@@ -1,0 +1,11 @@
+inst/.*[.]tex
+inst/.*[.]png
+inst/.*[.]jpg
+inst/.*[.]bib
+inst/.*[.]log
+inst/.*[.]bbl
+inst/.*[.]blg
+inst/.*[.]aux
+inst/.*[.]out
+inst/.*[.]toc
+inst/.*[.]bak
