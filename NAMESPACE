@@ -1,0 +1,76 @@
+useDynLib(RSiena, .registration = TRUE, .fixes="C_")
+
+export(
+	coCovar, coDyadCovar, getEffects, model.create, print01Report, siena07,
+	sienaCompositionChange, updateTheta, updateSpecification,
+	sienaCompositionChangeFromFile, sienaDataCreate, sienaGroupCreate,
+	sienaModelCreate, sienaAlgorithmCreate, sienaNet, sienaDependent,
+	sienaNodeSet, xtable.sienaFit, varCovar, varDyadCovar, setEffect,
+	includeEffects, includeInteraction, effectsDocumentation,
+	sienaDataConstraint, print.xtable.sienaFit, siena08, iwlsm, sienaTimeTest,
+	includeTimeDummy, sienaGOF, descriptives.sienaGOF, sienaRI,
+	sparseMatrixExtraction, networkExtraction, behaviorExtraction,
+	OutdegreeDistribution, IndegreeDistribution, BehaviorDistribution,
+	TriadCensus, mixedTriadCensus, dyadicCov,
+	siena.table, xtable, score.Test, Wald.RSiena, Multipar.RSiena
+)
+
+import(Matrix, tcltk, lattice, parallel, MASS)
+importFrom("grDevices", "rgb", "xy.coords")
+importFrom("graphics", "axis", "barplot", "contour", "layout", "lines",
+           "mtext", "pairs", "panel.smooth", "par", "pie", "plot",
+           "points", "stem", "strwidth", "text")
+importFrom("methods", "as", "is", "hasArg")
+importFrom("stats", ".getXlevels", "acf", "as.formula", "coef",
+           "contr.helmert", "cor", "cor.test", "cov", "density",
+           "dnorm", "ecdf", "hatvalues", "lm", "lm.wfit", "mad",
+           "mahalanobis", "median", "model.matrix", "model.offset",
+           "model.response", "model.weights", "na.omit", "naprint",
+           "optim", "optimize", "pchisq", "plot.ts", "pnorm", "poly",
+           "predict.lm", "pt", "qchisq", "qnorm", "quantile",
+           "rWishart", "rnorm", "runif", "sd", "ts", "uniroot", "var",
+           "weighted.mean", "weights")
+importFrom("utils", "browseURL", "capture.output", "edit",
+           "flush.console", "getFromNamespace", "object.size",
+           "packageDescription", "read.csv", "read.delim",
+           "read.table", "write.csv", "write.table")
+S3method(print, siena)
+S3method(print, sienaGroup)
+S3method(print, sienaDependent)
+S3method(print, sienaFit)
+S3method(print, summary.sienaFit)
+S3method(print, sienaAlgorithm)
+S3method(summary, sienaFit)
+S3method(print, sienaMeta)
+S3method(print, summary.sienaMeta)
+S3method(summary, sienaMeta)
+S3method(plot, sienaMeta)
+S3method(predict, iwlsm)
+S3method(print, iwlsm)
+S3method(print, summary.iwlsm)
+S3method(summary, iwlsm)
+S3method(iwlsm, formula)
+S3method(iwlsm, default)
+S3method(se.contrast, iwlsm)
+S3method(vcov, iwlsm)
+S3method(addAttributes, coCovar)
+S3method(addAttributes, varCovar)
+S3method(addAttributes, coDyadCovar)
+S3method(addAttributes, varDyadCovar)
+S3method(print, sienaTest)
+S3method(print, sienaTimeTest)
+S3method(summary, sienaTimeTest)
+S3method(print, summary.sienaTimeTest)
+S3method(plot, sienaTimeTest)
+S3method(print, sienaEffects)
+S3method(summary, sienaEffects)
+S3method(print, summary.sienaEffects)
+S3method(edit, sienaEffects)
+S3method(summary, sienaGOF)
+S3method(print, sienaGOF)
+S3method(plot, sienaGOF)
+S3method(summary, sienaRI)
+S3method(print, sienaRI)
+S3method(plot, sienaRI)
+S3method(print, xtable.sienaFit)
+S3method(print, chains.data.frame)
