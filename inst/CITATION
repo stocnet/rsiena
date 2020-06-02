@@ -1,0 +1,19 @@
+citHeader("To cite the RSiena package in publications use:")
+
+year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", meta$Date)
+vers <- paste0("R package version ", meta$Version,
+              ". https://www.cran.r-project.org/web/packages/RSiena/")
+
+citEntry(entry="Techreport",
+         title = "Manual for {Siena} version 4.0",
+         author = personList(as.person("Ruth M. Ripley"),as.person("Tom A. B. Snijders"),
+                  as.person("Zsofia B\'{o}da"),as.person("Andr\'{a}s V\"{o}r\"{o}s"),
+                  as.person("Paulina Preciado")),
+         year         = year,
+			institution = "Oxford: University of Oxford, Department of Statistics; Nuffield College",
+	 		note	      = vers,
+         textVersion =
+         paste("Ruth M. Ripley, Tom A. B. Snijders, Zsofia Boda, Andras Voros, and Paulina Preciado(",
+               year,"). Manual for Siena version 4.0. ",
+		vers, ".", sep="")
+)
