@@ -1,0 +1,70 @@
+/******************************************************************************
+ * SIENA: Simulation Investigation for Empirical Network Analysis
+ *
+ * Web: http://www.stats.ox.ac.uk/~snijders/siena/
+ *
+ * File: MixedTwoPathFunction.cpp
+ *
+ * Description: This file contains the implementation of the class
+ * MixedTwoPathFunction.
+ *****************************************************************************/
+
+#include "MixedTwoPathFunction.h"
+#include "model/tables/TwoNetworkCache.h"
+#include "model/tables/MixedEgocentricConfigurationTable.h"
+
+using namespace std;
+
+namespace siena
+{
+
+/**
+ * Constructor.
+ * @param[in] networkName the name of the network variable this function is
+ * associated with
+ */
+MixedTwoPathFunction::MixedTwoPathFunction(string firstNetworkName,
+	string secondNetworkName) :
+	MixedNetworkAlterFunction(firstNetworkName, secondNetworkName)
+{
+	this->lpTable = 0;
+}
+
+
+/**
+ * Initializes this function.
+ * @param[in] pData the observed data
+ * @param[in] pState the current state of the dependent variables
+ * @param[in] period the period of interest
+ * @param[in] pCache the cache object to be used to speed up calculations
+ */
+void MixedTwoPathFunction::initialize(const Data * pData,
+	State * pState,
+	int period,
+	Cache * pCache)
+{
+	MixedNetworkAlterFunction::initialize(pData, pState, period, pCache);
+	this->lpTable = this->pTwoNetworkCache()->pTwoPathTable();
+}
+
+
+/**
+ * Returns the value of this function for the given alter. It is assumed
+ * that the function has been initialized before and pre-processed with
+ * respect to a certain ego.
+ */
+double MixedTwoPathFunction::value(int alter)
+{
+	return this->lpTable->get(alter);
+}
+
+
+/**
+ * Returns the value of this function as an integer.
+ */
+int MixedTwoPathFunction::intValue(int alter)
+{
+	return this->lpTable->get(alter);
+}
+
+}
