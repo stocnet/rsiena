@@ -1,0 +1,4 @@
+"Group","Name","Filename","Format","Period","ActorSet","Type","Selected","MissingValues","NonZeroCode","NbrOfActors"
+"Group1","Var1","s50_d1.net","pajek net","1","Actors","network","Yes","9","1",""
+"Group1","Var1","s50_d2.net","pajek net","2","Actors","network","Yes","9","1",""
+"Group1","Var1","s50_d3.net","pajek net","3","Actors","network","Yes","9","1",""

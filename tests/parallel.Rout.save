@@ -1,0 +1,572 @@
+
+R version 3.6.3 (2020-02-29) -- "Holding the Windsock"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(RSiena)
+> 
+> 
+> ##test3
+> mynet1 <- sienaDependent(array(c(tmp3, tmp4),dim=c(32, 32, 2)))
+> mydata <- sienaDataCreate(mynet1)
+> myeff<- getEffects(mydata)
+> mymodel<- model.create(findiff=TRUE, fn = simstats0c,
++                        cond=FALSE, nsub=2, n3=50, seed=3)
+If you use this algorithm object, siena07 will create an output file Siena.txt .
+> print('test3')
+[1] "test3"
+> ans<- siena07(mymodel, data=mydata, effects=myeff,
++      batch=TRUE, parallelTesting=TRUE, silent=TRUE)
+> #,dll='../siena/src/RSiena.dll')
+> ans
+Estimates, standard errors and convergence t-ratios
+
+                                      Estimate   Standard   Convergence 
+                                                   Error      t-ratio   
+  1. rate basic rate parameter mynet1  3.0186  ( 0.5581   )    0.0134   
+  2. eval outdegree (density)         -1.1374  ( 0.2723   )    0.1044   
+  3. eval reciprocity                  1.7459  ( 0.2854   )   -0.1847   
+
+Overall maximum convergence ratio:    0.3838 
+
+
+Total of 407 iteration steps.
+
+> (myeff <- includeEffects(myeff, transTrip, cycle4))
+  effectName          include fix   test  initialValue parm
+1 transitive triplets TRUE    FALSE FALSE          0   0   
+2 4-cycles (#)        TRUE    FALSE FALSE          0   1   
+  effectName                  include fix   test  initialValue parm
+1 basic rate parameter mynet1 TRUE    FALSE FALSE    4.80941   0   
+2 outdegree (density)         TRUE    FALSE FALSE   -0.56039   0   
+3 reciprocity                 TRUE    FALSE FALSE    0.00000   0   
+4 transitive triplets         TRUE    FALSE FALSE    0.00000   0   
+5 4-cycles (#)                TRUE    FALSE FALSE    0.00000   1   
+> (myeff <- includeEffects(myeff, cycle4, include=FALSE))
+[1] effectName   include      fix          test         initialValue
+[6] parm        
+<0 rows> (or 0-length row.names)
+  effectName                  include fix   test  initialValue parm
+1 basic rate parameter mynet1 TRUE    FALSE FALSE    4.80941   0   
+2 outdegree (density)         TRUE    FALSE FALSE   -0.56039   0   
+3 reciprocity                 TRUE    FALSE FALSE    0.00000   0   
+4 transitive triplets         TRUE    FALSE FALSE    0.00000   0   
+> ##test4
+> mymodel$cconditional <- TRUE
+> mymodel$condvarno<- 1
+> print('test4')
+[1] "test4"
+> ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
++               parallelTesting=TRUE, silent=TRUE)
+> ##, verbose=TRUE)#,dll='../siena/src/RSiena.dll')
+> ans
+Estimates, standard errors and convergence t-ratios
+
+                              Estimate   Standard   Convergence 
+                                           Error      t-ratio   
+
+Rate parameters: 
+  0       Rate parameter       3.2640  ( 0.5554   )             
+
+Other parameters: 
+  1. eval outdegree (density) -1.7460  ( 0.4314   )   0.1523    
+  2. eval reciprocity          1.4356  ( 0.4395   )   0.2525    
+  3. eval transitive triplets  0.3126  ( 0.1201   )   0.0971    
+
+Overall maximum convergence ratio:    0.2753 
+
+
+Total of 231 iteration steps.
+
+> ##test5
+> mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
+> mydata <- sienaDataCreate(mynet1)
+> myeff<- getEffects(mydata)
+> mymodel<- model.create(fn = simstats0c,  nsub=2, n3=50,
++                        cond=FALSE, seed=5)
+If you use this algorithm object, siena07 will create an output file Siena.txt .
+> print('test5')
+[1] "test5"
+> ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
++               parallelTesting=TRUE, silent=TRUE)
+> ans
+Estimates, standard errors and convergence t-ratios
+
+                                      Estimate   Standard   Convergence 
+                                                   Error      t-ratio   
+  1. rate basic rate parameter mynet1  3.0451  ( 0.5078   )    0.0103   
+  2. eval outdegree (density)         -1.1448  ( 0.1690   )   -0.2193   
+  3. eval reciprocity                  1.7883  ( 0.3820   )   -0.0597   
+
+Overall maximum convergence ratio:    0.2334 
+
+
+Total of 588 iteration steps.
+
+> (myeff <- includeEffects(myeff, outAct, fix=TRUE, test=TRUE))
+  effectName           include fix  test initialValue parm
+1 outdegree - activity TRUE    TRUE TRUE          0   0
+  effectName                  include fix   test  initialValue parm
+1 basic rate parameter mynet1 TRUE    FALSE FALSE    4.80941   0
+2 outdegree (density)         TRUE    FALSE FALSE   -0.56039   0
+3 reciprocity                 TRUE    FALSE FALSE    0.00000   0
+4 outdegree - activity        TRUE     TRUE  TRUE    0.00000   0
+> ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
++               parallelTesting=TRUE, silent=TRUE)
+> ans
+Estimates, standard errors and convergence t-ratios
+
+                                      Estimate   Standard   Convergence
+                                                   Error      t-ratio
+  1. rate basic rate parameter mynet1  3.0512  ( 0.5362   )    0.0177
+  2. eval outdegree (density)         -1.1688  ( 0.1862   )   -0.1783
+  3. eval reciprocity                  1.8243  ( 0.4225   )   -0.1683
+  4. eval outdegree - activity         0.0000  (     NA   )   -1.0807
+
+Overall maximum convergence ratio:    0.1935
+
+
+Score test for 1 parameter:
+chi-squared = 5.52, p = 0.0188.
+
+Total of 395 iteration steps.
+
+> score.Test(ans, 4)
+Tested effects:
+ mynet1: outdegree-activity eval 
+chi-squared = 5.52, d.f. = 1; one-sided Z = 2.35;  p = 0.019.
+> ##test6
+> mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
+> mydata <- sienaDataCreate(mynet1)
+> myeff<- getEffects(mydata)
+> mymodel<- model.create(fn = simstats0c,  nsub=2, n3=50,
++                        cond=FALSE, doubleAveraging=0,seed=5)
+If you use this algorithm object, siena07 will create an output file Siena.txt .
+> print('test6')
+[1] "test6"
+> ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
++               parallelTesting=TRUE, silent=TRUE)
+> ans
+Estimates, standard errors and convergence t-ratios
+
+                                      Estimate   Standard   Convergence 
+                                                   Error      t-ratio   
+  1. rate basic rate parameter mynet1  3.0451  ( 0.5078   )    0.0103   
+  2. eval outdegree (density)         -1.1448  ( 0.1690   )   -0.2193   
+  3. eval reciprocity                  1.7883  ( 0.3820   )   -0.0597   
+
+Overall maximum convergence ratio:    0.2334 
+
+
+Total of 588 iteration steps.
+
+> ##test7
+> mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
+> mydata <- sienaDataCreate(mynet1)
+> myeff<- getEffects(mydata)
+> mymodel<- model.create(fn = simstats0c,  nsub=2, n3=50,
++                        cond=FALSE,  diagonalize=0.5, seed=5)
+If you use this algorithm object, siena07 will create an output file Siena.txt .
+> print('test7')
+[1] "test7"
+> ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
++               parallelTesting=TRUE, silent=TRUE)
+> ##, verbose=TRUE)#,dll='../siena/src/RSiena.dll')
+> ans
+Estimates, standard errors and convergence t-ratios
+
+                                      Estimate   Standard   Convergence 
+                                                   Error      t-ratio   
+  1. rate basic rate parameter mynet1  3.0258  ( 0.5063   )   -0.1656   
+  2. eval outdegree (density)         -1.1558  ( 0.1821   )    0.0801   
+  3. eval reciprocity                  1.8464  ( 0.3633   )    0.2701   
+
+Overall maximum convergence ratio:    0.3630 
+
+
+Total of 545 iteration steps.
+
+> ##test8
+> mymodel<- model.create(fn = simstats0c,  nsub=1, n3=50,
++                        cond=TRUE, condvarno=1, seed=5)
+If you use this algorithm object, siena07 will create an output file Siena.txt .
+> print('test8')
+[1] "test8"
+> ans <- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
++               parallelTesting=TRUE, silent=TRUE)
+> ##, verbose=TRUE)#,dll='../siena/src/RSiena.dll')
+> ans
+Estimates, standard errors and convergence t-ratios
+
+                              Estimate   Standard   Convergence 
+                                           Error      t-ratio   
+
+Rate parameters: 
+  0       Rate parameter       3.0998  ( 0.5110   )             
+
+Other parameters: 
+  1. eval outdegree (density) -1.1509  ( 0.2244   )   -0.1080   
+  2. eval reciprocity          1.7982  ( 0.4363   )    0.0185   
+
+Overall maximum convergence ratio:    0.1564 
+
+
+Total of 240 iteration steps.
+
+> ##test9
+> 
+> mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+> mynet2 <- sienaDependent(s50a,type='behavior')
+> mydata <- sienaDataCreate(mynet1, mynet2)
+> myeff <- getEffects(mydata)
+> myeff <- setEffect(myeff, linear, initialValue=0.34699930338, name="mynet2")
+  effectName          include fix   test  initialValue parm
+1 mynet2 linear shape TRUE    FALSE FALSE      0.347   0   
+> myeff <- setEffect(myeff, avAlt, name="mynet2", interaction1="mynet1")
+  effectName           include fix   test  initialValue parm
+1 mynet2 average alter TRUE    FALSE FALSE          0   0   
+> ##myeff$initialValue[98] <- 0.34699930338 ## siena3 starting values differ
+> ##test10
+> print('test10')
+[1] "test10"
+> mymodel$cconditional <- TRUE
+> mymodel$condvarno<- 1
+> ans <- siena07(mymodel, data=mydata, effects=myeff, batch=TRUE,
++                parallelTesting=TRUE, silent=TRUE)
+> ##, verbose=TRUE)
+> ans
+Estimates, standard errors and convergence t-ratios
+
+                                                  Estimate   Standard   Convergence 
+                                                               Error      t-ratio   
+
+Rate parameters: 
+  0.1      Rate parameter cond. variable period 1  6.0629  ( 1.2683   )             
+  0.2      Rate parameter cond. variable period 2  4.4421  ( 0.6116   )             
+
+Other parameters: 
+Network Dynamics 
+  1.  eval outdegree (density)                    -2.4172  ( 0.1896   )   -0.0951   
+  2.  eval reciprocity                             2.9130  ( 0.3222   )    0.0078   
+
+Behavior Dynamics
+  3.  rate rate mynet2 (period 1)                  1.3101  ( 0.4665   )    0.0888   
+  4.  rate rate mynet2 (period 2)                  1.6253  ( 0.5829   )   -0.0653   
+  5.  eval mynet2 linear shape                     0.4125  ( 0.2154   )   -0.0459   
+  6.  eval mynet2 quadratic shape                 -0.5443  ( 0.4127   )   -0.0480   
+  7.  eval mynet2 average alter                    1.2691  ( 1.1516   )   -0.0736   
+
+Overall maximum convergence ratio:    0.2577 
+
+
+Total of 335 iteration steps.
+
+> ##test11
+> print('test11')
+[1] "test11"
+> mymodel<- model.create(fn = simstats0c,  nsub=1, n3=50,
++                        behModelType=c(mynet2=2), seed=6)
+If you use this algorithm object, siena07 will create an output file Siena.txt .
+> (ans <- siena07(mymodel, data=mydata, effects=myeff, batch=TRUE,
++                parallelTesting=TRUE, silent=TRUE))
+Estimates, standard errors and convergence t-ratios
+
+                                          Estimate   Standard   Convergence 
+                                                       Error      t-ratio   
+Network Dynamics 
+  1. rate constant mynet1 rate (period 1)  5.7911  ( 1.8273   )   -0.2276   
+  2. rate constant mynet1 rate (period 2)  4.5005  ( 0.8629   )   -0.1708   
+  3. eval outdegree (density)             -2.3618  ( 0.1201   )   -0.2746   
+  4. eval reciprocity                      2.8187  ( 0.1675   )   -0.2688   
+
+Behavior Dynamics
+  5. rate rate mynet2 (period 1)           1.3221  ( 0.4155   )    0.0399   
+  6. rate rate mynet2 (period 2)           1.7863  ( 0.5585   )   -0.0260   
+  7. eval mynet2 linear shape              0.3724  ( 0.2906   )   -0.0873   
+  8. eval mynet2 quadratic shape          -0.5723  ( 0.3959   )   -0.1168   
+  9. eval mynet2 average alter             1.2012  ( 0.7552   )    0.0420   
+
+Overall maximum convergence ratio:    0.5329 
+
+
+ Behavioral Model Type:
+mynet2 : Boundary-absorbing behavior model 
+
+
+Total of 340 iteration steps.
+
+> ##test12
+> print('test12')
+[1] "test12"
+> use<- 1:30
+> mynet1 <- sienaDependent(array(c(s501[use,], s502[use,], s503[use,]),
++                          dim=c(length(use), 50,3)), type='bipartite',
++                          nodeSet=c('Senders','receivers'))
+> receivers <- sienaNodeSet(50,'receivers')
+> senders <- sienaNodeSet(30,'Senders')
+> myvar1 <- coCovar(s50a[1:30,2], nodeSet='Senders')
+> mydata <- sienaDataCreate(mynet1, myvar1, nodeSets=list(senders, receivers))
+> myeff <- getEffects(mydata)
+> myeff <- includeEffects(myeff, inPop)
+  effectName            include fix   test  initialValue parm
+1 indegree - popularity TRUE    FALSE FALSE          0   0   
+> myeff <- setEffect(myeff, altInDist2, interaction1="myvar1", parameter=1)
+  effectName             include fix   test  initialValue parm
+1 myvar1 in-alter dist 2 TRUE    FALSE FALSE          0   1   
+> ans <- siena07(sienaModelCreate(n3=50, nsub=2, seed=1),
++                data=mydata, effects=myeff, batch=TRUE, silent=TRUE)
+If you use this algorithm object, siena07 will create an output file Siena.txt .
+> ans
+Estimates, standard errors and convergence t-ratios
+
+                                   Estimate   Standard   Convergence 
+                                                Error      t-ratio   
+
+Rate parameters: 
+  0.1      Rate parameter period 1  3.6549  (  0.5402  )             
+  0.2      Rate parameter period 2  2.7936  (  0.4046  )             
+
+Other parameters: 
+  1.  eval outdegree (density)      2.6894  (  5.1633  )    0.7569   
+  2.  eval indegree - popularity   -3.4982  (  3.1025  )    0.8662   
+  3.  eval myvar1 in-alter dist 2  33.4085  ( 10.8879  )   -2.1192   
+
+Overall maximum convergence ratio:    7.2880 
+
+
+Total of 588 iteration steps.
+
+> tt <- sienaTimeTest(ans)
+> summary(tt)
+Joint significance test of time heterogeneity:
+chi-squared =   4.24, d.f. = 3, p= 0.2365, 
+where H0: The following parameters are zero:
+ (1) (*)Dummy2:outdegree (density)
+ (2) (*)Dummy2:indegree - popularity
+ (3) (*)Dummy2:myvar1 in-alter dist 2
+
+Individual significance tests and one-step estimators:
+                                 Initial Est. One Step Est. p-Value  
+outdegree (density)                 2.6894      15.2890        0.6020
+indegree - popularity              -3.4982     -16.1684        0.2600
+myvar1 in-alter dist 2             33.4085     142.5361        0.0020
+(*)Dummy2:outdegree (density)       0.0000     -17.8685        0.5020
+(*)Dummy2:indegree - popularity     0.0000      22.3587        0.1800
+(*)Dummy2:myvar1 in-alter dist 2    0.0000    -214.6286        0.0520
+
+Effect-wise joint significance tests
+(i.e. each effect across all dummies):
+                       chi-sq. df p-value
+outdegree (density)       0.45  1   0.502
+indegree - popularity     1.80  1   0.180
+myvar1 in-alter dist 2    3.77  1   0.052
+
+Period-wise joint significance tests
+(i.e. each period across all parameters):
+         chi-sq. df p-value
+Period 1    4.24  3   0.237
+Period 2    4.24  3   0.237
+
+Use the following indices for plotting:
+  (1) outdegree (density)
+  (2) indegree - popularity
+  (3) myvar1 in-alter dist 2
+
+If you would like to fit time dummies to your model,
+use the includeTimeDummy function.
+Type "?sienaTimeTest" for more information on this output.
+> ##test13
+> print('test13')
+[1] "test13"
+> use<- 1:30
+> mynet1 <- sienaDependent(array(c(s502[,use], s503[,use]),
++                          dim=c(50, length(use), 2)), type='bipartite',
++                          nodeSet=c('Senders','receivers'))
+> receivers <- sienaNodeSet(30,'receivers')
+> senders <- sienaNodeSet(50,'Senders')
+> myvar1 <- coCovar(s50a[1:50,2], nodeSet='Senders')
+> mydata <- sienaDataCreate(mynet1, myvar1, nodeSets=list(senders, receivers))
+> myeff <- getEffects(mydata)
+> myeff <- setEffect(myeff, altInDist2, interaction1="myvar1", parameter=1)
+  effectName             include fix   test  initialValue parm
+1 myvar1 in-alter dist 2 TRUE    FALSE FALSE          0   1   
+> myeff <- setEffect(myeff, egoX, interaction1="myvar1")
+  effectName include fix   test  initialValue parm
+1 myvar1 ego TRUE    FALSE FALSE          0   0   
+> (ans <- siena07(sienaModelCreate(n3=50, nsub=2, seed=1),
++                data=mydata, effects=myeff, batch=TRUE, silent=TRUE))
+If you use this algorithm object, siena07 will create an output file Siena.txt .
+Estimates, standard errors and convergence t-ratios
+
+                                 Estimate   Standard   Convergence 
+                                              Error      t-ratio   
+
+Rate parameters: 
+  0       Rate parameter          1.8747  ( 0.3077   )             
+
+Other parameters: 
+  1. eval outdegree (density)    -1.8071  ( 0.1798   )    0.0536   
+  2. eval myvar1 ego              0.3003  ( 0.1138   )   -0.0517   
+  3. eval myvar1 in-alter dist 2 -0.0569  ( 0.1678   )   -0.0475   
+
+Overall maximum convergence ratio:    0.0766 
+
+
+Total of 588 iteration steps.
+
+> ##test14
+> print('test14')
+[1] "test14"
+> net <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
+> dataset <- sienaDataCreate(net)
+> myeff <- getEffects(dataset)
+> myeff <- includeEffects(myeff, inPop)
+  effectName            include fix   test  initialValue parm
+1 indegree - popularity TRUE    FALSE FALSE          0   0   
+> algo <- sienaAlgorithmCreate(nsub=1, n3=20, maxlike=TRUE, seed=15, mult=1)
+If you use this algorithm object, siena07 will create an output file Siena.txt .
+> (ans <- siena07(algo, data=dataset, effects=myeff, batch=TRUE, silent=TRUE))
+Estimated by Maximum Likelihood
+
+Estimates, standard errors and convergence t-ratios
+
+                                   Estimate   Standard   Convergence 
+                                                Error      t-ratio   
+  1. rate basic rate parameter net  3.7505  ( 0.3841   )   0.6758    
+  2. eval outdegree (density)      -1.6225  ( 0.3358   )   1.3177    
+  3. eval reciprocity               1.8051  ( 0.2445   )   1.5288    
+  4. eval indegree - popularity     0.1246  ( 0.0449   )   1.6988    
+
+Overall maximum convergence ratio:    2.9012 
+
+
+Total of 266 iteration steps.
+
+> ##test16
+> print('test16')
+[1] "test16"
+> set.seed(123) # simulate behavior data according to dZ(t) = [-0.1 Z + 1] dt + 1 dW(t)
+> y1 <- rnorm(50, 0,3)
+> y2 <- exp(-0.1) * y1 + (1-exp(-0.1)) * 1/ -0.1 + rnorm(50, 0, (exp(-0.2)- 1) / -0.2 * 1^2)
+> friend <- sienaDependent(array(c(s501, s502), dim = c(50,50,2)))
+> behavior <- sienaDependent(matrix(c(y1,y2), 50,2), type = "continuous")
+> (mydata <- sienaDataCreate(friend, behavior))
+Dependent variables:  friend, behavior
+Number of observations: 2
+
+Nodeset                  Actors
+Number of nodes              50
+
+Dependent variable friend
+Type               oneMode
+Observations       2
+Nodeset            Actors
+Densities          0.046 0.047
+
+Dependent variable behavior
+Type               continuous
+Observations       2
+Nodeset            Actors
+Range              -6.242 - 6.507
+
+> (myeff <- getEffects(mydata, onePeriodSde = TRUE))
+SDE init parameters:  -0.1117176 -0.864023 0.8576913
+SDE par stand errors: 0.04669358 0.1223113 0.08791327
+  name     effectName                  include fix   test  initialValue parm
+1 friend   basic rate parameter friend TRUE    FALSE FALSE    4.69604   0
+2 friend   outdegree (density)         TRUE    FALSE FALSE   -1.48852   0
+3 friend   reciprocity                 TRUE    FALSE FALSE    0.00000   0
+4 sde      scale parameter period 1    TRUE    TRUE  FALSE    1.00000   0
+5 behavior wiener (behavior.behavior)  TRUE    FALSE FALSE    0.85769   0
+6 behavior feedback from behavior      TRUE    FALSE FALSE   -0.11172   0
+7 behavior intercept                   TRUE    FALSE FALSE   -0.86402   0
+> algorithmMoM <- sienaAlgorithmCreate(nsub=1, n3=20, seed=321)
+If you use this algorithm object, siena07 will create an output file Siena.txt .
+> (ans <- siena07(algorithmMoM, data = mydata, effects = myeff, batch=TRUE))
+SDE init parameters:  -0.1519645 -1.175127 0.7355777
+SDE par stand errors: 0.06428706 0.2889378 0.1507865
+
+Start phase 0
+theta:  4.696 -1.489  0.000  0.858 -0.112 -0.864  1.000
+
+Start phase 1
+Phase 1 Iteration 1 Progress: 0%
+Phase 1 Iteration 2 Progress: 0%
+Phase 1 Iteration 3 Progress: 0%
+Phase 1 Iteration 4 Progress: 1%
+Phase 1 Iteration 5 Progress: 1%
+Phase 1 Iteration 10 Progress: 2%
+Phase 1 Iteration 15 Progress: 2%
+Phase 1 Iteration 20 Progress: 3%
+Phase 1 Iteration 25 Progress: 4%
+Phase 1 Iteration 30 Progress: 5%
+Phase 1 Iteration 35 Progress: 5%
+Phase 1 Iteration 40 Progress: 6%
+Phase 1 Iteration 45 Progress: 7%
+Phase 1 Iteration 50 Progress: 8%
+theta:  4.4035 -1.6238  0.4253  0.8458 -0.0955 -0.8137  1.0000
+
+Start phase 2.1
+Phase 2 Subphase 1 Iteration 1 Progress: 61%
+Phase 2 Subphase 1 Iteration 2 Progress: 61%
+theta  4.1817 -1.7327  0.9256  0.8373 -0.0868 -0.7741  1.0000
+ac -1.142  3.277  1.128  0.733  0.761  0.598  0.685
+Phase 2 Subphase 1 Iteration 3 Progress: 62%
+Phase 2 Subphase 1 Iteration 4 Progress: 62%
+theta  3.896 -2.082  2.188  0.796 -0.068 -0.735  1.000
+ac 0.119 1.570 1.088 0.356 0.525 0.969 0.330
+Phase 2 Subphase 1 Iteration 5 Progress: 62%
+Phase 2 Subphase 1 Iteration 6 Progress: 62%
+theta  4.6429 -2.2035  2.6826  0.7857 -0.0835 -0.8061  1.0000
+ac 0.482 0.457 1.096 0.529 0.669 1.010 0.495
+Phase 2 Subphase 1 Iteration 7 Progress: 62%
+Phase 2 Subphase 1 Iteration 8 Progress: 62%
+theta  5.710 -2.093  2.611  0.825 -0.111 -0.878  1.000
+ac 0.473 0.676 1.174 0.452 0.608 1.004 0.433
+Phase 2 Subphase 1 Iteration 9 Progress: 62%
+Phase 2 Subphase 1 Iteration 10 Progress: 63%
+theta  6.171 -1.994  2.282  0.860 -0.131 -0.931  1.000
+ac 0.521 0.829 1.222 0.358 0.599 0.965 0.367
+theta  5.533 -2.264  2.476  0.854 -0.112 -0.865  1.000
+ac 0.4621 0.6521 0.2814 0.0807 0.1639 0.5790 0.0822
+theta:  5.533 -2.264  2.476  0.854 -0.112 -0.865  1.000
+
+Start phase 3
+Estimates, standard errors and convergence t-ratios
+
+                                      Estimate   Standard   Convergence
+                                                   Error      t-ratio
+Network Dynamics
+  1. rate basic rate parameter friend  5.5328  ( 9.6387   )   -0.4357
+  2. eval outdegree (density)         -2.2642  ( 0.1852   )   -0.5525
+  3. eval reciprocity                  2.4763  ( 0.2954   )   -0.2053
+
+Continuous Behavior Dynamics
+  4. eval wiener (behavior.behavior)   0.8540  ( 0.0861   )   -0.1574
+  5. eval feedback from behavior      -0.1119  ( 0.1616   )    0.0890
+  6. eval intercept                   -0.8645  ( 0.4628   )    0.0616
+  7. rate scale parameter period 1     1.0000  (     NA   )   -0.1574
+
+Overall maximum convergence ratio:    0.9060
+
+
+Total of 305 iteration steps.
+
+> ## delete output file
+> if (file.exists('Siena.txt')){unlink('Siena.txt')}
+> 
+> proc.time()
+   user  system elapsed 
+  18.90    0.64   19.75 
