@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+pushd "$(dirname "$0")"
+
+# autoconf
+rm -rf autom4te.cache
+rm -f config.log
+rm -f config.status
+rm -f src/Makedeps
+rm -f src/Makevars
+rm -f src/symbols.rds
+# binaries
+rm -f src/*.{so,d,dll,a,rc}
+# objects
+find src -name '*.o' -exec rm '{}' \;
+
+popd

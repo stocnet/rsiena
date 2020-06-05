@@ -1,0 +1,6 @@
+#!/usr/bin/env Rscript
+suppressPackageStartupMessages(library(RSiena))
+suppressPackageStartupMessages(library(tcltk))
+RSiena:::DONE(FALSE)
+while(!RSiena:::DONE()) {Sys.sleep(0.1)}
+

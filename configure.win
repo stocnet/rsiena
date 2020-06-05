@@ -1,0 +1,78 @@
+#!/usr/bin/env ash
+# vim:ft=sh:fdm=marker:
+
+# Searches for the MPI installations in the common places an produces the
+# Makevars.win from the Makevars.in file.
+
+# Dependencies                                                           {{{1
+echo -n "checking sed... "
+if type sed >/dev/null 2>&1 ; then
+  echo "yes"
+else
+  echo "no"
+  echo "Please install Rtools and make sure it's in the PATH." >&2
+  exit 1
+fi
+
+# Parse arguments                                                        {{{1
+while test -n "$1" ; do
+  case "$1" in
+    --with-mpi-include-path) MPI_INCLUDE="$2"; shift ;;
+    --with-mpi-lib-path)     MPI_LIB="$2";     shift ;;
+    --with-mpi-type)         MPI_TYPE="$2";    shift ;;
+    --with-mpi-root)
+      MPI_ROOT="$2"
+      MPI_INCLUDE="$MPI_ROOT/include"
+      MPI_LIB="$MPI_ROOT/lib"
+      shift ;;
+  esac
+  shift
+done
+
+# Search in the usual install paths                                      {{{1
+if test -z "$MPI_INCLUDE" || -z "$MPI_LIB" ; then
+  echo "Trying to find mpi root directory ..."
+  #for d in "$PROGRAMFILES" "$ProgramW6432" ; do
+  for d in "C:/Progra~1" "C:/Progra~2" ; do
+    if test -f "$d/MPICH2/include/mpi.h" \
+      && test -f "$d/MPICH2/lib/libmpi.a" ; then
+      MPI_ROOT="$d/MPICH2"
+      MPI_INCLUDE="$MPI_ROOT/include"
+      MPI_LIB="$MPI_ROOT/lib"
+      MPI_TYPE="MPICH2"
+      echo "I am here $MPI_ROOT and it is $MPI_TYPE"
+      break
+    elif test -f "$d/OpenMPI/include/mpi.h" \
+      && test -f "$d/OpenMPI/bin/libmpi.dll" ; then
+      MPI_ROOT="$d/OpenMPI"
+      MPI_INCLUDE="$MPI_ROOT/include"
+      MPI_LIB="$MPI_ROOT/bin"
+      MPI_TYPE="OPENMPI"
+      echo "I am here $MPI_ROOT and it is $MPI_TYPE"
+      break
+    fi
+  done
+fi # }}}1
+
+if test "$MPI_TYPE" = "OPENMPI" -o "$MPI_TYPE" = "MPICH2"; then
+  MPI_DEFS="-DMPI2"
+fi
+
+PKG_CPPFLAGS="-I${MPI_INCLUDE} ${MPI_DEFS} -D${MPI_TYPE}"
+
+case "$MPI_TYPE" in
+  OPENMPI) PKG_LIBS="-L${MPI_LIB} -lmpi_cxx -lmpi" ;;
+  MPICH2)  PKG_LIBS="-L${MPI_LIB} -lmpi" ;;
+  *) echo "No MPI Installation found. Compiling without MPI support." >&2 ;;
+esac
+
+PKG_SOURCES="$(cat src/sources.list)"
+
+# Take care that variables do not contain '\' backslashes or '#' hashes!
+sed "
+s#@PKG_SOURCES@#$PKG_SOURCES#;
+s#@OPENMP_CFLAGS@##;
+s#@PKG_LIBS@#$PKG_LIBS#;
+s#@PKG_CPPFLAGS@#$PKG_CPPFLAGS#" \
+src/Makevars.in >src/Makevars.win
+
