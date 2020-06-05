@@ -1,0 +1,867 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: R 3.0.2\n"
+"Report-Msgid-Bugs-To: bugs.r-project.org\n"
+"POT-Creation-Date: 2014-11-21 22:52\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+
+msgid "is not a sienaEffects object."
+msgstr ""
+
+msgid "not a legitimate Siena effects object"
+msgstr ""
+
+msgid "not a legitimate summary of a Siena effects object"
+msgstr ""
+
+msgid "empty effect group"
+msgstr ""
+
+msgid "missing effect name"
+msgstr ""
+
+msgid "Not a valid siena data object or group"
+msgstr ""
+
+msgid "error type"
+msgstr ""
+
+msgid "depvars don't match"
+msgstr ""
+
+msgid "not valid siena data object"
+msgstr ""
+
+msgid "invalid effect requested: see above"
+msgstr ""
+
+msgid "effects is not a data.frame"
+msgstr ""
+
+msgid "Cannot use standard initialisation with a"
+msgstr ""
+
+msgid "different effect list"
+msgstr ""
+
+msgid "Invalid algorithm-data combination."
+msgstr ""
+
+msgid "Not possible to use maximum likelihood estimation"
+msgstr ""
+
+msgid "with composition change"
+msgstr ""
+
+msgid "Conditional estimation is not possible with"
+msgstr ""
+
+msgid "maximum likelihood method"
+msgstr ""
+
+msgid "Incorrect variable name."
+msgstr ""
+
+msgid "Finite difference method for derivatives not available"
+msgstr ""
+
+msgid "with Maximum likelihood method"
+msgstr ""
+
+msgid "Must have at least one effect for each dependent variable"
+msgstr ""
+
+msgid "Non-local effect chosen."
+msgstr ""
+
+msgid "duplicate entries in sparse matrix"
+msgstr ""
+
+msgid "zero values in sparse matrices"
+msgstr ""
+
+msgid "duplicate values in sparse matrices"
+msgstr ""
+
+msgid "loop values in sparse matrices"
+msgstr ""
+
+msgid "duplicate entries in sparse matrix dyadic covariate"
+msgstr ""
+
+msgid "Only one active actor at start of period"
+msgstr ""
+
+msgid "No active actors at start of period"
+msgstr ""
+
+msgid "No/only one active actor(s) left."
+msgstr ""
+
+msgid "invalid network interaction specification:"
+msgstr ""
+
+msgid "effect number 1"
+msgstr ""
+
+msgid "effect number 2"
+msgstr ""
+
+msgid "effect number 3"
+msgstr ""
+
+msgid "must all be same network"
+msgstr ""
+
+msgid "must all be same type:"
+msgstr ""
+
+msgid "evaluation, endowment or creation"
+msgstr ""
+
+msgid "must all be"
+msgstr ""
+
+msgid "same type: evaluation, endowment or creation"
+msgstr ""
+
+msgid "must be at least one ego or both dyadic"
+msgstr ""
+
+msgid "effects"
+msgstr ""
+
+msgid "must be at least two ego or all dyadic"
+msgstr ""
+
+msgid "invalid behavior interaction specification:"
+msgstr ""
+
+msgid "must all be same behavior variable"
+msgstr ""
+
+msgid "must be same type: evaluation, endowment"
+msgstr ""
+
+msgid "or creation"
+msgstr ""
+
+msgid "at most one effect with interactionType"
+msgstr ""
+
+msgid "not OK is allowed"
+msgstr ""
+
+msgid "prevAns is not an RSiena fit object"
+msgstr ""
+
+msgid "'x' is singular: singular fits are not implemented in iwlsm"
+msgstr ""
+
+msgid "invalid 'test.vec'"
+msgstr ""
+
+msgid "length of 'weights' must equal number of observations"
+msgstr ""
+
+msgid "negative 'weights' value"
+msgstr ""
+
+msgid "some of ... do not match"
+msgstr ""
+
+msgid "'init' method is unknown"
+msgstr ""
+
+msgid "'c' must be at least 1.548 and has been ignored"
+msgstr ""
+
+msgid "'method' is unknown"
+msgstr ""
+
+msgid "iwlsm failed to converge in %d steps"
+msgstr ""
+
+msgid "'coef' must define a contrast, i.e., sum to 0"
+msgstr ""
+
+msgid "'coef' must have same length as 'contrast.obj'"
+msgstr ""
+
+msgid "each element of %s must be logical"
+msgstr ""
+
+msgid "the contrast defined is empty (has no TRUE elements)"
+msgstr ""
+
+msgid "columns of 'contrast.obj' must define a contrast (sum to zero)"
+msgstr ""
+
+msgid "Cannot proceed: derivative matrix not invertible"
+msgstr ""
+
+msgid "Regression not implemented; revive z$thetaStore if you wish"
+msgstr ""
+
+msgid "Negative minima not allowed for dependent actor"
+msgstr ""
+
+msgid "variables."
+msgstr ""
+
+msgid "Maxima more than 255 not allowed for dependent"
+msgstr ""
+
+msgid "actor"
+msgstr ""
+
+msgid "Dependent actor variables must not be"
+msgstr ""
+
+msgid "constant."
+msgstr ""
+
+msgid "The first argument needs to be a siena data object."
+msgstr ""
+
+msgid "print01Report needs no effects object."
+msgstr ""
+
+msgid "Incompatibility between data and MaxDegree in algorithm object."
+msgstr ""
+
+msgid "network names not consistent"
+msgstr ""
+
+msgid "sparse matrix has duplicate triples"
+msgstr ""
+
+msgid "Incompatible RSiena versions for sub process: exit R"
+msgstr ""
+
+msgid "and restart"
+msgstr ""
+
+msgid "Not enough observations to use the nodes"
+msgstr ""
+
+msgid "Gui only needs installing on Windows: on Linux use sienascript"
+msgstr ""
+
+msgid "This function needs the tcl/tk package TkTable: install it,"
+msgstr ""
+
+msgid "or use an alternative data entry method: see RSiena help page"
+msgstr ""
+
+msgid "cannot parallel test with multiple processes"
+msgstr ""
+
+msgid "cannot use forking processes on Windows"
+msgstr ""
+
+msgid "need some sienafits"
+msgstr ""
+
+msgid "names must be unique"
+msgstr ""
+
+msgid "Can only read csv, txt (tab delimited)"
+msgstr ""
+
+msgid "or prn (space delimiited) files"
+msgstr ""
+
+msgid "need some files if they have been edited"
+msgstr ""
+
+msgid "Actor set must be the same for one object"
+msgstr ""
+
+msgid "Invalid object dimensions"
+msgstr ""
+
+msgid "Dimensions must be the same for one object"
+msgstr ""
+
+msgid "Invalid actor sets"
+msgstr ""
+
+msgid "Conflicting sizes for actor set"
+msgstr ""
+
+msgid "observations and periods don't match"
+msgstr ""
+
+msgid "Differing numbers of observations"
+msgstr ""
+
+msgid "number of actors inconsistent"
+msgstr ""
+
+msgid "don't understand this pajek file"
+msgstr ""
+
+msgid "Two-mode pajek nets not supported"
+msgstr ""
+
+msgid "Only one wave possible for constant"
+msgstr ""
+
+msgid "dyadic covariates"
+msgstr ""
+
+msgid "for dyadic covariate"
+msgstr ""
+
+msgid "gaps in values in"
+msgstr ""
+
+msgid "exogenous event file"
+msgstr ""
+
+msgid "Missing data at start"
+msgstr ""
+
+msgid "of exogenous event file"
+msgstr ""
+
+msgid "File of unknown type:"
+msgstr ""
+
+msgid "Duplicate names"
+msgstr ""
+
+msgid "node set not found"
+msgstr ""
+
+msgid "need some networks"
+msgstr ""
+
+msgid "differing number of observations"
+msgstr ""
+
+msgid "invalid object in sienaDataCreate"
+msgstr ""
+
+msgid "need a dependent variable"
+msgstr ""
+
+msgid "constant covariate incorrect node set:"
+msgstr ""
+
+msgid "Changing covariates are not possible with only two waves"
+msgstr ""
+
+msgid "changing covariate incorrect size:"
+msgstr ""
+
+msgid "changing covariate not enough columns"
+msgstr ""
+
+msgid "dyadic covariate incorrect nbr rows"
+msgstr ""
+
+msgid "dyadic covariate incorrect nbr columns"
+msgstr ""
+
+msgid "dyadic changing covariate incorrect number of rows"
+msgstr ""
+
+msgid "dyadic changing covariate incorrect number of columns"
+msgstr ""
+
+msgid "Dyadic changing covariate not enough observations"
+msgstr ""
+
+msgid "Only one composition change allowed for each nodeSet"
+msgstr ""
+
+msgid "composition change incorrect size:"
+msgstr ""
+
+msgid "invalid times of composition change"
+msgstr ""
+
+msgid "Each composition change entry must have an"
+msgstr ""
+
+msgid "even number of digits"
+msgstr ""
+
+msgid "1st net dimension wrong"
+msgstr ""
+
+msgid "2nd net dimension wrong"
+msgstr ""
+
+msgid "Error in checkConstraints"
+msgstr ""
+
+msgid "group create constant covariate error"
+msgstr ""
+
+msgid "inconsistent actor covariate names"
+msgstr ""
+
+msgid "error in dyadic constant covariate, group create"
+msgstr ""
+
+msgid "inconsistent dyadic covariate names"
+msgstr ""
+
+msgid "inconsistent centering of dyadic covariates"
+msgstr ""
+
+msgid "Need a list of objects"
+msgstr ""
+
+msgid "Not a list of valid siena objects"
+msgstr ""
+
+msgid "Need more than one siena object"
+msgstr ""
+
+msgid "object names inconsistent"
+msgstr ""
+
+msgid "Inconsistent network types"
+msgstr ""
+
+msgid "Inconsistent node Sets"
+msgstr ""
+
+msgid "actor covariate names inconsistent"
+msgstr ""
+
+msgid "covariate names inconsistent"
+msgstr ""
+
+msgid "dyadic covariate names inconsistent"
+msgstr ""
+
+msgid "Inconsistent constant dyadic covariate types"
+msgstr ""
+
+msgid "Inconsistent changing dyadic covariate types"
+msgstr ""
+
+msgid "The first argument is not of class <sienaEffects>."
+msgstr ""
+
+msgid "This function needs some effect short names."
+msgstr ""
+
+msgid "Effect AltsAvAlt now is called avXAlt. Use the new name please."
+msgstr ""
+
+msgid "need some effect short names"
+msgstr ""
+
+msgid "need exactly two or three effect short names"
+msgstr ""
+
+msgid "First effect not found"
+msgstr ""
+
+msgid "First effect not unique"
+msgstr ""
+
+msgid "Second effect not found"
+msgstr ""
+
+msgid "Second effect not unique"
+msgstr ""
+
+msgid "Third effect not found"
+msgstr ""
+
+msgid "Third effect not unique"
+msgstr ""
+
+msgid "Effect AltsAvAlt renamed to avXAlt."
+msgstr ""
+
+msgid "Effect not found"
+msgstr ""
+
+msgid "Effect not unique"
+msgstr ""
+
+msgid "sienaGOF can only operate on results from Method of Moments estimation."
+msgstr ""
+
+msgid "You must instruct siena07 to return the simulated networks"
+msgstr ""
+
+msgid "You need at least one iteration."
+msgstr ""
+
+msgid "You need to supply the parameter <<varName>>."
+msgstr ""
+
+msgid "You need to supply the parameter <<auxiliaryFunction>>."
+msgstr ""
+
+msgid "Invalid input."
+msgstr ""
+
+msgid "Observation must be a matrix."
+msgstr ""
+
+msgid "Dimensionality of function parameters do not match."
+msgstr ""
+
+msgid "Key length does not match the number of variates."
+msgstr ""
+
+msgid "maximum likelihood estimation"
+msgstr ""
+
+msgid "Finite differences estimation of derivatives"
+msgstr ""
+
+msgid "is not possible with maximum likelihood estimation"
+msgstr ""
+
+msgid "not a legitimate Siena data object"
+msgstr ""
+
+msgid "not a legitimate Siena group data object"
+msgstr ""
+
+msgid "not a legitimate Siena dependent variable object"
+msgstr ""
+
+msgid "not a legitimate Siena model fit"
+msgstr ""
+
+msgid "not a legitimate summary of a Siena model fit"
+msgstr ""
+
+msgid "Sample did not come beyond warming"
+msgstr ""
+
+msgid "not a legitimate Siena Bayes model fit"
+msgstr ""
+
+msgid "Not enough data: nfirst too large."
+msgstr ""
+
+msgid "This object did not come beyond the warming phase."
+msgstr ""
+
+msgid "not a legitimate summary of a Siena Bayes model fit"
+msgstr ""
+
+msgid "If the models contains more than one dependent variables, \n it should be specified by variable 'depvar' for which dependent variable the relative importances should be calculated."
+msgstr ""
+
+msgid "As 'depvar = NULL', relative importances are calculated for variable"
+msgstr ""
+
+msgid "'depvar' is not a name of a dependent variable"
+msgstr ""
+
+msgid "data is not a legitimate Siena data specification"
+msgstr ""
+
+msgid "ans is not a legitimate Siena fit object"
+msgstr ""
+
+msgid "effects = NULL! In case of conditional estimation, the 'sienaEffects' object has to be given to function sienRIDynamics directly."
+msgstr ""
+
+msgid "effects is not a legitimate Siena effects object"
+msgstr ""
+
+msgid "some information are multiply defined \n results will be based on 'theta', 'algorithm', and 'effects' stored in 'ans' (as 'ans$theta', 'ans$x', 'ans$effects')"
+msgstr ""
+
+msgid "'intervalsPerPeriod' has to be of type 'numeric' \n used default settings"
+msgstr ""
+
+msgid "algorithm is not a legitimate Siena algorithm specification"
+msgstr ""
+
+msgid "theta is not a legitimate parameter vector"
+msgstr ""
+
+msgid "vector of model parameters has wrong dimension, maybe rate parameters are missing"
+msgstr ""
+
+msgid "theta is not a legitimate parameter vector \n number of parameters has to match number of effects"
+msgstr ""
+
+msgid "x is not of class 'sienaRIDynamics'"
+msgstr ""
+
+msgid "not a legitimate summary of a 'sienaRIDynamics' object"
+msgstr ""
+
+msgid "staticRI is not of class 'sienaRI' and is therefore ignored"
+msgstr ""
+
+msgid "staticRI does not correspond to x and is therefore ignored,\n staticRI and x do not refer to the same dependent variable"
+msgstr ""
+
+msgid "staticRI does not correspond to x and is therefore ignored,\n staticRI and x do not refer to the same effects"
+msgstr ""
+
+msgid "staticRI does not correspond to x and is therefore ignored,\n staticRI and x do not refer to the same number of observation moments"
+msgstr ""
+
+msgid "legendColumns has to be of type 'numeric' \n used default settings"
+msgstr ""
+
+msgid "legendHeight has to be of type 'numeric' \n used default settings"
+msgstr ""
+
+msgid "height has to be of type 'numeric' \n used default settings"
+msgstr ""
+
+msgid "width has to be of type 'numeric' \n used default settings"
+msgstr ""
+
+msgid "cex.legend has to be of type 'numeric' \n used default settings"
+msgstr ""
+
+msgid "no a legitimate Siena data specification"
+msgstr ""
+
+msgid "sienaRI does not yet work for models that contain endowment or creation effects"
+msgstr ""
+
+msgid "sienaRI does not yet work for models containinf endowment or creation effects"
+msgstr ""
+
+msgid "length of theta does not match the number of objective function effects\n theta is treated as if containing rate parameters"
+msgstr ""
+
+msgid "not implemented: RI together with settings"
+msgstr ""
+
+msgid "so far, sienaRI works only for dependent variables of type 'oneMode' or 'behavior'"
+msgstr ""
+
+msgid "more than one dependent variable\n return value is therefore not of class 'sienaRI'\n but a list of objects of class 'sienaRI'"
+msgstr ""
+
+msgid "not a legitimate Siena relative importance of effects object"
+msgstr ""
+
+msgid "not a legitimate summary of a Siena relative importance of effects object"
+msgstr ""
+
+msgid "cex.names has to be of type 'numeric' \n used default settings"
+msgstr ""
+
+msgid "radius has to be of type 'numeric' \n used default settings"
+msgstr ""
+
+msgid "A must have"
+msgstr ""
+
+msgid "columns."
+msgstr ""
+
+msgid "not a legitimate sienaFit object"
+msgstr ""
+
+msgid "Error end of estimation algorithm"
+msgstr ""
+
+msgid "User interrupted run, object possibly incomplete"
+msgstr ""
+
+msgid "You must have at least two time periods (three waves) to test"
+msgstr ""
+
+msgid "for non-heterogeneity across time."
+msgstr ""
+
+msgid "rerun Siena07 with the byWave option TRUE"
+msgstr ""
+
+msgid "non numeric effect number requested"
+msgstr ""
+
+msgid "Some effect number requested not found"
+msgstr ""
+
+msgid "siena time tests are inappropriate for basic rates"
+msgstr ""
+
+msgid "No effects available to test"
+msgstr ""
+
+msgid "Please rerun sienaTimeTest with appropriate excluded effects."
+msgstr ""
+
+msgid "No good group sizes 1."
+msgstr ""
+
+msgid "No good group sizes 2."
+msgstr ""
+
+msgid "Null hyp and test in transformed score test should not overlap"
+msgstr ""
+
+msgid "Meaningless transformed score test"
+msgstr ""
+
+msgid "Null hypothesis and test in partial score test should not overlap"
+msgstr ""
+
+msgid "Nothing to be tested in partial score test"
+msgstr ""
+
+msgid "not a legitimate Siena time test object"
+msgstr ""
+
+msgid "not a legitimate Siena time test summary object"
+msgstr ""
+
+msgid "Use the following indices for plotting the pairwise\n\t\t\t\tmoment correlations:"
+msgstr ""
+
+msgid "non unique effect names: contact RSiena help"
+msgstr ""
+
+msgid "Time dummies not relevant with only 2 periods"
+msgstr ""
+
+msgid "Time dummy effects are not implemented"
+msgstr ""
+
+msgid "for structural rate effects."
+msgstr ""
+
+msgid "Invalid input in timeDummy column"
+msgstr ""
+
+msgid ":"
+msgstr ""
+
+msgid "and"
+msgstr ""
+
+msgid "Having trouble finding the covariate for your rate"
+msgstr ""
+
+msgid "effect. Please contact the developers."
+msgstr ""
+
+msgid "Cannot find 'effect from' effect(s) for"
+msgstr ""
+
+msgid "Cannot find density effect(s) for"
+msgstr ""
+
+msgid "changelist must be a list"
+msgstr ""
+
+msgid "Non numeric data"
+msgstr ""
+
+msgid "only one node set relevant"
+msgstr ""
+
+msgid "nodeset should be a character string"
+msgstr ""
+
+msgid "option should be numeric"
+msgstr ""
+
+msgid "option should be between 1 and 4"
+msgstr ""
+
+msgid "n must be numeric"
+msgstr ""
+
+msgid "node set name must be a character string"
+msgstr ""
+
+msgid "node names incorrect length"
+msgstr ""
+
+msgid "val must be a vector"
+msgstr ""
+
+msgid "val must be numeric or a factor"
+msgstr ""
+
+msgid "val must be a matrix"
+msgstr ""
+
+msgid "not a sparse triples matrices"
+msgstr ""
+
+msgid "nodeSets may only have one or two elements"
+msgstr ""
+
+msgid "nodeSets must be a vector of character strings"
+msgstr ""
+
+msgid "bipartite covariate needs two different node sets"
+msgstr ""
+
+msgid "Both node sets must be the same for a oneMode covariate"
+msgstr ""
+
+msgid "val must be a 3d array"
+msgstr ""
+
+msgid "values must be an array or a list of sparse matrices"
+msgstr ""
+
+msgid "not a list of sparse triples matrices"
+msgstr ""
+
+msgid "all matrices must have the same dimension"
+msgstr ""
+
+msgid "netarray must be an array or a list of sparse matrices"
+msgstr ""
+
+msgid "entries must be numeric"
+msgstr ""
+
+msgid "netarray must have at least two observations"
+msgstr ""
+
+msgid "incorrect type"
+msgstr ""
+
+msgid "need 2 node sets for a bipartite network"
+msgstr ""
+
+msgid "nodesets should be character strings"
+msgstr ""
+
+msgid "nodesets should be different from each other"
+msgstr ""
+
+msgid "only one node set for this network"
+msgstr ""
+
+msgid "entries in networks must be 0, 1, 10 or 11"
+msgstr ""
+
+msgid "Not a sienaDependent object"
+msgstr ""
+
+msgid "invalid type in net"
+msgstr ""
+
+msgid "No constraints calculated: Need to recreate data object"
+msgstr ""
+
+msgid "No such constraint found"
+msgstr ""
