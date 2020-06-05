@@ -1,0 +1,3 @@
+Group,Name,Filename,Format,Period,ActorSet,Type,Selected,MissingValues,NonZeroCode
+data1,friendship,tmp3a.dat,matrix,1,Actors,network,Yes,6 9,1
+data1,friendship,tmp4a.dat,matrix,2,Actors,network,Yes,6 9,1

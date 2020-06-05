@@ -1,0 +1,5 @@
+"Group","Name","Filename","Format","Period","ActorSet","Type","Selected","MissingValues","NonZeroCode"
+"data1","friends","EIES1.dat","matrix","1","Actors","network","Yes","9","3 4"
+"data1","friends","EIES2.dat","matrix","2","Actors","network","Yes","9","3 4"
+"data1","cites disc","EIESATT.dat","matrix","1","Actors","constant covariate","Yes","99","1"
+"data1","cited discd","EIESATD.dat","matrix","1","Actors","constant covariate","Yes","99","1"
