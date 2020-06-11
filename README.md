@@ -1,4 +1,4 @@
-# rsiena  <img src="inst/rsienalogo.png" align="right" width="150"/>
+# rsiena  <img src="https://raw.githubusercontent.com/snlab-nl/rsiena/master/inst/rsienalogo.png" align="right" width="150"/>
 
 ![CRAN/METACRAN](https://img.shields.io/cran/l/RSiena)
 ![CRAN/METACRAN](https://img.shields.io/cran/v/RSiena)
@@ -30,4 +30,6 @@ Some or all of these networks can be two-mode networks. The restriction is that 
 
 We are migrating RSiena development and releases to this repository.
 
-Please stay tuned...
+Note that the main manual can still be found [here](http://www.stats.ox.ac.uk/~snijders/siena/RSiena_Manual.pdf),
+and the main website is still [here](http://www.stats.ox.ac.uk/~snijders/siena/) for the time being,
+however we are currently migrating many resources to [this website](http://snlab-nl.github.io/rsiena/).
