@@ -10,6 +10,7 @@
 SIENA is a program for the statistical analysis of network data, with the focus on social networks.
 Networks here are understood as entire (complete) networks, not as personal (egocentered) networks: it is assumed that a set of nodes (social actors) is given, and all ties (links) between these nodes are known - except perhaps for a moderate amount of missing data.
 The name SIENA stands for Simulation Investigation for Empirical Network Analysis.
+The R package is called RSiena; there also is the development package RSienaTest.
 
 SIENA is designed for analyzing various types of data as dependent variables:
 
@@ -23,7 +24,7 @@ This is like longitudinal network data, but in addition there are one or more ch
 
 ### Multivariate and two-mode networks:
 Network data sets can be multivariate, i.e., be composed of multiple networks on the same node set.
-Some or all of these networks can be two-mode networks. The restriction is that the first mode must be the same for all networks; these are defined as the actors. The second mode node sets are allowed to differ across the various networks in a given data set.
+Some or all of these networks can be two-mode networks. The restriction is that the first mode must be the same for all networks; the first mode is defined as the set of actors. The second mode node sets are allowed to differ across the various networks in a given data set. For such multivariate data sets, the model again is about the co-evoluton of several networks; and this may be combined with behavior. 
 
 ## Migration in progress...
 
