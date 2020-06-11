@@ -4,13 +4,28 @@ Type: Package
 Title: Siena - Simulation Investigation for Empirical Network Analysis
 Version: 1.2-25
 Date: 2020-04-08
-Author: Ruth Ripley, Krists Boitmanis, Tom A.B. Snijders, Felix Schoenenberger,
-   Nynke Niezink
+Authors@R: c(person("Tom", "Snijders", role = c("cre", "aut"), email = "tom.snijders@nuffield.ox.ac.uk"),
+              person("Christian", "Steglich", role = c("aut","ctb")),
+              person("Johan", "Koskinen", role = c("aut","ctb")),
+              person("Christoph", "Stadtfeld", role = c("aut","ctb")),
+              person("James", "Hollway", role = c("aut","ctb")),
+              person("Per", "Block", role = c("aut","ctb")),
+              person("Nynke", "Niezink", role = c("aut","ctb")),
+              person("Viviana", "Amati", role = c("aut","ctb")),
+              person("Robert", "Krause", role = c("aut","ctb")),
+              person("Charlotte", "Greenan", role = "ctb"),
+              person("Josh", "Lospinoso", role = "ctb"),
+              person("Paulina", "Preciado", role = "ctb"),
+              person("Michael", "Schweinberger", role = "ctb"),
+              person("Mark", "Huisman", role = "ctb"),
+              person("Maritje", "van Duijn", role = "ctb"),
+              person("Krists", "Boitmanis", role = "ctb"),
+              person("Felix", "Schoenenberger", role = "ctb"),
+              person("Ruth", "Ripley", role = "ctb"))
 Depends: R (>= 2.15.0)
 Imports: Matrix, tcltk, lattice, parallel, MASS, methods
 Suggests: xtable, network, tools, codetools
 SystemRequirements: GNU make, tcl/tk 8.5, Tktable
-Maintainer: Tom A.B. Snijders <tom.snijders@nuffield.ox.ac.uk>
 Description: The main purpose of this package is to perform simulation-based 
    estimation of stochastic actor-oriented models for longitudinal network 
    data collected as panel data. Dependent variables can be single or 
