@@ -1,0 +1,78 @@
+url: http://snlab-nl.github.io/rsiena/
+development:
+    mode: auto
+template:
+  params:
+    bootswatch: cosmo
+output:
+  rmarkdown::html_vignette:
+    fig_caption: yes
+navbar:
+  structure:
+    left:
+    - home
+    - intro
+    - articles
+    - reference
+    - tutorials
+    - news
+    right:
+    - icon: fa-home fa-lg
+      href: http://www.stats.ox.ac.uk/~snijders/siena/
+  components:
+    home:
+      icon: fa-home fa-lg
+      href: index.html
+    reference:
+      text: In the package
+      href: reference/index.html
+    news:
+      text: News
+      href: news/index.html
+articles:
+- title: Scripts
+  desc: ~
+  contents:
+  - '`basicRSiena`'
+reference:
+  - title: "Data"
+    desc: "Data objects that are included in rsiena:"
+    contents:
+      - starts_with("s50")
+      - ends_with("3401")
+      - starts_with("tmp")
+  - title: "Construction"
+    desc: "Construction functions included in rsiena:"
+    contents:
+      - starts_with("co")
+      - starts_with("var")
+      - ends_with("Create")
+      - starts_with("sienaNode")
+      - starts_with("sienaData")
+      - starts_with("sienaDependent")
+      - starts_with("sienaComposition")
+  - title: "Specification"
+    desc: "Specification functions included in rsiena:"
+    contents:
+      - ends_with("Effects")
+      - ends_with("Effect")
+      - starts_with("include")
+      - starts_with("effects")
+  - title: "Estimation"
+    desc: "Estimation functions included in rsiena:"
+    contents:
+      - starts_with("siena0")
+      - updateTheta
+      - simstats0c
+      - maxlikefn
+  - title: "Tests"
+    desc: "Test functions included in rsiena:"
+    contents:
+      - ends_with("Test")
+      - Wald
+      - starts_with("sienaGOF")
+  - title: "Print"
+    desc: "Print functions included in rsiena:"
+    contents:
+      - starts_with("print")
+      - xtable
