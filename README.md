@@ -24,7 +24,7 @@ This is like longitudinal network data, but in addition there are one or more ch
 
 ### Multivariate and two-mode networks:
 Network data sets can be multivariate, i.e., be composed of multiple networks on the same node set.
-Some or all of these networks can be two-mode networks. The restriction is that the first mode must be the same for all networks; the first mode is defined as the set of actors. The second mode node sets are allowed to differ across the various networks in a given data set. For such multivariate data sets, the model again is about the co-evoluton of several networks; and this may be combined with behavior. 
+Some or all of these networks can be two-mode networks. The restriction is that the first mode must be the same for all networks; the first mode is defined as the set of actors. The second mode node sets are allowed to differ across the various networks in a given data set. For such multivariate data sets, the model again is about the co-evolution of several networks; and this may be combined with behavior. 
 
 ## Migration in progress...
 
