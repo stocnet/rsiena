@@ -105,6 +105,12 @@ These functions are exported here mainly to enable users to write
 <li>
   <a href="../news/index.html">News</a>
 </li>
+<li>
+  <a href="https://github.com/snlab-nl/rsiena">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -328,7 +334,7 @@ These functions are exported here mainly to enable users to write
 <span class='no'>myeff</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='includeEffects.html'>includeEffects</a></span>(<span class='no'>myeff</span>, <span class='no'>transTies</span>, <span class='no'>cycle3</span>)</div><div class='output co'>#&gt;   effectName      include fix   test  initialValue parm
 #&gt; 1 3-cycles        TRUE    FALSE FALSE          0   0   
 #&gt; 2 transitive ties TRUE    FALSE FALSE          0   0   </div><div class='input'><span class='co'># Shorter phases 2 and 3, just for example:</span>
-<span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>50</span>, <span class='kw'>seed</span><span class='kw'>=</span><span class='fl'>122</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpNeONkK/Siena3ebf252bee87.txt .
+<span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>50</span>, <span class='kw'>seed</span><span class='kw'>=</span><span class='fl'>122</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpBuM5HN/Siena344e45e21ac9.txt .
 #&gt; This is a temporary file for this R session.</div><div class='input'>(<span class='no'>ans</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='siena07.html'>siena07</a></span>(<span class='no'>myalgorithm</span>, <span class='kw'>data</span><span class='kw'>=</span><span class='no'>mydata</span>, <span class='kw'>effects</span><span class='kw'>=</span><span class='no'>myeff</span>, <span class='kw'>returnDeps</span><span class='kw'>=</span><span class='fl'>TRUE</span>,
    <span class='kw'>batch</span><span class='kw'>=</span><span class='fl'>TRUE</span>))</div><div class='output co'>#&gt; 
 #&gt; Start phase 0 

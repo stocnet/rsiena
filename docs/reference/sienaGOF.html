@@ -106,6 +106,12 @@
 <li>
   <a href="../news/index.html">News</a>
 </li>
+<li>
+  <a href="https://github.com/snlab-nl/rsiena">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -409,7 +415,7 @@ This is further illustrated in the help page<br />
 <span class='no'>myeff</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='includeEffects.html'>includeEffects</a></span>(<span class='no'>myeff</span>, <span class='no'>transTrip</span>)</div><div class='output co'>#&gt;   effectName          include fix   test  initialValue parm
 #&gt; 1 transitive triplets TRUE    FALSE FALSE          0   0   </div><div class='input'><span class='no'>myeff</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='setEffect.html'>setEffect</a></span>(<span class='no'>myeff</span>, <span class='no'>cycle3</span>, <span class='kw'>fix</span><span class='kw'>=</span><span class='fl'>TRUE</span>, <span class='kw'>test</span><span class='kw'>=</span><span class='fl'>TRUE</span>)</div><div class='output co'>#&gt;   effectName include fix  test initialValue parm
 #&gt; 1 3-cycles   TRUE    TRUE TRUE          0   0   </div><div class='input'><span class='no'>myeff</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='setEffect.html'>setEffect</a></span>(<span class='no'>myeff</span>, <span class='no'>transTies</span>, <span class='kw'>fix</span><span class='kw'>=</span><span class='fl'>TRUE</span>, <span class='kw'>test</span><span class='kw'>=</span><span class='fl'>TRUE</span>)</div><div class='output co'>#&gt;   effectName      include fix  test initialValue parm
-#&gt; 1 transitive ties TRUE    TRUE TRUE          0   0   </div><div class='input'><span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>10</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpNeONkK/Siena3ebf6738f421.txt .
+#&gt; 1 transitive ties TRUE    TRUE TRUE          0   0   </div><div class='input'><span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>10</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpBuM5HN/Siena344e7f4ca5f6.txt .
 #&gt; This is a temporary file for this R session.</div><div class='input'><span class='co'># Shorter phases 2 and 3, just for example.</span>
 <span class='no'>ans</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='siena07.html'>siena07</a></span>(<span class='no'>myalgorithm</span>, <span class='kw'>data</span><span class='kw'>=</span><span class='no'>mydata</span>, <span class='kw'>effects</span><span class='kw'>=</span><span class='no'>myeff</span>, <span class='kw'>batch</span><span class='kw'>=</span><span class='fl'>TRUE</span>, <span class='kw'>returnDeps</span><span class='kw'>=</span><span class='fl'>TRUE</span>)</div><div class='output co'>#&gt; 
 #&gt; Start phase 0 
@@ -430,75 +436,73 @@ This is further illustrated in the help page<br />
 #&gt; Phase 1 Iteration 40 Progress: 5%
 #&gt; Phase 1 Iteration 45 Progress: 6%
 #&gt; Phase 1 Iteration 50 Progress: 7%
-#&gt; theta:  5.235 -1.744  0.436  0.290  0.000  0.000  0.904  0.150  0.011 
+#&gt; theta:  5.696 -1.653  0.381  0.181  0.000  0.000  0.686  0.470  0.111 
 #&gt; 
 #&gt; Start phase 2.1
 #&gt; Phase 2 Subphase 1 Iteration 1 Progress: 67%
 #&gt; Phase 2 Subphase 1 Iteration 2 Progress: 67%
-#&gt; theta  5.5123 -1.9010  0.7981  0.5389  0.0000  0.0000  0.9754  0.0925  0.0331 
-#&gt; ac  1.2959  0.0253  1.4609  2.8716  1.3316  4.0128 26.3705  1.1663  0.0298 
+#&gt; theta  6.395 -1.793  0.803  0.469  0.000  0.000  0.691  0.499  0.186 
+#&gt; ac  0.918  0.164  1.617  4.454  2.457  4.903  0.903 -1.126  2.588 
 #&gt; Phase 2 Subphase 1 Iteration 3 Progress: 67%
 #&gt; Phase 2 Subphase 1 Iteration 4 Progress: 67%
-#&gt; theta  5.5886 -2.1136  1.4846  0.6242  0.0000  0.0000  1.1625  0.1484  0.0141 
-#&gt; ac  1.815  1.599  1.869  3.569  3.442  2.111  1.790  1.033 -0.313 
+#&gt; theta  6.516 -1.988  1.563  0.431  0.000  0.000  0.913  0.458  0.188 
+#&gt; ac  1.809  1.955  1.788 13.988  6.286  0.496  0.963 -1.142  0.962 
 #&gt; Phase 2 Subphase 1 Iteration 5 Progress: 67%
 #&gt; Phase 2 Subphase 1 Iteration 6 Progress: 67%
-#&gt; theta  5.47243 -2.24416  1.85784  0.52000  0.00000  0.00000  1.34663  0.26189 -0.00593 
-#&gt; ac  1.597  1.217  1.294  2.809  2.438  1.612  0.848  0.987 -0.265 
+#&gt; theta  6.670 -2.209  1.949  0.624  0.000  0.000  1.000  0.460  0.107 
+#&gt; ac  1.2341  0.9382  0.6254  0.1020  0.0734 -0.5253  0.9565 -0.3180  0.9591 
 #&gt; Phase 2 Subphase 1 Iteration 7 Progress: 68%
 #&gt; Phase 2 Subphase 1 Iteration 8 Progress: 68%
-#&gt; theta  5.9546 -2.3882  2.1829  0.6005  0.0000  0.0000  1.2984  0.2440  0.0115 
-#&gt; ac 0.661 0.773 0.593 1.920 1.581 0.807 0.854 0.953 0.281 
+#&gt; theta  6.3899 -2.2968  2.1140  0.6285  0.0000  0.0000  1.0744  0.3664  0.0472 
+#&gt; ac  0.958  0.425  0.131 -0.200 -0.202 -0.748  0.560 -0.308  0.930 
 #&gt; Phase 2 Subphase 1 Iteration 9 Progress: 68%
 #&gt; Phase 2 Subphase 1 Iteration 10 Progress: 68%
-#&gt; theta  5.8411 -2.5004  2.1780  0.6708  0.0000  0.0000  1.1975  0.2754  0.0304 
-#&gt; ac  0.6434  0.5816  0.2995  0.6567  0.4875  0.3894  0.6326  0.9643 -0.0612 
-#&gt; theta  6.1182 -2.5032  2.1689  0.5487  0.0000  0.0000  1.1985  0.3053 -0.0403 
-#&gt; ac -0.09442 -0.38063 -0.38371 -0.26019 -0.27212 -0.43576 -0.05498 -0.01506 -0.00363 
-#&gt; theta:  6.1182 -2.5032  2.1689  0.5487  0.0000  0.0000  1.1985  0.3053 -0.0403 
+#&gt; theta  6.1419 -2.3721  2.2769  0.6077  0.0000  0.0000  1.1740  0.3002  0.0229 
+#&gt; ac  0.9546  0.3483  0.0434 -0.2544 -0.2489 -0.8091  0.5538 -0.2696  0.6034 
+#&gt; theta  6.0274 -2.4924  2.2238  0.5204  0.0000  0.0000  1.2327  0.3257 -0.0208 
+#&gt; ac -0.1772 -0.4137 -0.4516 -0.3063 -0.3097 -0.6969  0.0771 -0.0946 -0.1958 
+#&gt; theta:  6.0274 -2.4924  2.2238  0.5204  0.0000  0.0000  1.2327  0.3257 -0.0208 
 #&gt; 
 #&gt; Start phase 3 </div><div class='input'><span class='no'>gofi</span> <span class='kw'>&lt;-</span> <span class='fu'>sienaGOF</span>(<span class='no'>ans</span>, <span class='no'>IndegreeDistribution</span>, <span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>TRUE</span>, <span class='kw'>join</span><span class='kw'>=</span><span class='fl'>TRUE</span>,
   <span class='kw'>varName</span><span class='kw'>=</span><span class='st'>"mynet"</span>)</div><div class='output co'>#&gt; <span class='message'>Detected10iterations and1group.</span></div><div class='output co'>#&gt; Calculating auxiliary statistics for period  1 .</div><div class='output co'>#&gt; <span class='message'>  Period 1</span></div><div class='output co'>#&gt;   &gt; Completed  10  calculations
 #&gt; </div><div class='output co'>#&gt; <span class='message'>Estimating test statistic for model including 3-cycles</span></div><div class='output co'>#&gt; <span class='message'>Estimating test statistic for model including transitive ties</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span>(<span class='no'>gofi</span>)</div><div class='output co'>#&gt; Siena Goodness of Fit ( IndegreeDistribution ), all periods
 #&gt; =====
 #&gt; Monte Carlo Mahalanobis distance test p-value:  0 
-#&gt; **Note: Only 8 statistics are necessary in the auxiliary function.
 #&gt; -----
 #&gt; One tailed test used  (i.e. estimated probability of greater distance than observation).
 #&gt; -----
-#&gt; Calculated joint MHD = ( 147.56 ) for current model.
+#&gt; Calculated joint MHD = ( 84.72 ) for current model.
 #&gt; 
 #&gt; One-step estimates and predicted Mahalanobis distances for modified models.
 #&gt; 
 #&gt; **Model including 3-cycles 
 #&gt;                            one-step
-#&gt; basic rate parameter mynet    5.573
-#&gt; outdegree (density)          -2.501
-#&gt; reciprocity                   1.976
-#&gt; transitive triplets           0.595
-#&gt; 3-cycles                     -0.119
+#&gt; basic rate parameter mynet   -4.749
+#&gt; outdegree (density)         -27.696
+#&gt; reciprocity                  23.824
+#&gt; transitive triplets           4.591
+#&gt; 3-cycles                     24.567
 #&gt; transitive ties               0.000
-#&gt; rate mybeh period 1           0.914
-#&gt; mybeh linear shape            0.190
-#&gt; mybeh quadratic shape        -0.070
-#&gt; MHD                         148.876
+#&gt; rate mybeh period 1         -28.155
+#&gt; mybeh linear shape          -20.900
+#&gt; mybeh quadratic shape       -31.525
+#&gt; MHD                        -204.057
 #&gt; 
 #&gt; **Model including transitive ties 
 #&gt;                            one-step
-#&gt; basic rate parameter mynet    8.395
-#&gt; outdegree (density)          -3.115
-#&gt; reciprocity                   1.957
-#&gt; transitive triplets           0.274
+#&gt; basic rate parameter mynet    6.330
+#&gt; outdegree (density)          -3.837
+#&gt; reciprocity                   2.587
+#&gt; transitive triplets          -0.715
 #&gt; 3-cycles                      0.000
-#&gt; transitive ties               1.923
-#&gt; rate mybeh period 1           2.054
-#&gt; mybeh linear shape            0.765
-#&gt; mybeh quadratic shape         0.078
-#&gt; MHD                         216.263
+#&gt; transitive ties               4.742
+#&gt; rate mybeh period 1          -1.640
+#&gt; mybeh linear shape           -1.490
+#&gt; mybeh quadratic shape        -2.727
+#&gt; MHD                          38.567
 #&gt; 
 #&gt; -----
-#&gt; Computation time for auxiliary statistic calculations on simulations:  0.013 seconds.</div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>gofi</span>)</div><div class='output co'>#&gt; Note: some statistics are not plotted because their variance is 0.
-#&gt; This holds for the statistic: 8.</div><div class='img'><img src='sienaGOF-1.png' alt='' width='700' height='433' /></div><div class='input'>
+#&gt; Computation time for auxiliary statistic calculations on simulations:  0.014 seconds.</div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>gofi</span>)</div><div class='img'><img src='sienaGOF-1.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'># Illustration just for showing a case with two dependent networks;</span>
 <span class='co'># running time backwards is not meaningful!</span>
 <span class='no'>mynet1</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaDependent.html'>sienaDependent</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/array.html'>array</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='no'>s501</span>, <span class='no'>s502</span>), <span class='kw'>dim</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>50</span>, <span class='fl'>50</span>, <span class='fl'>2</span>)))
@@ -528,44 +532,46 @@ This is further illustrated in the help page<br />
 #&gt; Phase 1 Iteration 40 Progress: 5%
 #&gt; Phase 1 Iteration 45 Progress: 6%
 #&gt; Phase 1 Iteration 50 Progress: 6%
-#&gt; theta:  4.955 -1.612  0.371  0.193  5.572 -1.591  0.266  0.795  0.446 -0.127 
+#&gt; theta:  5.071 -1.736  0.662  0.375  5.313 -1.630  0.334  0.947  0.357 -0.313 
 #&gt; 
 #&gt; Start phase 2.1
 #&gt; Phase 2 Subphase 1 Iteration 1 Progress: 69%
 #&gt; Phase 2 Subphase 1 Iteration 2 Progress: 69%
-#&gt; theta  5.142 -1.747  0.751  0.416  5.586 -1.650  0.743  0.839  0.536 -0.147 
-#&gt; ac 1.0938 0.4350 2.6332 5.8860 0.5891 0.1975 1.2739 0.0888 0.4004 4.2838 
+#&gt; theta  5.128 -1.877  1.043  0.572  5.400 -1.688  0.703  1.081  0.366 -0.411 
+#&gt; ac   0.593   0.376 -25.685  -0.587   0.427   0.502   0.977   1.804   2.564   0.995 
 #&gt; Phase 2 Subphase 1 Iteration 3 Progress: 69%
 #&gt; Phase 2 Subphase 1 Iteration 4 Progress: 69%
-#&gt; theta  5.272 -2.109  1.374  0.636  5.533 -1.873  2.061  1.249  0.365 -0.131 
-#&gt; ac  0.546  0.675  1.338  0.376  0.564  0.508  1.011 -0.102 -0.250  1.558 
+#&gt; theta  4.701 -2.173  1.665  0.614  6.204 -1.904  2.039  1.353  0.234 -0.396 
+#&gt; ac  0.558  0.406 -2.728 -0.601  0.417  0.713  0.781  1.718  3.057  1.051 
 #&gt; Phase 2 Subphase 1 Iteration 5 Progress: 69%
 #&gt; Phase 2 Subphase 1 Iteration 6 Progress: 69%
-#&gt; theta  5.3884 -2.2550  1.8270  0.4969  6.4710 -2.0489  2.4118  1.3290  0.4029 -0.0413 
-#&gt; ac  0.5234  0.5940  1.5716  0.5278  0.0616  0.6416  0.9782 -0.1226 -0.9994 -0.0754 
+#&gt; theta  4.952 -2.494  2.168  0.710  6.943 -2.074  2.610  1.527  0.266 -0.152 
+#&gt; ac  0.591  0.372 -0.640 -0.586  0.358  0.773  0.574  1.067  1.721  1.132 
 #&gt; Phase 2 Subphase 1 Iteration 7 Progress: 69%
 #&gt; Phase 2 Subphase 1 Iteration 8 Progress: 70%
-#&gt; theta  5.2684 -2.4317  1.8118  0.3882  6.8390 -2.1839  2.4791  1.2961  0.2092  0.0356 
-#&gt; ac  0.4874  0.3485  0.8687  0.3226  0.0946  0.6573  0.9694 -0.1607 -0.9002  0.0630 
+#&gt; theta  4.960 -2.656  2.491  0.659  7.261 -2.239  2.613  1.541  0.385 -0.014 
+#&gt; ac  0.5363  0.3557 -0.7591 -0.6943 -0.0111  0.9236  0.6429  0.8735  1.6821  1.0822 
 #&gt; Phase 2 Subphase 1 Iteration 9 Progress: 70%
 #&gt; Phase 2 Subphase 1 Iteration 10 Progress: 70%
-#&gt; theta  5.836 -2.557  2.370  0.703  7.654 -2.294  2.445  1.192  0.572 -0.146 
-#&gt; ac  0.35860 -0.00766 -0.20865 -0.10482  0.00546  0.66471  0.95580 -0.27922 -0.90839  0.05988 
-#&gt; theta  5.9836 -2.4913  2.1893  0.5200  8.2942 -2.5551  2.9778  1.2203  0.3548 -0.0667 
-#&gt; ac -0.00070 -0.50866 -0.50759 -0.32208 -0.00180 -0.00539 -0.13076 -0.20265 -0.40810 -0.15703 
-#&gt; theta:  5.9836 -2.4913  2.1893  0.5200  8.2942 -2.5551  2.9778  1.2203  0.3548 -0.0667 
+#&gt; theta  5.2348 -2.7553  2.5760  0.7402  7.4999 -2.3613  2.7130  1.5864  0.4208 -0.0294 
+#&gt; ac  0.5998  0.2361 -0.6609 -0.6707 -0.0086  0.9148  0.6429  0.4046  0.7727  1.1482 
+#&gt; theta  5.9667 -2.4872  2.1572  0.5455  8.2372 -2.5157  2.9068  1.1794  0.3507 -0.0612 
+#&gt; ac -0.06709 -0.40155 -0.48730 -0.22050 -0.16777  0.25132 -0.00428  0.05224 -0.14693 -0.29977 
+#&gt; theta:  5.9667 -2.4872  2.1572  0.5455  8.2372 -2.5157  2.9068  1.1794  0.3507 -0.0612 
 #&gt; 
 #&gt; Start phase 3 </div><div class='input'><span class='no'>gofi</span> <span class='kw'>&lt;-</span> <span class='fu'>sienaGOF</span>(<span class='no'>ans</span>, <span class='no'>IndegreeDistribution</span>, <span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>TRUE</span>, <span class='kw'>join</span><span class='kw'>=</span><span class='fl'>TRUE</span>,
   <span class='kw'>varName</span><span class='kw'>=</span><span class='st'>"mynet1"</span>)</div><div class='output co'>#&gt; <span class='message'>Detected10iterations and1group.</span></div><div class='output co'>#&gt; Calculating auxiliary statistics for period  1 .</div><div class='output co'>#&gt; <span class='message'>  Period 1</span></div><div class='output co'>#&gt;   &gt; Completed  10  calculations
 #&gt; </div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span>(<span class='no'>gofi</span>)</div><div class='output co'>#&gt; Siena Goodness of Fit ( IndegreeDistribution ), all periods
 #&gt; =====
 #&gt; Monte Carlo Mahalanobis distance test p-value:  0 
+#&gt; **Note: Only 7 statistics are necessary in the auxiliary function.
 #&gt; -----
 #&gt; One tailed test used  (i.e. estimated probability of greater distance than observation).
 #&gt; -----
-#&gt; Calculated joint MHD = ( 37.44 ) for current model.
+#&gt; Calculated joint MHD = ( 17.07 ) for current model.
 #&gt; 
-#&gt; Computation time for auxiliary statistic calculations on simulations:  0.013 seconds.</div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>gofi</span>)</div><div class='img'><img src='sienaGOF-2.png' alt='' width='700' height='433' /></div><div class='input'>
+#&gt; Computation time for auxiliary statistic calculations on simulations:  0.013 seconds.</div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>gofi</span>)</div><div class='output co'>#&gt; Note: some statistics are not plotted because their variance is 0.
+#&gt; This holds for the statistics: 7 8.</div><div class='img'><img src='sienaGOF-2.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
 (<span class='no'>gofi.nc</span> <span class='kw'>&lt;-</span> <span class='fu'>sienaGOF</span>(<span class='no'>ans</span>, <span class='no'>IndegreeDistribution</span>, <span class='kw'>cumulative</span><span class='kw'>=</span><span class='fl'>FALSE</span>,
     <span class='kw'>varName</span><span class='kw'>=</span><span class='st'>"mynet1"</span>))

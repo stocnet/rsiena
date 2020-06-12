@@ -1,4 +1,4 @@
-url: http://snlab-nl.github.io/rsiena/
+url: https://snlab-nl.github.io/rsiena/
 development:
     mode: auto
 template:
@@ -19,6 +19,8 @@ navbar:
     right:
     - icon: fa-home fa-lg
       href: http://www.stats.ox.ac.uk/~snijders/siena/
+    - icon: fa-github
+      href: https://github.com/snlab-nl/rsiena
   components:
     home:
       icon: fa-home fa-lg
@@ -29,6 +31,9 @@ navbar:
     news:
       text: News
       href: news/index.html
+    github:
+      icon: fa-github
+      href: https://github.com/snlab-nl/rsiena 
 articles:
 - title: Scripts
   desc: ~
