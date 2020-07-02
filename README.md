@@ -32,4 +32,6 @@ We are migrating RSiena development and releases to this repository.
 
 Note that the main manual can still be found [here](http://www.stats.ox.ac.uk/~snijders/siena/RSiena_Manual.pdf),
 and the main website is still [here](http://www.stats.ox.ac.uk/~snijders/siena/) for the time being,
-however we are currently migrating many resources to [this website](http://snlab-nl.github.io/rsiena/).
+however we are currently migrating many resources to [this website](http://snlab-nl.github.io/rsiena/),
+and you can find [a wiki here](https://github.com/snlab-nl/rsiena/wiki) that holds much of the information on the original website,
+including background on SAOMs and RSiena, and links to teaching materials, literature, and contributing people and projects.
