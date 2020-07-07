@@ -28,33 +28,29 @@ check bayesTest.getNames, voor extract.sienaBayes en extract.posteriorMeans !!!
 R-Forge Revision 347
 
 ## Changes in RSiena and RSienaTest:
-   * New auxiliary function dyadicCov.
-   * Correction of error in modelType when one-mode as well as two-mode
-     networks are used (initializeFRAN.r).
+   * New auxiliary function `dyadicCov`.
+   * Correction of error in `modelType` when one-mode as well as two-mode
+     networks are used (`initializeFRAN.r`).
 
 ## Changes in RSienaTest:
-   * Corrected siena.table for sienaBayesFit objects;
-     added startingDate in sienaBayes and siena08 to the object produced. 
+   * Corrected `siena.table` for `sienaBayesFit` objects;
+     added `startingDate` in `sienaBayes` and `siena08` to the object produced. 
 
 # RSiena 1.2-23
 
-2020-01-15 
+2020-01-12 
 
 R-Forge Revision 346
 
-* one error in dontrun part of sienaGOF-auxiliary.Rd was corrected.
-
-# RSiena 1.2-23
-
-2020-01-12
+* one error in dontrun part of `sienaGOF-auxiliary.Rd` was corrected.
 
 ## Changes in RSiena and RSienaTest:
 
-* Option projname=NULL in sienaAlgorithmCreate.
-     This option is used for all examples in RSiena where siena07 is called,
+* Option `projname=NULL` in `sienaAlgorithmCreate`.
+     This option is used for all examples in RSiena where `siena07` is called,
      to restrict file writing for examples to the temporary directory. 
 
-# RSiena 1.2-22.
+# RSiena 1.2-22
 
 2020-01-10
 
@@ -588,7 +584,7 @@ R-Forge Revision 316
      sienaBayes with many groups).
    * In print.sienaEffects, omit last remark about random effects if only
      one line is printed.
-   * Corrected use of modeltype (initializeFRAN.r, CInterface.r),
+   * Corrected use of modeltype (`initializeFRAN.r`, CInterface.r),
    * Change in print.sienaAlgorithm for modelType.
    * In CalculateDerivative (phase1.r) changed assignment for
      diag(dfra)[a][b] (which is wrong) to diag(dfra)[which(a)[b]]
@@ -861,7 +857,7 @@ Changes RSienaTest:
    * More helpful error message for incorrect nodesets in sienaDataCreate;
      extended help pages sienaDataCreate.Rd and sienaDependent.Rd.
    * Correction of diag(diag(..)) to allow estimation with p=1
-     (phase1.r, initializeFRAN.r)
+     (phase1.r, `initializeFRAN.r`)
    * fromBayes bug corrected.
 
 ## Changes in RSienaTest:
@@ -884,7 +880,7 @@ Changes RSienaTest:
    * Improved one-step approximations to expected Mahalanobis
      distances in sienaGOF() (control variates for score function).
    * Permit 3-way interactions with one ego and two dyadic effects
-     (initializeFRAN.r) (this was erroneously not allowed).
+     (`initializeFRAN.r`) (this was erroneously not allowed).
    * New effects Jin, Jout, JinMix, JoutMix, altXOutAct,
      doubleInPop, doubleOutAct.
    * print01Report() now reports in-degrees also for two-mode networks.
@@ -994,7 +990,7 @@ Changes RSienaTest:
      but the differentiation between "simMean" and "simMeans" is not important,
      so "simMeans" was dropped for simplicity.)
      The object "simMeans" was not yet dropped from the data structure
-     transmitted to C++ (siena07internals.cpp. initializeFRAN.r)
+     transmitted to C++ (siena07internals.cpp. `initializeFRAN.r`)
    * z$positivized changed from matrix to vector (not important enough
      for so much memory use).
    * test7 renamed test 5, test6 and new test7 added in \tests\parallel.R
@@ -1191,9 +1187,9 @@ Changes RSienaTest:
 
 ## Changes in RSiena and RSienaTest:
    * Higher writefreq for batch operation (phase2.r, phase3.r)
-   * Error check for name of dependent variable to condition upon (initializeFRAN.r)
+   * Error check for name of dependent variable to condition upon (`initializeFRAN.r`)
    * Some corrections to allow behavior dependent variables that are not
-     coded as integer (in initializeFRAN and unpackBehavior, initializeFRAN.r)
+     coded as integer (in initializeFRAN and unpackBehavior, `initializeFRAN.r`)
    * Parameters fix and test now used in includeEffects() (sienaeffects.r)
    * Small bug fix in CalculateDerivative3 (phase3.r)
    * Avoidance of ":::" in siena01.r and document.r by small changes.
@@ -1206,9 +1202,9 @@ Changes RSienaTest:
 
 ## Changes in RSiena and RSienaTest:
    * Error message and stop in case of mismatch variable names
-     in algorithm object and in data (initializeFRAN.r).
+     in algorithm object and in data (`initializeFRAN.r`).
    * Force behavior and its attribute "change" to be integer in function
-     unpackBehavior() (initializeFRAN.r).
+     unpackBehavior() (`initializeFRAN.r`).
    * Some tabs in .Rd files change to spaces.
 
 2014-04-26 R-Forge Revision 274
@@ -1306,7 +1302,7 @@ Added R-files that contain functionalities to calculate, print and plot
 ## Changes in RSiena and RSienaTest:
    * getTargets.r: Added actorTargets function for use with multiple imputation
        of behaviour variable.
-   * sienaModelCreate.r, initializeFRAN.r, setup07setup.cpp, Model.cpp, Model.h,
+   * sienaModelCreate.r, `initializeFRAN.r`, setup07setup.cpp, Model.cpp, Model.h,
        MLSimulation.cpp, MLSimulation.h: added localML option to sienaAlgorithm.
    * allEffects.csv: added "local" column for use with localML option.
 
@@ -1322,7 +1318,7 @@ as have been included in RSienaTest in Revision 255
      statistics of individual actors
      as well as change contributions necessary for calculating relative
      importances of effects (siena07setup.cpp).
-   * Call of getTargets(...) is correspondingly adapted (initializeFRAN.r).
+   * Call of getTargets(...) is correspondingly adapted (`initializeFRAN.r`).
    * Modified simstats0c(...) such that it is possible to return
      statistics of individual actors in simulated networks
      as well as statistic contributions of all potential tie flips or
@@ -1438,7 +1434,7 @@ as have been included in RSienaTest in Revision 255
    * New option "centered" in coCovar and varCovar (sienautils.r,
      sienaDataCreate.r, print01Report.r, sienaprint.r).
    * setEffect, updateTheta, and prevAns in siena07() now also cater
-     for user-specified interactions (sienaeffects.r, initializeFRAN.r).
+     for user-specified interactions (sienaeffects.r, `initializeFRAN.r`).
    * Wald.RSiena and Multipar.RSiena added (Sienatest.r).
    * Error occurrence with message about cvalue in EvaluateTestStatistic
      corrected (Sienatest.r).
