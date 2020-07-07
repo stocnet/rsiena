@@ -243,7 +243,7 @@ and Mathematical Psychology</em> <b>65</b>, 263--281.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'>## Estimate a restricted model</span>
-<span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>50</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpBuM5HN/Siena344e2a841d7b.txt .
+<span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>50</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpXe2fRo/Siena6ef96702c3.txt .
 #&gt; This is a temporary file for this R session.</div><div class='input'><span class='co'># Short estimation not for practice, just for having a quick demonstration</span>
 <span class='no'>mynet1</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaDependent.html'>sienaDependent</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/array.html'>array</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='no'>s501</span>, <span class='no'>s502</span>, <span class='no'>s503</span>), <span class='kw'>dim</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>50</span>, <span class='fl'>50</span>, <span class='fl'>3</span>)))
 <span class='no'>mydata</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaDataCreate.html'>sienaDataCreate</a></span>(<span class='no'>mynet1</span>)
@@ -268,38 +268,38 @@ and Mathematical Psychology</em> <b>65</b>, 263--281.</p>
 #&gt; Phase 1 Iteration 40 Progress: 8%
 #&gt; Phase 1 Iteration 45 Progress: 9%
 #&gt; Phase 1 Iteration 50 Progress: 11%
-#&gt; theta: -1.732  0.319  0.257 
+#&gt; theta: -1.709  0.376  0.312 
 #&gt; 
 #&gt; Start phase 2.1
 #&gt; Phase 2 Subphase 1 Iteration 1 Progress: 42%
 #&gt; Phase 2 Subphase 1 Iteration 2 Progress: 43%
-#&gt; theta -1.821  0.480  0.363 
-#&gt; ac 1.64 1.12 1.08 
+#&gt; theta -1.805  0.584  0.449 
+#&gt; ac 0.631 1.248 1.763 
 #&gt; Phase 2 Subphase 1 Iteration 3 Progress: 43%
 #&gt; Phase 2 Subphase 1 Iteration 4 Progress: 43%
-#&gt; theta -2.111  0.984  0.700 
-#&gt; ac 0.357 1.238 0.817 
+#&gt; theta -2.121  1.439  0.696 
+#&gt; ac 0.731 1.177 0.714 
 #&gt; Phase 2 Subphase 1 Iteration 5 Progress: 43%
 #&gt; Phase 2 Subphase 1 Iteration 6 Progress: 43%
-#&gt; theta -2.394  1.716  0.743 
-#&gt; ac 0.541 1.233 0.745 
+#&gt; theta -2.38  2.17  0.71 
+#&gt; ac 0.530 0.548 0.152 
 #&gt; Phase 2 Subphase 1 Iteration 7 Progress: 44%
 #&gt; Phase 2 Subphase 1 Iteration 8 Progress: 44%
-#&gt; theta -2.537  2.206  0.689 
-#&gt; ac 0.252 1.159 0.522 
+#&gt; theta -2.494  2.460  0.538 
+#&gt; ac 0.566 0.563 0.149 
 #&gt; Phase 2 Subphase 1 Iteration 9 Progress: 44%
 #&gt; Phase 2 Subphase 1 Iteration 10 Progress: 44%
-#&gt; theta -2.712  2.531  0.685 
-#&gt; ac 0.261 1.100 0.377 
-#&gt; theta -2.696  2.464  0.621 
-#&gt; ac -0.24270 -0.00443 -0.41906 
-#&gt; theta: -2.696  2.464  0.621 
+#&gt; theta -2.590  2.555  0.428 
+#&gt; ac 0.4901 0.5563 0.0524 
+#&gt; theta -2.697  2.510  0.599 
+#&gt; ac -0.000107 -0.238146 -0.403947 
+#&gt; theta: -2.697  2.510  0.599 
 #&gt; 
 #&gt; Start phase 3 </div><div class='input'>
 <span class='co'>## Conduct the score-type test to assess whether heterogeneity is present.</span>
 <span class='no'>tt</span> <span class='kw'>&lt;-</span> <span class='fu'>sienaTimeTest</span>(<span class='no'>ans</span>)
 <span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span>(<span class='no'>tt</span>)</div><div class='output co'>#&gt; Joint significance test of time heterogeneity:
-#&gt; chi-squared =   3.69, d.f. = 3, p= 0.2973, 
+#&gt; chi-squared =   4.30, d.f. = 3, p= 0.2312, 
 #&gt; where H0: The following parameters are zero:
 #&gt;  (1) (*)Dummy2:outdegree (density)
 #&gt;  (2) (*)Dummy2:reciprocity
@@ -307,25 +307,25 @@ and Mathematical Psychology</em> <b>65</b>, 263--281.</p>
 #&gt; 
 #&gt; Individual significance tests and one-step estimators:
 #&gt;                               Initial Est. One Step Est. p-Value
-#&gt; outdegree (density)           -2.6960      -2.5004        0.0000
-#&gt; reciprocity                    2.4642       2.2196        0.0000
-#&gt; transitive triplets            0.6209       0.5629        0.0000
-#&gt; (*)Dummy2:outdegree (density)  0.0000      -0.3707        0.6020
-#&gt; (*)Dummy2:reciprocity          0.0000       0.4797        0.1910
-#&gt; (*)Dummy2:transitive triplets  0.0000       0.1453        0.3200
+#&gt; outdegree (density)           -2.6973      -2.4927        0.0000
+#&gt; reciprocity                    2.5096       2.2389        0.0000
+#&gt; transitive triplets            0.5988       0.5818        0.0000
+#&gt; (*)Dummy2:outdegree (density)  0.0000      -0.4177        0.6980
+#&gt; (*)Dummy2:reciprocity          0.0000       0.6816        0.2920
+#&gt; (*)Dummy2:transitive triplets  0.0000       0.0798        0.3780
 #&gt; 
 #&gt; Effect-wise joint significance tests
 #&gt; (i.e. each effect across all dummies):
 #&gt;                     chi-sq. df p-value
-#&gt; outdegree (density)    0.27  1   0.603
-#&gt; reciprocity            1.71  1   0.191
-#&gt; transitive triplets    0.99  1   0.320
+#&gt; outdegree (density)    0.15  1   0.699
+#&gt; reciprocity            1.11  1   0.292
+#&gt; transitive triplets    0.78  1   0.377
 #&gt; 
 #&gt; Period-wise joint significance tests
 #&gt; (i.e. each period across all parameters):
 #&gt;          chi-sq. df p-value
-#&gt; Period 1    3.69  3   0.297
-#&gt; Period 2    3.69  3   0.297
+#&gt; Period 1     4.3  3   0.231
+#&gt; Period 2     4.3  3   0.231
 #&gt; 
 #&gt; Use the following indices for plotting:
 #&gt;   (1) outdegree (density)
@@ -373,37 +373,37 @@ and Mathematical Psychology</em> <b>65</b>, 263--281.</p>
 #&gt; Phase 1 Iteration 40 Progress: 6%
 #&gt; Phase 1 Iteration 45 Progress: 7%
 #&gt; Phase 1 Iteration 50 Progress: 8%
-#&gt; theta: -1.7382  0.2963  0.3177  0.0000  0.0666  0.0132 
+#&gt; theta: -1.6450  0.4616  0.2078  0.0000  0.3524  0.0963 
 #&gt; 
 #&gt; Start phase 2.1
 #&gt; Phase 2 Subphase 1 Iteration 1 Progress: 56%
 #&gt; Phase 2 Subphase 1 Iteration 2 Progress: 56%
-#&gt; theta -1.8534  0.4871  0.4668  0.0000  0.1150  0.0477 
-#&gt; ac 0.563 1.144 1.496 2.226 3.173 6.592 
+#&gt; theta -1.739  0.717  0.345  0.000  0.508  0.146 
+#&gt; ac  0.786  1.271  1.294  0.429 -1.042 -1.009 
 #&gt; Phase 2 Subphase 1 Iteration 3 Progress: 56%
 #&gt; Phase 2 Subphase 1 Iteration 4 Progress: 56%
-#&gt; theta -2.23499  1.22215  0.88051  0.00000  0.33326 -0.00267 
-#&gt; ac 0.494 1.237 0.344 3.803 0.913 1.251 
+#&gt; theta -2.0898  1.5004  0.7302  0.0000  0.8450  0.0524 
+#&gt; ac 0.662 0.994 0.354 0.909 0.662 0.676 
 #&gt; Phase 2 Subphase 1 Iteration 5 Progress: 56%
 #&gt; Phase 2 Subphase 1 Iteration 6 Progress: 56%
-#&gt; theta -2.427  1.992  0.736  0.000  0.606 -0.246 
-#&gt; ac  0.528  0.862  0.270 -2.449 -0.925 -1.047 
+#&gt; theta -2.352  1.993  0.578  0.000  0.769 -0.328 
+#&gt; ac  0.746  0.992  0.411  0.591  0.216 -0.344 
 #&gt; Phase 2 Subphase 1 Iteration 7 Progress: 56%
 #&gt; Phase 2 Subphase 1 Iteration 8 Progress: 57%
-#&gt; theta -2.502  2.381  0.523  0.000  0.454  0.113 
-#&gt; ac  0.4960  0.8197  0.2465  0.0921 -0.4942 -1.2642 
+#&gt; theta -2.5364  2.3666  0.6778  0.0000  0.4720  0.0391 
+#&gt; ac  0.666  0.910  0.298  0.647  0.655 -0.245 
 #&gt; Phase 2 Subphase 1 Iteration 9 Progress: 57%
 #&gt; Phase 2 Subphase 1 Iteration 10 Progress: 57%
-#&gt; theta -2.5983  2.5943  0.5094  0.0000  0.3431 -0.0993 
-#&gt; ac  0.416  0.746  0.117  0.138 -0.525 -1.363 
-#&gt; theta -2.7214  2.5379  0.6212  0.0000  0.2160  0.0321 
-#&gt; ac -0.33060 -0.03012 -0.52706  0.00564 -0.42709 -0.39023 
-#&gt; theta: -2.7214  2.5379  0.6212  0.0000  0.2160  0.0321 
+#&gt; theta -2.635  2.516  0.526  0.000  0.289  0.171 
+#&gt; ac  0.587  0.751  0.206 -0.121 -0.137 -0.509 
+#&gt; theta -2.6718  2.4854  0.5951  0.0000  0.2537  0.0386 
+#&gt; ac -0.00778 -0.12410 -0.41087 -0.21032 -0.60086 -0.58869 
+#&gt; theta: -2.6718  2.4854  0.5951  0.0000  0.2537  0.0386 
 #&gt; 
 #&gt; Start phase 3 </div><div class='input'>
 <span class='co'>## Re-assess the time heterogeneity</span>
 (<span class='no'>tt2</span> <span class='kw'>&lt;-</span> <span class='fu'>sienaTimeTest</span>(<span class='no'>ans2</span>))</div><div class='output co'>#&gt; Joint significance test of time heterogeneity:
-#&gt; chi-squared =   2.11, d.f. = 1, p= 0.1461, 
+#&gt; chi-squared =   3.31, d.f. = 1, p= 0.0690, 
 #&gt; where H0: The following parameters are zero:
 #&gt;  (1) (*)Dummy2:outdegree (density)</div><div class='input'>
 <span class='co'>## And so on..</span>
@@ -412,7 +412,7 @@ and Mathematical Psychology</em> <b>65</b>, 263--281.</p>
 <span class='co'>## (Of course pasting these identical sets of three waves after each other</span>
 <span class='co'>##  in a sequence of six is not really meaningful. It's just a demonstration.)</span>
 
-<span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>2</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>50</span>, <span class='kw'>seed</span><span class='kw'>=</span><span class='fl'>654</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpBuM5HN/Siena344e47ab8c0b.txt .
+<span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>2</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>50</span>, <span class='kw'>seed</span><span class='kw'>=</span><span class='fl'>654</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpXe2fRo/Siena6ef96ae65069.txt .
 #&gt; This is a temporary file for this R session.</div><div class='input'><span class='no'>mynet1</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaDependent.html'>sienaDependent</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/array.html'>array</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='no'>s501</span>, <span class='no'>s502</span>, <span class='no'>s503</span>, <span class='no'>s501</span>, <span class='no'>s503</span>, <span class='no'>s502</span>),
                                <span class='kw'>dim</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>50</span>, <span class='fl'>50</span>, <span class='fl'>6</span>)))
 <span class='no'>mydata</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaDataCreate.html'>sienaDataCreate</a></span>(<span class='no'>mynet1</span>)

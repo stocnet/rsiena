@@ -1,5 +1,5 @@
 ---
-title: "basicRSiena.r: a basic script for the introduction to RSiena"
+title: "basicRSiena.R: a basic script for the introduction to RSiena"
 author: "Tom Snijders"
 date: "July 3, 2018"
 output: rmarkdown::html_vignette

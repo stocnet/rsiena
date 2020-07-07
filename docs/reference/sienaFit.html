@@ -254,7 +254,7 @@
   <code><a href='siena07.html'>siena07</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>2</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>100</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpBuM5HN/Siena344e5bb30457.txt .
+    <pre class="examples"><div class='input'><span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>2</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>100</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpXe2fRo/Siena6ef923a85cb.txt .
 #&gt; This is a temporary file for this R session.</div><div class='input'><span class='no'>mynet1</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaDependent.html'>sienaDependent</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/array.html'>array</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='no'>tmp3</span>, <span class='no'>tmp4</span>), <span class='kw'>dim</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>32</span>, <span class='fl'>32</span>, <span class='fl'>2</span>)))
 <span class='no'>mydata</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaDataCreate.html'>sienaDataCreate</a></span>(<span class='no'>mynet1</span>)
 <span class='no'>myeff</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='getEffects.html'>getEffects</a></span>(<span class='no'>mydata</span>)
@@ -277,32 +277,32 @@
 #&gt; Phase 1 Iteration 40 Progress: 6%
 #&gt; Phase 1 Iteration 45 Progress: 6%
 #&gt; Phase 1 Iteration 50 Progress: 7%
-#&gt; theta: -0.628  0.174 
+#&gt; theta: -0.646  0.358 
 #&gt; 
 #&gt; Start phase 2.1
 #&gt; Phase 2 Subphase 1 Iteration 1 Progress: 21%
 #&gt; Phase 2 Subphase 1 Iteration 2 Progress: 21%
-#&gt; theta -0.722  0.421 
-#&gt; ac -0.414  0.980 
+#&gt; theta -0.743  0.836 
+#&gt; ac 0.853 1.747 
 #&gt; Phase 2 Subphase 1 Iteration 3 Progress: 21%
 #&gt; Phase 2 Subphase 1 Iteration 4 Progress: 21%
-#&gt; theta -0.862  1.018 
-#&gt; ac -0.166  1.059 
+#&gt; theta -0.943  1.779 
+#&gt; ac 0.229 0.871 
 #&gt; Phase 2 Subphase 1 Iteration 5 Progress: 21%
 #&gt; Phase 2 Subphase 1 Iteration 6 Progress: 21%
-#&gt; theta -0.975  1.398 
-#&gt; ac -0.23  1.02 
+#&gt; theta -1.07  2.09 
+#&gt; ac 0.497 0.748 
 #&gt; Phase 2 Subphase 1 Iteration 7 Progress: 22%
 #&gt; Phase 2 Subphase 1 Iteration 8 Progress: 22%
-#&gt; theta -1.14  1.81 
-#&gt; ac -0.272  1.005 
+#&gt; theta -1.14  2.08 
+#&gt; ac 0.575 0.655 
 #&gt; Phase 2 Subphase 1 Iteration 9 Progress: 22%
 #&gt; Phase 2 Subphase 1 Iteration 10 Progress: 22%
-#&gt; theta -1.21  2.02 
-#&gt; ac -0.193  0.999 
-#&gt; theta -1.14  1.76 
-#&gt; ac -0.178 -0.068 
-#&gt; theta: -1.14  1.76 
+#&gt; theta -1.19  1.95 
+#&gt; ac 0.573 0.615 
+#&gt; theta -1.13  1.77 
+#&gt; ac 0.0869 0.1281 
+#&gt; theta: -1.13  1.77 
 #&gt; 
 #&gt; Start phase 2.2
 #&gt; Phase 2 Subphase 2 Iteration 1 Progress: 51%
@@ -315,9 +315,9 @@
 #&gt; Phase 2 Subphase 2 Iteration 8 Progress: 52%
 #&gt; Phase 2 Subphase 2 Iteration 9 Progress: 52%
 #&gt; Phase 2 Subphase 2 Iteration 10 Progress: 53%
-#&gt; theta -1.16  1.80 
-#&gt; ac 0.0772 0.0537 
-#&gt; theta: -1.16  1.80 
+#&gt; theta -1.15  1.78 
+#&gt; ac 0.0131 0.1368 
+#&gt; theta: -1.15  1.78 
 #&gt; 
 #&gt; Start phase 3 </div><div class='input'><span class='no'>ans</span></div><div class='output co'>#&gt; Estimates, standard errors and convergence t-ratios
 #&gt; 
@@ -325,47 +325,47 @@
 #&gt;                                            Error      t-ratio   
 #&gt; 
 #&gt; Rate parameters: 
-#&gt;   0       Rate parameter       3.0583  ( 0.4732   )             
+#&gt;   0       Rate parameter       3.0656  ( 0.4372   )             
 #&gt; 
 #&gt; Other parameters: 
-#&gt;   1. eval outdegree (density) -1.1592  ( 0.1805   )   -0.0610   
-#&gt;   2. eval reciprocity          1.8011  ( 0.4036   )   -0.1005   
+#&gt;   1. eval outdegree (density) -1.1461  ( 0.2070   )   -0.0055   
+#&gt;   2. eval reciprocity          1.7805  ( 0.4551   )    0.0202   
 #&gt; 
-#&gt; Overall maximum convergence ratio:    0.1008 
+#&gt; Overall maximum convergence ratio:    0.0266 
 #&gt; 
 #&gt; 
-#&gt; Total of 533 iteration steps.
+#&gt; Total of 627 iteration steps.
 #&gt; </div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span>(<span class='no'>ans</span>)</div><div class='output co'>#&gt; Estimates, standard errors and convergence t-ratios
 #&gt; 
 #&gt;                               Estimate   Standard   Convergence 
 #&gt;                                            Error      t-ratio   
 #&gt; 
 #&gt; Rate parameters: 
-#&gt;   0       Rate parameter       3.0583  ( 0.4732   )             
+#&gt;   0       Rate parameter       3.0656  ( 0.4372   )             
 #&gt; 
 #&gt; Other parameters: 
-#&gt;   1. eval outdegree (density) -1.1592  ( 0.1805   )   -0.0610   
-#&gt;   2. eval reciprocity          1.8011  ( 0.4036   )   -0.1005   
+#&gt;   1. eval outdegree (density) -1.1461  ( 0.2070   )   -0.0055   
+#&gt;   2. eval reciprocity          1.7805  ( 0.4551   )    0.0202   
 #&gt; 
-#&gt; Overall maximum convergence ratio:    0.1008 
+#&gt; Overall maximum convergence ratio:    0.0266 
 #&gt; 
 #&gt; 
-#&gt; Total of 533 iteration steps.
+#&gt; Total of 627 iteration steps.
 #&gt; 
 #&gt; Covariance matrix of estimates (correlations below diagonal)
 #&gt; 
-#&gt;        0.033       -0.045
-#&gt;       -0.614        0.163
+#&gt;        0.043       -0.057
+#&gt;       -0.602        0.207
 #&gt; 
 #&gt; Derivative matrix of expected statistics X by parameters:
 #&gt; 
-#&gt;       48.311       20.546
-#&gt;       13.974       17.967
+#&gt;       44.238       17.097
+#&gt;       12.259       16.187
 #&gt; 
 #&gt; Covariance matrix of X (correlations below diagonal):
 #&gt; 
-#&gt;       47.458       21.572
-#&gt;        0.543       33.317</div><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
+#&gt;       53.413       20.975
+#&gt;        0.482       35.379</div><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
 <span class='fu'><a href='xtable.html'>xtable</a></span>(<span class='no'>ans</span>, <span class='kw'>type</span><span class='kw'>=</span><span class='st'>"html"</span>, <span class='kw'>file</span><span class='kw'>=</span><span class='st'>"ans.html"</span>)
 <span class='fu'>siena.table</span>(<span class='no'>ans</span>, <span class='kw'>type</span><span class='kw'>=</span><span class='st'>"html"</span>, <span class='kw'>tstat</span><span class='kw'>=</span><span class='fl'>TRUE</span>, <span class='kw'>d</span><span class='kw'>=</span><span class='fl'>2</span>)
 }</div></pre>

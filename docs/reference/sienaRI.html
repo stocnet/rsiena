@@ -381,7 +381,7 @@ corresponding to the observation moments.</p><dl'>
 
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>50</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpBuM5HN/Siena344e123fac5.txt .
+    <pre class="examples"><div class='input'><span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>50</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpXe2fRo/Siena6ef97b4be418.txt .
 #&gt; This is a temporary file for this R session.</div><div class='input'><span class='no'>mynet1</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaDependent.html'>sienaDependent</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/array.html'>array</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='no'>tmp3</span>, <span class='no'>tmp4</span>), <span class='kw'>dim</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>32</span>, <span class='fl'>32</span>, <span class='fl'>2</span>)))
 <span class='no'>mydata</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaDataCreate.html'>sienaDataCreate</a></span>(<span class='no'>mynet1</span>)
 <span class='no'>myeff</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='getEffects.html'>getEffects</a></span>(<span class='no'>mydata</span>)
@@ -408,32 +408,32 @@ corresponding to the observation moments.</p><dl'>
 #&gt; Phase 1 Iteration 40 Progress: 8%
 #&gt; Phase 1 Iteration 45 Progress: 9%
 #&gt; Phase 1 Iteration 50 Progress: 9%
-#&gt; theta: -0.7220  0.1963  0.1335 -0.0184 
+#&gt; theta: -0.7829  0.3194  0.1150 -0.0188 
 #&gt; 
 #&gt; Start phase 2.1
 #&gt; Phase 2 Subphase 1 Iteration 1 Progress: 48%
 #&gt; Phase 2 Subphase 1 Iteration 2 Progress: 48%
-#&gt; theta -0.850  0.576  0.137 -0.111 
-#&gt; ac -6.447  1.011  0.115  2.788 
+#&gt; theta -0.9597  0.6519  0.2010 -0.0624 
+#&gt; ac -1.049  0.672  0.449  5.706 
 #&gt; Phase 2 Subphase 1 Iteration 3 Progress: 48%
 #&gt; Phase 2 Subphase 1 Iteration 4 Progress: 48%
-#&gt; theta -1.213  1.473  0.489 -0.258 
-#&gt; ac -1.509  1.261  0.453  2.545 
+#&gt; theta -1.352  1.661  0.473 -0.149 
+#&gt; ac -0.917  0.994  0.623  4.710 
 #&gt; Phase 2 Subphase 1 Iteration 5 Progress: 48%
 #&gt; Phase 2 Subphase 1 Iteration 6 Progress: 49%
-#&gt; theta -1.584  2.160  0.809 -0.321 
-#&gt; ac -0.848  1.279  0.476  1.713 
+#&gt; theta -1.598  2.246  0.678 -0.241 
+#&gt; ac -0.785  0.808  0.582  5.002 
 #&gt; Phase 2 Subphase 1 Iteration 7 Progress: 49%
 #&gt; Phase 2 Subphase 1 Iteration 8 Progress: 49%
-#&gt; theta -1.76  2.43  1.06 -0.33 
-#&gt; ac -0.710  1.204  0.475  1.710 
+#&gt; theta -1.776  2.669  0.824 -0.305 
+#&gt; ac -0.647  0.800  0.568  2.793 
 #&gt; Phase 2 Subphase 1 Iteration 9 Progress: 49%
 #&gt; Phase 2 Subphase 1 Iteration 10 Progress: 49%
-#&gt; theta -1.968  2.722  1.253 -0.352 
-#&gt; ac -0.689  1.205  0.429  1.509 
-#&gt; theta -2.312  2.109  1.587 -0.263 
-#&gt; ac -0.10903 -0.01085 -0.00189 -0.21865 
-#&gt; theta: -2.312  2.109  1.587 -0.263 
+#&gt; theta -1.924  2.871  0.987 -0.333 
+#&gt; ac -0.461  0.757  0.578  2.792 
+#&gt; theta -2.307  2.147  1.583 -0.266 
+#&gt; ac -0.28969 -0.02345 -0.00058 -0.35492 
+#&gt; theta: -2.307  2.147  1.583 -0.266 
 #&gt; 
 #&gt; Start phase 3 </div><div class='input'>
 <span class='no'>RI</span> <span class='kw'>&lt;-</span> <span class='fu'>sienaRI</span>(<span class='no'>mydata</span>, <span class='no'>ans</span>)
@@ -443,26 +443,26 @@ corresponding to the observation moments.</p><dl'>
 #&gt; 
 #&gt;                                                                wave 1    wave 2    
 #&gt;  
-#&gt;   1. eval outdegree (density)                                  0.3608    0.3204  
-#&gt;   2. eval reciprocity                                          0.2092    0.2082  
-#&gt;   3. eval transitive ties                                      0.1838    0.2328  
-#&gt;   4. eval number of actors at dist 2                           0.2461    0.2386  
+#&gt;   1. eval outdegree (density)                                  0.3575    0.3169  
+#&gt;   2. eval reciprocity                                          0.2121    0.2111  
+#&gt;   3. eval transitive ties                                      0.1831    0.2323  
+#&gt;   4. eval number of actors at dist 2                           0.2472    0.2397  
 #&gt; 
 #&gt; 
 #&gt;   Expected importance of effects for this dependent variable:
 #&gt; 
-#&gt;   1. eval outdegree (density)                                  0.8912    0.7588  
-#&gt;   2. eval reciprocity                                          0.5205    0.5083  
-#&gt;   3. eval transitive ties                                      0.5439    0.6512  
-#&gt;   4. eval number of actors at dist 2                           0.5837    0.5012  
+#&gt;   1. eval outdegree (density)                                  0.8868    0.7539  
+#&gt;   2. eval reciprocity                                          0.5293    0.5171  
+#&gt;   3. eval transitive ties                                      0.5433    0.6519  
+#&gt;   4. eval number of actors at dist 2                           0.5898    0.5068  
 #&gt; 
 #&gt; 
-#&gt;  R_H ('degree of certainty')                                   0.2875    0.2600  </div><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
+#&gt;  R_H ('degree of certainty')                                   0.2879    0.2610  </div><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
 <span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>RI</span>, <span class='kw'>addPieChart</span><span class='kw'>=</span><span class='fl'>TRUE</span>)
 <span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>RI</span>, <span class='kw'>actors</span><span class='kw'>=</span><span class='fl'>1</span>:<span class='fl'>20</span>, <span class='kw'>addPieChart</span><span class='kw'>=</span><span class='fl'>TRUE</span>, <span class='kw'>radius</span><span class='kw'>=</span><span class='fl'>1.08</span>)
 }
 
-<span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>50</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpBuM5HN/Siena344e61249c18.txt .
+<span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>50</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpXe2fRo/Siena6ef9336c22e5.txt .
 #&gt; This is a temporary file for this R session.</div><div class='input'><span class='no'>mynet2</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaDependent.html'>sienaDependent</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/array.html'>array</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='no'>s502</span>, <span class='no'>s503</span>), <span class='kw'>dim</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>50</span>, <span class='fl'>50</span>, <span class='fl'>2</span>)))
 <span class='no'>mybeh</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaDependent.html'>sienaDependent</a></span>(<span class='no'>s50a</span>[,<span class='fl'>2</span>:<span class='fl'>3</span>], <span class='kw'>type</span><span class='kw'>=</span><span class='st'>"behavior"</span>)
 <span class='no'>mydata2</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaDataCreate.html'>sienaDataCreate</a></span>(<span class='no'>mynet2</span>, <span class='no'>mybeh</span>)
@@ -489,32 +489,32 @@ corresponding to the observation moments.</p><dl'>
 #&gt; Phase 1 Iteration 40 Progress: 6%
 #&gt; Phase 1 Iteration 45 Progress: 7%
 #&gt; Phase 1 Iteration 50 Progress: 7%
-#&gt; theta:  4.6577 -1.6610  0.6993  0.3784  0.9478  0.0179 -0.1245 
+#&gt; theta:  4.41452 -1.55345  0.21369  0.16212  1.03308  0.37269 -0.00303 
 #&gt; 
 #&gt; Start phase 2.1
 #&gt; Phase 2 Subphase 1 Iteration 1 Progress: 59%
 #&gt; Phase 2 Subphase 1 Iteration 2 Progress: 59%
-#&gt; theta  4.5403 -1.8023  1.1788  0.5811  1.0446  0.0107 -0.1978 
-#&gt; ac 42.005  0.728  2.088  1.983  2.408  0.995  1.137 
+#&gt; theta  4.33048 -1.66805  0.51739  0.34869  1.29373  0.41241  0.00191 
+#&gt; ac 1.19 1.30 1.19 1.19 3.20 4.05 1.14 
 #&gt; Phase 2 Subphase 1 Iteration 3 Progress: 59%
 #&gt; Phase 2 Subphase 1 Iteration 4 Progress: 59%
-#&gt; theta  4.525 -2.219  2.157  0.959  1.384  0.177 -0.357 
-#&gt; ac  1.3792  1.0977  1.9790  2.1497 -0.0941  1.0925  1.0673 
+#&gt; theta  4.2474 -2.0224  1.4231  0.8939  1.7907  0.5372 -0.0369 
+#&gt; ac 1.169 0.525 1.280 1.029 1.730 0.545 1.119 
 #&gt; Phase 2 Subphase 1 Iteration 5 Progress: 59%
 #&gt; Phase 2 Subphase 1 Iteration 6 Progress: 59%
-#&gt; theta  4.203 -2.561  2.444  1.112  1.533  0.622 -0.449 
-#&gt; ac  0.3548  1.3076  2.0261  2.3603 -0.0998  0.9877  1.0001 
+#&gt; theta  4.343 -2.338  2.069  1.142  2.198  0.533 -0.160 
+#&gt; ac 1.183 0.652 1.271 0.922 0.426 0.801 1.008 
 #&gt; Phase 2 Subphase 1 Iteration 7 Progress: 59%
 #&gt; Phase 2 Subphase 1 Iteration 8 Progress: 60%
-#&gt; theta  4.340 -2.773  2.624  1.200  1.583  0.666 -0.522 
-#&gt; ac  0.0888  1.3582  1.8451  2.4110 -0.1430  0.9876  1.0000 
+#&gt; theta  4.556 -2.602  2.467  1.303  2.088  0.557 -0.333 
+#&gt; ac 1.085 0.679 1.074 0.768 0.472 0.912 1.003 
 #&gt; Phase 2 Subphase 1 Iteration 9 Progress: 60%
 #&gt; Phase 2 Subphase 1 Iteration 10 Progress: 60%
-#&gt; theta  4.697 -2.932  2.723  1.185  1.605  0.771 -0.554 
-#&gt; ac 0.242 1.380 1.977 2.564 0.399 0.526 0.701 
-#&gt; theta  6.049 -3.160  2.808  1.375  1.470  0.449 -0.449 
-#&gt; ac -0.1649 -0.0238 -0.4546 -0.4560 -0.0737 -0.1076 -0.1140 
-#&gt; theta:  6.049 -3.160  2.808  1.375  1.470  0.449 -0.449 
+#&gt; theta  4.562 -2.805  2.636  1.289  2.096  0.505 -0.457 
+#&gt; ac 1.042 0.738 1.057 0.794 0.484 1.164 1.025 
+#&gt; theta  6.079 -3.175  2.859  1.358  1.511  0.439 -0.444 
+#&gt; ac  0.0748  0.0993  0.1735 -0.0328  0.0763  0.2904  0.0310 
+#&gt; theta:  6.079 -3.175  2.859  1.358  1.511  0.439 -0.444 
 #&gt; 
 #&gt; Start phase 3 </div><div class='input'><span class='co'># Use only the parameters for the evaluation function:</span>
 <span class='no'>theta.eval</span> <span class='kw'>&lt;-</span> <span class='no'>ans2</span>$<span class='no'>theta</span>[<span class='no'>myeff2</span>$<span class='no'>type</span>[<span class='no'>myeff2</span>$<span class='no'>include</span>]<span class='kw'>==</span><span class='st'>"eval"</span>]
@@ -528,19 +528,19 @@ corresponding to the observation moments.</p><dl'>
 #&gt; 
 #&gt;                                                                wave 1    wave 2    
 #&gt;  
-#&gt;   1. eval outdegree (density)                                  0.4953    0.4652  
-#&gt;   2. eval reciprocity                                          0.2939    0.3390  
-#&gt;   3. eval transitive ties                                      0.2107    0.1957  
+#&gt;   1. eval outdegree (density)                                  0.4955    0.4649  
+#&gt;   2. eval reciprocity                                          0.2974    0.3434  
+#&gt;   3. eval transitive ties                                      0.2071    0.1916  
 #&gt; 
 #&gt; 
 #&gt;   Expected importance of effects for this dependent variable:
 #&gt; 
-#&gt;   1. eval outdegree (density)                                  1.0942    1.0232  
-#&gt;   2. eval reciprocity                                          0.7579    0.8664  
-#&gt;   3. eval transitive ties                                      0.5766    0.5316  
+#&gt;   1. eval outdegree (density)                                  1.0979    1.0274  
+#&gt;   2. eval reciprocity                                          0.7687    0.8801  
+#&gt;   3. eval transitive ties                                      0.5688    0.5224  
 #&gt; 
 #&gt; 
-#&gt;  R_H ('degree of certainty')                                   0.4699    0.4263  
+#&gt;  R_H ('degree of certainty')                                   0.4737    0.4310  
 #&gt; 
 #&gt; [[2]]
 #&gt; 
@@ -549,17 +549,17 @@ corresponding to the observation moments.</p><dl'>
 #&gt; 
 #&gt;                                                                wave 1    wave 2    
 #&gt;  
-#&gt;   1. eval mybeh linear shape                                   0.3822    0.3782  
-#&gt;   2. eval mybeh quadratic shape                                0.6178    0.6218  
+#&gt;   1. eval mybeh linear shape                                   0.3801    0.3761  
+#&gt;   2. eval mybeh quadratic shape                                0.6199    0.6239  
 #&gt; 
 #&gt; 
 #&gt;   Expected importance of effects for this dependent variable:
 #&gt; 
-#&gt;   1. eval mybeh linear shape                                   0.1955    0.1906  
-#&gt;   2. eval mybeh quadratic shape                                0.4088    0.4106  
+#&gt;   1. eval mybeh linear shape                                   0.1918    0.1871  
+#&gt;   2. eval mybeh quadratic shape                                0.4052    0.4069  
 #&gt; 
 #&gt; 
-#&gt;  R_H ('degree of certainty')                                   0.1479    0.1531  
+#&gt;  R_H ('degree of certainty')                                   0.1451    0.1502  
 #&gt; </div><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
 <span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>RI</span><span class='kw'>[[</span><span class='fl'>2</span>]], <span class='kw'>col</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"red"</span>, <span class='st'>"green"</span>), <span class='kw'>legend</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
 <span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>RI</span><span class='kw'>[[</span><span class='fl'>1</span>]], <span class='kw'>addPieChart</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>legendColumns</span><span class='kw'>=</span><span class='fl'>2</span>)
