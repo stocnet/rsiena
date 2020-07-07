@@ -1577,62 +1577,73 @@ The following changes in revision 244 were ported from RSienaTest to RSiena:
 2013 July 26 - August 2 R-Forge revisions 232-239
 Various changes by Mark Ortmann to RSienaTest.
 
-2013-06-18 CRAN version 1.1-232
+# RSiena 1.1-232
+
+2013-06-18
 
 ## Changes in RSiena:
-   * Drop the possibility to use obsolete package snow and rlecuyer
-     if Rversion < 2.14.0; functionality replaced by
-     package parallel (siena07.r).
+   * Drop the possibility to use obsolete package `snow` and `rlecuyer`
+     if `Rversion < 2.14.0`; functionality replaced by
+     package `parallel` (`siena07.r`).
    * Correct DESCRIPTION file to satisfy CRAN requirements.
    * Correct lines in various help pages that were too long
      in the pdf version.
 
+# RSiena 1.1-231
+
 2013-06-15 R-forge revision 231
 
 ## Changes in RSiena as well as RSienaTest:
-   * Make the "cumulative" option operational in BehaviorDistribution()
-     (sienaGOF.r).
-   * Correct bug in treatment of missing values in sparseMatrixExtraction()
-     (sienaGOF.r).
+   * Make the "cumulative" option operational in `BehaviorDistribution()`
+     (`sienaGOF.r`).
+   * Correct bug in treatment of missing values in `sparseMatrixExtraction()`
+     (`sienaGOF.r`).
    * Allow sparse observed data matrices, and structural zeros and ones, in
-     sparseMatrixExtraction() and networkExtraction(),
-     and bipartite networks in networkExtraction() (sienaGOF.r).
-   * In case prevAns exists, recalculate z$dinvv instead of taking it
-     from prevAns (initializeFRAN.r) (parameter diag may have changed)
+     `sparseMatrixExtraction()` and `networkExtraction()`,
+     and bipartite networks in `networkExtraction()` (`sienaGOF.r`).
+   * In case `prevAns` exists, recalculate `z$dinvv` instead of taking it
+     from `prevAns` (`initializeFRAN.r`) (parameter `diag` may have changed)
    * Report correct centering (by overall means) of individual
-     covariates for multi-group objects (print01Report.r).
-   * in sienaTimeTest: string in toTest$effectName set to "chisq="
-     instead of "p=" (sienaTimeTest.r)
-   * In print method for sienaAlgorithm, report of conditional corrected
-     in case !x$cconditional (sienaprint.r)
+     covariates for multi-group objects (`print01Report.r`).
+   * in `sienaTimeTest`: string in `toTest$effectName` set to "chisq="
+     instead of "p=" (`sienaTimeTest.r`)
+   * In print method for `sienaAlgorithm`, report of conditional corrected
+     in case `!x$cconditional` (`sienaprint.r`)
    * If there is a composition change object, MoM estimation is forced
-     to be non-conditional (initializeFRAN.r). This is reported in the help page
-     (sienaCompositionChange.Rd).
-   * Small changes in help pages sienaAlgorithm.Rd, plot.sienaTimeTest.Rd,
+     to be non-conditional (`initializeFRAN.r`). This is reported in the help page
+     (`sienaCompositionChange.Rd`).
+   * Small changes in help pages `sienaAlgorithm.Rd`, `plot.sienaTimeTest.Rd`
 
+
+# RSiena 1.1-230
 
 2013-05-10 R-forge revision 230
 
 ## Changes in RSiena as well as RSienaTest:
     * Add attribute maxObsOutDegree to <object of class siena>$depvars[[.]]
-     (sienaDataCreate.r).
+     (`sienaDataCreate.r`).
    * Check whether this maximum observed degree is not higher than maxDegree
-      (printDataReport.r).
-    * Fix bug in implementation of maxDegree (initializeFRAN.r)
-    * Fix bug in print.siena and extend print.siena (sienaprint.r).
-    * Make print method for sienaDependent (sienaprint.r).
-Changes only in RSienaTest:
-    * File
-      \pkg\RSienaTest\inst\doc\effects.pdf
-      was updated.
+      (`printDataReport.r`).
+    * Fix bug in implementation of `maxDegree` (`initializeFRAN.r`)
+    * Fix bug in print.siena and extend print.siena (`sienaprint.r`).
+    * Make print method for sienaDependent (`sienaprint.r`).
+
+## Changes only in RSienaTest:
+    * File `\pkg\RSienaTest\inst\doc\effects.pdf` was updated.
+
+# RSiena 1.1-229
 
 2013-05-10 R-forge revision 229
-Changes only in RSiena:
+
+## Changes only in RSiena:
    * Korean translation of R messages is updated: changed file
      \pkg\RSiena\po\R-RSiena.pot
 
+# RSiena 1.1-228
+
 2013-04-20 R-forge revision 228
-Changes only in RSiena:
+
+## Changes only in RSiena:
     * Files
       \pkg\RSiena\src\model\variables\DiffusionEffectValueTable.cpp
       \pkg\RSiena\src\model\variables\DiffusionEffectValueTable.h
@@ -1644,6 +1655,8 @@ Changes only in RSiena:
       \pkg\RSiena\inst\doc\effects.pdf
       was updated.
 
+# RSiena 1.1-227
+
 2013-04-19 R-forge revision 227
 
 ## Changes in RSiena as well as RSienaTest;
@@ -1653,7 +1666,7 @@ Available effects now are the same.
 
 I hope the list of changes indicated here is complete.
 
-For Siena only:
+## For Siena only:
     * function bayes() was removed (still under development in RSienaTest).
     * Attributes "allowOnly" and "simOnly" ported from RSienaTest.
     * Improved error messages in  includeEffects ported from RSienaTest.
@@ -1661,13 +1674,13 @@ For Siena only:
     * siena.table() ported from RSienaTest, in file sienatable.r.
     * Changes of revision 226 ported from RSienaTest.
 
-For RSienaTest only:
+## For RSienaTest only:
     * bayes() renamed to sienaBayes() and considerably changed.
     * Added function print.sienaBayesFit to sienaprint.r, with
         new documentation file printsienaBayesFit.Rd.
     * Some invisible developments for settings model.
 
-For RSiena and RSienaTest:
+## For RSiena and RSienaTest:
     * Changes to sienaGOF: new use structure with auxiliary functions
         sparseMatrixExtraction, networkExtraction, behaviorExtraction,
         allowing to test any dependent variable;
@@ -1755,6 +1768,8 @@ For RSiena and RSienaTest:
         (scriptfile.Rout.save).
     * Manual and siena.bib updated.
 
+# RSiena 1.1-226
+
 2013-04-17 R-forge revision 226 RSienaTest only
 
     * changed:
@@ -1765,19 +1780,27 @@ For RSiena and RSienaTest:
         base classes have always a virtual destructor
         reduced visibility of abstract class constructors
 
+# RSiena 1.1-225
+
 2013-03-12 R-forge revision 225
 
     * Removed files and directories that were put in, at the highest directory
         level, by mistake at revision 220.
 
+# RSiena 1.1-224
+
 2013-02-14 R-forge revision 224 RSiena only
 
     * Added pkg//RSiena/po/R-ko.mo and pkg//RSiena/po/R-ko.po
+
+# RSiena 1.1-223
 
 2013-01-01 R-forge revision 223
 
     * R/sienaDataCreateFromSession.R: change assignments to frame of
     function rather than using global environment.
+
+# RSiena 1.1-222
 
 2012-12-24 R-forge revision 222 mostly RSienaTest only
 
@@ -1788,23 +1811,31 @@ For RSiena and RSienaTest:
     run sensibly.
     * tests/effectsTest.R: edited comments
 
+# RSiena 1.1-221
+
 2012-12-23 R-forge revision 221 RSiena and RSienaTest
 
     * R/robmon.r, siena07.r, simstatsc.r: corrected check for R version
     so will work with R version 3.0.0.
+
+# RSiena 1.1-220
 
 2012-09-10 R-forge revision 220
 
     * Unintended changes in highest directory (i.e., without effect on packages);
      undone in revision 225.
 
+# RSiena 1.1-219
+
 2012-07-06 R-forge revision 219
-    For RSiena and RSienaTest:
+    
+## For RSiena and RSienaTest:
     * Added matrices N3401, N3403, N3404, N3406, and HN3401, HN3403, HN3404,
         HN3406 to RSiena.Rda, with associated documentation files
         N3401.Rd and HN3401.Rd.
     * Updates to manual and RSiena.bib.
-   For RSienaTest only:
+
+## For RSienaTest only:
     * Further serious changes in bayes.r and documentation bayes.tex.
     * Added function print.sienaBayesFit to sienaprint.r, with
         new documentation file printsienaBayesFit.Rd
@@ -1827,9 +1858,11 @@ For RSiena and RSienaTest:
             CovariateMixedNetworkAlterFunction.cpp and .h.
    * Removed some extra documentation producing a warning in R CMD check.
 
+# RSiena 1.1-216
+
 2012-06-07 R-forge revision 216
 
-   All for RSienaTest only.
+## All for RSienaTest only.
     * R/bayes.r: considerable update (no known errors now,
         except multigroup does not work for dyadic covariates.)
     * R/print07report.r: small cosmetic change
@@ -1851,9 +1884,11 @@ For RSiena and RSienaTest:
     * R/printInitialDescription.r: minor rewriting.
     * Manual correspondingly updated.
 
+# RSiena 1.1-213
+
 2012-05-18 R-forge revision 213
 
-   All for RSienaTest only.
+## All for RSienaTest only.
     * R/effects.r and R/printInitialDescription.r:
       protect against situations where matrix matchange has zero rows or columns
       (i.e., prevent runtime error)
@@ -1874,9 +1909,13 @@ For RSiena and RSienaTest:
      src/model/effects/SimilarityTransitiveTripletsEffect.cpp:
      new effects
 
+# RSiena 1.1-212
+
 2012-03-29 R-forge revision 212
 
    * update of RSiena_Manual.tex, RSiena.bib (both packages)
+
+# RSiena 1.1-211
 
 2012-03-29 R-forge revision 211
 
@@ -1889,6 +1928,8 @@ For RSiena and RSienaTest:
     exclude temporary latex files from the tar ball.
     * R/effectsDocumentation.r: bug fix for newly added groups.
     * inst/doc/effects.pdf: updated
+
+# RSiena 1.1-210
 
 2012-03-29 R-forge revision 210 NB new version number sequence. 1.1.210
 
