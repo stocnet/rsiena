@@ -21,7 +21,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 {
 	exitfn <- function()
 	{
-		if (!is.batch())
+		if (!is.batch() & require(tcltk))
 		{
 			tkdestroy(tkvars$tt)
 		}
@@ -135,7 +135,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 
 	## set the global is.batch
 	batchUse <- batch
-	if (!batch)
+	if (!batch & require(tcltk))
 	{
 		if (.Platform$OS.type != "windows")
 		{
@@ -160,7 +160,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	NullChecks()
 
 	## create the screen
-	if (!is.batch())
+	if (!is.batch() & require(tcltk))
 	{
 		tkvars <- siena07Gui(tt=tt)
 		z$tkvars<- tkvars
