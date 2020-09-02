@@ -1,4 +1,4 @@
-# rsiena  <img src="https://raw.githubusercontent.com/snlab-nl/rsiena/master/inst/rsienalogo.png" align="right" width="150"/>
+# rsiena  <img src="https://raw.githubusercontent.com/snlab-nl/rsiena/main/inst/rsienalogo.png" align="right" width="150"/>
 
 ![CRAN/METACRAN](https://img.shields.io/cran/l/RSiena)
 ![CRAN/METACRAN](https://img.shields.io/cran/v/RSiena)
