@@ -30,7 +30,7 @@ Imports:
     MASS,
     methods,
     roxygen2
-Suggests: xtable, network, tools, codetools, tcltk
+Suggests: xtable, network, tools, knitr, codetools, tcltk
 SystemRequirements: GNU make, tcl/tk 8.5, Tktable
 Description: The main purpose of this package is to perform simulation-based 
    estimation of stochastic actor-oriented models for longitudinal network 
@@ -50,6 +50,8 @@ Biarch: yes
 NeedsCompilation: yes
 BuildResaveData: no
 URL: http://www.stats.ox.ac.uk/~snijders/siena
+VignetteBuilder: 
+    knitr
 Repository: R-Forge
 Repository/R-Forge/Project: rsiena
 Repository/R-Forge/Revision: 348
