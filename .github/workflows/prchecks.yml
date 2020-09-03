@@ -61,8 +61,8 @@ jobs:
           remotes::install_cran("rcmdcheck")
         shell: Rscript {0}
 
-      - name: Document
-        run: Rscript -e 'roxygen2::roxygenise()'
+#      - name: Document
+#        run: Rscript -e 'roxygen2::roxygenise()'
 
       - name: Check
         env:
@@ -77,13 +77,13 @@ jobs:
           name: ${{ runner.os }}-r${{ matrix.config.r }}-results
           path: check
 
-      - name: Binary
-        run: |
-          pkgbuild::clean_dll()
-          binary <- pkgbuild::build(binary = TRUE, needs_compilation = TRUE, compile_attributes = TRUE)
-          dir.create("build")
-          file.copy(binary, "build")
-        shell: Rscript {0}
+#      - name: Binary
+#        run: |
+#          pkgbuild::clean_dll()
+#          binary <- pkgbuild::build(binary = TRUE, needs_compilation = TRUE, compile_attributes = TRUE)
+#          dir.create("build")
+#          file.copy(binary, "build")
+#        shell: Rscript {0}
     
 #- name: Save binary artifact
 #        uses: actions/upload-artifact@v1
@@ -91,5 +91,5 @@ jobs:
 #          name: ${{ matrix.config.asset_name }}
 #          path: build/
           
-      - name: Calculate code coverage
-        run: Rscript -e "covr::codecov()"
+#      - name: Calculate code coverage
+#        run: Rscript -e "covr::codecov()"
