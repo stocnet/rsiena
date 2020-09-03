@@ -30,10 +30,9 @@ siena07Gui <- function(tt, getDocumentation=FALSE)
     {
         return(getInternals())
     }
-    if (is.null(tt))
+    if (is.null(tt) & requireNamespace(tcltk, quietly = TRUE))
     {
-        ## require(tcltk)
-        tt <- tktoplevel()
+        tt <- tcltk::tktoplevel()
     }
     tkwm.title(tt,'Siena07')
     frame <- tkframe(tt, width=300, height=300, relief='ridge')

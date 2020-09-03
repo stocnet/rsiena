@@ -21,9 +21,9 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 {
 	exitfn <- function()
 	{
-		if (!is.batch() & require(tcltk))
+		if (!is.batch() & requireNamespace(tcltk, quietly = TRUE))
 		{
-			tkdestroy(tkvars$tt)
+		  tcltk::tkdestroy(tkvars$tt)
 		}
 		## close the report file
 		Report(closefiles=TRUE)
@@ -135,7 +135,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 
 	## set the global is.batch
 	batchUse <- batch
-	if (!batch & require(tcltk))
+	if (!batch & requireNamespace(tcltk, quietly = TRUE))
 	{
 		if (.Platform$OS.type != "windows")
 		{
@@ -160,7 +160,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	NullChecks()
 
 	## create the screen
-	if (!is.batch() & require(tcltk))
+	if (!is.batch() & requireNamespace(tcltk, quietly = TRUE))
 	{
 		tkvars <- siena07Gui(tt=tt)
 		z$tkvars<- tkvars
@@ -268,8 +268,7 @@ InitReports <- function(z, seed, newseed)
 ##@AnnouncePhase siena07 Progress reporting
 AnnouncePhase <- function(z, x, subphase=NULL)
 {
-	## require(tcltk)
-	if (!is.batch())
+	if (!is.batch() & requireNamespace(tcltk, quietly = TRUE))
 	{
 		tkdelete(z$tkvars$phase, 0, "end")
 		tkinsert(z$tkvars$phase, 0, paste(" ", z$Phase))
