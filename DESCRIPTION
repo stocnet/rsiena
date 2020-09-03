@@ -23,7 +23,13 @@ Authors@R: c(person("Tom", "Snijders", role = c("cre", "aut"), email = "tom.snij
               person("Felix", "Schoenenberger", role = "ctb"),
               person("Ruth", "Ripley", role = "ctb"))
 Depends: R (>= 2.15.0)
-Imports: Matrix, lattice, parallel, MASS, methods
+Imports: 
+    Matrix,
+    lattice,
+    parallel,
+    MASS,
+    methods,
+    roxygen2
 Suggests: xtable, network, tools, codetools, tcltk
 SystemRequirements: GNU make, tcl/tk 8.5, Tktable
 Description: The main purpose of this package is to perform simulation-based 
