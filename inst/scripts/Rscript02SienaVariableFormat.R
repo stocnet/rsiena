@@ -1,21 +1,21 @@
 ###############################################################################
-###
+###                                                                         ###
 ### - Rscript02SienaVariableFormat.R: a script for the introduction to RSiena -
-###
-###                               version June 19, 2015
+###                                                                         ###
+###                               version September 8, 2020                 ###
 ###############################################################################
 #
 # The introductory script is divided into the following script files:
 # Rscript01DataFormat.R, followed by
-# RScriptSNADescriptives.R, code for descriptive analysis of the data, and
-# Rscript02SienaVariableFormat.R, which formats data and specifies the model, and
+# RScriptSNADescriptives.R, code for descriptive analysis of the data,
+# Rscript02SienaVariableFormat.R, which formats data and specifies the model,
 # Rscript03SienaRunModel.R, which runs the model and estimates parameters
 # Rscript04SienaBehaviour.R, which illustrates an example of analysing the
 # coevolution of networks and behaviour
 # Written by Tom Snijders, with earlier contributions from Robin Gauthier,
 # Ruth Ripley, Johan Koskinen, and Paulina Preciado.
 #
-# This script, Rscript02SienaVariableFormat.R, sets up the variables for analysis.
+# This script, Rscript02SienaVariableFormat.R, sets up variables for analysis.
 # The manipulations in this script requires that you have gone through the
 # first part, "CALLING THE DATA AND PRELIMINARY MANIPULATIONS",
 # of the script "Rscript01DataFormat.R" beforehand.
@@ -26,7 +26,7 @@
 # Rscript01DataFormat.R. If you have already ran that script, you may
 # load the required workspace:
 	load("WorkspaceRscript01.RData")
-# If not, to make this script self-contained, you may run the following commands:
+# If not, to make this script self-contained, you may run the commands:
 
 	library(RSiena)
 	friend.data.w1 <- s501
@@ -59,6 +59,14 @@
 # receivers) and the number of waves.
 # This object is an array of dimension 50 x 50 x 3, representing
 # three adjacency matrices, with a number of attributes.
+# You can ask for a brief decription of this object simply by typing
+
+    print(friendship)
+
+# for which the shorthand is
+
+    friendship
+
 # Note that this is an object of class
 
         class(friendship)
@@ -72,14 +80,14 @@
 # If you only are interested in the value of one particular attribute,
 # you can request this by, e.g.,
 
-        attributes( friendship )$type
+    attr( friendship, "type")
 
-# A very concise description of the friendship data is obtained by typing
+# An extensive description of the friendship data is obtained by typing
 
-        friendship
+   str(friendship)
 
-# The function sienaDependent can also be used to create a behavior variable object
-# with the extra argument type = "behavior".
+# The function sienaDependent can also be used to create a behavior variable
+# object with the extra argument type = "behavior".
 # (Non-mentioned attributes get the default value, and in this case
 # oneMode is the default; see below.)
 
@@ -98,20 +106,19 @@
 
         ?sienaDependent
 
-# This shows that next to one-mode (unipartite) and behavior dependent variables,
+# This shows that next to one-mode (unipartite)
+# and behavior dependent variables,
 # also two-mode (bipartite) dependent variables are possible.
 # You can infer that oneMode is the default type from the fact
 # that it is mentioned first.
 
-# To create bipartite network objects you need two node sets and must create
-# the node sets too. The following is an example
-# (not really meaningful, just for the syntax):
+# To create bipartite network objects you need two node sets
+# and must create the node sets too.
+# See
 
- bfriendship <- sienaDependent(array(c(friend.data.w1, friend.data.w2, friend.data.w3),
-                               dim=c(50, 50, 3)),
-                               "bipartite", nodeSet=c("senders", "receivers"))
- senders <- sienaNodeSet(50, nodeSetName="senders")
- receivers <- sienaNodeSet(50, nodeSetName="receivers")
+    ?sienaNodeSet
+
+# where the Examples section shows an example of the syntax.
 
 
 # ---- B. ----------------------------------------------------------------------
@@ -148,7 +155,7 @@
 # you can create constant covariates through
 #       Attr1 <- coCovar(Covariates[,1])
 #       ...
-#       Attrk <- coCovar(Covariates[,p])
+#       Attrp <- coCovar(Covariates[,p])
 
 # We use the drinking data as a changing covariate.
 # The function varCovar creates a changing covariate object from a matrix;
@@ -157,7 +164,7 @@
         alcohol <- varCovar( drink )
 
 # You need at least three waves in the data set to define a varying covariate
-# by the function varCovar as the previous wave is used
+# by the function varCovar; the reason is that the previous wave is used
 # as a predictor of the next wave.
 
 # The command
@@ -188,17 +195,11 @@
 #        mydata <- sienaDataCreate( nominations = friendship, smoke1,
 #                                   drinking = alcohol )
 
-# For bipartite networks you would have to specify the node sets, e.g.,
+# Another type of dependent network is a two-mode network,
+# which here is also called a bipartite network.
+# To get advice for a first step in the use of two-mode networks,
+# see the script RscriptSienaBipartite.R on the Siena scripts page.
 
-        mybidata <- sienaDataCreate(bfriendship,
-                                    nodeSets=list(senders, receivers))
-
-# If you wish to use a covariate, the relevant nodeSet must match, e.g.,
-        balcohol <- varCovar(drink, nodeSet="senders")
-        mybidata <- sienaDataCreate(bfriendship, balcohol,
-                                    nodeSets=list(senders, receivers))
-
-# but we will not use this in these scripts.
 # This finishes the data specification. Now we have to specify the model.
 #
 
@@ -223,12 +224,13 @@
         print01Report( mydata, modelname = 's50_3_init' )
 
 # This writes a basic report of the data to the file
-# s50_3_init.out in the current working directory. Locate and open it!
+# s50_3_init.txt in the current working directory. Locate and open it!
 # Inspecting this is important because it serves as a check and also contains
 # a number of basic descriptives.
-# In this description you can see that the third wave data for alcohol are not used.
-# This is because changing covariates are assumed to be constant from one wave until
-# immediately before the next wave, so that the values for the last wave are ignored.
+# In this description you can see that the third wave for alcohol is not used.
+# This is because changing covariates are assumed to be constant from one wave
+# until immediately before the next wave,
+# so that the values for the last wave are ignored.
 
 # Let us now consider the myeff object, which is used to specify the model.
 # It is of the class "sienaEffects", and contains the model specification.
@@ -237,7 +239,7 @@
        myeff
 
 # For starting, the model specification is just a very limited default
-# (including rates of change, outdegree and reciprocity only)
+# (including rates of change, outdegree and reciprocity only).
 # To make a meaningful analysis, you will need to add to it.
 
 # The rows of myeff correspond to the effects.
@@ -246,19 +248,21 @@
         names( myeff )
 
 # you see the type of information that is stored about the effects,
-# i.e., the columns (variables) defined for the effects.
+# i.e., the columns (characteristics) defined for the effects.
 # If desired, more information about these variables can be obtained
 # from the help files:
 #      ?getEffects
+# where the characteristics are described.
 
 # Some often used variables are effectName, shortName, type, and parameter.
 # The set of available effects and their most used columns
 # can be inspected as follows:
 
-#       effectsDocumentation(myeff)
+    effectsDocumentation(myeff)
 
-# This gives a long list of effects: all defined in Section 12 of the manual,
-# as far as they are meaningful for dataset mydata.
+# This creates an html file with the list of all effects available in myeff;
+# the effects are all defined in Section 12 of the RSiena manual,
+# but only those that are meaningful for dataset mydata are used in myeff.
 # The "include" column defines whether effects are included in the model.
 
         myeff$include
@@ -269,17 +273,17 @@
 # 1. Using RSiena functions "includeEffects", "setEffects", etc;
 # 2. Changing myeff in spreadsheet form by the function fix();
 # 3. Changing myeff directly by operating on its elements.
-# Which one to use is a matter of personal preference.
 # The first way is most in line with the design philosophy of R,
 # and allows you to save scripts that also can be used when
 # there will be new versions of RSiena.
 # Therefore, we suggest that for starting you only study
 # option 1, ' Adding/removing effects using includeEffects'.
 # The other two options are treated only for special
-# and more difficult occasions.
+# and more difficult occasions; and for loooking 'behind the screens'.
 
 # For identifying your effects you need the "shortName"s,
-# which can be read in the manual (section "Mathematical definition of effects"),
+# which can be read in the manual
+# (section "Mathematical definition of effects"),
 # or obtained from the "effectsDocumentation()" function mentioned above.
 
 
@@ -289,11 +293,6 @@
 # The short names are given by the effectsDocumentation() function
 # mentioned above, and also are listed in the descriptions given in
 # Section 12 of the manual.
-# A different table of effect information, including short names,
-# that covers effects available for whatever data sets,
-# is available as a pdf file in the R directory, and can be opened by
-
-#        RShowDoc("effects", package="RSiena")
 
 # For illustration, let us start from scratch with a new sienaEffects object,
 # and add the transitive triples and 3-cycles effects
@@ -347,7 +346,7 @@
 # and by interaction2 if there is a second variable involved,
 # such as AltsAvAlt (see the manual).
 # Although the names of these parameters are interaction1 and interaction2,
-# this does not refer to an interaction as commonly used
+# this does not refer to the common concept of interaction
 # in statistical modelling!
 
 # ---- Creating interaction effects --------------------------------------------
@@ -381,6 +380,8 @@
 # includeInteraction function.
 # Then the two or three interaction1 parameters must be combined using c();
 # the same goes for interaction2, if that also is necessary for the definition.
+# As shown above for the recip effect, the interaction1 or interaction2 parameter
+# is "" (i.e., an empty string) for effects where it is not needed.
 
 # A second special topic is how to access other characteristics of effects.
 # This can be done by the setEffect function.
@@ -421,63 +422,27 @@
 # as an alternative to using the data editor.
 # The "include" column with values TRUE or FALSE will always be
 # located at the 9th column,
-# but transitive triplets will not always be at the 13th row as this depends
+# but transitive triplets will not always be at the 16th row as this depends
 # on the number of periods and variables; further, the list of available effects
 # changes over different versions of RSiena.
 # Some examples are the following
 # (preceded by # because not proposed to be applied).
 
-        #myeff[13,9] <- TRUE   #transitive triples
-        #myeff[17,9] <- TRUE   #3 cycles
-        #myeff[19,9] <- TRUE   #transitive ties
-        #myeff[29,9] <- TRUE   #indegree popularity (sqrt)
-        #myeff[33,9] <- TRUE   #outdegree popularity (sqrt)
-        #myeff[35,9] <- TRUE   #indegree based activity (sqrt)
-        #myeff[37,9] <- TRUE   #outdegree based activity (sqrt)
-        #myeff[46,9] <- TRUE   #indegree-indegree assortativity
-        #myeff[69,9] <- TRUE   #alcohol alter
-        #myeff[73,9] <- TRUE   #alcohol ego
-        #myeff[75,9] <- TRUE   #alcohol similarity
-        #myeff[83,9] <- TRUE   #alcohol ego x alcohol alter
+        #myeff[16,9] <- TRUE   #transitive triples
+        #myeff[34,9] <- TRUE   #3 cycles
+        #myeff[37,9] <- TRUE   #transitive ties
+        #myeff[77,9] <- TRUE   #indegree popularity (sqrt)
+        #myeff[86,9] <- TRUE   #outdegree popularity (sqrt)
+        #myeff[93,9] <- TRUE   #indegree based activity (sqrt)
+        #myeff[102,9] <- TRUE  #outdegree based activity (sqrt)
+        #myeff[155,9] <- TRUE   #indegree-indegree assortativity
+        #myeff[319,9] <- TRUE   #alcohol alter
+        #myeff[331,9] <- TRUE   #alcohol ego
+        #myeff[370,9] <- TRUE   #alcohol similarity
+        #myeff[439,9] <- TRUE   #alcohol ego x alcohol alter
 
 # But in other choices of data, the effect numbers will change.
 # This is a reason why this is not a convenient method.
-# The following methods require more typing the first time,
-# but can be re-used much more robustly.
-# Several variants are given, so that you can use what suits you best.
-# We give a small and meaningful model.
-
-# To understand the R commands, recall that myeff is a data.frame,
-# i.e., a two-dimensional array with named columns,
-# and myeff[i,j] refers to row/effect i and its characteristic j.
-# A file with the effect shortNames, for easy access to their exact wordings,
-# is obtained by effectsDocumentation() (see above).
-# The following commands can be used to select the
-# five mentioned effects.
-# Note that == is the logical "equals", & is the logical "and",
-# and what is between the square brackets [...] makes a selection
-# of the specified row and column of the "myeff" data frame.
-
-#        myeff[myeff$effectName=='transitive triplets' &
-#              myeff$type=='eval', 'include'] <- TRUE
-#        myeff[myeff$effectName=='3-cycles' &
-#              myeff$type=='eval', 'include'] <- TRUE
-#        myeff[myeff$effectName=='smoke1 similarity' &
-#              myeff$type=='eval', 'include'] <- TRUE
-#        myeff[myeff$effectName=='alcohol alter' &
-#              myeff$type=='eval', 'include'] <- TRUE
-#        myeff[myeff$effectName=='alcohol ego' &
-#              myeff$type=='eval', 'include'] <- TRUE
-#        myeff[myeff$effectName=='alcohol ego x alcohol alter' &
-#              myeff$type=='eval', 'include'] <- TRUE
-
-# You can similarly add other ones.
-# If you make a typing error in the effect name, there will be no warning,
-# but also no consequence of your command.
-# Therefore it is good to check the results,
-# by requesting the list of effects now included in the model:
-
-#        myeff
 
 save.image("WorkspaceRscript02.RData")
 
