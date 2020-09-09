@@ -1,11 +1,11 @@
 # RSiena 1.2-26
 
-2020-09-08 
+2020-09-09 
 
 ## Changes in RSiena:
    * Changed requirement for tcltk to "Suggests", 
      and further modified / cleaned up DESCRIPTION.
-   * In siena07: if (!requireNamespace(tcltk)) set batch to TRUE.
+   * In siena07: if (!requireNamespace("tcltk")) set batch to TRUE.
 
 
 # RSiena 1.2-25

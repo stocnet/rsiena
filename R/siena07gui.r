@@ -9,6 +9,7 @@
 # *
 # *****************************************************************************/
 ##@siena07Gui siena07 Create program screen for siena07
+## This is called only if !batch.
 siena07Gui <- function(tt, getDocumentation=FALSE)
 {
     ##@myInterrupt internal siena07Gui
@@ -30,9 +31,10 @@ siena07Gui <- function(tt, getDocumentation=FALSE)
     {
         return(getInternals())
     }
-    if (is.null(tt) & requireNamespace(tcltk, quietly = TRUE))
+    if (is.null(tt))
     {
-        tt <- tcltk::tktoplevel()
+        ## require(tcltk)
+        tt <- tktoplevel()
     }
     tkwm.title(tt,'Siena07')
     frame <- tkframe(tt, width=300, height=300, relief='ridge')

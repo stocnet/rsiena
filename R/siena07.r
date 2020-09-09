@@ -21,7 +21,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 {
 	exitfn <- function()
 	{
-		if (!is.batch() & requireNamespace(tcltk, quietly = TRUE))
+		if (!is.batch())
 		{
 		  tcltk::tkdestroy(tkvars$tt)
 		}
@@ -135,14 +135,22 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 
 	## set the global is.batch
 	batchUse <- batch
-	if (!batch & requireNamespace(tcltk, quietly = TRUE))
+	if (!batch)
 	{
-		if (.Platform$OS.type != "windows")
+		if (!requireNamespace("tcltk", quietly = TRUE))
 		{
-			if (!capabilities("X11"))
-			{
 				batchUse <- TRUE
-				message("No X11 device available, forcing use of batch mode")
+				message("Package tcltk not available, forcing use of batch mode")		
+		}
+		else
+		{
+			if (.Platform$OS.type != "windows")
+			{
+				if (!capabilities("X11"))
+				{
+					batchUse <- TRUE
+					message("No X11 device available, forcing use of batch mode")
+				}
 			}
 		}
 		if(nzchar(Sys.getenv("RSIENA_TESTING")))
@@ -160,10 +168,10 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	NullChecks()
 
 	## create the screen
-	if (!is.batch() & requireNamespace(tcltk, quietly = TRUE))
+	if (!is.batch())
 	{
 		tkvars <- siena07Gui(tt=tt)
-		z$tkvars<- tkvars
+		z$tkvars <- tkvars
 		z$pb <- list(pb=tkvars$pb, pbval=0, pbmax=1)
 	}
 	else
@@ -268,7 +276,8 @@ InitReports <- function(z, seed, newseed)
 ##@AnnouncePhase siena07 Progress reporting
 AnnouncePhase <- function(z, x, subphase=NULL)
 {
-	if (!is.batch() & requireNamespace(tcltk, quietly = TRUE))
+	## require(tcltk)
+	if (!is.batch())
 	{
 		tkdelete(z$tkvars$phase, 0, "end")
 		tkinsert(z$tkvars$phase, 0, paste(" ", z$Phase))
