@@ -50,5 +50,4 @@ Biarch: yes
 NeedsCompilation: yes
 BuildResaveData: no
 BuildVignettes: no
-VignetteBuilder: knitr, rmarkdown
 URL: http://www.stats.ox.ac.uk/~snijders/siena
