@@ -20,8 +20,10 @@ Authors@R: c(person("Tom", "Snijders", role = c("cre", "aut"), email = "tom.snij
               person("Krists", "Boitmanis", role = "ctr"),
               person("Felix", "Schoenenberger", role = "ctb"),
               person("Mark", "Ortmann", role = "ctb"),
+              person("Marion", "Hoffman", role = "ctb"),
               person("Robert", "Hellpap", role = "ctb"),
               person("Ruth", "Ripley", role = "aut"))
+Maintainer: Tom Snijders <tom.snijders@nuffield.ox.ac.uk>
 Depends: R (>= 2.15.0)
 Imports:
     Matrix,
@@ -47,6 +49,6 @@ LazyData: yes
 Biarch: yes
 NeedsCompilation: yes
 BuildResaveData: no
-BuildVignettes: yes
+BuildVignettes: no
 VignetteBuilder: knitr, rmarkdown
 URL: http://www.stats.ox.ac.uk/~snijders/siena

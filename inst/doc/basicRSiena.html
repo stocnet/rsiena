@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Tom Snijders" />
+
+<meta name="date" content="2020-08-09" />
+
+<title>BasicRSiena</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">BasicRSiena</h1>
+<h4 class="author">Tom Snijders</h4>
+<h4 class="date">August 9, 2020</h4>
+
+
+
+<p>An example of a basic sequence of commands for estimating a basic model by function <code>siena07()</code> of <code>RSiena</code>. With a lot of use of help pages; this can be skipped as you like. Note that lines starting with # are comment lines, not commands.</p>
+<p>What is your current working directory?</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">getwd</span>()</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;C:/Users/Tom.Snijders/AppData/Local/Temp/RtmpUXNCro/Rbuild429870dc3d8d/RSiena/vignettes&quot;</span></span></code></pre></div>
+<p>If you wish it to be different, change it by</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="co"># setwd()</span></span></code></pre></div>
+<p>In my case:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="co"># setwd(&quot;C:\\Users\\tom.snijders\\Documents\\Siena\\s50_script&quot;)</span></span></code></pre></div>
+<p>Note the double backslashes used for R.</p>
+<div id="define-data-sets" class="section level1">
+<h1>Define data sets</h1>
+<p>If you have internet access, you can download the data from the Siena website (“Data sets” tab) <a href="http://www.stats.ox.ac.uk/~snijders/siena/s50_data.zip" class="uri">http://www.stats.ox.ac.uk/~snijders/siena/s50_data.zip</a> and unzip it in your working directory. The data description is at <a href="http://www.stats.ox.ac.uk/~snijders/siena/s50_data.htm" class="uri">http://www.stats.ox.ac.uk/~snijders/siena/s50_data.htm</a></p>
+<p>Then you can read the data files by the commands (this can be replaced by using the internal data set, see below)</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="co"># friend.data.w1 &lt;- as.matrix(read.table(&quot;s50-network1.dat&quot;))</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a><span class="co"># friend.data.w2 &lt;- as.matrix(read.table(&quot;s50-network2.dat&quot;))</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="co"># friend.data.w3 &lt;- as.matrix(read.table(&quot;s50-network3.dat&quot;))</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a><span class="co"># drink &lt;- as.matrix(read.table(&quot;s50-alcohol.dat&quot;))</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a><span class="co"># smoke &lt;- as.matrix(read.table(&quot;s50-smoke.dat&quot;))</span></span></code></pre></div>
+<p>But without internet access, the data can be obtained from within RSiena (see below), because this is an internal data set.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">library</span>(RSiena)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a><span class="co"># Now we use the internally available s50 data set.</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a><span class="co"># Look at its description:</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>?s50</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a><span class="co"># 3 waves, 50 actors</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a><span class="co"># Look at the start and end of the first wave matrix</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a><span class="kw">head</span>(s501)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a><span class="co">#&gt;   V1 V2 V3 V4 V5 V6 V7 V8 V9 V10 V11 V12 V13 V14 V15 V16 V17 V18 V19 V20 V21</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a><span class="co">#&gt; 1  0  0  0  0  0  0  0  0  0   0   1   0   0   1   0   0   0   0   0   0   0</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a><span class="co">#&gt; 2  0  0  0  0  0  0  1  0  0   0   1   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a><span class="co">#&gt; 3  0  0  0  1  0  0  0  0  1   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a><span class="co">#&gt; 4  0  0  1  0  0  0  0  0  1   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a><span class="co">#&gt; 5  0  0  0  0  0  0  0  0  0   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a><span class="co">#&gt; 6  0  0  0  0  0  0  0  1  0   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a><span class="co">#&gt;   V22 V23 V24 V25 V26 V27 V28 V29 V30 V31 V32 V33 V34 V35 V36 V37 V38 V39 V40</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a><span class="co">#&gt; 1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a><span class="co">#&gt; 2   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true"></a><span class="co">#&gt; 3   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true"></a><span class="co">#&gt; 4   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true"></a><span class="co">#&gt; 5   0   0   0   0   0   0   0   0   0   0   1   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true"></a><span class="co">#&gt; 6   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true"></a><span class="co">#&gt;   V41 V42 V43 V44 V45 V46 V47 V48 V49 V50</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true"></a><span class="co">#&gt; 1   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true"></a><span class="co">#&gt; 2   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true"></a><span class="co">#&gt; 3   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true"></a><span class="co">#&gt; 4   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true"></a><span class="co">#&gt; 5   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true"></a><span class="co">#&gt; 6   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true"></a><span class="kw">tail</span>(s501)</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true"></a><span class="co">#&gt;    V1 V2 V3 V4 V5 V6 V7 V8 V9 V10 V11 V12 V13 V14 V15 V16 V17 V18 V19 V20 V21</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true"></a><span class="co">#&gt; 45  0  0  0  0  0  0  0  0  0   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true"></a><span class="co">#&gt; 46  0  0  0  0  0  0  0  0  0   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true"></a><span class="co">#&gt; 47  0  0  0  0  0  0  0  0  0   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true"></a><span class="co">#&gt; 48  0  0  0  0  0  0  0  0  0   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true"></a><span class="co">#&gt; 49  0  0  0  0  0  0  0  0  0   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true"></a><span class="co">#&gt; 50  0  0  0  0  0  0  0  0  0   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true"></a><span class="co">#&gt;    V22 V23 V24 V25 V26 V27 V28 V29 V30 V31 V32 V33 V34 V35 V36 V37 V38 V39 V40</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true"></a><span class="co">#&gt; 45   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   1</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true"></a><span class="co">#&gt; 46   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   1</span></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true"></a><span class="co">#&gt; 47   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true"></a><span class="co">#&gt; 48   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true"></a><span class="co">#&gt; 49   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true"></a><span class="co">#&gt; 50   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true"></a><span class="co">#&gt;    V41 V42 V43 V44 V45 V46 V47 V48 V49 V50</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true"></a><span class="co">#&gt; 45   0   0   0   0   0   1   1   0   0   0</span></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true"></a><span class="co">#&gt; 46   0   0   0   0   1   0   0   0   1   0</span></span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true"></a><span class="co">#&gt; 47   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true"></a><span class="co">#&gt; 48   0   0   0   0   0   1   0   0   1   0</span></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true"></a><span class="co">#&gt; 49   0   0   0   0   0   1   0   1   0   0</span></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true"></a><span class="co">#&gt; 50   0   0   0   0   0   0   0   0   0   0</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true"></a><span class="co"># and at the alcohol variable</span></span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true"></a>s50a</span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true"></a><span class="co">#&gt;    V1 V2 V3</span></span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true"></a><span class="co">#&gt; 1   3  1  3</span></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true"></a><span class="co">#&gt; 2   2  2  2</span></span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true"></a><span class="co">#&gt; 3   2  3  3</span></span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true"></a><span class="co">#&gt; 4   2  3  2</span></span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true"></a><span class="co">#&gt; 5   3  3  4</span></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true"></a><span class="co">#&gt; 6   4  4  4</span></span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true"></a><span class="co">#&gt; 7   4  4  3</span></span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true"></a><span class="co">#&gt; 8   4  5  4</span></span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true"></a><span class="co">#&gt; 9   2  2  2</span></span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true"></a><span class="co">#&gt; 10  4  5  4</span></span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true"></a><span class="co">#&gt; 11  5  5  5</span></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true"></a><span class="co">#&gt; 12  5  5  5</span></span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true"></a><span class="co">#&gt; 13  3  2  2</span></span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true"></a><span class="co">#&gt; 14  3  4  3</span></span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true"></a><span class="co">#&gt; 15  4  4  5</span></span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true"></a><span class="co">#&gt; 16  4  5  4</span></span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true"></a><span class="co">#&gt; 17  2  4  4</span></span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true"></a><span class="co">#&gt; 18  4  3  3</span></span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true"></a><span class="co">#&gt; 19  3  5  5</span></span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true"></a><span class="co">#&gt; 20  2  3  3</span></span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true"></a><span class="co">#&gt; 21  1  1  3</span></span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true"></a><span class="co">#&gt; 22  3  2  3</span></span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true"></a><span class="co">#&gt; 23  4  4  2</span></span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true"></a><span class="co">#&gt; 24  3  3  3</span></span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true"></a><span class="co">#&gt; 25  3  4  4</span></span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true"></a><span class="co">#&gt; 26  4  4  3</span></span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true"></a><span class="co">#&gt; 27  2  2  3</span></span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true"></a><span class="co">#&gt; 28  2  2  4</span></span>
+<span id="cb5-82"><a href="#cb5-82" aria-hidden="true"></a><span class="co">#&gt; 29  3  3  3</span></span>
+<span id="cb5-83"><a href="#cb5-83" aria-hidden="true"></a><span class="co">#&gt; 30  1  3  4</span></span>
+<span id="cb5-84"><a href="#cb5-84" aria-hidden="true"></a><span class="co">#&gt; 31  4  4  4</span></span>
+<span id="cb5-85"><a href="#cb5-85" aria-hidden="true"></a><span class="co">#&gt; 32  4  2  4</span></span>
+<span id="cb5-86"><a href="#cb5-86" aria-hidden="true"></a><span class="co">#&gt; 33  3  4  3</span></span>
+<span id="cb5-87"><a href="#cb5-87" aria-hidden="true"></a><span class="co">#&gt; 34  2  2  2</span></span>
+<span id="cb5-88"><a href="#cb5-88" aria-hidden="true"></a><span class="co">#&gt; 35  3  3  4</span></span>
+<span id="cb5-89"><a href="#cb5-89" aria-hidden="true"></a><span class="co">#&gt; 36  4  4  4</span></span>
+<span id="cb5-90"><a href="#cb5-90" aria-hidden="true"></a><span class="co">#&gt; 37  2  2  3</span></span>
+<span id="cb5-91"><a href="#cb5-91" aria-hidden="true"></a><span class="co">#&gt; 38  3  3  4</span></span>
+<span id="cb5-92"><a href="#cb5-92" aria-hidden="true"></a><span class="co">#&gt; 39  2  2  3</span></span>
+<span id="cb5-93"><a href="#cb5-93" aria-hidden="true"></a><span class="co">#&gt; 40  1  1  1</span></span>
+<span id="cb5-94"><a href="#cb5-94" aria-hidden="true"></a><span class="co">#&gt; 41  4  3  4</span></span>
+<span id="cb5-95"><a href="#cb5-95" aria-hidden="true"></a><span class="co">#&gt; 42  4  5  5</span></span>
+<span id="cb5-96"><a href="#cb5-96" aria-hidden="true"></a><span class="co">#&gt; 43  2  2  4</span></span>
+<span id="cb5-97"><a href="#cb5-97" aria-hidden="true"></a><span class="co">#&gt; 44  5  5  5</span></span>
+<span id="cb5-98"><a href="#cb5-98" aria-hidden="true"></a><span class="co">#&gt; 45  2  2  2</span></span>
+<span id="cb5-99"><a href="#cb5-99" aria-hidden="true"></a><span class="co">#&gt; 46  2  2  2</span></span>
+<span id="cb5-100"><a href="#cb5-100" aria-hidden="true"></a><span class="co">#&gt; 47  2  2  2</span></span>
+<span id="cb5-101"><a href="#cb5-101" aria-hidden="true"></a><span class="co">#&gt; 48  2  3  4</span></span>
+<span id="cb5-102"><a href="#cb5-102" aria-hidden="true"></a><span class="co">#&gt; 49  1  2  3</span></span>
+<span id="cb5-103"><a href="#cb5-103" aria-hidden="true"></a><span class="co">#&gt; 50  1  2  3</span></span>
+<span id="cb5-104"><a href="#cb5-104" aria-hidden="true"></a><span class="co"># Now define the objects with the same names as above</span></span>
+<span id="cb5-105"><a href="#cb5-105" aria-hidden="true"></a><span class="co"># (this step is superfluous if you read the data already).</span></span>
+<span id="cb5-106"><a href="#cb5-106" aria-hidden="true"></a>        friend.data.w1 &lt;-<span class="st"> </span>s501</span>
+<span id="cb5-107"><a href="#cb5-107" aria-hidden="true"></a>        friend.data.w2 &lt;-<span class="st"> </span>s502</span>
+<span id="cb5-108"><a href="#cb5-108" aria-hidden="true"></a>        friend.data.w3 &lt;-<span class="st"> </span>s503</span>
+<span id="cb5-109"><a href="#cb5-109" aria-hidden="true"></a>        drink &lt;-<span class="st"> </span>s50a</span>
+<span id="cb5-110"><a href="#cb5-110" aria-hidden="true"></a>        smoke &lt;-<span class="st"> </span>s50s</span></code></pre></div>
+<p>Now the data must be given the specific roles of variables in an RSiena analysis.</p>
+</div>
+<div id="dependent-variable" class="section level1">
+<h1>Dependent variable</h1>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>?sienaDependent</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a><span class="co"># First create a 50 * 50 * 3 array composed of the 3 adjacency matrices</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>friendshipData &lt;-<span class="st"> </span><span class="kw">array</span>( <span class="kw">c</span>( friend.data.w1, friend.data.w2, friend.data.w3 ),</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>           <span class="dt">dim =</span> <span class="kw">c</span>( <span class="dv">50</span>, <span class="dv">50</span>, <span class="dv">3</span> ) )</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a><span class="co"># and next give this the role of the dependent variable:</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>    friendship &lt;-<span class="st"> </span><span class="kw">sienaDependent</span>(friendshipData)</span></code></pre></div>
+<p>What did we construct?</p>
+<pre><code>friendship</code></pre>
+<p>We also must prepare the objects that will be the explanatory variables.</p>
+</div>
+<div id="actor-covariates" class="section level1">
+<h1>Actor covariates</h1>
+<p>We use smoking for wave 1 as a constant actor covariate:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>smoke1 &lt;-<span class="st"> </span><span class="kw">coCovar</span>( smoke[ , <span class="dv">1</span> ] )</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a><span class="co"># A variable actor covariate is defined for drinking:</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a>alcohol &lt;-<span class="st"> </span><span class="kw">varCovar</span>( drink )</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a><span class="co"># (This choice is purely for the purpose of illustration here.)</span></span></code></pre></div>
+<p>Put the variables together in the data set for analysis</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a>?sienaDataCreate</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a>mydata &lt;-<span class="st"> </span><span class="kw">sienaDataCreate</span>( friendship, smoke1, alcohol )</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a><span class="co"># Check what we have</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a>mydata</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true"></a><span class="co">#&gt; Dependent variables:  friendship </span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true"></a><span class="co">#&gt; Number of observations: 3 </span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true"></a><span class="co">#&gt; Nodeset                  Actors </span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true"></a><span class="co">#&gt; Number of nodes              50 </span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true"></a><span class="co">#&gt; Dependent variable friendship      </span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true"></a><span class="co">#&gt; Type               oneMode         </span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true"></a><span class="co">#&gt; Observations       3               </span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true"></a><span class="co">#&gt; Nodeset            Actors          </span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true"></a><span class="co">#&gt; Densities          0.046 0.047 0.05</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true"></a><span class="co">#&gt; Constant covariates:  smoke1 </span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true"></a><span class="co">#&gt; Changing covariates:  alcohol</span></span></code></pre></div>
+<p>You can get an outline of the data set with some basic descriptives from</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a><span class="kw">print01Report</span>( mydata, <span class="dt">modelname=</span><span class="st">&quot;s50&quot;</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a><span class="co"># For the model specification we need to create the effects object</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true"></a>myeff &lt;-<span class="st"> </span><span class="kw">getEffects</span>( mydata )</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true"></a><span class="co"># All the effects that are available given the structure</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true"></a><span class="co"># of this data set can be seen from</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true"></a><span class="kw">effectsDocumentation</span>(myeff)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true"></a><span class="co"># For a precise description of all effects, see Chapter 12 in the RSiena manual.</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true"></a><span class="co"># A basic specification of the structural effects:</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true"></a>?includeEffects</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true"></a>myeff &lt;-<span class="st"> </span><span class="kw">includeEffects</span>( myeff, transTrip, cycle3)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true"></a><span class="co">#&gt;   effectName          include fix   test  initialValue parm</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true"></a><span class="co">#&gt; 1 transitive triplets TRUE    FALSE FALSE          0   0   </span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true"></a><span class="co">#&gt; 2 3-cycles            TRUE    FALSE FALSE          0   0</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true"></a><span class="co"># and some covariate effects:</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true"></a>myeff &lt;-<span class="st"> </span><span class="kw">includeEffects</span>( myeff, egoX, altX, simX, <span class="dt">interaction1 =</span> <span class="st">&quot;alcohol&quot;</span> )</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true"></a><span class="co">#&gt;   effectName         include fix   test  initialValue parm</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true"></a><span class="co">#&gt; 1 alcohol alter      TRUE    FALSE FALSE          0   0   </span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true"></a><span class="co">#&gt; 2 alcohol ego        TRUE    FALSE FALSE          0   0   </span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true"></a><span class="co">#&gt; 3 alcohol similarity TRUE    FALSE FALSE          0   0</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true"></a>myeff &lt;-<span class="st"> </span><span class="kw">includeEffects</span>( myeff, simX, <span class="dt">interaction1 =</span> <span class="st">&quot;smoke1&quot;</span> )</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true"></a><span class="co">#&gt;   effectName        include fix   test  initialValue parm</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true"></a><span class="co">#&gt; 1 smoke1 similarity TRUE    FALSE FALSE          0   0</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true"></a>myeff</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true"></a><span class="co">#&gt;    effectName                          include fix   test  initialValue parm</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true"></a><span class="co">#&gt; 1  constant friendship rate (period 1) TRUE    FALSE FALSE    4.69604   0   </span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true"></a><span class="co">#&gt; 2  constant friendship rate (period 2) TRUE    FALSE FALSE    4.32885   0   </span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true"></a><span class="co">#&gt; 3  outdegree (density)                 TRUE    FALSE FALSE   -1.46770   0   </span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true"></a><span class="co">#&gt; 4  reciprocity                         TRUE    FALSE FALSE    0.00000   0   </span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true"></a><span class="co">#&gt; 5  transitive triplets                 TRUE    FALSE FALSE    0.00000   0   </span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true"></a><span class="co">#&gt; 6  3-cycles                            TRUE    FALSE FALSE    0.00000   0   </span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true"></a><span class="co">#&gt; 7  smoke1 similarity                   TRUE    FALSE FALSE    0.00000   0   </span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true"></a><span class="co">#&gt; 8  alcohol alter                       TRUE    FALSE FALSE    0.00000   0   </span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true"></a><span class="co">#&gt; 9  alcohol ego                         TRUE    FALSE FALSE    0.00000   0   </span></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true"></a><span class="co">#&gt; 10 alcohol similarity                  TRUE    FALSE FALSE    0.00000   0</span></span></code></pre></div>
+<p>Create object with algorithm settings Accept defaults but specify name for output file (which you may replace by any name you prefer)</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a>?sienaAlgorithmCreate</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a>myalgorithm &lt;-<span class="st"> </span><span class="kw">sienaAlgorithmCreate</span>( <span class="dt">projname =</span> <span class="st">&#39;s50&#39;</span> )</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true"></a><span class="co">#&gt; If you use this algorithm object, siena07 will create an output file s50.txt .</span></span></code></pre></div>
+</div>
+<div id="estimate-parameters" class="section level1">
+<h1>Estimate parameters</h1>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a>?siena07</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true"></a>ans &lt;-<span class="st"> </span><span class="kw">siena07</span>( myalgorithm, <span class="dt">data =</span> mydata, <span class="dt">effects =</span> myeff)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true"></a>ans</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true"></a><span class="co">#&gt; Estimates, standard errors and convergence t-ratios</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true"></a><span class="co">#&gt;                                    Estimate   Standard   Convergence </span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true"></a><span class="co">#&gt;                                                 Error      t-ratio   </span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true"></a><span class="co">#&gt; Rate parameters: </span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true"></a><span class="co">#&gt;   0.1      Rate parameter period 1  6.6488  ( 1.1597   )             </span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true"></a><span class="co">#&gt;   0.2      Rate parameter period 2  5.2851  ( 0.8996   )             </span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true"></a><span class="co">#&gt; Other parameters: </span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true"></a><span class="co">#&gt;   1.  eval outdegree (density)     -2.7440  ( 0.1256   )   -0.0886   </span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true"></a><span class="co">#&gt;   2.  eval reciprocity              2.4506  ( 0.2155   )   -0.0398   </span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true"></a><span class="co">#&gt;   3.  eval transitive triplets      0.6692  ( 0.1474   )   -0.0578   </span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true"></a><span class="co">#&gt;   4.  eval 3-cycles                -0.0989  ( 0.2951   )   -0.0545   </span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true"></a><span class="co">#&gt;   5.  eval smoke1 similarity        0.2023  ( 0.2061   )   -0.0258   </span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true"></a><span class="co">#&gt;   6.  eval alcohol alter           -0.0130  ( 0.0674   )    0.0215   </span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true"></a><span class="co">#&gt;   7.  eval alcohol ego              0.0505  ( 0.0714   )   -0.0321   </span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true"></a><span class="co">#&gt;   8.  eval alcohol similarity       0.7377  ( 0.3033   )   -0.0772   </span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true"></a><span class="co">#&gt; Overall maximum convergence ratio:    0.1803 </span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true"></a><span class="co">#&gt; Total of 2355 iteration steps.</span></span></code></pre></div>
+<p>This gives results from a random starting point. To use a fixed starting point, use the “seed” parameter:</p>
+<pre><code># myalgorithm &lt;- sienaAlgorithmCreate( projname = &#39;s50&#39;, seed=435123 )</code></pre>
+<p>For checking convergence, look at the ‘Overall maximum convergence ratio’ mentioned under the parameter estimates.</p>
+<p>It can also be shown by requesting 0.1803416</p>
+<p>If this is less than 0.25, convergence is good. If convergence is inadequate, estimate once more, using the result obtained as the “previous answer” from which estimation continues:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a>ans &lt;-<span class="st"> </span><span class="kw">siena07</span>( myalgorithm, <span class="dt">data =</span> mydata, <span class="dt">effects =</span> myeff, <span class="dt">prevAns=</span>ans)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true"></a>ans</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true"></a><span class="co">#&gt; Estimates, standard errors and convergence t-ratios</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true"></a><span class="co">#&gt;                                    Estimate   Standard   Convergence </span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true"></a><span class="co">#&gt;                                                 Error      t-ratio   </span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true"></a><span class="co">#&gt; Rate parameters: </span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true"></a><span class="co">#&gt;   0.1      Rate parameter period 1  6.6232  ( 1.1692   )             </span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true"></a><span class="co">#&gt;   0.2      Rate parameter period 2  5.3234  ( 0.8868   )             </span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true"></a><span class="co">#&gt; Other parameters: </span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true"></a><span class="co">#&gt;   1.  eval outdegree (density)     -2.7325  ( 0.1249   )   -0.0159   </span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true"></a><span class="co">#&gt;   2.  eval reciprocity              2.4283  ( 0.2174   )    0.0045   </span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true"></a><span class="co">#&gt;   3.  eval transitive triplets      0.6415  ( 0.1459   )   -0.0087   </span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true"></a><span class="co">#&gt;   4.  eval 3-cycles                -0.0376  ( 0.2937   )    0.0165   </span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true"></a><span class="co">#&gt;   5.  eval smoke1 similarity        0.2010  ( 0.1984   )    0.0139   </span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true"></a><span class="co">#&gt;   6.  eval alcohol alter           -0.0117  ( 0.0790   )    0.0190   </span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true"></a><span class="co">#&gt;   7.  eval alcohol ego              0.0555  ( 0.0799   )   -0.0265   </span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true"></a><span class="co">#&gt;   8.  eval alcohol similarity       0.7300  ( 0.2858   )    0.0214   </span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true"></a><span class="co">#&gt; Overall maximum convergence ratio:    0.2360 </span></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true"></a><span class="co">#&gt; Total of 2454 iteration steps.</span></span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true"></a><span class="co"># If convergence is good, you can look at the estimates.</span></span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true"></a><span class="co"># More extensive results</span></span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true"></a><span class="kw">summary</span>(ans)</span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true"></a><span class="co">#&gt; Estimates, standard errors and convergence t-ratios</span></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true"></a><span class="co">#&gt;                                    Estimate   Standard   Convergence </span></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true"></a><span class="co">#&gt;                                                 Error      t-ratio   </span></span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true"></a><span class="co">#&gt; Rate parameters: </span></span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true"></a><span class="co">#&gt;   0.1      Rate parameter period 1  6.6232  ( 1.1692   )             </span></span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true"></a><span class="co">#&gt;   0.2      Rate parameter period 2  5.3234  ( 0.8868   )             </span></span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true"></a><span class="co">#&gt; Other parameters: </span></span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true"></a><span class="co">#&gt;   1.  eval outdegree (density)     -2.7325  ( 0.1249   )   -0.0159   </span></span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true"></a><span class="co">#&gt;   2.  eval reciprocity              2.4283  ( 0.2174   )    0.0045   </span></span>
+<span id="cb14-41"><a href="#cb14-41" aria-hidden="true"></a><span class="co">#&gt;   3.  eval transitive triplets      0.6415  ( 0.1459   )   -0.0087   </span></span>
+<span id="cb14-42"><a href="#cb14-42" aria-hidden="true"></a><span class="co">#&gt;   4.  eval 3-cycles                -0.0376  ( 0.2937   )    0.0165   </span></span>
+<span id="cb14-43"><a href="#cb14-43" aria-hidden="true"></a><span class="co">#&gt;   5.  eval smoke1 similarity        0.2010  ( 0.1984   )    0.0139   </span></span>
+<span id="cb14-44"><a href="#cb14-44" aria-hidden="true"></a><span class="co">#&gt;   6.  eval alcohol alter           -0.0117  ( 0.0790   )    0.0190   </span></span>
+<span id="cb14-45"><a href="#cb14-45" aria-hidden="true"></a><span class="co">#&gt;   7.  eval alcohol ego              0.0555  ( 0.0799   )   -0.0265   </span></span>
+<span id="cb14-46"><a href="#cb14-46" aria-hidden="true"></a><span class="co">#&gt;   8.  eval alcohol similarity       0.7300  ( 0.2858   )    0.0214   </span></span>
+<span id="cb14-47"><a href="#cb14-47" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-48"><a href="#cb14-48" aria-hidden="true"></a><span class="co">#&gt; Overall maximum convergence ratio:    0.2360 </span></span>
+<span id="cb14-49"><a href="#cb14-49" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-50"><a href="#cb14-50" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-51"><a href="#cb14-51" aria-hidden="true"></a><span class="co">#&gt; Total of 2454 iteration steps.</span></span>
+<span id="cb14-52"><a href="#cb14-52" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-53"><a href="#cb14-53" aria-hidden="true"></a><span class="co">#&gt; Covariance matrix of estimates (correlations below diagonal)</span></span>
+<span id="cb14-54"><a href="#cb14-54" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-55"><a href="#cb14-55" aria-hidden="true"></a><span class="co">#&gt;        0.016       -0.017       -0.005        0.002       -0.001        0.000       -0.001       -0.007</span></span>
+<span id="cb14-56"><a href="#cb14-56" aria-hidden="true"></a><span class="co">#&gt;       -0.615        0.047        0.007       -0.020        0.001        0.000        0.002       -0.003</span></span>
+<span id="cb14-57"><a href="#cb14-57" aria-hidden="true"></a><span class="co">#&gt;       -0.277        0.215        0.021       -0.036       -0.001        0.000       -0.001       -0.001</span></span>
+<span id="cb14-58"><a href="#cb14-58" aria-hidden="true"></a><span class="co">#&gt;        0.053       -0.306       -0.850        0.086       -0.002       -0.001        0.002        0.009</span></span>
+<span id="cb14-59"><a href="#cb14-59" aria-hidden="true"></a><span class="co">#&gt;       -0.060        0.030       -0.037       -0.041        0.039        0.005        0.002       -0.010</span></span>
+<span id="cb14-60"><a href="#cb14-60" aria-hidden="true"></a><span class="co">#&gt;        0.016       -0.015        0.016       -0.057        0.320        0.006       -0.003       -0.002</span></span>
+<span id="cb14-61"><a href="#cb14-61" aria-hidden="true"></a><span class="co">#&gt;       -0.090        0.116       -0.122        0.073        0.152       -0.450        0.006        0.001</span></span>
+<span id="cb14-62"><a href="#cb14-62" aria-hidden="true"></a><span class="co">#&gt;       -0.201       -0.042       -0.012        0.102       -0.170       -0.070        0.033        0.082</span></span>
+<span id="cb14-63"><a href="#cb14-63" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-64"><a href="#cb14-64" aria-hidden="true"></a><span class="co">#&gt; Derivative matrix of expected statistics X by parameters:</span></span>
+<span id="cb14-65"><a href="#cb14-65" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-66"><a href="#cb14-66" aria-hidden="true"></a><span class="co">#&gt;      282.325      223.142      469.493      150.503       26.051       18.528       30.955       19.725</span></span>
+<span id="cb14-67"><a href="#cb14-67" aria-hidden="true"></a><span class="co">#&gt;      126.367      135.084      239.293       79.339       13.147        4.709        6.197        8.885</span></span>
+<span id="cb14-68"><a href="#cb14-68" aria-hidden="true"></a><span class="co">#&gt;      327.361      296.361     1093.473      350.068       32.110       57.228       67.494       16.403</span></span>
+<span id="cb14-69"><a href="#cb14-69" aria-hidden="true"></a><span class="co">#&gt;      161.703      153.738      529.010      177.714       16.165       25.211       26.342        7.165</span></span>
+<span id="cb14-70"><a href="#cb14-70" aria-hidden="true"></a><span class="co">#&gt;       22.788       18.520       38.906       12.394       40.152      -52.788      -47.420        5.213</span></span>
+<span id="cb14-71"><a href="#cb14-71" aria-hidden="true"></a><span class="co">#&gt;       19.771       24.132       93.886       32.200      -50.955      334.078      229.139        1.636</span></span>
+<span id="cb14-72"><a href="#cb14-72" aria-hidden="true"></a><span class="co">#&gt;       25.256       20.419      106.420       32.227      -43.279      233.814      315.603       -0.626</span></span>
+<span id="cb14-73"><a href="#cb14-73" aria-hidden="true"></a><span class="co">#&gt;       19.092       15.906       13.796        4.216        5.427       -3.235       -2.663       14.792</span></span>
+<span id="cb14-74"><a href="#cb14-74" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-75"><a href="#cb14-75" aria-hidden="true"></a><span class="co">#&gt; Covariance matrix of X (correlations below diagonal):</span></span>
+<span id="cb14-76"><a href="#cb14-76" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb14-77"><a href="#cb14-77" aria-hidden="true"></a><span class="co">#&gt;      445.621      387.594     1054.657      340.705       39.678       48.694       62.428       29.355</span></span>
+<span id="cb14-78"><a href="#cb14-78" aria-hidden="true"></a><span class="co">#&gt;        0.927      392.404     1032.751      338.141       34.833       56.519       63.321       26.448</span></span>
+<span id="cb14-79"><a href="#cb14-79" aria-hidden="true"></a><span class="co">#&gt;        0.789        0.823     4012.814     1304.428       87.018      219.494      230.301       51.250</span></span>
+<span id="cb14-80"><a href="#cb14-80" aria-hidden="true"></a><span class="co">#&gt;        0.779        0.824        0.994      429.332       27.670       73.177       73.481       16.251</span></span>
+<span id="cb14-81"><a href="#cb14-81" aria-hidden="true"></a><span class="co">#&gt;        0.272        0.255        0.199        0.193       47.662      -70.644      -66.307        6.610</span></span>
+<span id="cb14-82"><a href="#cb14-82" aria-hidden="true"></a><span class="co">#&gt;        0.107        0.132        0.160        0.163       -0.473      468.227      378.248        1.521</span></span>
+<span id="cb14-83"><a href="#cb14-83" aria-hidden="true"></a><span class="co">#&gt;        0.140        0.152        0.172        0.168       -0.456        0.829      444.356        1.746</span></span>
+<span id="cb14-84"><a href="#cb14-84" aria-hidden="true"></a><span class="co">#&gt;        0.349        0.335        0.203        0.197        0.240        0.018        0.021       15.913</span></span></code></pre></div>
+<p>Still more extensive results are given in the output file s50.out in the current directory.</p>
+<p>Note that by putting an R command between parentheses (….), the result will also be printed to the screen. Next add the transitive reciprocated triplets effect, an interaction between transitive triplets and reciprocity,</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true"></a>(myeff &lt;-<span class="st"> </span><span class="kw">includeEffects</span>( myeff, transRecTrip))</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true"></a><span class="co">#&gt;   effectName                  include fix   test  initialValue parm</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true"></a><span class="co">#&gt; 1 transitive recipr. triplets TRUE    FALSE FALSE          0   0</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true"></a><span class="co">#&gt;    effectName                          include fix   test  initialValue parm</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true"></a><span class="co">#&gt; 1  constant friendship rate (period 1) TRUE    FALSE FALSE    4.69604   0   </span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true"></a><span class="co">#&gt; 2  constant friendship rate (period 2) TRUE    FALSE FALSE    4.32885   0   </span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true"></a><span class="co">#&gt; 3  outdegree (density)                 TRUE    FALSE FALSE   -1.46770   0   </span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true"></a><span class="co">#&gt; 4  reciprocity                         TRUE    FALSE FALSE    0.00000   0   </span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true"></a><span class="co">#&gt; 5  transitive triplets                 TRUE    FALSE FALSE    0.00000   0   </span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true"></a><span class="co">#&gt; 6  transitive recipr. triplets         TRUE    FALSE FALSE    0.00000   0   </span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true"></a><span class="co">#&gt; 7  3-cycles                            TRUE    FALSE FALSE    0.00000   0   </span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true"></a><span class="co">#&gt; 8  smoke1 similarity                   TRUE    FALSE FALSE    0.00000   0   </span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true"></a><span class="co">#&gt; 9  alcohol alter                       TRUE    FALSE FALSE    0.00000   0   </span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true"></a><span class="co">#&gt; 10 alcohol ego                         TRUE    FALSE FALSE    0.00000   0   </span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true"></a><span class="co">#&gt; 11 alcohol similarity                  TRUE    FALSE FALSE    0.00000   0</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true"></a>(ans1 &lt;-<span class="st"> </span><span class="kw">siena07</span>( myalgorithm, <span class="dt">data =</span> mydata, <span class="dt">effects =</span> myeff, <span class="dt">prevAns=</span>ans))</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true"></a><span class="co">#&gt; Estimates, standard errors and convergence t-ratios</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true"></a><span class="co">#&gt;                                        Estimate   Standard   Convergence </span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true"></a><span class="co">#&gt;                                                     Error      t-ratio   </span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true"></a><span class="co">#&gt; Rate parameters: </span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true"></a><span class="co">#&gt;   0.1      Rate parameter period 1      6.2277  ( 1.0265   )             </span></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true"></a><span class="co">#&gt;   0.2      Rate parameter period 2      5.0783  ( 0.8455   )             </span></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true"></a><span class="co">#&gt; Other parameters: </span></span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true"></a><span class="co">#&gt;   1.  eval outdegree (density)         -2.9396  ( 0.1480   )    0.0078   </span></span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true"></a><span class="co">#&gt;   2.  eval reciprocity                  2.8939  ( 0.2620   )    0.0092   </span></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true"></a><span class="co">#&gt;   3.  eval transitive triplets          0.9081  ( 0.1525   )   -0.0089   </span></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true"></a><span class="co">#&gt;   4.  eval transitive recipr. triplets -0.9095  ( 0.2708   )   -0.0219   </span></span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true"></a><span class="co">#&gt;   5.  eval 3-cycles                     0.5079  ( 0.2953   )   -0.0214   </span></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true"></a><span class="co">#&gt;   6.  eval smoke1 similarity            0.1663  ( 0.2136   )    0.0006   </span></span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true"></a><span class="co">#&gt;   7.  eval alcohol alter               -0.0234  ( 0.0785   )    0.0208   </span></span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true"></a><span class="co">#&gt;   8.  eval alcohol ego                  0.0440  ( 0.0835   )    0.0226   </span></span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true"></a><span class="co">#&gt;   9.  eval alcohol similarity           0.7201  ( 0.2985   )   -0.0481   </span></span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true"></a><span class="co">#&gt; Overall maximum convergence ratio:    0.1236 </span></span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true"></a><span class="co">#&gt; Total of 2677 iteration steps.</span></span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true"></a><span class="co"># If necessary, repeat the estimation with the new result:</span></span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true"></a>(ans1 &lt;-<span class="st"> </span><span class="kw">siena07</span>( myalgorithm, <span class="dt">data =</span> mydata, <span class="dt">effects =</span> myeff, <span class="dt">prevAns=</span>ans1))</span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true"></a><span class="co">#&gt; Estimates, standard errors and convergence t-ratios</span></span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true"></a><span class="co">#&gt;                                        Estimate   Standard   Convergence </span></span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true"></a><span class="co">#&gt;                                                     Error      t-ratio   </span></span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb15-48"><a href="#cb15-48" aria-hidden="true"></a><span class="co">#&gt; Rate parameters: </span></span>
+<span id="cb15-49"><a href="#cb15-49" aria-hidden="true"></a><span class="co">#&gt;   0.1      Rate parameter period 1      6.2272  ( 1.0380   )             </span></span>
+<span id="cb15-50"><a href="#cb15-50" aria-hidden="true"></a><span class="co">#&gt;   0.2      Rate parameter period 2      5.1382  ( 0.8566   )             </span></span>
+<span id="cb15-51"><a href="#cb15-51" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb15-52"><a href="#cb15-52" aria-hidden="true"></a><span class="co">#&gt; Other parameters: </span></span>
+<span id="cb15-53"><a href="#cb15-53" aria-hidden="true"></a><span class="co">#&gt;   1.  eval outdegree (density)         -2.9398  ( 0.1493   )    0.0056   </span></span>
+<span id="cb15-54"><a href="#cb15-54" aria-hidden="true"></a><span class="co">#&gt;   2.  eval reciprocity                  2.8891  ( 0.2599   )    0.0548   </span></span>
+<span id="cb15-55"><a href="#cb15-55" aria-hidden="true"></a><span class="co">#&gt;   3.  eval transitive triplets          0.8849  ( 0.1479   )    0.0591   </span></span>
+<span id="cb15-56"><a href="#cb15-56" aria-hidden="true"></a><span class="co">#&gt;   4.  eval transitive recipr. triplets -0.8820  ( 0.2745   )    0.0828   </span></span>
+<span id="cb15-57"><a href="#cb15-57" aria-hidden="true"></a><span class="co">#&gt;   5.  eval 3-cycles                     0.5357  ( 0.3010   )    0.0659   </span></span>
+<span id="cb15-58"><a href="#cb15-58" aria-hidden="true"></a><span class="co">#&gt;   6.  eval smoke1 similarity            0.1632  ( 0.2199   )   -0.0139   </span></span>
+<span id="cb15-59"><a href="#cb15-59" aria-hidden="true"></a><span class="co">#&gt;   7.  eval alcohol alter               -0.0222  ( 0.0795   )    0.0636   </span></span>
+<span id="cb15-60"><a href="#cb15-60" aria-hidden="true"></a><span class="co">#&gt;   8.  eval alcohol ego                  0.0425  ( 0.0754   )    0.0151   </span></span>
+<span id="cb15-61"><a href="#cb15-61" aria-hidden="true"></a><span class="co">#&gt;   9.  eval alcohol similarity           0.7210  ( 0.3068   )   -0.0575   </span></span>
+<span id="cb15-62"><a href="#cb15-62" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb15-63"><a href="#cb15-63" aria-hidden="true"></a><span class="co">#&gt; Overall maximum convergence ratio:    0.2006 </span></span>
+<span id="cb15-64"><a href="#cb15-64" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb15-65"><a href="#cb15-65" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb15-66"><a href="#cb15-66" aria-hidden="true"></a><span class="co">#&gt; Total of 2448 iteration steps.</span></span></code></pre></div>
+<p>This might still not have an overall maximum convergence ratio less than 0.25. If not, you could go on once more.</p>
+<p>Inspect the file s50.txt in your working directory and understand the meaning of its contents.</p>
+<p>To have a joint test of the three effects of alcohol:</p>
+<pre><code>?Multipar.RSiena
+Multipar.RSiena(ans1, 7:9)</code></pre>
+<p>Focusing on alcohol similarity, the effect is significant; diluting the effects of alcohol by also considering ego and alter, the three effects simultaneously are not significant.</p>
+</div>
+<div id="assignment-1" class="section level1">
+<h1>Assignment 1</h1>
+<div id="a." class="section level2">
+<h2>1a.</h2>
+<p>Drop the effect of smoke1 similarity and estimate the model again. Do this by the function setEffects() using the &lt;<include>&gt; parameter. Give the changed effects object and the new answer object new names, such as effects1 and ans1, to distinguish them.</p>
+</div>
+<div id="b." class="section level2">
+<h2>1b.</h2>
+<p>Change the three effects of alcohol to the single effect of alcohol similarity, and estimate again.</p>
+</div>
+</div>
+<div id="networks-and-behavior-study" class="section level1">
+<h1>Networks and behavior study</h1>
+<p>Now we redefine the role of alcohol drinking as a dependent behaviour variable.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true"></a><span class="co"># Once again, look at the help file</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true"></a>?sienaDependent</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true"></a><span class="co"># now paying special attention to the &lt;&lt;type&gt;&gt; parameter.</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true"></a>drinking &lt;-<span class="st"> </span><span class="kw">sienaDependent</span>( drink, <span class="dt">type =</span> <span class="st">&quot;behavior&quot;</span> )</span></code></pre></div>
+<p>Put the variables together in the data set for analysis</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true"></a>NBdata &lt;-<span class="st"> </span><span class="kw">sienaDataCreate</span>( friendship, smoke1, drinking )</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true"></a>NBdata</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true"></a><span class="co">#&gt; Dependent variables:  friendship, drinking </span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true"></a><span class="co">#&gt; Number of observations: 3 </span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true"></a><span class="co">#&gt; Nodeset                  Actors </span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true"></a><span class="co">#&gt; Number of nodes              50 </span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true"></a><span class="co">#&gt; Dependent variable friendship      </span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true"></a><span class="co">#&gt; Type               oneMode         </span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true"></a><span class="co">#&gt; Observations       3               </span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true"></a><span class="co">#&gt; Nodeset            Actors          </span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true"></a><span class="co">#&gt; Densities          0.046 0.047 0.05</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true"></a><span class="co">#&gt; Dependent variable drinking</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true"></a><span class="co">#&gt; Type               behavior</span></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true"></a><span class="co">#&gt; Observations       3       </span></span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true"></a><span class="co">#&gt; Nodeset            Actors  </span></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true"></a><span class="co">#&gt; Range              1 - 5   </span></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true"></a><span class="co">#&gt; Constant covariates:  smoke1</span></span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true"></a>NBeff &lt;-<span class="st"> </span><span class="kw">getEffects</span>( NBdata )</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true"></a><span class="kw">effectsDocumentation</span>(NBeff)</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true"></a>NBeff &lt;-<span class="st"> </span><span class="kw">includeEffects</span>( NBeff, transTrip, transRecTrip )</span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true"></a><span class="co">#&gt;   effectName                  include fix   test  initialValue parm</span></span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true"></a><span class="co">#&gt; 1 transitive triplets         TRUE    FALSE FALSE          0   0   </span></span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true"></a><span class="co">#&gt; 2 transitive recipr. triplets TRUE    FALSE FALSE          0   0</span></span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true"></a>NBeff &lt;-<span class="st"> </span><span class="kw">includeEffects</span>( NBeff, egoX, egoSqX, altX, altSqX, diffSqX,</span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true"></a>                         <span class="dt">interaction1 =</span> <span class="st">&quot;drinking&quot;</span> )</span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true"></a><span class="co">#&gt;   effectName             include fix   test  initialValue parm</span></span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true"></a><span class="co">#&gt; 1 drinking alter         TRUE    FALSE FALSE          0   0   </span></span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true"></a><span class="co">#&gt; 2 drinking squared alter TRUE    FALSE FALSE          0   0   </span></span>
+<span id="cb18-33"><a href="#cb18-33" aria-hidden="true"></a><span class="co">#&gt; 3 drinking ego           TRUE    FALSE FALSE          0   0   </span></span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true"></a><span class="co">#&gt; 4 drinking squared ego   TRUE    FALSE FALSE          0   0   </span></span>
+<span id="cb18-35"><a href="#cb18-35" aria-hidden="true"></a><span class="co">#&gt; 5 drinking diff. squared TRUE    FALSE FALSE          0   0</span></span>
+<span id="cb18-36"><a href="#cb18-36" aria-hidden="true"></a>NBeff &lt;-<span class="st"> </span><span class="kw">includeEffects</span>( NBeff, egoX, altX, simX, <span class="dt">interaction1 =</span> <span class="st">&quot;smoke1&quot;</span> )</span>
+<span id="cb18-37"><a href="#cb18-37" aria-hidden="true"></a><span class="co">#&gt;   effectName        include fix   test  initialValue parm</span></span>
+<span id="cb18-38"><a href="#cb18-38" aria-hidden="true"></a><span class="co">#&gt; 1 smoke1 alter      TRUE    FALSE FALSE          0   0   </span></span>
+<span id="cb18-39"><a href="#cb18-39" aria-hidden="true"></a><span class="co">#&gt; 2 smoke1 ego        TRUE    FALSE FALSE          0   0   </span></span>
+<span id="cb18-40"><a href="#cb18-40" aria-hidden="true"></a><span class="co">#&gt; 3 smoke1 similarity TRUE    FALSE FALSE          0   0</span></span>
+<span id="cb18-41"><a href="#cb18-41" aria-hidden="true"></a>NBeff</span>
+<span id="cb18-42"><a href="#cb18-42" aria-hidden="true"></a><span class="co">#&gt;    name       effectName                          include fix   test </span></span>
+<span id="cb18-43"><a href="#cb18-43" aria-hidden="true"></a><span class="co">#&gt; 1  friendship constant friendship rate (period 1) TRUE    FALSE FALSE</span></span>
+<span id="cb18-44"><a href="#cb18-44" aria-hidden="true"></a><span class="co">#&gt; 2  friendship constant friendship rate (period 2) TRUE    FALSE FALSE</span></span>
+<span id="cb18-45"><a href="#cb18-45" aria-hidden="true"></a><span class="co">#&gt; 3  friendship outdegree (density)                 TRUE    FALSE FALSE</span></span>
+<span id="cb18-46"><a href="#cb18-46" aria-hidden="true"></a><span class="co">#&gt; 4  friendship reciprocity                         TRUE    FALSE FALSE</span></span>
+<span id="cb18-47"><a href="#cb18-47" aria-hidden="true"></a><span class="co">#&gt; 5  friendship transitive triplets                 TRUE    FALSE FALSE</span></span>
+<span id="cb18-48"><a href="#cb18-48" aria-hidden="true"></a><span class="co">#&gt; 6  friendship transitive recipr. triplets         TRUE    FALSE FALSE</span></span>
+<span id="cb18-49"><a href="#cb18-49" aria-hidden="true"></a><span class="co">#&gt; 7  friendship smoke1 alter                        TRUE    FALSE FALSE</span></span>
+<span id="cb18-50"><a href="#cb18-50" aria-hidden="true"></a><span class="co">#&gt; 8  friendship smoke1 ego                          TRUE    FALSE FALSE</span></span>
+<span id="cb18-51"><a href="#cb18-51" aria-hidden="true"></a><span class="co">#&gt; 9  friendship smoke1 similarity                   TRUE    FALSE FALSE</span></span>
+<span id="cb18-52"><a href="#cb18-52" aria-hidden="true"></a><span class="co">#&gt; 10 friendship drinking alter                      TRUE    FALSE FALSE</span></span>
+<span id="cb18-53"><a href="#cb18-53" aria-hidden="true"></a><span class="co">#&gt; 11 friendship drinking squared alter              TRUE    FALSE FALSE</span></span>
+<span id="cb18-54"><a href="#cb18-54" aria-hidden="true"></a><span class="co">#&gt; 12 friendship drinking ego                        TRUE    FALSE FALSE</span></span>
+<span id="cb18-55"><a href="#cb18-55" aria-hidden="true"></a><span class="co">#&gt; 13 friendship drinking squared ego                TRUE    FALSE FALSE</span></span>
+<span id="cb18-56"><a href="#cb18-56" aria-hidden="true"></a><span class="co">#&gt; 14 friendship drinking diff. squared              TRUE    FALSE FALSE</span></span>
+<span id="cb18-57"><a href="#cb18-57" aria-hidden="true"></a><span class="co">#&gt; 15 drinking   rate drinking (period 1)            TRUE    FALSE FALSE</span></span>
+<span id="cb18-58"><a href="#cb18-58" aria-hidden="true"></a><span class="co">#&gt; 16 drinking   rate drinking (period 2)            TRUE    FALSE FALSE</span></span>
+<span id="cb18-59"><a href="#cb18-59" aria-hidden="true"></a><span class="co">#&gt; 17 drinking   drinking linear shape               TRUE    FALSE FALSE</span></span>
+<span id="cb18-60"><a href="#cb18-60" aria-hidden="true"></a><span class="co">#&gt; 18 drinking   drinking quadratic shape            TRUE    FALSE FALSE</span></span>
+<span id="cb18-61"><a href="#cb18-61" aria-hidden="true"></a><span class="co">#&gt;    initialValue parm</span></span>
+<span id="cb18-62"><a href="#cb18-62" aria-hidden="true"></a><span class="co">#&gt; 1     4.69604   0   </span></span>
+<span id="cb18-63"><a href="#cb18-63" aria-hidden="true"></a><span class="co">#&gt; 2     4.32885   0   </span></span>
+<span id="cb18-64"><a href="#cb18-64" aria-hidden="true"></a><span class="co">#&gt; 3    -1.46770   0   </span></span>
+<span id="cb18-65"><a href="#cb18-65" aria-hidden="true"></a><span class="co">#&gt; 4     0.00000   0   </span></span>
+<span id="cb18-66"><a href="#cb18-66" aria-hidden="true"></a><span class="co">#&gt; 5     0.00000   0   </span></span>
+<span id="cb18-67"><a href="#cb18-67" aria-hidden="true"></a><span class="co">#&gt; 6     0.00000   0   </span></span>
+<span id="cb18-68"><a href="#cb18-68" aria-hidden="true"></a><span class="co">#&gt; 7     0.00000   0   </span></span>
+<span id="cb18-69"><a href="#cb18-69" aria-hidden="true"></a><span class="co">#&gt; 8     0.00000   0   </span></span>
+<span id="cb18-70"><a href="#cb18-70" aria-hidden="true"></a><span class="co">#&gt; 9     0.00000   0   </span></span>
+<span id="cb18-71"><a href="#cb18-71" aria-hidden="true"></a><span class="co">#&gt; 10    0.00000   0   </span></span>
+<span id="cb18-72"><a href="#cb18-72" aria-hidden="true"></a><span class="co">#&gt; 11    0.00000   0   </span></span>
+<span id="cb18-73"><a href="#cb18-73" aria-hidden="true"></a><span class="co">#&gt; 12    0.00000   0   </span></span>
+<span id="cb18-74"><a href="#cb18-74" aria-hidden="true"></a><span class="co">#&gt; 13    0.00000   0   </span></span>
+<span id="cb18-75"><a href="#cb18-75" aria-hidden="true"></a><span class="co">#&gt; 14    0.00000   0   </span></span>
+<span id="cb18-76"><a href="#cb18-76" aria-hidden="true"></a><span class="co">#&gt; 15    0.70571   0   </span></span>
+<span id="cb18-77"><a href="#cb18-77" aria-hidden="true"></a><span class="co">#&gt; 16    0.84939   0   </span></span>
+<span id="cb18-78"><a href="#cb18-78" aria-hidden="true"></a><span class="co">#&gt; 17    0.32237   0   </span></span>
+<span id="cb18-79"><a href="#cb18-79" aria-hidden="true"></a><span class="co">#&gt; 18    0.00000   0</span></span>
+<span id="cb18-80"><a href="#cb18-80" aria-hidden="true"></a><span class="co"># For including effects also for the dependent behaviour variable, see</span></span>
+<span id="cb18-81"><a href="#cb18-81" aria-hidden="true"></a>?includeEffects</span>
+<span id="cb18-82"><a href="#cb18-82" aria-hidden="true"></a>NBeff &lt;-<span class="st"> </span><span class="kw">includeEffects</span>( NBeff, avAlt, <span class="dt">name=</span><span class="st">&quot;drinking&quot;</span>,</span>
+<span id="cb18-83"><a href="#cb18-83" aria-hidden="true"></a>                         <span class="dt">interaction1 =</span> <span class="st">&quot;friendship&quot;</span> )</span>
+<span id="cb18-84"><a href="#cb18-84" aria-hidden="true"></a><span class="co">#&gt;   effectName             include fix   test  initialValue parm</span></span>
+<span id="cb18-85"><a href="#cb18-85" aria-hidden="true"></a><span class="co">#&gt; 1 drinking average alter TRUE    FALSE FALSE          0   0</span></span>
+<span id="cb18-86"><a href="#cb18-86" aria-hidden="true"></a>NBeff</span>
+<span id="cb18-87"><a href="#cb18-87" aria-hidden="true"></a><span class="co">#&gt;    name       effectName                          include fix   test </span></span>
+<span id="cb18-88"><a href="#cb18-88" aria-hidden="true"></a><span class="co">#&gt; 1  friendship constant friendship rate (period 1) TRUE    FALSE FALSE</span></span>
+<span id="cb18-89"><a href="#cb18-89" aria-hidden="true"></a><span class="co">#&gt; 2  friendship constant friendship rate (period 2) TRUE    FALSE FALSE</span></span>
+<span id="cb18-90"><a href="#cb18-90" aria-hidden="true"></a><span class="co">#&gt; 3  friendship outdegree (density)                 TRUE    FALSE FALSE</span></span>
+<span id="cb18-91"><a href="#cb18-91" aria-hidden="true"></a><span class="co">#&gt; 4  friendship reciprocity                         TRUE    FALSE FALSE</span></span>
+<span id="cb18-92"><a href="#cb18-92" aria-hidden="true"></a><span class="co">#&gt; 5  friendship transitive triplets                 TRUE    FALSE FALSE</span></span>
+<span id="cb18-93"><a href="#cb18-93" aria-hidden="true"></a><span class="co">#&gt; 6  friendship transitive recipr. triplets         TRUE    FALSE FALSE</span></span>
+<span id="cb18-94"><a href="#cb18-94" aria-hidden="true"></a><span class="co">#&gt; 7  friendship smoke1 alter                        TRUE    FALSE FALSE</span></span>
+<span id="cb18-95"><a href="#cb18-95" aria-hidden="true"></a><span class="co">#&gt; 8  friendship smoke1 ego                          TRUE    FALSE FALSE</span></span>
+<span id="cb18-96"><a href="#cb18-96" aria-hidden="true"></a><span class="co">#&gt; 9  friendship smoke1 similarity                   TRUE    FALSE FALSE</span></span>
+<span id="cb18-97"><a href="#cb18-97" aria-hidden="true"></a><span class="co">#&gt; 10 friendship drinking alter                      TRUE    FALSE FALSE</span></span>
+<span id="cb18-98"><a href="#cb18-98" aria-hidden="true"></a><span class="co">#&gt; 11 friendship drinking squared alter              TRUE    FALSE FALSE</span></span>
+<span id="cb18-99"><a href="#cb18-99" aria-hidden="true"></a><span class="co">#&gt; 12 friendship drinking ego                        TRUE    FALSE FALSE</span></span>
+<span id="cb18-100"><a href="#cb18-100" aria-hidden="true"></a><span class="co">#&gt; 13 friendship drinking squared ego                TRUE    FALSE FALSE</span></span>
+<span id="cb18-101"><a href="#cb18-101" aria-hidden="true"></a><span class="co">#&gt; 14 friendship drinking diff. squared              TRUE    FALSE FALSE</span></span>
+<span id="cb18-102"><a href="#cb18-102" aria-hidden="true"></a><span class="co">#&gt; 15 drinking   rate drinking (period 1)            TRUE    FALSE FALSE</span></span>
+<span id="cb18-103"><a href="#cb18-103" aria-hidden="true"></a><span class="co">#&gt; 16 drinking   rate drinking (period 2)            TRUE    FALSE FALSE</span></span>
+<span id="cb18-104"><a href="#cb18-104" aria-hidden="true"></a><span class="co">#&gt; 17 drinking   drinking linear shape               TRUE    FALSE FALSE</span></span>
+<span id="cb18-105"><a href="#cb18-105" aria-hidden="true"></a><span class="co">#&gt; 18 drinking   drinking quadratic shape            TRUE    FALSE FALSE</span></span>
+<span id="cb18-106"><a href="#cb18-106" aria-hidden="true"></a><span class="co">#&gt; 19 drinking   drinking average alter              TRUE    FALSE FALSE</span></span>
+<span id="cb18-107"><a href="#cb18-107" aria-hidden="true"></a><span class="co">#&gt;    initialValue parm</span></span>
+<span id="cb18-108"><a href="#cb18-108" aria-hidden="true"></a><span class="co">#&gt; 1     4.69604   0   </span></span>
+<span id="cb18-109"><a href="#cb18-109" aria-hidden="true"></a><span class="co">#&gt; 2     4.32885   0   </span></span>
+<span id="cb18-110"><a href="#cb18-110" aria-hidden="true"></a><span class="co">#&gt; 3    -1.46770   0   </span></span>
+<span id="cb18-111"><a href="#cb18-111" aria-hidden="true"></a><span class="co">#&gt; 4     0.00000   0   </span></span>
+<span id="cb18-112"><a href="#cb18-112" aria-hidden="true"></a><span class="co">#&gt; 5     0.00000   0   </span></span>
+<span id="cb18-113"><a href="#cb18-113" aria-hidden="true"></a><span class="co">#&gt; 6     0.00000   0   </span></span>
+<span id="cb18-114"><a href="#cb18-114" aria-hidden="true"></a><span class="co">#&gt; 7     0.00000   0   </span></span>
+<span id="cb18-115"><a href="#cb18-115" aria-hidden="true"></a><span class="co">#&gt; 8     0.00000   0   </span></span>
+<span id="cb18-116"><a href="#cb18-116" aria-hidden="true"></a><span class="co">#&gt; 9     0.00000   0   </span></span>
+<span id="cb18-117"><a href="#cb18-117" aria-hidden="true"></a><span class="co">#&gt; 10    0.00000   0   </span></span>
+<span id="cb18-118"><a href="#cb18-118" aria-hidden="true"></a><span class="co">#&gt; 11    0.00000   0   </span></span>
+<span id="cb18-119"><a href="#cb18-119" aria-hidden="true"></a><span class="co">#&gt; 12    0.00000   0   </span></span>
+<span id="cb18-120"><a href="#cb18-120" aria-hidden="true"></a><span class="co">#&gt; 13    0.00000   0   </span></span>
+<span id="cb18-121"><a href="#cb18-121" aria-hidden="true"></a><span class="co">#&gt; 14    0.00000   0   </span></span>
+<span id="cb18-122"><a href="#cb18-122" aria-hidden="true"></a><span class="co">#&gt; 15    0.70571   0   </span></span>
+<span id="cb18-123"><a href="#cb18-123" aria-hidden="true"></a><span class="co">#&gt; 16    0.84939   0   </span></span>
+<span id="cb18-124"><a href="#cb18-124" aria-hidden="true"></a><span class="co">#&gt; 17    0.32237   0   </span></span>
+<span id="cb18-125"><a href="#cb18-125" aria-hidden="true"></a><span class="co">#&gt; 18    0.00000   0   </span></span>
+<span id="cb18-126"><a href="#cb18-126" aria-hidden="true"></a><span class="co">#&gt; 19    0.00000   0</span></span>
+<span id="cb18-127"><a href="#cb18-127" aria-hidden="true"></a><span class="co"># Define an algorithm with a new project name</span></span>
+<span id="cb18-128"><a href="#cb18-128" aria-hidden="true"></a>myalgorithm1 &lt;-<span class="st"> </span><span class="kw">sienaAlgorithmCreate</span>( <span class="dt">projname =</span> <span class="st">&#39;s50_NB&#39;</span> )</span>
+<span id="cb18-129"><a href="#cb18-129" aria-hidden="true"></a><span class="co">#&gt; If you use this algorithm object, siena07 will create an output file s50_NB.txt .</span></span>
+<span id="cb18-130"><a href="#cb18-130" aria-hidden="true"></a></span>
+<span id="cb18-131"><a href="#cb18-131" aria-hidden="true"></a><span class="co"># Estimate again, using the second algorithm right from the start.</span></span>
+<span id="cb18-132"><a href="#cb18-132" aria-hidden="true"></a>NBans &lt;-<span class="st"> </span><span class="kw">siena07</span>( myalgorithm1, <span class="dt">data =</span> NBdata, <span class="dt">effects =</span> NBeff)</span>
+<span id="cb18-133"><a href="#cb18-133" aria-hidden="true"></a><span class="co"># You may improve convergence (considering the overall maximum</span></span>
+<span id="cb18-134"><a href="#cb18-134" aria-hidden="true"></a><span class="co"># convergence ratio) by repeated estimation in the same way as above.</span></span>
+<span id="cb18-135"><a href="#cb18-135" aria-hidden="true"></a></span>
+<span id="cb18-136"><a href="#cb18-136" aria-hidden="true"></a><span class="co"># Look at results</span></span>
+<span id="cb18-137"><a href="#cb18-137" aria-hidden="true"></a>NBans</span>
+<span id="cb18-138"><a href="#cb18-138" aria-hidden="true"></a><span class="co">#&gt; Estimates, standard errors and convergence t-ratios</span></span>
+<span id="cb18-139"><a href="#cb18-139" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb18-140"><a href="#cb18-140" aria-hidden="true"></a><span class="co">#&gt;                                                Estimate   Standard   Convergence </span></span>
+<span id="cb18-141"><a href="#cb18-141" aria-hidden="true"></a><span class="co">#&gt;                                                             Error      t-ratio   </span></span>
+<span id="cb18-142"><a href="#cb18-142" aria-hidden="true"></a><span class="co">#&gt; Network Dynamics </span></span>
+<span id="cb18-143"><a href="#cb18-143" aria-hidden="true"></a><span class="co">#&gt;    1. rate constant friendship rate (period 1)  6.3315  ( 1.1202   )    0.0392   </span></span>
+<span id="cb18-144"><a href="#cb18-144" aria-hidden="true"></a><span class="co">#&gt;    2. rate constant friendship rate (period 2)  5.0594  ( 0.8609   )   -0.0319   </span></span>
+<span id="cb18-145"><a href="#cb18-145" aria-hidden="true"></a><span class="co">#&gt;    3. eval outdegree (density)                 -2.8298  ( 0.2408   )    0.0138   </span></span>
+<span id="cb18-146"><a href="#cb18-146" aria-hidden="true"></a><span class="co">#&gt;    4. eval reciprocity                          2.8344  ( 0.3002   )    0.0500   </span></span>
+<span id="cb18-147"><a href="#cb18-147" aria-hidden="true"></a><span class="co">#&gt;    5. eval transitive triplets                  0.8913  ( 0.1597   )    0.0633   </span></span>
+<span id="cb18-148"><a href="#cb18-148" aria-hidden="true"></a><span class="co">#&gt;    6. eval transitive recipr. triplets         -0.5034  ( 0.2548   )    0.0797   </span></span>
+<span id="cb18-149"><a href="#cb18-149" aria-hidden="true"></a><span class="co">#&gt;    7. eval smoke1 alter                         0.0783  ( 0.1585   )   -0.0466   </span></span>
+<span id="cb18-150"><a href="#cb18-150" aria-hidden="true"></a><span class="co">#&gt;    8. eval smoke1 ego                          -0.0124  ( 0.1615   )   -0.0618   </span></span>
+<span id="cb18-151"><a href="#cb18-151" aria-hidden="true"></a><span class="co">#&gt;    9. eval smoke1 similarity                    0.2517  ( 0.2629   )    0.0480   </span></span>
+<span id="cb18-152"><a href="#cb18-152" aria-hidden="true"></a><span class="co">#&gt;   10. eval drinking alter                      -0.0678  ( 0.1207   )   -0.0544   </span></span>
+<span id="cb18-153"><a href="#cb18-153" aria-hidden="true"></a><span class="co">#&gt;   11. eval drinking squared alter              -0.1173  ( 0.1290   )   -0.0013   </span></span>
+<span id="cb18-154"><a href="#cb18-154" aria-hidden="true"></a><span class="co">#&gt;   12. eval drinking ego                         0.0453  ( 0.1214   )   -0.0431   </span></span>
+<span id="cb18-155"><a href="#cb18-155" aria-hidden="true"></a><span class="co">#&gt;   13. eval drinking squared ego                 0.2308  ( 0.1087   )   -0.0010   </span></span>
+<span id="cb18-156"><a href="#cb18-156" aria-hidden="true"></a><span class="co">#&gt;   14. eval drinking diff. squared              -0.1038  ( 0.0529   )    0.0111   </span></span>
+<span id="cb18-157"><a href="#cb18-157" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb18-158"><a href="#cb18-158" aria-hidden="true"></a><span class="co">#&gt; Behavior Dynamics</span></span>
+<span id="cb18-159"><a href="#cb18-159" aria-hidden="true"></a><span class="co">#&gt;   15. rate rate drinking (period 1)             1.3376  ( 0.3510   )    0.0363   </span></span>
+<span id="cb18-160"><a href="#cb18-160" aria-hidden="true"></a><span class="co">#&gt;   16. rate rate drinking (period 2)             1.8235  ( 0.5306   )   -0.0178   </span></span>
+<span id="cb18-161"><a href="#cb18-161" aria-hidden="true"></a><span class="co">#&gt;   17. eval drinking linear shape                0.4025  ( 0.2209   )   -0.0787   </span></span>
+<span id="cb18-162"><a href="#cb18-162" aria-hidden="true"></a><span class="co">#&gt;   18. eval drinking quadratic shape            -0.5610  ( 0.2814   )    0.0427   </span></span>
+<span id="cb18-163"><a href="#cb18-163" aria-hidden="true"></a><span class="co">#&gt;   19. eval drinking average alter               1.2454  ( 0.6931   )    0.0041   </span></span>
+<span id="cb18-164"><a href="#cb18-164" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb18-165"><a href="#cb18-165" aria-hidden="true"></a><span class="co">#&gt; Overall maximum convergence ratio:    0.1988 </span></span>
+<span id="cb18-166"><a href="#cb18-166" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb18-167"><a href="#cb18-167" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb18-168"><a href="#cb18-168" aria-hidden="true"></a><span class="co">#&gt; Total of 3427 iteration steps.</span></span>
+<span id="cb18-169"><a href="#cb18-169" aria-hidden="true"></a><span class="co"># Make a nicer listing of the results</span></span>
+<span id="cb18-170"><a href="#cb18-170" aria-hidden="true"></a><span class="kw">siena.table</span>(NBans, <span class="dt">type=</span><span class="st">&quot;html&quot;</span>, <span class="dt">sig=</span><span class="ot">TRUE</span>)</span></code></pre></div>
+<p>This produces an html file; siena.table can also produce a LaTeX file.</p>
+</div>
+<div id="assignment-2" class="section level1">
+<h1>Assignment 2</h1>
+<div id="a.-1" class="section level2">
+<h2>2a.</h2>
+<p>Replace the average alter effect by average similarity (avSim) or total similarity (totSim) and estimate the model again.</p>
+</div>
+<div id="b.-1" class="section level2">
+<h2>2b.</h2>
+<p>Add the effect of smoking on drinking and estimate again.</p>
+</div>
+</div>
+<div id="assignment-3" class="section level1">
+<h1>Assignment 3</h1>
+<p>Read Sections 13.3 and 13.4 of the Siena Manual, download scripts <code>SelectionTables.r</code> and <code>InfluenceTables.r</code> from the Siena website, and make plots of the selection table and influence table for drinking.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

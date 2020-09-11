@@ -62,7 +62,7 @@ Package \code{"RSiena"} is the official release.
   Nynke Niezink.
   Contributions by Josh Lospinoso, Charlotte Greenan, Christian Steglich,
   Johan Koskinen, Mark Ortmann, Natalie Indlekofer,
-  Christoph Stadtfeld, Per Block, Michael Schweinberger, and Robert Hellpap.
+  Christoph Stadtfeld, Per Block, Marion Hoffman, Michael Schweinberger, and Robert Hellpap.
 
   Maintainer: Tom A.B. Snijders <tom.snijders@nuffield.ox.ac.uk>
 }
