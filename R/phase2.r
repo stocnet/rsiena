@@ -32,9 +32,9 @@ phase2.1<- function(z, x, ...)
     z$writefreq <- 1
     if (!is.batch())
     {
-        tkconfigure(z$tkvars$earlyEndPhase2,state='normal')
-        tkconfigure(z$tkvars$subphase,state='normal')
-        tkconfigure(z$tkvars$subphaselabel,state='normal')
+        tcltk::tkconfigure(z$tkvars$earlyEndPhase2,state='normal')
+        tcltk::tkconfigure(z$tkvars$subphase,state='normal')
+        tcltk::tkconfigure(z$tkvars$subphaselabel,state='normal')
     }
     z$Deriv <- FALSE
 	msf <- as.matrix(cov(z$sf)) # as.matrix() just in case z$pp = 1
