@@ -9,6 +9,10 @@
 # Declare files that will always have CRLF line endings on checkout.
 *.sln text eol=crlf
 
+# Declare files that will always have LF line endings on checkout.
+*.ac text eol=lf
+
 # Denote all files that are truly binary and should not be modified.
 *.png binary
 *.jpg binary
+*.gif binary
