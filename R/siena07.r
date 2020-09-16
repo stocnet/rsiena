@@ -222,13 +222,6 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	class(z) <- "sienaFit"
 	z$tkvars <- NULL
 	z$pb <- NULL
-    if (nzchar(Sys.getenv("_R_CHECK_THINGS_IN_CHECK_DIR_")))
-    {
-		if (file.exists('Siena.txt'))
-		{
-			unlink('Siena.txt')
-		}
-	}
 	z
 }
 

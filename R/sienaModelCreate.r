@@ -25,12 +25,22 @@ sienaModelCreate <- function(fn,
 	lessMem=FALSE)
 {
 	model <- NULL
-	if (is.null(projname))
+	checking <- any(grepl("_R_CHECK", names(Sys.getenv()))) 
+	if (is.null(projname) | checking)
 	{
 		model$projname <- tempfile("Siena")
-		cat('If you use this algorithm object, siena07 will create an output file',
+		if (checking)
+		{
+	cat('If you use this algorithm object, siena07 will create an output file', 
+				paste('Siena','.txt',sep=''),'.\n')
+		
+		}
+		else
+		{
+	cat('If you use this algorithm object, siena07 will create an output file',
 				paste(model$projname,'.txt',sep=''),'.\n')
-		cat('This is a temporary file for this R session.\n')
+			cat('This is a temporary file for this R session.\n')
+		}
 	}
 	else
 	{

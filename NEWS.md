@@ -1,15 +1,14 @@
 # RSiena 1.2-26
 
-2020-09-14 
+2020-09-16 
 
 ## Changes in RSiena:
    * Changed requirement for tcltk to "Suggests", 
      and further modified / cleaned up DESCRIPTION.
    * In siena07: if (!requireNamespace("tcltk")) set batch to TRUE.
    * In NAMESPACE drop tcltk
-   * at the end of siena07:
-     delete file Siena.txt if environment variable 
-    _R_CHECK_THINGS_IN_CHECK_DIR_ is set.
+   * In sienaAlgorithmCreate, use the definitions for projname=NULL
+     also if any environment variable _R_CHECK* is set.
 
 
 # RSiena 1.2-25
