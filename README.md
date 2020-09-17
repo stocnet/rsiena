@@ -30,6 +30,19 @@ Some or all of these networks can be two-mode networks. The restriction is that 
 
 We are migrating RSiena development and releases to this repository.
 
+To install from source the latest main version of RSiena from Github, please install the `{remotes}` package from CRAN and then enter into the console:
+
+`remotes::install_github("snlab-nl/rsiena")`
+
+The development version of RSiena can be similarly installed as:
+
+`remotes::install_github("snlab-nl/rsiena@develop")`
+
+Or, if you would prefer to install a compiled binary, please download the latest release from Github,
+unzip the file, and install the OS-appropriate binary, for example:
+
+`install.packages("~/Downloads/rsiena_AllOS/macOS/rsiena_1.2.3.tgz", repos = NULL)`
+
 Note that the main manual can still be found [here](http://www.stats.ox.ac.uk/~snijders/siena/RSiena_Manual.pdf),
 and the main website is still [here](http://www.stats.ox.ac.uk/~snijders/siena/) for the time being,
 however we are currently migrating many resources to [this website](http://snlab-nl.github.io/rsiena/),
