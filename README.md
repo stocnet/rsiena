@@ -30,6 +30,27 @@ Some or all of these networks can be two-mode networks. The restriction is that 
 
 We are migrating RSiena development and releases to this repository.
 
+Note that the main manual can still be found [here](http://www.stats.ox.ac.uk/~snijders/siena/RSiena_Manual.pdf),
+and the main website is still [here](http://www.stats.ox.ac.uk/~snijders/siena/) for the time being,
+however we are currently migrating many resources to [this website](http://snlab-nl.github.io/rsiena/),
+and you can find [a wiki here](https://github.com/snlab-nl/rsiena/wiki) that holds much of the information on the original website,
+including background on SAOMs and RSiena, and links to teaching materials, literature, and contributing people and projects.
+
+## Installation
+
+### From binary
+
+Perhaps the easiest way to install RSiena is by installing a compiled binary.
+Binaries for all major OSes -- Windows, Mac, and Linux -- 
+can be found by clicking on the latest release [here](https://github.com/snlab-nl/rsiena/releases/latest/download/rsiena_AllOS.zip).
+
+Once the file has been downloaded, unzip the file, and install the binary as appropriate for your binary.
+For example, for Mac you can use the following line, amending the version number as necessary:
+
+`install.packages("~/Downloads/rsiena_AllOS/macOS/rsiena_1.2.3.tgz", repos = NULL)`
+
+### From source
+
 To install from source the latest main version of RSiena from Github, please install the `{remotes}` package from CRAN and then enter into the console:
 
 `remotes::install_github("snlab-nl/rsiena")`
@@ -37,14 +58,3 @@ To install from source the latest main version of RSiena from Github, please ins
 The development version of RSiena can be similarly installed as:
 
 `remotes::install_github("snlab-nl/rsiena@develop")`
-
-Or, if you would prefer to install a compiled binary, please download the latest release from Github,
-unzip the file, and install the OS-appropriate binary, for example:
-
-`install.packages("~/Downloads/rsiena_AllOS/macOS/rsiena_1.2.3.tgz", repos = NULL)`
-
-Note that the main manual can still be found [here](http://www.stats.ox.ac.uk/~snijders/siena/RSiena_Manual.pdf),
-and the main website is still [here](http://www.stats.ox.ac.uk/~snijders/siena/) for the time being,
-however we are currently migrating many resources to [this website](http://snlab-nl.github.io/rsiena/),
-and you can find [a wiki here](https://github.com/snlab-nl/rsiena/wiki) that holds much of the information on the original website,
-including background on SAOMs and RSiena, and links to teaching materials, literature, and contributing people and projects.
