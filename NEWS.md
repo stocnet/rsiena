@@ -1,6 +1,6 @@
 # RSiena 1.2-26
 
-2020-09-16 
+2020-09-17 
 
 ## Changes in RSiena:
    * Changed requirement for tcltk to "Suggests", 
