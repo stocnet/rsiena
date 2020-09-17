@@ -1,4 +1,5 @@
 inst/.*[.]tex
+inst/.*[.]txt
 inst/.*[.]png
 inst/.*[.]jpg
 inst/.*[.]bib

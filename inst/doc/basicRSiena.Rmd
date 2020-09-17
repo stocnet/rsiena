@@ -1,10 +1,10 @@
 ---
-title: "basicRSiena.R: a basic script for the introduction to RSiena"
+title: "BasicRSiena"
 author: "Tom Snijders"
-date: "July 3, 2018"
+date: "August 9, 2020"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{rsiena}
+  %\VignetteIndexEntry{BasicRSiena}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -41,31 +41,6 @@ In my case:
 
 Note the double backslashes used for R.
 
-If you have not yet installed RSiena, do this preferably from R-Forge;
-this can be done by (for Windows) downloading the .zip file from
-http://r-forge.r-project.org/R/?group_id=461
-or (for Mac) the .tgz file from
-http://www.stats.ox.ac.uk/~snijders/siena/siena_downloads.htm
-and then in R installing from the local zip or tgz file.
-
-Or you can use
-
-```{r} 
-# install.packages("RSiena", repos="http://R-Forge.R-project.org")
-```
-
-and for the RSienaTest package by
-
-```{r} 
-# install.packages("RSienaTest", repos="http://R-Forge.R-project.org")
-```
-
-The R-Forge version usually is more up to date than the version
-available from CRAN, the general R archive.
-RSienaTest is not available from CRAN.
-Note that you can also download the recent versions from the
-Siena website, http://www.stats.ox.ac.uk/~snijders/siena/siena_downloads.htm
-
 # Define data sets
 
 If you have internet access, you can download the data
@@ -89,7 +64,7 @@ But without internet access, the data can be obtained
 from within RSiena (see below), because this is an internal data set.
 
 ```{r} 
-library(RSiena) # or RSienaTest
+library(RSiena)
 # Now we use the internally available s50 data set.
 # Look at its description:
 ?s50
@@ -120,6 +95,11 @@ friendshipData <- array( c( friend.data.w1, friend.data.w2, friend.data.w3 ),
            dim = c( 50, 50, 3 ) )
 # and next give this the role of the dependent variable:
 	friendship <- sienaDependent(friendshipData)
+```
+
+What did we construct?
+```
+friendship
 ```
 
 We also must prepare the objects that will be the explanatory variables.
@@ -180,6 +160,12 @@ ans <- siena07( myalgorithm, data = mydata, effects = myeff)
 ans
 ```
 
+This gives results from a random starting point.
+To use a fixed starting point, use the "seed" parameter:
+```
+# myalgorithm <- sienaAlgorithmCreate( projname = 's50', seed=435123 )
+```
+
 For checking convergence, look at the
 'Overall maximum convergence ratio' mentioned under the parameter estimates.
 
@@ -217,8 +203,19 @@ an interaction between transitive triplets and reciprocity,
 This might still not have an overall maximum convergence ratio
 less than 0.25. If not, you could go on once more.
 
-Inspect the file s50.out in your working directory
+Inspect the file s50.txt in your working directory
 and understand the meaning of its contents.
+
+To have a joint test of the three effects of alcohol:
+
+```
+?Multipar.RSiena
+Multipar.RSiena(ans1, 7:9)
+```
+
+Focusing on alcohol similarity, the effect is significant;
+diluting the effects of alcohol by also considering ego and alter,
+the three effects simultaneously are not significant.
 
 # Assignment 1
 
@@ -278,7 +275,6 @@ siena.table(NBans, type="html", sig=TRUE)
 ```
 
 This produces an html file; siena.table can also produce a LaTeX file.
-But the current version (2.12) does not do this well for html.
 
 # Assignment 2
 

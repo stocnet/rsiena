@@ -219,7 +219,7 @@ to update an effects object.</h1>
 <span class='no'>mydata</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaDataCreate.html'>sienaDataCreate</a></span>(<span class='no'>mynet1</span>)
 <span class='no'>myeff1</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='getEffects.html'>getEffects</a></span>(<span class='no'>mydata</span>)
 <span class='no'>myeff1</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='includeEffects.html'>includeEffects</a></span>(<span class='no'>myeff1</span>, <span class='no'>transTrip</span>)</div><div class='output co'>#&gt;   effectName          include fix   test  initialValue parm
-#&gt; 1 transitive triplets TRUE    FALSE FALSE          0   0   </div><div class='input'><span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>100</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpXe2fRo/Siena6ef926df312e.txt .
+#&gt; 1 transitive triplets TRUE    FALSE FALSE          0   0   </div><div class='input'><span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>1</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>100</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpB3MQ6s/Siena2a711f013825.txt .
 #&gt; This is a temporary file for this R session.</div><div class='input'><span class='no'>ans</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='siena07.html'>siena07</a></span>(<span class='no'>myalgorithm</span>, <span class='kw'>data</span><span class='kw'>=</span><span class='no'>mydata</span>, <span class='kw'>effects</span><span class='kw'>=</span><span class='no'>myeff1</span>, <span class='kw'>batch</span><span class='kw'>=</span><span class='fl'>TRUE</span>)</div><div class='output co'>#&gt; 
 #&gt; Start phase 0 
 #&gt; theta: -0.56  0.00  0.00 
@@ -239,38 +239,38 @@ to update an effects object.</h1>
 #&gt; Phase 1 Iteration 40 Progress: 8%
 #&gt; Phase 1 Iteration 45 Progress: 9%
 #&gt; Phase 1 Iteration 50 Progress: 10%
-#&gt; theta: -0.7343  0.0821  0.0625 
+#&gt; theta: -0.7221  0.1054  0.0523 
 #&gt; 
 #&gt; Start phase 2.1
 #&gt; Phase 2 Subphase 1 Iteration 1 Progress: 38%
 #&gt; Phase 2 Subphase 1 Iteration 2 Progress: 38%
-#&gt; theta -0.914  0.337  0.121 
-#&gt; ac 0.424 1.249 1.269 
+#&gt; theta -0.899  0.296  0.110 
+#&gt; ac 13.529  0.833  0.971 
 #&gt; Phase 2 Subphase 1 Iteration 3 Progress: 39%
 #&gt; Phase 2 Subphase 1 Iteration 4 Progress: 39%
-#&gt; theta -1.393  0.933  0.278 
-#&gt; ac 0.0114 1.2497 0.6230 
+#&gt; theta -1.354  0.889  0.245 
+#&gt; ac 2.028 0.872 0.988 
 #&gt; Phase 2 Subphase 1 Iteration 5 Progress: 39%
 #&gt; Phase 2 Subphase 1 Iteration 6 Progress: 39%
-#&gt; theta -1.727  1.264  0.332 
-#&gt; ac -0.175  1.160  0.575 
+#&gt; theta -1.658  1.240  0.331 
+#&gt; ac 0.401 0.856 0.673 
 #&gt; Phase 2 Subphase 1 Iteration 7 Progress: 39%
 #&gt; Phase 2 Subphase 1 Iteration 8 Progress: 40%
-#&gt; theta -1.870  1.260  0.342 
-#&gt; ac -0.535  0.798  0.461 
+#&gt; theta -1.823  1.448  0.348 
+#&gt; ac 0.235 0.753 0.627 
 #&gt; Phase 2 Subphase 1 Iteration 9 Progress: 40%
 #&gt; Phase 2 Subphase 1 Iteration 10 Progress: 40%
-#&gt; theta -1.933  1.574  0.311 
-#&gt; ac -0.3473  0.7950 -0.0386 
-#&gt; theta -1.75  1.34  0.32 
-#&gt; ac -0.12007 -0.00556 -0.04577 
-#&gt; theta: -1.75  1.34  0.32 
+#&gt; theta -1.93  1.48  0.37 
+#&gt; ac 0.259 0.753 0.614 
+#&gt; theta -1.761  1.337  0.323 
+#&gt; ac -0.1735 -0.0316 -0.1575 
+#&gt; theta: -1.761  1.337  0.323 
 #&gt; 
-#&gt; Start phase 3 </div><div class='input'><span class='no'>ans</span>$<span class='no'>theta</span></div><div class='output co'>#&gt; [1] -1.752583  1.336895  0.320084</div><div class='input'>(<span class='no'>myeff</span> <span class='kw'>&lt;-</span> <span class='fu'>updateTheta</span>(<span class='no'>myeff1</span>, <span class='no'>ans</span>))</div><div class='output co'>#&gt;   effectName                  include fix   test  initialValue parm
-#&gt; 1 basic rate parameter mynet1 TRUE    FALSE FALSE    3.15091   0   
-#&gt; 2 outdegree (density)         TRUE    FALSE FALSE   -1.75258   0   
-#&gt; 3 reciprocity                 TRUE    FALSE FALSE    1.33690   0   
-#&gt; 4 transitive triplets         TRUE    FALSE FALSE    0.32008   0   </div><div class='input'><span class='co'>##</span>
+#&gt; Start phase 3 </div><div class='input'><span class='no'>ans</span>$<span class='no'>theta</span></div><div class='output co'>#&gt; [1] -1.761308  1.336868  0.322924</div><div class='input'>(<span class='no'>myeff</span> <span class='kw'>&lt;-</span> <span class='fu'>updateTheta</span>(<span class='no'>myeff1</span>, <span class='no'>ans</span>))</div><div class='output co'>#&gt;   effectName                  include fix   test  initialValue parm
+#&gt; 1 basic rate parameter mynet1 TRUE    FALSE FALSE    3.07238   0   
+#&gt; 2 outdegree (density)         TRUE    FALSE FALSE   -1.76131   0   
+#&gt; 3 reciprocity                 TRUE    FALSE FALSE    1.33687   0   
+#&gt; 4 transitive triplets         TRUE    FALSE FALSE    0.32292   0   </div><div class='input'><span class='co'>##</span>
 <span class='co'>## For updateSpecification:</span>
 <span class='no'>myeff2</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='getEffects.html'>getEffects</a></span>(<span class='no'>mydata</span>)
 <span class='no'>myeff2</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='includeEffects.html'>includeEffects</a></span>(<span class='no'>myeff2</span>, <span class='no'>inPop</span>)</div><div class='output co'>#&gt;   effectName            include fix   test  initialValue parm

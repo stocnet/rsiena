@@ -50,9 +50,9 @@ Reportfun<- function(x, verbose = FALSE, silent=FALSE)
         }
         else if (closefiles)
         {
-				close(x[["outf"]])
-				x$outf <<- NULL
-			}
+			close(x[["outf"]])
+			x$outf <<- NULL
+		}
         else
         {
             if (missing(dest) && missing(hdest))

@@ -292,7 +292,7 @@
 <span class='no'>mydata</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaDataCreate.html'>sienaDataCreate</a></span>(<span class='no'>mynet1</span>)
 <span class='no'>myeff</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='getEffects.html'>getEffects</a></span>(<span class='no'>mydata</span>)
 <span class='no'>myeff</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='includeEffects.html'>includeEffects</a></span>(<span class='no'>myeff</span>, <span class='no'>transTrip</span>)</div><div class='output co'>#&gt;   effectName          include fix   test  initialValue parm
-#&gt; 1 transitive triplets TRUE    FALSE FALSE          0   0   </div><div class='input'><span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>fn</span><span class='kw'>=</span><span class='no'>simstats0c</span>, <span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>2</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>100</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpXe2fRo/Siena6ef936a95453.txt .
+#&gt; 1 transitive triplets TRUE    FALSE FALSE          0   0   </div><div class='input'><span class='no'>myalgorithm</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='sienaAlgorithmCreate.html'>sienaAlgorithmCreate</a></span>(<span class='kw'>fn</span><span class='kw'>=</span><span class='no'>simstats0c</span>, <span class='kw'>nsub</span><span class='kw'>=</span><span class='fl'>2</span>, <span class='kw'>n3</span><span class='kw'>=</span><span class='fl'>100</span>, <span class='kw'>projname</span><span class='kw'>=</span><span class='kw'>NULL</span>)</div><div class='output co'>#&gt; If you use this algorithm object, siena07 will create an output file /var/folders/pl/ngry9kn13p7466xwk0_2xyh40000gn/T//RtmpB3MQ6s/Siena2a71e1eb2.txt .
 #&gt; This is a temporary file for this R session.</div><div class='input'><span class='no'>ans</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='siena07.html'>siena07</a></span>(<span class='no'>myalgorithm</span>, <span class='kw'>data</span><span class='kw'>=</span><span class='no'>mydata</span>, <span class='kw'>effects</span><span class='kw'>=</span><span class='no'>myeff</span>,  <span class='kw'>batch</span><span class='kw'>=</span><span class='fl'>TRUE</span>)</div><div class='output co'>#&gt; 
 #&gt; Start phase 0 
 #&gt; theta: -0.56  0.00  0.00 
@@ -312,32 +312,32 @@
 #&gt; Phase 1 Iteration 40 Progress: 5%
 #&gt; Phase 1 Iteration 45 Progress: 6%
 #&gt; Phase 1 Iteration 50 Progress: 6%
-#&gt; theta: -0.7315  0.1092  0.0601 
+#&gt; theta: -0.6555  0.1075  0.0409 
 #&gt; 
 #&gt; Start phase 2.1
 #&gt; Phase 2 Subphase 1 Iteration 1 Progress: 26%
 #&gt; Phase 2 Subphase 1 Iteration 2 Progress: 26%
-#&gt; theta -0.880  0.381  0.101 
-#&gt; ac 0.454 1.432 0.805 
+#&gt; theta -0.8264  0.3773  0.0977 
+#&gt; ac 2.182 0.928 0.859 
 #&gt; Phase 2 Subphase 1 Iteration 3 Progress: 26%
 #&gt; Phase 2 Subphase 1 Iteration 4 Progress: 26%
-#&gt; theta -1.379  0.962  0.270 
-#&gt; ac 0.948 1.494 0.947 
+#&gt; theta -1.340  1.138  0.266 
+#&gt; ac 0.991 0.790 0.556 
 #&gt; Phase 2 Subphase 1 Iteration 5 Progress: 26%
 #&gt; Phase 2 Subphase 1 Iteration 6 Progress: 26%
-#&gt; theta -1.701  1.446  0.336 
-#&gt; ac 1.51 1.35 1.03 
+#&gt; theta -1.707  1.500  0.344 
+#&gt; ac 0.503 0.656 0.398 
 #&gt; Phase 2 Subphase 1 Iteration 7 Progress: 26%
 #&gt; Phase 2 Subphase 1 Iteration 8 Progress: 26%
-#&gt; theta -1.853  1.563  0.358 
-#&gt; ac 0.854 1.312 0.851 
+#&gt; theta -2.031  1.646  0.354 
+#&gt; ac  0.302  0.574 -0.028 
 #&gt; Phase 2 Subphase 1 Iteration 9 Progress: 27%
 #&gt; Phase 2 Subphase 1 Iteration 10 Progress: 27%
-#&gt; theta -1.938  1.598  0.376 
-#&gt; ac 0.837 1.368 0.939 
-#&gt; theta -1.739  1.335  0.314 
-#&gt; ac -0.1165  0.0927 -0.0744 
-#&gt; theta: -1.739  1.335  0.314 
+#&gt; theta -2.129  1.705  0.403 
+#&gt; ac  0.3129  0.5379 -0.0232 
+#&gt; theta -1.778  1.387  0.323 
+#&gt; ac -0.2627  0.0858 -0.2123 
+#&gt; theta: -1.778  1.387  0.323 
 #&gt; 
 #&gt; Start phase 2.2
 #&gt; Phase 2 Subphase 2 Iteration 1 Progress: 54%
@@ -350,9 +350,9 @@
 #&gt; Phase 2 Subphase 2 Iteration 8 Progress: 55%
 #&gt; Phase 2 Subphase 2 Iteration 9 Progress: 55%
 #&gt; Phase 2 Subphase 2 Iteration 10 Progress: 55%
-#&gt; theta -1.740  1.283  0.318 
-#&gt; ac -0.0377 -0.0103 -0.2345 
-#&gt; theta: -1.740  1.283  0.318 
+#&gt; theta -1.754  1.349  0.316 
+#&gt; ac -0.3354 -0.0108 -0.1161 
+#&gt; theta: -1.754  1.349  0.316 
 #&gt; 
 #&gt; Start phase 3 </div></pre>
   </div>

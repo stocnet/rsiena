@@ -45,14 +45,13 @@ Package \code{"RSiena"} is the official release.
   \tabular{ll}{
     Package: \tab RSiena\cr
     Type: \tab Package\cr
-    Version: \tab 1.2-25\cr
-    Date: \tab 2020-04-06\cr
+    Version: \tab 1.2-26\cr
+    Date: \tab 2020-09-17\cr
     Depends: \tab R (>= 3.0.0)\cr
-    Imports: \tab Matrix\cr
-    Suggests: \tab tcltk, network, codetools, lattice, MASS, parallel,
-    xtable, tools, utils\cr
-    SystemRequirements: \tab GNU make, tcl/tk 8.5, Tktable\cr
-    License: \tab GPL-2 \cr
+    Imports: \tab Matrix, lattice, parallel, MASS, methods\cr
+    Suggests: \tab xtable, network, tools, codetools, tcltk, knitr, rmarkdown\cr
+    SystemRequirements: \tab GNU make\cr
+    License: \tab GPL-2 | GPL-3 \cr
     LazyData: \tab yes\cr
     NeedsCompilation: \tab yes\cr
     BuildResaveData: \tab no\cr
@@ -63,7 +62,7 @@ Package \code{"RSiena"} is the official release.
   Nynke Niezink.
   Contributions by Josh Lospinoso, Charlotte Greenan, Christian Steglich,
   Johan Koskinen, Mark Ortmann, Natalie Indlekofer,
-  Christoph Stadtfeld, Per Block, Marion Hoffman, and Robert Hellpap.
+  Christoph Stadtfeld, Per Block, Marion Hoffman, Michael Schweinberger, and Robert Hellpap.
 
   Maintainer: Tom A.B. Snijders <tom.snijders@nuffield.ox.ac.uk>
 }
@@ -77,7 +76,7 @@ Package \code{"RSiena"} is the official release.
       The statistical evaluation of social network dynamics.
       \emph{Sociological Methodology} \bold{31}, 361-395.
     \item Snijders, Tom A.B. (2017). Stochastic Actor-Oriented Models for Network
-      Dynamics. 
+      Dynamics.
       \emph{Annual Review of Statistics and Its Application} \bold{4}, 343--363.
     \item  Snijders, Tom A.B., van de Bunt, Gerhard G., and
       Steglich, Christian E.G. (2010).

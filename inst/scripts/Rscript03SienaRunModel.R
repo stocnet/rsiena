@@ -1,9 +1,9 @@
 ################################################################################
-###
-###
-### ---- Rscript03SienaRunModel.R: a script for the introduction to RSiena -----
-###
-###                         version June 19, 2015
+###                                                                          ###
+###                                                                          ###
+### --- Rscript03SienaRunModel.R: a script for the introduction to RSiena -- ###
+###                                                                          ###
+###                         version September 8, 2020                        ###
 ################################################################################
 #
 # The introductory script is divided into the following script files:
@@ -30,7 +30,7 @@
 
 	load("WorkspaceRscript02.RData")
 
-# If not, to make this script self-contained, you may run the following commands:
+# If not, to make this script self-contained, you may run the commands:
 
 	library(RSiena)
 	friend.data.w1 <- s501
@@ -58,7 +58,7 @@
 # to find out about options that you may use here;
 # for beginning users, only the two options mentioned below are relevant.
 #
-# Output will be written to a file with name projname.out, where projname is
+# Output will be written to a file with name projname.txt, where projname is
 # whatever name is given; the default (used if no name is given) is Siena.
 # This file will be written to your current directory.
 # New estimation runs will append to it.
@@ -101,14 +101,14 @@
 
 # verbose = TRUE leads to extensive diagnostic information being sent
 # to the console during the estimation, and results after the estimation
-# (these results are also copied to the output file projname.out, see above);
+# (these results are also copied to the output file projname.txt, see above);
 # while batch=TRUE gives only a limited amount of printout sent to the console
 # during the estimation (which is seen when clicking in the console,
 # or more immediately if the Buffered Output is deselected in the Misc menu)
 # which monitors the progress of the estimation algorithm in a different way.
 
-# The call of siena07 leads to output in the file s50_3.out
-# (or more generally projname.out,
+# The call of siena07 leads to output in the file s50_3.txt
+# (or more generally projname.txt,
 # where projname is the name given in sienaAlgorithmCreate)
 # and to the creation of the object which here is called ans (for "answer").
 
@@ -117,7 +117,7 @@
 #		ans <- siena07( myalgorithm, data = mydata, effects = myeff,
 #					  nbrNodes = 2, useCluster = TRUE)
 
-# Adjust the nbrNodes to the number available.
+# Adjust the nbrNodes to the number that you wish to use.
 # If you wish to work on with other programs while running siena07,
 # it is advisable to use one node less than the number of available processors.
 # If you wish to use other machines as well,
@@ -133,16 +133,11 @@
 # of lists (each dependent network or behavior variable) of edgelists for
 # networks or vectors for behavior variables.
 # See the manual for further explanation.
-#
-# This option when used with multiple processors would require
-# rather a lot of communication between multiple processes,
-# slowing down the computations,
-# so it might be better to avoid using the two options together.
 
 
 ################### LOOKING AT THE RESULTS ################################
 
-# The file "s50_3.out" will contain the results of the estimation.
+# The file "s50_3.txt" will contain the results of the estimation.
 # It is contained in the current directory ("getwd()").
 # This file can be read by any text editor.
 # A summary of the results is obtained on the screen by
@@ -178,14 +173,14 @@
 # Overall maximum convergence ratio:    0.2287
 # Total of 2244 iteration steps.
 
-# The results can also be viewed externally in the output file s50_3.out
+# The results can also be viewed externally in the output file s50_3.txt
 # It is advisable that you have a look at all three reports and
 # understand how information is organized in each of them.
 
 # To understand the table above, note that the "convergence t-ratio"
 # is the t-ratio for convergence checking,
 # not the t statistic for testing the significance of this effect!
-# See Section 6.1.2 of the manual to understand this better.
+# See Section 6.2 of the manual to understand this better.
 # In the external output file, these are called
 # "t-ratios for deviations from targets".
 # The rule of thumb is that all t-ratios for convergence
@@ -203,14 +198,18 @@
 # To obtain "publication grade" estimates, where this variability is minimized,
 # choose the value of parameter n3 in sienaAlgorithmCreate()
 # ("Number of iterations in phase 3") larger than the default value of 1000;
-# e.g., n3=3000.
+# e.g., n3=5000.
 
 # With function siena07 we made ans as the object containing
 # all the results of the estimation. For example,
 
 		ans$theta
 
-# contains the vector of parameter estimates while
+# contains the vector of parameter estimates,
+
+    ans$se
+
+# contains the standard errors, while
 
 		ans$covtheta
 
@@ -264,19 +263,13 @@
 # This should be used only if the model specification in myeff
 # has not changed, and if the provisional parameter estimates obtained
 # in ans are reasonable; if they are not reasonable,
-# make a fresh estimation withour the prevAns parameter.
+# make a fresh estimation without the prevAns parameter.
 
-# In Section 6.1.1 of the manual you can read more about the initial
+# In Section 6.3.1 of the manual you can read more about the initial
 # values used for the estimation algorithm; but this rarely is of any concern.
 
-# If convergence is difficult to obtain, a better algorithm may be created
-# by the options
+# Sections 6.3-6.5 of the manual give further help.
 
-	betterAlgorithm <- sienaAlgorithmCreate( projname = 's50_3',
-	                           diagonalize = 0.2, doubleAveraging = 0 )
-
-# These options may become the default in future versions of RSiena;
-# the impression is that they are preferable.
 
 ################################################################################
 ###
@@ -306,6 +299,11 @@
 		summary(ans)
 
 # to see the results, including those for the score test.
+# You can also simply request
+
+    score.Test(ans)
+
+# see ?score.Test for further explanation.
 
 # 3. Wald tests of single and multiple parameters can be obtained by means
 # of the functions Wald.RSiena and Multipar.RSiena;
@@ -323,17 +321,8 @@
 # To apply the test to the results obtained above, request, e.g.,
 		tt2 <- sienaTimeTest(ans)
 		tt2
-# If you wish more information, also
-#		summary(tt2)
-#		 plot(tt2, effects=3:4)
-# If as a consequence of this analysis you wish to add time dummy terms,
-# this may be done via
-#		myeff <- includeTimeDummy(myeff, transTrip, cycle3)
-#		myeff
-#		ans3 <- siena07(myalgorithm, data=mydata, effects=myeff)
-# and testing again,
-#		(tt3 <- sienaTimeTest(ans3))
-# and so on.
+# If you wish more information, see
+    summary(tt2)
 
 ################################################################################
 ###
@@ -351,8 +340,6 @@
 	  friendship <- sienaDependent( array( c( friend.data.w1,
 											  friend.data.w2, friend.data.w3 ),
 									dim = c( 50, 50, 3 ) ) )
-
-	  drinkingbeh <- sienaDependent( drink, type = "behavior" )
 	  smoke1 <- coCovar( smoke[ , 1 ] )
 	  alcohol <- varCovar( drink )
 
@@ -367,13 +354,11 @@
 							   egoXaltX, interaction1 = "alcohol" )
 	  myeff <- includeEffects( myeff, simX, interaction1 = "smoke1" )
 # estimate
-	  myalgorithm <- sienaAlgorithmCreate( projname = 's50_3' )
-	(ans <- siena07( myalgorithm, data = mydata, effects = myeff))
-# (the outer parentheses lead to printing the obttained result on the screen)S
+	  myAlgorithm <- sienaAlgorithmCreate( projname = 's50_3' )
+	(ans <- siena07( myAlgorithm, data = mydata, effects = myeff))
+# (the outer parentheses lead to printing the obtained result on the screen)
 # if necessary, estimate further
-	betterAlgorithm <- sienaAlgorithmCreate( projname = 's50_3',
-	                    diagonalize = 0.2, doubleAveraging = 0 )
-	(ans <- siena07( betterAlgorithm,
+    (ans <- siena07( myAlgorithm,
 	                    data = mydata, effects = myeff, prevAns=ans))
 
 ################################################################################

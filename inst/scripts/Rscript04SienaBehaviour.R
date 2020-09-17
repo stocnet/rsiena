@@ -2,7 +2,7 @@
 ###
 ### ---- Rscript04SienaBehaviour.R: a script for the introduction to RSiena ----
 ###
-###                         version February 4, 2019
+###                         version September 8, 2020
 ################################################################################
 #
 # The introductory script is divided into the following script files:
@@ -25,11 +25,11 @@
 # Read in the adjacency matrices, covariates and dependent behavioural variable
 # assuming data are in current working directory
 
-		friend.data.w1 <- as.matrix(read.table("s50-network1.dat")) # network
-		friend.data.w2 <- as.matrix(read.table("s50-network2.dat"))
-		friend.data.w3 <- as.matrix(read.table("s50-network3.dat"))
-		drink <- as.matrix(read.table("s50-alcohol.dat")) # behaviour
-		smoke <- as.matrix(read.table("s50-smoke.dat")) # covariate
+#		friend.data.w1 <- as.matrix(read.table("s50-network1.dat")) # network
+#		friend.data.w2 <- as.matrix(read.table("s50-network2.dat"))
+#		friend.data.w3 <- as.matrix(read.table("s50-network3.dat"))
+#		drink <- as.matrix(read.table("s50-alcohol.dat")) # behaviour
+#		smoke <- as.matrix(read.table("s50-smoke.dat")) # covariate
 
 # If you wish to make it easier, you can use this data set as included
 # in the package - but the above is included to show you
@@ -45,7 +45,7 @@
 # At this point it is a good idea to use the sna package to plot the networks
 # and the behavioural variable. Descriptive measures of the similarity of
 # "friends" with respect to behaviour (like Moran's I) are given by the function
-# nacf() in the sna package.
+# nacf() in the sna package. See the script RscriptSNADescriptives.R.
 
 # Tell RSiena that the adjacency matrices are network data and in what order
 # they should be treated

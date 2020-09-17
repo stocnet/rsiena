@@ -32,9 +32,9 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 			stop("sienaTimeTest cannot be applied to results of GMoM estimation")
 		}
 	}
-	if (!is.null(sienaFit$sf2.byIterations))
+	if (!is.null(sienaFit$sf2.byIteration))
 	{
-		if (!sienaFit$sf2.byIterations)
+		if (!sienaFit$sf2.byIteration)
 		{
 			stop("sienaTimeTest needs sf2 by iterations (use lessMem=FALSE)")
 		}

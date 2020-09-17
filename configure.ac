@@ -1,6 +1,6 @@
 #
-# After changing this file run `autoconf` to produce the 'configure' script.
-#
+# After changing this file run `autoconf` to produce the 'configure' script. 
+# 
 # MPI discovery options for the build process:
 #
 # - Run with automatic detection: `R CMD INSTALL {pkg}`
