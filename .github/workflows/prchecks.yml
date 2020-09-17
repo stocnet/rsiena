@@ -32,6 +32,14 @@ jobs:
           r-version: ${{ matrix.config.r }}
       - uses: r-lib/actions/setup-pandoc@master
         
+      - name: Install Mac dependencies
+        if: runner.os == 'macOS'
+        run: |
+          ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+          brew doctor
+          brew install autoconf
+          brew install automake
+
       - name: Query dependencies
         run: |
           install.packages('remotes')
