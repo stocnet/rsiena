@@ -8,3 +8,5 @@ src/*.dll
 *.o
 *.log
 *.status
+*.synctex
+TexAux/
