@@ -235,13 +235,14 @@ mycov.egoalter <- outer(10*mycov, mycov ,'+')
 diag(mycov.egoalter) <- 0
 dim(mycov.egoalter) # 50 * 50 matrix
 # This is a dyadic variable indicating ego-alter combinations of mycov.
-# This construction works since mycov has integer values 
+# This construction works since mycov has integer values 1, 2, 3; 
 # not outside the interval from 1 to 9.
 # All cells of this matrix contain a two-digit number,
 # left digit is row (ego) value, right digit is column (alter) value.
 # See the top left part of the matrix:
 mycov.egoalter[1:10,1:12]
-# The number of values is the square of the number of values of mycov;
+# The number of values in this matrix 
+# is the square of the number of values of mycov;
 # therefore, unwise to do this for a monadic covariate with more than 5 values.
 gof.mycov <- sienaGOF(ans, dyadicCov, verbose=TRUE, varName="mynet1", 
     dc=mycov.egoalter)  

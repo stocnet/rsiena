@@ -11,6 +11,7 @@
 
 #include "DisjointFilter.h"
 #include "network/IncidentTieIterator.h"
+#include "network/iterators/UnionTieIterator.h"
 #include "network/Network.h"
 #include "model/variables/NetworkVariable.h"
 #include "model/ml/NetworkChange.h"
@@ -25,6 +26,11 @@ DisjointFilter::DisjointFilter(const NetworkVariable * pOwnerVariable,
 	const NetworkVariable * pOtherVariable) :
 		NetworkDependentFilter(pOwnerVariable, pOtherVariable)
 {
+	const NetworkVariable * pNetworkVariable1 = this->pVariable();
+	const NetworkVariable * pNetworkVariable2 = this->pOtherVariable();
+	lsymmetric <- pNetworkVariable1->symmetric() && !pNetworkVariable2->symmetric();
+//  The extra steps for a symmetric owner network are superfluous
+//  if the other network is also symmetric.
 }
 
 
@@ -56,8 +62,27 @@ void DisjointFilter::filterPermittedChanges(int ego, bool * permitted)
 
 		iter2.next();
 	}
-}
 
+	if (this->lsymmetric)
+	{
+		IncidentTieIterator iter1 = pNetwork1->outTies(ego);
+		IncidentTieIterator iter2 = pNetwork2->inTies(ego);
+		while (iter2.valid())
+		{
+			while (iter1.valid() && iter1.actor() < iter2.actor())
+			{
+				iter1.next();
+			}
+
+			if (!iter1.valid() || iter1.actor() > iter2.actor())
+			{
+				permitted[iter2.actor()] = false;
+			}
+
+			iter2.next();
+		}
+	}
+}
 
 /**
  * Returns if applying the given ministep on the current state of the
@@ -73,7 +98,15 @@ bool DisjointFilter::validMiniStep(const NetworkChange * pMiniStep)
 	int i = pMiniStep->ego();
 	int j = pMiniStep->alter();
 
-	return pNetwork1->tieValue(i, j) || !pNetwork2->tieValue(i, j);
+	if  (this->lsymmetric)
+	{
+		return (pNetwork1->tieValue(i, j) ||
+				!(pNetwork2->tieValue(i, j) || pNetwork2->tieValue(j, i)));
+	}
+	else
+	{
+		return pNetwork1->tieValue(i, j) || !pNetwork2->tieValue(i, j);
+	}
 }
 
 }

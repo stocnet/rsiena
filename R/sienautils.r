@@ -345,7 +345,7 @@ varDyadCovar<- function(val, centered=TRUE,
 }
 ##@sienaDependent Create
 sienaDependent <- function(netarray, type=c("oneMode","bipartite","behavior",
-					"continuous"), nodeSet="Actors", sparse=is.list(netarray), 
+					"continuous"), nodeSet="Actors", sparse=is.list(netarray),
 					allowOnly=TRUE, imputationValues=NULL)
 {
 	if (inherits(netarray,'data.frame'))
@@ -484,8 +484,8 @@ sienaDependent <- function(netarray, type=c("oneMode","bipartite","behavior",
 			}
         }
     }
-    
-  	if (!is.null(imputationValues))    
+
+  	if (!is.null(imputationValues))
     {
         if (type != "behavior" && type != "continuous")
         {
@@ -504,7 +504,7 @@ sienaDependent <- function(netarray, type=c("oneMode","bipartite","behavior",
 			stop("imputationValues and data must have the same dimension")
 		}
     }
-    
+
     obj <- netarray
     class(obj) <- ("sienaDependent")
     attr(obj, "type") <- type
@@ -512,7 +512,7 @@ sienaDependent <- function(netarray, type=c("oneMode","bipartite","behavior",
     attr(obj, "nodeSet") <- nodeSet
     attr(obj, "netdims") <- netdims
 	attr(obj, "allowOnly") <- allowOnly
-    if (!is.null(imputationValues))    
+    if (!is.null(imputationValues))
     {
         attr(obj, "imputationValues") <- imputationValues
     }
@@ -562,5 +562,11 @@ sienaDataConstraint <- function(x, net1, net2, type=c("higher",
     {
         attr(x, type)[pairname] <- value
     }
+
+	if (type %in% c("disjoint", "atLeastOne"))
+	{
+		pairname <- paste(net2, net1, sep=",")
+		attr(x, type)[pairname] <- value
+	}
     x
 }

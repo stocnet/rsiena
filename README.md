@@ -44,10 +44,20 @@ Perhaps the easiest way to install RSiena is by installing a compiled binary.
 Binaries for all major OSes -- Windows, Mac, and Linux -- 
 can be found by clicking on the latest release [here](https://github.com/snlab-nl/rsiena/releases/latest/download/rsiena_AllOS.zip).
 
-Once the file has been downloaded, unzip the file, and install the binary as appropriate for your binary.
-For example, for Mac you can use the following line, amending the version number as necessary:
+Once the file has been downloaded, unzip the file, and install the binary as appropriate for your Operating System.
+In the following, perhaps the name of the Downloads folder and the version number have to be amended:
 
-`install.packages("~/Downloads/rsiena_AllOS/macOS/rsiena_1.2.3.tgz", repos = NULL)`
+For Windows:
+
+`install.packages("~/Downloads/rsiena_AllOS/winOS/rsiena_1.2.26.zip", repos = NULL)`
+
+For Mac:
+
+`install.packages("~/Downloads/rsiena_AllOS/macOS/rsiena_1.2.26.tgz", repos = NULL)`
+
+For Unix:
+
+`install.packages("~/Downloads/rsiena_AllOS/linuxOS/RSiena_1.2-26_R_x86_64-pc-linux-gnu.tar.gz", repos = NULL)`
 
 ### From source
 

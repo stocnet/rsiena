@@ -1,3 +1,25 @@
+# RSiena 1.2-28
+
+2020-09-30
+
+## Changes in RSiena:
+   * Adapted filter "disjoint" so that it operates correctly
+     also when the network is symmetric.
+     Consequence: constraint that two networks are disjoint
+     operates correctly also when one of the networks is symmetric
+     and the other is not.
+   * Adapted filter "higher" so that it operates correctly
+     also when the other network is symmetric.
+     Consequence: constraint that one network is at least as high
+     as another network operates correctly also when 
+     the higher networks is symmetric and the other is not.
+   * In "CheckConstraints", used in "sienaDataCreate", the requirement 
+     was dropped that the two networks have the same symmetry property;
+     and for "higher" it is required that if the lower network
+     is symmetric, the higher network is also symmetric.
+   * In "sienaDataConstraint", if type is "disjoint" or "atLeastOne",
+     the constraint is also implemented for the pair (net2, net1).
+
 # RSiena 1.2-26
 
 2020-09-17 
@@ -120,7 +142,7 @@ R-Forge Revision 346
    * In `sienaBayes`: more precise check that 
      prevAns has same specification as effects;
      `priorSigEta` added to `sienaBayesFit` object.
-	  `dimnames(ThinParameters)[[3]]` defined as effect names;
+      `dimnames(ThinParameters)[[3]]` defined as effect names;
      ridge for prior variance of rate parameters if priorRatesFromData=1 or 2
      decreased from 0.5 to 0.01.
    * `sienaBayes`: `zm` and `zsmall` are removed at the end.

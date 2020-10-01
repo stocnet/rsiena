@@ -338,7 +338,7 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 		if (!(inherits(nodeSets, "sienaNodeSet") || inherits(nodeSets[[1]], "sienaNodeSet")))
 		{
 			stop("nodeSets should be a sienaNodeSet object or a list of such objects")
-		}		
+		}
 	}
 	nodeSetNames <- sapply(nodeSets,function(x) attr(x,"nodeSetName"))
 	names(nodeSets) <- nodeSetNames
@@ -588,10 +588,10 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 		attr(compositionChange[[i]], "activeStart") <- activeStart
 		attr(compositionChange[[i]], "action") <- action
 	}
-	## dependent variables. First we sort the list so discrete and then continuous 
+	## dependent variables. First we sort the list so discrete and then continuous
 	## behavior are at the end
 	types <- sapply(depvars, function(x)attr(x, "type"))
-	depvars <- depvars[c(which(!(types %in% c('behavior', 'continuous'))), 
+	depvars <- depvars[c(which(!(types %in% c('behavior', 'continuous'))),
 						which(types == 'behavior'), which(types == "continuous"))]
 
 	for (i in 1:v1) ## dependent variables
@@ -672,7 +672,7 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 						   )
 			}
 			else # type == 'continuous', input the medians here; these will be
-				 #						 used for missing data imputation 
+				 #						 used for missing data imputation
 			{
 				modes <- apply(depvars[[i]][, 1, ], 2, median, na.rm=TRUE)
 			}
@@ -1052,8 +1052,7 @@ checkConstraints <- function(z)
 			symmetric2 <- symmetrics[net2]
 
 			if (type1 == type2 && type1 != "behavior" && nodes1 == nodes2
-				&& symmetric1 == symmetric2 && type1 != "continuous" 
-				&& type2 != "continuous")
+				&& type1 != "continuous" && type2 != "continuous")
 			{
 				higher[i] <- TRUE
 				disjoint[i] <- TRUE
@@ -1081,7 +1080,8 @@ checkConstraints <- function(z)
 					var1[var1 %in% c(10, 11)] <- var1[var1 %in% c(10, 11)] - 10
 					var2[var2 %in% c(10, 11)] <- var2[var2 %in% c(10, 11)] - 10
 					## higher
-					if (any(var1 - var2 < 0, na.rm=TRUE))
+					if ((any(var1 - var2 < 0, na.rm=TRUE)) ||
+							(symmetric2 && !symmetric1))
 					{
 						higher[i] <- FALSE
 					}
@@ -2422,7 +2422,7 @@ covarDist2 <- function(z)
 			## take off the mean NB no structurals yet!
 			beh <- beh - mean(beh, na.rm=TRUE)
 			nodeSet <- netActorSet[i]
-			use <- (!(netTypes %in% c("behavior", "continuous")) 
+			use <- (!(netTypes %in% c("behavior", "continuous"))
 			        & netActorSet == nodeSet)
 			simMeans <- namedVector(NA, netNames[use])
 			for (j in which(use))
