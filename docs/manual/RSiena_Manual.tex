@@ -890,7 +890,7 @@ of the software appear).
             install \sfn{sna} and \sfn{igraph}.
             For constructing the vignette in \RS the
             packages \sfn{knitr} and \sfn{rmarkdown} are used.
-            
+
             You can just install \RS and the other packages
             in the regular way from CRAN.
             If you want to have detailed information about
@@ -910,17 +910,17 @@ of the software appear).
             in \Rn,
             via the drop-down menu in the \R console, or in command mode which for Mac is
             the `terminal'.
-            If you downloaded a binary file (\texttt{.zip} for Windows, 
+            If you downloaded a binary file (\texttt{.zip} for Windows,
             \texttt{.tgz} for Mac),
             then using the binary is recommended.
             Installation from binary is much faster than installation from source.
 
             Installation from the GitHub can be done as follows.
-        Download  the latest release from 
+        Download  the latest release from
         \url{https://github.com/snlab-nl/rsiena/releases/}.
-Once the file has been downloaded, unzip it, and install the binary 
+Once the file has been downloaded, unzip it, and install the binary
 as appropriate for your Operating System.
-In the following, perhaps the name of the Downloads folder and 
+In the following, perhaps the name of the Downloads folder and
 the version number have to be amended:
 
 For Windows:
@@ -3259,12 +3259,21 @@ These constraints are observed and set during the creation of the
 \texttt{siena} object in \sfn{sienaDataCreate}.
 When one of the constraints is true,
 this will be reported in the output of \sfn{print01Report}.
-These constraints will continue to be respected during the simulations.
-The constraints for the simulations can be changed by function
-\sfn{sienaDataConstraint}.
+These constraints will continue to be respected during the simulations
+(and by implication for the estimations).
+The constraints for the simulations can be changed 
+(e.g., turned off) by function \sfn{sienaDataConstraint}.
 
-This does not work for multi-group data sets! By implication,
-it does not work for \sfn{sienaBayes}.
+Constraints will work for all pairs of networks of the same kind:
+both networks directed one-mode, both symmetric (non-directed) one-mode,
+or both two-mode with the same node sets.
+For the combination of a one-mode directed and a symmetric non-directed
+network, the constraint \textbf{disjoint} is possible;
+and the constraint \textbf{higher} is possible,
+if the symmetric network is higher than the directed network.
+
+Constraints do not work for multi-group data sets! By implication,
+they do not work for \sfn{sienaBayes}.
 
 
 \subsection{Effects on behavior evolution}
@@ -15496,7 +15505,7 @@ Changes in RSiena and RSienaTest:
    \item For effect \texttt{from.w.ind}, option \texttt{parameter=-1} added.
    \item The \texttt{to} effect is an ego effect.
    \item For \sfn{siena.table}, some of the \texttt{effectNames} changed to nice strings,
-     so that \LaTeX\ can run without errors 
+     so that \LaTeX\ can run without errors
      on the table produced if \texttt{type='tex'}.
    \item The \sfn{sienaMeta} object produced by \sfn{siena08} now has IWLS estimates more easily
      accessible, as \texttt{object\$muhat} and \texttt{object\$se.muhat}.
