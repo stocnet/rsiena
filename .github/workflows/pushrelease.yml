@@ -91,7 +91,7 @@ jobs:
           file.copy(binary, "build")
         shell: Rscript {0}
     
-- name: Save binary artifact
+      - name: Save binary artifact
         uses: actions/upload-artifact@v1
         with:
           name: ${{ matrix.config.asset_name }}
