@@ -465,16 +465,16 @@ bipartiteSymmetricObjective,shared xxxxxx (#) to agreement,"mixed 4cycles WWXX, 
 bipartiteSymmetricObjective,mixed incoming from xxxxxx,"mixed WXX triplets, W = xxxxxx",mixedInWX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 continuousFeedback,feedback from yyyyyy,Feedback of yyyyyy on xxxxxx (A_xxxxxx.yyyyyy),feedback,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 continuousIntercept,intercept,Intercept of xxxxxx (b_xxxxxx),intercept,NA,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
-continuousOneModeObjective,behavior xxxxxx average alter,beh. xxxxxx average alters,avAlt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
-continuousOneModeObjective,behavior xxxxxx max. alter,beh. xxxxxx max. alters,maxAlt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
-continuousOneModeObjective,behavior xxxxxx min. alter,beh. xxxxxx min. alters,minAlt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
-continuousOneModeObjective,behavior xxxxxx indegree,beh. xxxxxx indegrees,indeg,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
-continuousOneModeObjective,behavior xxxxxx indegree (sqrt),beh. xxxxxx indegrees (sqrt),indegSqrt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
-continuousOneModeObjective,behavior xxxxxx outdegree,beh. xxxxxx outdegrees,outdeg,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
-continuousOneModeObjective,behavior xxxxxx outdegree (sqrt),beh. xxxxxx outdegrees (sqrt),outdegSqrt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
-continuousOneModeObjective,behavior xxxxxx isolate out,beh. xxxxxx isolate out,isolateOut,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
-continuousOneModeObjective,behavior xxxxxx recip outdegree,beh. xxxxxx reciprocated outdegree,recipDeg,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
-continuousOneModeObjective,behavior xxxxxx nonrecip outdegree,beh. xxxxxx non-reciprocated outdegree,nonrecipDeg,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,xxxxxx average alter,beh. xxxxxx average alters,avAlt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,xxxxxx max. alter,beh. xxxxxx max. alters,maxAlt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,xxxxxx min. alter,beh. xxxxxx min. alters,minAlt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,xxxxxx indegree,beh. xxxxxx indegrees,indeg,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,xxxxxx indegree (sqrt),beh. xxxxxx indegrees (sqrt),indegSqrt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,xxxxxx outdegree,beh. xxxxxx outdegrees,outdeg,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,xxxxxx outdegree (sqrt),beh. xxxxxx outdegrees (sqrt),outdegSqrt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,xxxxxx isolate out,beh. xxxxxx isolate out,isolateOut,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,xxxxxx recip outdegree,beh. xxxxxx reciprocated outdegree,recipDeg,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,xxxxxx nonrecip outdegree,beh. xxxxxx non-reciprocated outdegree,nonrecipDeg,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 continuousRate,scale parameter period 1,Time scaling continuous behavior change,scale,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,1,NA,0,0,0,0,,FALSE
 continuousRate,scale parameter (period nnnnnn),Time scaling continuous behavior change in period nnnnnn,scale,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,nnnnnn,NA,0,0,0,0,,FALSE
 continuousWiener,wiener (xxxxxx.yyyyyy),Wiener process matrix (G_xxxxxx.yyyyyy),wiener,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE

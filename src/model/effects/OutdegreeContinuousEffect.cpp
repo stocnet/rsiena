@@ -54,8 +54,8 @@ double change = this->pNetwork()->outDegree(actor);
  */
 double OutdegreeContinuousEffect::egoStatistic(int ego, double * currentValues)
 {
-	double statistic = this->pNetwork()->inDegree(ego);
-	
+    double statistic = this->pNetwork()->outDegree(ego);
+    
 	if (this->lroot)
 	{
 		statistic = this->lsqrtTable->sqrt(statistic);
