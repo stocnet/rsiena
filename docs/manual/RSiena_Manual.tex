@@ -3261,7 +3261,7 @@ When one of the constraints is true,
 this will be reported in the output of \sfn{print01Report}.
 These constraints will continue to be respected during the simulations
 (and by implication for the estimations).
-The constraints for the simulations can be changed 
+The constraints for the simulations can be changed
 (e.g., turned off) by function \sfn{sienaDataConstraint}.
 
 Constraints will work for all pairs of networks of the same kind:
@@ -10173,7 +10173,7 @@ the generality already now.
 \subsubsection{Special effects for non-directed networks}
 \label{S_NonDirEff}
 
-For non-directed networks
+For non-directed (symmetric) networks
 \citep[see Section~\ref{S_modeltype_nd} and][]{SnijdersPickup16},
 in principle the same effects are used as above; you may search
 in this manual for 'non-directed' to see the cases where the definition of
@@ -16562,7 +16562,7 @@ Changes in RSiena and RSienaTest:
  \item Effect \texttt{cycle4} extended to non-directed one-mode networks
     (for directed one-mode networks this is \texttt{sharedPop}).
  \item Effect \texttt{jumpXTransTrip} ported to non-directed networks.
- \item \texttt{gwesp..}  effects modified and ported to nondirected networks.
+ \item \texttt{gwesp..}  effects modified and ported to non-directed networks.
  \item Also take account of behavior user-specified interactions in
      \sfn{includeInteraction} and \sfn{setEffect}.
  \item Correction: Effect \texttt{to} is not a dyadic effect.

@@ -56,11 +56,11 @@ sienaGOF <- function(
 	{
 		if (groups <= 1)
 		{
-			message("Detected", iterations, "iterations and", groups, "group.")
+			message("Detected ", iterations, " iterations and ", groups, " group.")
 		}
 		else
 		{
-			message("Detected", iterations, "iterations and", groups, "groups.")
+			message("Detected ", iterations, " iterations and ", groups, " groups.")
 		}
 	}
 
