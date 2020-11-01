@@ -54,6 +54,13 @@ public:
 	inline MixedEgocentricConfigurationTable * pTwoPathTable() const;
 	inline MixedEgocentricConfigurationTable * pInStarTable() const;
 	inline MixedEgocentricConfigurationTable * pOutStarTable() const;
+	// added by Christoph
+	inline MixedEgocentricConfigurationTable * pFRTable() const;
+	inline MixedEgocentricConfigurationTable * pEETable() const;
+	inline MixedEgocentricConfigurationTable * pFETable() const;
+	inline MixedEgocentricConfigurationTable * pERTable() const;
+	inline MixedEgocentricConfigurationTable * pRFTable() const;
+
 
 private:
 	// The first network this cache object is associated with
@@ -82,6 +89,20 @@ private:
 
 	// The number of out-two-stars from the middle actor to ego and alter.
 	MixedEgocentricConfigurationTable * lpOutStarTable;
+
+	// C. Stadtfeld: add four additional two path tables,
+	// coded as: (F)orward, (B)ackward, (R)eciprocal, (E)ither
+	// Number of forward-reciprocal paths from ego to alter
+	MixedEgocentricConfigurationTable * lpFRTable;
+	// Number of either-either paths from ego to alter
+	MixedEgocentricConfigurationTable * lpEETable;
+	// Number of forward-either paths from ego to alter
+	MixedEgocentricConfigurationTable * lpFETable;
+	// Number of either-reciprocal paths from ego to alter
+	MixedEgocentricConfigurationTable * lpERTable;
+	// Number of reciprocal-forward paths from ego to alter
+	MixedEgocentricConfigurationTable * lpRFTable;
+
 };
 
 
@@ -177,6 +198,54 @@ MixedEgocentricConfigurationTable * TwoNetworkCache::pOutStarTable() const
 {
 	return this->lpOutStarTable;
 }
+
+// The following four functions related to effects added by cws
+/**
+ * Returns the table storing the number of forward-reciprocal paths
+ * from ego to any alter with at least one such path
+ */
+MixedEgocentricConfigurationTable * TwoNetworkCache::pFRTable() const
+{
+	return this->lpFRTable;
+}
+
+/**
+ * Returns the table storing the number of either-either paths
+ * from ego to any alter with at least one such path
+ */
+MixedEgocentricConfigurationTable * TwoNetworkCache::pEETable() const
+{
+	return this->lpEETable;
+}
+
+/**
+ * Returns the table storing the number of forward-either paths
+ * from ego to any alter with at least one such path
+ */
+MixedEgocentricConfigurationTable * TwoNetworkCache::pFETable() const
+{
+	return this->lpFETable;
+}
+
+/**
+ * Returns the table storing the number of either-reciprocal paths
+ * from ego to any alter with at least one such path
+ */
+MixedEgocentricConfigurationTable * TwoNetworkCache::pERTable() const
+{
+	return this->lpERTable;
+}
+
+/**
+ * Returns the table storing the number of reciprocal-forward paths
+ * from ego to any alter with at least one such path
+ */
+MixedEgocentricConfigurationTable * TwoNetworkCache::pRFTable() const
+{
+	return this->lpRFTable;
+}
+
+
 
 }
 

@@ -39,10 +39,11 @@
 #include "model/effects/generic/OutJaccardFunction.h"
 #include "model/effects/generic/ReciprocatedTwoPathFunction.h"
 #include "model/effects/generic/TwoPathFunction.h"
+#include "model/effects/generic/TwoStepFunction.h"
 #include "model/effects/generic/ReverseTwoPathFunction.h"
 #include "model/effects/generic/MixedTwoPathFunction.h"
 #include "model/effects/generic/MixedInStarFunction.h"
-#include "model/effects/generic/MixedOutStarFunction.h"
+#include "model/effects/generic/MixedTwoStepFunction.h"
 #include "model/effects/generic/ConditionalFunction.h"
 #include "model/effects/generic/EqualCovariatePredicate.h"
 #include "model/effects/generic/MissingCovariatePredicate.h"
@@ -905,18 +906,30 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			new MixedTwoPathFunction(pEffectInfo->interactionName1(),
 				pEffectInfo->variableName()));
 	}
-	else if (effectName == "mixedInWX")
+	else if (effectName == "to.2") // alternative implementation that is supposed to be equivalent to "to"
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new MixedOutStarFunction(pEffectInfo->interactionName1(),
-				pEffectInfo->variableName()));
-	}
-	else if (effectName == "mixedInXW")
+				new MixedTwoStepFunction(
+						pEffectInfo->interactionName1(),
+						pEffectInfo->variableName(),
+						FORWARD, FORWARD));
+		}
+	else if (effectName == "toBack")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new MixedOutStarFunction(pEffectInfo->variableName(),
-				pEffectInfo->interactionName1()));
-	}
+				new MixedTwoStepFunction(
+						pEffectInfo->interactionName1(),
+						pEffectInfo->variableName(),
+						BACKWARD, FORWARD));
+		}
+	else if (effectName == "toRecip")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+				new MixedTwoStepFunction(
+						pEffectInfo->interactionName1(),
+						pEffectInfo->variableName(),
+						RECIPROCAL, FORWARD));
+		}
 	else if (effectName == "cl.XWX")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
@@ -938,6 +951,71 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			new MixedInStarFunction(pEffectInfo->variableName(),
 					pEffectInfo->interactionName1()));
 	}
+	/*
+	 * Mixed two step effects with flexible iterators (added by Christoph)
+	 */
+	else if (effectName == "transTrip.FR")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new TwoStepFunction(pEffectInfo->variableName(),
+					FORWARD, RECIPROCAL));
+	}
+	else if (effectName == "transTrip.EE")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new MixedTwoStepFunction(pEffectInfo->variableName(), // not mixed, TwoStepFunction equivalent not implemented
+					pEffectInfo->variableName(),
+					EITHER, EITHER));
+	}
+	else if (effectName == "transTrip.FE")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new MixedTwoStepFunction(pEffectInfo->variableName(), // not mixed, TwoStepFunction equivalent not implemented
+					pEffectInfo->variableName(),
+					FORWARD, EITHER));
+	}
+	else if (effectName == "WWX.EE")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new MixedTwoStepFunction(pEffectInfo->interactionName1(), // not mixed
+					pEffectInfo->interactionName1(),
+					EITHER, EITHER));
+	}
+	else if (effectName == "WXX.FE")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new MixedTwoStepFunction(pEffectInfo->interactionName1(),
+					pEffectInfo->variableName(),
+					FORWARD, EITHER));
+	}
+	else if (effectName == "XWX.ER")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new MixedTwoStepFunction(pEffectInfo->variableName(),
+					pEffectInfo->interactionName1(),
+					EITHER, RECIPROCAL));
+	}
+	else if (effectName == "WWX.FR")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new MixedTwoStepFunction(pEffectInfo->interactionName1(),  // not mixed
+					pEffectInfo->interactionName1(),
+					FORWARD, RECIPROCAL));
+	}
+	else if (effectName == "WXX.ER")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new MixedTwoStepFunction(pEffectInfo->interactionName1(),
+					pEffectInfo->variableName(),
+					EITHER, RECIPROCAL));
+	}
+	else if (effectName == "XWX.FE")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new MixedTwoStepFunction(pEffectInfo->variableName(),
+					pEffectInfo->interactionName1(),
+					FORWARD, EITHER));
+	}
 	else if (effectName == "outOutActIntn")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
@@ -951,118 +1029,6 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			new MixedThreeCyclesFunction(pEffectInfo->interactionName1(),
 				pEffectInfo->variableName(),
 				pEffectInfo->internalEffectParameter()));
-	}
-	else if (effectName == "inPopIntnX")
-	{
-		string networkName = pEffectInfo->interactionName1();
-		string covariateName = pEffectInfo->interactionName2();
-		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new CovariateDegreeFunction(networkName, covariateName,
-					false, true, false, (pEffectInfo->internalEffectParameter()>=2)),
-			new CovariateDegreeFunction(networkName, covariateName,
-					true, true, false, (pEffectInfo->internalEffectParameter()>=2)));
-	}
-	else if (effectName == "inActIntnX")
-	{
-		string networkName = pEffectInfo->interactionName1();
-		string covariateName = pEffectInfo->interactionName2();
-		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new CovariateDegreeFunction(networkName, covariateName,
-					false, true, true, (pEffectInfo->internalEffectParameter()>=2)),
-			new CovariateDegreeFunction(networkName, covariateName,
-					true, true, true, (pEffectInfo->internalEffectParameter()>=2)));
-	}
-	else if (effectName == "outPopIntnX")
-	{
-		string networkName = pEffectInfo->interactionName1();
-		string covariateName = pEffectInfo->interactionName2();
-		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new CovariateDegreeFunction(networkName, covariateName,
-					false, false, false, (pEffectInfo->internalEffectParameter()>=2)),
-			new CovariateDegreeFunction(networkName, covariateName,
-					true, false, false, (pEffectInfo->internalEffectParameter()>=2)));
-	}
-	else if (effectName == "outActIntnX")
-	{
-		string networkName = pEffectInfo->interactionName1();
-		string covariateName = pEffectInfo->interactionName2();
-		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new CovariateDegreeFunction(networkName, covariateName,
-					false, false, true, (pEffectInfo->internalEffectParameter()>=2)),
-			new CovariateDegreeFunction(networkName, covariateName,
-					true, false, true, (pEffectInfo->internalEffectParameter()>=2)));
-	}
-	else if (effectName == "sameXInPopIntn")
-	{
-		string networkName = pEffectInfo->interactionName1();
-		string covariateName = pEffectInfo->interactionName2();
-		AlterFunction * pChangeFunction =
-			new SameCovariateInTiesFunction(networkName, covariateName,
-									true, false, false);
-		AlterFunction * pStatisticFunction =
-			new SameCovariateInTiesFunction(networkName, covariateName,
-									true, false, true);
-		if (pEffectInfo->internalEffectParameter() == 2)
-		{
-			pChangeFunction = new IntSqrtFunction(pChangeFunction);
-			pStatisticFunction = new IntSqrtFunction(pStatisticFunction);
-		}
-		pEffect = new GenericNetworkEffect(pEffectInfo,
-			pChangeFunction, pStatisticFunction);
-	}
-	else if (effectName == "sameXInActIntn")
-	{
-		string networkName = pEffectInfo->interactionName1();
-		string covariateName = pEffectInfo->interactionName2();
-		AlterFunction * pChangeFunction =
-			new EgoFunction(new SameCovariateInTiesFunction(networkName, covariateName,
-									true, false, false));
-		AlterFunction * pStatisticFunction =
-			new EgoFunction(new SameCovariateInTiesFunction(networkName, covariateName,
-									true, false, true));
-		if (pEffectInfo->internalEffectParameter() == 2)
-		{
-			pChangeFunction = new IntSqrtFunction(pChangeFunction);
-			pStatisticFunction = new IntSqrtFunction(pStatisticFunction);
-		}
-		pEffect = new GenericNetworkEffect(pEffectInfo,
-			pChangeFunction, pStatisticFunction);
-	}
-	else if (effectName == "sameXOutPopIntn")
-	{
-		string networkName = pEffectInfo->interactionName1();
-		string covariateName = pEffectInfo->interactionName2();
-		AlterFunction * pChangeFunction =
-			new SameCovariateOutTiesFunction(networkName,
-									covariateName, true, false);
-		AlterFunction * pStatisticFunction =
-			new SameCovariateOutTiesFunction(networkName,
-									covariateName, true, true);
-		if (pEffectInfo->internalEffectParameter() == 2)
-		{
-			pChangeFunction = new IntSqrtFunction(pChangeFunction);
-			pStatisticFunction = new IntSqrtFunction(pStatisticFunction);
-		}
-		pEffect = new GenericNetworkEffect(pEffectInfo,
-			pChangeFunction, pStatisticFunction);
-	}
-	else if (effectName == "sameXOutActIntn")
-	{
-		string networkName = pEffectInfo->interactionName1();
-		string covariateName = pEffectInfo->interactionName2();
-		AlterFunction * pChangeFunction =
-			new EgoFunction(new SameCovariateOutTiesFunction(networkName,
-									covariateName, true, false));
-		AlterFunction * pStatisticFunction =
-			new EgoFunction(new SameCovariateOutTiesFunction(networkName,
-									covariateName, true, true));
-		if (pEffectInfo->internalEffectParameter() == 2)
-		{
-			pChangeFunction = new IntSqrtFunction(pChangeFunction);
-			pStatisticFunction = new IntSqrtFunction(pStatisticFunction);
-		}
-		pEffect = new GenericNetworkEffect(pEffectInfo,
-			pChangeFunction, pStatisticFunction);
 	}
 	else if (effectName == "covNetNet")
 	{

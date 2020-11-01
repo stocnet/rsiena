@@ -25,6 +25,7 @@ namespace siena
  * between two actors i and j as generalized two-paths, where we traverse
  * one outgoing tie of i, say (i,h), in the forward direction followed by the
  * incoming tie (j,h) of h in the backward direction.
+ * ADDED by C. Stadtfeld: option to traverse ties that exist in either direction
  */
 class MixedTwoPathTable : public MixedEgocentricConfigurationTable
 {
