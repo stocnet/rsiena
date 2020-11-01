@@ -22,6 +22,7 @@ namespace siena
 // ----------------------------------------------------------------------------
 
 class CommonNeighborIterator;
+class UnionNeighborIterator;
 
 
 // ----------------------------------------------------------------------------
@@ -50,6 +51,7 @@ public:
 	CommonNeighborIterator reciprocatedTies(int i) const;
 	CommonNeighborIterator reciprocatedTies(int i,
 		int lowerBound) const;
+	UnionNeighborIterator eitherTies(int i) const;
 
 	int twoPathCount(int i, int j) const;
 	int truncatedTwoPathCount(int i, int j, int threshold = 2) const;

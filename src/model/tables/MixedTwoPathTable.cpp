@@ -13,6 +13,7 @@
 #include "MixedTwoPathTable.h"
 #include "network/IncidentTieIterator.h"
 #include "network/CommonNeighborIterator.h"
+#include "network/UnionNeighborIterator.h"
 #include "network/OneModeNetwork.h"
 
 namespace siena
@@ -57,12 +58,20 @@ void MixedTwoPathTable::calculate()
 		this->performFirstStep(
 				this->pFirstNetwork()->inTies(this->ego()));
 	}
-	else
+	else if (this->lfirstStepDirection == EITHER)
 	{
 		const OneModeNetwork * pOneModeFirstNetwork =
 			dynamic_cast<const OneModeNetwork *>(this->pFirstNetwork());
 		this->performFirstStep(
 				pOneModeFirstNetwork->reciprocatedTies(this->ego()));
+	}
+	// Final case refers to RECIPROCAL
+	else if (this->lfirstStepDirection == RECIPROCAL)
+	{
+		const OneModeNetwork * pOneModeFirstNetwork =
+			dynamic_cast<const OneModeNetwork *>(this->pFirstNetwork());
+		this->performFirstStep(
+			pOneModeFirstNetwork->reciprocatedTies(this->ego()));
 	}
 }
 
@@ -95,7 +104,15 @@ void MixedTwoPathTable::performFirstStep(Iterator iter)
 			this->performSecondStep(
 					this->pSecondNetwork()->inTies(middleActor));
 		}
-		else
+		else if (this->lsecondStepDirection == EITHER)
+		{
+			const OneModeNetwork * pOneModeSecondNetwork =
+				dynamic_cast<const OneModeNetwork *>(this->pSecondNetwork());
+			this->performSecondStep(
+				pOneModeSecondNetwork->eitherTies(middleActor));
+		}
+		// Final case refers to RECIPROCAL
+		else if (this->lsecondStepDirection == RECIPROCAL)
 		{
 			const OneModeNetwork * pOneModeSecondNetwork =
 				dynamic_cast<const OneModeNetwork *>(this->pSecondNetwork());
