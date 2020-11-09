@@ -493,14 +493,6 @@ PAGES = "185--198"
    Year = {1977}
 }
 
-@article{BlondelEA2011,
-  title={The {L}ouvain method for community detection in large networks},
-  author={Blondel, Vincent D and Guillaume, Jean-Lou and Lambiotte, Renaud and Lefebvre, {\'E}tienne},
-  journal={J of Statistical Mechanics: Theory and Experiment},
-  volume={10},
-  pages={P10008},
-  year={2011}
-}
 
 @book{Byrn71,
    Author = {Byrne, Donn Erwin},
@@ -1698,12 +1690,6 @@ Edgington69,
   year = {2005}
 }
 
-@book{Elster1989,
-  title={Nuts and bolts for the social sciences},
-  author={Elster, Jon},
-  year={1989},
-  publisher={Cambridge University Press}
-}
 
 @incollection{Emerson72,
   author = {Richard M. Emerson},
@@ -1753,17 +1739,6 @@ YEAR = "2007",
 JOURNAL = "American Journal of Sociology",
 VOLUME = "112",
 PAGES = "1495--1533"
-}
-
-@article{Epstein1999,
-  title={Agent-based computational models and generative social science},
-  author={Epstein, Joshua M},
-  journal={Complexity},
-  volume={4},
-  number={5},
-  pages={41--60},
-  year={1999},
-  publisher={Wiley Online Library}
 }
 
 @book{Epstein2006,
@@ -2751,14 +2726,6 @@ HeagertyLele98,
    Address = {Cambridge},
    Year = {2005} }
 
-@article{HedstromYlikoski2010,
-  title={Causal mechanisms in the social sciences},
-  author={Hedstr{\"o}m, Peter and Ylikoski, Petri},
-  journal={Annual review of sociology},
-  volume={36},
-  year={2010}
-}
-
 
 @article{Heider1948,
    Author = {Fritz Heider},
@@ -2991,13 +2958,6 @@ YEAR = "2012",
    Pages = {446--452},
    Year = {1987} }
 
-@book{Homans1950,
-AUTHOR = "George C. {Homans}",
-TITLE = {The Human Group},
-PUBLISHER = "Harcourt, Brace, Jovanovich",
-YEAR = "1950",
-ADDRESS = "New York"
-}
 
 
 @BOOK{Homans74,
@@ -4370,16 +4330,6 @@ year = 2001,
 publisher = {Aldine de Gruyter},
 address = {New York}}
 
-@article{Lindenberg1989,
-  title={Social production functions, deficits, and social revolutions: Prerevolutionary France and Russia},
-  author={Lindenberg, Siegwart},
-  journal={Rationality and Society},
-  volume={1},
-  number={1},
-  pages={51--77},
-  year={1989},
-  publisher={Sage Publications}
-}
 
 @INCOLLECTION{Lindenberg1992,
 AUTHOR = "Siegwart M. {Lindenberg}",
@@ -5258,17 +5208,6 @@ ADDRESS = "New York"
   pages = {   167--256}
 }
 
-@article{Newman2006,
-  title={Modularity and community structure in networks},
-  author={Newman, Mark EJ},
-  journal={Proceedings of the national academy of sciences},
-  volume={103},
-  number={23},
-  pages={8577--8582},
-  year={2006},
-  publisher={National Acad Sciences}
-}
-
 @book{Newman2010,
     author ={M.E.J. Newman},
     title = {Networks. {A}n Introduction},
@@ -5876,15 +5815,6 @@ year = "2015"}
    Pages = {1--25},
    Year = {2011} }
 
-@article{RaubVoss2017,
-  title={Micro-macro models in sociology: antecedents of Coleman’s diagram},
-  author={Raub, Werner and Voss, Thomas},
-  journal={Social Dilemmas, Institutions and the Evolution of Cooperation. Festchrift for Andreas Diekmann},
-  pages={11--36},
-  year={2017}
-}
-
-
 
 @Article{Rao47,
   author =       {C. R. Rao},
@@ -6010,17 +5940,6 @@ socio-structural bias:  {II.} {V}arious models with partial transitivity},
     journal={Social Networks},
     volume={23},
     pages={1--30}
-}
-
-@article{RobinsEA2005,
-  title={Small and other worlds: Global network structures from local processes},
-  author={Robins, Garry and Pattison, Philippa and Woolcock, Jodie},
-  journal={American Journal of Sociology},
-  volume={110},
-  number={4},
-  pages={894--936},
-  year={2005},
-  publisher={The University of Chicago Press}
 }
 
 
@@ -7271,16 +7190,6 @@ ecology},
   pages =      {34--58},
   year =         1992}
 
-@article{Stadtfeld2018,
-  title={The micro--macro link in social networks},
-  author={Stadtfeld, Christoph},
-  journal={Emerging Trends in the Social and Behavioral Sciences: An Interdisciplinary, Searchable, and Linkable Resource},
-  pages={1--15},
-  year={2018},
-  publisher={Wiley Online Library}
-}
-
-
 @article {StadtfeldBlock2017,
 author = {Christoph Stadtfeld and Per Block },
 title = {Interactions, Actors, and Time: {D}ynamic Network Actor Models for Relational Events},
@@ -7300,16 +7209,6 @@ year = {2017}
 	doi = {10.1073/pnas.1811388115},
 	eprint = {https://www.pnas.org/content/early/2018/12/19/1811388115.full.pdf},
 	journal = {Proceedings of the National Academy of Sciences}
-}
-
-@article{StadtfeldEA2020,
-  title={The emergence and stability of groups in social networks},
-  author={Stadtfeld, Christoph and Tak{\'a}cs, K{\'a}roly and V{\"o}r{\"o}s, Andr{\'a}s},
-  journal={Social Networks},
-  volume={60},
-  pages={129--145},
-  year={2020},
-  publisher={Elsevier}
 }
 
 @article{StadfeldGeyer2011,
@@ -7506,17 +7405,6 @@ constrained distributions},
   volume={4},
   pages={117--139},
   year={2016}
-}
-
-@article{Tarone1985,
-  title={On heterogeneity tests based on efficient scores},
-  author={Tarone, Robert E},
-  journal={Biometrika},
-  volume={72},
-  number={1},
-  pages={91--95},
-  year={1985},
-  publisher={Oxford University Press}
 }
 
 @ARTICLE{Tesser00,
@@ -8256,14 +8144,6 @@ revisited",
   pages =    {245--264}
 }
 
-@misc{Ylikoski2016,
-  title={Thinking with the {C}oleman boat},
-  author={Ylikoski, Petri},
-  year={2016},
-  publisher={The Institute for Analytical Sociology, Link{\"o}ping University Electronic Press},
-  url = {https://www.diva-portal.org/smash/get/diva2:1048216/FULLTEXT02.pdf},
-  journal = {The   IAS  Working Paper Series}
-}
 
 @Article{Yule1924,
   author =   {G. Yule},
