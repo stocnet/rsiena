@@ -23,8 +23,8 @@ namespace siena
  * @param[in] networkName the name of the network variable this function is
  * associated with
  */
-MixedTwoPathFunction::MixedTwoPathFunction(string firstNetworkName,
-	string secondNetworkName) :
+MixedTwoPathFunction::MixedTwoPathFunction(std::string firstNetworkName,
+                                           std::string secondNetworkName) :
 	MixedNetworkAlterFunction(firstNetworkName, secondNetworkName)
 {
 	this->lpTable = 0;

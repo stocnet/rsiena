@@ -30,7 +30,7 @@ class TwoStepFunction:
 	public OneModeNetworkAlterFunction, IntAlterFunction
 {
 public:
-	TwoStepFunction(string networkName, Direction direction1, Direction direction2);
+	TwoStepFunction(std::string networkName, Direction direction1, Direction direction2);
 
 	virtual void initialize(const Data * pData,
 		State * pState,
