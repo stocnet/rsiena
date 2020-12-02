@@ -19,7 +19,12 @@ public:
 	int actor() const;
 	void next();
 	UnionNeighborIterator* clone() const;
-
+	// added for GIT version
+	virtual void reset();
+	int size() const {
+	  return -1;
+	}
+	
 private:
 	IncidentTieIterator liter1;
 	IncidentTieIterator liter2;

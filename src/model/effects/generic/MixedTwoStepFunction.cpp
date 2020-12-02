@@ -22,8 +22,10 @@ namespace siena
  * @param[in] networkName the name of the network variable this function is
  * associated with
  */
-MixedTwoStepFunction::MixedTwoStepFunction(string firstNetworkName,
-	string secondNetworkName, Direction firstDirection, Direction secondDirection) :
+MixedTwoStepFunction::MixedTwoStepFunction(std::string firstNetworkName,
+                                           std::string secondNetworkName, 
+                                           Direction firstDirection, 
+                                           Direction secondDirection) :
 	MixedNetworkAlterFunction(firstNetworkName, secondNetworkName)
 {
 	this->lpTable = 0;

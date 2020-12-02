@@ -91,4 +91,10 @@ UnionNeighborIterator::UnionNeighborIterator(
 	// note there is no need to skip matches this has been down by rhs
 }
 
+void siena::UnionNeighborIterator::reset() {
+  liter1.reset();
+  liter2.reset();
+}
+
+
 }

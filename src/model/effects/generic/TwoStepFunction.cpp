@@ -22,7 +22,7 @@ namespace siena
  * @param[in] networkName the name of the network variable this function is
  * associated with
  */
-TwoStepFunction::TwoStepFunction(string networkName, Direction direction1, Direction direction2) :
+TwoStepFunction::TwoStepFunction(std::string networkName, Direction direction1, Direction direction2) :
 	OneModeNetworkAlterFunction(networkName)
 {
 	this->lpTable = 0;

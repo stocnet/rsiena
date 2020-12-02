@@ -3,10 +3,10 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: MixedTwoPathFunction.h
+ * File: MixedTwoStepFunction.h
  *
  * Description: This file contains the definition of the
- * MixedTwoPathFunction class.
+ * MixedTwoStepFunction class.
  *****************************************************************************/
 
 #ifndef MIXEDTWOSTEPFUNCTION_H_
@@ -30,7 +30,7 @@ class MixedTwoStepFunction:
 public MixedNetworkAlterFunction, IntAlterFunction
 {
 public:
-	MixedTwoStepFunction(string firstNetworkName, string secondNetworkName,
+	MixedTwoStepFunction(std::string firstNetworkName, std::string secondNetworkName,
 						Direction firstDirection, Direction secondDirection);
 
 	virtual void initialize(const Data * pData,
