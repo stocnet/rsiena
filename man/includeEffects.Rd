@@ -18,9 +18,9 @@ includeEffects(myeff, ..., include = TRUE, name = myeff$name[1], type = "eval",
   \item{\dots}{
 short names to identify the effects which should be included or excluded.}
   \item{include}{Boolean. default TRUE, but can be switched to FALSE to
-	turn off an effect.}
-  \item{name}{Name of network for which effects are being
-	included. Defaults to the first in the effects object.}
+    turn off an effect.}
+  \item{name}{Name of dependent variable (network or behavior) for which
+    effects are being included. Defaults to the first in the effects object.}
   \item{type}{
   Type of effects to be included: "eval", "endow", "creation", or "rate".}
   \item{interaction1}{
@@ -47,7 +47,7 @@ short names to identify the effects which should be included or excluded.}
   The arguments should identify the effects completely.\cr
   The short names must not be set between quotes,
   unless you use \code{character=TRUE}.
-  
+
   The function \code{includeEffects} operates as an interface
   setting the "include" column on selected rows of the effects object,
   to the value requested (TRUE or FALSE).
@@ -69,15 +69,15 @@ short names to identify the effects which should be included or excluded.}
   is obtained by executing \code{\link{effectsDocumentation}(myeff)}.
 }
 \value{
-	An updated version of the input effects object, with the include, test, and fix
-	columns for one or more rows updated.
-	Details of the rows altered will be printed.
+    An updated version of the input effects object, with the include, test, and fix
+    columns for one or more rows updated.
+    Details of the rows altered will be printed.
 }
 \references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley }
 \seealso{
   \code{\link{getEffects}}, \code{\link{setEffect}},
-  \code{\link{includeInteraction}}, 
+  \code{\link{includeInteraction}},
   \code{\link{print.sienaEffects}}, \code{\link{effectsDocumentation}}
 }
 

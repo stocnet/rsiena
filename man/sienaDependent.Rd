@@ -3,8 +3,8 @@
 \alias{sienaNet}
 \title{Function to create a dependent variable for a Siena model}
 \description{
-  Creates a Siena dependent variable: either a network, created from a matrix
-  or array or list of sparse matrix of triples; or a behavior variable,
+  Creates a Siena dependent variable: either a network, created from
+  an array or list of sparse matrix of triples; or a behavior variable,
   created from a matrix.\cr
   \code{sienaDependent()} and \code{sienaNet()} are identical functions;
   the second name was used from the start of the \code{RSiena} package,

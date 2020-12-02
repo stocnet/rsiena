@@ -18,6 +18,7 @@
 
 #include <vector>
 #include <cstring>
+#include <exception>
 #include <R_ext/Random.h>
 #include <R_ext/Print.h>
 #include <R_ext/Error.h>
