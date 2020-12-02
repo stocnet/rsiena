@@ -2722,7 +2722,7 @@ int MLSimulation::aborted(int stepType) const
 
 void MLSimulation::updateCurrentPermutationLength(bool accept)
 {
-	int permutationLength = this->lcurrentPermutationLength;
+	unsigned permutationLength = this->lcurrentPermutationLength;
 	if (this->lthisPermutationLength == permutationLength)
 	{
 		double minvalue = this->pModel()->minimumPermutationLength();
@@ -2935,7 +2935,7 @@ bool MLSimulation::neighbourhoodChange(MiniStep * pMiniStep1,
 			// Loop over all networks with same actorset
 			if (this->lvariables.size() > 1)
 			{
-				for (int k = 0;k < this->lvariables.size(); k++)
+				for (unsigned k = 0;k < this->lvariables.size(); k++)
 				{
 					if (this->lvariables[k]->pActorSet()==
 						pVariable->pActorSet())

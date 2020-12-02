@@ -9,4 +9,5 @@ src/*.dll
 *.log
 *.status
 *.synctex
+*.bak
 TexAux/
