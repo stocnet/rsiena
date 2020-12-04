@@ -20,6 +20,8 @@ sienaDataConstraint(x, net1, net2,
 }
 \details{
   The value of the appropriate attribute is set to the value requested.
+  Note that, for \code{value=TRUE}, the correspondence of this value 
+  to the data is not checked.
 }
 \value{
   Updated Siena data object.

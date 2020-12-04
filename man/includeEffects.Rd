@@ -19,8 +19,8 @@ includeEffects(myeff, ..., include = TRUE, name = myeff$name[1], type = "eval",
 short names to identify the effects which should be included or excluded.}
   \item{include}{Boolean. default TRUE, but can be switched to FALSE to
     turn off an effect.}
-  \item{name}{Name of dependent variable (network or behavior) for which
-    effects are being included. Defaults to the first in the effects object.}
+  \item{name}{Name of network for which effects are being
+	included. Defaults to the first in the effects object.}
   \item{type}{
   Type of effects to be included: "eval", "endow", "creation", or "rate".}
   \item{interaction1}{
@@ -78,6 +78,7 @@ short names to identify the effects which should be included or excluded.}
 \seealso{
   \code{\link{getEffects}}, \code{\link{setEffect}},
   \code{\link{includeInteraction}},
+  \code{\link{updateSpecification}},
   \code{\link{print.sienaEffects}}, \code{\link{effectsDocumentation}}
 }
 

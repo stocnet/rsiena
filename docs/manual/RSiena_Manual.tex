@@ -15494,6 +15494,35 @@ the R-Forge repository, which contains a more complete listing.
 \begin{itemize} % Also update version number in abstract
 
 
+\item 2020-12-03  GitHub, package version 1.2-29.\\
+Integration of GitHub and what was at R-Forge.
+
+Changes in RSiena:
+\begin{itemize}
+   \item New effects (due to Christoph Stadtfeld):
+     \texttt{transtrip.FR, transtrip.FE, transtrip.EE, WWX.EE, WWX.FR, WXX.FE,
+     WXX.ER, XWX.ER, XWX.FE, to.2, toBack, toRecip}.
+   \item New functions \sfn{meta.table} and \sfn{funnelPlot}.
+   \item In \sfn{sienaAlgorithmCreate}, use the definitions for \texttt{projname=NULL}
+     also if any environment variable \texttt{\_R\_CHECK*} is set.
+   \item Adapted filter \texttt{disjoint} so that it operates correctly
+     also when the network is symmetric.\\
+     Consequence: constraint that two networks are disjoint
+     operates correctly also when one of the networks is symmetric
+     and the other is not.
+   \item Adapted filter \texttt{higher} so that it operates correctly
+     also when the other network is symmetric.\\
+     Consequence: constraint that one network is at least as high
+     as another network operates correctly also when
+     the higher networks is symmetric and the other is not.
+   \item In \sfn{CheckConstraints}, used in \sfn{sienaDataCreate}, the requirement
+     was dropped that the two networks have the same symmetry property;
+     and for \texttt{higher} it is required that if the lower network
+     is symmetric, the higher network is also symmetric.
+   \item In \sfn{sienaDataConstraint}, if type is \texttt{disjoint} or \texttt{atLeastOne},
+     the constraint is also implemented for the pair \texttt{(net2, net1)}.
+\end{itemize}
+
 \item 2020-09-16 R-Forge Revision 350, package version 1.2-27.
 
 Changes in RSiena and RSienaTest:
@@ -15928,7 +15957,7 @@ Changes in RSiena and RSienaTest:
      covariate is 0, or a covariate has only two values, of version 1.1-306,
      was  taken further (was incomplete).
    \item Message if attributes \texttt{higher, disjoint},
-   or \texttt{atLeastOne} are \texttt{TRUE}      at the end of \\
+   or \texttt{atLeastOne} are \texttt{TRUE} at the end of \\
      \sfn{sienaDataCreate}.
    \end{itemize}
 Changes in RSienaTest:

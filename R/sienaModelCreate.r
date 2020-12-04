@@ -31,13 +31,13 @@ sienaModelCreate <- function(fn,
 		model$projname <- tempfile("Siena")
 		if (checking)
 		{
-	cat('If you use this algorithm object, siena07 will create an output file', 
+	cat('If you use this algorithm object, siena07 will create/use an output file', 
 				paste('Siena','.txt',sep=''),'.\n')
 		
 		}
 		else
 		{
-	cat('If you use this algorithm object, siena07 will create an output file',
+	cat('If you use this algorithm object, siena07 will create/use an output file',
 				paste(model$projname,'.txt',sep=''),'.\n')
 			cat('This is a temporary file for this R session.\n')
 		}
@@ -47,7 +47,7 @@ sienaModelCreate <- function(fn,
 		if (is.character(projname))
 		{
 			model$projname <- projname
-			cat('If you use this algorithm object, siena07 will create an output file', 
+			cat('If you use this algorithm object, siena07 will create/use an output file', 
 				paste(model$projname,'.txt',sep=''),'.\n')
 		}
 		else

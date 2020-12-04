@@ -218,7 +218,7 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
     edited by Kees van Montfort, Han Oud and Albert Satorra; Lawrence Erlbaum.
    \item Steglich, Christian E. G., Snijders, Tom A. B., and
     Pearson, Michael A. (2010). Dynamic networks and behavior:
-    Separating selection from influence. 
+    Separating selection from influence.
     \emph{Sociological Methodology} \bold{40}, 329--393.
    \item Information about the implementation of the algorithm is in
      \url{http://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf}.

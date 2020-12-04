@@ -273,7 +273,7 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 	compositionChange <- vector('list',narg)
 	v1 <- 0; v2 <- 0; v3 <- 0; v4 <- 0; v5 <- 0; v6 <- 0
 	for (i in seq(along = dots))
-		switch(class(dots[[i]]),
+		switch(class(dots[[i]])[1],
 			   sienaDependent = {
 				   if (attr(dots[[i]],'sparse'))
 				   {
@@ -321,8 +321,9 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 				   compositionChange[[v6]] <- dots[[i]]
 				   names(compositionChange)[v6] <- nm[i]
 			   },
-			   stop(paste("invalid object in sienaDataCreate",
-						  class(dots[[i]])), call.=FALSE)
+			   stop(paste("invalid object in sienaDataCreate: argument number",
+					i, "is of class ", class(dots[[i]]),
+					", which is not a valid ... argument."), call.=FALSE)
 			   )
 	if (v1 == 0)
 	{
@@ -1052,7 +1053,8 @@ checkConstraints <- function(z)
 			symmetric2 <- symmetrics[net2]
 
 			if (type1 == type2 && type1 != "behavior" && nodes1 == nodes2
-				&& type1 != "continuous" && type2 != "continuous")
+				&& symmetric1 == symmetric2 && type1 != "continuous" 
+				&& type2 != "continuous")
 			{
 				higher[i] <- TRUE
 				disjoint[i] <- TRUE
@@ -1080,8 +1082,7 @@ checkConstraints <- function(z)
 					var1[var1 %in% c(10, 11)] <- var1[var1 %in% c(10, 11)] - 10
 					var2[var2 %in% c(10, 11)] <- var2[var2 %in% c(10, 11)] - 10
 					## higher
-					if ((any(var1 - var2 < 0, na.rm=TRUE)) ||
-							(symmetric2 && !symmetric1))
+					if (any(var1 - var2 < 0, na.rm=TRUE))
 					{
 						higher[i] <- FALSE
 					}

@@ -4,6 +4,7 @@
 \alias{summary.sienaMeta}
 \alias{plot.sienaMeta}
 \alias{print.summary.sienaMeta}
+\alias{meta.table}
 \title{Methods for processing sienaMeta objects}
 \usage{
 \method{print}{sienaMeta}(x, file=FALSE, reportEstimates=FALSE, ...)
@@ -14,10 +15,12 @@
 
 \method{plot}{sienaMeta}(x, ..., which = 1:length(x$theta),
                          useBound=TRUE, layout = c(2,2))
+meta.table(x, d=3, option=1,
+    filename=paste(deparse(substitute(x)),'_global.tex',sep=""), align=TRUE)
 }
 \description{
   \code{print}, \code{summary}, and \code{plot} methods for
-   \code{sienaMeta} objects.
+   \code{sienaMeta} objects; and a function to write a LaTeX table.
 }
 \arguments{
   \item{object}{An object of class \code{sienaMeta}.}
@@ -33,11 +36,17 @@
   \item{layout}{Vector giving number of rows and columns
     in the arrangement of the several panels in a
     rectangular array, possibly spanning multiple pages.}
+  \item{d}{Number of decimals to be used in table.}
+  \item{option}{1: results without normality assumptions;
+    2: results with normality assumptions, with confidence intervals;
+    3: results with normality assumptions, with standard errors.}
+  \item{filename}{filename for output.}
+  \item{align}{Whether to align numbers at the decimal point.}
   \item{\dots}{For extra arguments (none used at present).}
 }
 \value{
  The function \code{print.sienaMeta} prints details of the merged
- estimates of the meta-analysis carried out by \code{\link{siena08}}, 
+ estimates of the meta-analysis carried out by \code{\link{siena08}},
  with test statistics. See the help page for \code{\link{siena08}}
  for what is produced by this function.
 
@@ -50,11 +59,18 @@
  name: \code{projname.txt}  where \code{projname} is the value of the
  argument to \code{siena08}.
 
+ The function \code{meta.table} writes a combined table of results
+ for all parameters to a LaTeX file in (as default) the current working
+ directory. This table is a more compact version of
+ the results presented by \code{print.sienaMeta}.
+
  The function \code{plot.sienaMeta} plots estimates against standard
  errors for each effect, with reference lines added at the two-sided
  significance threshold 0.05. It returns an object of class \code{trellis},
- of the \code{\link{lattice}}.package. Effects for which a score test
- was requested are not plotted.
+ of the \code{\link{lattice}} package. Effects for which a score test
+ was requested are not plotted.\cr
+ Another funnel plot, not using \code{\link{siena08}},
+ is available as \code{\link{funnelPlot}}.
 }
 \references{
   T. A. B. Snijders and Chris Baerveldt.

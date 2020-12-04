@@ -145,12 +145,13 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
     Default \code{NULL} implies values 1.}
   \item{mult}{Multiplication factor for maximum likelihood and Bayes. Number of
     steps per iteration is set to this multiple of the total distance
-    between the observations at start and finish of the wave.
+    between the observations at start and finish of the wave (and rounded).
     Decreasing \code{mult} below a certain value has no further effect.\cr
-    This can be either a number (which needs to be positive) or a vector
-    of numbers, of length equal to the number of basic rate parameters in the
-    model, i.e., the number of periods times the number of dependent
-    variables.}
+     \code{mult} can be either a number (which needs to be positive) or a vector
+    of numbers, of length equal to the total number of periods. Note that for 
+    multi-group data, the total number of periods is equal to the number
+    of groups times the number of periods per group 
+    (if the latter is constant).}
   \item{simOnly}{Logical: If TRUE, then the calculation of the covariance
     matrix and standard errors of the estimates at the end of
     Phase 3 of the estimation algorithm in function siena07 is skipped.

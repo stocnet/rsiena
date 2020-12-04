@@ -11,13 +11,14 @@ sienaDataCreate(..., nodeSets=NULL, getDocumentation=FALSE)
 }
 \arguments{
   \item{\dots}{objects of class \code{\link{sienaDependent}},
-    \code{\link{coCovar}},\code{\link{varCovar}},\code{\link{coDyadCovar}},\cr
-  \code{\link{varDyadCovar}}, \code{\link{sienaCompositionChange}}}
+    \code{\link{coCovar}}, \code{\link{varCovar}}, \code{\link{coDyadCovar}},
+  \code{\link{varDyadCovar}}, and/or \code{\link{sienaCompositionChange}}.
+  There should be at least one \code{\link{sienaDependent}} object.}
   \item{nodeSets}{list of Siena node sets. Default is the single node
     set named "Actors", length equal to the number of rows in the first
     object of class "sienaDependent". If the entire data set contains more than
     one node set, then the node sets must have been specified in
-    the creation of all data objects.}
+    the creation of all data objects mentioned in \dots.}
   \item{getDocumentation}{Flag to allow documentation of internal
     functions, not for use by users.}
 }

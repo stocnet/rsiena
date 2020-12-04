@@ -1,4 +1,36 @@
+# RSiena 1.2-29
+
+## 
+
+2020-12-03
+
+## Changes in RSiena:
+   * New effects (due to Christoph Stadtfeld):
+     transtrip.FR, transtrip.FE, transtrip.EE, WWX.EE, WWX.FR, WXX.FE,
+     WXX.ER, XWX.ER, XWX.FE, to.2, toBack, toRecip.
+   * New effect transtripX.
+   * New functions meta.table and funnelPlot.
+   * For effect from.w.ind, option parameter=-1 added.
+   * The to effect is an ego effect.
+   * For siena.table, some of the effectNames changed to nice strings,
+     so that LaTeX can run without errors if type='tex'.
+   * The object produced by siena08 now has IWLS estimates more easily 
+     accessible, as object$muhat and object$se.muhat.
+   * Error message in sienaTimeTest for sienaFit objects produced with
+     lessMem=TRUE.
+   * More extensive error message for error in named vectors in algorithm object
+     (checkNames in initializeFRAN).
+   * For sienaDataCreate: more extensive error message, and class(...) replaced
+     by class(...)[1]. 
+   * multiplication factor added to print.sienaAlgorithm if maxlike.
+   * SienaAlgorithmCreate: requirements for mult corrected in help page.
+   * In sienaAlgorithmCreate, use the definitions for projname=NULL
+     also if any environment variable _R_CHECK* is set. 
+
+
 # RSiena 1.2-28
+
+## 
 
 2020-09-30
 
@@ -19,6 +51,8 @@
      is symmetric, the higher network is also symmetric.
    * In "sienaDataConstraint", if type is "disjoint" or "atLeastOne",
      the constraint is also implemented for the pair (net2, net1).
+   * Vignette basicRSiena added (was earlier available as a script);
+     thanks to James Hollway.
 
 # RSiena 1.2-26
 

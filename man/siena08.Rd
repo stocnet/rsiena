@@ -1,5 +1,6 @@
 \name{siena08}
 \alias{siena08}
+\alias{sienaMeta}
 \title{
 Function to perform a meta analysis of a collection of Siena fits.
 }
@@ -32,7 +33,7 @@ siena08(..., projname = "sienaMeta", bound = 5, alpha = 0.05, maxit=20)
 \details{
   A meta analysis is performed as described
   in the Siena manual, section "Meta-analysis of Siena results". This
-  consists of three parts: an iterated weighted least squares
+  consists of three parts: an iterated weighted least squares (IWLS)
   modification of the method described in the reference below;
   maximum likelihood estimates and confidence intervals based on
   profile likelihoods under normality assumptions;
@@ -48,13 +49,15 @@ siena08(..., projname = "sienaMeta", bound = 5, alpha = 0.05, maxit=20)
   This object contains at least the following.
   \item{thetadf}{Data frame containing the coefficients, standard errors
     and score test results}
-  \item{projname}{Name for any output file to be produced by the print method}
+  \item{projname}{Root name for any output file to be produced by the print method}
   \item{bound}{Estimates with standard error above this value were
     excluded from the calculations}
   \item{scores}{Object of class \code{by} indicating, for each effect in
     the models, whether score test  information was present.}
   \item{requestedEffects}{The \code{requestedEffects} component of the first
     \code{sienaFit} object in ....}
+  \item{muhat}{The vector of IWLS estimates.}
+  \item{se.muhat}{The vector of standard errors of the IWLS estimates.}
   \item{theta}{The vector of ML estimates \code{mu.ml} (see below).}
   \item{se}{The vector of standard errors of the ML estimates \code{mu.ml.se}
     (see below).}
@@ -110,7 +113,8 @@ siena08(..., projname = "sienaMeta", bound = 5, alpha = 0.05, maxit=20)
 }
 \author{Ruth Ripley, Tom Snijders}
 
-\seealso{\code{\link{sienaMeta}}, \code{\link{iwlsm}}, \code{\link{siena07}}
+\seealso{\code{\link{print.sienaMeta}}, \code{\link{funnelPlot}},
+  \code{\link{meta.table}}, \code{\link{iwlsm}}, \code{\link{siena07}}
 }
 \examples{
 \dontrun{

@@ -57,7 +57,7 @@ for data set \code{x}.\cr
     which time dummy interacted parameters should be included?}
   \item{initialValue}{starting value for estimation, also used for
     \code{fix} and \code{test}.}
-  \item{parm}{parameter values}
+  \item{parm}{internal effect parameter values}
   \item{functionType}{"objective" or "rate"}
   \item{period}{period for basic rate parameters}
   \item{rateType}{"Structural", "covariate", "diffusion"}
@@ -89,6 +89,13 @@ for data set \code{x}.\cr
   The columns not used for identifying the effect define how the effect is used
   for the estimation.
 
+  The columns \code{initialValue} and \code{parm} should not be confused:
+  \code{initialValue} gives the initial value for the parameter to be estimated,
+  indicated in the manual by \code{theta};
+  \code{parm} gives the internal value of the parameter defining the effect,
+  indicated in the manual (Chapter 12) by \code{p}, and is fixed
+  during the estimation.
+
   A list of all effects in a given effects object (e.g., \code{myeff}),
   including their names of dependent variables, effect names, short names,
   and values of interaction1 and interaction2 (if any),
@@ -98,7 +105,8 @@ for data set \code{x}.\cr
 \author{Ruth Ripley}
 \seealso{\code{\link{sienaDataCreate}}, \code{\link{sienaGroupCreate}},
         \code{\link{includeEffects}}, \code{\link{setEffect}},
-        \code{\link{print.sienaEffects}}}
+        \code{\link{updateSpecification}},
+        \code{\link{print.sienaEffects}},\code{\link{effectsDocumentation}}}
 \examples{
 mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
 mybeh <- sienaDependent(s50a, type="behavior")

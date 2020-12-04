@@ -31,9 +31,9 @@ sienaGOF <- function(
 	{
 		stop("You must instruct siena07 to return the simulated networks")
 	}
-	if (!is.null(sienaFitObject$sf2.byIterations))
+	if (!is.null(sienaFitObject$sf2.byIteration))
 	{
-		if (!sienaFitObject$sf2.byIterations)
+		if (!sienaFitObject$sf2.byIteration)
     	{
         	stop("sienaGOF needs sf2 by iterations (use lessMem=FALSE)")
     	}

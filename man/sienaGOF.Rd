@@ -250,13 +250,13 @@ myeff <- getEffects(mydata)
 myeff <- includeEffects(myeff, transTrip)
 myeff <- includeEffects(myeff, recip, name="mynet2")
 # Shorter phases 2 and 3, just for example.
-\dontrun{
 ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE, returnDeps=TRUE)
 gofi <- sienaGOF(ans, IndegreeDistribution, verbose=TRUE, join=TRUE,
   varName="mynet1")
 summary(gofi)
 plot(gofi)
 
+\dontrun{
 (gofi.nc <- sienaGOF(ans, IndegreeDistribution, cumulative=FALSE,
     varName="mynet1"))
 # cumulative is an example of "...".

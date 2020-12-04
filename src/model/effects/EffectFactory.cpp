@@ -567,6 +567,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new SameCovariateActivityEffect(pEffectInfo, false, true);
 	}
+	else if (effectName == "transTripX")
+	{
+		pEffect = new CovariateTransitiveTripletsEffect(pEffectInfo);
+	}
 	else if (effectName == "homXTransTrip")
 	{
 		pEffect = new HomCovariateTransitiveTripletsEffect(pEffectInfo, false);

@@ -18,6 +18,28 @@ siena.table <- function(x, type='tex',
 	vertLine=TRUE, tstatPrint=FALSE,
 	sig=FALSE, d=3, nfirst=NULL)
 {
+	## fromObjectToText transforms names from the effects object
+	## to names readable in LateX or text.
+
+    fromObjectToText <- function(a, type='tex'){
+		b <- as.character(a)
+		if (type == 'tex')
+		{
+			b <- gsub('->', '$\\rightarrow$', fixed=TRUE, b)
+			b <- gsub('<-', '$\\leftarrow$', fixed=TRUE, b)
+			b <- gsub('<>', '$\\leftrightarrow$', fixed=TRUE, b)
+			b <- gsub('sqrt', '$\\sqrt{}$', fixed=TRUE, b)
+			b <- gsub('&', '.', fixed=TRUE, b)
+		}
+# Note: R changes \\ to \ but still displays \\ in printing the string.
+		b <- gsub('^(1/1)', '', fixed=TRUE, b)
+		b <- gsub('^(1/2)', '(sqrt)', fixed=TRUE, b)
+		b <- gsub('^', '', fixed=TRUE, b)
+		b <- gsub('_', '-', fixed=TRUE, b)
+		b <- gsub('#', '.', fixed=TRUE, b)
+		b
+	}
+
 	objectName <- deparse(substitute(x))
 	fromBayes <- FALSE
 	xkind.string <- "sienaFit"
@@ -101,6 +123,7 @@ siena.table <- function(x, type='tex',
 
 	max.eff.width <- max(nchar(effects$effectName))
 	effects$effectName <- format(effects$effectName,width=max.eff.width)
+	effects$effectName <- fromObjectToText(effects$effectName, type=type)
 
 	max.width <- function(theta)
 	{

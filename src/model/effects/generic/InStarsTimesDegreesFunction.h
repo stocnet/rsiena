@@ -43,7 +43,8 @@ public:
 
 private:
 	bool lroot; // should the square root be taken?
-	std::string lvariableName; // name of second network
+	bool linv; // should the inverse be taken?
+//	std::string lvariableName; // name of second network
 	// Lookup table for fast square root calculations:
 	SqrtTable * lsqrtTable;
 };

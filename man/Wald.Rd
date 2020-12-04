@@ -93,5 +93,13 @@ for (i in which(ans$test)){
    sct <- score.Test(ans,i)
    cat(ans$requestedEffects$effectName[i], '\n')
    print(sct)}
+# Testing that endowment and creation effects are identical:
+myeff1 <- getEffects(mydata)
+myeff1 <- includeEffects(myeff1, recip, include=FALSE)
+myeff1 <- includeEffects(myeff1, recip, type='creation')
+(myeff1 <- includeEffects(myeff1, recip, type='endow'))
+(ans1 <- siena07(myalgorithm, data=mydata, effects=myeff1, batch=TRUE))
+A <- matrix(c(0,1,-1), 1, 3)
+(Wald.RSiena(A, ans1))
 }
 \keyword{ tests }
