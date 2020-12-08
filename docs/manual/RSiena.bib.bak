@@ -230,16 +230,6 @@ Spatial Econometrics},
    Pages = {141--163},
    Year = {1990} }
 
-@article{ArnoldPress1989,
-  title={Compatible conditional distributions},
-  author={Arnold, Barry C and Press, S James},
-  journal={Journal of the American Statistical Association},
-  volume={84},
-  issue={405},
-  pages={152--156},
-  year={1989}
-}
-
 @TechReport{ArrowBorz04,
   author =       {Arrow, K. J. and R. Borzekowski},
   title =        {Limited Network Connections and the Distribution of Wages},
@@ -420,13 +410,6 @@ PAGES = "185--198"
  volume = 102,
  pages = {1383--1415}}
 
-@book{BenAkivaLerman2018,
-  title={Discrete choice analysis: {T}heory and application to travel demand},
-  author={Ben-Akiva, Moshe and Lerman, Steven R},
-  year={2018},
-  publisher={MIT Press},
-  address={Cambridge, Mass.}
-}
 
 @Article{BenderMcFarland2006,
   author = {Skye Bender-deMoll and Daniel McFarland},
@@ -458,7 +441,7 @@ PAGES = "185--198"
 	title = {Voting: {A} Study of Opinion Formation in a Presidential Campaign},
 	publisher = {Chicago University Press},
 	year = {1954},
-	address = {Chicago}
+	address = {Chicago},
 }
 
 
@@ -510,14 +493,6 @@ PAGES = "185--198"
    Year = {1977}
 }
 
-@article{BlondelEA2011,
-  title={The {L}ouvain method for community detection in large networks},
-  author={Blondel, Vincent D and Guillaume, Jean-Lou and Lambiotte, Renaud and Lefebvre, {\'E}tienne},
-  journal={Journal of Statistical Mechanics: Theory and Experiment},
-  volume={10},
-  pages={P10008},
-  year={2011}
-}
 
 @book{Byrn71,
    Author = {Byrne, Donn Erwin},
@@ -971,15 +946,6 @@ PAGES = "1--28" }
   volume={38},
   pages={155--200},
   year={2008}
-}
-
-@article{Butts2017,
-author = {Carter T. Butts},
-title ={Comment: {A}ctor Orientation and Relational Event Models},
-journal = {Sociological Methodology},
-volume = {47},
-pages = {47--56},
-year = {2017}
 }
 
 @BOOK{Byrne71,
@@ -1724,22 +1690,6 @@ Edgington69,
   year = {2005}
 }
 
-@article{ElmerBodaStadtfeld2017,
-   title={The co-evolution of emotional well-being with weak and strong friendship ties},
-   author={Elmer, Timon and Boda, Zs\'{o}fia And Stadtfeld, Christoph},
-   volume={5},
-   issue={3},
-   journal={Network Science},
-   year={2017},
-   pages={278--307}
-}
-
-@book{Elster1989,
-  title={Nuts and bolts for the social sciences},
-  author={Elster, Jon},
-  year={1989},
-  publisher={Cambridge University Press}
-}
 
 @incollection{Emerson72,
   author = {Richard M. Emerson},
@@ -1789,17 +1739,6 @@ YEAR = "2007",
 JOURNAL = "American Journal of Sociology",
 VOLUME = "112",
 PAGES = "1495--1533"
-}
-
-@article{Epstein1999,
-  title={Agent-based computational models and generative social science},
-  author={Epstein, Joshua M},
-  journal={Complexity},
-  volume={4},
-  number={5},
-  pages={41--60},
-  year={1999},
-  publisher={Wiley Online Library}
 }
 
 @book{Epstein2006,
@@ -2104,7 +2043,7 @@ FreedmanLane83,
 
 @ARTICLE{Freeman1992,
   AUTHOR="Linton C. {Freeman}",
-  TITLE = "The Sociological Concept of Â‘GroupÂ’: An Empirical Test of
+  TITLE = "The Sociological Concept of ‘Group’: An Empirical Test of
 Two Models.",
   YEAR = "1992",
   JOURNAL = "American Journal of Sociology",
@@ -2408,16 +2347,6 @@ GibbonsOlk03,
   year = 2009,
   pages = {103-125}}
 
-@article{Statnet2008,
-  title={A statnet Tutorial},
-  author={Goodreau, Steven M and Handcock, Mark S and
-     Hunter, David R and Butts, Carter T and Morris, Martina},
-  journal={Journal of Statistical Software},
-  volume={24},
-  number={9},
-  pages={1--26},
-  year={2008}
-}
 
 @article{GZFA2009,
   author = {Anna Goldenberg and Alice X. Zheng and Stephen E. Fienberg and
@@ -2450,7 +2379,7 @@ ADDRESS = "London"
 }
 
 @BOOK{GouMon1996,
-AUTHOR = "Christian {GouriÃ©roux} and Alain {Monfort}",
+AUTHOR = "Christian {Gouriéroux} and Alain {Monfort}",
 TITLE = {Simulation-Based Econometric Methods},
 PUBLISHER = "Oxford University Press",
 YEAR = "1996",
@@ -2528,7 +2457,7 @@ journal = {International Journal of Epidemiology}
 
 @article{GremmenEA2018,
 author = {Gremmen, Mariola C. and Berger, Christian and Ryan, Allison M. and
-        Steglich, Christian E.G. and Veenstra, RenÃ© and Dijkstra, Jan K.},
+        Steglich, Christian E.G. and Veenstra, René and Dijkstra, Jan K.},
 title = {Adolescents' Friendships, Academic Achievement, and Risk Behaviors:
     {S}ame-Behavior and Cross-Behavior Selection and Influence Processes},
 journal = {Child Development},
@@ -2784,7 +2713,7 @@ HeagertyLele98,
 
 @book{HedstromSwedberg1998,
   title={Social mechanisms: An analytical approach to social theory},
- author={Hedstr{\"o}m, Peter and Swedberg, Richard},
+  editor={Hedstr{\"o}m, Peter and Swedberg, Richard},
   year={1998},
   address = {Cambridge},
   publisher={Cambridge University Press}
@@ -2796,15 +2725,6 @@ HeagertyLele98,
    Publisher = {Cambridge University Press},
    Address = {Cambridge},
    Year = {2005} }
-
-@article{HedstromYlikoski2010,
-  title={Causal mechanisms in the social sciences},
-  author={Hedstr{\"o}m, Peter and Ylikoski, Petri},
-  journal={Annual Review of Sociology},
-  volume={36},
-  pages={49--67},
-  year={2010}
-}
 
 
 @article{Heider1948,
@@ -3038,13 +2958,6 @@ YEAR = "2012",
    Pages = {446--452},
    Year = {1987} }
 
-@book{Homans1950,
-AUTHOR = "George C. {Homans}",
-TITLE = {The Human Group},
-PUBLISHER = "Harcourt, Brace, Jovanovich",
-YEAR = "1950",
-ADDRESS = "New York"
-}
 
 
 @BOOK{Homans74,
@@ -3672,7 +3585,7 @@ KennedyCade96,
 
 @ARTICLE{KiesnerEA04,
   AUTHOR="Jeff {Kiesner}, Margaret {Kerr}, H{\aa}kan {Stattin} ",
-  TITLE = "Â‘Â‘Very Important Persons'' in adolescence: going beyond
+  TITLE = "‘‘Very Important Persons'' in adolescence: going beyond
           in-school, single friendships in the study of peer homophily",
     YEAR = "2004",
   JOURNAL = "Journal of Adolescence",
@@ -3747,18 +3660,6 @@ JOURNAL = "Social Networks",
 VOLUME = "26",
 PAGES = "3--28"
 }
-
-@article{KittsEtAl2017,
-  title={Investigating the temporal dynamics of interorganizational exchange:
-     {Patient} transfers among {Italian} hospitals},
-  author={Kitts, James A and Lomi, Alessandro and Mascia, Daniele and Pallotti, Francesca and Quintane, Eric},
-  journal={American Journal of Sociology},
-  volume={123},
-  issue={3},
-  pages={850--910},
-  year={2017}
-}
-
 
 @article{KivelaEtAl2014,
 author = {Kivel\"{a}, Mikko and Arenas, Alex and Barthelemy, Marc and
@@ -4007,7 +3908,7 @@ Analysis of Dyadic Data},
 }
 
 @article{KHSS2020,
-    title = "Missing data in cross-sectional networks Â–- {An}
+    title = "Missing data in cross-sectional networks –- {An}
         extensive comparison of missing data treatment methods",
     author = "Robert W. Krause and Mark Huisman and Christian Steglich and Tom Snijders",
     journal = "Social Networks",
@@ -4355,19 +4256,10 @@ journal = "Journal of Mathematical Psychology",
 volume = 57,
 number = "0",
 pages = "275--283",
-year = "2013"
+year = "2013",
+doi = "http://dx.doi.org/10.1016/j.jmp.2012.03.002",
 }
 
-@article{LernerLomi2020,
- title = {The free encyclopedia that anyone can dispute:
-    {An} analysis of the micro-structural dynamics of positive and negative
-    relations in the production of contentious Wikipedia articles},
-    author = {J\"{u}rgen Lerner and Alessandro Lomi},
-    journal = {Social Networks},
-    volume = {60},
-    pages = {11--25},
-    year = {2020}
-}
 
 @book{Lev69,
 author ={L\'evi-Strauss, Claude},
@@ -4438,16 +4330,6 @@ year = 2001,
 publisher = {Aldine de Gruyter},
 address = {New York}}
 
-@article{Lindenberg1989,
-  title={Social production functions, deficits, and social revolutions: Prerevolutionary France and Russia},
-  author={Lindenberg, Siegwart},
-  journal={Rationality and Society},
-  volume={1},
-  number={1},
-  pages={51--77},
-  year={1989},
-  publisher={Sage Publications}
-}
 
 @INCOLLECTION{Lindenberg1992,
 AUTHOR = "Siegwart M. {Lindenberg}",
@@ -4781,16 +4663,6 @@ Mantel67,
   year={2010}
 }
 
-@article{MarcumButts2015,
-  title={Constructing and Modifying Sequence Statistics for relevent Using {informR} in {R}?},
-  author={Marcum, Christopher Steven and Butts, Carter T},
-  journal={Journal of Statistical Software},
-  volume={64},
-  number={5},
-  pages={1--36},
-  year={2015}
-}
-
 @ARTICLE{Mark98,
   AUTHOR="Noah {Mark}",
   TITLE = "Beyond individual differences: Social differentiation from first
@@ -4861,15 +4733,6 @@ principles",
   issue={3},
   pages={665--680},
   year={2018}
-}
-
-@book{MLVM2019,
-  title={Conducting personal network research: {A} practical guide},
-  author={McCarty, Christopher and Lubbers, Miranda J and Vacca, Raffaele
-    and Molina, Jos{\'e} Luis},
-  year={2019},
-  address={New York, London},
-  publisher={The Guilford Press}
 }
 
 @article{McCraeJohn1992,
@@ -5345,17 +5208,6 @@ ADDRESS = "New York"
   pages = {   167--256}
 }
 
-@article{Newman2006,
-  title={Modularity and community structure in networks},
-  author={Newman, Mark EJ},
-  journal={Proceedings of the national academy of sciences},
-  volume={103},
-  number={23},
-  pages={8577--8582},
-  year={2006},
-  publisher={National Acad Sciences}
-}
-
 @book{Newman2010,
     author ={M.E.J. Newman},
     title = {Networks. {A}n Introduction},
@@ -5395,16 +5247,6 @@ pages = {2566--2572}}
     year = {2018}
 }
 
-@article{Niezink2017,
-  title={Co-evolution of social networks and continuous actor attributes},
-  author={Niezink, Nynke M. D. and Snijders, Tom A. B.},
-  journal={The Annals of Applied Statistics},
-  volume={11},
-  issue={4},
-  pages={1948--1973},
-  year={2017}
-}
-
 @incollection{Niezink2018b,
 author="Niezink, Nynke M. D. and Snijders, Tom A. B.",
 editor="van Montfort, Kees and Oud, Johan H.L. and Voelkle, Manuel C.",
@@ -5414,15 +5256,6 @@ year="2018",
 publisher="Springer International Publishing",
 address="Cham",
 pages="111--134"
-}
-
-@article{Niezink2019,
-  title={No longer discrete: {Modeling} the dynamics of social networks and continuous behavior},
-  author={Niezink, Nynke M. D. and Snijders, Tom A. B. and van Duijn, Marijtje A. J.},
-  journal={Sociological Methodology},
-  volume={49},
-  pages={295--340},
-  year={2019}
 }
 
 @Manual{nlme,
@@ -5592,24 +5425,13 @@ ADDRESS = "Ljubljana"
 
 
 @book{Pajek2018,
-  title={Exploratory social network analysis with {Pajek}},
+  title={Exploratory social network analysis with Pajek},
   author={De Nooy, Wouter and Mrvar, Andrej and Batagelj, Vladimir},
   year={2018},
   edition={3rd},
   publisher={Cambridge University Press},
   location={Cambridge}
 }
-
-@article{PalEtAl2016,
-author = {P\'{a}l, Judit and Stadtfeld, Christoph and Grow, Andr\'{e} and Tak\'{a}cs, K\'{a}roly},
-title = {Status Perceptions Matter: {U}nderstanding Disliking Among Adolescents},
-journal = {Journal of Research on Adolescence},
-volume = {26},
-issue= {4},
-pages = {805--818},
-year = {2016}
-}
-
 
 @article {PattisonWasserman99,
    author = {Pattison, Philippa and Wasserman, Stanley},
@@ -5680,17 +5502,6 @@ ordering structures},
    Pages = {301--337},
    Year = {2002} }
 %edited by Ross M.\ Stolzenberg. Boston, MA: Blackwell Publishing.
-
-@article{PattisonWasserman1999,
-  title={Logit models and logistic regressions for social networks:
-            {II. Multivariate} relations},
-  author={Pattison, Philippa and Wasserman, Stanley},
-  journal={British Journal of Mathematical and Statistical Psychology},
-  volume={52},
-  issue={2},
-  pages={169--193},
-  year={1999}
-}
 
 
 @incollection{PattisonSnijders2013,
@@ -6004,22 +5815,12 @@ year = "2015"}
    Pages = {1--25},
    Year = {2011} }
 
-@incollection{RaubVoss2017,
-  title={Micro-macro models in sociology: antecedents of {C}oleman's diagram},
-  author={Raub, Werner and Voss, Thomas},
-  editor={Ben Jann and Wojtek Przepiorka},
-  booktitle={Social Dilemmas, Institutions and the Evolution of Cooperation.
-   Festschrift for {Andreas Diekmann}},
-  pages={11--36},
-  publisher={De Gruyter},
-  address={Berlin},
-  year={2017}
-}
 
 @Article{Rao47,
   author =       {C. R. Rao},
   title =        {Large sample tests of statistical hypothesis concerning
-                  several parameters with applications to problems of estimation},
+                  several parameters with applications to problems of
+estimation.},
   journal =      {Proceedings of the Cambridge Philosophical Society},
   year =         1947,
   volume =   44,
@@ -6038,8 +5839,8 @@ year = "2015"}
   author = {A.R. Rao and R. Jana and S.  Bandyopadhyay},
 	year = {1996},
   pages={225--242},
-  title={A {M}arkov chain {M}onte {C}arlo method
-     for generating random (0,1) matrices with given marginals},
+  title={A {M}arkov chain {M}onte {C}arlo method for generating random (0,1) matrices
+with given marginals},
     journal={Sankhya, ser.\ A},
        volume= {58}
 }
@@ -6139,17 +5940,6 @@ socio-structural bias:  {II.} {V}arious models with partial transitivity},
     journal={Social Networks},
     volume={23},
     pages={1--30}
-}
-
-@article{RobinsEA2005,
-  title={Small and other worlds: Global network structures from local processes},
-  author={Robins, Garry and Pattison, Philippa and Woolcock, Jodie},
-  journal={American Journal of Sociology},
-  volume={110},
-  number={4},
-  pages={894--936},
-  year={2005},
-  publisher={The University of Chicago Press}
 }
 
 
@@ -6536,18 +6326,6 @@ ADDRESS = "New York"
   number={SP VI 2013-103}
 }
 
-@article{SchecterETAl2018,
-  title={Step by step: {C}apturing the dynamics of work team process
-        through relational event sequences},
-  author={Schecter, Aaron and Pilny, Andrew and Leung, Alice and
-    Poole, Marshall Scott and Contractor, Noshir},
-  journal={Journal of Organizational Behavior},
-  volume={39},
-  issue={9},
-  pages={1163--1181},
-  year={2018}
-}
-
 @article{SchmidtOhHayes2009,
   title={Fixed-versus random-effects models in meta-analysis:
     {M}odel properties and an empirical comparison of differences in results},
@@ -6576,7 +6354,6 @@ ADDRESS = "New York"
     VOLUME = "44",
     PAGES = "165--180"
  }
-
 
 
 @article{SchweinbergerSnijders2003,
@@ -6638,18 +6415,6 @@ and other outcome variables},
   note =         {Working Paper},
  year=2007,
 }
-
-@article{Schweinberger2020,
-    author = {Schweinberger, Michael},
-    title = {Statistical inference for continuous-time {Markov}
-       processes with block structure based on discrete-time network data},
-    journal = {Statistica Neerlandica},
-    volume = {74},
-    issue = {3},
-    pages = {342--362},
-    year = {2020}
-}
-
 
 @article{SchweinbergerStewart2020,
   title={Concentration and consistency results for canonical and curved exponential-family models of random graphs},
@@ -7425,16 +7190,6 @@ ecology},
   pages =      {34--58},
   year =         1992}
 
-@article{Stadtfeld2018,
-  title={The micro--macro link in social networks},
-  author={Stadtfeld, Christoph},
-  journal={Emerging Trends in the Social and Behavioral Sciences: An Interdisciplinary, Searchable, and Linkable Resource},
-  pages={1--15},
-  year={2018},
-  publisher={Wiley Online Library}
-}
-
-
 @article {StadtfeldBlock2017,
 author = {Christoph Stadtfeld and Per Block },
 title = {Interactions, Actors, and Time: {D}ynamic Network Actor Models for Relational Events},
@@ -7456,16 +7211,6 @@ year = {2017}
 	journal = {Proceedings of the National Academy of Sciences}
 }
 
-@article{StadtfeldEA2020,
-  title={The emergence and stability of groups in social networks},
-  author={Stadtfeld, Christoph and Tak{\'a}cs, K{\'a}roly and V{\"o}r{\"o}s, Andr{\'a}s},
-  journal={Social Networks},
-  volume={60},
-  pages={129--145},
-  year={2020},
-  publisher={Elsevier}
-}
-
 @article{StadfeldGeyer2011,
    Author = {Stadtfeld, Christoph and Geyer-Schulz, Andreas},
    Title = {Analyzing event stream dynamics in two-mode networks: {An} exploratory
@@ -7479,7 +7224,7 @@ year = {2017}
 
 @article{DyNAM,
    Author = {Christoph Stadtfeld and James Hollway and Per Block},
-   Title = {Dynamic Network Actor {Markov} Models:
+   Title = {Dynamic Network Actor Markov Models:
             {I}nvestigating Coordination Ties through Time},
    Journal = {Sociological Methodology},
    Volume = {47},
@@ -7487,14 +7232,6 @@ year = {2017}
    Year = {2017} }
 
 
-@article{DyNAM_b,
-    author = {Christoph Stadtfeld and James Hollway and Per Block},
-    title ={Rejoinder: {DyNAMs} and the Grounds for Actor-oriented Network Event Models},
-    journal = {Sociological Methodology},
-    volume = {47},
-    pages = {56--67},
-    year = {2017}
-}
 
 
 @incollection{StadtfeldEtAl2010,
@@ -7568,6 +7305,8 @@ Consumption},
     year    = 2007
 }
 
+
+
 @Article{SteglichEA10,
   author =       {Christian E. G. Steglich and Tom A. B. Snijders and Michael A. Pearson},
   title =        {Dynamic Networks and Behavior: Separating Selection from
@@ -7617,7 +7356,7 @@ sozialer {N}etzwerke",
 
  @INCOLLECTION{StokmanZeggelink96,
   AUTHOR = "Frans N. {Stokman}, Evelien P.H. {Zeggelink}",
-  TITLE = "Â‘Self-organizing' friendship networks",
+  TITLE = "‘Self-organizing' friendship networks",
   BOOKTITLE = "Frontiers in social dilemmas research",
   PUBLISHER = "Springer",
   YEAR = "1996",
@@ -7645,13 +7384,7 @@ sozialer {N}etzwerke",
   year={1999}
 }
 
-@book{Sundberg2019,
-  title={Statistical modelling by exponential families},
-  author={Sundberg, Rolf},
-  year={2019},
-  address={Cambridge},
-  publisher={Cambridge University Press}
-}
+
 
 @article{TannerWong87,
     author={M.A. Tanner and W.H. Wong},
@@ -7672,17 +7405,6 @@ constrained distributions},
   volume={4},
   pages={117--139},
   year={2016}
-}
-
-@article{Tarone1985,
-  title={On heterogeneity tests based on efficient scores},
-  author={Tarone, Robert E},
-  journal={Biometrika},
-  volume={72},
-  number={1},
-  pages={91--95},
-  year={1985},
-  publisher={Oxford University Press}
 }
 
 @ARTICLE{Tesser00,
@@ -7711,7 +7433,7 @@ terBraak92,
    Title = {Permutation versus Bootstrap Significance Tests in Mulitple
 Regression and ANOVA},
    BookTitle = {Bootstrapping and Related Techniques},
-   Editor = {K.-H. JÃ¶ckel and G. Rothe and W. Sendler},
+   Editor = {K.-H. Jöckel and G. Rothe and W. Sendler},
    Publisher = {Springer-Verlag},
    Address = {Berlin},
    Year = {1992} }
@@ -8085,25 +7807,6 @@ author = "Lotte Vermeij and Marijtje A.J. {Van Duijn} and Chris Baerveldt"
   year={2019}
 }
 
-@inproceedings{VuEtAl2011,
-  title={Continuous-time regression models for longitudinal networks},
-  author={Vu, Duy Q and Hunter, David and Smyth, Padhraic and Asuncion, Arthur U},
-  booktitle={Advances in neural information processing systems},
-  pages={2492--2500},
-  year={2011}
-}
-
-@article{VuEtAl2017,
-  title={Relational event models for longitudinal network data
-  with an application to interhospital patient transfers},
-  author={Vu, Duy and Lomi, Alessandro and Mascia, Daniele and Pallotti, Francesca},
-  journal={Statistics in Medicine},
-  volume={36},
-  issue={14},
-  pages={2265--2287},
-  year={2017}
-}
-
 @article{Wakefield2009,
     author = {Wakefield, Jon},
     title = {Multi-level modelling, the ecologic fallacy, and hybrid study designs},
@@ -8142,16 +7845,6 @@ Philippa E. Pattison},
   publisher={Elsevier}
 }
 
-@techreport{pnet2009,
-  title={PNet},
-  author={Wang, Peng and Robins, Garry and Pattison, Philippa},
-  journal={Program for the Simulation and Estimation of
-  Exponential Random Graph ($p^\ast$) Models},
-  institution = {University of Melbourne},
-  address={Melbourne},
-  url = {http://www.melnet.org.au/pnet},
-  year={2009}
-}
 
 
 @article{Warren2010,
@@ -8451,14 +8144,6 @@ revisited",
   pages =    {245--264}
 }
 
-@misc{Ylikoski2016,
-  title={Thinking with the {C}oleman boat},
-  author={Ylikoski, Petri},
-  year={2016},
-  address={Link{\"o}ping},
-  howpublished = {The IAS Working Paper Series, The Institute for Analytical Sociology,
-  Link{\"o}ping}
-}
 
 @Article{Yule1924,
   author =   {G. Yule},
