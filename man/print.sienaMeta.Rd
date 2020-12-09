@@ -1,6 +1,5 @@
 \name{print.sienaMeta}
 \alias{print.sienaMeta}
-\alias{sienaMeta}
 \alias{summary.sienaMeta}
 \alias{plot.sienaMeta}
 \alias{print.summary.sienaMeta}

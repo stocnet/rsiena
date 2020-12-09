@@ -32,7 +32,7 @@ Imports:
     MASS,
     methods
 Suggests: xtable, network, tools, codetools, tcltk, knitr, rmarkdown
-SystemRequirements: GNU make
+SystemRequirements: GNU make, pandoc
 Description: The main purpose of this package is to perform simulation-based
    estimation of stochastic actor-oriented models for longitudinal network
    data collected as panel data. Dependent variables can be single or
