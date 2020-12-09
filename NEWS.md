@@ -2,7 +2,7 @@
 
 ## 
 
-2020-12-03
+2020-12-09
 
 ## Changes in RSiena:
    * New effects (due to Christoph Stadtfeld):
@@ -12,6 +12,7 @@
    * New functions meta.table and funnelPlot.
    * For effect from.w.ind, option parameter=-1 added.
    * The to effect is an ego effect.
+   * New parameter 'tested' in sienaGOF.
    * For siena.table, some of the effectNames changed to nice strings,
      so that LaTeX can run without errors if type='tex'.
    * The object produced by siena08 now has IWLS estimates more easily 

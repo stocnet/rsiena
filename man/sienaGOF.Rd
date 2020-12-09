@@ -24,7 +24,7 @@
 sienaGOF(sienaFitObject, auxiliaryFunction,
         period=NULL, verbose=FALSE, join=TRUE, twoTailed=FALSE,
         cluster=NULL, robust=FALSE, groupName="Data1",
-        varName, \dots)
+        varName, tested=NULL, \dots)
 \method{plot}{sienaGOF}(x, center=FALSE, scale=FALSE, violin=TRUE, key=NULL,
         perc=.05, period=1, fontsize=12, \dots)
 descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
@@ -63,6 +63,10 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
   \item{robust}{ Whether to use robust estimation of the covariance matrix.}
   \item{groupName}{ Name of group; relevant for multi-group data sets.}
   \item{varName}{ Name of dependent variable.}
+  \item{tested}{ A logical vector of length \code{sienaFitObject$pp} (number of parameters),
+          indicating a subset of tested parameters;
+          or \code{NULL}, indicating all tested parameters; or \code{FALSE},
+          indicating nothing is to be tested.}
   \item{x}{ Result from a call to sienaGOF. }
   \item{center}{ Whether to center the statistics by median during plotting.}
   \item{scale}{ Whether to scale the statistics by range during plotting.
@@ -149,12 +153,13 @@ We recommend the following heuristic approach to model checking:
  have precedence. This is an explorative issue.
 
  The \code{summary} function will display some useful information
- to help with model selection if some effects are set to FIX and
- TEST on the effects object. A rough estimator for the Mahalanobis
- distance that would be obtained at each proposed specification
- is given in the output. This can help guide model selection.
+ to help with model selection if some effects are set in the effects object
+ to be fixed and tested. In that case, for all parameters indicated
+ in the vector \code{tested}, a rough estimator is computed for the Mahalanobis
+ distance that would be obtained at each proposed specification.
+ This is then given in the \code{summary}. This can help guide model selection.
  This estimator is called the modified Mahalanobis distance (MMD).
- See Lospinoso (2012), the manual, or the references for more information.
+ See Lospinoso and Snijders (2019) or the manual for more information.
 
  The following functions are pre-fabricated for ease of use, and can
  be passed in as the \cr
@@ -205,7 +210,7 @@ We recommend the following heuristic approach to model checking:
     maximum, upper percentile, mean, median, lower percentile, minimum,
     of the simulated distributions of the auxiliary statistics, the
     observed values, and the proportions of simulated values greater
-    and greater-or-equal than the observed values. 
+    and greater-or-equal than the observed values.
     If \code{center=TRUE} the median is subtracted
     from mean, median, and percentiles; if \code{scale=TRUE}
     these numbers are divided by (maximum - minimum). \cr

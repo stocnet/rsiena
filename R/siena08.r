@@ -832,7 +832,7 @@ funnelPlot <- function(anslist, k, threshold=NULL, origin=TRUE, ...)
 	invisible(cbind(th[use],se[use]))
 }
 
-meta.table <- function(x, d=3, option=1,
+meta.table <- function(x, d=3, option=2,
 	filename=paste(deparse(substitute(x)),'_global.tex',sep=""), align=TRUE)
 {
 # Produces three latex tables with summaries of sienaMeta object:

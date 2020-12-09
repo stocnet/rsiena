@@ -14,7 +14,7 @@
 
 \method{plot}{sienaMeta}(x, ..., which = 1:length(x$theta),
                          useBound=TRUE, layout = c(2,2))
-meta.table(x, d=3, option=1,
+meta.table(x, d=3, option=2,
     filename=paste(deparse(substitute(x)),'_global.tex',sep=""), align=TRUE)
 }
 \description{
