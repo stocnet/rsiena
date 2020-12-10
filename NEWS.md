@@ -2,7 +2,7 @@
 
 ## 
 
-2020-12-09
+2020-12-10
 
 ## Changes in RSiena:
    * New effects (due to Christoph Stadtfeld):

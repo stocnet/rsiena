@@ -891,21 +891,22 @@ meta.table <- function(x, d=3, option=2,
 	{
 	line <- paste(fromObjectToLaTeX(x$thetadf$effects[i]), "&")
 	line <- paste(line, x[[i]]$n1, " & ")
-#browser()
-	line <- paste(line, formatC(x[[i]]$Tsq, digits=1, format="f", decimal.mark=sepsign), sep="")
-	line <- paste(line, " & \\hspace{-0.8em} (", formatC(x[[i]]$pTsq, digits=3, format="f",
-				decimal.mark=sepsign),
-					")", sep="")
-	line <- paste(line, " & ", formatC(x[[i]]$regsummary$coefficients[1, 1], digits=d, format="f",
-			decimal.mark=sepsign), sep="")
-	line <- paste(line, " & \\hspace{-0.5em} (",
-			formatC(x[[i]]$regsummary$coefficients[1, 2], digits=d, format="f",
-			decimal.mark=sepsign), ")", sep="")
-	line <- paste(line, " & ", formatC(x[[i]]$regsummary$stddev, digits=d, format="f",
-			decimal.mark=sepsign), sep="")
-	line <- paste(line, " & ", formatC(x[[i]]$Qstat, digits=d, format="f", decimal.mark=sepsign), sep="")
-	line <- paste(line, " & \\hspace{-0.5em} (",
-			formatC(x[[i]]$pttilde, digits=3, format="f", decimal.mark=sepsign), ")", sep="")
+	if (x[[i]]$n1 >= 2)
+	{
+		line <- paste(line, formatC(x[[i]]$Tsq, digits=1, format="f", decimal.mark=sepsign), sep="")
+		line <- paste(line, " & \\hspace{-0.8em} (", formatC(x[[i]]$pTsq, digits=3, format="f",
+					decimal.mark=sepsign), ")", sep="")
+		line <- paste(line, " & ", formatC(x[[i]]$regsummary$coefficients[1, 1], digits=d, format="f",
+				decimal.mark=sepsign), sep="")
+		line <- paste(line, " & \\hspace{-0.5em} (",
+				formatC(x[[i]]$regsummary$coefficients[1, 2], digits=d, format="f",
+				decimal.mark=sepsign), ")", sep="")
+		line <- paste(line, " & ", formatC(x[[i]]$regsummary$stddev, digits=d, format="f",
+				decimal.mark=sepsign), sep="")
+		line <- paste(line, " & ", formatC(x[[i]]$Qstat, digits=d, format="f", decimal.mark=sepsign), sep="")
+		line <- paste(line, " & \\hspace{-0.5em} (",
+				formatC(x[[i]]$pttilde, digits=3, format="f", decimal.mark=sepsign), ")", sep="")
+	}
 	cat(line,"\\\\\n", file=filename, append = TRUE)
 	nscores <- nscores + x[[i]]$ns
 	}
@@ -944,20 +945,22 @@ meta.table <- function(x, d=3, option=2,
 	{
 	line <- paste(fromObjectToLaTeX(x$thetadf$effects[i]), "&")
 	line <- paste(line, x[[i]]$n1, " & ")
-	line <- paste(line, formatC(x[[i]]$Tsq, digits=1, format="f", decimal.mark=sepsign), sep="")
-	line <- paste(line, " & \\hspace{-0.8em} (", formatC(x[[i]]$pTsq, digits=3, format="f",
-			decimal.mark=sepsign),
-					")", sep="")
-	line <- paste(line, " & ", formatC(x[[i]]$mu.ml, digits=d, format="f", decimal.mark=sepsign), sep="")
-	line <- paste(line, " & \\hspace{-0.5em} (", formatC(x[[i]]$mu.confint[1], digits=d, format="f",
-			decimal.mark=sepsign),
+	if (x[[i]]$n1 >= 2)
+	{
+		line <- paste(line, formatC(x[[i]]$Tsq, digits=1, format="f", decimal.mark=sepsign), sep="")
+		line <- paste(line, " & \\hspace{-0.8em} (", formatC(x[[i]]$pTsq, digits=3, format="f",
+				decimal.mark=sepsign), ")", sep="")
+		line <- paste(line, " & ", formatC(x[[i]]$mu.ml, digits=d, format="f", decimal.mark=sepsign), sep="")
+		line <- paste(line, " & \\hspace{-0.5em} (", formatC(x[[i]]$mu.confint[1], digits=d, format="f",
+				decimal.mark=sepsign),
 					", & \\hspace{-1.1em} ", formatC(x[[i]]$mu.confint[2], digits=d, format="f",
 					decimal.mark=sepsign),")", sep="")
-	line <- paste(line, " & ", formatC(x[[i]]$sigma.ml, digits=d, format="f", decimal.mark=sepsign), sep="")
-	line <- paste(line, " & \\hspace{-0.5em} (", formatC(x[[i]]$sigma.confint[1],
-	digits=d, format="f", decimal.mark=sepsign),
-					", & \\hspace{-1.1em} ", formatC(x[[i]]$sigma.confint[2],
-					digits=d, format="f", decimal.mark=sepsign),")", sep="")
+		line <- paste(line, " & ", formatC(x[[i]]$sigma.ml, digits=d, format="f", decimal.mark=sepsign), sep="")
+		line <- paste(line, " & \\hspace{-0.5em} (", formatC(x[[i]]$sigma.confint[1],
+					digits=d, format="f", decimal.mark=sepsign),
+						", & \\hspace{-1.1em} ", formatC(x[[i]]$sigma.confint[2],
+						digits=d, format="f", decimal.mark=sepsign),")", sep="")
+	}
 	cat(line,"\\\\\n", file=filename, append = TRUE)
 	nscores <- nscores + x[[i]]$ns
 	}
@@ -979,7 +982,7 @@ meta.table <- function(x, d=3, option=2,
 	for (i in 1:7) {line <- paste(line, code)}
 	line <- paste(line,"}")
 	cat(line, "\n", sep="", file=filename, append = TRUE)
-	cat("Effect & $N$ & \\multicolumn{", numdig, "}{c}{$T^2$} &  \\multicolumn{", 
+	cat("Effect & $N$ & \\multicolumn{", numdig, "}{c}{$T^2$} &  \\multicolumn{",
 			numdig, "}{c}{($p_{T^2}$)} ",
 			file=filename, append = TRUE)
 	cat(" &  \\multicolumn{", numdig, "}{c}{$\\hat\\mu_k$} &  \\multicolumn{", numdig, "}{c}{(s.e.)}",
@@ -994,17 +997,19 @@ meta.table <- function(x, d=3, option=2,
 	{
 	line <- paste(fromObjectToLaTeX(x$thetadf$effects[i]), "&")
 	line <- paste(line, x[[i]]$n1, " & ")
-	line <- paste(line, formatC(x[[i]]$Tsq, digits=1, format="f", decimal.mark=sepsign), sep="")
-	line <- paste(line, " & \\hspace{-0.8em} (", formatC(x[[i]]$pTsq, digits=3, format="f",
-			decimal.mark=sepsign),
-					")", sep="")
-	line <- paste(line, " & ", formatC(x[[i]]$mu.ml, digits=d, format="f", decimal.mark=sepsign), sep="")
-	line <- paste(line, " & \\hspace{-0.5em} (",
-			formatC(x[[i]]$mu.ml.se, digits=d, format="f", decimal.mark=sepsign), ")", sep="")
-	line <- paste(line, " & ", formatC(x[[i]]$sigma.ml, digits=d, format="f", decimal.mark=sepsign), sep="")
-	line <- paste(line, " & ", formatC(x[[i]]$Qstat, digits=d, format="f", decimal.mark=sepsign), sep="")
-	line <- paste(line, " & \\hspace{-0.5em} (",
-			formatC(x[[i]]$pttilde, digits=3, format="f", decimal.mark=sepsign), ")", sep="")
+	if (x[[i]]$n1 >= 2)
+	{
+		line <- paste(line, formatC(x[[i]]$Tsq, digits=1, format="f", decimal.mark=sepsign), sep="")
+		line <- paste(line, " & \\hspace{-0.8em} (", formatC(x[[i]]$pTsq, digits=3, format="f",
+					decimal.mark=sepsign), ")", sep="")
+		line <- paste(line, " & ", formatC(x[[i]]$mu.ml, digits=d, format="f", decimal.mark=sepsign), sep="")
+		line <- paste(line, " & \\hspace{-0.5em} (",
+				formatC(x[[i]]$mu.ml.se, digits=d, format="f", decimal.mark=sepsign), ")", sep="")
+		line <- paste(line, " & ", formatC(x[[i]]$sigma.ml, digits=d, format="f", decimal.mark=sepsign), sep="")
+		line <- paste(line, " & ", formatC(x[[i]]$Qstat, digits=d, format="f", decimal.mark=sepsign), sep="")
+		line <- paste(line, " & \\hspace{-0.5em} (",
+				formatC(x[[i]]$pttilde, digits=3, format="f", decimal.mark=sepsign), ")", sep="")
+	}
 	cat(line,"\\\\\n", file=filename, append = TRUE)
 	}
 # tailer 3
@@ -1023,7 +1028,7 @@ meta.table <- function(x, d=3, option=2,
 	for (i in 1:2) {line <- paste(line, code)}
 	line <- paste(line,"}")
 	cat(line, "\n", sep="", file=filename, append = TRUE)
-	cat("Effect & \\multicolumn{", numdig, "}{c}{$p$ (right-sided)} &  \\multicolumn{", 
+	cat("Effect & \\multicolumn{", numdig, "}{c}{$p$ (right-sided)} &  \\multicolumn{",
 			numdig, "}{c}{$p$ (left-sided)} \\\\ \n", file=filename, append = TRUE)
 	cat("\\hline \n", file=filename, append=TRUE)
 # body 4

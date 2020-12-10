@@ -186,7 +186,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.2-27.
+This version was renewed for \RS version 1.2-29.
 \end{abstract}
 
 
@@ -276,13 +276,7 @@ at the University of Groningen, seconded by researchers in Z\"{u}rich,
 Konstanz, and Manchester.
 
 In addition to the `official' \R distribution of \rs, there is
-an additional distribution at R-Forge, which is
-a central platform for the development of \R packages
-offering facilities for source code management.
-It is quite usual that recent versions of \RS are available at
-\url{http://r-forge.r-project.org/R/?group_id=461}
-before being incorporated into the R package that can be downloaded from CRAN.
-In addition, at R-Forge there is a package {\sf RSienaTest} which may include
+an additional distribution \sfn{RSienaTest} at R-Forge, which includes
 additional options that are still in the testing stage.
 Some of the options described in this manual may apply to
 {\sf RSienaTest} only, with the plan to transfer this to \RS
@@ -897,12 +891,10 @@ of the software appear).
             what is available at CRAN, go to\\
 \url{http://cran.r-project.org/web/packages/RSiena/} .\\
             However, it is advisable to have the latest version of \RS
-            or \sfn{RSienaTest} from GitHub, R-Forge or the \SI website.
+            or \sfn{RSienaTest} from GitHub or the \SI website.
             You can go to\\
             \url{https://github.com/snlab-nl/rsiena/releases}\\
             or to\\
-               \url{http://r-forge.r-project.org/R/?group_id=461} \\
-               or to\\
               \url{http://www.stats.ox.ac.uk/~snijders/siena/siena_downloads.htm}\\
             and there download the appropriate version of the package
             appropriate for your operation system (Windows, Mac, Unix). \\
@@ -915,7 +907,7 @@ of the software appear).
             then using the binary is recommended.
             Installation from binary is much faster than installation from source.
 
-            Installation from the GitHub can be done as follows.
+            Installation from GitHub can be done as follows.
         Download  the latest release from
         \url{https://github.com/snlab-nl/rsiena/releases/}.
 Once the file has been downloaded, unzip it, and install the binary
@@ -925,22 +917,22 @@ the version number have to be amended:
 
 For Windows:
 
-\texttt{install.packages("\url{~/Downloads/rsiena\_AllOS/winOS/RSiena\_1.2.26.zip}", \\
+\texttt{install.packages("\url{~/Downloads/rsiena\_AllOS/winOS/RSiena\_1.2.29.zip}", \\
 repos = NULL)}
 
 For Mac:
 
-\texttt{install.packages("\url{~/Downloads/rsiena\_AllOS/macOS/RSiena\_1.2.26.tgz}", \\
+\texttt{install.packages("\url{~/Downloads/rsiena\_AllOS/macOS/RSiena\_1.2.29.tgz}", \\
 repos = NULL)}
 
 For Unix:
 
 \texttt{install.packages(\\
-"\url{~/Downloads/rsiena\_AllOS/linuxOS/RSiena\_1.2-26\_R\_x86\_64-pc-linux-gnu.tar.gz}",
+"\url{~/Downloads/rsiena\_AllOS/linuxOS/RSiena\_1.2-29\_R\_x86\_64-pc-linux-gnu.tar.gz}",
  repos = NULL)}
 
-            Installation from the R-Forge repository can be done as follows.
-            In these commands, \texttt{RSienaTest} can be replaced by \texttt{RSiena}.
+            Installation of \texttt{RSienaTest}
+            from the R-Forge repository can be done as follows.
             \begin{itemize}
             \item for Windows:\\
             \texttt{install.packages("RSienaTest", repos="http://R-Forge.R-project.org")}
@@ -951,24 +943,24 @@ For Unix:
             \end{itemize}
 
             Installation from a downloaded file can be done as follows, assuming
-            the root name of the file is \texttt{RSienaTest\_1.2-26}, and filling in the correct path name.
+            the root name of the file is \texttt{RSienaTest\_1.2-29}, and filling in the correct path name.
             It will be convenient to first navigate to the directory
             containing the \RS binary or source file so that this is the current directory.
             Then the pathname consists only of the filename.
             \begin{itemize}
             \item In \R from binary:\\
             for Windows:\\
-             \texttt{install.packages("pathname to RSienaTest\_1.2-26.zip", repos = NULL, type="binary")}\\
+             \texttt{install.packages("pathname to RSienaTest\_1.2-29.zip", repos = NULL, type="binary")}\\
             for Mac:\\
-             \texttt{install.packages("pathname to RSienaTest\_1.2-26.tgz", repos = NULL, type="binary")}
+             \texttt{install.packages("pathname to RSienaTest\_1.2-29.tgz", repos = NULL, type="binary")}
              \item In \R from source:\\
-            \texttt{install.packages("RSienaTest\_1.2-26.tar.gz", repos = NULL, type="source")}
+            \texttt{install.packages("RSienaTest\_1.2-29.tar.gz", repos = NULL, type="source")}
             \item In \text{command.com} or in batch mode (Windows) from binary:\\
-            \texttt{R CMD INSTALL RSienaTest\_1.2-26.zip}
+            \texttt{R CMD INSTALL RSienaTest\_1.2-29.zip}
             \item In the terminal (Mac) from binary:\\
-            \texttt{R CMD INSTALL RSienaTest\_1.2-26.tgz}
+            \texttt{R CMD INSTALL RSienaTest\_1.2-29.tgz}
             \item In \text{command.com} or in batch mode (Windows) or in the terminal (Mac) from source:\\
-            \texttt{R CMD INSTALL RSienaTest\_1.2-26.tar.gz}
+            \texttt{R CMD INSTALL RSienaTest\_1.2-29.tar.gz}
             \item In drop-down menu in \Rn:\\
             for Windows:  go to Packages  $\rightarrow$ Install package(s) from local zip file\\
             for Mac:  go to Packages \& Data $\rightarrow$ Package Installer
@@ -1166,13 +1158,15 @@ For technical problems running \rs, follow the following points.
 \item[Check your version of \RS]
   The `News' page of the \SI website gives information about new versions
   of \rs. Details of the latest version available can
-  be found at {\small{\url{http://r-forge.r-project.org/R/?group_id=461}}}.
+  be found at the `Donwloads' page.
   The version is
-  identified by a version number (e.g.\ 1.2-26) and an R-Forge revision
-  number. You can find both numbers of your current installed version by
-  opening \R, and typing \\
+  identified by a version number (e.g.\ 1.2-29).
+  You can find the number of your current installed version by
+  opening \R, and typing\\
+  \verb|packageVersion("RSiena")|   \\
+  or \\
   \verb|packageDescription("RSiena")|. The version is
-  near the top, the revision number near the end. Both are also displayed at the
+  near the top. It is also displayed at the
   start of \SI output files.
 \item[Check your version of \Rn] When there is a new version or revision of \RS
   it will only be available to you automatically if you are running the most
@@ -1180,23 +1174,14 @@ For technical problems running \rs, follow the following points.
   necessary by downloading the tarball or binary and installing from that, but
   it is better to update your \Rn.)
 \item [Check both repositories] We have two repositories in use for \rs: CRAN
-  and R-Forge. The latest version will always be available from
-  R-Forge. (Frequent updates are discouraged on CRAN, so bug-fixes are likely to
-  appear first on R-Forge.)
-\item[Installation] When using the repository at R-Forge, \emph{install} the
+  and GitHub. The latest version will always be available from
+  GitHub. (Frequent updates are discouraged on CRAN, so bug-fixes are likely to
+  appear first on GitHub.)
+\item[Installation] When using the repository at GitHub, \emph{install} the
   package rather than updating it. Then check the version and revision numbers.
 \item[Users' group] Consult the archives of the Users' Group mentioned above, or post
      a message to the Users' Group. In your message,
      please tell which operating system, which version of \Rn, and which version
-     of \RS you are using.
-\item[R-Forge help list]
-     If you are a programmer, then
-     for technical questions about the \RS code (as distinct from the
-     methodology), you can send an email to
-     rsiena-help@lists.r-forge.r-project.org, or post in the help forum for \RS in
-     R-Forge. You need to be a registered member of R-Forge (and possibly of \rs)
-     to post to a forum, but anyone can send emails (at present!). In your message,
-     please tell us which operating system, which version of \Rn, and which version
      of \RS you are using.
 \end{description}
 %\addtocontents{toc}{\vspace{-2ex}}  % hack to avoid a 3-page table of contents
@@ -4833,7 +4818,6 @@ Further details are in the help file for \textsf{siena07}.
                              \> Programmers can consult function \texttt{initializeFRAN()}\\
                              \> for the creation and hence contents of this object.\\
  \texttt{ans\$version }      \> the \textsf{RSiena/Test} version\\
- \texttt{ans\$revision }     \> the \textsf{R-Forge} revision (probably empty)\\
  \texttt{ans\$startingDate}  \> date and time of the start of the estimation (since version 1.2-17).\\
 
 \end{tabbing}
@@ -14070,7 +14054,7 @@ with recursive information.
 Note that it is not difficult to find the source of error messages in the code.
 The easiest way is searching for the text of the error message
 by some search machine such as google.
-You will probably find it points to R-Forge or another repository of the code.
+You will probably find it points to GitHub or another repository of the code.
 There you can see what led to the error message, if you can understand some R.
 An alternative, if you know the function generating the error message
 (which you can find out by \texttt{traceback()}, see above)
@@ -14403,7 +14387,7 @@ first you must get access to it.
 In the first place, it is good to know that for any \R function
 that can be called,
 the source code is listed by writing the function name.
-Thus, if \RS is loaded, the command
+Thus, e.g., if \RS is loaded, the command
 \begin{verbatim}
 sienaAlgorithmCreate
 \end{verbatim}
@@ -14412,16 +14396,10 @@ will list the code for the function with this name.
 To get insight into a package, and certainly to modify
 or personalize it, it is necessary, however,
 to get the source code of the whole package.
-This can be done by downloading, from CRAN or (preferably) R-Forge,
-the `tarball' with extension \sfn{.tar.gz}.
-This file can be extracted by compression/decompression
-programs (perhaps you need to do a double extraction).
-If you do not succeed in extracting the tar ball, see below
-for the use of \texttt{RTools} for this purpose.
-This will lead to a directory structure where at some place
-there is a directory called \texttt{RSiena} and/or a directory
-called \texttt{RSienaTest}, which includes the source code
-of the package.
+This is available from GitHub at
+\url{https://github.com/snlab-nl/rsiena/}.
+
+\iffalse
 
 In the file structure for \texttt{RSienaTest} there is a directory
 \texttt{doc} which contains a lot of programmers' documentation.
@@ -14432,10 +14410,11 @@ about algorithms used.
 For code developers, important files are
 \texttt{HowToCommit.tex} and \texttt{RSienaDeveloper.tex}.
 The latter file will guide you to the further documentation.
+\fi
 
-The file
+A lot of programmers' documentation is also in the file
 \href{http://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf}{\texttt{Siena\_algorithms.pdf}}
-can also be downloaded from the
+which can be downloaded from the
 \SI website.
 
 \section{For programmers: Other tools you need}
@@ -15487,15 +15466,16 @@ This presents the main changes, especially those directly visible to the user,
 in reverse time order from the current version until
 version 1.0.6 of end October 2009.
 For more complete information about changes,
-consult the CHANGELOG file in the source code on CRAN or in
-the R-Forge repository, which contains a more complete listing.
+consult the NEWS.md file (in earlier versions
+this was the CHANGELOG file) in the source code, 
+which contains a more complete listing.
 
 \begin{small}
 \begin{itemize} % Also update version number in abstract
 
 
-\item 2020-12-03  GitHub, package version 1.2-29.\\
-Integration of GitHub and what was at R-Forge.
+\item 2020-12-10  GitHub, package version 1.2-29.\\
+Integration of GitHub and what was earlier at R-Forge.
 
 Changes in RSiena:
 \begin{itemize}
@@ -15521,6 +15501,8 @@ Changes in RSiena:
      is symmetric, the higher network is also symmetric.
    \item In \sfn{sienaDataConstraint}, if type is \texttt{disjoint} or \texttt{atLeastOne},
      the constraint is also implemented for the pair \texttt{(net2, net1)}.
+   \item New parameter \texttt{tested} in \sfn{sienaGOF}.
+
 \end{itemize}
 
 \item 2020-09-16 R-Forge Revision 350, package version 1.2-27.
