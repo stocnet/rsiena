@@ -2,8 +2,10 @@
 
 ![CRAN/METACRAN](https://img.shields.io/cran/l/RSiena)
 ![CRAN/METACRAN](https://img.shields.io/cran/v/RSiena)
+![GitHub R package version](https://img.shields.io/github/r-package/v/snlab-nl/rsiena)
 ![GitHub issues](https://img.shields.io/github/issues-raw/snlab-nl/rsiena)
 ![GitHub All Releases](https://img.shields.io/github/downloads/snlab-nl/rsiena/total)
+![](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)
 
 ## About
 
@@ -42,22 +44,20 @@ including background on SAOMs and RSiena, and links to teaching materials, liter
 
 Perhaps the easiest way to install RSiena is by installing a compiled binary.
 Binaries for all major OSes -- Windows, Mac, and Linux -- 
-can be found by clicking on the latest release [here](https://github.com/snlab-nl/rsiena/releases/latest/download/rsiena_AllOS.zip).
+can be found by clicking on the latest release for your OS [here](https://github.com/snlab-nl/rsiena/releases/latest).
 
 Once the file has been downloaded, unzip the file, and install the binary as appropriate for your Operating System.
 In the following, perhaps the name of the Downloads folder and the version number have to be amended:
 
-For Windows:
+For Windows you will first need to rename the `RSiena_winOS.zip` file to `RSiena.zip`:
 
-`install.packages("~/Downloads/rsiena_AllOS/winOS/rsiena_1.2.26.zip", repos = NULL)`
+`install.packages("~/Downloads/RSiena.zip", repos = NULL)`
 
-For Mac:
+For Mac and Unix systems you should not need to rename the package:
 
-`install.packages("~/Downloads/rsiena_AllOS/macOS/rsiena_1.2.26.tgz", repos = NULL)`
+`install.packages("~/Downloads/RSiena_macOS.tgz", repos = NULL)`
 
-For Unix:
-
-`install.packages("~/Downloads/rsiena_AllOS/linuxOS/RSiena_1.2-26_R_x86_64-pc-linux-gnu.tar.gz", repos = NULL)`
+`install.packages("~/Downloads/rsiena_linuxOS.tar.gz", repos = NULL)`
 
 ### From source
 
