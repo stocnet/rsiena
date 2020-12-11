@@ -9,10 +9,11 @@
 
 ## About
 
-SIENA is a program for the statistical analysis of network data, with the focus on social networks.
-Networks here are understood as entire (complete) networks, not as personal (egocentered) networks: it is assumed that a set of nodes (social actors) is given, and all ties (links) between these nodes are known - except perhaps for a moderate amount of missing data.
-The name SIENA stands for Simulation Investigation for Empirical Network Analysis.
-The R package is called RSiena; there also is the development package RSienaTest.
+The package RSiena implements the SIENA (Simulation Investigation for Empirical Network Analysis) 
+program for the statistical analysis of network data, with the focus on social networks, in R.
+Networks here are understood as entire (complete) networks, not as personal (egocentered) networks: 
+it is assumed that a set of nodes (social actors) is given, and all ties (links) between these nodes are known - 
+except perhaps for a moderate amount of missing data.
 
 SIENA is designed for analyzing various types of data as dependent variables:
 
@@ -47,8 +48,6 @@ Binaries for all major OSes -- Windows, Mac, and Linux --
 can be found by clicking on the latest release for your OS [here](https://github.com/snlab-nl/rsiena/releases/latest).
 
 Once the file has been downloaded, unzip the file, and install the binary as appropriate for your Operating System.
-In the following, perhaps the name of the Downloads folder and the version number have to be amended:
-
 For Windows you will first need to rename the `RSiena_winOS.zip` file to `RSiena.zip`:
 
 `install.packages("~/Downloads/RSiena.zip", repos = NULL)`
