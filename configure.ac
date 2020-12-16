@@ -27,22 +27,26 @@ RBIN="${R_HOME}/bin/R"
 LIBS="${PKG_LIBS}"
 
 # Checking for C++
-# 
-CXX=`"${R_HOME}/bin/R" CMD config CXX`
-CXXFLAGS=`"${R_HOME}/bin/R" CMD config CXXFLAGS`
-CPPFLAGS=`"${R_HOME}/bin/R" CMD config CPPFLAGS`
+# base on: https://unconj.ca/blog/an-autoconf-primer-for-r-package-authors.html 
+CXX=`"${RBIN}" CMD config CXX`
+CXXFLAGS=`"${RBIN}" CMD config CXXFLAGS`
+CPPFLAGS=`"${RBIN}" CMD config CPPFLAGS`
 AC_LANG(C++)
 AC_PROG_CPP
 
 
 AC_PROG_CXX
 AC_PROG_CC
+
+# Check for typedefs, structures, and compiler characteristics
 AC_CHECK_HEADERS([sys/time.h unistd.h])
 AC_CHECK_HEADER_STDBOOL
 AC_C_INLINE
 AC_C_RESTRICT
 AC_TYPE_SIZE_T
 AC_CHECK_TYPES([ptrdiff_t])
+
+# Check for library functions
 AC_FUNC_ERROR_AT_LINE
 AC_FUNC_MALLOC
 AC_HEADER_MAJOR
