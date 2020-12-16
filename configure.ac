@@ -183,7 +183,7 @@ if test -z "${MPI_INCLUDE_PATH}" ; then
         MPITYPE="OPENMPI"
         MPI_INCLUDE_PATH=$d/include/openmpi-x86_64
         break
-      if test -f $d/include/mpi.h && test -d $d/lib/openmpi; then
+      elif test -f $d/include/mpi.h && test -d $d/lib/openmpi; then
         MPI_ROOT=$d
         MPI_TYPE="OPENMPI"
         MPI_INCLUDE_PATH=$d/include/openmpi
