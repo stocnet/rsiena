@@ -1,5 +1,5 @@
 
-R version 3.6.3 (2020-02-29) -- "Holding the Windsock"
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
@@ -24,7 +24,7 @@ Type 'q()' to quit R.
 > myeff<- getEffects(mydata)
 > mymodel<- model.create(findiff=TRUE, fn = simstats0c,
 +                        cond=FALSE, nsub=2, n3=50, seed=3)
-If you use this algorithm object, siena07 will create an output file Siena.txt .
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > print('test3')
 [1] "test3"
 > ans<- siena07(mymodel, data=mydata, effects=myeff,
@@ -96,7 +96,7 @@ Total of 231 iteration steps.
 > myeff<- getEffects(mydata)
 > mymodel<- model.create(fn = simstats0c,  nsub=2, n3=50,
 +                        cond=FALSE, seed=5)
-If you use this algorithm object, siena07 will create an output file Siena.txt .
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > print('test5')
 [1] "test5"
 > ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
@@ -146,14 +146,14 @@ Total of 395 iteration steps.
 > score.Test(ans, 4)
 Tested effects:
  mynet1: outdegree-activity eval 
-chi-squared = 5.52, d.f. = 1; one-sided Z = 2.35;  p = 0.019.
+chi-squared = 5.52, d.f. = 1; one-sided Z = 2.35; two-sided p = 0.019. 
 > ##test6
 > mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
 > mydata <- sienaDataCreate(mynet1)
 > myeff<- getEffects(mydata)
 > mymodel<- model.create(fn = simstats0c,  nsub=2, n3=50,
 +                        cond=FALSE, doubleAveraging=0,seed=5)
-If you use this algorithm object, siena07 will create an output file Siena.txt .
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > print('test6')
 [1] "test6"
 > ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
@@ -178,7 +178,7 @@ Total of 588 iteration steps.
 > myeff<- getEffects(mydata)
 > mymodel<- model.create(fn = simstats0c,  nsub=2, n3=50,
 +                        cond=FALSE,  diagonalize=0.5, seed=5)
-If you use this algorithm object, siena07 will create an output file Siena.txt .
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > print('test7')
 [1] "test7"
 > ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
@@ -201,7 +201,7 @@ Total of 545 iteration steps.
 > ##test8
 > mymodel<- model.create(fn = simstats0c,  nsub=1, n3=50,
 +                        cond=TRUE, condvarno=1, seed=5)
-If you use this algorithm object, siena07 will create an output file Siena.txt .
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > print('test8')
 [1] "test8"
 > ans <- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
@@ -278,7 +278,7 @@ Total of 335 iteration steps.
 [1] "test11"
 > mymodel<- model.create(fn = simstats0c,  nsub=1, n3=50,
 +                        behModelType=c(mynet2=2), seed=6)
-If you use this algorithm object, siena07 will create an output file Siena.txt .
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > (ans <- siena07(mymodel, data=mydata, effects=myeff, batch=TRUE,
 +                parallelTesting=TRUE, silent=TRUE))
 Estimates, standard errors and convergence t-ratios
@@ -327,7 +327,7 @@ Total of 340 iteration steps.
 1 myvar1 in-alter dist 2 TRUE    FALSE FALSE          0   1   
 > ans <- siena07(sienaModelCreate(n3=50, nsub=2, seed=1),
 +                data=mydata, effects=myeff, batch=TRUE, silent=TRUE)
-If you use this algorithm object, siena07 will create an output file Siena.txt .
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > ans
 Estimates, standard errors and convergence t-ratios
 
@@ -407,7 +407,7 @@ Type "?sienaTimeTest" for more information on this output.
 1 myvar1 ego TRUE    FALSE FALSE          0   0   
 > (ans <- siena07(sienaModelCreate(n3=50, nsub=2, seed=1),
 +                data=mydata, effects=myeff, batch=TRUE, silent=TRUE))
-If you use this algorithm object, siena07 will create an output file Siena.txt .
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 Estimates, standard errors and convergence t-ratios
 
                                  Estimate   Standard   Convergence 
@@ -436,7 +436,7 @@ Total of 588 iteration steps.
   effectName            include fix   test  initialValue parm
 1 indegree - popularity TRUE    FALSE FALSE          0   0   
 > algo <- sienaAlgorithmCreate(nsub=1, n3=20, maxlike=TRUE, seed=15, mult=1)
-If you use this algorithm object, siena07 will create an output file Siena.txt .
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > (ans <- siena07(algo, data=dataset, effects=myeff, batch=TRUE, silent=TRUE))
 Estimated by Maximum Likelihood
 
@@ -493,7 +493,7 @@ SDE par stand errors: 0.04669358 0.1223113 0.08791327
 6 behavior feedback from behavior      TRUE    FALSE FALSE   -0.11172   0
 7 behavior intercept                   TRUE    FALSE FALSE   -0.86402   0
 > algorithmMoM <- sienaAlgorithmCreate(nsub=1, n3=20, seed=321)
-If you use this algorithm object, siena07 will create an output file Siena.txt .
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > (ans <- siena07(algorithmMoM, data = mydata, effects = myeff, batch=TRUE))
 SDE init parameters:  -0.1519645 -1.175127 0.7355777
 SDE par stand errors: 0.06428706 0.2889378 0.1507865
@@ -569,4 +569,4 @@ Total of 305 iteration steps.
 > 
 > proc.time()
    user  system elapsed 
-  18.90    0.64   19.75 
+  18.01    0.29   18.40 

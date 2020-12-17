@@ -9,6 +9,7 @@ src/*.dll
 *.log
 *.status
 *.synctex
+*.bak
 TexAux/
 autom4te.cache
 config.log

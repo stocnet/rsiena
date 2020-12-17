@@ -17,6 +17,7 @@
 #include "network/IncidentTieIterator.h"
 #include "network/CommonNeighborIterator.h"
 #include "network/INetworkChangeListener.h"
+#include "network/UnionNeighborIterator.h"
 
 namespace siena {
 
@@ -203,6 +204,14 @@ CommonNeighborIterator OneModeNetwork::reciprocatedTies(int i,
 	this->checkSenderRange(i);
 	return CommonNeighborIterator(this->inTies(i, lowerBound),
 			this->outTies(i, lowerBound));
+}
+
+/**
+ * Returns an iterator over ties in either direction (incoming, outgoing of the actor <i>i</i>.
+ */
+UnionNeighborIterator OneModeNetwork::eitherTies(int i) const {
+	this->checkSenderRange(i);
+	return UnionNeighborIterator(this->inTies(i), this->outTies(i));
 }
 
 // ----------------------------------------------------------------------------

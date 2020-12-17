@@ -78,6 +78,12 @@ public:
 	void missingBehaviorProbability(double probability);
 	double missingBehaviorProbability() const;
 
+// The currentPermutationLength defines the length of the stretch 
+// that is permuted in a **permute step.
+// It is between a minimum and a maximum value, defined in the algorithm.
+// It is dynamically updated, depending on the acceptance rates.
+// That is why currentPermutationLength is not integer.
+
 	void currentPermutationLength(double value);
 	double currentPermutationLength() const;
 
@@ -117,7 +123,7 @@ private:
 	double lmissingBehaviorProbability;
 	// current length of permuted interval
 	double lcurrentPermutationLength;
-	int lthisPermutationLength;
+	unsigned lthisPermutationLength;
 
 	// A vector of options with missing values in the initial observation
 	std::vector<const Option *> linitialMissingOptions;

@@ -22,9 +22,9 @@ namespace siena
 // ----------------------------------------------------------------------------
 
 /**
- * This enumeration defines two possible directions of traversing a tie.
+ * This enumeration defines four possible settings of traversing a tie.
  */
-enum Direction {FORWARD, BACKWARD, RECIPROCAL};
+enum Direction {FORWARD, BACKWARD, RECIPROCAL, EITHER};
 
 
 // ----------------------------------------------------------------------------

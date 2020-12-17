@@ -17,7 +17,7 @@ sienaGOF <- function(
 		sienaFitObject,	auxiliaryFunction,
 		period=NULL, verbose=FALSE, join=TRUE, twoTailed=FALSE,
 		cluster=NULL, robust=FALSE,
-		groupName="Data1", varName, ...)
+		groupName="Data1", varName, tested=NULL, ...)
 	{
 	## require(MASS)
 	## require(Matrix)
@@ -31,9 +31,9 @@ sienaGOF <- function(
 	{
 		stop("You must instruct siena07 to return the simulated networks")
 	}
-	if (!is.null(sienaFitObject$sf2.byIterations))
+	if (!is.null(sienaFitObject$sf2.byIteration))
 	{
-		if (!sienaFitObject$sf2.byIterations)
+		if (!sienaFitObject$sf2.byIteration)
     	{
         	stop("sienaGOF needs sf2 by iterations (use lessMem=FALSE)")
     	}
@@ -52,15 +52,34 @@ sienaGOF <- function(
 		stop("You need to supply the parameter <<auxiliaryFunction>>.")
 	}
 	groups <- length(sienaFitObject$f$groupNames)
+	if (is.null(tested))
+	{
+		tested <- sienaFitObject$test
+	}
+	else
+	{
+		if (!inherits(tested, "logical"))
+		{
+			stop('tested should be a logical vector')
+		}
+		if ((length(tested) != length(sienaFitObject$test)) | (all(tested == FALSE)))
+		{
+			tested <- rep(FALSE, length(sienaFitObject$test))
+		}
+		else
+		{
+			tested <- (tested & sienaFitObject$test)
+		}
+	}
 	if (verbose)
 	{
 		if (groups <= 1)
 		{
-			message("Detected", iterations, "iterations and", groups, "group.")
+			message("Detected ", iterations, " iterations and ", groups, " group.")
 		}
 		else
 		{
-			message("Detected", iterations, "iterations and", groups, "groups.")
+			message("Detected ", iterations, " iterations and ", groups, " groups.")
 		}
 	}
 
@@ -239,8 +258,8 @@ sienaGOF <- function(
 	res <- lapply(1:length(simStats),
 					function (i) {
 				 applyTest(obsStats[[i]], simStats[[i]]) })
-	mhdTemplate <- rep(0, sum(sienaFitObject$test))
-	names(mhdTemplate) <- rep(0, sum(sienaFitObject$test))
+	mhdTemplate <- rep(0, sum(tested))
+	names(mhdTemplate) <- rep(0, sum(tested))
 
 	JoinedOneStepMHD_old <- mhdTemplate
 	OneStepMHD_old <- lapply(period, function(i) (mhdTemplate))
@@ -255,7 +274,7 @@ sienaGOF <- function(
 		lapply(period, function(i) {
 			t(apply(simStatsByPeriod[[i]],1, function(x){x - ExpStat[[i]]}))})
 
-	OneStepSpecs <- matrix(0, ncol=sum(sienaFitObject$test),
+	OneStepSpecs <- matrix(0, ncol=sum(tested),
 			nrow=length(sienaFitObject$theta))
 	if (robust) {
 		covInvByPeriod <- lapply(period, function(i) ginv(
@@ -273,30 +292,30 @@ sienaGOF <- function(
 						t(obsStatsByPeriod[[i]] - ExpStat[[i]] )
 			})
 
-	if (sum(sienaFitObject$test) > 0) {
+	if (sum(tested) > 0) {
 		effectsObject <- sienaFitObject$requestedEffects
 		nSims <- sienaFitObject$Phase3nits
 		for (i in period) {
 			names(OneStepMHD_old[[i]]) <-
-					effectsObject$effectName[sienaFitObject$test]
+					effectsObject$effectName[tested]
 			names(OneStepMHD[[i]]) <-
-					effectsObject$effectName[sienaFitObject$test]
+					effectsObject$effectName[tested]
 		}
 		names(JoinedOneStepMHD_old) <-
-			effectsObject$effectName[sienaFitObject$test]
+			effectsObject$effectName[tested]
 		names(JoinedOneStepMHD) <-
-				effectsObject$effectName[sienaFitObject$test]
+				effectsObject$effectName[tested]
 
 		rownames(OneStepSpecs) <- effectsObject$effectName
-		colnames(OneStepSpecs) <- effectsObject$effectName[sienaFitObject$test]
+		colnames(OneStepSpecs) <- effectsObject$effectName[tested]
 		counterTestEffects <- 0
-		for(index in which(sienaFitObject$test)) {
+		for(index in which(tested)) {
 			if (verbose) {
 				message("Estimating test statistic for model including ",
 						effectsObject$effectName[index], "\n")
 			}
 			counterTestEffects <- counterTestEffects + 1
-			effectsToInclude <- !sienaFitObject$test
+			effectsToInclude <- !tested
 			effectsToInclude[index] <- TRUE
 			theta0 <- sienaFitObject$theta
 			names(theta0) <- effectsObject$effectName
@@ -404,7 +423,7 @@ sienaGOF <- function(
 
 	names(res) <- names(obsStats)
 	class(res) <- "sienaGOF"
-	attr(res, "scoreTest") <- (sum(sienaFitObject$test) > 0)
+	attr(res, "scoreTest") <- (sum(tested) > 0)
 	attr(res, "originalMahalanobisDistances") <- obsMhd
 	attr(res, "oneStepMahalanobisDistances") <- OneStepMHD
 	attr(res, "joinedOneStepMahalanobisDistances") <-

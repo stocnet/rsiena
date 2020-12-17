@@ -108,7 +108,8 @@ The arguments \code{shortName}, \code{name}, \code{type},
 \seealso{
   \code{\link{getEffects}}, \code{\link{includeEffects}},
   \code{\link{includeInteraction}},
-  \code{\link{print.sienaEffects}}.
+  \code{\link{updateSpecification}},
+  \code{\link{print.sienaEffects}},\code{\link{effectsDocumentation}}.
 }
 
 \examples{

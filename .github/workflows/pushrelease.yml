@@ -133,22 +133,45 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
 
-      - name: Zip up
-        uses: montudor/action-zip@v0.1.0
-        with:
-          args: zip -qq -r rsiena_AllOS.zip . -i ./macOS/* ./winOS/* ./linuxOS/*
+      - name: Rename Mac release
+        run: mv ./macOS/*.tgz RSiena_macOS.tgz 
 
-      - name: Display structure of downloaded files again
-        run: ls -R
-
-      - name: Upload binary
-        id: upload-binary 
+      - name: Upload Mac binary
+        id: upload-mac
         uses: actions/upload-release-asset@v1.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: rsiena_AllOS.zip
-          asset_name: rsiena_AllOS.zip
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: RSiena_macOS.tgz
+          asset_name: RSiena_macOS.tgz
+          asset_content_type: application/zip
+
+      - name: Rename Linux release
+        run: mv ./linuxOS/*.tar.gz RSiena_linuxOS.tar.gz 
+
+      - name: Upload Linux binary
+        id: upload-lin
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: RSiena_linuxOS.tar.gz
+          asset_name: RSiena_linuxOS.tar.gz
+          asset_content_type: application/zip
+
+      - name: Rename Windows release
+        run: mv ./winOS/*.zip RSiena_winOS.zip 
+
+      - name: Upload Windows binary
+        id: upload-win
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: RSiena_winOS.zip
+          asset_name: RSiena_winOS.zip
           asset_content_type: application/zip
           

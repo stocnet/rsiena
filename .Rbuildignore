@@ -5,3 +5,4 @@
 ^pkgdown$
 ^\.github$
 ^.*\.code-workspace$
+^checkEffects.R

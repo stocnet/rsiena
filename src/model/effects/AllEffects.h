@@ -44,6 +44,7 @@
 #include "CovariateEgoDiffEffect.h"
 #include "CovariateIndirectTiesEffect.h"
 #include "CovariateSimilarityEffect.h"
+#include "CovariateTransitiveTripletsEffect.h"
 #include "DenseTriadsBehaviorEffect.h"
 #include "DenseTriadsEffect.h"
 #include "DenseTriadsSimilarityEffect.h"

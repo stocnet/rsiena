@@ -686,6 +686,7 @@ print.sienaAlgorithm <- function(x, ...)
 	if (x$maxlike)
 	{
 		cat(" Estimation by maximum likelihood\n")
+		cat(' multiplication factor:', x$mult, '\n')
 	}
 	else
 	{

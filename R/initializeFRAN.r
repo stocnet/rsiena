@@ -41,6 +41,16 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		}
 		if ((length(xx) >= 1) && (!(length(xx) == sum(theVars))))
 		{
+			cat(deparse(substitute(xx)), ' =  (', 
+					paste(names(xx), xx, sep=" = ", collapse="; ") ,') ,\n')
+			if (sum(theVars)==1)
+			{
+				cat('but there is only one dependent variable.\n')
+			}
+			else
+			{
+				cat('but there are ', sum(theVars), ' dependent variables.\n')
+			}
 			cat('Length of',deparse(substitute(xx)),
 				'should be equal to number of', thetype,'variables.\n')
 			stop('Invalid algorithm-data combination.')
@@ -74,6 +84,8 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 					'in the algorithm object x should be a named vector with\n')
 				cat(' the names of dependent', thetype, 'variables')
 				cat(' in the data set, in the same order.\n')
+				cat(' Names in algorithm object: ', names(xx), '\n')
+				cat(' Names in data set: ', theVarNames, '\n')
 				stop('Invalid algorithm-data combination.')
 			}
 		}
@@ -728,8 +740,10 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 				{
 					z$targets <- x$targets
 					z$targets2 <- matrix(x$targets, length(x$targets), 1)
-					message('Note: targets taken from algorithm object.\n')
-					message(z$targets , '\n')
+					message('Note: targets taken from algorithm object.')
+					cat('\n')
+					print(z$targets)
+					cat('\n')
 				}
 			}
 		}

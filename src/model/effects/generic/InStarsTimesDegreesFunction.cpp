@@ -34,8 +34,9 @@ InStarsTimesDegreesFunction::InStarsTimesDegreesFunction(string firstNetworkName
 				MixedNetworkAlterFunction(firstNetworkName, secondNetworkName)
 {
 	this->lsqrtTable = SqrtTable::instance();
-	this->lroot =  (parameter == 2);
-	this->lvariableName = secondNetworkName;
+	this->lroot = (fabs(parameter - 2) < EPSILON);
+	this->linv = (fabs(parameter + 1) < EPSILON);
+//	this->lvariableName = secondNetworkName;
 }
 
 /**
@@ -80,7 +81,15 @@ double InStarsTimesDegreesFunction::value(int alter)
 		}
 		else
 		{
+			if (this->linv)
+			{
+				double indeg = pSecondNetwork->inDegree(iter.actor()) + 1;
+				statistic += (1/indeg);
+			}
+			else
+			{
 			statistic += (pSecondNetwork->inDegree(iter.actor()));
+			}
 		}
 	}
 	return statistic;

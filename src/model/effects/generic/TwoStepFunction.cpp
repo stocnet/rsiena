@@ -3,17 +3,16 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: MixedTwoPathFunction.cpp
+ * File: TwoStepFunction.cpp
  *
  * Description: This file contains the implementation of the class
- * MixedTwoPathFunction.
+ * TwoStepFunction.
  *****************************************************************************/
 
-#include "MixedTwoPathFunction.h"
-#include "model/tables/TwoNetworkCache.h"
-#include "model/tables/MixedEgocentricConfigurationTable.h"
-
-using namespace std;
+#include "TwoStepFunction.h"
+#include "model/tables/NetworkCache.h"
+#include "model/tables/EgocentricConfigurationTable.h"
+#include <stdexcept>
 
 namespace siena
 {
@@ -23,11 +22,12 @@ namespace siena
  * @param[in] networkName the name of the network variable this function is
  * associated with
  */
-MixedTwoPathFunction::MixedTwoPathFunction(std::string firstNetworkName,
-                                           std::string secondNetworkName) :
-	MixedNetworkAlterFunction(firstNetworkName, secondNetworkName)
+TwoStepFunction::TwoStepFunction(std::string networkName, Direction direction1, Direction direction2) :
+	OneModeNetworkAlterFunction(networkName)
 {
 	this->lpTable = 0;
+	this->ldirection1 = direction1;
+	this->ldirection2 = direction2;
 }
 
 
@@ -38,13 +38,21 @@ MixedTwoPathFunction::MixedTwoPathFunction(std::string firstNetworkName,
  * @param[in] period the period of interest
  * @param[in] pCache the cache object to be used to speed up calculations
  */
-void MixedTwoPathFunction::initialize(const Data * pData,
+void TwoStepFunction::initialize(const Data * pData,
 	State * pState,
 	int period,
 	Cache * pCache)
 {
-	MixedNetworkAlterFunction::initialize(pData, pState, period, pCache);
-	this->lpTable = this->pTwoNetworkCache()->pTwoPathTable();
+	OneModeNetworkAlterFunction::initialize(pData, pState, period, pCache);
+
+	if (ldirection1 == FORWARD && ldirection2 == RECIPROCAL)
+		this->lpTable = this->pNetworkCache()->pFRTable();
+	if (ldirection1 == FORWARD && ldirection2 == FORWARD)
+		this->lpTable = this->pNetworkCache()->pTwoPathTable();
+
+
+	if(this->lpTable == 0)
+		throw std::invalid_argument( "TwoStepFunction expects different direction parameters" );
 }
 
 
@@ -53,7 +61,7 @@ void MixedTwoPathFunction::initialize(const Data * pData,
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double MixedTwoPathFunction::value(int alter)
+double TwoStepFunction::value(int alter)
 {
 	return this->lpTable->get(alter);
 }
@@ -62,7 +70,7 @@ double MixedTwoPathFunction::value(int alter)
 /**
  * Returns the value of this function as an integer.
  */
-int MixedTwoPathFunction::intValue(int alter)
+int TwoStepFunction::intValue(int alter)
 {
 	return this->lpTable->get(alter);
 }

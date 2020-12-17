@@ -63,6 +63,24 @@ TwoNetworkCache::TwoNetworkCache(const Network * pFirstNetwork,
 	this->lpOutStarTable =
 		new MixedTwoPathTable(this, BACKWARD, FORWARD);
 
+
+	// new tables added by cws
+	this->lpEETable =
+		new MixedTwoPathTable(this, EITHER, EITHER);
+
+	this->lpFRTable =
+		new MixedTwoPathTable(this, FORWARD, RECIPROCAL);
+
+	this->lpFETable =
+		new MixedTwoPathTable(this, FORWARD, EITHER);
+
+	this->lpERTable =
+		new MixedTwoPathTable(this, EITHER, RECIPROCAL);
+
+	this->lpRFTable =
+		new MixedTwoPathTable(this, RECIPROCAL, FORWARD);
+
+
 	this->initialize(-1);
 }
 
@@ -77,12 +95,22 @@ TwoNetworkCache::~TwoNetworkCache()
 	delete this->lpTwoPathTable;
 	delete this->lpInStarTable;
 	delete this->lpOutStarTable;
+	delete this->lpFRTable;
+	delete this->lpEETable;
+	delete this->lpFETable;
+	delete this->lpERTable;
+	delete this->lpRFTable;
 
 	this->lfirstOutTieValues = 0;
 	this->lsecondOutTieValues = 0;
 	this->lpTwoPathTable = 0;
 	this->lpInStarTable = 0;
 	this->lpOutStarTable = 0;
+	this->lpFRTable = 0;
+	this->lpEETable = 0;
+	this->lpFETable = 0;
+	this->lpERTable = 0;
+	this->lpRFTable = 0;
 }
 
 
@@ -133,6 +161,12 @@ void TwoNetworkCache::initialize(int ego)
 	this->lpInStarTable->initialize(ego);
 
 	this->lpOutStarTable->initialize(ego);
+
+	this->lpFRTable->initialize(ego);
+	this->lpEETable->initialize(ego);
+	this->lpFETable->initialize(ego);
+	this->lpERTable->initialize(ego);
+	this->lpRFTable->initialize(ego);
 
 }
 

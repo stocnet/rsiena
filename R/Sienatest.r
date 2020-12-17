@@ -407,6 +407,10 @@ print.sienaTest <- function(x, ...)
 	{
 		stop("not a legitimate sienaTest object")
 	}
+	if (any(is.na(unlist(x))))
+	{
+		stop("some estimates or standard errors are NA")
+	}
 	if (!is.null(x$efnames))
 	{
 		cat('Tested effects:\n ')
@@ -419,6 +423,7 @@ print.sienaTest <- function(x, ...)
 	{
 		cat(paste('one-sided Z = ',
 			format(round(x$onesided, digits=2), nsmall = 2), '; ', sep=''))
+		cat('two-sided')
 	}
 	if (x$pvalue < 0.001)
 	{
