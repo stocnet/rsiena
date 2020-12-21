@@ -24,7 +24,7 @@
    * For sienaDataCreate: more extensive error message, and class(...) replaced
      by class(...)[1]. 
    * multiplication factor added to print.sienaAlgorithm if maxlike.
-   * SienaAlgorithmCreate: requirements for mult corrected in help page.
+   * In sienaAlgorithmCreate: requirements for mult corrected in help page.
    * In sienaAlgorithmCreate, use the definitions for projname=NULL
      also if any environment variable _R_CHECK* is set. 
 
