@@ -31,7 +31,15 @@ Imports:
     parallel,
     MASS,
     methods
-Suggests: xtable, network, tools, codetools, tcltk, knitr, rmarkdown
+Suggests: 
+    xtable,
+    network,
+    tools,
+    codetools,
+    tcltk,
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
 SystemRequirements: GNU make, pandoc
 Description: The main purpose of this package is to perform simulation-based
    estimation of stochastic actor-oriented models for longitudinal network
@@ -51,3 +59,5 @@ NeedsCompilation: yes
 BuildResaveData: no
 BuildVignettes: no
 URL: http://www.stats.ox.ac.uk/~snijders/siena
+VignetteBuilder: knitr
+Config/testthat/edition: 3

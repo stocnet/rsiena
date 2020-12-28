@@ -11,3 +11,4 @@ src/*.dll
 *.synctex
 *.bak
 TexAux/
+inst/doc
