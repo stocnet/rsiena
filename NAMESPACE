@@ -6,7 +6,7 @@ export(
 	sienaCompositionChangeFromFile, sienaDataCreate, sienaGroupCreate,
 	sienaModelCreate, sienaAlgorithmCreate, sienaNet, sienaDependent,
 	sienaNodeSet, xtable.sienaFit, varCovar, varDyadCovar, setEffect,
-	includeEffects, includeInteraction, effectsDocumentation,
+	includeEffects, includeInteraction, includeGMoMStatistics, effectsDocumentation,
 	sienaDataConstraint, print.xtable.sienaFit, siena08, iwlsm, sienaTimeTest,
 	includeTimeDummy, sienaGOF, descriptives.sienaGOF, sienaRI,
 	sparseMatrixExtraction, networkExtraction, behaviorExtraction,

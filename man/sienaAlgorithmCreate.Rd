@@ -17,7 +17,7 @@
 \usage{
 sienaAlgorithmCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
      useStdInits = FALSE, n3 = 1000, nsub = 4, n2start = NULL,
-     dolby=TRUE, maxlike = FALSE, diagonalize=0.2*!maxlike,
+     dolby=TRUE, maxlike = FALSE, gmm = FALSE, diagonalize=0.2*!maxlike,
      condvarno = 0, condname = "", firstg = 0.2, reduceg = 0.5,
      cond = NA, findiff = FALSE, seed = NULL,
      pridg=0.05, prcdg=0.05, prper=0.2, pripr=0.3, prdpr=0.3,
@@ -29,7 +29,7 @@ sienaAlgorithmCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
 
 sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
      useStdInits = FALSE, n3 = 1000, nsub = 4, n2start = NULL,
-     dolby=TRUE, maxlike = FALSE, diagonalize=0.2*!maxlike,
+     dolby=TRUE, maxlike = FALSE, gmm = FALSE, diagonalize=0.2*!maxlike,
      condvarno = 0, condname = "", firstg = 0.2, reduceg = 0.5,
      cond = NA, findiff = FALSE, seed = NULL,
      pridg=0.05, prcdg=0.05, prper=0.2, pripr=0.3, prdpr=0.3,
@@ -75,6 +75,8 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
     if convergence is problematic, however, dolby=FALSE may be tried.
     Just use whatever works best.}
   \item{maxlike}{Whether to use maximum likelihood method or
+    Method of Moments estimation.}
+  \item{gmm}{Whether to use the Generalized Method of Moments or the regular
     Method of Moments estimation.}
   \item{diagonalize}{Number between 0 and 1 (bounds included),
     values outside this interval will be truncated;

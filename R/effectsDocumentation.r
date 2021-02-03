@@ -25,6 +25,10 @@ effectsDocumentation <- function(effects= NULL, type="html",
 		x <- as.data.frame(effects[, c("name", "effectName", "shortName", "type",
 			"interaction1", "interaction2", "parm", "interactionType")])
 	}
+  if (any(x$type=="gmm"))
+  {
+    x <- x[-which(x$type=="gmm"),]
+  }
 	storage.mode(x$parm) <- "integer"
 	names(x)[4] <- ifelse(is.null(effects), "endow?", "type")
 	names(x)[5] <- "inter1"

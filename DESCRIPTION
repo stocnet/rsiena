@@ -24,7 +24,7 @@ Authors@R: c(person("Tom A.B.", "Snijders", role = c("cre", "aut"), email = "tom
               person("Robert", "Hellpap", role = "ctb"),
               person("Ruth", "Ripley", role = "aut"))
 Maintainer: Tom A.B. Snijders <tom.snijders@nuffield.ox.ac.uk>
-Depends: R (>= 2.15.0)
+Depends: R (>= 3.5.0)
 Imports:
     Matrix,
     lattice,

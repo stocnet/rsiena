@@ -79,6 +79,7 @@ private:
 	void calculateStatistics();
 	void calculateNetworkRateStatistics(
 		NetworkLongitudinalData * pNetworkData);
+	void calculateNetworkGMMStatistics(NetworkLongitudinalData * pNetworkData);
 	void calculateNetworkEvaluationStatistics(
 		NetworkLongitudinalData * pNetworkData);
 	void calculateNetworkEndowmentStatistics(
@@ -86,6 +87,8 @@ private:
 	void calculateNetworkCreationStatistics(
 		NetworkLongitudinalData * pNetworkData);
 	void calculateBehaviorStatistics(BehaviorLongitudinalData * pBehaviorData);
+	void calculateBehaviorGMMStatistics(
+			BehaviorLongitudinalData * pBehaviorData);
 	void calculateBehaviorRateStatistics(BehaviorLongitudinalData * pBehaviorData);
 	void calculateContinuousStatistics(ContinuousLongitudinalData * pContinuousData);
 	void calculateContinuousRateStatistics(ContinuousLongitudinalData * pContinuousData);

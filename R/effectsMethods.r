@@ -44,7 +44,7 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
 		nDependents <- length(unique(x$name))
 		userSpecifieds <- x$shortName[x$include] %in%
 			c("unspInt", "behUnspInt")
-		endowments <- !x$type[x$include] %in% c("rate", "eval")
+		endowments <- !x$type[x$include] %in% c("rate", "eval", "gmm")
 		# includes creations and gmm
 		gmm <- any(x$type[x$include] %in% "gmm")
 		timeDummies <- !x$timeDummy[x$include] == ","
@@ -75,6 +75,10 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
 		{
 			specs <- cbind(specs, type=x[included, "type"])
 		}
+		if (gmm)
+		{
+		  specs <- cbind(specs, type=x[included, "type"])
+		}
 		if (any(timeDummies))
 		{
 			specs <- cbind(specs, timeDummy=x[included, "timeDummy"])
@@ -95,24 +99,27 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
 			width=10)
 		if (nrow(specs) > 0)
 		{
-			if (gmm)
-			{
-				cat('  For estimation by the Generalized Method of Moments\n')
-				cat('  Effects\n')
-				if (any(specs$type!='gmm'))
-				{
-					specs1 <- specs[specs$type!='gmm',]
-					row.names(specs1) <- 1:nrow(specs1)
-					print(as.matrix(specs1), quote=FALSE)
-				}
-				if (any(specs$type=='gmm'))
-				{
-					cat('\n	 Statistics\n')
-					specs2 <- specs[specs$type=='gmm',]
-					row.names(specs2) <- 1:nrow(specs2)
-					print(as.matrix(specs2[,c(1:2,7)]), quote=FALSE)
-				}
-			}
+		  if (gmm)
+			  {
+			    cat('\n Effects and statistics for estimation by the Generalized Method of Moments\n')
+			    if (any(specs$type!='gmm'))
+			    {
+			      cat('\n Effects\n')
+			      specs1 <- specs[specs$type!='gmm',]
+			      row.names(specs1) <- 1:nrow(specs1)
+			      print(as.matrix(specs1), quote=FALSE)
+			    }
+			    if (any(specs$type=='gmm'))
+			    {
+			      cat('\n Regular and GMoM statistics\n')
+			      specs2 <- specs[specs$type=='gmm',]
+			      specs3 <- rbind(specs1, specs2)
+			      specs3$Statistic <- c(rep("Regular",nrow(specs1)), 
+			                            rep("GMoM",nrow(specs2)))
+			      row.names(specs3) <- 1:nrow(specs3)
+			      print(as.matrix(specs3[,c(1:2,9)]), quote=FALSE)
+			    }
+			  }
 			else
 			{
 				print(as.matrix(specs), quote=FALSE)

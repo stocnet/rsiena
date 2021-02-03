@@ -295,6 +295,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		z$posj <- rep(FALSE, z$pp)
 		z$posj[requestedEffects$basicRate] <- TRUE
 		z$BasicRateFunction <- z$posj
+		z$gmmEffects <- (requestedEffects$type=="gmm")
 
 		## sort out names of user specified interaction effects
 		effects <- fixUpEffectNames(effects)
@@ -378,6 +379,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 				z$condname][1:observations]
 			z$theta<- z$theta[-z$condvar]
 			z$fixed<- z$fixed[-z$condvar]
+			z$gmmEffects <- z$gmmEffects[-z$condvar]
 			z$test<- z$test[-z$condvar]
 			z$pp<- z$pp - length(z$condvar)
 			z$scale<- z$scale[-z$condvar]
@@ -474,13 +476,29 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 				# from phase1.r.
 				# Partial diagonalization of derivative matrix
 				# for use if 0 < x$diagonalize < 1.
-				temp <- (1-x$diagonalize)*z$dfra +
-					x$diagonalize*diag(diag(z$dfra), nrow=dim(z$dfra)[1])
-				temp[z$fixed, ] <- 0.0
-				temp[, z$fixed] <- 0.0
-				diag(temp)[z$fixed] <- 1.0
-				# Invert this matrix
-				z$dinvv <- solve(temp)
+				if (!z$gmm) 
+				{
+				  temp <- (1-x$diagonalize)*z$dfra +
+				    x$diagonalize*diag(diag(z$dfra), nrow=dim(z$dfra)[1])
+				  temp[z$fixed, ] <- 0.0
+				  temp[, z$fixed] <- 0.0
+				  diag(temp)[z$fixed] <- 1.0
+				  # Invert this matrix
+				  z$dinvv <- solve(temp)
+				} 
+				else 
+				{ 
+				  z$B <- prevAns$B
+				  z$D0 <- prevAns$D0
+				  z$gamma <- prevAns$gamma
+				  temp <- (1-x$diagonalize)*z$D0 +
+				    x$diagonalize*diag(diag(z$D0), nrow=dim(z$D0)[1])
+				  temp[which(z$fixed & !z$gmmEffects), ] <- 0.0
+				  temp[, which(z$fixed & !z$gmmEffects)] <- 0.0
+				  diag(temp)[which(z$fixed & !z$gmmEffects)] <- 1.0
+				  # Invert this matrix
+				  z$dinvv <- solve(temp)%*%z$B
+				}
 
 				z$sf <- prevAns$sf
 				# check for backward compatibility with pre-1.1-220 versions:
@@ -2335,8 +2353,16 @@ updateTheta <- function(effects, prevAns, varName=NULL)
 	{
 		stop("prevAns is not an RSiena fit object")
 	}
-	prevEffects <- prevAns$requestedEffects[which(prevAns$requestedEffects$type != 'gmm'),]
-	prevEffects$initialValue <- prevAns$theta
+  	if (!prevAns$gmm)
+	{
+		prevEffects <- prevAns$requestedEffects[which(prevAns$requestedEffects$type != 'gmm'),]
+		prevEffects$initialValue <- prevAns$theta
+	} 
+	else if (prevAns$gmm)
+	{
+		prevEffects <- prevAns$requestedEffects
+    	prevEffects$initialValue <- prevAns$theta
+	}
 	if (prevAns$cconditional)
 	{
 		condEffects <- attr(prevAns$f, "condEffects")

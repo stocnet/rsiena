@@ -75,6 +75,58 @@ using namespace std;
 namespace siena
 {
 /**
+ * GMM group information. Maps effect short names to the one unique gmm group
+ * (usually the basic effect). In addition there are two special groups. The
+ * empty string ("") meaning a match by position (diagonal matrix) and the
+ * star ("*") meaning matching all.
+ */
+const std::string EffectFactory::gmmGroup(const EffectInfo* pEffectInfo) {
+	// map basic rates to the empty group, that is match by position
+	if (pEffectInfo->effectName() == "BasicRate") {
+	//	LOGF(Priority::INFO, "'%s' in gmm group '%s'",
+	//			pEffectInfo->effectName().c_str(), "");
+		return "";
+	}
+	map<const string, const string>::const_iterator it =
+		EffectFactory::GMM_GROUPS.find(pEffectInfo->effectName());
+	// if group is not specified, map to base name
+	if (it == EffectFactory::GMM_GROUPS.end()) {
+	//	LOGF(Priority::INFO, "'%s' in gmm group '%s'",
+	//			pEffectInfo->effectName().c_str(), pEffectInfo->effectName().c_str());
+		return pEffectInfo->effectName();
+	}
+	// otherwise return the group
+	//LOGF(Priority::INFO, "'%s' in gmm group '%s'",
+	//		pEffectInfo->effectName().c_str(), it->second.c_str());
+	return it->second;
+}
+const map<const string, const string> EffectFactory::GMM_GROUPS = init_groups();
+map<const string, const string> EffectFactory::init_groups() {
+	map<const string, const string> map;
+	map.insert(make_pair("recip", "recip"));
+	map.insert(make_pair("newrecip", "recip"));
+	map.insert(make_pair("realrecip", "recip"));
+	map.insert(make_pair("persistrecip", "recip"));
+	//
+	map.insert(make_pair("transTrip", "transTrip"));
+	//
+	map.insert(make_pair("egoX", "egoX"));
+	map.insert(make_pair("egoX_gmm", "egoX"));
+	map.insert(make_pair("outdeg", "egoX"));
+	//
+	map.insert(make_pair("simX", "simX"));
+	map.insert(make_pair("simX_gmm", "simX"));
+	map.insert(make_pair("totSim", "simX"));
+	map.insert(make_pair("totSim_gmm", "simX"));
+	map.insert(make_pair("avSim_gmm", "avSim"));
+	map.insert(make_pair("avAlt_gmm", "avAlt"));
+	map.insert(make_pair("totAlt_gmm", "totAlt"));
+	map.insert(make_pair("maxAlt_gmm", "maxAlt"));
+	map.insert(make_pair("minAlt_gmm", "minAlt"));
+	return map;
+}
+
+/**
  * Constructor.
  * @param[in] pData the data this factory will create effects for
  */
@@ -157,6 +209,21 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new ReciprocityEffect(pEffectInfo);
 	}
+	else if (effectName == "newrecip") 
+	{
+		pEffect = new ReciprocityGMMEffect(pEffectInfo,
+				ReciprocityGMMEffect::NEW);
+	} 
+	else if (effectName == "realrecip") 
+	{
+		pEffect = new ReciprocityGMMEffect(pEffectInfo,
+				ReciprocityGMMEffect::REAL);
+	}
+	else if (effectName == "persistrecip") 
+	{
+		pEffect = new ReciprocityGMMEffect(pEffectInfo,
+				ReciprocityGMMEffect::PERSISTENT);
+	}
 	else if (effectName == "transTrip1")
 	{
 		pEffect = new TransitiveTripletsEffect(pEffectInfo,true,false);
@@ -168,6 +235,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "transTrip")
 	{
 		pEffect = new TransitiveTripletsEffect(pEffectInfo,true,true);
+	}
+	else if (effectName == "agreetrans")
+	{
+		pEffect = new AgreementTransitivityEffect(pEffectInfo);
+	}
+	else if (effectName == "realtrans")
+	{
+		pEffect = new RealTransitivityEffect(pEffectInfo);
 	}
 	else if (effectName == "transTriads")
 	{
@@ -385,7 +460,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new CovariateEgoSquaredEffect(pEffectInfo);
 	}
-	else if (effectName == "egoX_sim")
+	else if (effectName == "egoX_gmm")
 	{
 		pEffect = new CovariateEgoEffect(pEffectInfo, false, false, true);
 	}
@@ -437,7 +512,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new CovariateSimilarityEffect(pEffectInfo, false);
 	}
-	else if (effectName == "simX_sim")
+	else if (effectName == "simX_gmm")
 	{
 		pEffect = new CovariateSimilarityEffect(pEffectInfo, false, true);
 	}
@@ -445,7 +520,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new CovariateSimilarityEffect(pEffectInfo, true);
 	}
-	else if (effectName == "simRecipX_sim")
+	else if (effectName == "simRecipX_gmm")
 	{
 		pEffect = new CovariateSimilarityEffect(pEffectInfo, true, true);
 	}
@@ -1316,6 +1391,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new SimilarityEffect(pEffectInfo, true, false, false);
 	}
+	else if (effectName == "avSim_gmm")
+	{
+		pEffect = new SimilarityEffect(pEffectInfo, true, false, false,true);
+	}
 	else if (effectName == "totSim")
 	{
 		pEffect = new SimilarityEffect(pEffectInfo, false, false, false);
@@ -1479,6 +1558,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new AverageAlterEffect(pEffectInfo, true, false);
 	}
 	}
+	else if (effectName == "avAlt_gmm")
+	{
+		pEffect = new AverageAlterEffect(pEffectInfo, true, false, true);
+	}
 	else if (effectName == "avGroup")
 	{
 		pEffect = new AverageGroupEffect(pEffectInfo);
@@ -1486,6 +1569,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "totAlt")
 	{
 		pEffect = new AverageAlterEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "totAlt_gmm")
+	{
+		pEffect = new AverageAlterEffect(pEffectInfo, false, false, true);
 	}
 	else if (effectName == "avAltPop")
 	{
@@ -1514,6 +1601,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new MaxAlterEffect(pEffectInfo, false);
 	}
 	}
+	else if (effectName == "maxAlt_gmm")
+	{
+		pEffect = new MaxAlterEffect(pEffectInfo, false, true);
+	}
 	else if (effectName == "minAlt")
 	{
 		if (pContinuousData)
@@ -1524,6 +1615,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		{
 		pEffect = new MaxAlterEffect(pEffectInfo, true);
 	}
+	}
+	else if (effectName == "minAlt_gmm")
+	{
+		pEffect = new MaxAlterEffect(pEffectInfo, true, true);
 	}
 	else if (effectName == "avInAlt")
 	{

@@ -42,9 +42,17 @@ phase2.1<- function(z, x, ...)
 # Instead of the preceding line,
 # the following is used for equality with earlier versions.
     z$sd <- sqrt(apply(z$sf, 2, function(x) sum(x^2) / nrow(z$sf) - mean(x)^2))
-    z$sd[z$fixed] <- 0
-	z$standardization <-
+	if (!z$gmm) 
+	{
+   	z$sd[z$fixed] <- 0
+	  z$standardization <-
 						1/sqrt(diag(as.matrix(z$dinvv %*% msf %*% t(z$dinvv))))
+	}
+	else
+	{
+	  z$sd[which(z$fixed & !z$gmmEffects)] <- 0
+	  z$standardization <- 1/sqrt(diag(as.matrix(z$dinvv %*% msf %*% t(z$dinvv))))
+	}
     Report(paste("standardization = ", round(z$standardization,4)), cf)
 	if (sum(z$fixed) < z$pp)
 	{
@@ -348,9 +356,18 @@ doIterations<- function(z, x, subphase,...)
 		{
 			if (z$pp > sum(z$fixed))
 			{
-				maxRatio <-
-					max(sqrt((t(fra[!z$fixed]) %*% z$sf.invcov %*% fra[!z$fixed]) /
-							(z$pp-sum(z$fixed))))
+			  if(!z$gmm)
+			  {
+			    maxRatio <-
+			      max(sqrt((t(fra[!z$fixed]) %*% z$sf.invcov %*% fra[!z$fixed]) /
+			                 (z$pp-sum(z$fixed))))			    
+			  }
+			  else
+			  {
+			    maxRatio <-
+			      max(sqrt((t(fra[!z$fixed & !z$gmmEffects]) %*% z$sf.invcov %*% fra[!z$fixed & !z$gmmEffects]) /
+			                 (z$pp-sum(!z$fixed & !z$gmmEffects)))) 
+			   }
 				# the max() is just to turn the (1,1) matrix into a number.
 			}
 			else
@@ -382,19 +399,44 @@ doIterations<- function(z, x, subphase,...)
 			{
 				if (x$standardizeWithTruncation)
 				{
-					changestep <- (as.vector(z$dinvv %*% fra))*pmin(z$standardization, 1)
+				  if (!z$gmm)
+				  {
+				    changestep <- (as.vector(z$dinvv %*% fra))*pmin(z$standardization, 1)
+				  }
+				  else
+				  {
+				    change <- (as.vector(z$dinvv %*% fra))*pmin(z$standardization, 1)
+				    changestep <- rep(0,z$pp)
+				    changestep[!z$gmmEffect] <- change
+				  }
 				}
 				else
 				{
-					changestep <- (as.vector(z$dinvv %*% fra))*z$standardization
+				  if (!z$gmm)
+				  {
+				    changestep <- (as.vector(z$dinvv %*% fra))*z$standardization
+				  }
+				  else
+				  {
+				    changestep <- (as.vector(z$dinvv %*% fra))*z$standardization
+				    changestep <- rep(0,z$pp)
+				    changestep[!z$gmmEffect] <- change
+		
+				  }
 				}
 			}
 		}
 		else
 		{
-			if (x$diagg)
+			if (x$diagg & !z$gmm)
 			{
 				changestep <- fra / diag(z$dfra)
+			}
+		  	else if (z$gmm)
+		  	{
+			    change <- (as.vector(z$dinvv %*% fra))
+			    changestep <- rep(0,z$pp)
+			    changestep[!z$gmmEffect] <- change 
 			}
 			else
 			{

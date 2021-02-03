@@ -283,13 +283,38 @@ DataReport <- function(z, x, f)
 		}
 	}
 
-	fixed <- ifelse(z$fixed, '  (fixed) ', '')
-	tmp <- paste(sprintf("%3d",1:length(z$requestedEffects$effectName)), '. ',
-		format(paste(z$requestedEffects$type, ':  ',
-				z$requestedEffects$effectName,
-				sep = ''), width = 52),
-		sprintf("%9.4f", z$requestedEffects$initialValue), fixed, '\n',
-		sep = '', collapse = '')
+	if (!x$gmm)
+	{
+	  fixed <- ifelse(z$fixed, '  (fixed) ', '')
+	}
+	else 
+	{
+	  if (!z$cconditional)
+	  {
+	    fixed <- ifelse((z$fixed & !z$gmmEffects), '  (fixed) ', '')
+	  }
+	  else
+	  {
+	    fixed <- ifelse((z$fixed & !(z$requestedEffects$type=="gmm")), '  (fixed) ', '')
+	  }
+	}
+	if (!x$gmm)
+	{	tmp <- paste(sprintf("%3d",1:length(z$requestedEffects$effectName)), '. ',
+	               format(paste(z$requestedEffects$type, ':  ',
+	                            z$requestedEffects$effectName,
+	                            sep = ''), width = 52),
+	               sprintf("%9.4f", z$requestedEffects$initialValue), fixed, '\n',
+	               sep = '', collapse = '')
+	}
+	else
+	{
+	  tmp <- paste(sprintf("%3d",1:(length(z$requestedEffects$effectName)-sum(z$gmmEffects))), '. ',
+	               format(paste(z$requestedEffects$type[!z$gmmEffects], ':  ',
+	                            z$requestedEffects$effectName[!z$gmmEffects],
+	                            sep = ''), width = 52),
+	               sprintf("%9.4f", z$requestedEffects$initialValue[!z$gmmEffects]), fixed[!z$gmmEffects], '\n',
+	               sep = '', collapse = '')
+	}
 	Report(tmp, outf)
 	## targets:
 	Report("\n\nObserved values of target statistics are\n", outf)
@@ -308,7 +333,7 @@ DataReport <- function(z, x, f)
 				targets)),
 		'\n', sep = '', collapse = '')
 	Report(tmp, outf)
-	Report(c('\n', nrow(z$requestedEffects), 'parameters,',
+	Report(c('\n', nrow(z$requestedEffects)-sum(z$requestedEffects$type=="gmm"), 'parameters,',
 			nrow(z$requestedEffects),
 			'statistics\n'),outf)
 }

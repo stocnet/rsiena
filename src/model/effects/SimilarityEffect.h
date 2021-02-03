@@ -33,6 +33,10 @@ public:
 		bool average,
 		bool alterPopularity,
 		bool egoPopularity);
+	SimilarityEffect(const EffectInfo * pEffectInfo,
+		bool average,
+		bool alterPopularity,
+		bool egoPopularity, const bool simulatedState);
 
 	virtual double calculateChangeContribution(int actor,
 		int difference);

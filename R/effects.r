@@ -359,6 +359,9 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 		tmp <- objEffects$functionName[objEffects$type =='creation']
 		tmp <- paste('New ties:', tmp)
 		objEffects$functionName[objEffects$type == 'creation'] <- tmp
+		tmp <- objEffects$functionName[objEffects$type =='gmm']
+		tmp <- paste('Gmm statistic:', tmp)
+		objEffects$functionName[objEffects$type == 'gmm'] <- tmp
 
 		## get starting values
 		starts <- getNetworkStartingVals(depvar)

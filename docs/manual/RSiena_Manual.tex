@@ -5180,12 +5180,23 @@ the Maximum Likelihood method \citep*[`ML', see][]{SnijdersEA10a},
 and Bayesian methods
 \citep[see][]{Koskinen04,KoskinenSnijders07,SchweinbergerSnijders07c,KoskinenSnijders20}.
 
-The application of the Generalized Method of Moments is still in development.
-It is theoretically more efficient than the Method of Moments.
-It is somewhat more time-consuming; on the other hand, function \sfn{sienacpp()}
-is coded in a more efficient way than \sfn{siena07()}.
 
-In models for one network, without co-evolution,
+The application of the GMoM is still in development.
+Relative to the MoM, the GMoM is theoretically more efficient and somewhat more time-consuming
+than the regular MoM since it requires a large number of simulations and 
+iterations of the model estimation (see Section~\ref{S_GMoM_siena07}). 
+In models for one network, the MoM and the GMoM yield similar estimates. 
+However, the GMoM estimator of the parameters of the effects related to the new statistics 
+is slightly more efficient than the MoM estimator. For the co-evolution model, 
+the gain in efficiency of the GMoM relative to the MoM is usually larger. 
+When the statistics are informative (i.e., when the number of simultaneous network 
+and behavioral changes made by the same actor between any two observations is not negligible), 
+the GMoM leads to more accurate estimates with smaller bias 
+and standard errors than the regular MoM.
+
+
+Comparison among all the four methods indicates that, 
+in models for one network, without co-evolution,
 in nice situations (data sets that are not too small, model specifications
 that do not request too much from the data, good fit between data and
 model specification), the four methods tend to agree
@@ -5201,14 +5212,13 @@ But in the `nice situations' the efficiency advantage of ML is very small.
 Bayesian estimation is based on a different statistical paradigm, and
 assumes and requires that the uncertainty about parameters is expressed
 itself in a probability distribution.
-For co-evolution, estimation by the Generalized Method of Moments
-will be made available in future versions.
+The comparison of the GMoM with ML and Bayesian 
+will be made available in the near future.
 
-Estimation by the regular Method of Moments (MoM)
-is implemented in the functions \sfn{siena07()} and \sfn{sienacpp()}.
-Estimation by the Generalized Method of Moments (GMoM)
-is implemented in the function \sfn{sienacpp()}.
 
+Estimation by the regular Method of Moments (MoM) 
+and Generalized Method of Moments (GMoM)
+is implemented in the functions \sfn{siena07()} and \sfn{sienacpp()}. 
 ML estimation is done by the function \sfn{siena07()}, using a set of options
 created by \sfn{sienaAlgorithmCreate()} with \sfn{maxlike=TRUE}.
 Bayesian estimation is done by the function \sfn{sienaBayes()},
@@ -5219,9 +5229,160 @@ but is as yet implemented only for multilevel network modeling
 \subsection{Generalized Method of Moments estimation}
 \label{S_GMoM}
 
-Estimation by the Generalized Method of Moments (GMoM)
-was proposed in \citet{ASS2015,ASS2019} and part of this is implemented
-in the function \sfn{sienacpp()}, available in \sfn{RSienaTest()}.
+\subsubsection{Using the function \sfn{siena07()}}
+\label{S_GMoM_siena07}
+
+Estimation by the Generalized Method of Moments (GMoM) 
+with the function \sfn{siena07()} is obtained by specifying the GMoM statistics 
+and the option \texttt{gmm=TRUE} of the function \sfn{sienaAlgorithmCreate()}. 
+
+Compared to the regular MoM, the GMoM allows using more statistics than parameters, 
+thereby exploiting more information in the observed data. 
+The additional information derives from the use of supplementary statistics,
+referred to as GMoM statistics.  
+
+Several GMoM statistics have been implemented for the evolution of networks 
+and co-evolution of networks and behaviors. 
+% We denote by $X$ the network, by $Z$ the behavior, 
+% and by $X(t_m)$ and $Z(t_m)$ the network and the behavior at time $t_m$.
+The statistics for the network evolution \citep{ASS2015}
+%(\texttt{newrecip}, \texttt{persistrecip}, \texttt{realrecip}, 
+%\texttt{realtrans}, \texttt{agreetrans})
+complement the information provided by the regular statistics by considering two consecutive 
+observations of the network. 
+%While the regular statistics depend only on the network
+%at time $t_m$, i.e., $\sum_{m=2}^M\sum_{i=1}^n S_{ik}(X(t_m))$,
+%the GMoM statistics simultaneously consider the networks at time $t_m$ and $t_{m+1}$, i.e.,
+%$\sum_{m=2}^M\sum_{i=1}^n S_{ik}(X(t_m),X(t_{m-1}))$.
+This formulation allows distinguishing between different antecedents of a same effect. 
+The implemented statistics are named \texttt{newrecip}, \texttt{persistrecip}, \texttt{realrecip}, 
+\texttt{realtrans}, \texttt{agreetrans}.
+The GMoM statistics for the co-evolution of networks and behaviors \citep{ASS2019}
+supplement the information of the cross-lagged statistics , depending jointly 
+on the network and behavior by considering the network and behavior at the same time point.
+Thus, the GMoM statistics account for the information on the simultaneous observation 
+of network and behavioral changes. The name of the implemented GMoM statistics
+are \texttt{avSim\_gmm}, \texttt{avAlt\_gmm}, \texttt{totAlt\_gmm}, \texttt{maxAlt\_gmm}, 
+\texttt{minAlt\_gmm}, \texttt{egoX\_gmm}, \texttt{simX\_gmm}. 
+
+For the GMoM, the additional statistics used for estimation are specified by 
+the function \sfn{includeGMoMStatistics()}. For example, the following lines
+\begin{verbatim}
+myeff <- includeGMoMStatistics(myeff, egoX_gmm, interaction1="mybeh")
+myeff <- includeGMoMStatistics(myeff, simX_gmm, interaction1="mybeh")
+\end{verbatim}
+specify the GMoM statistics for the covariate-related activity and similarity effects. 
+
+Although the statistics are added to the effect object, 
+one should keep in mind that the GMoM statistics are not model effects. 
+They are only used to evaluate the moment conditions and their use does not extend 
+the specification of the probability model. 
+
+The distinction between model effects 
+and GMoM statistics is recalled when printing the effect object in the R console.
+As illustrated by the example below, the output is divided into two parts. 
+The first part lists the model effects. 
+The second part reports the statistics used for the estimation: 
+the regular statistics, included by default when an effect is specified 
+in the probability model using \sfn{includeEffects()},
+and the GMoM statistics, specified with the function \sfn{includeGMoMStatistics()}. 
+The comparison between the number of effects and that of the statistics 
+illustrates that, for the GMoM, the one-to-one correspondence
+between effects operating for the evolution of networks and/or behaviors,
+and statistics operating for parameter estimation is lost.
+ 
+{\footnotesize
+\begin{verbatim}
+	 Effects and statistics for estimation by the Generalized Method of Moments
+
+ Effects
+   name  effectName                     include fix   test  initialValue parm type
+1  mynet constant mynet rate (period 1) TRUE    FALSE FALSE    4.69604   0    rate
+2  mynet constant mynet rate (period 2) TRUE    FALSE FALSE    4.32885   0    rate
+3  mynet outdegree (density)            TRUE    FALSE FALSE   -1.46770   0    eval
+4  mynet reciprocity                    TRUE    FALSE FALSE    0.00000   0    eval
+5  mynet transitive triplets            TRUE    FALSE FALSE    0.00000   0    eval
+6  mynet 3-cycles                       TRUE    FALSE FALSE    0.00000   0    eval
+7  mynet mybeh ego                      TRUE    FALSE FALSE    0.00000   0    eval
+8  mynet mybeh similarity               TRUE    FALSE FALSE    0.00000   0    eval
+9  mybeh rate mybeh (period 1)          TRUE    FALSE FALSE    0.70571   0    rate
+10 mybeh rate mybeh (period 2)          TRUE    FALSE FALSE    0.84939   0    rate
+11 mybeh mybeh linear shape             TRUE    FALSE FALSE    0.32237   0    eval
+12 mybeh mybeh quadratic shape          TRUE    FALSE FALSE    0.00000   0    eval
+13 mybeh mybeh total similarity         TRUE    FALSE FALSE    0.00000   0    eval
+
+ Regular and GMoM statistics
+   name  effectName                     Statistic
+1  mynet constant mynet rate (period 1) Regular  
+2  mynet constant mynet rate (period 2) Regular  
+3  mynet outdegree (density)            Regular  
+4  mynet reciprocity                    Regular  
+5  mynet transitive triplets            Regular  
+6  mynet 3-cycles                       Regular  
+7  mynet mybeh ego                      Regular  
+8  mynet mybeh similarity               Regular  
+9  mybeh rate mybeh (period 1)          Regular  
+10 mybeh rate mybeh (period 2)          Regular  
+11 mybeh mybeh linear shape             Regular  
+12 mybeh mybeh quadratic shape          Regular  
+13 mybeh mybeh total similarity         Regular  
+14 mynet mybeh ego                      GMoM     
+15 mynet mybeh similarity               GMoM    
+\end{verbatim}}
+
+\normalsize
+
+
+The computation of the GMoM estimates is more time consuming than that of the regular MoM.
+The estimation of the GMoM weights requires a larger number of simulations 
+in phase 1 and phase 3 and (at least) one iteration of the function \sfn{siena07}.
+The following estimation steps are recommended to reach the convergence of the algorithm quickly.
+\begin{enumerate}
+	\item  Run the function \sfn{siena07} with one or two sub-phases (i.e., 
+\texttt{nsub=1} or \texttt{nsub=2}) in phase 2 and a large number of simulations in phase 3
+(e.g., \texttt{n3=5000}) to get better initial estimates of the model parameters and a 
+more stable estimation of the matrix of GMoM weights.  
+ \item Re-estimate the model using the estimates produced in 1 by using four sub-phases in phase 2 
+(\texttt{nsub=4}), the same number of simulations in phase 3 (e.g., \texttt{n3=5000}) and the 
+argument \texttt{prevAns=TRUE}.
+\end{enumerate}
+If convergence is not adequate, one runs \sfn{siena07} repeatedly with \texttt{prevAns=TRUE}.
+
+The code below illustrates the estimation procedure described in the previous lines.
+
+\begin{verbatim}
+# Step 1
+myalgorithm <- sienaAlgorithmCreate(nsub=2, n3=5000, gmm=TRUE)
+ans <- siena07(myalgorithm, data=mydata, effects=myeff, initC=TRUE)
+ans
+
+Step 2
+myalgorithm <- sienaAlgorithmCreate(nsub=4, n3=5000, gmm=TRUE)
+ans1 <- siena07(myalgorithm, data=mydata, effects=myeff, prevAns=ans)
+ans1
+\end{verbatim}
+
+The code below illustrates the estimation procedure described in the previous lines.
+
+\begin{verbatim}
+# Step 1
+myalgorithm <- sienaAlgorithmCreate(nsub=2, n3=5000, gmm=TRUE)
+ans <- siena07(myalgorithm, data=mydata, effects=myeff, initC=TRUE)
+ans
+
+Step 2
+myalgorithm <- sienaAlgorithmCreate(nsub=4, n3=5000, gmm=TRUE)
+ans1 <- siena07(myalgorithm, data=mydata, effects=myeff, prevAns=ans)
+ans1
+\end{verbatim}
+
+Like the MoM, the GMoM allows conditional as well as unconditional estimation (see Section~\ref{S_cond}).
+
+\subsubsection{Using the function \sfn{sienacpp()}}
+\label{S_GMoM_sienacpp}
+
+Estimation by the Generalized Method of Moments (GMoM) is also implemented 
+in the function \sfn{sienacpp()}, available in \sfn{RSienaTest()}. 
 
 If the algorithm object created by \sfn{sienaAlgorithmCreate()}
 uses \texttt{maxlike=FALSE}, the estimation function \sfn{sienacpp()}

@@ -50,6 +50,10 @@ includeEffects <- function(myeff, ..., include=TRUE, name=myeff$name[1],
 	myeff[use, "include"] <- include
 	myeff[use, "test"] <- test
 	myeff[use, "fix"] <- fix
+  	if (sum(myeff[use, "type"]=="gmm") > 0)
+  	{
+	    stop("\n To include a GMoM statistic use the function includeGMoMStatistics")
+	}
 	if (sum(use) <= 0)
 	{
 		cat(paste("There is no effect with short name "))
@@ -84,6 +88,7 @@ includeEffects <- function(myeff, ..., include=TRUE, name=myeff$name[1],
 	}
 	myeff
 }
+
 ##@includeInteraction DataCreate
 includeInteraction <- function(myeff, ...,
 				include=TRUE, name=myeff$name[1],
@@ -306,7 +311,72 @@ setEffect <- function(myeff, shortName, parameter=NULL,
 	# 		"initialValue", "timeDummy", "period", "group")])
 	if (verbose)
 	{
-		print.sienaEffects(myeff[use,], includeRandoms = random)
+	  if (any(myeff$type[use] %in% "gmm"))
+	  {
+	    myeff2 <- as.data.frame(myeff[use,])
+	    rownames(myeff2) <- 1:nrow(myeff2)
+	    print.data.frame(myeff2[, c("name", "shortName", "type","include")])
+	  }
+	  else
+	  {
+	    print.sienaEffects(myeff[use,], includeRandoms = random)
+	  }
 	}
 	myeff
+}
+
+##@includeGMoMStatistics DataCreate
+includeGMoMStatistics <- function(myeff, ..., include=TRUE, name=myeff$name[1],
+                                  interaction1="", interaction2="",
+                                  character=FALSE, verbose=TRUE)
+{
+  if (character)
+  {
+    dots <- sapply(list(...), function(x)x)
+  }
+  else
+  {
+    dots <- substitute(list(...))[-1] ##first entry is the word 'list'
+  }
+  if (length(dots) == 0)
+  {
+    stop("This function needs some effect short names.")
+  }
+  if (!character)
+  {
+    effectNames <- sapply(dots, function(x)deparse(x))
+  }
+  else
+  {
+    effectNames <- dots
+  }
+  use <- myeff$shortName %in% effectNames &
+    myeff$type=="gmm" &
+    myeff$name==name &
+    myeff$interaction1 == interaction1 &
+    myeff$interaction2 == interaction2
+  myeff[use, "include"] <- include
+  myeff[use, "test"] <- FALSE
+  myeff[use, "fix"] <- TRUE
+  myeff[use, "initialValue"] <- 0
+  if (sum(use) <= 0)
+  {
+    cat(paste("There is no GMoM statistic with short name "))
+    cat(paste(effectNames,", \n", sep=""))
+    cat(paste("and with interaction1 = <",interaction1,">, ", sep=""))
+    cat(paste("interaction2 = <",interaction2,">, ", sep=""))
+    cat(paste("for dependent variable",name,".\n"))
+  }
+  else
+  {
+    #		print.data.frame(myeff[use, c("name", "shortName", "type",
+    #			"interaction1", "interaction2", "include")])
+    if (verbose)
+    {
+      myeff2 <- as.data.frame(myeff[use,])
+      rownames(myeff2) <- 1:nrow(myeff2)
+      print.data.frame(myeff2[, c("name", "shortName", "type","include")])
+    }
+  }
+  myeff
 }
