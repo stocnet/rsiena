@@ -1,0 +1,293 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[pdftex,dvipsnames]{color}
+\usepackage{graphicx,times}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage[pdfstartview={}]{hyperref}
+\textheight=9.5in
+\textwidth=6.0in
+\topmargin=-0.5in
+\evensidemargin=0in
+\oddsidemargin=0in
+\newcommand{\eps}{\varepsilon}
+\newcommand{\abso}[1]{\;\mid#1\mid\;}
+\renewcommand{\=}{\,=\,}
+\newcommand{\+}{\,+\,}
+% ----------------------------------------------------------------
+\newcommand{\remark}[1]{\par\noindent{\color[named]{ProcessBlue}#1}\par}
+\newcommand{\mcc}[2]{\multicolumn{#1}{c}{#2}}
+\newcommand{\mcp}[2]{\multicolumn{#1}{c|}{#2}}
+\newcommand{\nm}[1]{\textsf{\small #1}}
+\newcommand{\nnm}[1]{\textsf{\small\textit{#1}}}
+\newcommand{\nmm}[1]{\nnm{#1}}
+\newcommand{\R}{{\sf R }}
+\newcommand{\sfn}[1]{\textbf{\texttt{#1}}}
+\newcommand{\Rn}{{\sf R}}
+\newcommand{\rs}{{\sf RSiena}}
+\newcommand{\RS}{{\sf RSiena }}
+\newcommand{\SI}{{\sf Siena3 }}
+\newcommand{\Sn}{{\sf Siena3}}
+% no labels in list of references:
+\makeatletter
+\renewcommand\@biblabel{}
+\makeatother
+
+\hyphenation{Snij-ders Duijn DataSpecification dataspecification dependentvariable ModelSpecification}
+
+% centered section headings with a period after the number;
+% sans serif fonts for section and subsection headings
+\renewcommand{\thesection}{\arabic{section}.}
+\renewcommand{\thesubsection}{\thesection\arabic{subsection}}
+\makeatletter
+ \renewcommand{\section}{\@startsection{section}{1}
+                {0pt}{\baselineskip}{0.5\baselineskip}
+                {\centering\sffamily} }
+ \renewcommand{\subsection}{\@startsection{subsection}{2}
+                {0pt}{0.7\baselineskip}{0.3\baselineskip}
+                {\sffamily} }
+\makeatother
+
+\newcommand{\ts}[1]{\par{\color[named]{Red}TS: #1}\par}
+
+\renewcommand{\baselinestretch}{1.0} %% For line spacing.
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1ex plus1ex}
+\begin{document}
+
+\title{RSiena: processing of missing and structural values}
+\author{Ruth Ripley (with modifications by Tom Snijders)}
+\date{}
+\maketitle
+
+\centerline{\emph{\today}}
+\bigskip
+\section{Introduction}
+This document describes the processing of missing and structurally fixed
+values. It does not (yet!) include definitions of all the various missing data
+attributes used in RSiena.
+
+Nothing yet about ML.
+\section{Outcome: see below for details}
+\begin{description}
+\item[networks]\hfill
+\begin{enumerate}
+\item Missing values are replaced by the most recent previous non-missing value,
+  if any. Or zero.
+\end{enumerate}
+\item[behavior variables]\hfill
+\begin{enumerate}
+\item Missing values are replaced by the most recent previous non-missing value,
+  if any, or the earliest later one, if any, or by the mode for the wave.
+\item Centering is done by subtracting the mean each time the value is
+  used in a relevant effect.
+\item No structurals yet.
+\end{enumerate}
+\item[constant and changing covariates] \hfill
+\begin{enumerate}
+\item In siena07 and other functions relying on the C++ code (eg
+  \verb|sienaBayes|), missing values are replaced by 0, which is the mean of the
+  centred data. Missing values are never altered in R.
+\item Values are centered i.e. the ((global) mean is
+  subtracted).
+\end{enumerate}
+\item[constant and changing dyadic covariates]\hfill
+\begin{enumerate}
+\item Missing values are replaced by the (global) mean when preparing the data
+  for input to C++.
+\item Values are centered by \emph{the relevant effect} subtracting the mean.
+\end{enumerate}
+\end{description}
+\section{siena01 route}
+
+\section{Object creation}
+
+\subsection{networks: sienaDependent}
+\begin{enumerate}
+\item For networks, all values must be missing or 0, 1, 10, 11
+\end{enumerate}
+
+\subsection{Data object}
+\begin{description}
+\item[networks]\hfill
+\begin{enumerate}
+\item Missing and structural values are excluded in calculation of distance
+  between the waves.
+\end{enumerate}
+\item[behavior variables]\hfill
+\begin{enumerate}
+\item No mean is calculated.
+\item \nnm{moreThan2} treats missing values as a separate category, unlike
+  for covariates.
+\item \nnm{poszvar} always true if there are missing values. Otherwise only if
+    not all values are the same.
+\item Missing values are excluded in calculation of distance between the waves.
+\end{enumerate}
+\item[constant and changing covariates]\hfill
+\begin{enumerate}
+\item Missing values are ignored in calculation of mean i.e. mean is average of
+  non-missing values.
+\item \nnm{moreThan2} ignores missing values.
+\item \nnm{poszvar} always true if there are missing values. Otherwise only if
+    not all values are the same.
+\item Values are centered but NA's are never removed within R.
+\item Range and similarity calculations ignore any missing values, excluding
+  them from denominators as well.
+\end{enumerate}
+\item[dyadic covariates]\hfill
+\begin{enumerate}
+\item Missing values are ignored in calculation of mean.
+\end{enumerate}
+\end{description}
+
+\section{Reports}
+
+\section{Input to C++: initializeFRAN}
+\begin{description}
+\item[networks]\hfill
+\begin{enumerate}
+\item Missing values are replaced by the most recent previous value if
+  any. Otherwise by 0. \emph{No carry back}.
+\item Which values are treated as missing can be altered by composition change
+  option. This may mean that a carried forward value is replaced
+  by 0 later.
+\item A new distance is calculated in R after these changes. Possibly is not
+  used, but if it is used, its exact definition is not immediately apparent! See
+  item below for details of composition change options. I think it is a hangover
+  from days before the distance was calculated with the statistics.
+\item Three edge lists are created, one for data which is to be used, one for
+  missing indicators and one for indicators of structurally fixed values.
+\end{enumerate}
+\item[behavior variables] Missing values are replaced by a previous value or a
+  later value or the mode for the wave. Done in \nnm{unpackBehavior}, called by
+  \nnm{initializeFRAN}.
+\item[constant and changing covariates] When the data is read in C++: it is then
+  zero'd if missing, and the fact that it is missing is stored.
+ (Uses R ISNAN macro in C++, a convenient flag.)
+\item[dyadic covariates] When making edgelists in preparation for C++, in the
+  unpack functions called by\nnm{initializeFRAN}, NA's are replaced by the mean.
+\item[Composition change options]\hfill
+\begin{description}
+\item[1] Never treated as missing, except in the initial report.
+Before the actor joins the network, row and column are set to 0
+After the actor has joined, if later inactive, the previous
+value is carried forward.
+\item[2] Before the actor joins the network, row and column are set to 0 and the
+  values are not treated as missing values. If temporarily missing after
+  joining, the previous value is carried forward and this is not treated as a
+  missing value. After finally leaving, any non-missing values in the data will
+  be used, but they will be treated as missing values. If the data contained
+  NA's then values are carried forward or zeroed as usual.
+\item[3] When inactive the values are treated as missing. If any values are
+  present they will be used. If NA's are present then values are carried
+  forward or zeroed as usual.
+\end{description}
+\end{description}
+
+\section{Processing in siena07}
+\begin{description}
+\item[networks] Each network has 3 network objects: one for the values and two
+  boolean networks, one for missing indicators and one for structural
+  indicators. In general, forward simulation does not concern itself with
+  missing values until calculating statistics. Structural values are used
+  alongside any composition change data when defining the flags indicating
+  whether an actor is active or not.
+\item[behavior variables] Centering is achieved when required by the relevant
+  effect subtracting the overall mean. (Which is calculated after set up in C++,
+  not R. Might be good idea to alter this as too easy to get reports and values
+  used out of sync.)
+\item[constant and changing covariates] The missing
+  flags are used when calculating distance 2 covariate effects: if all the
+  values which are being averaged are missing the result is treated as missing.
+\item[dyadic covariates] The relevant effect subtracts the mean from the value
+  each time the latter is requested.
+\item[Statistics] See \texttt{StatisticCalculator.cpp}\hfill
+\begin{enumerate}
+\item We create \emph{predictor} versions of the dependent variables which are
+  used in any effect of which the dependent variable is not the owner. For
+  networks these have all values missing at either end of the period set to
+  zero. For behavior variables we only set to zero the values which are missing
+  at the start of the period.
+\item In the simulated values data for any actors who are inactive at the end of
+  the period are set to the values at the start of the period so as not to
+  affect the statistics. This is done in a routine named \nnm{setLeaverBack} but
+  in fact it affects all actors inactive at the time, not just leavers during
+  the period.
+\item Then each dependent variable is processed in turn. The three types of
+  effects are processed differently, and differently for networks and behavior
+  variables:
+  \begin{description}
+  \item[networks]\hfill
+    \begin{description}
+    \item[evaluation]\hfill
+      \begin{enumerate}
+      \item In a copy of the current state of the owner dependent
+        variable we make the following changes:
+        \begin{description}
+        \item[missing] Values missing at either end of the period are set to 0.
+        \item[structural] There are two cases to consider: initial calculation
+          of targets, and calculation of simulated statistics after
+          simulation. In the former case we have used the data for the end of
+          the period as the current state so we copy values structurally fixed
+          at the start of the period from the data to the state. In the other
+          case we copy values structurally fixed at the end to our state. (The
+          same two changes are made in each case, but only one has any effect.)
+        \end{description}
+      \item Since a network is not used at the same time as a predictor and an
+        owner we temporarily overwrite the predictor state's copy of this
+        network with our changed copy so we can use the predictor state for all
+        our calculations.
+      \end{enumerate}
+    \item[endowment] Here we create a \nnm{LostTieNetwork} and also overwrite
+      the predictor network.
+      \begin{description}
+      \item[lostTieNetwork]\hfill
+        \begin{enumerate}
+        \item A copy is made of the initial state of the network, from the data
+        \item In a copy of the current state of the owner dependent variable,
+          any values that are structurally fixed are changed as for evaluation
+          effects.
+        \item Any values which are 1 in our changed copy of the current state
+          are set to zero in the lost tie network.
+        \item Any values missing at the end of the period are set to zero in the
+          lost tie network. ?? why not start too?
+        \end{enumerate}
+      \item[predictor network]
+        \begin{enumerate}
+        \item Values missing at the start of the period are set to zero in a
+          copy of the current state of the network. (Values missing at the end
+          are not changed).
+        \item Since a network is not used at the same time as a predictor and an
+          owner we temporarily overwrite the predictor state's copy of this
+          network with our changed copy so we can use the predictor state for
+          all our calculations.
+        \end{enumerate}
+      \end{description}
+    \item[creation] Here we create a \nnm{GainedTieNetwork} and also overwrite
+      the predictor network as for evaluation effects.
+      \begin{description}
+      \item[predictor network] A changed copy of the current state is created as
+        for evaluation effects.
+      \item[GainedTieNetwork]
+         A copy is made of our altered predictor network, and any values
+          missing or 1 at the start of the period are set to zero.
+      \end{description}
+    \end{description}
+  \item[behavior]
+    \begin{enumerate}
+    \item A copy of the current state of values (less overall mean) is made and
+      any values missing at start or end of the period are set to zero.
+    \item A vector of differences, start of period value less (unaltered)
+      current state is created. Entries missing at either end of the period are
+      set to zero.
+    \item Evaluation effects are calculated using the altered current centred
+      values.
+    \item Endowment and creation effects are calculated using the altered
+      current centred values and the differences.
+    \end{enumerate}
+  \end{description}
+\end{enumerate}
+\end{description}
+\end{document}

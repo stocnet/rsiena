@@ -871,8 +871,8 @@ of the software appear).
             This can be done from \url{http://cran.r-project.org/} .\\
             Many users prefer some kind of additional environment, such as \texttt{RStudio}, or
             the combination of \texttt{Notepad++} with \texttt{NppToR}.\\
-            For Mac, you will also need \sfn{X11}, because this is
-            required for \sfn{tcltk}. See the FAQ list for R on Mac,
+            For Mac, you may also need \sfn{X11}, which is
+            used for \sfn{tcltk}; but this is not a necessity. See the FAQ list for R on Mac.
 	\item	Install the package \RS or \sfn{RSienaTest}, with dependencies.
             The other packages used are  \sfn{parallel}
             and \sfn{tools} (all included in the basic \R distribution);
@@ -912,24 +912,26 @@ of the software appear).
         \url{https://github.com/snlab-nl/rsiena/releases/}.
 Once the file has been downloaded, unzip it, and install the binary
 as appropriate for your Operating System.
-In the following, perhaps the name of the Downloads folder and
+In the following, the name of the Downloads folder has to be changed
+to wherever you downloaded the file and
 the version number have to be amended:
 
 For Windows:
 
-\texttt{install.packages("\url{~/Downloads/rsiena\_AllOS/winOS/RSiena\_1.2.29.zip}", \\
-repos = NULL)}
+after downloading
+\url{https://github.com/snlab-nl/rsiena/releases/download/v1.2.29/RSiena_winOS.zip},
+change filename \texttt{RSiena\_winOS.zip} to \texttt{RSiena.zip}, and
+apply \\
+\texttt{install.packages("\url{~//Downloads//RSiena.zip}", repos = NULL)}\\
+(where the name \texttt{\url{~//Downloads//}} will have to be changed, as mentioned).
 
 For Mac:
-
-\texttt{install.packages("\url{~/Downloads/rsiena\_AllOS/macOS/RSiena\_1.2.29.tgz}", \\
-repos = NULL)}
+\\
+\texttt{install.packages("\url{~//Downloads//RSiena\_macOS.tgz}", repos = NULL)}\\
 
 For Unix:
-
-\texttt{install.packages(\\
-"\url{~/Downloads/rsiena\_AllOS/linuxOS/RSiena\_1.2-29\_R\_x86\_64-pc-linux-gnu.tar.gz}",
- repos = NULL)}
+\\
+\texttt{install.packages("\url{~//Downloads//RSiena\_linuxOS.tar.gz}", repos = NULL)}\\
 
             Installation of \texttt{RSienaTest}
             from the R-Forge repository can be done as follows.
@@ -1338,7 +1340,8 @@ The three possible formats for digraph input are as follows.
       The help file for \sfn{sienaDependent} shows by examples how the
       specification can be given by sparse matrices.
     \item \emph{Pajek format}.\\
-      These can be used in \sfn{sienaDataCreateFromSession}.\\
+      These can be used in \sfn{sienaDataCreateFromSession}
+      (only available in \rst).\\
       If the digraph data file has extension name \texttt{.net}, then the
       program assumes that the data file has Pajek format.
       The file should relate to one observation only,
@@ -1351,7 +1354,7 @@ The three possible formats for digraph input are as follows.
       that is distributed in the \texttt{examples} directory of the
       source code.
     \item \emph{Siena format}.\\
-      These can be used in \sfn{sienaDataCreateFromSession}.\\
+      These can be used in \sfn{sienaDataCreateFromSession} (only available in \rst).\\
       An edge list is a matrix containing three or four columns:
       from, to, value, wave (optional).\\
       Like the Pajek format, this has the advantage that absent ties (tie
@@ -1378,7 +1381,7 @@ outside R. \fi
 Missing values must be indicated in the way usual for \Rn,
 by \texttt{NA}.
 For data specification by the function
-\textsf{sienaDataCreateFromSession},
+\textsf{sienaDataCreateFromSession} (only available in \rst),
 instead of \texttt{NA} any numerical code can be used
 given that this is indicated to be a missing value code.
 
@@ -3232,9 +3235,11 @@ between networks can be considered:
 \begin{description}
   \item[disjoint:] for any given pair of actors $(i,j)$,
       it is impossible that ties exists in both networks;
-  \item[higher:] for any given pair of actors $(i,j)$,
-      it is impossible that a tie exists in the first
-      but not in the second network;
+  \item[higher:] the tie variables for the first network
+      are higher than or equal to those for the second network:
+      for any given pair of actors $(i,j)$,
+      it is impossible that a tie exists in the second
+      but not in the first network;
   \item[atleastone:] for any given pair of actors $(i,j)$,
      there must be a tie in at least one of the networks.
 \end{description}
@@ -5183,19 +5188,19 @@ and Bayesian methods
 
 The application of the GMoM is still in development.
 Relative to the MoM, the GMoM is theoretically more efficient and somewhat more time-consuming
-than the regular MoM since it requires a large number of simulations and 
-iterations of the model estimation (see Section~\ref{S_GMoM_siena07}). 
-In models for one network, the MoM and the GMoM yield similar estimates. 
-However, the GMoM estimator of the parameters of the effects related to the new statistics 
-is slightly more efficient than the MoM estimator. For the co-evolution model, 
-the gain in efficiency of the GMoM relative to the MoM is usually larger. 
-When the statistics are informative (i.e., when the number of simultaneous network 
-and behavioral changes made by the same actor between any two observations is not negligible), 
-the GMoM leads to more accurate estimates with smaller bias 
+than the regular MoM since it requires a large number of simulations and
+iterations of the model estimation (see Section~\ref{S_GMoM_siena07}).
+In models for one network, the MoM and the GMoM yield similar estimates.
+However, the GMoM estimator of the parameters of the effects related to the new statistics
+is slightly more efficient than the MoM estimator. For the co-evolution model,
+the gain in efficiency of the GMoM relative to the MoM is usually larger.
+When the statistics are informative (i.e., when the number of simultaneous network
+and behavioral changes made by the same actor between any two observations is not negligible),
+the GMoM leads to more accurate estimates with smaller bias
 and standard errors than the regular MoM.
 
 
-Comparison among all the four methods indicates that, 
+Comparison among all the four methods indicates that,
 in models for one network, without co-evolution,
 in nice situations (data sets that are not too small, model specifications
 that do not request too much from the data, good fit between data and
@@ -5212,13 +5217,13 @@ But in the `nice situations' the efficiency advantage of ML is very small.
 Bayesian estimation is based on a different statistical paradigm, and
 assumes and requires that the uncertainty about parameters is expressed
 itself in a probability distribution.
-The comparison of the GMoM with ML and Bayesian 
+The comparison of the GMoM with ML and Bayesian
 will be made available in the near future.
 
 
-Estimation by the regular Method of Moments (MoM) 
+Estimation by the regular Method of Moments (MoM)
 and Generalized Method of Moments (GMoM)
-is implemented in the functions \sfn{siena07()} and \sfn{sienacpp()}. 
+is implemented in the functions \sfn{siena07()} and \sfn{sienacpp()}.
 ML estimation is done by the function \sfn{siena07()}, using a set of options
 created by \sfn{sienaAlgorithmCreate()} with \sfn{maxlike=TRUE}.
 Bayesian estimation is done by the function \sfn{sienaBayes()},
@@ -5231,66 +5236,73 @@ but is as yet implemented only for multilevel network modeling
 
 \subsubsection{Using the function \sfn{siena07()}}
 \label{S_GMoM_siena07}
+.
 
-Estimation by the Generalized Method of Moments (GMoM) 
-with the function \sfn{siena07()} is obtained by specifying the GMoM statistics 
-and the option \texttt{gmm=TRUE} of the function \sfn{sienaAlgorithmCreate()}. 
-
-Compared to the regular MoM, the GMoM allows using more statistics than parameters, 
-thereby exploiting more information in the observed data. 
+Compared to the regular Method of Moments (MoM), the Generalized Method of
+Moments (GMoM) allows using more statistics than parameters,
+thereby exploiting more information in the observed data.
 The additional information derives from the use of supplementary statistics,
-referred to as GMoM statistics.  
+referred to as GMoM statistics.
+\medskip
 
-Several GMoM statistics have been implemented for the evolution of networks 
-and co-evolution of networks and behaviors. 
-% We denote by $X$ the network, by $Z$ the behavior, 
+Estimation by the GMoM with the function \sfn{siena07()} is obtained
+by specifying the GMoM statistics in the effects object using
+function \sfn{includeGMoMStatistics()},
+and setting option \texttt{gmm=TRUE}
+in the algorithm object created by the function \sfn{sienaAlgorithmCreate()}.
+
+Several GMoM statistics have been implemented for the evolution of networks
+and for co-evolution of networks and behaviors.
+
+% We denote by $X$ the network, by $Z$ the behavior,
 % and by $X(t_m)$ and $Z(t_m)$ the network and the behavior at time $t_m$.
 The statistics for the network evolution \citep{ASS2015}
-%(\texttt{newrecip}, \texttt{persistrecip}, \texttt{realrecip}, 
+%(\texttt{newrecip}, \texttt{persistrecip}, \texttt{realrecip},
 %\texttt{realtrans}, \texttt{agreetrans})
-complement the information provided by the regular statistics by considering two consecutive 
-observations of the network. 
+complement the information provided by the regular statistics by
+considering two consecutive observations of the network.
 %While the regular statistics depend only on the network
 %at time $t_m$, i.e., $\sum_{m=2}^M\sum_{i=1}^n S_{ik}(X(t_m))$,
 %the GMoM statistics simultaneously consider the networks at time $t_m$ and $t_{m+1}$, i.e.,
 %$\sum_{m=2}^M\sum_{i=1}^n S_{ik}(X(t_m),X(t_{m-1}))$.
-This formulation allows distinguishing between different antecedents of a same effect. 
-The implemented statistics are named \texttt{newrecip}, \texttt{persistrecip}, \texttt{realrecip}, 
+This formulation allows distinguishing between different antecedents of a same effect.
+The implemented statistics are named \texttt{newrecip}, \texttt{persistrecip}, \texttt{realrecip},
 \texttt{realtrans}, \texttt{agreetrans}.
 The GMoM statistics for the co-evolution of networks and behaviors \citep{ASS2019}
-supplement the information of the cross-lagged statistics , depending jointly 
-on the network and behavior by considering the network and behavior at the same time point.
-Thus, the GMoM statistics account for the information on the simultaneous observation 
+supplement the information of the cross-lagged statistics, depending jointly
+on network and behavior, by considering the network and behavior at the same time point.
+Thus, the GMoM statistics account for the information on the simultaneous observation
 of network and behavioral changes. The name of the implemented GMoM statistics
-are \texttt{avSim\_gmm}, \texttt{avAlt\_gmm}, \texttt{totAlt\_gmm}, \texttt{maxAlt\_gmm}, 
-\texttt{minAlt\_gmm}, \texttt{egoX\_gmm}, \texttt{simX\_gmm}. 
+are \texttt{avSim\_gmm}, \texttt{avAlt\_gmm}, \texttt{totAlt\_gmm}, \texttt{maxAlt\_gmm},
+\texttt{minAlt\_gmm}, \texttt{egoX\_gmm}, \texttt{simX\_gmm}.
 
-For the GMoM, the additional statistics used for estimation are specified by 
+For the GMoM, the additional statistics used for estimation are specified by
 the function \sfn{includeGMoMStatistics()}. For example, the following lines
 \begin{verbatim}
 myeff <- includeGMoMStatistics(myeff, egoX_gmm, interaction1="mybeh")
 myeff <- includeGMoMStatistics(myeff, simX_gmm, interaction1="mybeh")
 \end{verbatim}
-specify the GMoM statistics for the covariate-related activity and similarity effects. 
+specify the GMoM statistics for the covariate-related activity and similarity effects.
 
-Although the statistics are added to the effect object, 
-one should keep in mind that the GMoM statistics are not model effects. 
-They are only used to evaluate the moment conditions and their use does not extend 
-the specification of the probability model. 
+Although the statistics are added to the effect object,
+one should keep in mind that the GMoM statistics are not effects
+in the stochastic model, i.e., they are not
+included as terms in the objective function.
+They are only used for parameter estimation to evaluate the moment conditions.
 
-The distinction between model effects 
+The distinction between model effects
 and GMoM statistics is recalled when printing the effect object in the R console.
-As illustrated by the example below, the output is divided into two parts. 
-The first part lists the model effects. 
-The second part reports the statistics used for the estimation: 
-the regular statistics, included by default when an effect is specified 
+As illustrated by the example below, the output is divided into two parts.
+The first part lists the model effects.
+The second part reports the statistics used for the estimation:
+the regular statistics, included by default when an effect is specified
 in the probability model using \sfn{includeEffects()},
-and the GMoM statistics, specified with the function \sfn{includeGMoMStatistics()}. 
-The comparison between the number of effects and that of the statistics 
+and the GMoM statistics, specified with the function \sfn{includeGMoMStatistics()}.
+The comparison between the number of effects and that of the statistics
 illustrates that, for the GMoM, the one-to-one correspondence
 between effects operating for the evolution of networks and/or behaviors,
 and statistics operating for parameter estimation is lost.
- 
+
 {\footnotesize
 \begin{verbatim}
 	 Effects and statistics for estimation by the Generalized Method of Moments
@@ -5313,37 +5325,37 @@ and statistics operating for parameter estimation is lost.
 
  Regular and GMoM statistics
    name  effectName                     Statistic
-1  mynet constant mynet rate (period 1) Regular  
-2  mynet constant mynet rate (period 2) Regular  
-3  mynet outdegree (density)            Regular  
-4  mynet reciprocity                    Regular  
-5  mynet transitive triplets            Regular  
-6  mynet 3-cycles                       Regular  
-7  mynet mybeh ego                      Regular  
-8  mynet mybeh similarity               Regular  
-9  mybeh rate mybeh (period 1)          Regular  
-10 mybeh rate mybeh (period 2)          Regular  
-11 mybeh mybeh linear shape             Regular  
-12 mybeh mybeh quadratic shape          Regular  
-13 mybeh mybeh total similarity         Regular  
-14 mynet mybeh ego                      GMoM     
-15 mynet mybeh similarity               GMoM    
+1  mynet constant mynet rate (period 1) Regular
+2  mynet constant mynet rate (period 2) Regular
+3  mynet outdegree (density)            Regular
+4  mynet reciprocity                    Regular
+5  mynet transitive triplets            Regular
+6  mynet 3-cycles                       Regular
+7  mynet mybeh ego                      Regular
+8  mynet mybeh similarity               Regular
+9  mybeh rate mybeh (period 1)          Regular
+10 mybeh rate mybeh (period 2)          Regular
+11 mybeh mybeh linear shape             Regular
+12 mybeh mybeh quadratic shape          Regular
+13 mybeh mybeh total similarity         Regular
+14 mynet mybeh ego                      GMoM
+15 mynet mybeh similarity               GMoM
 \end{verbatim}}
 
 \normalsize
 
 
 The computation of the GMoM estimates is more time consuming than that of the regular MoM.
-The estimation of the GMoM weights requires a larger number of simulations 
+The estimation of the GMoM weights requires a larger number of simulations
 in phase 1 and phase 3 and (at least) one iteration of the function \sfn{siena07}.
 The following estimation steps are recommended to reach the convergence of the algorithm quickly.
 \begin{enumerate}
-	\item  Run the function \sfn{siena07} with one or two sub-phases (i.e., 
+	\item  Run the function \sfn{siena07} with one or two sub-phases (i.e.,
 \texttt{nsub=1} or \texttt{nsub=2}) in phase 2 and a large number of simulations in phase 3
-(e.g., \texttt{n3=5000}) to get better initial estimates of the model parameters and a 
-more stable estimation of the matrix of GMoM weights.  
- \item Re-estimate the model using the estimates produced in 1 by using four sub-phases in phase 2 
-(\texttt{nsub=4}), the same number of simulations in phase 3 (e.g., \texttt{n3=5000}) and the 
+(e.g., \texttt{n3=5000}) to get better initial estimates of the model parameters and a
+more stable estimation of the matrix of GMoM weights.
+ \item Re-estimate the model using the estimates produced in 1 by using four sub-phases in phase 2
+(\texttt{nsub=4}), the same number of simulations in phase 3 (e.g., \texttt{n3=5000}) and the
 argument \texttt{prevAns=TRUE}.
 \end{enumerate}
 If convergence is not adequate, one runs \sfn{siena07} repeatedly with \texttt{prevAns=TRUE}.
@@ -5381,8 +5393,8 @@ Like the MoM, the GMoM allows conditional as well as unconditional estimation (s
 \subsubsection{Using the function \sfn{sienacpp()}}
 \label{S_GMoM_sienacpp}
 
-Estimation by the Generalized Method of Moments (GMoM) is also implemented 
-in the function \sfn{sienacpp()}, available in \sfn{RSienaTest()}. 
+Estimation by the Generalized Method of Moments (GMoM) is also implemented
+in the function \sfn{sienacpp()}, available in \sfn{RSienaTest()}.
 
 If the algorithm object created by \sfn{sienaAlgorithmCreate()}
 uses \texttt{maxlike=FALSE}, the estimation function \sfn{sienacpp()}
@@ -7630,7 +7642,7 @@ This principle here is applied in a double test:
       For each of these combined tests, the $p$-value is given.
       In the output these are denoted, respectively,
       as `combination of right one-sided $p$-values' and
-      `combination of right one-sided $p$-values'.
+      `combination of left one-sided $p$-values'.
 
       It is advisable to use for each the significance level of $\alpha/2$
       (e.g., 0.025 if $\alpha = 0.05$) which yields an overall combined test
@@ -9825,7 +9837,10 @@ the following effects are available:
  or for $p=2$ \\
    $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \sqrt{\sum_h x_{hj}\,v_h}   $;\\
  note that to use this effect for $p=2$ the variable $V$ must be nonnegative,
- which implies that it must be non-centered;
+ which implies that it must be non-centered;\\
+ further note that if $V$ is a behavioral variable, it will be used
+ in the centered version, so that $p$ must be 1; if weighting by
+ a non-centered behavioral variable is desired, a new effect is necessary;
 
  \item {\em in-degree activity weighted by sender's V } \texttt{(inActX)}\\
  defined by the sum of values of $V$ for actors $h$
@@ -11129,6 +11144,82 @@ Then there are effects using mixed configurations on four nodes
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
 
+\iffalse
+
+\noindent
+\textbf{\emph{Dyadic covariate effects}}
+\medskip
+
+For dyadic covariate effects in models for evolution of multiple networks,
+the convention with respect to letters has to be adapted.
+For the rest, $W$ is used both to indicate dyadic covariates and networks
+in their role as explanatory variables.
+Now we use the letter $U$ to indicate the dyadic covariate,
+$X$ to denote the network in the role of dependent variable, and $W$
+the other network, having the role of explanatory variable.
+
+\begin{enumerate}
+\setcounter{enumi}{\value{savenumi}}
+ \item
+\begin{minipage}[t]{.7\textwidth}
+ {\em  W weighted by U leading to agreement along X}, 
+ ($X$: $W$ weighted $U$ to agreement) \texttt{(toU)} \\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, u_{ih} \, w_{ih}\, x_{hj}\,$;\\[0.2em]
+ this refers to the closure of mixed $W-X$ two-paths,
+ where the $W$ relation is weighted by $U$;
+ the contribution of the tie $i \stackrel{X}{\rightarrow} j$
+ is proportional to
+ the sum of mixed $W-X$ two-paths
+ $i \stackrel{W}{\rightarrow} h \stackrel{X}{\rightarrow} j$
+ weighted by $u_{ih}$.\\
+ This is an elementary effect for actor $i$:
+ only the $x_{ij}$ tie indicator in the formula,
+ corresponding to  the tie $i \stackrel{X}{\rightarrow} j$,
+ is the dependent variable here.\\
+ The interpretation is that actors have the tendency to make the same
+ outgoing $X$-choices as those to whom they have a $W$-tie,
+ weighted by $U$.
+ This will usually be meaningful if $U$ is non-centered.
+ 
+ This effect is a variant of the \texttt{sameWXClosure} effect,
+ where the restriction is made that actors $i$ and $h$
+ have the same value of a monadic covariate.
+      \end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\linethickness{0.3pt}
+\vfill
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
+\setplotarea x from 2 to 4, y from 0 to 3
+\put{\large$\bullet$} at  2 1
+\put{\large$\bullet$} at  4 1
+\put{\large$\bullet$} at  3 2.732
+\put{$i$} at 2 0.4
+\put{$j$} at 4 0.4
+\put{$h$} at 3 3.4
+\put{{\small $W \times U$}} at 1.6 1.9
+\put{{\small $X$}} at 3.9 1.9
+\put{{\small $X$}} at 3   0.6
+\arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
+\arrow <2mm> [.2,.6]  from 2.1 1.1732 to 2.9 2.559
+\arrow <2mm> [.2,.6]  from 3.1 2.559 to 3.9 1.1732
+\endpicture
+\end{center}
+\vfill
+\end{minipage}
+
+\setcounter{savenumi}{\value{enumi}}
+\end{enumerate}
+
+\fi
+
+
+\noindent
+\textbf{\emph{Monadic covariate effects}}
+\medskip
+
 \noindent
 The mixed degree-related effects can be weighted with monadic covariates $V$,
 as implemented by the following four effects.
@@ -11497,6 +11588,9 @@ covariate $V$.
  this refers to the closure of $W-X$ two-paths, restricted to
  two-paths  $i \stackrel{W}{\rightarrow} h \stackrel{X}{\rightarrow} j $
  in which the focal actor and the mediating actor have the same value of $V$.
+ 
+ A variant of this effect with weighting by a dyadic covariate
+ is the \texttt{toU} effect.
       \end{minipage}
 \hfill
 \begin{minipage}[t]{.15\textwidth}
@@ -12563,7 +12657,7 @@ The list of these effects is the following.
 
 \noindent
 If there are more than one dependent network variables,
-denoted $X_1$ and £$X_2$,
+denoted $X_1$ and $X_2$,
 they can operate jointly on the behavioural dependent variable using
 the following effects.
 $X_1$ is given as \texttt{interaction1}, $X_2$ as \texttt{interaction2}.
@@ -12826,7 +12920,8 @@ denoted $v_j$), there are the following effects.
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
 There are also a number of interaction effects between actor covariates
-(which includes other dependent behavior variables) and influence effects.
+(which includes other dependent behavior variables; note that these are used
+in their \underline{centered} versions) and influence effects.
 These have to be specified using \texttt{interaction1} for the covariate
 and \texttt{interaction2} for the network, e.g.,
 \begin{verbatim}
@@ -12839,6 +12934,13 @@ interaction effects created, for example, as follows:
 myCoevolutionEff <- includeInteraction(myCoevolutionEff, effFrom, avAlt,
         name="smoking", interaction1 = c("sex", "friendship"))
 \end{verbatim}
+Furthermore, note that when the same dependent variable is used
+(i.e., \texttt{name} and \texttt{interaction1} are the same),
+the dependent variable is used as a weight with its value
+before the ministep, and the potential change is not taken into account;
+this departs from the concept of evaluation effect,
+and is a case of an elementary effect.
+
 For the `alter'-variant, this way of construction will not work because the
 effect statistic cannot be decomposed into a product of two ego-level statistics.
 The available effects of this type are the following.
@@ -14632,13 +14734,13 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.0.n.tar.gz|\\
-(where \verb|n| is adjusted to match the tar ball name.)
+\verb|R CMD check RSiena_1.2-29.tar.gz|\\
+(where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.0.n.tar.gz| \\
-(where again \verb|n| is adjusted to match the tar ball name.)
+\verb|R CMD INSTALL --build RSiena_1.2-29.tar.gz| \\
+(where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
 If you make a change you need to \textsf{INSTALL} the new version in order to
@@ -15628,7 +15730,7 @@ in reverse time order from the current version until
 version 1.0.6 of end October 2009.
 For more complete information about changes,
 consult the NEWS.md file (in earlier versions
-this was the CHANGELOG file) in the source code, 
+this was the CHANGELOG file) in the source code,
 which contains a more complete listing.
 
 \begin{small}
@@ -15663,7 +15765,6 @@ Changes in RSiena:
    \item In \sfn{sienaDataConstraint}, if type is \texttt{disjoint} or \texttt{atLeastOne},
      the constraint is also implemented for the pair \texttt{(net2, net1)}.
    \item New parameter \texttt{tested} in \sfn{sienaGOF}.
-
 \end{itemize}
 
 \item 2020-09-16 R-Forge Revision 350, package version 1.2-27.
