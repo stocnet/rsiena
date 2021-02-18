@@ -5186,19 +5186,18 @@ and Bayesian methods
 \citep[see][]{Koskinen04,KoskinenSnijders07,SchweinbergerSnijders07c,KoskinenSnijders20}.
 
 
-The application of the GMoM is still in development.
 Relative to the MoM, the GMoM is theoretically more efficient and somewhat more time-consuming
 than the regular MoM since it requires a large number of simulations and
 iterations of the model estimation (see Section~\ref{S_GMoM_siena07}).
 In models for one network, the MoM and the GMoM yield similar estimates.
 However, the GMoM estimator of the parameters of the effects related to the new statistics
-is slightly more efficient than the MoM estimator. For the co-evolution model,
-the gain in efficiency of the GMoM relative to the MoM is usually larger.
+is somewhat more efficient than the MoM estimator, especially for the co-evolution model.
 When the statistics are informative (i.e., when the number of simultaneous network
 and behavioral changes made by the same actor between any two observations is not negligible),
+and when the `true model' has only evaluation effects for the GMoM statistics,
 the GMoM leads to more accurate estimates with smaller bias
 and standard errors than the regular MoM.
-
+This is documented in \citet{ASS2015,ASS2019}.
 
 Comparison among all the four methods indicates that,
 in models for one network, without co-evolution,
@@ -5209,17 +5208,16 @@ and there seems to be no reason to use the more time-consuming
 ML or Bayesian methods.
 For co-evolution models and not-so-nice situations (very small network data sets,
 small network and behavior data sets in combination with complex models),
-however, ML and Bayesian methods tend to produce more accurate results
+however, GMoM, ML and Bayesian methods tend to produce more accurate results
 (i.e., smaller standard errors) than MoM.
-Statistical theory suggests that ML is a more efficient estimation method
+Statistical theory suggests that, if the model is well-specified,
+GMoM and ML are more efficient estimation methods
 than MoM in the sense of producing estimates with smaller standard errors.
-But in the `nice situations' the efficiency advantage of ML is very small.
+But in the `nice situations'
+with only one dependent network variable the efficiency advantage of ML is very small.
 Bayesian estimation is based on a different statistical paradigm, and
 assumes and requires that the uncertainty about parameters is expressed
 itself in a probability distribution.
-The comparison of the GMoM with ML and Bayesian
-will be made available in the near future.
-
 
 Estimation by the regular Method of Moments (MoM)
 and Generalized Method of Moments (GMoM)
@@ -5236,7 +5234,7 @@ but is as yet implemented only for multilevel network modeling
 
 \subsubsection{Using the function \sfn{siena07()}}
 \label{S_GMoM_siena07}
-.
+
 
 Compared to the regular Method of Moments (MoM), the Generalized Method of
 Moments (GMoM) allows using more statistics than parameters,
@@ -5246,13 +5244,10 @@ referred to as GMoM statistics. The GMoM statistics are defined only for the eff
 of the evaluation function. Thus, they are used under the assumption that
 effects operate in the same strength for the creation and the dissolution of ties,
 and the increasing and decreasing of the behavior. In other words,
-the creation and the endowment functions are assumed to be zero (see Section~\ref{S_mathmod}).
+the creation and the endowment effects
+corresponding to the GMoM statistics are assumed to be zero 
+(see Section~\ref{S_mathmod}).
 \medskip
-
-
-
-
-
 
 Estimation by the GMoM with the function \sfn{siena07()} is obtained
 by specifying the GMoM statistics in the effects object using
