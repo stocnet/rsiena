@@ -5242,8 +5242,17 @@ Compared to the regular Method of Moments (MoM), the Generalized Method of
 Moments (GMoM) allows using more statistics than parameters,
 thereby exploiting more information in the observed data.
 The additional information derives from the use of supplementary statistics,
-referred to as GMoM statistics.
+referred to as GMoM statistics. The GMoM statistics are defined only for the effects
+of the evaluation function. Thus, they are used under the assumption that
+effects operate in the same strength for the creation and the dissolution of ties,
+and the increasing and decreasing of the behavior. In other words,
+the creation and the endowment functions are assumed to be zero (see Section~\ref{S_mathmod}).
 \medskip
+
+
+
+
+
 
 Estimation by the GMoM with the function \sfn{siena07()} is obtained
 by specifying the GMoM statistics in the effects object using
@@ -5344,10 +5353,14 @@ and statistics operating for parameter estimation is lost.
 
 \normalsize
 
-
 The computation of the GMoM estimates is more time consuming than that of the regular MoM.
-The estimation of the GMoM weights requires a larger number of simulations
-in phase 1 and phase 3 and (at least) one iteration of the function \sfn{siena07}.
+The GMoM estimator is computed by minimizing the distance between the
+expected value of the statistics and their sample counterpart.
+The minimization demands the computation of a matrix of weights
+describing the importance of the statistics and their sensitivity
+to the parameters. To estimate the matrix of the GMoM weights, a larger number of simulations
+in phase 1 and phase 3 and (at least) one iteration of the function \sfn{siena07} is used.
+
 The following estimation steps are recommended to reach the convergence of the algorithm quickly.
 \begin{enumerate}
 	\item  Run the function \sfn{siena07} with one or two sub-phases (i.e.,
@@ -5360,35 +5373,13 @@ argument \texttt{prevAns=TRUE}.
 \end{enumerate}
 If convergence is not adequate, one runs \sfn{siena07} repeatedly with \texttt{prevAns=TRUE}.
 
-The code below illustrates the estimation procedure described in the previous lines.
+Difficulties in convergence might occur when the GMoM statistics are ``highly'' correlated ($>$ 0.9) with the regular statistics. Dropping the corresponding GMoM statistics would solve the problem. Intuitively, when the GMoM and the regular statistics are highly correlated, the GMoM statistics do not carry relevant information
+for the estimation of the parameters and can be discarded. Therefore, it is recommended to inspect the covariance matrix of the statistics to decide whether GMoM statistics should be used for the estimation.
 
-\begin{verbatim}
-# Step 1
-myalgorithm <- sienaAlgorithmCreate(nsub=2, n3=5000, gmm=TRUE)
-ans <- siena07(myalgorithm, data=mydata, effects=myeff, initC=TRUE)
-ans
-
-Step 2
-myalgorithm <- sienaAlgorithmCreate(nsub=4, n3=5000, gmm=TRUE)
-ans1 <- siena07(myalgorithm, data=mydata, effects=myeff, prevAns=ans)
-ans1
-\end{verbatim}
-
-The code below illustrates the estimation procedure described in the previous lines.
-
-\begin{verbatim}
-# Step 1
-myalgorithm <- sienaAlgorithmCreate(nsub=2, n3=5000, gmm=TRUE)
-ans <- siena07(myalgorithm, data=mydata, effects=myeff, initC=TRUE)
-ans
-
-Step 2
-myalgorithm <- sienaAlgorithmCreate(nsub=4, n3=5000, gmm=TRUE)
-ans1 <- siena07(myalgorithm, data=mydata, effects=myeff, prevAns=ans)
-ans1
-\end{verbatim}
+We refer to  the  \R script \texttt{GMoMscript.R} on the \SI webpage for an illustration of the GMoM estimation, the steps described above and the inspection of the covariance matrix of the statistics.
 
 Like the MoM, the GMoM allows conditional as well as unconditional estimation (see Section~\ref{S_cond}).
+
 
 \subsubsection{Using the function \sfn{sienacpp()}}
 \label{S_GMoM_sienacpp}
@@ -11162,7 +11153,7 @@ the other network, having the role of explanatory variable.
 \setcounter{enumi}{\value{savenumi}}
  \item
 \begin{minipage}[t]{.7\textwidth}
- {\em  W weighted by U leading to agreement along X}, 
+ {\em  W weighted by U leading to agreement along X},
  ($X$: $W$ weighted $U$ to agreement) \texttt{(toU)} \\[0.2em]
  $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, u_{ih} \, w_{ih}\, x_{hj}\,$;\\[0.2em]
  this refers to the closure of mixed $W-X$ two-paths,
@@ -11180,7 +11171,7 @@ the other network, having the role of explanatory variable.
  outgoing $X$-choices as those to whom they have a $W$-tie,
  weighted by $U$.
  This will usually be meaningful if $U$ is non-centered.
- 
+
  This effect is a variant of the \texttt{sameWXClosure} effect,
  where the restriction is made that actors $i$ and $h$
  have the same value of a monadic covariate.
@@ -11588,7 +11579,7 @@ covariate $V$.
  this refers to the closure of $W-X$ two-paths, restricted to
  two-paths  $i \stackrel{W}{\rightarrow} h \stackrel{X}{\rightarrow} j $
  in which the focal actor and the mediating actor have the same value of $V$.
- 
+
  A variant of this effect with weighting by a dyadic covariate
  is the \texttt{toU} effect.
       \end{minipage}
