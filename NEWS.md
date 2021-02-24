@@ -1,3 +1,13 @@
+# RSiena 1.2.30
+
+## 
+
+2021-02-23
+
+## Changes in RSiena:
+   * Resolved issue with continuous dependent behavior variables 
+     (Nynke Niezink).
+
 # RSiena 1.2-29
 
 ## 
