@@ -186,7 +186,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.2-29.
+This version was renewed for \RS version 1.2.30.
 \end{abstract}
 
 
@@ -236,6 +236,12 @@ The website further contains references to many published examples,
 example scripts illustrating various possibilities of the package,
 course announcements, etc.
 
+The source code for \RS is at GitHub:\\
+\url{https://github.com/snlab-nl/rsiena/}\\
+with also a wiki at
+\url{https://github.com/snlab-nl/rsiena/wiki}.
+\medskip
+
 This is a manual for \rs, which also might be called \SI version 4.1.2;
 the manual is provisional in the sense
 that it is continually being updated, taking account of
@@ -259,21 +265,21 @@ information:
   \item the website
 {\small\url{http://www.stats.ox.ac.uk/~snijders/siena/}~},
         e.g., its \texttt{News} page and its \texttt{RSiena scripts} page;
-  \item the yahoo users' group for \SI meant to exchange information
+  \item the users' group for \SI meant to exchange information
         and technical advice; the address is
-        {\small\url{http://groups.yahoo.com/groups/stocnet/}~}.
+        {\small\url{https://groups.io/g/RSiena}~}.
 \end{enumerate}
 
 \RS was originally programmed by Ruth Ripley and Krists Boitmanis,
 in collaboration with Tom Snijders.
 Since May 2012 the maintainer is Tom Snijders.
 Further contributions were made by Josh Lospinoso, Charlotte Greenan,
-Felix Sch\"{o}nenberger,
+Felix Sch\"{o}nenberger, Viviana Amati,
 Christian Steglich, Johan Koskinen, Mark Ortmann, Nynke Niezink,
-and Robert Hellpap.
+James Hollway, and Robert Hellpap.
 Currently, \RS is maintained by a research group
 at the University of Groningen, seconded by researchers in Z\"{u}rich,
-Konstanz, and Manchester.
+Pittsburgh, and Melbourne.
 
 In addition to the `official' \R distribution of \rs, there is
 an additional distribution \sfn{RSienaTest} at R-Forge, which includes
@@ -284,8 +290,9 @@ in the future.
 
 \subsection{Acknowledgements}
 
-The development of \RS was carried out by researchers of the Universities
-of Oxford, Groningen, and Konstanz.
+The development of \RS was carried out by researchers 
+working at the Universities
+of Oxford, Groningen, Konstanz,  Z\"{u}rich, and Pittsburgh (CMU).
 We are grateful to NIH (National Institutes of Health, USA)
 for their funding of programming \RS during 2008-2014.
 This was done
@@ -894,42 +901,56 @@ of the software appear).
             or \sfn{RSienaTest} from GitHub or the \SI website.
             You can go to\\
             \url{https://github.com/snlab-nl/rsiena/releases}\\
-            or to\\
+            or to the Siena website at\\
               \url{http://www.stats.ox.ac.uk/~snijders/siena/siena_downloads.htm}\\
             and there download the appropriate version of the package
-            appropriate for your operation system (Windows, Mac, Unix). \\
+            appropriate for your operation system (Windows, Mac, Unix). 
+            \medskip
+            
             Installation can be done in various ways --- by the function \texttt{install.packages()}
             in \Rn,
             via the drop-down menu in the \R console, or in command mode which for Mac is
             the `terminal'.
             If you downloaded a binary file (\texttt{.zip} for Windows,
-            \texttt{.tgz} for Mac),
+            \texttt{.tgz} for Mac, \texttt{.tar.gz} for Unix/Linux),
             then using the binary is recommended.
             Installation from binary is much faster than installation from source.
 
-            Installation from GitHub can be done as follows.
-        Download  the latest release from
-        \url{https://github.com/snlab-nl/rsiena/releases/}.
-Once the file has been downloaded, unzip it, and install the binary
-as appropriate for your Operating System.
-In the following, perhaps the name of the Downloads folder and
-the version number have to be amended:
+            Installation from binary can be done as follows.
+        Download  the latest release for your computer system from
+        \url{https://github.com/snlab-nl/rsiena/releases/}
+        or  \url{http://www.stats.ox.ac.uk/~snijders/siena/siena_downloads.htm}. \\
 
-For Windows:
+        For Windows:
 
-\texttt{install.packages("\url{~/Downloads/rsiena\_AllOS/winOS/RSiena\_1.2.29.zip}", \\
-repos = NULL)}
+        the downloaded file is \texttt{RSiena\_1.2.30.zip} for 
+        downloads from the Siena website 
+        and \texttt{RSiena\_winOS.zip} for downloads from GitHub. In the latter case,
+        please rename the file to \texttt{RSiena\_1.2.30.zip}.
+        Then you can install it by the \R command 
+\begin{verbatim}
+install.packages(pathname to "RSiena_1.2.30.zip", repos = NULL))
+\end{verbatim}
 
-For Mac:
+        For Mac:
 
-\texttt{install.packages("\url{~/Downloads/rsiena\_AllOS/macOS/RSiena\_1.2.29.tgz}", \\
-repos = NULL)}
+        the downloaded file is \texttt{RSiena\_1.2.30.tgz}. 
 
-For Unix:
+        It can be installed by the \R command 
+\begin{verbatim}
+install.packages("pathname to RSiena_1.2.30.tgz", repos = NULL))
+\end{verbatim}
 
-\texttt{install.packages(\\
-"\url{~/Downloads/rsiena\_AllOS/linuxOS/RSiena\_1.2-29\_R\_x86\_64-pc-linux-gnu.tar.gz}",
- repos = NULL)}
+        For Unix:
+
+        the downloaded file is \texttt{RSiena\_linuxOS.tar.gz}.
+
+        It can be installed by the \R command 
+\begin{verbatim}
+install.packages("pathname to RSiena_linuxOS.tar.gz", repos = NULL))
+\end{verbatim}
+\medskip
+
 
             Installation of \texttt{RSienaTest}
             from the R-Forge repository can be done as follows.
@@ -943,24 +964,24 @@ For Unix:
             \end{itemize}
 
             Installation from a downloaded file can be done as follows, assuming
-            the root name of the file is \texttt{RSienaTest\_1.2-29}, and filling in the correct path name.
+            the root name of the file is \texttt{RSienaTest\_1.2.30}, and filling in the correct path name.
             It will be convenient to first navigate to the directory
             containing the \RS binary or source file so that this is the current directory.
             Then the pathname consists only of the filename.
             \begin{itemize}
             \item In \R from binary:\\
             for Windows:\\
-             \texttt{install.packages("pathname to RSienaTest\_1.2-29.zip", repos = NULL, type="binary")}\\
+             \texttt{install.packages("pathname to RSienaTest\_1.2.30.zip", repos = NULL, type="binary")}\\
             for Mac:\\
-             \texttt{install.packages("pathname to RSienaTest\_1.2-29.tgz", repos = NULL, type="binary")}
+             \texttt{install.packages("pathname to RSienaTest\_1.2.30.tgz", repos = NULL, type="binary")}
              \item In \R from source:\\
-            \texttt{install.packages("RSienaTest\_1.2-29.tar.gz", repos = NULL, type="source")}
+            \texttt{install.packages("RSienaTest\_1.2.30.tar.gz", repos = NULL, type="source")}
             \item In \text{command.com} or in batch mode (Windows) from binary:\\
-            \texttt{R CMD INSTALL RSienaTest\_1.2-29.zip}
+            \texttt{R CMD INSTALL RSienaTest\_1.2.30.zip}
             \item In the terminal (Mac) from binary:\\
-            \texttt{R CMD INSTALL RSienaTest\_1.2-29.tgz}
+            \texttt{R CMD INSTALL RSienaTest\_1.2.30.tgz}
             \item In \text{command.com} or in batch mode (Windows) or in the terminal (Mac) from source:\\
-            \texttt{R CMD INSTALL RSienaTest\_1.2-29.tar.gz}
+            \texttt{R CMD INSTALL RSienaTest\_1.2.30.tar.gz}
             \item In drop-down menu in \Rn:\\
             for Windows:  go to Packages  $\rightarrow$ Install package(s) from local zip file\\
             for Mac:  go to Packages \& Data $\rightarrow$ Package Installer
@@ -969,7 +990,7 @@ For Unix:
             \end{itemize}
    \end{enumerate}
 
-
+\newpage
 \subsection{Using \SI within \Rn}
 
    \begin{enumerate}
@@ -1148,7 +1169,7 @@ The website, {\small\url{http://www.stats.ox.ac.uk/~snijders/siena/}~}, contains
 various further publications (also in other languages than English) that may
 be helpful, as well as example scripts.
 There is a users' group for \SI to exchange information and seek technical
-advice; the address is {\small\url{http://groups.yahoo.com/groups/stocnet/}~}.
+advice; the address is {\small\url{https://groups.io/g/RSiena}~}.
 
 For technical problems running \rs, follow the following points.
 \begin{description}
@@ -1160,7 +1181,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Donwloads' page.
   The version is
-  identified by a version number (e.g.\ 1.2-29).
+  identified by a version number (e.g.\ 1.2.30).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -5703,6 +5724,11 @@ The derivatives can be estimated by two methods:
 \item finite differences method with common random numbers,
 \item score function method.
 \end{itemize}
+For both methods, the standard errors are calculated on the basis of
+Phase~3 of the algorithm, and the length of this phase, given by the
+value of \texttt{n3} in function \sfn{sienaAlgorithmCreate}, determines
+the precision of the estimation of the standard errors.
+
 The finite difference method is explained (briefly) in \citet{Snijders01},
 the score function method was developed in \citet{SchweinbergerSnijders07a}
 (where also the finite difference method is explained).
@@ -5723,16 +5749,24 @@ This can be checked this by running \textsf{siena07} several times, with differe
 random number seeds (or the default \texttt{seed=NULL} which also gives different
 seeds every run).
 
+Whether the given value of \texttt{n3} is adequate to estimate the
+standard errors with sufficient precision can be checked using the function
+in script \\
+\url{http://www.stats.ox.ac.uk/~snijders/siena/SE\_checks.R},\\
+of which the use is demonstrated in script\\
+{\url{http://www.stats.ox.ac.uk/~snijders/siena/RscriptStandardErrors.R}}.
+\medskip
+
 To calculate the standard errors for a
 given set of estimates, when these estimates are good and do not need to be changed,
 algorithm settings can be used with \texttt{nsub=0}
-in \sfn{sienaAlgorithmCreate}, so phases 1 and 2 are
+in \sfn{sienaAlgorithmCreate}, so Phases~1 and~2 are
 skipped and the whole operation of \sfn{siena07} takes considerably less time.
 
 The method for estimating derivatives is set
 by the \sfn{findiff} parameter and the number of iterations in Phase~3
 by the \sfn{n3} parameter, both in function \sfn{sienaAlgorithmCreate}
-that creates the object with specifications for the algorithm.
+which creates the object with specifications for the algorithm.
 
 \subsection{Multicollinearity}
 
@@ -15467,11 +15501,20 @@ in reverse time order from the current version until
 version 1.0.6 of end October 2009.
 For more complete information about changes,
 consult the NEWS.md file (in earlier versions
-this was the CHANGELOG file) in the source code, 
+this was the CHANGELOG file) in the source code,
 which contains a more complete listing.
 
 \begin{small}
 \begin{itemize} % Also update version number in abstract
+
+
+\item 2021-02-24  GitHub, package version 1.2.30.\\
+
+Changes in RSiena:
+\begin{itemize}
+\item Resolved issue with continuous dependent behavior variables
+     (Nynke Niezink).
+\end{itemize}
 
 
 \item 2020-12-10  GitHub, package version 1.2-29.\\
