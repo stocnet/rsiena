@@ -8,7 +8,7 @@
   by modifying a Siena effects object.
 }
 \usage{
-  includeGMoMStatistics(myeff, ..., include=TRUE, name=myeff$name[1], 
+  includeGMoMStatistics(myeff, ..., include=TRUE, name=myeff$name[1],
                         interaction1="", interaction2="",
                         character=FALSE, verbose=TRUE)
 }
@@ -16,11 +16,12 @@
   \item{myeff}{a Siena effects object as created by \code{\link{getEffects}}
   }
   \item{\dots}{
-    short names to identify the GMoM statistics which should be included or excluded.}
-  \item{include}{Boolean. default TRUE, but can be switched to FALSE to
+    short names to identify the GMoM statistics which should be included or
+    excluded.}
+  \item{include}{Boolean; default TRUE, but can be switched to FALSE to
     turn off an effect.}
-  \item{name}{Name of network for which effects are being
-    included. Defaults to the first in the effects object.}
+  \item{name}{Name of dependent variable (network or behavior) for which
+    statistics are being included. Defaults to the first in the effects object.}
   \item{interaction1}{
     Name of siena object where needed to completely identify the
     effects e.g. covariate name or behavior variable name.}
@@ -31,24 +32,29 @@
   \item{verbose}{Boolean: should the print of altered statistic be produced.}
 }
 \details{The names \code{interaction1} and \code{interaction2} refer to
-   the dependence of the GMoM statistics on  other variables in the data set.
-  The arguments should identify the GMoM statistic completely.\cr
+   the dependence of the GMoM statistics on other variables in the data set.
+  The arguments should identify the GMoM statistic completely.
+  The type does not have to be specified, as it is \code{gmm} for all
+  GMoM statistiscs in the effects object. \cr
   The short names must not be set between quotes,
   unless you use \code{character=TRUE}.
-  
+
   The function \code{includeGMoMStatistics} operates as an interface
   setting the "include" column on selected rows of the effects object,
-  to the value requested (TRUE or FALSE).
+  to the value requested (\code{TRUE} or \code{FALSE}).
 }
 \value{
-  An updated version of the input effects object, with the include, 
-  columns for one or more rows updated.
+  An updated version of the input effects object, with the \code{include}
+  column for one or more rows updated.
   Details of the rows altered will be printed.
 }
 \references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}}
+\author{Viviana Amati.
+}
 \seealso{
-  \code{\link{getEffects}}, 
+  \code{\link{getEffects}},
   \code{\link{includeEffects}},
+  \code{\link{setEffect}},
   \code{\link{includeInteraction}},
   \code{\link{print.sienaEffects}}
 }

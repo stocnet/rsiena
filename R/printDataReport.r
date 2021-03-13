@@ -77,6 +77,14 @@ DataReport <- function(z, x, f)
 	if (z$cconditional)
 	{
 		Report("conditional moment estimation\n", outf)
+		if (x$gmm)
+		{
+			Report(' by the Generalized Method of Moments.\n', outf)
+		}
+		else
+		{
+			Report('.\n', outf)
+		}
 		Report(c('Conditioning variable is the total number of observed',
 				'changes ("distance") \n'), outf)
 		if (z$condtype == 'oneMode')
@@ -93,6 +101,10 @@ DataReport <- function(z, x, f)
 		else
 		{
 			Report(c("in behavioral variable", x$condname, '\n'), outf)
+		}
+		if (x$gmm)
+		{
+			Report('in the network variable.\n', outf)
 		}
 		if (observations == 1)
 		{
@@ -115,8 +127,16 @@ DataReport <- function(z, x, f)
 	}
 	else if (!z$maxlike)
 	{
-		Report("unconditional moment estimation.\n", outf)
-
+		Report("unconditional moment estimation\n", outf)
+		if (x$gmm)
+		{
+			Report(' by the Generalized Method of Moments.\n', outf)
+		}
+		else
+		{
+			Report('.\n', outf)
+		}
+		
 		#if (exogenous)
 		#{
 		#    Report("Changing composition: no conditional moment estimation.\n",

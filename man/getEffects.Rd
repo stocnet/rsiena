@@ -105,6 +105,7 @@ for data set \code{x}.\cr
 \author{Ruth Ripley}
 \seealso{\code{\link{sienaDataCreate}}, \code{\link{sienaGroupCreate}},
         \code{\link{includeEffects}}, \code{\link{setEffect}},
+		\code{\link{includeGMoMStatistics}},
         \code{\link{updateSpecification}},
         \code{\link{print.sienaEffects}},\code{\link{effectsDocumentation}}}
 \examples{

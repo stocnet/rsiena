@@ -105,7 +105,8 @@ phase3.2 <- function(z, x, ...)
     }
 	if ((x$nsub == 0)&(x$simOnly))
 	{
-	# nothing
+        dmsf <- diag(z$msf)
+        sf <- colMeans(z$sf)
 	}
 	else
 	{

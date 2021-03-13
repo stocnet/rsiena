@@ -454,6 +454,152 @@ Overall maximum convergence ratio:    2.9012
 
 Total of 266 iteration steps.
 
+> ##test 15
+> print('test15')
+[1] "test15"
+> mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+> mynet2 <- sienaDependent(s50a,type='behavior')
+> mydata <- sienaDataCreate(mynet1, mynet2)
+> myeff <- getEffects(mydata)
+> (myeff <- includeEffects(myeff, transTrip))
+  effectName          include fix   test  initialValue parm
+1 transitive triplets TRUE    FALSE FALSE          0   0   
+  name   effectName                      include fix   test  initialValue parm
+1 mynet1 constant mynet1 rate (period 1) TRUE    FALSE FALSE    4.69604   0   
+2 mynet1 constant mynet1 rate (period 2) TRUE    FALSE FALSE    4.32885   0   
+3 mynet1 outdegree (density)             TRUE    FALSE FALSE   -1.46770   0   
+4 mynet1 reciprocity                     TRUE    FALSE FALSE    0.00000   0   
+5 mynet1 transitive triplets             TRUE    FALSE FALSE    0.00000   0   
+6 mynet2 rate mynet2 (period 1)          TRUE    FALSE FALSE    0.70571   0   
+7 mynet2 rate mynet2 (period 2)          TRUE    FALSE FALSE    0.84939   0   
+8 mynet2 mynet2 linear shape             TRUE    FALSE FALSE    0.32237   0   
+9 mynet2 mynet2 quadratic shape          TRUE    FALSE FALSE    0.00000   0   
+> (myeff <- includeEffects(myeff, egoX, simX, interaction1="mynet2"))
+  effectName        include fix   test  initialValue parm
+1 mynet2 ego        TRUE    FALSE FALSE          0   0   
+2 mynet2 similarity TRUE    FALSE FALSE          0   0   
+   name   effectName                      include fix   test  initialValue parm
+1  mynet1 constant mynet1 rate (period 1) TRUE    FALSE FALSE    4.69604   0   
+2  mynet1 constant mynet1 rate (period 2) TRUE    FALSE FALSE    4.32885   0   
+3  mynet1 outdegree (density)             TRUE    FALSE FALSE   -1.46770   0   
+4  mynet1 reciprocity                     TRUE    FALSE FALSE    0.00000   0   
+5  mynet1 transitive triplets             TRUE    FALSE FALSE    0.00000   0   
+6  mynet1 mynet2 ego                      TRUE    FALSE FALSE    0.00000   0   
+7  mynet1 mynet2 similarity               TRUE    FALSE FALSE    0.00000   0   
+8  mynet2 rate mynet2 (period 1)          TRUE    FALSE FALSE    0.70571   0   
+9  mynet2 rate mynet2 (period 2)          TRUE    FALSE FALSE    0.84939   0   
+10 mynet2 mynet2 linear shape             TRUE    FALSE FALSE    0.32237   0   
+11 mynet2 mynet2 quadratic shape          TRUE    FALSE FALSE    0.00000   0   
+> (myeff <- includeEffects(myeff, avSim, name="mynet2", interaction1="mynet1"))
+  effectName                include fix   test  initialValue parm
+1 mynet2 average similarity TRUE    FALSE FALSE          0   0   
+   name   effectName                      include fix   test  initialValue parm
+1  mynet1 constant mynet1 rate (period 1) TRUE    FALSE FALSE    4.69604   0   
+2  mynet1 constant mynet1 rate (period 2) TRUE    FALSE FALSE    4.32885   0   
+3  mynet1 outdegree (density)             TRUE    FALSE FALSE   -1.46770   0   
+4  mynet1 reciprocity                     TRUE    FALSE FALSE    0.00000   0   
+5  mynet1 transitive triplets             TRUE    FALSE FALSE    0.00000   0   
+6  mynet1 mynet2 ego                      TRUE    FALSE FALSE    0.00000   0   
+7  mynet1 mynet2 similarity               TRUE    FALSE FALSE    0.00000   0   
+8  mynet2 rate mynet2 (period 1)          TRUE    FALSE FALSE    0.70571   0   
+9  mynet2 rate mynet2 (period 2)          TRUE    FALSE FALSE    0.84939   0   
+10 mynet2 mynet2 linear shape             TRUE    FALSE FALSE    0.32237   0   
+11 mynet2 mynet2 quadratic shape          TRUE    FALSE FALSE    0.00000   0   
+12 mynet2 mynet2 average similarity       TRUE    FALSE FALSE    0.00000   0   
+> (myeff <- includeGMoMStatistics(myeff, simX_gmm, interaction1="mynet2"))
+    name shortName type include
+1 mynet1  simX_gmm  gmm    TRUE
+
+ Effects and statistics for estimation by the Generalized Method of Moments
+
+ Effects
+   name   effectName                      include fix   test  initialValue parm
+1  mynet1 constant mynet1 rate (period 1) TRUE    FALSE FALSE    4.69604   0   
+2  mynet1 constant mynet1 rate (period 2) TRUE    FALSE FALSE    4.32885   0   
+3  mynet1 outdegree (density)             TRUE    FALSE FALSE   -1.46770   0   
+4  mynet1 reciprocity                     TRUE    FALSE FALSE    0.00000   0   
+5  mynet1 transitive triplets             TRUE    FALSE FALSE    0.00000   0   
+6  mynet1 mynet2 ego                      TRUE    FALSE FALSE    0.00000   0   
+7  mynet1 mynet2 similarity               TRUE    FALSE FALSE    0.00000   0   
+8  mynet2 rate mynet2 (period 1)          TRUE    FALSE FALSE    0.70571   0   
+9  mynet2 rate mynet2 (period 2)          TRUE    FALSE FALSE    0.84939   0   
+10 mynet2 mynet2 linear shape             TRUE    FALSE FALSE    0.32237   0   
+11 mynet2 mynet2 quadratic shape          TRUE    FALSE FALSE    0.00000   0   
+12 mynet2 mynet2 average similarity       TRUE    FALSE FALSE    0.00000   0   
+   type
+1  rate
+2  rate
+3  eval
+4  eval
+5  eval
+6  eval
+7  eval
+8  rate
+9  rate
+10 eval
+11 eval
+12 eval
+
+ Regular and GMoM statistics
+   name   effectName                      Statistic
+1  mynet1 constant mynet1 rate (period 1) Regular  
+2  mynet1 constant mynet1 rate (period 2) Regular  
+3  mynet1 outdegree (density)             Regular  
+4  mynet1 reciprocity                     Regular  
+5  mynet1 transitive triplets             Regular  
+6  mynet1 mynet2 ego                      Regular  
+7  mynet1 mynet2 similarity               Regular  
+8  mynet2 rate mynet2 (period 1)          Regular  
+9  mynet2 rate mynet2 (period 2)          Regular  
+10 mynet2 mynet2 linear shape             Regular  
+11 mynet2 mynet2 quadratic shape          Regular  
+12 mynet2 mynet2 average similarity       Regular  
+13 mynet1 mynet2 similarity               GMoM     
+> (algo <- sienaAlgorithmCreate(nsub=2, n3=100, gmm=TRUE, seed=6))
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+ Siena Algorithm specification.
+ Project name: C:\Users\TOM~1.SNI\AppData\Local\Temp\RtmpgJ9Y0g\Siena22a41cb51430 
+ Use standard initial values: FALSE 
+ Random seed: 6 
+ Number of subphases in phase 2: 2 
+ Starting value of gain parameter: 0.2 
+ Reduction factor for gain parameter: 0.5 
+ Diagonalization parameter: 0.2 
+ Double averaging after subphase: 0 
+ Dolby noise reduction: FALSE 
+ Method for calculation of derivatives: Scores 
+ Number of subphases in phase 2: 2 
+ Number of iterations in phase 3: 100 
+ Unconditional simulation if more than one dependent variable
+> (ans <- siena07(algo, data=mydata, effects=myeff, batch=TRUE,
++                 parallelTesting=TRUE, silent=TRUE))
+Estimated by Generalized Method of Moments
+
+Estimates, standard errors and convergence t-ratios
+
+                                           Estimate   Standard   Convergence 
+                                                        Error      t-ratio   
+Network Dynamics 
+   1. rate constant mynet1 rate (period 1)  6.4230  ( 1.2255   )   -0.0971   
+   2. rate constant mynet1 rate (period 2)  4.8422  ( 1.7337   )   -0.9100   
+   3. eval outdegree (density)             -2.6419  ( 0.1137   )    0.7748   
+   4. eval reciprocity                      2.5650  ( 0.1696   )    1.1617   
+   5. eval transitive triplets              0.5481  ( 0.1066   )   -0.2127   
+   6. eval mynet2 ego                       0.0080  ( 0.0922   )   -0.0077   
+   7. eval mynet2 similarity                0.7028  ( 0.5935   )    0.6421   
+
+Behavior Dynamics
+   8. rate rate mynet2 (period 1)           1.3265  ( 0.3333   )    0.0952   
+   9. rate rate mynet2 (period 2)           1.7188  ( 0.8989   )    0.2547   
+  10. eval mynet2 linear shape              0.3632  ( 0.2048   )   -0.0884   
+  11. eval mynet2 quadratic shape          -0.1373  ( 0.1440   )   -0.3824   
+  12. eval mynet2 average similarity        1.9156  ( 2.0605   )   -0.2767   
+
+Overall maximum convergence ratio:    2.0268 
+
+
+Total of 1451 iteration steps.
+
 > ##test16
 > print('test16')
 [1] "test16"
@@ -569,4 +715,4 @@ Total of 305 iteration steps.
 > 
 > proc.time()
    user  system elapsed 
-  18.01    0.29   18.40 
+  28.06    0.53   28.62 
