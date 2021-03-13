@@ -141,7 +141,7 @@ eq <- 1*outer(two, two, "==") # same two
 twop.eq <- (s502*eq) %*% s502
 tt.eq <- s502 * eq * twop.eq
 sum(tt.eq) # OK
- 
+
 
 myeff <- getEffects(mydata)
 myeff <- includeEffects(myeff,transRecTrip)
@@ -254,49 +254,36 @@ sum(s502 * sqrt(mixos)) #  58.45997 OK
 
 advice <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
 trust <- sienaDependent(array(c(s503, s501), dim=c(50, 50, 2)))
-
 mydata <- sienaDataCreate(advice,trust)
-
-myeff <- includeEffects(myeff,cl.XWX,name="trust",interaction1="advice")
-
-
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, cl.XWX, name="trust", interaction1="advice")
+mymodel <- sienaModelCreate(projname = NULL, seed=123)
 myans <- siena07(mymodel, data = mydata, effects = myeff)
 myans
 myans$targets
 
-
 # for cl.XWX effect:
-
-XW <- t2 %*% a1
+XW <- s501 %*% s501
 diag(XW) <- 0
-XWX <- XW * t2
+XWX <- XW * s501
 diag(XWX)
-sum(XWX)
+2*sum(XWX) # 172 OK
 
-
-WX <- a2 %*% t2
-diag(WX) <- 0
-WXW <- WX * a2
-diag(WXW)
-sum(WXW)
-
-
-XX <- t2 %*% t2
-diag(XX) <- 0
-XXX <- XX * t2
-diag(XXX)
-sum(XXX)
-
-
-
-myeff <- includeEffects(myeff,cl.XWX1,name="trust",interaction1="advice")
-myeff <- includeEffects(myeff,cl.XWX2,name="trust",interaction1="advice")
-myeff
+# for cl.XWX1 effect:
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, cl.XWX1, name="trust", interaction1="advice")
 myans <- siena07(mymodel, data = mydata, effects = myeff)
-# Inspect the results (also in file two_networks.out):
 myans
-summary(myans)
+myans$targets
+sum(XWX) # 86 OK
 
+# for cl.XWX2 effect:
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, cl.XWX2, name="trust", interaction1="advice")
+myans <- siena07(mymodel, data = mydata, effects = myeff)
+myans
+myans$targets
+sum(XWX) # 86 OK
 
 ############################################
 ############################################

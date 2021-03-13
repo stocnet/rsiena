@@ -65,6 +65,8 @@ void MixedTwoStepFunction::initialize(const Data * pData,
 		this->lpTable = this->pTwoNetworkCache()->pTwoPathTable();
 	if (ldirection1 == BACKWARD && ldirection2 == FORWARD)
 		this->lpTable = this->pTwoNetworkCache()->pOutStarTable();
+	if (ldirection1 == FORWARD && ldirection2 == BACKWARD)
+		this->lpTable = this->pTwoNetworkCache()->pInStarTable();
 	if (ldirection1 == RECIPROCAL && ldirection2 == FORWARD)
 		this->lpTable = this->pTwoNetworkCache()->pRFTable();
 
