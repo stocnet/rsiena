@@ -19,11 +19,11 @@ nodeSet="Actors", sparse=is.list(netarray), allowOnly=TRUE, imputationValues=NUL
 }
 \arguments{
   \item{netarray}{type="behavior" or "continuous": matrix 
-    (actors \eqn{\times} waves).\cr
+    (actors \eqn{\times}{*} waves).\cr
 	type="oneMode" or "bipartite": array of values or list of sparse matrices
     of type "dgTMatrix"; if an array is used, it should have
-	dimensions: for a one-network, \eqn{n \times n \times M},
-	and for a two-mode network \eqn{n \times m \times M}, 
+	dimensions: for a one-network, \eqn{n \times n \times M}{n * n * M},
+	and for a two-mode network \eqn{n \times m \times M}{n * m * M}, 
 	where \code{n} is the number of actors, \code{m} is the number
 	of nodes in the second mode, and \code{M} is the number of waves.}
   \item{type}{type of dependent variable, default "oneMode".}

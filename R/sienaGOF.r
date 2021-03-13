@@ -157,7 +157,10 @@ sienaGOF <- function(
 										sienaFitObject$f,
 										sienaFitObject$sims, j, groupName, varName, ...)
 						})
-					cat("  > Completed ", iterations, " calculations\n\n")
+					if (verbose)
+					{
+						cat("  > Completed ", iterations, " calculations\n\n")
+					}
 					flush.console()
 					simStatsByPeriod <-
 							matrix(simStatsByPeriod, ncol=iterations)
@@ -1429,11 +1432,20 @@ TriadCensus <- function (i, obsData, sims, period, groupName, varName, levls = 1
 # for subsets of ordered pairs corresponding to
 # certain values of the categorical dyadic covariate dc.
 # dc should be a matrix of the same dimensions as
-# the dependent variable.
+# the dependent variable,
+# or an array where the third dimension is time.
 # Frequencies of ties with dc == 0 are not counted.
 dyadicCov <-  function (i, obsData, sims, period, groupName, varName, dc){
 	m <- sparseMatrixExtraction(i, obsData, sims, period, groupName, varName)
-    tmdyv <- table((m * dc)@x, useNA="no") # note that m*dc is a sparse matrix, too
+    # note that m*dc is a sparse matrix, too:
+	if (length(dim(dc))==3)
+	{
+		tmdyv <- table((m * dc[,,period])@x, useNA = "no")
+	}
+	else
+	{
+		tmdyv <- table((m * dc)@x, useNA = "no")
+	}
 	values <- unique(as.vector(dc))
 	tdyv <- sort(values[!is.na(values)])
 	tdyv <- tdyv[-which(tdyv==0)] # if 0 is included, take it out

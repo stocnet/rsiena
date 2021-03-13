@@ -767,8 +767,8 @@ print.summary.sienaMeta <- function(x, file=FALSE, extra=TRUE, ...)
 	}
 }
 
-
-funnelPlot <- function(anslist, k, threshold=NULL, origin=TRUE, ...)
+funnelPlot <- function(anslist, k, threshold=NULL, origin=TRUE,
+				plotAboveThreshold=TRUE, verbose=TRUE, ...)
 {
 	if (!inherits(anslist, 'list'))
 	{
@@ -798,18 +798,24 @@ funnelPlot <- function(anslist, k, threshold=NULL, origin=TRUE, ...)
 	{
 		warning('not all tested effect names are the same.')
 	}
-
-	th <- sapply(anslist[use], function(x){x$theta[k]}, USE.NAMES=FALSE)
-	se <- sapply(anslist[use], function(x){x$se[k]}, USE.NAMES=FALSE)
+	use0 <- use
+	th0 <- sapply(anslist, function(x){x$theta[k]}, USE.NAMES=FALSE)
+	se0 <- sapply(anslist, function(x){x$se[k]}, USE.NAMES=FALSE)
+	th <- th0[use]
+	se <- se0[use]
 	if (is.null(threshold))
 	{
-		threshold <- range(se)[2] + 1
+		threshold <- (1.1 * range(se)[2]) + 0.01
 	}
 	use <- use[se < threshold]
 	tooLarge <- sum(se >= threshold)
 	use <- (se < threshold)
 	xxlim <- 1.1*range(th[use])
 	yylim <- c(0,1.1*range(se[use])[2])
+	if ((plotAboveThreshold) & any(!use))
+	{
+		yylim[2] <- threshold+ 0.05
+	}
 	if (origin)
 	{
 		xxlim[1] <- min(xxlim[1], 0)
@@ -821,13 +827,30 @@ funnelPlot <- function(anslist, k, threshold=NULL, origin=TRUE, ...)
 	mi <- xxlim[1]
 	lines(c(0,ma), c(0, ma/1.96), col='red')
 	lines(c(0,mi), c(0,  mi/(-1.96)), col='red')
-	if (notUsed > 0)
+	if ((plotAboveThreshold) & any(!use))
+	{
+		points(th[!use], rep(threshold, sum(!use)), pch=8)
+	}
+	if ((notUsed > 0) & verbose)
 	{
 		cat(notUsed, 'groups had no estimation of parameter', k,'.\n')
+		cat('Table of parameter values for these groups : \n')
+	#	print(round(cbind((th0[!use0]), se0[!use0]), 4))
+		t0 <- table(round(th0[!use0], 4))
+		t <- matrix(t0, 1, length(t0))
+		colnames(t) <- names(t0)
+		rownames(t) <- 'count'
+		print(t)
+		cat('\n')
 	}
-	if (tooLarge > 0)
+	if ((tooLarge > 0) & verbose)
 	{
 		cat(tooLarge, 'groups had standard errors larger than', threshold,'.\n')
+		cat('Rounded parameter values for these groups : \n')
+		t <- as.matrix(round(rbind(th[!use], se[!use]), 2))
+		rownames(t) <- c('par', 'se')
+		print(t)
+		flush.console()
 	}
 	invisible(cbind(th[use],se[use]))
 }
@@ -849,6 +872,9 @@ meta.table <- function(x, d=3, option=2,
 		b <- gsub('->', '$\\rightarrow$', fixed=TRUE, b)
 		b <- gsub('<-', '$\\leftarrow$', fixed=TRUE, b)
 		b <- gsub('<>', '$\\leftrightarrow$', fixed=TRUE, b)
+		b <- gsub('=>', '$\\Rightarrow$', fixed=TRUE, b)
+		b <- gsub('>=', '$\\geq$', fixed=TRUE, b)
+		b <- gsub('<=', '$\\leq$', fixed=TRUE, b)
 # Note: R changes \\ to \ but still displays \\ in printing the string.
 		b <- gsub('^(1/1)', '', fixed=TRUE, b)
 		b <- gsub('^(1/2)', '(sqrt)', fixed=TRUE, b)

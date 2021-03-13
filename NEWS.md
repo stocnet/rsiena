@@ -1,3 +1,59 @@
+# RSiena 1.2.32
+
+## 
+
+2021-03-13
+
+## Changes in RSiena:
+   * New effects: homXTransRecTrip, toU.
+   * This implied creation of a new effect class dyadANetNetObjective.
+   * sqrt versions for parameter 2 for the effects to, toBack, toRecip,
+     from, fromMutual.
+   * Reinstated effect MixedInXW, also with sqrt version for parameter 2.
+   * Dropped effect to.2 (identical to "to") 
+     and MixedInWX (identical to "toBack").
+   * Description of toBack and toRecip in manual.
+   * Correction in phase3.2 of a bug that sometimes led to an error message 
+     if simOnly.
+   * effectsDocumentation now also includes gmm effects (at the bottom).
+   * Improved fromObjectToLaTeX in meta.table and siena.table. 
+   * oneModeNet in effects.r: some further cases where the comparison of
+     types with 'behavior' is replaced by 
+     comparison with c('behavior', 'continuous').
+   * Display of deviations from targets changed to after subtraction of targets.
+   * Stop if no parameters are estimated and simOnly is FALSE (initializeFRAN).
+   * Changed keyword for some help pages.
+   * Dropped MixedOutStarFunction, MixedInStarFunction, MixedTwoPathFunction,
+     (their functionality replaced by MixedTwoStepFunction).
+   * Dropped MixedTwoStepFunction from effects 
+     (its place is in effects\generic, and that's were it is).
+
+# RSiena 1.2-31
+
+## 
+
+2021-02-27
+
+## Changes in RSiena:
+   * Generalized method of Moments implemented (Viviana Amati):
+     see docs\manual\Changes_RSiena_GMoM.tex;
+     new function includeGMoMStatistics, extended functionality of siena07.
+   * Require R >= 3.5.0.
+   * xtable added to "Imports" (used to be in "Suggests").
+   * dyadicCov made to accept also changing dyadic covariates.
+   * Used 'verbose' condition in sienaGOF also for last console output.
+   * new arguments plotAboveThreshold and verbose for funnelPlot.
+
+# RSiena 1.2.30
+
+## 
+
+2021-02-23
+
+## Changes in RSiena:
+   * Resolved issue with continuous dependent behavior variables 
+     (Nynke Niezink).
+
 # RSiena 1.2-29
 
 ## 

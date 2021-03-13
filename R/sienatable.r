@@ -28,6 +28,9 @@ siena.table <- function(x, type='tex',
 			b <- gsub('->', '$\\rightarrow$', fixed=TRUE, b)
 			b <- gsub('<-', '$\\leftarrow$', fixed=TRUE, b)
 			b <- gsub('<>', '$\\leftrightarrow$', fixed=TRUE, b)
+			b <- gsub('=>', '$\\Rightarrow$', fixed=TRUE, b)
+			b <- gsub('>=', '$\\geq$', fixed=TRUE, b)
+			b <- gsub('<=', '$\\leq$', fixed=TRUE, b)
 			b <- gsub('sqrt', '$\\sqrt{}$', fixed=TRUE, b)
 			b <- gsub('&', '.', fixed=TRUE, b)
 		}

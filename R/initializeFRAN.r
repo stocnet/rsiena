@@ -41,7 +41,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		}
 		if ((length(xx) >= 1) && (!(length(xx) == sum(theVars))))
 		{
-			cat(deparse(substitute(xx)), ' =  (', 
+			cat(deparse(substitute(xx)), ' =  (',
 					paste(names(xx), xx, sep=" = ", collapse="; ") ,') ,\n')
 			if (sum(theVars)==1)
 			{
@@ -117,11 +117,12 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		defaultEffects <- getEffects(data)
 		if (is.null(effects))
 		{
+			cat("You specified no effects. The default effects are used.\n")
 			effects <- defaultEffects
 		}
 		else
 		{
-			## todo check that the effects match the data dependent variables
+			## check that the effects match the data dependent variables
 			userlist <- apply(effects[effects$include,], 1, function(x)
 				paste(x[c("name", "effectName",
 						"type", "groupName")],
@@ -152,7 +153,10 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 			}
 			effects$initialValue <- defaultEffects$initialValue
 		}
-
+		if ((sum(!effects$fix[effects$include]) == 0) & (!x$simOnly))
+		{
+			stop('All parameters are fixed, none are estimated, but simOnly is FALSE.')
+		}
 		# Check that the following attributes have correct names
 		# and change NULL to default values for x$modelType and x$behModelType
 		# For symmetric networks, default is changed below from 1 to 2.
@@ -476,7 +480,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 				# from phase1.r.
 				# Partial diagonalization of derivative matrix
 				# for use if 0 < x$diagonalize < 1.
-				if (!z$gmm) 
+				if (!z$gmm)
 				{
 				  temp <- (1-x$diagonalize)*z$dfra +
 				    x$diagonalize*diag(diag(z$dfra), nrow=dim(z$dfra)[1])
@@ -485,9 +489,9 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 				  diag(temp)[z$fixed] <- 1.0
 				  # Invert this matrix
 				  z$dinvv <- solve(temp)
-				} 
-				else 
-				{ 
+				}
+				else
+				{
 				  z$B <- prevAns$B
 				  z$D0 <- prevAns$D0
 				  z$gamma <- prevAns$gamma
@@ -2357,7 +2361,7 @@ updateTheta <- function(effects, prevAns, varName=NULL)
 	{
 		prevEffects <- prevAns$requestedEffects[which(prevAns$requestedEffects$type != 'gmm'),]
 		prevEffects$initialValue <- prevAns$theta
-	} 
+	}
 	else if (prevAns$gmm)
 	{
 		prevEffects <- prevAns$requestedEffects

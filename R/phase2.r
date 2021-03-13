@@ -248,32 +248,6 @@ doIterations<- function(z, x, subphase,...)
 				## running faster with no tcl/tk
 			}
 		}
-		if ((z$nit <= 10) || (z$nit %% z$writefreq ==0))
-		{
-			DisplayIteration(z)
-			if (is.batch())
-			{
-				val <- getProgressBar(z$pb)
-				increment <- ifelse(z$nit <= 10, 1, z$writefreq)
-				Report(paste('Phase ', z$Phase, ' Subphase ', subphase,
-						' Iteration ', z$nit,' Progress: ',
-						round((increment + val) / z$pb$pbmax * 100),
-						'%\n', sep = ''))
-				z$pb <- setProgressBar(z$pb, val + increment)
-			}
-			else
-			{
-				if (z$nit>1)
-				{
-					DisplayDeviations(z, fra)
-				}
-				if  (z$nit %% z$writefreq == 0)
-				{
-					val <- getProgressBar(z$pb)
-					z$pb <-setProgressBar(z$pb, val + z$writefreq)
-				}
-			}
-		}
 		zsmall$nit <- z$nit
 		if (x$dolby) {zsmall$Deriv <- TRUE} ## include scores in FRAN
 		if (z$int == 1) ## then no parallel runs at this level
@@ -319,6 +293,33 @@ doIterations<- function(z, x, subphase,...)
 				break
 			}
 
+		}
+		
+		if ((z$nit <= 10) || (z$nit %% z$writefreq ==0))
+		{
+			DisplayIteration(z)
+			if (is.batch())
+			{
+				val <- getProgressBar(z$pb)
+				increment <- ifelse(z$nit <= 10, 1, z$writefreq)
+				Report(paste('Phase ', z$Phase, ' Subphase ', subphase,
+						' Iteration ', z$nit,' Progress: ',
+						round((increment + val) / z$pb$pbmax * 100),
+						'%\n', sep = ''))
+				z$pb <- setProgressBar(z$pb, val + increment)
+			}
+			else
+			{
+				if (z$nit>1)
+				{
+					DisplayDeviations(z, fra)
+				}
+				if  (z$nit %% z$writefreq == 0)
+				{
+					val <- getProgressBar(z$pb)
+					z$pb <- setProgressBar(z$pb, val + z$writefreq)
+				}
+			}
 		}
 		## setup check for end of phase. either store or calculate
 		if (z$nit %% 2 == 1)
