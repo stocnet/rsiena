@@ -19,7 +19,16 @@
 namespace siena
 {
 
+// ----------------------------------------------------------------------------
+// Section: Forward declarations
+// ----------------------------------------------------------------------------
+
+class SqrtTable;
 class ConfigurationTable;
+
+// ----------------------------------------------------------------------------
+// Section: InStarFunction class
+// ----------------------------------------------------------------------------
 
 
 /**
@@ -29,7 +38,7 @@ class ConfigurationTable;
 class InStarFunction: public NetworkAlterFunction, IntAlterFunction
 {
 public:
-	InStarFunction(std::string networkName);
+	InStarFunction(std::string networkName, bool root);
 
 	virtual void initialize(const Data * pData,
 		State * pState, int period, Cache * pCache);
@@ -39,6 +48,9 @@ public:
 
 private:
 	ConfigurationTable * lpTable;
+	bool lroot; // should the square root be taken?
+	// Lookup table for fast square root calculations:
+	SqrtTable * lsqrtTable;
 };
 
 }

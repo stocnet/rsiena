@@ -33,7 +33,6 @@ HomCovariateTransitiveTripletsEffect::HomCovariateTransitiveTripletsEffect(
 									const EffectInfo * pEffectInfo, bool reciprocal) :
 	CovariateDependentNetworkEffect(pEffectInfo)
 {
-// currently not used:
 	{
 		this->lreciprocal = reciprocal;
 	}
@@ -46,8 +45,8 @@ double HomCovariateTransitiveTripletsEffect::calculateContribution(
                                               int alter) const
 {
 	// If we are introducing a tie from the ego i to the alter j, then each
-	// two-path from i to j via h with v_i = v_h != v_j contributes one unit;
-   // in addition, each in-star i -> h <- j with v_i = v_j != v_h
+	// two-path from i to j via h with v_i = v_h = v_j contributes one unit;
+   // in addition, each in-star i -> h <- j with v_i = v_j = v_h
    // also contributes one unit.
    // This number is not stored in a table and is calculated from scratch.
 
@@ -63,41 +62,44 @@ double HomCovariateTransitiveTripletsEffect::calculateContribution(
 			iter.valid();
 			iter.next())
 			{
-
-// HERE THE COVAR OF THE MEDIATING ACTOR IS IDENTIFIED!!!!
-
 				// Get the receiver of the outgoing tie.
 				int h = iter.actor();
+				if (this->lreciprocal)  // homXTransRecTrip
+				{
+					if (fabs(  this->value(h) - this->value( this->ego()) ) < EPSILON)
+					{
 				// in 2-stars:
-				if (fabs(  this->value(h) - this->value( this->ego() )     ) < EPSILON &&
-				pNetwork->tieValue(alter, h) >= 1)
+						if ( (pNetwork->tieValue(alter, h) >= 1) &&
+								(pNetwork->tieValue(this->ego(), h) >= 1) )
 				{
 					contribution1++ ;
 				}
+					// 2-paths:
+						if ( (pNetwork->tieValue(h, alter) >= 1) &&
+								(pNetwork->tieValue(this->ego(), alter) >= 1) )
+						{
+							contribution1++ ;
 			}
 	}
-	else
+				}
+				else  // homXTransTrip
 	{
-		for (IncidentTieIterator iter = pNetwork->outTies(this->ego());
-			iter.valid();
-			iter.next())
+					if (fabs(  this->value(h) - this->value( this->ego()) ) < EPSILON)
 			{
-				// Get the receiver of the outgoing tie.
-				int h = iter.actor();
+					// in 2-stars:
+						if (pNetwork->tieValue(alter, h) >= 1)
+						{
+							contribution1++ ;
+						}
 				// 2-paths:
-				if (fabs(this->value(h) - this->value(this->ego())) < EPSILON &&
-				pNetwork->tieValue(h, alter) >= 1)
+						if (pNetwork->tieValue(h, alter) >= 1)
 				{
 					contribution1++ ;
 				}
 			}
 	}
-
-
-
-
-
-
+			}
+	}
 	return contribution1;
 }
 
@@ -113,8 +115,10 @@ double HomCovariateTransitiveTripletsEffect::tieStatistic(int alter)
 	int statistic = 0;
 	const Network * pNetwork = this->pNetwork();
 
-	if (!this->missing(this->ego()) && !this->missing(alter) &&
-		fabs(this->value(alter) - this->value(this->ego())) < EPSILON)
+	if ( (!this->missing(this->ego())) && (!this->missing(alter)) &&
+			(fabs(this->value(alter) - this->value(this->ego())) < EPSILON) &&
+			((!this->lreciprocal) ||
+							(pNetwork->tieValue(alter, this->ego()) >= 1) ) )
 	{
 	// The following probably can be done more efficiently
 	// using CommonNeighborIterator.

@@ -10,6 +10,8 @@
  *****************************************************************************/
 
 #include "ReciprocatedTwoPathFunction.h"
+#include <stdexcept>
+#include "utils/SqrtTable.h"
 #include "model/tables/NetworkCache.h"
 #include "model/tables/EgocentricConfigurationTable.h"
 
@@ -23,10 +25,13 @@ namespace siena
  * @param[in] networkName the name of the network variable this function is
  * associated with
  */
-ReciprocatedTwoPathFunction::ReciprocatedTwoPathFunction(string networkName) :
+ReciprocatedTwoPathFunction::ReciprocatedTwoPathFunction(string networkName,
+															bool root) :
 	OneModeNetworkAlterFunction(networkName)
 {
-	this->lpTable = 0;
+	this->lpTable = 0;;
+	this->lroot = root;
+	this->lsqrtTable = SqrtTable::instance();
 }
 
 
@@ -54,7 +59,14 @@ void ReciprocatedTwoPathFunction::initialize(const Data * pData,
  */
 double ReciprocatedTwoPathFunction::value(int alter)
 {
-	return this->lpTable->get(alter);
+	if (this->lroot)
+	{
+		return this->lsqrtTable->sqrt(this->lpTable->get(alter));
+	}
+	else
+	{
+		return this->lpTable->get(alter);
+	}
 }
 
 
@@ -63,7 +75,14 @@ double ReciprocatedTwoPathFunction::value(int alter)
  */
 int ReciprocatedTwoPathFunction::intValue(int alter)
 {
-	return this->lpTable->get(alter);
+	if (this->lroot)
+	{
+		throw logic_error("Square roots are not integer values");
+	}
+	else
+	{
+		return this->lpTable->get(alter);
+	}
 }
 
 }
