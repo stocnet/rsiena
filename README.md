@@ -42,26 +42,19 @@ including background on SAOMs and RSiena, and links to teaching materials, liter
 
 Perhaps the easiest way to install RSiena is by installing a compiled binary.
 Binaries for all major OSes -- Windows, Mac, and Linux -- 
-can be found by clicking on the latest release [here](https://github.com/snlab-nl/rsiena/releases/latest/download/rsiena_AllOS.zip).
+can be found by clicking on the latest release for your OS [here](https://github.com/snlab-nl/rsiena/releases/latest).
+For Windows you should use the `RSiena.zip`, for macOS it should be `RSiena.tgz`, and for Linux `RSiena.tar.gz`.
 
-Once the file has been downloaded, unzip the file, and install the binary as appropriate for your Operating System.
-In the following, perhaps the name of the Downloads folder and the version number have to be amended:
+Once the file has been downloaded, install the binary appropriate for your Operating System like so:
 
-For Windows:
+`install.packages("~/Downloads/RSiena.zip", repos = NULL)`
 
-`install.packages("~/Downloads/rsiena_AllOS/winOS/rsiena_1.2.26.zip", repos = NULL)`
-
-For Mac:
-
-`install.packages("~/Downloads/rsiena_AllOS/macOS/rsiena_1.2.26.tgz", repos = NULL)`
-
-For Unix:
-
-`install.packages("~/Downloads/rsiena_AllOS/linuxOS/RSiena_1.2-26_R_x86_64-pc-linux-gnu.tar.gz", repos = NULL)`
+amending the file suffix as necessary.
 
 ### From source
 
-To install from source the latest main version of RSiena from Github, please install the `{remotes}` package from CRAN and then enter into the console:
+To install from source the latest main version of RSiena from Github, 
+please install the `{remotes}` package from CRAN and then enter into the console:
 
 `remotes::install_github("snlab-nl/rsiena")`
 
