@@ -153,10 +153,18 @@ phase1.2 <- function(z, x, ...)
 		{
 			scores <- z$scores
 		}
+		oldwarn <- getOption("warn")
+		options(warn = -1)
 		for (i in 1:z$pp)
 		{
-			oldwarn <- getOption("warn")
-			options(warn = -1)
+			if (is.na(var(scores[,i])))
+			{
+				stop(paste('phase1.2: missing var(scores[,i]) for i =', i))
+			}
+			if (is.na(var(z$sf[,i])))
+			{
+				stop(paste('phase1.2: missing var(z$sf[,i]) for i =', i))
+			}
 			if ((var(scores[,i]) > 0)&&(var(z$sf[,i]) > 0))
 			{
 				z$regrCoef[i] <- cov(z$sf[,i], scores[,i])/var(scores[,i])
@@ -171,8 +179,8 @@ phase1.2 <- function(z, x, ...)
 			if (is.na(z$regrCoef[i])){z$regrCoef[i] <- 0}
 			if (!is.finite(z$regrCor[i])){z$regrCor[i] <- 0}
 			if (!is.finite(z$regrCoef[i])){z$regrCoef[i] <- 0}
-			options(warn = oldwarn)
 		}
+		options(warn = oldwarn)
 		Report('Correlations between scores and statistics:\n', cf)
 		PrtOutMat(format(as.matrix(t(z$regrCor)), digits = 2, nsmall = 2), cf)
 		Report('Regression coefficients:\n', cf)

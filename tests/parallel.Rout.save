@@ -555,22 +555,8 @@ Total of 266 iteration steps.
 11 mynet2 mynet2 quadratic shape          Regular  
 12 mynet2 mynet2 average similarity       Regular  
 13 mynet1 mynet2 similarity               GMoM     
-> (algo <- sienaAlgorithmCreate(nsub=2, n3=100, gmm=TRUE, seed=6))
+> algo <- sienaAlgorithmCreate(nsub=2, n3=100, gmm=TRUE, seed=6)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
- Siena Algorithm specification.
- Project name: C:\Users\TOM~1.SNI\AppData\Local\Temp\RtmpgJ9Y0g\Siena22a41cb51430 
- Use standard initial values: FALSE 
- Random seed: 6 
- Number of subphases in phase 2: 2 
- Starting value of gain parameter: 0.2 
- Reduction factor for gain parameter: 0.5 
- Diagonalization parameter: 0.2 
- Double averaging after subphase: 0 
- Dolby noise reduction: FALSE 
- Method for calculation of derivatives: Scores 
- Number of subphases in phase 2: 2 
- Number of iterations in phase 3: 100 
- Unconditional simulation if more than one dependent variable
 > (ans <- siena07(algo, data=mydata, effects=myeff, batch=TRUE,
 +                 parallelTesting=TRUE, silent=TRUE))
 Estimated by Generalized Method of Moments
@@ -715,4 +701,4 @@ Total of 305 iteration steps.
 > 
 > proc.time()
    user  system elapsed 
-  28.06    0.53   28.62 
+  27.76    0.56   28.43 

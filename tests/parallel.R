@@ -140,7 +140,7 @@ myeff <- getEffects(mydata)
 (myeff <- includeEffects(myeff, egoX, simX, interaction1="mynet2"))
 (myeff <- includeEffects(myeff, avSim, name="mynet2", interaction1="mynet1"))
 (myeff <- includeGMoMStatistics(myeff, simX_gmm, interaction1="mynet2"))
-(algo <- sienaAlgorithmCreate(nsub=2, n3=100, gmm=TRUE, seed=6))
+algo <- sienaAlgorithmCreate(nsub=2, n3=100, gmm=TRUE, seed=6)
 (ans <- siena07(algo, data=mydata, effects=myeff, batch=TRUE,
                 parallelTesting=TRUE, silent=TRUE))
 ##test16

@@ -30,7 +30,7 @@ sienaModelCreate <- function(fn,
 	{
 		model$projname <- tempfile("Siena")
 		if (checking)
-		{
+		{		
 	cat('If you use this algorithm object, siena07 will create/use an output file', 
 				paste('Siena','.txt',sep=''),'.\n')
 		

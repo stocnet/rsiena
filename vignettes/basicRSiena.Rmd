@@ -1,7 +1,7 @@
 ---
 title: "BasicRSiena"
 author: "Tom Snijders"
-date: "August 9, 2020"
+date: "March 13, 2021"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{BasicRSiena}
@@ -33,14 +33,6 @@ If you wish it to be different, change it by
 # setwd()
 ```
 
-In my case:
-
-```{r} 
-# setwd("C:\\Users\\tom.snijders\\Documents\\Siena\\s50_script")
-```
-
-Note the double backslashes used for R.
-
 # Define data sets
 
 If you have internet access, you can download the data
@@ -66,8 +58,19 @@ from within RSiena (see below), because this is an internal data set.
 
 ```{r} 
 library(RSiena)
-# Now we use the internally available s50 data set.
-# Look at its description:
+```
+
+With
+```{r} 
+?RSiena
+```
+you get to see the basic operation.
+
+Now we use the internally available s50 data set.
+
+Look at its description:
+
+```{r} 
 ?s50
 # 3 waves, 50 actors
 # Look at the start and end of the first wave matrix
@@ -75,8 +78,11 @@ head(s501)
 tail(s501)
 # and at the alcohol variable
 s50a
-# Now define the objects with the same names as above
-# (this step is superfluous if you read the data already).
+```
+
+Now define the objects with the same names as above
+(this step is superfluous if you read the data already).
+```{r} 
         friend.data.w1 <- s501
         friend.data.w2 <- s502
         friend.data.w3 <- s503
@@ -173,7 +179,10 @@ For checking convergence, look at the
 'Overall maximum convergence ratio' mentioned under the parameter estimates.
 
 It can also be shown by requesting
-`r ans$tconv.max`
+
+```{r}
+ans$tconv.max
+```
 
 If this is less than 0.25, convergence is good.
 If convergence is inadequate, estimate once more,

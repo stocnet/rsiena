@@ -2,7 +2,7 @@
 
 ## 
 
-2021-03-13
+2021-03-14
 
 ## Changes in RSiena:
    * New effects: homXTransRecTrip, toU.
@@ -22,6 +22,7 @@
      comparison with c('behavior', 'continuous').
    * Display of deviations from targets changed to after subtraction of targets.
    * Stop if no parameters are estimated and simOnly is FALSE (initializeFRAN).
+   * Extra check in phase1.2.
    * Changed keyword for some help pages.
    * Dropped MixedOutStarFunction, MixedInStarFunction, MixedTwoPathFunction,
      (their functionality replaced by MixedTwoStepFunction).

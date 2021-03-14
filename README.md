@@ -8,9 +8,12 @@
 ## About
 
 SIENA is a program for the statistical analysis of network data, with the focus on social networks.
-Networks here are understood as entire (complete) networks, not as personal (egocentered) networks: it is assumed that a set of nodes (social actors) is given, and all ties (links) between these nodes are known - except perhaps for a moderate amount of missing data.
+Networks here are understood as entire (complete) networks, not as personal (egocentered) networks: 
+it is assumed that a set of nodes (social actors) is given, and all ties (links) between these nodes are known - 
+except perhaps for a moderate amount of missing data.
 The name SIENA stands for Simulation Investigation for Empirical Network Analysis.
-The R package is called RSiena; there also is the development package RSienaTest.
+The R package is called RSiena; there also is the development package RSienaTest,
+available from R-Forge.
 
 SIENA is designed for analyzing various types of data as dependent variables:
 
