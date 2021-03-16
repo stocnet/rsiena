@@ -5,6 +5,8 @@
 2021-03-16
 
 ## Changes in RSiena:
+
+### Effects:
    * New effects: homXTransRecTrip, toU.
    * This implied creation of a new effect class dyadANetNetObjective.
    * sqrt versions for parameter 2 for the effects to, toBack, toRecip,
@@ -13,23 +15,35 @@
    * Reinstated effect MixedInXW, also with sqrt version for parameter 2.
    * Dropped effect to.2 (identical to "to") 
      and MixedInWX (identical to "toBack").
-   * Description of toBack and toRecip in manual.
+
+### Improvements of functionality:
+   * effectsDocumentation now also includes gmm effects (at the bottom).
+   * Improved fromObjectToLaTeX in meta.table and siena.table.
+   * Display of deviations from targets changed to after subtraction of targets.
+   * Stop if no parameters are estimated and simOnly is FALSE (initializeFRAN).
+
+### Reduction of functionality:
    * Vignette basicRSiena.Rmd dropped (available at website).
+
+### Documentation:
+   * Extended description of GMoM in the manual.
+   * Description of toBack and toRecip in manual.
+   * Changed keyword for some help pages.
+
+### Corrections / safeguards
    * Correction in phase3.2 of a bug that sometimes led to an error message 
      if simOnly.
-   * effectsDocumentation now also includes gmm effects (at the bottom).
-   * Improved fromObjectToLaTeX in meta.table and siena.table. 
    * oneModeNet in effects.r: some further cases where the comparison of
      types with 'behavior' is replaced by 
      comparison with c('behavior', 'continuous').
-   * Display of deviations from targets changed to after subtraction of targets.
-   * Stop if no parameters are estimated and simOnly is FALSE (initializeFRAN).
    * Extra check in phase1.2.
-   * Changed keyword for some help pages.
+
+### More neat code:
    * Dropped MixedOutStarFunction, MixedInStarFunction, MixedTwoPathFunction,
      (their functionality replaced by MixedTwoStepFunction).
    * Dropped MixedTwoStepFunction from effects 
      (its place is in effects\generic, and that's were it is).
+
 
 # RSiena 1.2-31
 
