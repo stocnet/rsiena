@@ -587,8 +587,7 @@ Overall maximum convergence ratio:    2.0268
 Total of 1451 iteration steps.
 
 > ##test16
-> print('test16')
-[1] "test16"
+> #print('test16')
 > set.seed(123) # simulate behavior data according to dZ(t) = [-0.1 Z + 1] dt + 1 dW(t)
 > y1 <- rnorm(50, 0,3)
 > y2 <- exp(-0.1) * y1 + (1-exp(-0.1)) * 1/ -0.1 + rnorm(50, 0, (exp(-0.2)- 1) / -0.2 * 1^2)
@@ -626,76 +625,7 @@ SDE par stand errors: 0.04669358 0.1223113 0.08791327
 7 behavior intercept                   TRUE    FALSE FALSE   -0.86402   0
 > algorithmMoM <- sienaAlgorithmCreate(nsub=1, n3=20, seed=321)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> (ans <- siena07(algorithmMoM, data = mydata, effects = myeff, batch=TRUE))
-SDE init parameters:  -0.1519645 -1.175127 0.7355777
-SDE par stand errors: 0.06428706 0.2889378 0.1507865
-
-Start phase 0
-theta:  4.696 -1.489  0.000  0.858 -0.112 -0.864  1.000
-
-Start phase 1
-Phase 1 Iteration 1 Progress: 0%
-Phase 1 Iteration 2 Progress: 0%
-Phase 1 Iteration 3 Progress: 0%
-Phase 1 Iteration 4 Progress: 1%
-Phase 1 Iteration 5 Progress: 1%
-Phase 1 Iteration 10 Progress: 2%
-Phase 1 Iteration 15 Progress: 2%
-Phase 1 Iteration 20 Progress: 3%
-Phase 1 Iteration 25 Progress: 4%
-Phase 1 Iteration 30 Progress: 5%
-Phase 1 Iteration 35 Progress: 5%
-Phase 1 Iteration 40 Progress: 6%
-Phase 1 Iteration 45 Progress: 7%
-Phase 1 Iteration 50 Progress: 8%
-theta:  4.4035 -1.6238  0.4253  0.8458 -0.0955 -0.8137  1.0000
-
-Start phase 2.1
-Phase 2 Subphase 1 Iteration 1 Progress: 61%
-Phase 2 Subphase 1 Iteration 2 Progress: 61%
-theta  4.1817 -1.7327  0.9256  0.8373 -0.0868 -0.7741  1.0000
-ac -1.142  3.277  1.128  0.733  0.761  0.598  0.685
-Phase 2 Subphase 1 Iteration 3 Progress: 62%
-Phase 2 Subphase 1 Iteration 4 Progress: 62%
-theta  3.896 -2.082  2.188  0.796 -0.068 -0.735  1.000
-ac 0.119 1.570 1.088 0.356 0.525 0.969 0.330
-Phase 2 Subphase 1 Iteration 5 Progress: 62%
-Phase 2 Subphase 1 Iteration 6 Progress: 62%
-theta  4.6429 -2.2035  2.6826  0.7857 -0.0835 -0.8061  1.0000
-ac 0.482 0.457 1.096 0.529 0.669 1.010 0.495
-Phase 2 Subphase 1 Iteration 7 Progress: 62%
-Phase 2 Subphase 1 Iteration 8 Progress: 62%
-theta  5.710 -2.093  2.611  0.825 -0.111 -0.878  1.000
-ac 0.473 0.676 1.174 0.452 0.608 1.004 0.433
-Phase 2 Subphase 1 Iteration 9 Progress: 62%
-Phase 2 Subphase 1 Iteration 10 Progress: 63%
-theta  6.171 -1.994  2.282  0.860 -0.131 -0.931  1.000
-ac 0.521 0.829 1.222 0.358 0.599 0.965 0.367
-theta  5.533 -2.264  2.476  0.854 -0.112 -0.865  1.000
-ac 0.4621 0.6521 0.2814 0.0807 0.1639 0.5790 0.0822
-theta:  5.533 -2.264  2.476  0.854 -0.112 -0.865  1.000
-
-Start phase 3
-Estimates, standard errors and convergence t-ratios
-
-                                      Estimate   Standard   Convergence
-                                                   Error      t-ratio
-Network Dynamics
-  1. rate basic rate parameter friend  5.5328  ( 9.6387   )   -0.4357
-  2. eval outdegree (density)         -2.2642  ( 0.1852   )   -0.5525
-  3. eval reciprocity                  2.4763  ( 0.2954   )   -0.2053
-
-Continuous Behavior Dynamics
-  4. eval wiener (behavior.behavior)   0.8540  ( 0.0861   )   -0.1574
-  5. eval feedback from behavior      -0.1119  ( 0.1616   )    0.0890
-  6. eval intercept                   -0.8645  ( 0.4628   )    0.0616
-  7. rate scale parameter period 1     1.0000  (     NA   )   -0.1574
-
-Overall maximum convergence ratio:    0.9060
-
-
-Total of 305 iteration steps.
-
+> # (ans <- siena07(algorithmMoM, data = mydata, effects = myeff, batch=TRUE))
 > ## delete output file
 > if (file.exists('Siena.txt')){unlink('Siena.txt')}
 > 

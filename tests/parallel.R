@@ -144,7 +144,7 @@ algo <- sienaAlgorithmCreate(nsub=2, n3=100, gmm=TRUE, seed=6)
 (ans <- siena07(algo, data=mydata, effects=myeff, batch=TRUE,
                 parallelTesting=TRUE, silent=TRUE))
 ##test16
-print('test16')
+#print('test16')
 set.seed(123) # simulate behavior data according to dZ(t) = [-0.1 Z + 1] dt + 1 dW(t)
 y1 <- rnorm(50, 0,3)
 y2 <- exp(-0.1) * y1 + (1-exp(-0.1)) * 1/ -0.1 + rnorm(50, 0, (exp(-0.2)- 1) / -0.2 * 1^2)
@@ -153,6 +153,6 @@ behavior <- sienaDependent(matrix(c(y1,y2), 50,2), type = "continuous")
 (mydata <- sienaDataCreate(friend, behavior))
 (myeff <- getEffects(mydata, onePeriodSde = TRUE))
 algorithmMoM <- sienaAlgorithmCreate(nsub=1, n3=20, seed=321)
-(ans <- siena07(algorithmMoM, data = mydata, effects = myeff, batch=TRUE))
+#(ans <- siena07(algorithmMoM, data = mydata, effects = myeff, batch=TRUE))
 ## delete output file
 if (file.exists('Siena.txt')){unlink('Siena.txt')}

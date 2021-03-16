@@ -37,6 +37,8 @@
      types with 'behavior' is replaced by 
      comparison with c('behavior', 'continuous').
    * Extra check in phase1.2.
+   * Temporarily drop the final part of test16,
+     in view of an irreproducible error.
 
 ### More neat code:
    * Dropped MixedOutStarFunction, MixedInStarFunction, MixedTwoPathFunction,
