@@ -315,7 +315,7 @@ const ActorSet * pCourses =
 \subsection{Observed Data for Dependent Variables}
 
 There is a small hierarchy of classes for storing the observed data for
-dependent variables. 
+dependent variables.
 \begin{center}
 \includegraphics[scale=.5]{LongitudinalData.png}
 \end{center}
@@ -518,7 +518,7 @@ observation) is provided by the method
 \item \verb|const| \verb|int| * \nnm{values}(\verb|int| \nnm{observation}).
 \end{itemize}
 
-\paragraph{Calculating Properties.} 
+\paragraph{Calculating Properties.}
 Again, as soon as the observed values and missingness indicators are stored, and
 before the data object can be used for model simulations, the method
 \nnm{calculateProperties} should be called:
@@ -734,7 +734,7 @@ const ActorSet * pStudents = pData->pActorSet("students");
 OneModeNetworkLongitudinalData * pFriendshipData =
   pData->pOneModeNetworkData("friendship");
 \end{verbatim}
-If some operation is to be performed for all sub-objects oGenericNetworkEffectf a certain type, one
+If some operation is to be performed for all sub-objects of a certain type, one
 can obtain a reference to the vector, where the subobjects of this type are
 stored by the \nnm{Data} class. For example, the values of all constant
 covariates can be printed as follows:

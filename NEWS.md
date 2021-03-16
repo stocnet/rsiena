@@ -2,17 +2,19 @@
 
 ## 
 
-2021-03-14
+2021-03-16
 
 ## Changes in RSiena:
    * New effects: homXTransRecTrip, toU.
    * This implied creation of a new effect class dyadANetNetObjective.
    * sqrt versions for parameter 2 for the effects to, toBack, toRecip,
      from, fromMutual.
+   * Effects to, toU, toBack, toRecip, MixedInXW are dyadic.
    * Reinstated effect MixedInXW, also with sqrt version for parameter 2.
    * Dropped effect to.2 (identical to "to") 
      and MixedInWX (identical to "toBack").
    * Description of toBack and toRecip in manual.
+   * Vignette basicRSiena.Rmd dropped (available at website).
    * Correction in phase3.2 of a bug that sometimes led to an error message 
      if simOnly.
    * effectsDocumentation now also includes gmm effects (at the bottom).
