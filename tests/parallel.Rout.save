@@ -454,9 +454,140 @@ Overall maximum convergence ratio:    2.9012
 
 Total of 266 iteration steps.
 
+> ##test 15
+> print('test15')
+[1] "test15"
+> mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+> mynet2 <- sienaDependent(s50a,type='behavior')
+> mydata <- sienaDataCreate(mynet1, mynet2)
+> myeff <- getEffects(mydata)
+> (myeff <- includeEffects(myeff, transTrip))
+  effectName          include fix   test  initialValue parm
+1 transitive triplets TRUE    FALSE FALSE          0   0   
+  name   effectName                      include fix   test  initialValue parm
+1 mynet1 constant mynet1 rate (period 1) TRUE    FALSE FALSE    4.69604   0   
+2 mynet1 constant mynet1 rate (period 2) TRUE    FALSE FALSE    4.32885   0   
+3 mynet1 outdegree (density)             TRUE    FALSE FALSE   -1.46770   0   
+4 mynet1 reciprocity                     TRUE    FALSE FALSE    0.00000   0   
+5 mynet1 transitive triplets             TRUE    FALSE FALSE    0.00000   0   
+6 mynet2 rate mynet2 (period 1)          TRUE    FALSE FALSE    0.70571   0   
+7 mynet2 rate mynet2 (period 2)          TRUE    FALSE FALSE    0.84939   0   
+8 mynet2 mynet2 linear shape             TRUE    FALSE FALSE    0.32237   0   
+9 mynet2 mynet2 quadratic shape          TRUE    FALSE FALSE    0.00000   0   
+> (myeff <- includeEffects(myeff, egoX, simX, interaction1="mynet2"))
+  effectName        include fix   test  initialValue parm
+1 mynet2 ego        TRUE    FALSE FALSE          0   0   
+2 mynet2 similarity TRUE    FALSE FALSE          0   0   
+   name   effectName                      include fix   test  initialValue parm
+1  mynet1 constant mynet1 rate (period 1) TRUE    FALSE FALSE    4.69604   0   
+2  mynet1 constant mynet1 rate (period 2) TRUE    FALSE FALSE    4.32885   0   
+3  mynet1 outdegree (density)             TRUE    FALSE FALSE   -1.46770   0   
+4  mynet1 reciprocity                     TRUE    FALSE FALSE    0.00000   0   
+5  mynet1 transitive triplets             TRUE    FALSE FALSE    0.00000   0   
+6  mynet1 mynet2 ego                      TRUE    FALSE FALSE    0.00000   0   
+7  mynet1 mynet2 similarity               TRUE    FALSE FALSE    0.00000   0   
+8  mynet2 rate mynet2 (period 1)          TRUE    FALSE FALSE    0.70571   0   
+9  mynet2 rate mynet2 (period 2)          TRUE    FALSE FALSE    0.84939   0   
+10 mynet2 mynet2 linear shape             TRUE    FALSE FALSE    0.32237   0   
+11 mynet2 mynet2 quadratic shape          TRUE    FALSE FALSE    0.00000   0   
+> (myeff <- includeEffects(myeff, avSim, name="mynet2", interaction1="mynet1"))
+  effectName                include fix   test  initialValue parm
+1 mynet2 average similarity TRUE    FALSE FALSE          0   0   
+   name   effectName                      include fix   test  initialValue parm
+1  mynet1 constant mynet1 rate (period 1) TRUE    FALSE FALSE    4.69604   0   
+2  mynet1 constant mynet1 rate (period 2) TRUE    FALSE FALSE    4.32885   0   
+3  mynet1 outdegree (density)             TRUE    FALSE FALSE   -1.46770   0   
+4  mynet1 reciprocity                     TRUE    FALSE FALSE    0.00000   0   
+5  mynet1 transitive triplets             TRUE    FALSE FALSE    0.00000   0   
+6  mynet1 mynet2 ego                      TRUE    FALSE FALSE    0.00000   0   
+7  mynet1 mynet2 similarity               TRUE    FALSE FALSE    0.00000   0   
+8  mynet2 rate mynet2 (period 1)          TRUE    FALSE FALSE    0.70571   0   
+9  mynet2 rate mynet2 (period 2)          TRUE    FALSE FALSE    0.84939   0   
+10 mynet2 mynet2 linear shape             TRUE    FALSE FALSE    0.32237   0   
+11 mynet2 mynet2 quadratic shape          TRUE    FALSE FALSE    0.00000   0   
+12 mynet2 mynet2 average similarity       TRUE    FALSE FALSE    0.00000   0   
+> (myeff <- includeGMoMStatistics(myeff, simX_gmm, interaction1="mynet2"))
+    name shortName type include
+1 mynet1  simX_gmm  gmm    TRUE
+
+ Effects and statistics for estimation by the Generalized Method of Moments
+
+ Effects
+   name   effectName                      include fix   test  initialValue parm
+1  mynet1 constant mynet1 rate (period 1) TRUE    FALSE FALSE    4.69604   0   
+2  mynet1 constant mynet1 rate (period 2) TRUE    FALSE FALSE    4.32885   0   
+3  mynet1 outdegree (density)             TRUE    FALSE FALSE   -1.46770   0   
+4  mynet1 reciprocity                     TRUE    FALSE FALSE    0.00000   0   
+5  mynet1 transitive triplets             TRUE    FALSE FALSE    0.00000   0   
+6  mynet1 mynet2 ego                      TRUE    FALSE FALSE    0.00000   0   
+7  mynet1 mynet2 similarity               TRUE    FALSE FALSE    0.00000   0   
+8  mynet2 rate mynet2 (period 1)          TRUE    FALSE FALSE    0.70571   0   
+9  mynet2 rate mynet2 (period 2)          TRUE    FALSE FALSE    0.84939   0   
+10 mynet2 mynet2 linear shape             TRUE    FALSE FALSE    0.32237   0   
+11 mynet2 mynet2 quadratic shape          TRUE    FALSE FALSE    0.00000   0   
+12 mynet2 mynet2 average similarity       TRUE    FALSE FALSE    0.00000   0   
+   type
+1  rate
+2  rate
+3  eval
+4  eval
+5  eval
+6  eval
+7  eval
+8  rate
+9  rate
+10 eval
+11 eval
+12 eval
+
+ Regular and GMoM statistics
+   name   effectName                      Statistic
+1  mynet1 constant mynet1 rate (period 1) Regular  
+2  mynet1 constant mynet1 rate (period 2) Regular  
+3  mynet1 outdegree (density)             Regular  
+4  mynet1 reciprocity                     Regular  
+5  mynet1 transitive triplets             Regular  
+6  mynet1 mynet2 ego                      Regular  
+7  mynet1 mynet2 similarity               Regular  
+8  mynet2 rate mynet2 (period 1)          Regular  
+9  mynet2 rate mynet2 (period 2)          Regular  
+10 mynet2 mynet2 linear shape             Regular  
+11 mynet2 mynet2 quadratic shape          Regular  
+12 mynet2 mynet2 average similarity       Regular  
+13 mynet1 mynet2 similarity               GMoM     
+> algo <- sienaAlgorithmCreate(nsub=2, n3=100, gmm=TRUE, seed=6)
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> (ans <- siena07(algo, data=mydata, effects=myeff, batch=TRUE,
++                 parallelTesting=TRUE, silent=TRUE))
+Estimated by Generalized Method of Moments
+
+Estimates, standard errors and convergence t-ratios
+
+                                           Estimate   Standard   Convergence 
+                                                        Error      t-ratio   
+Network Dynamics 
+   1. rate constant mynet1 rate (period 1)  6.4230  ( 1.2255   )   -0.0971   
+   2. rate constant mynet1 rate (period 2)  4.8422  ( 1.7337   )   -0.9100   
+   3. eval outdegree (density)             -2.6419  ( 0.1137   )    0.7748   
+   4. eval reciprocity                      2.5650  ( 0.1696   )    1.1617   
+   5. eval transitive triplets              0.5481  ( 0.1066   )   -0.2127   
+   6. eval mynet2 ego                       0.0080  ( 0.0922   )   -0.0077   
+   7. eval mynet2 similarity                0.7028  ( 0.5935   )    0.6421   
+
+Behavior Dynamics
+   8. rate rate mynet2 (period 1)           1.3265  ( 0.3333   )    0.0952   
+   9. rate rate mynet2 (period 2)           1.7188  ( 0.8989   )    0.2547   
+  10. eval mynet2 linear shape              0.3632  ( 0.2048   )   -0.0884   
+  11. eval mynet2 quadratic shape          -0.1373  ( 0.1440   )   -0.3824   
+  12. eval mynet2 average similarity        1.9156  ( 2.0605   )   -0.2767   
+
+Overall maximum convergence ratio:    2.0268 
+
+
+Total of 1451 iteration steps.
+
 > ##test16
-> print('test16')
-[1] "test16"
+> #print('test16')
 > set.seed(123) # simulate behavior data according to dZ(t) = [-0.1 Z + 1] dt + 1 dW(t)
 > y1 <- rnorm(50, 0,3)
 > y2 <- exp(-0.1) * y1 + (1-exp(-0.1)) * 1/ -0.1 + rnorm(50, 0, (exp(-0.2)- 1) / -0.2 * 1^2)
@@ -494,79 +625,10 @@ SDE par stand errors: 0.04669358 0.1223113 0.08791327
 7 behavior intercept                   TRUE    FALSE FALSE   -0.86402   0
 > algorithmMoM <- sienaAlgorithmCreate(nsub=1, n3=20, seed=321)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> (ans <- siena07(algorithmMoM, data = mydata, effects = myeff, batch=TRUE))
-SDE init parameters:  -0.1519645 -1.175127 0.7355777
-SDE par stand errors: 0.06428706 0.2889378 0.1507865
-
-Start phase 0
-theta:  4.696 -1.489  0.000  0.858 -0.112 -0.864  1.000
-
-Start phase 1
-Phase 1 Iteration 1 Progress: 0%
-Phase 1 Iteration 2 Progress: 0%
-Phase 1 Iteration 3 Progress: 0%
-Phase 1 Iteration 4 Progress: 1%
-Phase 1 Iteration 5 Progress: 1%
-Phase 1 Iteration 10 Progress: 2%
-Phase 1 Iteration 15 Progress: 2%
-Phase 1 Iteration 20 Progress: 3%
-Phase 1 Iteration 25 Progress: 4%
-Phase 1 Iteration 30 Progress: 5%
-Phase 1 Iteration 35 Progress: 5%
-Phase 1 Iteration 40 Progress: 6%
-Phase 1 Iteration 45 Progress: 7%
-Phase 1 Iteration 50 Progress: 8%
-theta:  4.4035 -1.6238  0.4253  0.8458 -0.0955 -0.8137  1.0000
-
-Start phase 2.1
-Phase 2 Subphase 1 Iteration 1 Progress: 61%
-Phase 2 Subphase 1 Iteration 2 Progress: 61%
-theta  4.1817 -1.7327  0.9256  0.8373 -0.0868 -0.7741  1.0000
-ac -1.142  3.277  1.128  0.733  0.761  0.598  0.685
-Phase 2 Subphase 1 Iteration 3 Progress: 62%
-Phase 2 Subphase 1 Iteration 4 Progress: 62%
-theta  3.896 -2.082  2.188  0.796 -0.068 -0.735  1.000
-ac 0.119 1.570 1.088 0.356 0.525 0.969 0.330
-Phase 2 Subphase 1 Iteration 5 Progress: 62%
-Phase 2 Subphase 1 Iteration 6 Progress: 62%
-theta  4.6429 -2.2035  2.6826  0.7857 -0.0835 -0.8061  1.0000
-ac 0.482 0.457 1.096 0.529 0.669 1.010 0.495
-Phase 2 Subphase 1 Iteration 7 Progress: 62%
-Phase 2 Subphase 1 Iteration 8 Progress: 62%
-theta  5.710 -2.093  2.611  0.825 -0.111 -0.878  1.000
-ac 0.473 0.676 1.174 0.452 0.608 1.004 0.433
-Phase 2 Subphase 1 Iteration 9 Progress: 62%
-Phase 2 Subphase 1 Iteration 10 Progress: 63%
-theta  6.171 -1.994  2.282  0.860 -0.131 -0.931  1.000
-ac 0.521 0.829 1.222 0.358 0.599 0.965 0.367
-theta  5.533 -2.264  2.476  0.854 -0.112 -0.865  1.000
-ac 0.4621 0.6521 0.2814 0.0807 0.1639 0.5790 0.0822
-theta:  5.533 -2.264  2.476  0.854 -0.112 -0.865  1.000
-
-Start phase 3
-Estimates, standard errors and convergence t-ratios
-
-                                      Estimate   Standard   Convergence
-                                                   Error      t-ratio
-Network Dynamics
-  1. rate basic rate parameter friend  5.5328  ( 9.6387   )   -0.4357
-  2. eval outdegree (density)         -2.2642  ( 0.1852   )   -0.5525
-  3. eval reciprocity                  2.4763  ( 0.2954   )   -0.2053
-
-Continuous Behavior Dynamics
-  4. eval wiener (behavior.behavior)   0.8540  ( 0.0861   )   -0.1574
-  5. eval feedback from behavior      -0.1119  ( 0.1616   )    0.0890
-  6. eval intercept                   -0.8645  ( 0.4628   )    0.0616
-  7. rate scale parameter period 1     1.0000  (     NA   )   -0.1574
-
-Overall maximum convergence ratio:    0.9060
-
-
-Total of 305 iteration steps.
-
+> # (ans <- siena07(algorithmMoM, data = mydata, effects = myeff, batch=TRUE))
 > ## delete output file
 > if (file.exists('Siena.txt')){unlink('Siena.txt')}
 > 
 > proc.time()
    user  system elapsed 
-  18.01    0.29   18.40 
+  27.76    0.56   28.43 

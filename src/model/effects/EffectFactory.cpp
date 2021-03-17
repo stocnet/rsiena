@@ -41,9 +41,8 @@
 #include "model/effects/generic/TwoPathFunction.h"
 #include "model/effects/generic/TwoStepFunction.h"
 #include "model/effects/generic/ReverseTwoPathFunction.h"
-#include "model/effects/generic/MixedTwoPathFunction.h"
-#include "model/effects/generic/MixedInStarFunction.h"
 #include "model/effects/generic/MixedTwoStepFunction.h"
+#include "model/effects/generic/WeightedMixedTwoPathFunction.h"
 #include "model/effects/generic/ConditionalFunction.h"
 #include "model/effects/generic/EqualCovariatePredicate.h"
 #include "model/effects/generic/MissingCovariatePredicate.h"
@@ -74,6 +73,58 @@ using namespace std;
 
 namespace siena
 {
+/**
+ * GMM group information. Maps effect short names to the one unique gmm group
+ * (usually the basic effect). In addition there are two special groups. The
+ * empty string ("") meaning a match by position (diagonal matrix) and the
+ * star ("*") meaning matching all.
+ */
+const std::string EffectFactory::gmmGroup(const EffectInfo* pEffectInfo) {
+	// map basic rates to the empty group, that is match by position
+	if (pEffectInfo->effectName() == "BasicRate") {
+	//	LOGF(Priority::INFO, "'%s' in gmm group '%s'",
+	//			pEffectInfo->effectName().c_str(), "");
+		return "";
+	}
+	map<const string, const string>::const_iterator it =
+		EffectFactory::GMM_GROUPS.find(pEffectInfo->effectName());
+	// if group is not specified, map to base name
+	if (it == EffectFactory::GMM_GROUPS.end()) {
+	//	LOGF(Priority::INFO, "'%s' in gmm group '%s'",
+	//			pEffectInfo->effectName().c_str(), pEffectInfo->effectName().c_str());
+		return pEffectInfo->effectName();
+	}
+	// otherwise return the group
+	//LOGF(Priority::INFO, "'%s' in gmm group '%s'",
+	//		pEffectInfo->effectName().c_str(), it->second.c_str());
+	return it->second;
+}
+const map<const string, const string> EffectFactory::GMM_GROUPS = init_groups();
+map<const string, const string> EffectFactory::init_groups() {
+	map<const string, const string> map;
+	map.insert(make_pair("recip", "recip"));
+	map.insert(make_pair("newrecip", "recip"));
+	map.insert(make_pair("realrecip", "recip"));
+	map.insert(make_pair("persistrecip", "recip"));
+	//
+	map.insert(make_pair("transTrip", "transTrip"));
+	//
+	map.insert(make_pair("egoX", "egoX"));
+	map.insert(make_pair("egoX_gmm", "egoX"));
+	map.insert(make_pair("outdeg", "egoX"));
+	//
+	map.insert(make_pair("simX", "simX"));
+	map.insert(make_pair("simX_gmm", "simX"));
+	map.insert(make_pair("totSim", "simX"));
+	map.insert(make_pair("totSim_gmm", "simX"));
+	map.insert(make_pair("avSim_gmm", "avSim"));
+	map.insert(make_pair("avAlt_gmm", "avAlt"));
+	map.insert(make_pair("totAlt_gmm", "totAlt"));
+	map.insert(make_pair("maxAlt_gmm", "maxAlt"));
+	map.insert(make_pair("minAlt_gmm", "minAlt"));
+	return map;
+}
+
 /**
  * Constructor.
  * @param[in] pData the data this factory will create effects for
@@ -157,6 +208,21 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new ReciprocityEffect(pEffectInfo);
 	}
+	else if (effectName == "newrecip") 
+	{
+		pEffect = new ReciprocityGMMEffect(pEffectInfo,
+				ReciprocityGMMEffect::NEW);
+	} 
+	else if (effectName == "realrecip") 
+	{
+		pEffect = new ReciprocityGMMEffect(pEffectInfo,
+				ReciprocityGMMEffect::REAL);
+	}
+	else if (effectName == "persistrecip") 
+	{
+		pEffect = new ReciprocityGMMEffect(pEffectInfo,
+				ReciprocityGMMEffect::PERSISTENT);
+	}
 	else if (effectName == "transTrip1")
 	{
 		pEffect = new TransitiveTripletsEffect(pEffectInfo,true,false);
@@ -168,6 +234,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "transTrip")
 	{
 		pEffect = new TransitiveTripletsEffect(pEffectInfo,true,true);
+	}
+	else if (effectName == "agreetrans")
+	{
+		pEffect = new AgreementTransitivityEffect(pEffectInfo);
+	}
+	else if (effectName == "realtrans")
+	{
+		pEffect = new RealTransitivityEffect(pEffectInfo);
 	}
 	else if (effectName == "transTriads")
 	{
@@ -385,7 +459,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new CovariateEgoSquaredEffect(pEffectInfo);
 	}
-	else if (effectName == "egoX_sim")
+	else if (effectName == "egoX_gmm")
 	{
 		pEffect = new CovariateEgoEffect(pEffectInfo, false, false, true);
 	}
@@ -437,7 +511,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new CovariateSimilarityEffect(pEffectInfo, false);
 	}
-	else if (effectName == "simX_sim")
+	else if (effectName == "simX_gmm")
 	{
 		pEffect = new CovariateSimilarityEffect(pEffectInfo, false, true);
 	}
@@ -445,7 +519,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new CovariateSimilarityEffect(pEffectInfo, true);
 	}
-	else if (effectName == "simRecipX_sim")
+	else if (effectName == "simRecipX_gmm")
 	{
 		pEffect = new CovariateSimilarityEffect(pEffectInfo, true, true);
 	}
@@ -480,6 +554,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "diffXTransRecTrip")
 	{
 		pEffect = new SameCovariateTransitiveReciprocatedTripletsEffect(pEffectInfo, false);
+	}
+	else if (effectName == "homXTransRecTrip")
+	{
+		pEffect = new HomCovariateTransitiveTripletsEffect(pEffectInfo, true);
 	}
 	else if (effectName == "inPopX")
 	{
@@ -897,34 +975,30 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "from")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new InStarFunction(pEffectInfo->interactionName1()));
+			new InStarFunction(pEffectInfo->interactionName1(), 
+							(pEffectInfo->internalEffectParameter() >= 2)));
 	}
 	else if (effectName == "fromMutual")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new ReciprocatedTwoPathFunction(pEffectInfo->interactionName1()));
+			new ReciprocatedTwoPathFunction(pEffectInfo->interactionName1(),
+							(pEffectInfo->internalEffectParameter() >= 2)));
 	}
-	else if (effectName == "to")
-	{
-		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new MixedTwoPathFunction(pEffectInfo->interactionName1(),
-				pEffectInfo->variableName()));
-	}
-	else if (effectName == "to.2") // alternative implementation that is supposed to be equivalent to "to"
+	else if (effectName == "to") 
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 				new MixedTwoStepFunction(
 						pEffectInfo->interactionName1(),
 						pEffectInfo->variableName(),
-						FORWARD, FORWARD));
-		}
-	else if (effectName == "toBack")
+						FORWARD, FORWARD, (pEffectInfo->internalEffectParameter()>=2)));
+	}
+	else if (effectName == "toBack") // formerly mixedInWX
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 				new MixedTwoStepFunction(
 						pEffectInfo->interactionName1(),
 						pEffectInfo->variableName(),
-						BACKWARD, FORWARD));
+						BACKWARD, FORWARD, (pEffectInfo->internalEffectParameter()>=2)));
 		}
 	else if (effectName == "toRecip")
 	{
@@ -932,28 +1006,44 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 				new MixedTwoStepFunction(
 						pEffectInfo->interactionName1(),
 						pEffectInfo->variableName(),
-						RECIPROCAL, FORWARD));
+						RECIPROCAL, FORWARD, (pEffectInfo->internalEffectParameter()>=2)));
 		}
 	else if (effectName == "cl.XWX")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new SumFunction(
-			new MixedTwoPathFunction(pEffectInfo->variableName(),
-					pEffectInfo->interactionName1()),
-			new MixedInStarFunction(pEffectInfo->variableName(),
-					pEffectInfo->interactionName1())));
+			new MixedTwoStepFunction(
+						pEffectInfo->variableName(),
+						pEffectInfo->interactionName1(),
+						FORWARD, FORWARD, false),
+			new MixedTwoStepFunction(
+						pEffectInfo->variableName(),
+						pEffectInfo->interactionName1(),
+						FORWARD, BACKWARD, false)));
 	}
 	else if (effectName == "cl.XWX1")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new MixedTwoPathFunction(pEffectInfo->variableName(),
-					pEffectInfo->interactionName1()));
+					new MixedTwoStepFunction(
+						pEffectInfo->variableName(),
+						pEffectInfo->interactionName1(),
+						FORWARD, FORWARD, false));
 	}
 	else if (effectName == "cl.XWX2")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new MixedInStarFunction(pEffectInfo->variableName(),
-					pEffectInfo->interactionName1()));
+			new  MixedTwoStepFunction(
+						pEffectInfo->variableName(),
+						pEffectInfo->interactionName1(),
+						FORWARD, BACKWARD, false));
+	}
+	else if (effectName == "mixedInXW")
+	{				
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+				new MixedTwoStepFunction(
+						pEffectInfo->variableName(),
+						pEffectInfo->interactionName1(),
+						BACKWARD, FORWARD, (pEffectInfo->internalEffectParameter()>=2)));
 	}
 	/*
 	 * Mixed two step effects with flexible iterators (added by Christoph)
@@ -969,56 +1059,56 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new MixedTwoStepFunction(pEffectInfo->variableName(), // not mixed, TwoStepFunction equivalent not implemented
 					pEffectInfo->variableName(),
-					EITHER, EITHER));
+					EITHER, EITHER, false));
 	}
 	else if (effectName == "transTrip.FE")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new MixedTwoStepFunction(pEffectInfo->variableName(), // not mixed, TwoStepFunction equivalent not implemented
 					pEffectInfo->variableName(),
-					FORWARD, EITHER));
+					FORWARD, EITHER, false));
 	}
 	else if (effectName == "WWX.EE")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new MixedTwoStepFunction(pEffectInfo->interactionName1(), // not mixed
 					pEffectInfo->interactionName1(),
-					EITHER, EITHER));
+					EITHER, EITHER, false));
 	}
 	else if (effectName == "WXX.FE")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new MixedTwoStepFunction(pEffectInfo->interactionName1(),
 					pEffectInfo->variableName(),
-					FORWARD, EITHER));
+					FORWARD, EITHER, false));
 	}
 	else if (effectName == "XWX.ER")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new MixedTwoStepFunction(pEffectInfo->variableName(),
 					pEffectInfo->interactionName1(),
-					EITHER, RECIPROCAL));
+					EITHER, RECIPROCAL, false));
 	}
 	else if (effectName == "WWX.FR")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new MixedTwoStepFunction(pEffectInfo->interactionName1(),  // not mixed
 					pEffectInfo->interactionName1(),
-					FORWARD, RECIPROCAL));
+					FORWARD, RECIPROCAL, false));
 	}
 	else if (effectName == "WXX.ER")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new MixedTwoStepFunction(pEffectInfo->interactionName1(),
 					pEffectInfo->variableName(),
-					EITHER, RECIPROCAL));
+					EITHER, RECIPROCAL, false));
 	}
 	else if (effectName == "XWX.FE")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new MixedTwoStepFunction(pEffectInfo->variableName(),
 					pEffectInfo->interactionName1(),
-					FORWARD, EITHER));
+					FORWARD, EITHER, false));
 	}
 	else if (effectName == "outOutActIntn")
 	{
@@ -1030,9 +1120,19 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "sharedTo")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new MixedThreeCyclesFunction(pEffectInfo->interactionName1(),
-				pEffectInfo->variableName(),
-				pEffectInfo->internalEffectParameter()));
+						new MixedThreeCyclesFunction(pEffectInfo->variableName(),
+							pEffectInfo->interactionName1(),
+							pEffectInfo->internalEffectParameter()));
+	}
+	else if (effectName == "toU")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new WeightedMixedTwoPathFunction(pEffectInfo->interactionName1(),
+					pEffectInfo->variableName(),
+					pEffectInfo->interactionName2(), false),
+			new WeightedMixedTwoPathFunction(pEffectInfo->interactionName1(),
+					pEffectInfo->variableName(),
+					pEffectInfo->interactionName2(), true));
 	}
 	else if (effectName == "covNetNet")
 	{
@@ -1040,14 +1140,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		string covariateName = pEffectInfo->interactionName2();
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new ConditionalFunction(new EqualCovariatePredicate(covariateName),
-				new InStarFunction(networkName),
+				new InStarFunction(networkName, false),
 				0),
 			new ConditionalFunction(
 				new MissingCovariatePredicate(covariateName),
 				0,
 				new ConditionalFunction(
 					new EqualCovariatePredicate(covariateName),
-					new InStarFunction(networkName),
+					new InStarFunction(networkName, false),
 					0)));
 	}
 	else if (effectName == "homCovNetNet")
@@ -1316,6 +1416,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new SimilarityEffect(pEffectInfo, true, false, false);
 	}
+	else if (effectName == "avSim_gmm")
+	{
+		pEffect = new SimilarityEffect(pEffectInfo, true, false, false,true);
+	}
 	else if (effectName == "totSim")
 	{
 		pEffect = new SimilarityEffect(pEffectInfo, false, false, false);
@@ -1479,6 +1583,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new AverageAlterEffect(pEffectInfo, true, false);
 	}
 	}
+	else if (effectName == "avAlt_gmm")
+	{
+		pEffect = new AverageAlterEffect(pEffectInfo, true, false, true);
+	}
 	else if (effectName == "avGroup")
 	{
 		pEffect = new AverageGroupEffect(pEffectInfo);
@@ -1486,6 +1594,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "totAlt")
 	{
 		pEffect = new AverageAlterEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "totAlt_gmm")
+	{
+		pEffect = new AverageAlterEffect(pEffectInfo, false, false, true);
 	}
 	else if (effectName == "avAltPop")
 	{
@@ -1514,6 +1626,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new MaxAlterEffect(pEffectInfo, false);
 	}
 	}
+	else if (effectName == "maxAlt_gmm")
+	{
+		pEffect = new MaxAlterEffect(pEffectInfo, false, true);
+	}
 	else if (effectName == "minAlt")
 	{
 		if (pContinuousData)
@@ -1524,6 +1640,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		{
 		pEffect = new MaxAlterEffect(pEffectInfo, true);
 	}
+	}
+	else if (effectName == "minAlt_gmm")
+	{
+		pEffect = new MaxAlterEffect(pEffectInfo, true, true);
 	}
 	else if (effectName == "avInAlt")
 	{

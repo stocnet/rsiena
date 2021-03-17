@@ -36,6 +36,7 @@ Model::Model()
 {
 	this->lconditional = false;
 	this->lbasicScaleParameters = 0;
+	this->lGMMModel = false;
 	this->lneedChain = false;
 	this->lneedScores = false;
 	this->lneedDerivatives = false;
@@ -513,6 +514,11 @@ EffectInfo * Model::addEffect(string variableName,
 	{
 		this->lcreationEffects[variableName].push_back(pInfo);
 	}
+	else if (effectType == "gmm")
+	{
+		this->lGMMModel = true;
+		this->lgmmEffects[variableName].push_back(pInfo);
+	}
 	else
 	{
 		throw invalid_argument("Unexpected effect type '" + effectType + "'.");
@@ -570,6 +576,11 @@ EffectInfo * Model::addInteractionEffect(string variableName,
 	{
 		this->lcreationEffects[variableName].push_back(pInfo);
 	}
+	else if (effectType == "gmm")
+	{
+		this->lGMMModel = true;
+		this->lgmmEffects[variableName].push_back(pInfo);
+	}
 	else
 	{
 		throw invalid_argument("Unexpected effect type '" + effectType + "'.");
@@ -596,6 +607,21 @@ const vector<EffectInfo *> & Model::rRateEffects(string variableName) const
 	return iter->second;
 }
 
+bool Model::gmmModel() const {
+	return lGMMModel;
+}
+
+/**
+ * Returns the GMM effects for the given dependent variable.
+ */
+const vector<EffectInfo *> & Model::rGMMEffects(string variableName) const {
+	map<string, vector<EffectInfo *> >::const_iterator iter =
+		this->lgmmEffects.find(variableName);
+	if (iter == this->lgmmEffects.end()) {
+		return this->lemptyEffectVector;
+	}
+	return iter->second;
+}
 
 /**
  * Returns the evaluation effects for the given dependent variable.

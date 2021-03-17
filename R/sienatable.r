@@ -28,6 +28,9 @@ siena.table <- function(x, type='tex',
 			b <- gsub('->', '$\\rightarrow$', fixed=TRUE, b)
 			b <- gsub('<-', '$\\leftarrow$', fixed=TRUE, b)
 			b <- gsub('<>', '$\\leftrightarrow$', fixed=TRUE, b)
+			b <- gsub('=>', '$\\Rightarrow$', fixed=TRUE, b)
+			b <- gsub('>=', '$\\geq$', fixed=TRUE, b)
+			b <- gsub('<=', '$\\leq$', fixed=TRUE, b)
 			b <- gsub('sqrt', '$\\sqrt{}$', fixed=TRUE, b)
 			b <- gsub('&', '.', fixed=TRUE, b)
 		}
@@ -66,8 +69,16 @@ siena.table <- function(x, type='tex',
 			stop('x must be a sienaFit or sienaBayesFit object')
 		}
 	}
-	effects <- x$requestedEffects
-	p <- x$pp
+	if (!x$gmm)
+	{
+	  effects <- x$requestedEffects
+	  p <- x$pp
+	}
+	else
+	{
+	  effects <- x$requestedEffects[!x$gmmEffects,]
+	  p <- x$pp - sum(x$gmmEffects)
+	}
 	condrates <- 0
 	if (fromBayes)
 	{
@@ -93,13 +104,28 @@ siena.table <- function(x, type='tex',
 	}
 	else
 	{
-	theta <- x$theta
-	theta[diag(x$covtheta) < 0.0 | x$fixed] <- NA
-	ses <- sqrt(diag(x$covtheta))
-	ses[x$fixed] <- NA
-	max.t1 <- max(abs(x$tstat[!x$fixed]))
-	dd <- 2
-	max.t <- round(max.t1, digits = dd)
+	  if (!x$gmm)
+	  {
+	    theta <- x$theta
+	    theta[diag(x$covtheta) < 0.0 | x$fixed] <- NA
+	    ses <- sqrt(diag(x$covtheta))
+	    ses[x$fixed] <- NA
+	    max.t1 <- max(abs(x$tstat[!x$fixed]))
+	    dd <- 2
+	    max.t <- round(max.t1, digits = dd)
+	  }
+	  else
+	  { 
+	    fixednogmm <- x$fixed[!x$gmmEffects]
+	    theta <- x$theta
+	    theta[diag(x$covtheta) < 0.0 | fixednogmm] <- NA
+	    theta <- theta[!x$gmmEffects]
+	    ses <- sqrt(diag(x$covtheta))
+	    ses[fixednogmm] <- NA
+	    max.t1 <- max(abs(x$tstat[!fixednogmm]))
+	    dd <- 2
+	    max.t <- round(max.t1, digits = dd)
+	  }
 	if (max.t < max.t1)
 	{
 		max.t <- max.t + 10^{-dd} #needs to be rounded up
@@ -167,7 +193,7 @@ siena.table <- function(x, type='tex',
 		s
 	}
 
-	## mystr rounds a number and splits into into its integer and fractional parts
+	## mystr rounds a number and splits into its integer and fractional parts
 
 	mystr <- function(theta,int.width=0)
 	{
@@ -552,7 +578,14 @@ siena.table <- function(x, type='tex',
 		mainTable$se2[-mid] <- sapply(ses[rows],mystr)[2,]
 
 		basicRates <- c(1:nwaves)
-		fixed.2 <- c(1:nn)[x$fixed[rows]]
+		if (!x$gmm)
+		{
+		  fixed.2 <- c(1:nn)[x$fixed[rows]]
+		}
+		else 
+		{
+		  fixed.2 <- c(1:nn)[fixednogmm[rows]]  
+		}
 
 		if (condvarno == sections)
 		{

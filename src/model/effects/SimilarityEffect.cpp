@@ -42,6 +42,27 @@ SimilarityEffect::SimilarityEffect(
 	this->legoPopularity = egoPopularity;
 }
 
+/**
+ * Constructor.
+ * @param[in] average indicates if one of the average effects is required
+ * @param[in] alterPopularity indicates if the similarity scores have to
+ * be multiplied by the in-degrees of alters
+ * @param simulatedState If `true` the value() function uses the simulated
+ *        state, if any or the value at the end of the period.
+ */
+SimilarityEffect::SimilarityEffect(
+	const EffectInfo * pEffectInfo,
+	bool average,
+	bool alterPopularity,
+	bool egoPopularity,
+	const bool simulatedState) :
+		NetworkDependentBehaviorEffect(pEffectInfo,simulatedState)
+{
+	this->laverage = average;
+	this->lalterPopularity = alterPopularity;
+	this->legoPopularity = egoPopularity;
+}
+
 
 /**
  * Calculates the change in the statistic corresponding to this effect if

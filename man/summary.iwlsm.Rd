@@ -101,4 +101,4 @@ metalm <- iwlsm(theta ~ tconv, metadf, ses=se^2)
 summary(metalm)
 }
 }
-\keyword{models}
+\keyword{methods}

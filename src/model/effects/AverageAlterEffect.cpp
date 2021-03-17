@@ -33,6 +33,22 @@ AverageAlterEffect::AverageAlterEffect(
 	this->lalterPopularity = alterPopularity;
 }
 
+/**
+ * Constructor.
+ * @param[in] pEffectInfo the effect descriptor
+ * @param[in] reciprocal indicates if only reciprocal ties have to be
+ * considered
+ * @param simulatedState If `true` the value() function uses the simulated
+ *        state, if any or the value at the end of the period.
+ */
+ AverageAlterEffect::AverageAlterEffect(
+	const EffectInfo * pEffectInfo, bool divide, bool alterPopularity, const bool simulatedState) :
+		NetworkDependentBehaviorEffect(pEffectInfo, simulatedState)
+{
+	this->ldivide = divide;
+	// Indicates whether there will be division by the outdegree of ego
+	this->lalterPopularity = alterPopularity;
+}
 
 /**
  * Calculates the change in the statistic corresponding to this effect if

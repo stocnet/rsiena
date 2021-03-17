@@ -30,6 +30,20 @@ MaxAlterEffect::MaxAlterEffect(
 	// Indicates whether it will be a minimum instead of a maximum
 }
 
+/**
+ * Constructor.
+ * @param simulatedState If `true` the value() function uses the simulated
+ *        state, if any or the value at the end of the period.
+ */
+ 
+MaxAlterEffect::MaxAlterEffect(
+	const EffectInfo * pEffectInfo, bool minim, const bool simulatedState) :
+		NetworkDependentBehaviorEffect(pEffectInfo,simulatedState)
+{
+	this->lminim = minim;
+	// Indicates whether it will be a minimum instead of a maximum
+}
+
 
 /**
  * Calculates the change in the statistic corresponding to this effect if

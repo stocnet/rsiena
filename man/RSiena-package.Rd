@@ -45,8 +45,8 @@ Package \code{"RSiena"} is the official release.
   \tabular{ll}{
     Package: \tab RSiena\cr
     Type: \tab Package\cr
-    Version: \tab 1.2.30\cr
-    Date: \tab 2021-02-23\cr
+    Version: \tab 1.2.32\cr
+    Date: \tab 2021-03-16\cr
     Depends: \tab R (>= 3.0.0)\cr
     Imports: \tab Matrix, lattice, parallel, MASS, methods\cr
     Suggests: \tab xtable, network, tools, codetools, tcltk, knitr, rmarkdown\cr
@@ -60,14 +60,18 @@ Package \code{"RSiena"} is the official release.
 \author{
   Ruth Ripley, Krists Boitmanis, Tom Snijders, Felix Schoenenberger,
   Nynke Niezink.
-  Contributions by Josh Lospinoso, Charlotte Greenan, Christian Steglich,
-  Johan Koskinen, Mark Ortmann, Natalie Indlekofer,
-  Christoph Stadtfeld, Per Block, Marion Hoffman, Michael Schweinberger, and Robert Hellpap.
+  Contributions by Josh Lospinoso, Charlotte Greenan, Viviana Amati,
+  Christian Steglich, Johan Koskinen, Mark Ortmann, Natalie Indlekofer,
+  Christoph Stadtfeld, Per Block, Marion Hoffman, Michael Schweinberger,
+  and Robert Hellpap.
 
   Maintainer: Tom A.B. Snijders <tom.snijders@nuffield.ox.ac.uk>
 }
 \references{
   \itemize{
+    \item Amati, Viviana, Schoenenberger, Felix, and Snijders, Tom A.B. (2019).
+      Contemporaneous statistics for estimation in stochastic actor-oriented
+      co-evolution models. \emph{Psychometrika} \bold{84}, 1068--1096.
     \item Schweinberger, Michael, and Snijders, Tom A.B. (2007).
       Markov models for digraph panel data:
       Monte Carlo-based derivative estimation.

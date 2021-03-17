@@ -9,11 +9,13 @@
 
 ## About
 
-The package RSiena implements the SIENA (Simulation Investigation for Empirical Network Analysis) 
-program for the statistical analysis of network data, with the focus on social networks, in R.
+SIENA is a program for the statistical analysis of network data, with the focus on social networks.
 Networks here are understood as entire (complete) networks, not as personal (egocentered) networks: 
 it is assumed that a set of nodes (social actors) is given, and all ties (links) between these nodes are known - 
 except perhaps for a moderate amount of missing data.
+The name SIENA stands for Simulation Investigation for Empirical Network Analysis.
+The R package is called RSiena; there also is the development package RSienaTest,
+available from R-Forge.
 
 SIENA is designed for analyzing various types of data as dependent variables:
 
@@ -48,21 +50,18 @@ including background on SAOMs and RSiena, and links to teaching materials, liter
 Perhaps the easiest way to install RSiena is by installing a compiled binary.
 Binaries for all major OSes -- Windows, Mac, and Linux -- 
 can be found by clicking on the latest release for your OS [here](https://github.com/snlab-nl/rsiena/releases/latest).
+For Windows you should use the `RSiena.zip`, for macOS it should be `RSiena.tgz`, and for Linux `RSiena.tar.gz`.
 
-Once the file has been downloaded, unzip the file, and install the binary as appropriate for your Operating System.
-For Windows you will first need to rename the `RSiena_winOS.zip` file to `RSiena.zip`:
+Once the file has been downloaded, install the binary appropriate for your Operating System like so:
 
 `install.packages("~/Downloads/RSiena.zip", repos = NULL)`
 
-For Mac and Unix systems you should not need to rename the package:
-
-`install.packages("~/Downloads/RSiena_macOS.tgz", repos = NULL)`
-
-`install.packages("~/Downloads/rsiena_linuxOS.tar.gz", repos = NULL)`
+amending the file suffix as necessary.
 
 ### From source
 
-To install from source the latest main version of RSiena from Github, please install the `{remotes}` package from CRAN and then enter into the console:
+To install from source the latest main version of RSiena from Github, 
+please install the `{remotes}` package from CRAN and then enter into the console:
 
 `remotes::install_github("snlab-nl/rsiena")`
 

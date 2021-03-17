@@ -31,14 +31,14 @@ namespace siena
  * Constructor.
  */
 CovariateDependentNetworkEffect::CovariateDependentNetworkEffect(
-        const EffectInfo * pEffectInfo) :
-        NetworkEffect(pEffectInfo), //
-        lSimulatedOffset(0), //
-        lpConstantCovariate(0), //
-        lpChangingCovariate(0), //
-        lpBehaviorData(0), //
+		const EffectInfo * pEffectInfo) :
+		NetworkEffect(pEffectInfo), //
+		lSimulatedOffset(0), //
+		lpConstantCovariate(0), //
+		lpChangingCovariate(0), //
+		lpBehaviorData(0), //
         lpContinuousData(0),
-        lvalues(0),
+		lvalues(0),
         lcontinuousValues(0) {
 }
 
@@ -51,14 +51,14 @@ CovariateDependentNetworkEffect::CovariateDependentNetworkEffect(
  *        of the period.
  */
 CovariateDependentNetworkEffect::CovariateDependentNetworkEffect(
-        const EffectInfo * pEffectInfo, bool simulatedState) :
-        NetworkEffect(pEffectInfo), //
-        lSimulatedOffset(simulatedState ? 1 : 0), //
-        lpConstantCovariate(0), //
-        lpChangingCovariate(0), //
-        lpBehaviorData(0), //
+		const EffectInfo * pEffectInfo, bool simulatedState) :
+		NetworkEffect(pEffectInfo), //
+		lSimulatedOffset(simulatedState ? 1 : 0), //
+		lpConstantCovariate(0), //
+		lpChangingCovariate(0), //
+		lpBehaviorData(0), //
         lpContinuousData(0),
-        lvalues(0),
+		lvalues(0),
         lcontinuousValues(0) {
 }
 
@@ -70,28 +70,28 @@ CovariateDependentNetworkEffect::CovariateDependentNetworkEffect(
  * @param[in] pCache the cache object to be used to speed up calculations
  */
 void CovariateDependentNetworkEffect::initialize(const Data * pData,
-    State * pState,
-    int period,
-    Cache * pCache)
+	State * pState,
+	int period,
+	Cache * pCache)
 {
-    NetworkEffect::initialize(pData, pState, period, pCache);
-    string name = this->pEffectInfo()->interactionName1();
+	NetworkEffect::initialize(pData, pState, period, pCache);
+	string name = this->pEffectInfo()->interactionName1();
 
-    this->lpConstantCovariate = pData->pConstantCovariate(name);
-    this->lpChangingCovariate = pData->pChangingCovariate(name);
-    this->lpBehaviorData = pData->pBehaviorData(name);
+	this->lpConstantCovariate = pData->pConstantCovariate(name);
+	this->lpChangingCovariate = pData->pChangingCovariate(name);
+	this->lpBehaviorData = pData->pBehaviorData(name);
     this->lpContinuousData = pData->pContinuousData(name);
-    this->lvalues = pState->behaviorValues(name);
+	this->lvalues = pState->behaviorValues(name);
     this->lcontinuousValues = pState->continuousValues(name);
 
-    if (!this->lpConstantCovariate &&
-        !this->lpChangingCovariate &&
-        !(this->lpBehaviorData && this->lvalues) &&
+	if (!this->lpConstantCovariate &&
+		!this->lpChangingCovariate &&
+		!(this->lpBehaviorData && this->lvalues) &&
         !(this->lpContinuousData && this->lcontinuousValues))
-    {
-        throw logic_error("Covariate or dependent behavior variable '" +
-            name + "' expected.");
-    }
+	{
+		throw logic_error("Covariate or dependent behavior variable '" +
+			name + "' expected.");
+	}
 }
 
 
@@ -104,32 +104,32 @@ void CovariateDependentNetworkEffect::initialize(const Data * pData,
  * @param[in] pCache the cache object to be used to speed up calculations
  */
 void CovariateDependentNetworkEffect::initialize(const Data* pData,
-        State* pState, State* pSimulatedState, int period, Cache* pCache) {
-    NetworkEffect::initialize(pData, pState, pSimulatedState, period, pCache);
-    const string name = this->pEffectInfo()->interactionName1();
+		State* pState, State* pSimulatedState, int period, Cache* pCache) {
+	NetworkEffect::initialize(pData, pState, pSimulatedState, period, pCache);
+	const string name = this->pEffectInfo()->interactionName1();
 
-    // For covariates lSimulatedOffset is applied in values().
-    this->lpConstantCovariate = pData->pConstantCovariate(name);
-    this->lpChangingCovariate = pData->pChangingCovariate(name);
+	// For covariates lSimulatedOffset is applied in values().
+	this->lpConstantCovariate = pData->pConstantCovariate(name);
+	this->lpChangingCovariate = pData->pChangingCovariate(name);
 
-    this->lpBehaviorData = pData->pBehaviorData(name);
+	this->lpBehaviorData = pData->pBehaviorData(name);
     this->lpContinuousData = pData->pContinuousData(name);
-    // If the covariate is a behaviour take the right state.
-    if (lSimulatedOffset == 1) {
-        this->lvalues = pSimulatedState->behaviorValues(name);
+	// If the covariate is a behaviour take the right state.
+	if (lSimulatedOffset == 1) {
+		this->lvalues = pSimulatedState->behaviorValues(name);
         this->lcontinuousValues = pSimulatedState->continuousValues(name);
-    } else {
-        this->lvalues = pState->behaviorValues(name);
+	} else {
+		this->lvalues = pState->behaviorValues(name);
         this->lcontinuousValues = pState->continuousValues(name);
-    }
+	}
 
-    if (!this->lpConstantCovariate &&
+	if (!this->lpConstantCovariate &&
         !this->lpChangingCovariate &&
         !(this->lpBehaviorData && this->lvalues) &&
         !(this->lpContinuousData && this->lcontinuousValues)) {
-        throw logic_error(
-                "Covariate or dependent behavior variable '" + name + "' expected.");
-    }
+		throw logic_error(
+				"Covariate or dependent behavior variable '" + name + "' expected.");
+	}
 }
 
 /**
@@ -143,12 +143,12 @@ double CovariateDependentNetworkEffect::value(const int i) const
     
     if (this->lpConstantCovariate)
     {
-        value = this->lpConstantCovariate->value(i);
-    }
-    else if (this->lpChangingCovariate)
+		value = this->lpConstantCovariate->value(i);
+	}
+	else if (this->lpChangingCovariate)
     {
-        value = this->lpChangingCovariate->value(i, this->period() + lSimulatedOffset);
-    }
+		value = this->lpChangingCovariate->value(i, this->period() + lSimulatedOffset);
+	}
     else if (this->lpBehaviorData)
     {
         value = this->lvalues[i] - this->lpBehaviorData->overallMean();
@@ -171,12 +171,12 @@ bool CovariateDependentNetworkEffect::missing(int i) const
 
     if (this->lpConstantCovariate)
     {
-        missing = this->lpConstantCovariate->missing(i);
-    }
-    else if (this->lpChangingCovariate)
+		missing = this->lpConstantCovariate->missing(i);
+	}
+	else if (this->lpChangingCovariate)
     {
-        missing = this->lpChangingCovariate->missing(i, this->period() + lSimulatedOffset);
-    }
+		missing = this->lpChangingCovariate->missing(i, this->period() + lSimulatedOffset);
+	}
     else if (this->lpBehaviorData)
     {
         missing = this->lpBehaviorData->missing(this->period() + lSimulatedOffset, i);
@@ -197,27 +197,27 @@ bool CovariateDependentNetworkEffect::missing(int i) const
  */
 double CovariateDependentNetworkEffect::similarity(int i, int j) const
 {
-    double similarity = 0;
+	double similarity = 0;
 
-    if (this->lpConstantCovariate)
-    {
-        similarity =
-            this->lpConstantCovariate->similarity(
-                this->lpConstantCovariate->value(i),
-                this->lpConstantCovariate->value(j));
-    }
-    else if (this->lpChangingCovariate)
-    {
-        similarity =
-            this->lpChangingCovariate->similarity(this->value(i),
-                this->value(j));
-    }
-    else if (this->lpBehaviorData)
-    {
-        similarity =
-            this->lpBehaviorData->similarity(this->lvalues[i],
-                this->lvalues[j]);
-    }
+	if (this->lpConstantCovariate)
+	{
+		similarity =
+			this->lpConstantCovariate->similarity(
+				this->lpConstantCovariate->value(i),
+				this->lpConstantCovariate->value(j));
+	}
+	else if (this->lpChangingCovariate)
+	{
+		similarity =
+			this->lpChangingCovariate->similarity(this->value(i),
+				this->value(j));
+	}
+	else if (this->lpBehaviorData)
+	{
+		similarity =
+			this->lpBehaviorData->similarity(this->lvalues[i],
+				this->lvalues[j]);
+	}
     else
     {
         similarity =
@@ -225,7 +225,7 @@ double CovariateDependentNetworkEffect::similarity(int i, int j) const
                 this->lcontinuousValues[j]);
     }
 
-    return similarity;
+	return similarity;
 }
 
 /**
@@ -233,7 +233,7 @@ double CovariateDependentNetworkEffect::similarity(int i, int j) const
  */
 ConstantCovariate * CovariateDependentNetworkEffect::pConstantCovariate() const
 {
-        return this->lpConstantCovariate;
+		return this->lpConstantCovariate;
 
 }
 
@@ -242,7 +242,7 @@ ConstantCovariate * CovariateDependentNetworkEffect::pConstantCovariate() const
  */
 ChangingCovariate * CovariateDependentNetworkEffect::pChangingCovariate() const
 {
-        return this->lpChangingCovariate;
+		return this->lpChangingCovariate;
 
 }
 
@@ -251,7 +251,7 @@ ChangingCovariate * CovariateDependentNetworkEffect::pChangingCovariate() const
  */
 BehaviorLongitudinalData * CovariateDependentNetworkEffect::pBehaviorData() const
 {
-        return this->lpBehaviorData;
+		return this->lpBehaviorData;
 }
 
 /**

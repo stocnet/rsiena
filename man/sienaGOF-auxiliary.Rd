@@ -71,8 +71,11 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
     range of values.}
   \item{cumulative}{ Are the distributions to be considered as raw or
     cumulative (<=) distributions?}
-  \item{dc}{Dyadic covariate: matrix with the same dimensions as
-    adjacency matrix for dependent network variable.}
+  \item{dc}{Dyadic covariate: either a matrix with dimensions
+    \eqn{n \times n}{n * n}; or, as period-dependent values,
+	an array with dimensions \eqn{n \times n \times (M-1)}{n * n * (M-1)};
+    where \eqn{n} is the number of actors and \eqn{M} is the number of waves.
+	There may be more time points, but those after \eqn{(M-1)} will not be used.}
 }
 \details{
  The statistics should be chosen to represent features of the network

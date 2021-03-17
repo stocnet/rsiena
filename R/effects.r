@@ -29,7 +29,6 @@ substituteNames <- function(nameVectors, xName = NULL, yName = NULL, zName = NUL
 createEffects <- function(effectGroup, xName=NULL, yName=NULL, zName = NULL,
 	name, groupName, group, netType)
 {
-
 	effects <- RSiena::allEffects[RSiena::allEffects$effectGroup == effectGroup, ]
 	if (nrow(effects) == 0)
 	{
@@ -296,7 +295,7 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 							groupName=groupName, group=group,
 							netType=netType))
 			}
-			if (types[j] != "behavior" && varname != otherName)
+			if ((!(types[j] %in% c('behavior', 'continuous'))) && (varname != otherName))
 			{
 				for (k in seq(along=xx$cCovars))
 				{
@@ -326,10 +325,36 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 									name=varname))
 					}
 				}
+				for (k in seq(along = xx$dycCovars))
+				{
+					if (attr(xx$dycCovars[[k]], "type") == "oneMode" &&
+						attr(xx$dycCovars[[k]], 'nodeSet')[1] == nodeSet)
+					{
+						othervarname <- names(xx$dycCovars)[k]
+						objEffects <- rbind(objEffects,
+							createEffects("dyadANetNetObjective",
+								varname, otherName, othervarname,
+								name=varname, groupName=groupName,
+								group=group, netType=netType))
+					}
+				}
+				for (k in seq(along = xx$dyvCovars))
+				{
+					if (attr(xx$dyvCovars[[k]], "type") == "oneMode" &&
+						attr(xx$dyvCovars[[k]], 'nodeSet')[1] == nodeSet)
+					{
+						othervarname <- names(xx$dyvCovars)[k]
+						objEffects <- rbind(objEffects,
+							createEffects("dyadANetNetObjective",
+								varname, otherName, othervarname,
+								name=varname, groupName=groupName,
+								group=group, netType=netType))
+					}
+				}
 				for (k in seq(along=xx$depvars))
 				{
-					if (types[k] == 'behavior' &&
-						attr(xx$depvars[[k]], 'nodeSet') == nodeSet)
+					if ((types[k] %in% c('behavior', 'continuous')) &&
+						(attr(xx$depvars[[k]], 'nodeSet') == nodeSet))
 					{
 						objEffects <-
 							rbind(objEffects,
@@ -359,6 +384,9 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 		tmp <- objEffects$functionName[objEffects$type =='creation']
 		tmp <- paste('New ties:', tmp)
 		objEffects$functionName[objEffects$type == 'creation'] <- tmp
+		tmp <- objEffects$functionName[objEffects$type =='gmm']
+		tmp <- paste('Gmm statistic:', tmp)
+		objEffects$functionName[objEffects$type == 'gmm'] <- tmp
 
 		## get starting values
 		starts <- getNetworkStartingVals(depvar)
@@ -973,7 +1001,7 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 		}
 		for (j in seq(along=xx$depvars))
 		{
-			if (types[j] == "behavior")
+			if (types[j] %in% c('behavior', 'continuous'))
 			{
 				covNodeset <- match(attr(xx$depvars[[j]], "nodeSet"),
 					nodeSets)
@@ -1007,7 +1035,7 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 		}
 		if (length(xx$cCovars) + length(xx$vCovars) +
 			length(xx$dycCovars) + length(xx$dyvCovars) +
-			length(types=='behavior') > 0)
+			length(types=='behavior') + length(types=='continuous') > 0)
 		{
 			interaction <- createEffects("unspecifiedNetInteraction",
 				name=varname,
@@ -1055,7 +1083,7 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 							groupName=groupName, group=group,
 							netType=netType))
 			}
-			if (types[j] != "behavior") # other networks, irrespective of onemode/symmetric/twomode
+			if (!(types[j] %in% c('behavior', 'continuous'))) # other networks, irrespective of onemode/symmetric/twomode
 			{
 				for (k in seq(along=xx$cCovars))
 				{
@@ -1083,7 +1111,7 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 				}
 				for (k in seq(along=xx$depvars))
 				{
-					if (types[k] == 'behavior' &&
+					if (types[k] %in% c('behavior', 'continuous') &&
 						attr(xx$depvars[[k]], 'nodeSet') == nodeSets[1])
 					{
 						objEffects <-

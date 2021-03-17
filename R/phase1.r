@@ -153,10 +153,18 @@ phase1.2 <- function(z, x, ...)
 		{
 			scores <- z$scores
 		}
+		oldwarn <- getOption("warn")
+		options(warn = -1)
 		for (i in 1:z$pp)
 		{
-			oldwarn <- getOption("warn")
-			options(warn = -1)
+			if (is.na(var(scores[,i])))
+			{
+				stop(paste('phase1.2: missing var(scores[,i]) for i =', i))
+			}
+			if (is.na(var(z$sf[,i])))
+			{
+				stop(paste('phase1.2: missing var(z$sf[,i]) for i =', i))
+			}
 			if ((var(scores[,i]) > 0)&&(var(z$sf[,i]) > 0))
 			{
 				z$regrCoef[i] <- cov(z$sf[,i], scores[,i])/var(scores[,i])
@@ -171,8 +179,8 @@ phase1.2 <- function(z, x, ...)
 			if (is.na(z$regrCoef[i])){z$regrCoef[i] <- 0}
 			if (!is.finite(z$regrCor[i])){z$regrCor[i] <- 0}
 			if (!is.finite(z$regrCoef[i])){z$regrCoef[i] <- 0}
-			options(warn = oldwarn)
 		}
+		options(warn = oldwarn)
 		Report('Correlations between scores and statistics:\n', cf)
 		PrtOutMat(format(as.matrix(t(z$regrCor)), digits = 2, nsmall = 2), cf)
 		Report('Regression coefficients:\n', cf)
@@ -198,11 +206,22 @@ phase1.2 <- function(z, x, ...)
 	z$SomeFixed <-z$SomeFixed | z$cdSomeFixed
 	if (z$SomeFixed)
 	{
-		Report('(Values for fixed parameters are meaningless.)\n', cf)
-		z$dfra[outer(z$fixed, z$fixed, '|')] <- 0
-		diag(z$dfra)[z$fixed] <- 1.0
-		z$mnfra[z$fixed] <- 0.0
-		z$sf[ , z$fixed] <- 0
+	  if (!z$gmm)
+	  {
+	    Report('(Values for fixed parameters are meaningless.)\n', cf)
+	    z$dfra[outer(z$fixed, z$fixed, '|')] <- 0
+	    diag(z$dfra)[z$fixed] <- 1.0
+	    z$mnfra[z$fixed] <- 0.0
+	    z$sf[ , z$fixed] <- 0	    
+	  }
+	  else
+	  {
+	    Report('(Values for fixed parameters are meaningless.)\n', cf)
+	    z$dfra[outer(z$fixed & !z$gmmEffects, z$fixed & !z$gmmEffects, '|')] <- 0
+	    diag(z$dfra)[z$fixed & !z$gmmEffects] <- 1.0
+	    z$mnfra[z$fixed & !z$gmmEffects] <- 0.0
+	    z$sf[ , z$fixed & !z$gmmEffects] <- 0		    
+	  }
 	}
 	# Manage derivative matrix
 	if (any(diag(z$dfra) < 1e-8))
@@ -213,7 +232,7 @@ phase1.2 <- function(z, x, ...)
 				'of derivative matrix amended in phase 1.'), cf, fill=80)
 	}
 	# Invert derivative matrix and define step fchange that will not be made.
-	if (inherits(try(dinv <- solve(z$dfra), silent=TRUE), "try-error"))
+	if (inherits(try(dinv <- solve(z$dfra), silent=TRUE), "try-error") & !z$gmm)
 	{
 		Report('Error message for inversion of dfra: \n', cf)
 		diag(z$dfra) <- diag(z$dfra) + 1
@@ -231,6 +250,41 @@ phase1.2 <- function(z, x, ...)
 			z$dinv <- dinv
 		}
 	}
+	else if (z$gmm)
+	{ 
+	  # qxq covariance matrix of the statistics
+	  sigmagmm <- cov(t(apply(z$sf2, 1, function(x) colSums(x)) - z$targets))
+	  W <- solve(sigmagmm) # Matrix of GMoM weights
+	  gamma <- z$dfra[,-which(z$gmmEffects==TRUE)] # gammaT qxp matrix of first order derivatives
+	  B0 <- t(gamma) %*% W
+	  B <- solve(diag(sqrt(rowSums(B0*B0)))) %*% B0 # Row-normlized matrix B
+	  D0 <- B %*% gamma # Matrix D = B * gammaT 
+	  if (inherits(try(dinvGmm <- solve(D0), silent=TRUE), "try-error"))
+	  {
+	    Report('Error message for inversion of dfra: \n', cf)
+	    diag(D0) <- diag(D0) + 1
+	    Report('Intervention 1.4.1: ridge added after phase 1.\n', cf)
+	    if (inherits(try(dinvGmm <- solve(D0), silent=TRUE), "try-error"))
+	    {
+	      Report(c('Error. After phase 1, derivative matrix non-invertible',
+	               'even with a ridge.\n'), cf)
+	      fchange <- 0
+	      stop("Cannot proceed: derivative matrix not invertible")
+	    }
+	  }
+	  else
+	    {
+	      dbGmm <- dinvGmm%*%B # D_0^{-1}*B_0
+	      fchangeGmm <- as.vector(dbGmm %*% z$mnfra)
+	      fchange <- rep(0,z$pp)
+	      fchange[!z$gmmEffects] <- fchangeGmm
+	      z$W <- W
+	      z$B <- B
+	      z$gamma <- gamma
+	      z$D0 <- D0
+	      z$dinv <- dbGmm
+	    }
+	}
 	else
 	{
 		fchange <- as.vector(dinv %*% z$mnfra)
@@ -238,13 +292,26 @@ phase1.2 <- function(z, x, ...)
 	}
 	# Partial diagonalization of derivative matrix
 	# for use if 0 < x$diagonalize < 1.
-	temp <- (1-x$diagonalize)*z$dfra +
-		x$diagonalize*diag(diag(z$dfra), nrow=dim(z$dfra)[1])
-	temp[z$fixed, ] <- 0.0
-	temp[, z$fixed] <- 0.0
-	diag(temp)[z$fixed] <- 1.0
-	# Invert this matrix
-	z$dinvv <- solve(temp)
+	if (!z$gmm) 
+	{
+	  temp <- (1-x$diagonalize)*z$dfra +
+	    x$diagonalize*diag(diag(z$dfra), nrow=dim(z$dfra)[1])
+	  temp[z$fixed, ] <- 0.0
+	  temp[, z$fixed] <- 0.0
+	  diag(temp)[z$fixed] <- 1.0
+	  # Invert this matrix
+	  z$dinvv <- solve(temp)
+	}
+	else
+	{	  
+	  temp <- (1-x$diagonalize)*dinvGmm +
+	    x$diagonalize*diag(diag(dinvGmm), nrow=dim(dinvGmm)[1])
+	  temp[which(z$fixed & !z$gmmEffects), ] <- 0.0
+	  temp[, which(z$fixed & !z$gmmEffects)] <- 0.0
+	  diag(temp)[which(z$fixed & !z$gmmEffects)] <- 1.0
+	  # Invert this matrix
+	  z$dinvv <- solve(temp)%*%B
+	}
 
 	Report('dfra :\n', cf)
 	##  browser()
@@ -261,7 +328,14 @@ phase1.2 <- function(z, x, ...)
 			format(0.5 * x$firstg, digits = 5, nsmall = 5, width = 8), '.\n'),
 		cf, sep='')
 	fchange <- 0.5 * x$firstg * fchange
+	if (!z$gmm) 
+	{
 	fchange[z$fixed] <- 0.0
+	}
+	else
+	{
+	  fchange[which(z$fixed & !z$gmmEffects)] <- 0.0
+	}	
 	##check if jump is too large
 	maxrat<- max(abs(fchange / z$scale))
 	if (maxrat > 10.0)
@@ -352,8 +426,16 @@ CalculateDerivative <- function(z, x)
 			return(z)
 		}
 	}
-	dfra[outer(z$fixed,z$fixed,'|')] <- 0
-	diag(dfra)[z$fixed] <- 1.0
+	if (!z$gmm) 
+  	{
+		dfra[outer(z$fixed,z$fixed,'|')] <- 0
+		diag(dfra)[z$fixed] <- 1.0
+  	} 
+  	else 
+  	{
+    	dfra[outer(z$fixed & !z$gmmEffects, z$fixed & !z$gmmEffects,'|')] <- 0
+    	diag(dfra)[z$fixed & !z$gmmEffects] <- 1.0
+  	}
 	Report('Diagonal values of derivative matrix :\n', cf)
 	Report(format(diag(dfra), digits = 4, nsmall = 4, width = 8), cf, fill=80)
 	someFixed <- FALSE
@@ -501,6 +583,7 @@ makeZsmall <- function(z)
 	zsmall$int2 <- z$int2
 	zsmall$cl <- z$cl
 	zsmall$maxlike <- z$maxlike
+	zsmall$gmm <- z$gmm
 	zsmall$cconditional <- z$cconditional
 	zsmall$condvar <- z$condvar
 	zsmall$pp <- z$pp

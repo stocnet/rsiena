@@ -18,7 +18,16 @@
 namespace siena
 {
 
+// ----------------------------------------------------------------------------
+// Section: Forward declarations
+// ----------------------------------------------------------------------------
+
+class SqrtTable;
 class ConfigurationTable;
+
+// ----------------------------------------------------------------------------
+// Section: ReciprocatedTwoPathFunction class
+// ----------------------------------------------------------------------------
 
 
 /**
@@ -30,7 +39,7 @@ class ReciprocatedTwoPathFunction:
 	public OneModeNetworkAlterFunction, IntAlterFunction
 {
 public:
-	ReciprocatedTwoPathFunction(std::string networkName);
+	ReciprocatedTwoPathFunction(std::string networkName, bool root);
 
 	virtual void initialize(const Data * pData,
 		State * pState,
@@ -42,6 +51,9 @@ public:
 
 private:
 	ConfigurationTable * lpTable;
+	bool lroot; // should the square root be taken?
+	// Lookup table for fast square root calculations:
+	SqrtTable * lsqrtTable;
 };
 
 }

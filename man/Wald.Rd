@@ -88,10 +88,8 @@ sct <- score.Test(ans, c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE))
 sct <- score.Test(ans,6)
 print(sct)
 # Getting all 1-df score tests separately:
-# (More identifying information for the effects may be added as necessary)
 for (i in which(ans$test)){
    sct <- score.Test(ans,i)
-   cat(ans$requestedEffects$effectName[i], '\n')
    print(sct)}
 # Testing that endowment and creation effects are identical:
 myeff1 <- getEffects(mydata)

@@ -35,9 +35,9 @@ For combining two-wave with more-wave groups in one group object,
 covariates that are changing covariates for the more-wave groups have to
 be specified as changing covariates also for the two-wave groups.
 This can be done by specifying them with values for the two waves;
-for actor covariates this will be by using an \eqn{n \times 2}{n x 2} matrix,
-for dyadic covariates an \eqn{n \times n \times 2}{n x n x 2} array
-(or \eqn{n \times m \times 2}{nxmx2} for the two-mode case).
+for actor covariates this will be by using an \eqn{n \times 2}{n * 2} matrix,
+for dyadic covariates an \eqn{n \times n \times 2}{n * n * 2} array
+(or \eqn{n \times m \times 2}{n * m * 2} for the two-mode case).
 The values for the second wave should be identical to those for the
 first wave (they will be used only for centering operations).
 
