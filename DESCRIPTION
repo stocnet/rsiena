@@ -38,7 +38,7 @@ Suggests:
     codetools,
     tcltk,
     testthat (>= 3.0.0)
-SystemRequirements: GNU make, pandoc
+SystemRequirements: GNU make
 Description: The main purpose of this package is to perform simulation-based
    estimation of stochastic actor-oriented models for longitudinal network
    data collected as panel data. Dependent variables can be single or

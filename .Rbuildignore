@@ -6,3 +6,4 @@
 ^\.github$
 ^checkEffects.R$
 ^ONEWS$
+^.*\.code-workspace$
