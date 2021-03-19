@@ -1,3 +1,14 @@
+# RSiena 1.2.33
+
+## 
+
+2021-03-19
+
+## Changes in RSiena:
+
+   * Adjusted `configure`, `cleanup` and `Makevars` files for just C++ checks.
+   * Pandoc dropped as a system requirement.
+ 
 # RSiena 1.2.32
 
 ## 

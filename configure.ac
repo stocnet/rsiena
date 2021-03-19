@@ -39,7 +39,7 @@ AC_OUTPUT(src/Makevars)
 
 echo "
  --------------------------------------------------
-  Configuration for ${PACKAGE_NAME} ${PACKAGE_VERSION}
+  Configuration for ${PACKAGE_NAME}
   ================
   
     cppflags: ${CPPFLAGS} 
