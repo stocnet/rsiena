@@ -12,3 +12,7 @@ src/*.dll
 *.bak
 TexAux/
 inst/doc
+autom4te.cache
+config.log
+config.status
+*.code-workspace

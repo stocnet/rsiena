@@ -23,7 +23,7 @@ Please use bullet points and reference particular issues like so:
 - [ ] If function added/modified, I have added/modified documentation (in .R file)
 - [ ] If effect added/modified, I have added/modified section 12 of the manual
 - [ ] I have added a description of all changes to this pull request above and to the NEWS.md file
-- [ ] I have bumped the version in the DESCRIPTION file by the appropriate increment:
+- [ ] I have bumped the version in the DESCRIPTION and man/RSiena-package.md files by the appropriate increment:
   - 'major' (incompatible API changes)
   - 'minor' (add functionality in a backwards compatible manner)
   - 'patch' (backwards compatible bug fixes)

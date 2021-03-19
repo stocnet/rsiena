@@ -63,7 +63,7 @@ amending the file suffix as necessary.
 To install from source the latest main version of RSiena from Github, 
 please install the `{remotes}` package from CRAN and then enter into the console:
 
-`remotes::install_github("snlab-nl/rsiena")`
+`remotes::install_github("snlab-nl/rsiena", ref = "main")`
 
 The development version of RSiena can be similarly installed as:
 

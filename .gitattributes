@@ -8,9 +8,16 @@
 
 # Declare files that will always have CRLF line endings on checkout.
 *.sln text eol=crlf
+src/Makevars.win text eol=crlf
+cleanup.win text eol=crlf
 
 # Declare files that will always have LF line endings on checkout.
 *.ac text eol=lf
+configure text eol=lf
+configure.ac text eol=lf
+src/Makevars.in text eol=lf
+cleanup text eol=lf
+src/sources.list text eol=lf
 
 # Denote all files that are truly binary and should not be modified.
 *.png binary
