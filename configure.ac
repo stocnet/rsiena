@@ -5,7 +5,7 @@
 #
 
 AC_PREREQ([2.69])
-AC_INIT([RSiena], 1.2.32)
+AC_INIT([RSiena], 1.2.33)
 AC_CONFIG_SRCDIR([src])
 
 # Find the compiler and compiler flags used by R.
