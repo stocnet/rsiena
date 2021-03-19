@@ -10,9 +10,13 @@
  *****************************************************************************/
 
 #include "MixedTwoStepFunction.h"
+#include <stdexcept>
+#include "utils/SqrtTable.h"
 #include "model/tables/TwoNetworkCache.h"
 #include "model/tables/MixedEgocentricConfigurationTable.h"
-#include <stdexcept>
+
+using namespace std;
+
 
 namespace siena
 {
@@ -25,12 +29,14 @@ namespace siena
 MixedTwoStepFunction::MixedTwoStepFunction(std::string firstNetworkName,
                                            std::string secondNetworkName, 
                                            Direction firstDirection, 
-                                           Direction secondDirection) :
+                                           Direction secondDirection, bool root) :
 	MixedNetworkAlterFunction(firstNetworkName, secondNetworkName)
 {
 	this->lpTable = 0;
 	this->ldirection1 = firstDirection;
 	this->ldirection2 = secondDirection;
+	this->lroot = root;
+	this->lsqrtTable = SqrtTable::instance();
 }
 
 
@@ -59,6 +65,8 @@ void MixedTwoStepFunction::initialize(const Data * pData,
 		this->lpTable = this->pTwoNetworkCache()->pTwoPathTable();
 	if (ldirection1 == BACKWARD && ldirection2 == FORWARD)
 		this->lpTable = this->pTwoNetworkCache()->pOutStarTable();
+	if (ldirection1 == FORWARD && ldirection2 == BACKWARD)
+		this->lpTable = this->pTwoNetworkCache()->pInStarTable();
 	if (ldirection1 == RECIPROCAL && ldirection2 == FORWARD)
 		this->lpTable = this->pTwoNetworkCache()->pRFTable();
 
@@ -75,7 +83,14 @@ void MixedTwoStepFunction::initialize(const Data * pData,
  */
 double MixedTwoStepFunction::value(int alter)
 {
-	return this->lpTable->get(alter);
+	if (this->lroot)
+	{
+		return this->lsqrtTable->sqrt(this->lpTable->get(alter));
+	}
+	else
+	{
+		return this->lpTable->get(alter);
+	}
 }
 
 
@@ -84,7 +99,14 @@ double MixedTwoStepFunction::value(int alter)
  */
 int MixedTwoStepFunction::intValue(int alter)
 {
-	return this->lpTable->get(alter);
+	if (this->lroot)
+	{
+		throw logic_error("Square roots are not integer values");
+	}
+	else
+	{
+		return this->lpTable->get(alter);
+	}
 }
 
 }

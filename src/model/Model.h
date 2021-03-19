@@ -84,7 +84,10 @@ public:
 		const EffectInfo * pEffect2,
 		const EffectInfo * pEffect3 = 0);
 
+	bool gmmModel() const;
+
 	const std::vector<EffectInfo *> & rRateEffects(std::string variableName) const;
+	const std::vector<EffectInfo *> & rGMMEffects(std::string variableName) const;
 	const std::vector<EffectInfo *> & rEvaluationEffects(std::string variableName) const;
 	const std::vector<EffectInfo *> & rEndowmentEffects(std::string variableName) const;
 	const std::vector<EffectInfo *> & rCreationEffects(std::string variableName) const;
@@ -183,6 +186,10 @@ private:
 	// Indicates if conditional simulation has to be carried out
 	bool lconditional;
 
+	//! True if any dependent variable has effects in the gmm objective
+	//! function.
+	bool lGMMModel;
+
 	// name of conditional dependent variable
 	std::string lconditionalDependentVariable;
 
@@ -211,6 +218,9 @@ private:
 
 	// A vector of rate effects (except the basic rate effects) per variable
 	std::map<std::string, std::vector<EffectInfo *> > lrateEffects;
+
+	// A vector of pointers to GMM effects per variable
+	std::map<std::string, std::vector<EffectInfo *> > lgmmEffects;
 
 	// A vector of pointers to evaluation effects per variable
 	std::map<std::string, std::vector<EffectInfo *> > levaluationEffects;

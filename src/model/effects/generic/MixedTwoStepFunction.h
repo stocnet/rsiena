@@ -19,7 +19,16 @@
 namespace siena
 {
 
+// ----------------------------------------------------------------------------
+// Section: Forward declarations
+// ----------------------------------------------------------------------------
+
+class SqrtTable;
 class MixedConfigurationTable;
+
+// ----------------------------------------------------------------------------
+// Section: MixedTwoStepFunction class
+// ----------------------------------------------------------------------------
 
 
 /**
@@ -31,7 +40,7 @@ public MixedNetworkAlterFunction, IntAlterFunction
 {
 public:
 	MixedTwoStepFunction(std::string firstNetworkName, std::string secondNetworkName,
-						Direction firstDirection, Direction secondDirection);
+						Direction firstDirection, Direction secondDirection, bool root);
 
 	virtual void initialize(const Data * pData,
 		State * pState,
@@ -43,9 +52,11 @@ public:
 
 private:
 	MixedConfigurationTable * lpTable;
-
 	Direction ldirection1;
 	Direction ldirection2;
+	bool lroot; // should the square root be taken?
+	// Lookup table for fast square root calculations:
+	SqrtTable * lsqrtTable;
 };
 
 }

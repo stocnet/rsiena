@@ -105,7 +105,8 @@ phase3.2 <- function(z, x, ...)
     }
 	if ((x$nsub == 0)&(x$simOnly))
 	{
-	# nothing
+        dmsf <- diag(z$msf)
+        sf <- colMeans(z$sf)
 	}
 	else
 	{
@@ -130,12 +131,15 @@ phase3.2 <- function(z, x, ...)
  		{
             Report('\nMaximum Likelihood estimation.', bof)
  		}
+        else if (z$gmm)
+        {
+          Report('\nGeneralized Method of Moments estimation.', bof)
+        }
         else
  		{
  			if (z$cconditional)
  			{
  				Report('\nconditional moment estimation.', bof)
-
  			}
  			else
  			{
@@ -156,13 +160,48 @@ phase3.2 <- function(z, x, ...)
         tstat[toosmall & toosmall2] <- 0
         tstat[toosmall & !toosmall2] <- NA
         z$tstat <- tstat
+		if (z$gmm)
+        {
+          W <- solve(cov(z$sf))
+          gamma <- z$dfra[,-which(z$gmmEffects==TRUE)]
+          B0 <- t(gamma) %*% W
+          B <- solve(diag(sqrt(rowSums(B0*B0)))) %*% B0 # Row-normlized matrix B
+          D0 <- B%*%gamma # Matrix D = B * gammaT 
+          dbGmm <- solve(D0)%*%B
+          sf <- B%*%colMeans(z$sf)
+          dmsf <- diag(B%*%z$msf%*%t(B))
+          dimTheta <- length(sf)
+          scaleGmm <- z$scale[1:dimTheta]
+          toosmall <- dmsf < 1e-20 * scaleGmm * scaleGmm
+          toosmall2 <- abs(sf) < 1e-10 * scaleGmm
+          dmsf[toosmall] <- 1e-20 * scaleGmm [toosmall] * scaleGmm [toosmall]
+          tstat <- rep(NA, length(sf))
+          tstat[!toosmall]<- sf[!toosmall] / sqrt(dmsf[!toosmall])
+          tstat[toosmall & toosmall2] <- 0
+          tstat[toosmall & !toosmall2] <- NA
+          z$tstat <- tstat
+          z$B <- B
+          z$D0 <- D0
+          z$gamma <- t(gamma)
+          z$W <- W
+          z$dinvv <- dbGmm
+        }
  		# tconv.max = Maximum value of t-ratio for convergence,
  		# for any linear combination.
  		z$tconv.max <- NA
  		if (sum(!z$fixed) > 0)
  		{
+ 		  if (!z$gmm)
+ 		  {
  			mean.dev <- colSums(z$sf)[!z$fixed]/dim(z$sf)[1]
  			cov.dev <- z$msf[!z$fixed,!z$fixed]
+		  }
+ 		  else
+ 		  {
+ 		    fixednoGmm <- z$fixed[-which(z$gmmEffects)]
+ 		    mean.dev <- (B%*%colSums(z$sf)/dim(z$sf)[1])[!fixednoGmm]
+ 		    cov.dev <- (B%*%z$msf%*%t(B))[!fixednoGmm, !fixednoGmm]
+ 		  }
  			if (inherits(try(thisproduct <- solve(cov.dev, mean.dev), silent=TRUE),
  						"try-error"))
  			{
@@ -173,16 +212,34 @@ phase3.2 <- function(z, x, ...)
  				z$tconv.max <- sqrt(t(mean.dev) %*% thisproduct)
  			}
  		}
-        mymess1 <- paste(format(1:z$pp,width=3), '. ',
-                        format(round(sf, 4), width=8, nsmall=4), ' ',
-                        format(round(sqrt(dmsf), 4) ,width=8, nsmall=4), ' ',
-                        format(round(tstat, 4), width=8, nsmall=3), sep='')
-        mymess2 <- c('', '    (fixed parameter)')[as.numeric(z$fixed) + 1]
+ 		if (!z$gmm)
+ 		{
+ 		  mymess1 <- paste(format(1:z$pp,width=3), '. ',
+ 		                   format(round(sf, 4), width=8, nsmall=4), ' ',
+ 		                   format(round(sqrt(dmsf), 4) ,width=8, nsmall=4), ' ',
+ 		                   format(round(tstat, 4), width=8, nsmall=3), sep='')
+ 		  mymess2 <- c('', '    (fixed parameter)')[as.numeric(z$fixed) + 1]
+ 		} 
+    else
+    {
+      mymess1 <- paste(format(1:(z$pp-sum(z$gmmEffects)),width=3), '. ',
+                       format(round(sf, 4), width=8, nsmall=4), ' ',
+                       format(round(sqrt(dmsf), 4) ,width=8, nsmall=4), ' ',
+                       format(round(tstat, 4), width=8, nsmall=3), sep='')
+      mymess2 <- c('', '    (fixed parameter)')[as.numeric(z$fixed[-which(z$gmmEffects)]) + 1]
+    }
         mymess <- paste(mymess1, mymess2)
         PrtOutMat(as.matrix(mymess), outf)
         PrtOutMat(as.matrix(mymess1), bof)
         ##  Report(mymess1, bof, fill=80)
-        tmax <- max(abs(tstat)[!z$fixed])
+        if (!z$gmm)
+         {
+          tmax <- max(abs(tstat)[!z$fixed])
+         }
+        else
+         {
+           tmax <- max(abs(tstat)[which(!z$fixed[-which(z$gmmEffects)])])
+         }
         z$tconv <- tstat
 		z$tmax <- tmax
         error <- (is.na(tmax)) ||
@@ -192,7 +249,7 @@ phase3.2 <- function(z, x, ...)
             z$error <- TRUE
  		}
  		Report('Good convergence is indicated by the t-ratios ', outf)
-        if (any(z$fixed))
+        if (any(z$fixed) & !z$gmm)
  		{
  			Report('of non-fixed parameters ', outf)
  		}
@@ -276,6 +333,10 @@ phase3.2 <- function(z, x, ...)
 				cov.est <- NA * dfrac
 			}
 		}
+		else if (z$gmm)
+		{
+		  cov.est <-  solve(D0) %*% (B%*%z$msfc%*%t(B)) %*% t(solve(D0))
+		}
 		else
 		{
 			cov.est <- z$dinv %*% z$msfc %*% t(z$dinv)
@@ -319,12 +380,19 @@ phase3.2 <- function(z, x, ...)
 			}
 			cov.est <- NA * z$msfc
 		}
-		if (!is.null(cov.est))
+		if (!is.null(cov.est) & !z$gmm)
 		{
 			zerovar <- ((diag(cov.est) < 1e-9) | (is.na(diag(cov.est))))
 			z$diver <- (z$fixed | z$diver | zerovar) & (!z$AllUserFixed)
 			cov.est[z$diver, ] <- NA
 			cov.est[, z$diver] <- NA
+		}
+		else if (!is.null(cov.est) & z$gmm)
+		{ 
+		  zerovar <- ((diag(cov.est) < 1e-9) | (is.na(diag(cov.est))))
+		  z$diver <- (z$fixed[-which(z$gmmEffects)] | z$diver[-which(z$gmmEffects)] | zerovar) & (!z$AllUserFixed)
+		  cov.est[z$diver, ] <- NA
+		  cov.est[, z$diver] <- NA
 		}
 		z$covtheta <- cov.est
 	}
@@ -415,12 +483,24 @@ PotentialNR <-function(z,x,MakeStep=FALSE)
 	z$msfc <- z$msf
 	if (!z$AllUserFixed)
 	{
-		z$dfrac[z$fixed, ] <- 0
-		z$dfrac[, z$fixed] <- 0
-		diag(z$dfrac)[z$fixed]<- 1
-		z$msfc[z$fixed, ] <- 0
-		z$msfc[, z$fixed] <- 0
-		diag(z$msfc)[z$fixed] <- 1
+	  if (!z$gmm)
+	  {
+	    z$dfrac[z$fixed, ] <- 0
+	    z$dfrac[, z$fixed] <- 0
+	    diag(z$dfrac)[z$fixed]<- 1
+	    z$msfc[z$fixed, ] <- 0
+	    z$msfc[, z$fixed] <- 0
+	    diag(z$msfc)[z$fixed] <- 1
+	  }
+	  else 
+	  {
+	    z$dfrac[(z$fixed & !z$gmmEffects), ] <- 0
+	    z$dfrac[, (z$fixed & !z$gmmEffects)] <- 0
+	    diag(z$dfrac)[(z$fixed & !z$gmmEffects)]<- 1
+	    z$msfc[(z$fixed & !z$gmmEffects), ] <- 0
+	    z$msfc[, (z$fixed & !z$gmmEffects)] <- 0
+	    diag(z$msfc)[(z$fixed & !z$gmmEffects)] <- 1
+	  }
 	}
 	if (inherits(try(dinv <- solve(z$dfrac), silent=TRUE), "try-error"))
 	{

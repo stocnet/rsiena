@@ -186,7 +186,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.2-29.
+This version was renewed for \RS version 1.2.32.
 \end{abstract}
 
 
@@ -871,8 +871,8 @@ of the software appear).
             This can be done from \url{http://cran.r-project.org/} .\\
             Many users prefer some kind of additional environment, such as \texttt{RStudio}, or
             the combination of \texttt{Notepad++} with \texttt{NppToR}.\\
-            For Mac, you will also need \sfn{X11}, because this is
-            required for \sfn{tcltk}. See the FAQ list for R on Mac,
+            For Mac, you may also need \sfn{X11}, which is
+            used for \sfn{tcltk}; but this is not a necessity. See the FAQ list for R on Mac.
 	\item	Install the package \RS or \sfn{RSienaTest}, with dependencies.
             The other packages used are  \sfn{parallel}
             and \sfn{tools} (all included in the basic \R distribution);
@@ -912,24 +912,26 @@ of the software appear).
         \url{https://github.com/snlab-nl/rsiena/releases/}.
 Once the file has been downloaded, unzip it, and install the binary
 as appropriate for your Operating System.
-In the following, perhaps the name of the Downloads folder and
+In the following, the name of the Downloads folder has to be changed
+to wherever you downloaded the file and
 the version number have to be amended:
 
 For Windows:
 
-\texttt{install.packages("\url{~/Downloads/rsiena\_AllOS/winOS/RSiena\_1.2.29.zip}", \\
-repos = NULL)}
+after downloading
+\url{https://github.com/snlab-nl/rsiena/releases/download/v1.2.32/RSiena_winOS.zip},
+change filename \texttt{RSiena\_winOS.zip} to \texttt{RSiena.zip}, and
+apply \\
+\texttt{install.packages("\url{~//Downloads//RSiena.zip}", repos = NULL)}\\
+(where the name \texttt{\url{~//Downloads//}} will have to be changed, as mentioned).
 
 For Mac:
-
-\texttt{install.packages("\url{~/Downloads/rsiena\_AllOS/macOS/RSiena\_1.2.29.tgz}", \\
-repos = NULL)}
+\\
+\texttt{install.packages("\url{~//Downloads//RSiena\_macOS.tgz}", repos = NULL)}\\
 
 For Unix:
-
-\texttt{install.packages(\\
-"\url{~/Downloads/rsiena\_AllOS/linuxOS/RSiena\_1.2-29\_R\_x86\_64-pc-linux-gnu.tar.gz}",
- repos = NULL)}
+\\
+\texttt{install.packages("\url{~//Downloads//RSiena\_linuxOS.tar.gz}", repos = NULL)}\\
 
             Installation of \texttt{RSienaTest}
             from the R-Forge repository can be done as follows.
@@ -943,24 +945,24 @@ For Unix:
             \end{itemize}
 
             Installation from a downloaded file can be done as follows, assuming
-            the root name of the file is \texttt{RSienaTest\_1.2-29}, and filling in the correct path name.
+            the root name of the file is \texttt{RSienaTest\_1.2.32}, and filling in the correct path name.
             It will be convenient to first navigate to the directory
             containing the \RS binary or source file so that this is the current directory.
             Then the pathname consists only of the filename.
             \begin{itemize}
             \item In \R from binary:\\
             for Windows:\\
-             \texttt{install.packages("pathname to RSienaTest\_1.2-29.zip", repos = NULL, type="binary")}\\
+             \texttt{install.packages("pathname to RSienaTest\_1.2.32.zip", repos = NULL, type="binary")}\\
             for Mac:\\
-             \texttt{install.packages("pathname to RSienaTest\_1.2-29.tgz", repos = NULL, type="binary")}
+             \texttt{install.packages("pathname to RSienaTest\_1.2.32.tgz", repos = NULL, type="binary")}
              \item In \R from source:\\
-            \texttt{install.packages("RSienaTest\_1.2-29.tar.gz", repos = NULL, type="source")}
+            \texttt{install.packages("RSienaTest\_1.2.32.tar.gz", repos = NULL, type="source")}
             \item In \text{command.com} or in batch mode (Windows) from binary:\\
-            \texttt{R CMD INSTALL RSienaTest\_1.2-29.zip}
+            \texttt{R CMD INSTALL RSienaTest\_1.2.32.zip}
             \item In the terminal (Mac) from binary:\\
-            \texttt{R CMD INSTALL RSienaTest\_1.2-29.tgz}
+            \texttt{R CMD INSTALL RSienaTest\_1.2.32.tgz}
             \item In \text{command.com} or in batch mode (Windows) or in the terminal (Mac) from source:\\
-            \texttt{R CMD INSTALL RSienaTest\_1.2-29.tar.gz}
+            \texttt{R CMD INSTALL RSienaTest\_1.2.32.tar.gz}
             \item In drop-down menu in \Rn:\\
             for Windows:  go to Packages  $\rightarrow$ Install package(s) from local zip file\\
             for Mac:  go to Packages \& Data $\rightarrow$ Package Installer
@@ -1160,7 +1162,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Donwloads' page.
   The version is
-  identified by a version number (e.g.\ 1.2-29).
+  identified by a version number (e.g.\ 1.2.32).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -1338,7 +1340,8 @@ The three possible formats for digraph input are as follows.
       The help file for \sfn{sienaDependent} shows by examples how the
       specification can be given by sparse matrices.
     \item \emph{Pajek format}.\\
-      These can be used in \sfn{sienaDataCreateFromSession}.\\
+      These can be used in \sfn{sienaDataCreateFromSession}
+      (only available in \rst).\\
       If the digraph data file has extension name \texttt{.net}, then the
       program assumes that the data file has Pajek format.
       The file should relate to one observation only,
@@ -1351,7 +1354,7 @@ The three possible formats for digraph input are as follows.
       that is distributed in the \texttt{examples} directory of the
       source code.
     \item \emph{Siena format}.\\
-      These can be used in \sfn{sienaDataCreateFromSession}.\\
+      These can be used in \sfn{sienaDataCreateFromSession} (only available in \rst).\\
       An edge list is a matrix containing three or four columns:
       from, to, value, wave (optional).\\
       Like the Pajek format, this has the advantage that absent ties (tie
@@ -1378,7 +1381,7 @@ outside R. \fi
 Missing values must be indicated in the way usual for \Rn,
 by \texttt{NA}.
 For data specification by the function
-\textsf{sienaDataCreateFromSession},
+\textsf{sienaDataCreateFromSession} (only available in \rst),
 instead of \texttt{NA} any numerical code can be used
 given that this is indicated to be a missing value code.
 
@@ -3232,9 +3235,11 @@ between networks can be considered:
 \begin{description}
   \item[disjoint:] for any given pair of actors $(i,j)$,
       it is impossible that ties exists in both networks;
-  \item[higher:] for any given pair of actors $(i,j)$,
-      it is impossible that a tie exists in the first
-      but not in the second network;
+  \item[higher:] the tie variables for the first network
+      are higher than or equal to those for the second network:
+      for any given pair of actors $(i,j)$,
+      it is impossible that a tie exists in the second
+      but not in the first network;
   \item[atleastone:] for any given pair of actors $(i,j)$,
      there must be a tie in at least one of the networks.
 \end{description}
@@ -3248,6 +3253,11 @@ These constraints will continue to be respected during the simulations
 (and by implication for the estimations).
 The constraints for the simulations can be changed
 (e.g., turned off) by function \sfn{sienaDataConstraint}.
+
+Script \url{http://www.stats.ox.ac.uk/~snijders/siena/RscriptSienaOrdered.R}\\
+gives a demonstration of how this feature can be used for analyzing networks
+with ordered values.
+\medskip
 
 Constraints will work for all pairs of networks of the same kind:
 both networks directed one-mode, both symmetric (non-directed) one-mode,
@@ -4233,7 +4243,7 @@ may cancel earlier ministeps, and ministeps can have the outcome of
   \item \texttt{condname}: the name of the conditioning variable (an alternative
       to using \texttt{condvarno}).
 \end{enumerate}
-Finally, there are some parameters with special purposes that sometimes
+Furthermore, there are some parameters with special purposes that sometimes
 can be used.
 \begin{enumerate}[resume]
   \item \texttt{simOnly}: to indicate that the interest is in simulation,
@@ -4243,6 +4253,22 @@ can be used.
       some large arrays; but these are used by functions
      \sfn{sienaTimeTest} and \sfn{sienaGOF}, so running those functions will be impossible
      for \sfn{sienaFit} object obtained with \texttt{lessMem=TRUE}.
+\end{enumerate}
+Finally, there is a parameter for which the default is always good;
+but you might try it out anyway.
+\begin{enumerate}[resume]
+  \item \texttt{dolby}: the default is \texttt{TRUE}, which implies that the
+   statistics are regressed on the augmented data score, which is known to have
+   expected value 0. This is explained in \citet{Snijders2013Greenwich}.
+   This yields a considerable reduction of the variance of the statistics
+   without affecting their expected values.\\
+   The regression coefficients are calculated in Phase~1. 
+   If \texttt{prevAns=ans} is used
+   and the model has remained identical, the regression coefficients from
+   Phase~3 of \texttt{ans} are used. 
+   These values are given in \texttt{ans\$regrCoef}; 
+   the corresponding correlations are in \texttt{ans\$regrCor}.
+   
 \end{enumerate}
 
 \subsection{Results of the estimation}
@@ -4882,11 +4908,20 @@ initial value.
       having a first rough estimate of the matrix of derivatives.
 \item Phase~2 consists of several subphases.
       More subphases means a greater precision. The default
-      number of subphases is 4.
-      The parameter values change from run to run, reflecting
-      the deviations between generated and observed values of the
-      statistics. The changes in the parameter values are smaller
-      in the later subphases.\\
+      number of subphases is 4.\\
+      Each subphase consists of a large number of runs, usually hundreds of them.
+      Each run consists of a simulation of the network dynamics over all periods,
+      using trial parameter values. From this simulation, the estimation statistics 
+      are calculated;
+      the devations between the generated statistics and the observed values,
+      which are the target values, are used to update the trial parameter values.
+      For statistics of which the outcome is too high the corresponding 
+      parameter will be decreased, if it is too low the parameter will be increased.
+      These changes in the parameter values are smaller in the later subphases.\\
+      If the option \texttt{dolby} is in force, the statistics are regressed
+      on the score function of the augmented data.
+      This reduces their variance without affecting their expected value,
+      see \citet{Snijders2013Greenwich}.\\
       The program searches for parameter values where these deviations
       average out to 0. This is reflected by what is called the
       \hypertarget{T_quasiac}{`quasi-auto\-cor\-relations'}
@@ -4914,7 +4949,10 @@ initial value.
       now at its final value.
       This phase is for estimating the covariance matrix and the
       matrix of derivatives used for the computation of standard errors.\\
-      The default number of runs in Phase~3 is 1000. This requires a lot
+      The number of runs in Phase~3 is given by parameter \texttt{n3},
+      with the default value of 1000. 
+      For precise estimation of standard errors, higher values of \texttt{n3}
+      are desirable. This requires a lot
       of computing time, but when the number of Phase~3 runs is too low,
       the standard errors computed are rather unreliable.
 \end{enumerate}
@@ -5180,12 +5218,22 @@ the Maximum Likelihood method \citep*[`ML', see][]{SnijdersEA10a},
 and Bayesian methods
 \citep[see][]{Koskinen04,KoskinenSnijders07,SchweinbergerSnijders07c,KoskinenSnijders20}.
 
-The application of the Generalized Method of Moments is still in development.
-It is theoretically more efficient than the Method of Moments.
-It is somewhat more time-consuming; on the other hand, function \sfn{sienacpp()}
-is coded in a more efficient way than \sfn{siena07()}.
 
-In models for one network, without co-evolution,
+Relative to the MoM, the GMoM is theoretically more efficient and somewhat more time-consuming
+than the regular MoM since it requires a large number of simulations and
+iterations of the model estimation (see Section~\ref{S_GMoM_siena07}).
+In models for one network, the MoM and the GMoM yield similar estimates.
+However, the GMoM estimator of the parameters of the effects related to the new statistics
+is somewhat more efficient than the MoM estimator, especially for the co-evolution model.
+When the statistics are informative (i.e., when the number of simultaneous network
+and behavioral changes made by the same actor between any two observations is not negligible),
+and when the `true model' has only evaluation effects for the GMoM statistics,
+the GMoM leads to more accurate estimates with smaller bias
+and standard errors than the regular MoM.
+This is documented in \citet{ASS2015,ASS2019}.
+
+Comparison among all the four methods indicates that,
+in models for one network, without co-evolution,
 in nice situations (data sets that are not too small, model specifications
 that do not request too much from the data, good fit between data and
 model specification), the four methods tend to agree
@@ -5193,22 +5241,20 @@ and there seems to be no reason to use the more time-consuming
 ML or Bayesian methods.
 For co-evolution models and not-so-nice situations (very small network data sets,
 small network and behavior data sets in combination with complex models),
-however, ML and Bayesian methods tend to produce more accurate results
+however, GMoM, ML and Bayesian methods tend to produce more accurate results
 (i.e., smaller standard errors) than MoM.
-Statistical theory suggests that ML is a more efficient estimation method
+Statistical theory suggests that, if the model is well-specified,
+GMoM and ML are more efficient estimation methods
 than MoM in the sense of producing estimates with smaller standard errors.
-But in the `nice situations' the efficiency advantage of ML is very small.
+But in the `nice situations'
+with only one dependent network variable the efficiency advantage of ML is very small.
 Bayesian estimation is based on a different statistical paradigm, and
 assumes and requires that the uncertainty about parameters is expressed
 itself in a probability distribution.
-For co-evolution, estimation by the Generalized Method of Moments
-will be made available in future versions.
 
 Estimation by the regular Method of Moments (MoM)
+and Generalized Method of Moments (GMoM)
 is implemented in the functions \sfn{siena07()} and \sfn{sienacpp()}.
-Estimation by the Generalized Method of Moments (GMoM)
-is implemented in the function \sfn{sienacpp()}.
-
 ML estimation is done by the function \sfn{siena07()}, using a set of options
 created by \sfn{sienaAlgorithmCreate()} with \sfn{maxlike=TRUE}.
 Bayesian estimation is done by the function \sfn{sienaBayes()},
@@ -5219,8 +5265,154 @@ but is as yet implemented only for multilevel network modeling
 \subsection{Generalized Method of Moments estimation}
 \label{S_GMoM}
 
-Estimation by the Generalized Method of Moments (GMoM)
-was proposed in \citet{ASS2015,ASS2019} and part of this is implemented
+\subsubsection{Using the function \sfn{siena07()}}
+\label{S_GMoM_siena07}
+
+
+Compared to the regular Method of Moments (MoM), the Generalized Method of
+Moments (GMoM) allows using more statistics than parameters,
+thereby exploiting more information in the observed data.
+The additional information derives from the use of supplementary statistics,
+referred to as GMoM statistics. The GMoM statistics are defined only for the effects
+of the evaluation function. Thus, they are used under the assumption that
+effects operate in the same strength for the creation and the dissolution of ties,
+and the increasing and decreasing of the behavior. In other words,
+the creation and the endowment effects
+corresponding to the GMoM statistics are assumed to be zero
+(see Section~\ref{S_mathmod}).
+\medskip
+
+Estimation by the GMoM with the function \sfn{siena07()} is obtained
+by specifying the GMoM statistics in the effects object using
+function \sfn{includeGMoMStatistics()},
+and setting option \texttt{gmm=TRUE}
+in the algorithm object created by the function \sfn{sienaAlgorithmCreate()}.
+
+Several GMoM statistics have been implemented for the evolution of networks
+and for co-evolution of networks and behaviors.
+
+% We denote by $X$ the network, by $Z$ the behavior,
+% and by $X(t_m)$ and $Z(t_m)$ the network and the behavior at time $t_m$.
+The statistics for the network evolution \citep{ASS2015}
+%(\texttt{newrecip}, \texttt{persistrecip}, \texttt{realrecip},
+%\texttt{realtrans}, \texttt{agreetrans})
+complement the information provided by the regular statistics by
+considering two consecutive observations of the network.
+%While the regular statistics depend only on the network
+%at time $t_m$, i.e., $\sum_{m=2}^M\sum_{i=1}^n S_{ik}(X(t_m))$,
+%the GMoM statistics simultaneously consider the networks at time $t_m$ and $t_{m+1}$, i.e.,
+%$\sum_{m=2}^M\sum_{i=1}^n S_{ik}(X(t_m),X(t_{m-1}))$.
+This formulation allows distinguishing between different antecedents of a same effect.
+The implemented statistics are named \texttt{newrecip}, \texttt{persistrecip}, \texttt{realrecip},
+\texttt{realtrans}, \texttt{agreetrans}.
+The GMoM statistics for the co-evolution of networks and behaviors \citep{ASS2019}
+supplement the information of the cross-lagged statistics, depending jointly
+on network and behavior, by considering the network and behavior at the same time point.
+Thus, the GMoM statistics account for the information on the simultaneous observation
+of network and behavioral changes. The name of the implemented GMoM statistics
+are \texttt{avSim\_gmm}, \texttt{avAlt\_gmm}, \texttt{totAlt\_gmm}, \texttt{maxAlt\_gmm},
+\texttt{minAlt\_gmm}, \texttt{egoX\_gmm}, \texttt{simX\_gmm}.
+
+For the GMoM, the additional statistics used for estimation are specified by
+the function \sfn{includeGMoMStatistics()}. For example, the following lines
+\begin{verbatim}
+myeff <- includeGMoMStatistics(myeff, egoX_gmm, interaction1="mybeh")
+myeff <- includeGMoMStatistics(myeff, simX_gmm, interaction1="mybeh")
+\end{verbatim}
+specify the GMoM statistics for the covariate-related activity and similarity effects.
+
+Although the statistics are added to the effect object,
+one should keep in mind that the GMoM statistics are not effects
+in the stochastic model, i.e., they are not
+included as terms in the objective function.
+They are only used for parameter estimation to evaluate the moment conditions.
+
+The distinction between model effects
+and GMoM statistics is recalled when printing the effect object in the R console.
+As illustrated by the example below, the output is divided into two parts.
+The first part lists the model effects.
+The second part reports the statistics used for the estimation:
+the regular statistics, included by default when an effect is specified
+in the probability model using \sfn{includeEffects()},
+and the GMoM statistics, specified with the function \sfn{includeGMoMStatistics()}.
+The comparison between the number of effects and that of the statistics
+illustrates that, for the GMoM, the one-to-one correspondence
+between effects operating for the evolution of networks and/or behaviors,
+and statistics operating for parameter estimation is lost.
+
+{\footnotesize
+\begin{verbatim}
+	 Effects and statistics for estimation by the Generalized Method of Moments
+
+ Effects
+   name  effectName                     include fix   test  initialValue parm type
+1  mynet constant mynet rate (period 1) TRUE    FALSE FALSE    4.69604   0    rate
+2  mynet constant mynet rate (period 2) TRUE    FALSE FALSE    4.32885   0    rate
+3  mynet outdegree (density)            TRUE    FALSE FALSE   -1.46770   0    eval
+4  mynet reciprocity                    TRUE    FALSE FALSE    0.00000   0    eval
+5  mynet transitive triplets            TRUE    FALSE FALSE    0.00000   0    eval
+6  mynet 3-cycles                       TRUE    FALSE FALSE    0.00000   0    eval
+7  mynet mybeh ego                      TRUE    FALSE FALSE    0.00000   0    eval
+8  mynet mybeh similarity               TRUE    FALSE FALSE    0.00000   0    eval
+9  mybeh rate mybeh (period 1)          TRUE    FALSE FALSE    0.70571   0    rate
+10 mybeh rate mybeh (period 2)          TRUE    FALSE FALSE    0.84939   0    rate
+11 mybeh mybeh linear shape             TRUE    FALSE FALSE    0.32237   0    eval
+12 mybeh mybeh quadratic shape          TRUE    FALSE FALSE    0.00000   0    eval
+13 mybeh mybeh total similarity         TRUE    FALSE FALSE    0.00000   0    eval
+
+ Regular and GMoM statistics
+   name  effectName                     Statistic
+1  mynet constant mynet rate (period 1) Regular
+2  mynet constant mynet rate (period 2) Regular
+3  mynet outdegree (density)            Regular
+4  mynet reciprocity                    Regular
+5  mynet transitive triplets            Regular
+6  mynet 3-cycles                       Regular
+7  mynet mybeh ego                      Regular
+8  mynet mybeh similarity               Regular
+9  mybeh rate mybeh (period 1)          Regular
+10 mybeh rate mybeh (period 2)          Regular
+11 mybeh mybeh linear shape             Regular
+12 mybeh mybeh quadratic shape          Regular
+13 mybeh mybeh total similarity         Regular
+14 mynet mybeh ego                      GMoM
+15 mynet mybeh similarity               GMoM
+\end{verbatim}}
+
+\normalsize
+
+The computation of the GMoM estimates is more time consuming than that of the regular MoM.
+The GMoM estimator is computed by minimizing the distance between the
+expected value of the statistics and their sample counterpart.
+The minimization demands the computation of a matrix of weights
+describing the importance of the statistics and their sensitivity
+to the parameters. To estimate the matrix of the GMoM weights, a larger number of simulations
+in phase 1 and phase 3 and (at least) one iteration of the function \sfn{siena07} is used.
+
+The following estimation steps are recommended to reach the convergence of the algorithm quickly.
+\begin{enumerate}
+	\item  Run the function \sfn{siena07} with one or two sub-phases (i.e.,
+\texttt{nsub=1} or \texttt{nsub=2}) in phase 2 and a large number of simulations in phase 3
+(e.g., \texttt{n3=5000}) to get better initial estimates of the model parameters and a
+more stable estimation of the matrix of GMoM weights.
+ \item Re-estimate the model using the estimates produced in 1 by using four sub-phases in phase 2
+(\texttt{nsub=4}), the same number of simulations in phase 3 (e.g., \texttt{n3=5000}) and the
+argument \texttt{prevAns=TRUE}.
+\end{enumerate}
+If convergence is not adequate, one runs \sfn{siena07} repeatedly with \texttt{prevAns=TRUE}.
+
+Difficulties in convergence might occur when the GMoM statistics are ``highly'' correlated ($>$ 0.9) with the regular statistics. Dropping the corresponding GMoM statistics would solve the problem. Intuitively, when the GMoM and the regular statistics are highly correlated, the GMoM statistics do not carry relevant information
+for the estimation of the parameters and can be discarded. Therefore, it is recommended to inspect the covariance matrix of the statistics to decide whether GMoM statistics should be used for the estimation.
+
+We refer to  the  \R script \texttt{GMoMscript.R} on the \SI webpage for an illustration of the GMoM estimation, the steps described above and the inspection of the covariance matrix of the statistics.
+
+Like the MoM, the GMoM allows conditional as well as unconditional estimation (see Section~\ref{S_cond}).
+
+
+\subsubsection{Using the function \sfn{sienacpp()}}
+\label{S_GMoM_sienacpp}
+
+Estimation by the Generalized Method of Moments (GMoM) is also implemented
 in the function \sfn{sienacpp()}, available in \sfn{RSienaTest()}.
 
 If the algorithm object created by \sfn{sienaAlgorithmCreate()}
@@ -7469,7 +7661,7 @@ This principle here is applied in a double test:
       For each of these combined tests, the $p$-value is given.
       In the output these are denoted, respectively,
       as `combination of right one-sided $p$-values' and
-      `combination of right one-sided $p$-values'.
+      `combination of left one-sided $p$-values'.
 
       It is advisable to use for each the significance level of $\alpha/2$
       (e.g., 0.025 if $\alpha = 0.05$) which yields an overall combined test
@@ -9664,7 +9856,10 @@ the following effects are available:
  or for $p=2$ \\
    $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \sqrt{\sum_h x_{hj}\,v_h}   $;\\
  note that to use this effect for $p=2$ the variable $V$ must be nonnegative,
- which implies that it must be non-centered;
+ which implies that it must be non-centered;\\
+ further note that if $V$ is a behavioral variable, it will be used
+ in the centered version, so that $p$ must be 1; if weighting by
+ a non-centered behavioral variable is desired, a new effect is necessary;
 
  \item {\em in-degree activity weighted by sender's V } \texttt{(inActX)}\\
  defined by the sum of values of $V$ for actors $h$
@@ -9857,6 +10052,15 @@ $s^{\rm net}_{i\vit}(x ) = \sum_j  x^{\rm{simm}}_{ij}\,v_j $ .
  that have the same covariate value for $i$ and $j$,\\
  $s^{\rm net}_{i\vit}(x) =
  \sum_j x_{ij}\, x_{ji}\, x_{ih} \, x_{hj} \, I\{v_i = v_j\}$;
+
+
+ \item {\em homogeneous covariate $\times$ transitive reciprocated triplets}
+ \texttt{(homXTransRecTrip)}, defined by the number of transitive
+ reciprocated triplets
+ $i \rightarrow h \rightarrow j \leftrightarrow i$
+ for which the covariate values for $i$, $j$, $h$ all are the same,\\
+ $s^{\rm net}_{i\vit}(x) =
+ \sum_j x_{ij}\, x_{ji}\, x_{ih} \, x_{hj} \, I\{v_i = v_j = v_h\}$;
 
  \item {\em different covariate $\times$ transitive reciprocated triplets}
  \texttt{(diffXTransRecTrip)}, defined by the number of transitive
@@ -10428,7 +10632,9 @@ Further there are a number of mixed triadic effects.
  the contribution of the tie $i \stackrel{X}{\rightarrow} j$
  is proportional to
  the number of joint $W$ choices of others,
- $i \stackrel{W}{\rightarrow} h \stackrel{W}{\leftarrow} j$.
+ $i \stackrel{W}{\rightarrow} h \stackrel{W}{\leftarrow} j$.\\
+ For internal effect parameter $p \geq 2$, the effect is  \\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, \sqrt{ \sum_{h \neq i, j} w_{ih} \,w_{jh} }\,$.
       \end{minipage}
 \hfill
 \begin{minipage}[t]{.15\textwidth}
@@ -10465,7 +10671,10 @@ Further there are a number of mixed triadic effects.
  the contribution  of the tie $i \stackrel{X}{\rightarrow} j$
  is proportional to
  the number of joint mutual $W$ choices of others,
- $i \stackrel{W}{\leftrightarrow} h \stackrel{W}{\leftrightarrow} j$.
+ $i \stackrel{W}{\leftrightarrow} h \stackrel{W}{\leftrightarrow} j$.\\
+ For internal effect parameter $p \geq 2$, the effect is  \\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, 
+        \sqrt{ \sum_{h \neq i, j} w_{ih}\,  w_{hi}\, w_{jh}\, w_{hj} }\,$.
       \end{minipage}
 \hfill
 \begin{minipage}[t]{.15\textwidth}
@@ -10508,7 +10717,9 @@ Further there are a number of mixed triadic effects.
  corresponding to  the tie $i \stackrel{X}{\rightarrow} j$,
  is the dependent variable here.\\
  The interpretation is that actors have the tendency to make the same
- outgoing $X$-choices as those to whom they have a $W$-tie.
+ outgoing $X$-choices as those to whom they have a $W$-tie.\\
+ For internal effect parameter $p \geq 2$, the effect is  \\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, \sqrt{ \sum_{h \neq i, j} w_{ih}\, x_{hj}}\,$.
       \end{minipage}
 \hfill
 \begin{minipage}[t]{.15\textwidth}
@@ -10534,6 +10745,92 @@ Further there are a number of mixed triadic effects.
 \end{center}
 \vfill
 \end{minipage}
+\smallskip
+ \item
+\begin{minipage}[t]{.7\textwidth}
+{\em  W (backwards) leading to agreement along X}, ($X$: $W$ (backwards) to agreement) \texttt{(toBack)} 
+ (earlier called \texttt{(MixedInWX)}) \\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{hi}\, x_{hj}\,$;\\[0.2em]
+ this refers to the closure of mixed incoming $W$ and $X$ ties;
+ the contribution of the tie $i \stackrel{X}{\rightarrow} j$
+ is proportional to
+ the number of mixed $W-X$ out-two-stars
+ $h \stackrel{W}{\rightarrow} i,  h \stackrel{X}{\rightarrow} j$.\\
+ This is an elementary effect for actor $i$:
+ only the $x_{ij}$ tie indicator in the formula,
+ corresponding to  the tie $i \stackrel{X}{\rightarrow} j$,
+ is the dependent variable here.\\
+ For internal effect parameter $p \geq 2$, the effect is  \\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, \sqrt{ \sum_{h \neq i, j} w_{hi}\, x_{hj}}\,$.
+      \end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\linethickness{0.3pt}
+\vfill
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
+\setplotarea x from 2 to 4, y from 0 to 3
+\put{\large$\bullet$} at  2 1
+\put{\large$\bullet$} at  4 1
+\put{\large$\bullet$} at  3 2.732
+\put{$i$} at 2 0.4
+\put{$j$} at 4 0.4
+\put{$h$} at 3 3.4
+\put{{\small $W$}} at 2.1 1.9
+\put{{\small $X$}} at 3.9 1.9
+\put{{\small $X$}} at 3   0.6
+\arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
+\arrow <2mm> [.2,.6]  from 2.9 2.559 to 2.1 1.1732
+\arrow <2mm> [.2,.6]  from 3.1 2.559 to 3.9 1.1732
+\endpicture
+\end{center}
+\vfill
+\end{minipage}
+\smallskip
+ \item
+\begin{minipage}[t]{.7\textwidth}
+ {\em mutual W leading to agreement along X}, ($X$: mutual $W$ to agreement) \texttt{(toRecip)} \\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{hi}\, w_{ih}\, x_{hj}\,$;\\[0.2em]
+ this refers to the closure of mixed mutual $W$ and $X$ ties;
+ the contribution of the tie $i \stackrel{X}{\rightarrow} j$
+ is proportional to
+ the number of mixed $W-X$ out-two-stars
+ $h \stackrel{W}{\leftrightarrow} i,  h \stackrel{X}{\rightarrow} j$.\\
+ This is an elementary effect for actor $i$:
+ only the $x_{ij}$ tie indicator in the formula,
+ corresponding to  the tie $i \stackrel{X}{\rightarrow} j$,
+ is the dependent variable here.\\
+ For internal effect parameter $p \geq 2$, the effect is  \\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, \sqrt{ \sum_{h \neq i, j} w_{hi} \,w_{ih}\, x_{hj}}\,$.
+      \end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\linethickness{0.3pt}
+\vfill
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
+\setplotarea x from 2 to 4, y from 0 to 3
+\put{\large$\bullet$} at  2 1
+\put{\large$\bullet$} at  4 1
+\put{\large$\bullet$} at  3 2.732
+\put{$i$} at 2 0.4
+\put{$j$} at 4 0.4
+\put{$h$} at 3 3.4
+\put{{\small $W$}} at 2.1 1.9
+\put{{\small $X$}} at 3.9 1.9
+\put{{\small $X$}} at 3   0.6
+\arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
+\arrow <2mm> [.2,.6]  from 2.9 2.559 to 2.1 1.1732
+\arrow <2mm> [.2,.6]  from 3.1 2.559 to 3.9 1.1732
+\endpicture
+\end{center}
+\vfill
+\end{minipage}
+\smallskip
+
+
  \item
 \begin{minipage}[t]{.7\textwidth}
  {\em  XWX closure of $W$}, \texttt{(cl.XWX)} \\[0.2em]
@@ -10644,10 +10941,8 @@ by Maximum Likelihood and Bayesian estimation.
  is proportional to
  the number of mixed $X-W$ out-two-stars
  $h \stackrel{X}{\rightarrow} i,  h \stackrel{W}{\rightarrow} j$.\\
- This is an elementary effect for actor $i$:
- only the $x_{ij}$ tie indicator in the formula,
- corresponding to  the tie $i \stackrel{X}{\rightarrow} j$,
- is the dependent variable here.
+ For internal effect parameter $p \geq 2$, the effect is  \\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, \sqrt{ \sum_{h \neq i, j} x_{hi}\, w_{hj}}\,$.
       \end{minipage}
 \hfill
 \begin{minipage}[t]{.15\textwidth}
@@ -10665,45 +10960,6 @@ by Maximum Likelihood and Bayesian estimation.
 \put{$h$} at 3 3.4
 \put{{\small $X$}} at 2.1 1.9
 \put{{\small $W$}} at 3.9 1.9
-\put{{\small $X$}} at 3   0.6
-\arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
-\arrow <2mm> [.2,.6]  from 2.9 2.559 to 2.1 1.1732
-\arrow <2mm> [.2,.6]  from 3.1 2.559 to 3.9 1.1732
-\endpicture
-\end{center}
-\vfill
-\end{minipage}
-\smallskip
- \item
-\begin{minipage}[t]{.7\textwidth}
- {\em  shared mixed incoming W and X}, ($X$: mixed incoming from $W$) \texttt{(mixedInWX)} \\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{hi}\, x_{hj}\,$;\\[0.2em]
- this refers to the closure of mixed incoming $W$ and $X$ ties;
- the contribution of the tie $i \stackrel{X}{\rightarrow} j$
- is proportional to
- the number of mixed $W-X$ out-two-stars
- $h \stackrel{W}{\rightarrow} i,  h \stackrel{X}{\rightarrow} j$.\\
- This is an elementary effect for actor $i$:
- only the $x_{ij}$ tie indicator in the formula,
- corresponding to  the tie $i \stackrel{X}{\rightarrow} j$,
- is the dependent variable here.
-      \end{minipage}
-\hfill
-\begin{minipage}[t]{.15\textwidth}
-\linethickness{0.3pt}
-\vfill
-\begin{center}
-\beginpicture
-\setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
-\setplotarea x from 2 to 4, y from 0 to 3
-\put{\large$\bullet$} at  2 1
-\put{\large$\bullet$} at  4 1
-\put{\large$\bullet$} at  3 2.732
-\put{$i$} at 2 0.4
-\put{$j$} at 4 0.4
-\put{$h$} at 3 3.4
-\put{{\small $W$}} at 2.1 1.9
-\put{{\small $X$}} at 3.9 1.9
 \put{{\small $X$}} at 3   0.6
 \arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
 \arrow <2mm> [.2,.6]  from 2.9 2.559 to 2.1 1.1732
@@ -10967,6 +11223,82 @@ Then there are effects using mixed configurations on four nodes
  also to include the \texttt{inPop} effect, so as to avoid misinterpretations.
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
+
+\iffalse
+
+\noindent
+\textbf{\emph{Dyadic covariate effects}}
+\medskip
+
+For dyadic covariate effects in models for evolution of multiple networks,
+the convention with respect to letters has to be adapted.
+For the rest, $W$ is used both to indicate dyadic covariates and networks
+in their role as explanatory variables.
+Now we use the letter $U$ to indicate the dyadic covariate,
+$X$ to denote the network in the role of dependent variable, and $W$
+the other network, having the role of explanatory variable.
+
+\begin{enumerate}
+\setcounter{enumi}{\value{savenumi}}
+ \item
+\begin{minipage}[t]{.7\textwidth}
+ {\em  W weighted by U leading to agreement along X},
+ ($X$: $W$ weighted $U$ to agreement) \texttt{(toU)} \\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, u_{ih} \, w_{ih}\, x_{hj}\,$;\\[0.2em]
+ this refers to the closure of mixed $W-X$ two-paths,
+ where the $W$ relation is weighted by $U$;
+ the contribution of the tie $i \stackrel{X}{\rightarrow} j$
+ is proportional to
+ the sum of mixed $W-X$ two-paths
+ $i \stackrel{W}{\rightarrow} h \stackrel{X}{\rightarrow} j$
+ weighted by $u_{ih}$.\\
+ This is an elementary effect for actor $i$:
+ only the $x_{ij}$ tie indicator in the formula,
+ corresponding to  the tie $i \stackrel{X}{\rightarrow} j$,
+ is the dependent variable here.\\
+ The interpretation is that actors have the tendency to make the same
+ outgoing $X$-choices as those to whom they have a $W$-tie,
+ weighted by $U$.
+ This will usually be meaningful if $U$ is non-centered.
+
+ This effect is a variant of the \texttt{sameWXClosure} effect,
+ where the restriction is made that actors $i$ and $h$
+ have the same value of a monadic covariate.
+      \end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\linethickness{0.3pt}
+\vfill
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
+\setplotarea x from 2 to 4, y from 0 to 3
+\put{\large$\bullet$} at  2 1
+\put{\large$\bullet$} at  4 1
+\put{\large$\bullet$} at  3 2.732
+\put{$i$} at 2 0.4
+\put{$j$} at 4 0.4
+\put{$h$} at 3 3.4
+\put{{\small $W \times U$}} at 1.6 1.9
+\put{{\small $X$}} at 3.9 1.9
+\put{{\small $X$}} at 3   0.6
+\arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
+\arrow <2mm> [.2,.6]  from 2.1 1.1732 to 2.9 2.559
+\arrow <2mm> [.2,.6]  from 3.1 2.559 to 3.9 1.1732
+\endpicture
+\end{center}
+\vfill
+\end{minipage}
+
+\setcounter{savenumi}{\value{enumi}}
+\end{enumerate}
+
+\fi
+
+
+\noindent
+\textbf{\emph{Monadic covariate effects}}
+\medskip
 
 \noindent
 The mixed degree-related effects can be weighted with monadic covariates $V$,
@@ -11336,6 +11668,9 @@ covariate $V$.
  this refers to the closure of $W-X$ two-paths, restricted to
  two-paths  $i \stackrel{W}{\rightarrow} h \stackrel{X}{\rightarrow} j $
  in which the focal actor and the mediating actor have the same value of $V$.
+
+ A variant of this effect with weighting by a dyadic covariate
+ is the \texttt{toU} effect.
       \end{minipage}
 \hfill
 \begin{minipage}[t]{.15\textwidth}
@@ -11642,15 +11977,64 @@ covariate $V$.
 \end{minipage}
 \smallskip
 
+
+
+ \item
+\begin{minipage}[t]{.7\textwidth}
+ {\em  W, weighted by $U$, leading to agreement along X}, \\
+ ($X$: $W$ weighted by $U$ to agreement) \texttt{(toU)} \\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{ih}\, u_{ih}\, x_{hj}\,$;\\[0.2em]
+ this refers to the closure of mixed $W-X$ two-paths,
+ weighted by the dyadic covariate $U$;
+ the contribution of the tie $i \stackrel{X}{\rightarrow} j$
+ is proportional to
+ the sum of $u_{ih}$ for all mixed $W-X$ two-paths
+ $i \stackrel{W}{\rightarrow} h \stackrel{X}{\rightarrow} j$.\\
+ This is an elementary effect for actor $i$:
+ only the $x_{ij}$ tie indicator in the formula,
+ corresponding to  the tie $i \stackrel{X}{\rightarrow} j$,
+ is the dependent variable here.\\
+ The interpretation is that actors have the tendency to make the same
+ outgoing $X$-choices as those to whom they have a $W$-tie,
+ weighted by $U$.\\
+ Here $W$ is \texttt{interaction1} and $U$ is \texttt{interaction2}.
+ This will be suitable mainly for non-centered covariates $U$,
+ for which the term `weight' is appropriate.
+      \end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\linethickness{0.3pt}
+\vfill
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
+\setplotarea x from 2 to 4, y from 0 to 3
+\put{\large$\bullet$} at  2 1
+\put{\large$\bullet$} at  4 1
+\put{\large$\bullet$} at  3 2.732
+\put{$i$} at 2 0.4
+\put{$j$} at 4 0.4
+\put{$h$} at 3 3.4
+\put{{\small $W, \ U$}} at 1.8 1.9
+\put{{\small $X$}} at 3.9 1.9
+\put{{\small $X$}} at 3   0.6
+\arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
+\arrow <2mm> [.2,.6]  from 2.1 1.1732 to 2.9 2.559
+\arrow <2mm> [.2,.6]  from 3.1 2.559 to 3.9 1.1732
+\endpicture
+\end{center}
+\vfill
+\end{minipage}
+
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
 
 
 \noindent
-There are two effects similar to the effects described above
-depending on the auxiliary variable $\breve v_i$,
-``alters' $v$-average''.
-Now the `alter' is defined, however, by the other network $W$.
+There are several effects similar to the `alter' and `similarity'
+effects described above,
+now depending on the auxiliary variable $\breve v_i$, ``alters' $v$-average''.
+Here the `alter' is defined, however, by the other network $W$.
 Thus, \emph{$W$-alters' $v$-average} $\breve v_i^W$ is defined by
 \begin{equation}
   \breve v_i^W = \left\{\begin{array}{ll} \displaystyle
@@ -12402,7 +12786,7 @@ The list of these effects is the following.
 
 \noindent
 If there are more than one dependent network variables,
-denoted $X_1$ and £$X_2$,
+denoted $X_1$ and $X_2$,
 they can operate jointly on the behavioural dependent variable using
 the following effects.
 $X_1$ is given as \texttt{interaction1}, $X_2$ as \texttt{interaction2}.
@@ -12665,7 +13049,8 @@ denoted $v_j$), there are the following effects.
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
 There are also a number of interaction effects between actor covariates
-(which includes other dependent behavior variables) and influence effects.
+(which includes other dependent behavior variables; note that these are used
+in their \underline{centered} versions) and influence effects.
 These have to be specified using \texttt{interaction1} for the covariate
 and \texttt{interaction2} for the network, e.g.,
 \begin{verbatim}
@@ -12678,6 +13063,13 @@ interaction effects created, for example, as follows:
 myCoevolutionEff <- includeInteraction(myCoevolutionEff, effFrom, avAlt,
         name="smoking", interaction1 = c("sex", "friendship"))
 \end{verbatim}
+Furthermore, note that when the same dependent variable is used
+(i.e., \texttt{name} and \texttt{interaction1} are the same),
+the dependent variable is used as a weight with its value
+before the ministep, and the potential change is not taken into account;
+this departs from the concept of evaluation effect,
+and is a case of an elementary effect.
+
 For the `alter'-variant, this way of construction will not work because the
 effect statistic cannot be decomposed into a product of two ego-level statistics.
 The available effects of this type are the following.
@@ -14471,13 +14863,13 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.0.n.tar.gz|\\
-(where \verb|n| is adjusted to match the tar ball name.)
+\verb|R CMD check RSiena_1.2.32.tar.gz|\\
+(where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.0.n.tar.gz| \\
-(where again \verb|n| is adjusted to match the tar ball name.)
+\verb|R CMD INSTALL --build RSiena_1.2.32.tar.gz| \\
+(where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
 If you make a change you need to \textsf{INSTALL} the new version in order to
@@ -14949,21 +15341,25 @@ Further some of the complex effectGroups are the following:
     statistics as usual for co-evolution models);
 \item \sfn{tripleNetworkObjective} is for combinations
     of three networks where for the two in the role of explanatory networks,
-    either both should be one-mode, or both should be bipartite with the same second node sets.
+\item \sfn{dyadANetNetObjective} is for combinations
+    of two networks and a dyadic covariate, where the network in the role
+    of dependent network should be one-mode, and the dyadic covariate
+    should be on the node set (`squared') of the dependent network;
 \item \sfn{behaviorOneOneModeObjective} is for dependent behavioral variables and
-    two explanatory one-mode directed networks.
+    two explanatory one-mode directed networks;
 \item \sfn{behaviorSymSymObjective} is for dependent behavioral variables and
-    two explanatory one-mode non-directed networks.
+    two explanatory one-mode non-directed networks;
 \item \sfn{behaviorOneModeSymObjective} is for dependent behavioral variables and
     two explanatory one-mode networks, the first directed, the second non-directed.
 \item \sfn{behaviorBipBipObjective} is for dependent behavioral variables and
-    two explanatory two-mode networks with identical actor sets.
+    two explanatory two-mode networks with identical actor sets;
 \item \sfn{dyadBehaviorNetObjective} is for dependent behavioral variables,
    an explanatory one-mode network and an explanatory dyadic covariate.
 \end{itemize}
 
 If you wish to add an effect with a combination of variables that is not yet implemented,
-you have also to treat it in \sfn{effects.r}.
+you have also to treat it in \sfn{effects.r} (which will require some figuring out) and
+mention it in \sfn{effectsDocumentation.r}.
 
 
 \appendix
@@ -15467,14 +15863,46 @@ in reverse time order from the current version until
 version 1.0.6 of end October 2009.
 For more complete information about changes,
 consult the NEWS.md file (in earlier versions
-this was the CHANGELOG file) in the source code, 
+this was the CHANGELOG file) in the source code,
 which contains a more complete listing.
 
 \begin{small}
 \begin{itemize} % Also update version number in abstract
 
 
-\item 2020-12-10  GitHub, package version 1.2-29.\\
+
+\item 2021-03-12  GitHub, package version 1.2.32.
+
+Changes in RSiena:
+\begin{itemize}
+   \item Generalized Method of Moments implemented (Viviana Amati):
+     see\\
+     \url{https://github.com/snlab-nl/rsiena/blob/develop/docs/manual/Changes_RSiena_GMoM.pdf};
+     new function \sfn{includeGMoMStatistics}, extended functionality of \sfn{siena07}.
+   \item \sfn{effectsDocumentation} now also includes \texttt{gmm} effects (at the bottom).
+   \item \sfn{dyadicCov} made to accept also changing dyadic covariates.
+   \item new arguments \texttt{plotAboveThreshold} and \texttt{verbose} for \sfn{funnelPlot}.
+   \item Resolved issue with continuous dependent behavior variables
+     (Nynke Niezink).
+   \item New effects: \texttt{homXTransRecTrip}, \texttt{toU}.
+   \item This implied creation of a new effect class \sfn{dyadANetNetObjective}.
+   \item \texttt{sqrt} versions for parameter 2 for the effects 
+      \texttt{to}, \texttt{toBack}, \texttt{toRecip},
+     \texttt{from}, \texttt{fromMutual}.
+   \item Reinstated effect \texttt{MixedInXW}, also with \texttt{sqrt} version for parameter 2.
+   \item Dropped effect \texttt{to.2} (identical to "\texttt{to}")
+     and \texttt{MixedInWX} (identical to "\texttt{toBack}").
+   \item Description of \texttt{toBack} and \texttt{toRecip} in manual.
+   \item Correction in \texttt{phase3.2} of a bug that sometimes led to an error message
+     if \texttt{simOnly}.
+   \item Display of deviations from targets changed to after subtraction of targets.
+   \item Stop if no parameters are estimated and \texttt{simOnly} is FALSE.
+   \item Require \texttt{R >= 3.5.0}.
+   \item \sfn{xtable} added to \texttt{Imports} (used to be in \texttt{Suggests}).
+\end{itemize}
+
+
+\item 2020-12-10  GitHub, package version 1.2.32.\\
 Integration of GitHub and what was earlier at R-Forge.
 
 Changes in RSiena:
@@ -15502,7 +15930,6 @@ Changes in RSiena:
    \item In \sfn{sienaDataConstraint}, if type is \texttt{disjoint} or \texttt{atLeastOne},
      the constraint is also implemented for the pair \texttt{(net2, net1)}.
    \item New parameter \texttt{tested} in \sfn{sienaGOF}.
-
 \end{itemize}
 
 \item 2020-09-16 R-Forge Revision 350, package version 1.2-27.

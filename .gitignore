@@ -11,7 +11,4 @@ src/*.dll
 *.synctex
 *.bak
 TexAux/
-autom4te.cache
-config.log
-config.status
-*.code-workspace
+inst/doc

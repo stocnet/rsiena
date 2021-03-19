@@ -2,7 +2,8 @@
 \alias{funnelPlot}
 \title{Plot function for a list of sienaFit objects}
 \usage{
-funnelPlot(anslist, k, threshold=NULL, origin=TRUE, ...)
+funnelPlot(anslist, k, threshold=NULL, origin=TRUE,
+           plotAboveThreshold=TRUE, verbose=TRUE, ...)
 }
 \description{
   Draws a funnel plot for a list of sienaFit objects that all have estimated
@@ -16,6 +17,12 @@ funnelPlot(anslist, k, threshold=NULL, origin=TRUE, ...)
      \code{k} is larger than this threshold will be disregarded.}
   \item{origin}{Boolean: whether to include the origin in the plot,
     if all estimates have the same sign.}
+  \item{plotAboveThreshold}{Boolean: whether to include the estimates
+    for which the standard error is larger than \code{threshold},
+    and plot them with an asterisk at \code{se=threshold}.}
+  \item{verbose}{Boolean: whether to report in the console all estimates
+    omitted, because either their standard error is larger than
+    \code{threshold}, or they were fixed.}
   \item{\dots}{For extra arguments (passed to \code{plot}).}
 }
 \details{
@@ -23,7 +30,11 @@ funnelPlot(anslist, k, threshold=NULL, origin=TRUE, ...)
  errors for a given effect \code{k}, with red
  reference lines added at the two-sided
  significance threshold 0.05. Effects for which a score test
- was requested are not plotted.\cr
+ was requested are not plotted (and reported to the console
+ if \code{verbose}).\cr
+ It is not checked whether the effects with number \code{k} are the same
+ in all \code{sienaFit} objects. The effect name for the first object
+ is used as the plot title.\cr
  Another funnel plot is available as \code{\link{print.sienaMeta}}.
 }
 \value{

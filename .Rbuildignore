@@ -4,5 +4,5 @@
 ^docs$
 ^pkgdown$
 ^\.github$
-^.*\.code-workspace$
-^checkEffects.R
+^checkEffects.R$
+^ONEWS$

@@ -510,7 +510,7 @@ void Chain::connect(int period, MLSimulation * pMLSimulation)
 								MiniStep * pFirstMiniStep =
 									this->pFirstMiniStepForLink(miniSteps[i]);
 								//	if (pFirstMiniStep != this->lpFirst)
-								//{
+								// {
 								//	PrintValue(getMiniStepDF(*pFirstMiniStep));
 								pMiniStep =
 									this->randomMiniStep(this->
@@ -524,7 +524,7 @@ void Chain::connect(int period, MLSimulation * pMLSimulation)
 								// see if valid here
 								if (pVariable->validMiniStep(miniSteps[i]))
 								{
-									Rprintf("thirsd true val\n");
+								//	Rprintf("third true val\n");
 									valid = true;
 								}
 								//	}

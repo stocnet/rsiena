@@ -26,6 +26,8 @@ class AverageAlterEffect : public NetworkDependentBehaviorEffect
 public:
 	AverageAlterEffect(const EffectInfo * pEffectInfo, bool divide,
 		bool alterPopularity);
+	AverageAlterEffect(const EffectInfo * pEffectInfo, bool divide,
+		bool alterPopularity, const bool simulatedState);
 
 	virtual double calculateChangeContribution(int actor,
 		int difference);

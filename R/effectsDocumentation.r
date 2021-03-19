@@ -25,6 +25,10 @@ effectsDocumentation <- function(effects= NULL, type="html",
 		x <- as.data.frame(effects[, c("name", "effectName", "shortName", "type",
 			"interaction1", "interaction2", "parm", "interactionType")])
 	}
+#  if (any(x$type=="gmm"))
+#  {
+#    x <- x[-which(x$type=="gmm"),]
+#  }
 	storage.mode(x$parm) <- "integer"
 	names(x)[4] <- ifelse(is.null(effects), "endow?", "type")
 	names(x)[5] <- "inter1"
@@ -68,6 +72,7 @@ effectsDocumentation <- function(effects= NULL, type="html",
 				"nonSymmetricBipartiteObjective",
 				"covarNetNetObjective",
 				"tripleNetworkObjective",
+				"dyadANetNetObjective",
 				"settingsObjective",
 
 				"symmetricObjective",
@@ -98,7 +103,7 @@ effectsDocumentation <- function(effects= NULL, type="html",
 				"covarABehaviorBipartiteObjective",
 				"covarBBehaviorBipartiteObjective",
 				"unspecifiedBehaviorInteraction",
-				"continuousFeedback", 
+				"continuousFeedback",
 				"continuousWiener",
 				"continuousIntercept",
 				"continuousOneModeObjective",
@@ -120,6 +125,7 @@ effectsDocumentation <- function(effects= NULL, type="html",
 			"</TD> </TR>")
 	}
 	add.to.row <- NULL
+	x$interactionType[x$type=='gmm'] <- ''
 	if (is.null(effects))
 	{
 		add.to.row$pos <- lapply(addtorowPos, function(x)x)
@@ -132,7 +138,7 @@ effectsDocumentation <- function(effects= NULL, type="html",
 	}
 	else
 	{
-		y <- x
+		y <- rbind(x[x$type!='gmm',], x[x$type=='gmm',])
 	}
 	row.names(y) <- 1:nrow(y)
 

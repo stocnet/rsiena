@@ -25,6 +25,7 @@ class MaxAlterEffect : public NetworkDependentBehaviorEffect
 {
 public:
 	MaxAlterEffect(const EffectInfo * pEffectInfo, bool minim);
+	MaxAlterEffect(const EffectInfo * pEffectInfo, bool minim, const bool simulatedState);
 
 	virtual double calculateChangeContribution(int actor,
 		int difference);

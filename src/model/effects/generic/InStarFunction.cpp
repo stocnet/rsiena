@@ -10,6 +10,8 @@
  *****************************************************************************/
 
 #include "InStarFunction.h"
+#include <stdexcept>
+#include "utils/SqrtTable.h"
 #include "model/tables/NetworkCache.h"
 #include "model/tables/EgocentricConfigurationTable.h"
 
@@ -23,10 +25,12 @@ namespace siena
  * @param[in] networkName the name of the network variable this function is
  * associated with
  */
-InStarFunction::InStarFunction(string networkName) :
+InStarFunction::InStarFunction(string networkName, bool root) :
 	NetworkAlterFunction(networkName)
 {
 	this->lpTable = 0;
+	this->lroot = root;
+	this->lsqrtTable = SqrtTable::instance();
 }
 
 
@@ -54,7 +58,14 @@ void InStarFunction::initialize(const Data * pData,
  */
 double InStarFunction::value(int alter)
 {
-	return this->lpTable->get(alter);
+	if (this->lroot)
+	{
+		return this->lsqrtTable->sqrt(this->lpTable->get(alter));
+	}
+	else
+	{
+		return this->lpTable->get(alter);
+	}
 }
 
 
@@ -63,7 +74,14 @@ double InStarFunction::value(int alter)
  */
 int InStarFunction::intValue(int alter)
 {
-	return this->lpTable->get(alter);
+	if (this->lroot)
+	{
+		throw logic_error("Square roots are not integer values");
+	}
+	else
+	{
+		return this->lpTable->get(alter);
+	}
 }
 
 }

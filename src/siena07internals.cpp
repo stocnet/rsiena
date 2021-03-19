@@ -2071,6 +2071,22 @@ void getStatistics(SEXP EFFECTSLIST,
 						score = 0;
 					}
 				}
+				else if (strcmp(effectType, "gmm") == 0)
+				{
+				  EffectInfo * pEffectInfo = (EffectInfo *)
+				  R_ExternalPtrAddr(
+				    VECTOR_ELT(VECTOR_ELT(EFFECTS,
+                              pointerCol), i));
+				  statistic = pCalculator->statistic(pEffectInfo);
+				  if (pEpochSimulation)
+				  {
+				    score = pEpochSimulation->score(pEffectInfo);
+				  }
+				  else
+				  {
+				    score = 0;
+				  }
+				}
 				else
 				{
 					error("invalid effect type %s\n", effectType);

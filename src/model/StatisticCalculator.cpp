@@ -411,11 +411,13 @@ void StatisticCalculator::calculateStatistics()
 			this->calculateNetworkEvaluationStatistics(pNetworkData);
 			this->calculateNetworkEndowmentStatistics(pNetworkData);
 			this->calculateNetworkCreationStatistics(pNetworkData);
+			this->calculateNetworkGMMStatistics(pNetworkData);
 		}
 		else if (pBehaviorData)
 		{
 			this->calculateBehaviorRateStatistics(pBehaviorData);
 			this->calculateBehaviorStatistics(pBehaviorData);
+			this->calculateBehaviorGMMStatistics(pBehaviorData);
 		}
 		else if (pContinuousData)
 		{
@@ -443,6 +445,126 @@ void StatisticCalculator::calculateStatistics()
 	}
 }
 
+/**
+ * Calculates the statistics for the GMM effects of the given
+ * network variable.
+ */
+void StatisticCalculator::calculateNetworkGMMStatistics(
+		NetworkLongitudinalData * pNetworkData) {
+	// We want to pass all networks to the effects in a single state,
+	// hence we overwrite the network in the predictor state.
+	// We do not use the predictor network with effects this network owns.
+
+	string name = pNetworkData->name();
+	const Network * pPredictorNetwork = this->lpPredictorState->pNetwork(name);
+	const Network * pCurrentLessMissingsEtc =
+			this->lpStateLessMissingsEtc->pNetwork(name);
+	this->lpPredictorState->pNetwork(name, pCurrentLessMissingsEtc);
+
+	// Loop through the evaluation effects, calculate the statistics, and store
+	// them.
+	const vector<EffectInfo *> & rEffects = this->lpModel->rGMMEffects(
+			pNetworkData->name());
+	EffectFactory factory(this->lpData);
+	Cache cache;
+
+	for (unsigned i = 0; i < rEffects.size(); i++) {
+		EffectInfo * pInfo = rEffects[i];
+		NetworkEffect * pEffect = (NetworkEffect *) factory.createEffect(pInfo);
+
+		// Initialize the effect to work with our data and state of variables.
+//	pEffect->initialize(this->lpData, this->lpPredictorState,
+//		this->lperiod, &cache);
+		pEffect->initialize(this->lpData, this->lpPredictorState, this->lpState,
+			this->lperiod, &cache);
+
+		this->lstatistics[pInfo] = pEffect->evaluationStatistic();
+		delete pEffect;
+	}
+
+	// Restore the predictor network
+	this->lpPredictorState->pNetwork(name, pPredictorNetwork);
+}
+
+void StatisticCalculator::calculateBehaviorGMMStatistics(
+		BehaviorLongitudinalData * pBehaviorData) {
+	// create a copy of the current state and zero any values missing
+	// at either end of period
+	const int* currentState = this->lpState->behaviorValues(
+			pBehaviorData->name());
+	double* currentValues = new double[pBehaviorData->n()];
+
+	for (int i = 0; i < pBehaviorData->n(); i++) {
+		currentValues[i] = currentState[i] - pBehaviorData->overallMean();
+		if (pBehaviorData->missing(this->lperiod, i)
+				|| pBehaviorData->missing(this->lperiod + 1, i)) {
+			currentValues[i] = 0;
+		}
+	}
+	// Loop through the evaluation effects, calculate the statistics,
+	// and store them.
+	const vector<EffectInfo *> & rEffects = this->lpModel->rGMMEffects(
+			pBehaviorData->name());
+	EffectFactory factory(this->lpData);
+	Cache cache;
+	for (unsigned i = 0; i < rEffects.size(); i++) {
+		EffectInfo * pInfo = rEffects[i];
+		BehaviorEffect * pEffect = (BehaviorEffect *) factory.createEffect(
+				pInfo);
+		// Initialize the effect to work with our data and state of variables.
+//	pEffect->initialize(this->lpData, this->lpPredictorState,
+//			this->lperiod, &cache);
+		pEffect->initialize(this->lpData, this->lpPredictorState, this->lpState,
+				this->lperiod, &cache);
+		if (this->lneedActorStatistics) {
+			pair<double, double *> p = pEffect->evaluationStatistic(
+					currentValues, this->lneedActorStatistics);
+			this->lstatistics[pInfo] = p.first;
+			this->lactorStatistics[pInfo] = p.second;
+		} else {
+			this->lstatistics[pInfo] = pEffect->evaluationStatistic(
+					currentValues);
+		}
+		if (this->lcountStaticChangeContributions)
+		{
+			int choices = 3;
+			vector<double *> egosMap(pBehaviorData->n());
+			this->lstaticChangeContributions.insert(make_pair(pInfo, egosMap));
+			for (int e = 0; e < pBehaviorData->n(); e++) {
+				cache.initialize(e);
+				//			pEffect->initialize(this->lpData, this->lpPredictorState,
+				//					this->lperiod, &cache);
+				pEffect->initialize(this->lpData, this->lpPredictorState, this->lpState,
+						this->lperiod, &cache);
+				double * contributions = new double[choices];
+				this->lstaticChangeContributions[pInfo].at(e) = contributions;
+				pEffect->preprocessEgo(e);
+				// no change gives no contribution
+				this->lstaticChangeContributions[pInfo].at(e)[1] = 0;
+				// calculate the contribution of downward change
+				if ((currentValues[e] > pBehaviorData->min())
+						&& (!pBehaviorData->upOnly(this->lperiod)))
+				{
+					this->lstaticChangeContributions[pInfo].at(e)[0] =
+						pEffect->calculateChangeContribution(e, -1);
+				} else {
+					this->lstaticChangeContributions[pInfo].at(e)[0] = R_NaN;
+				}
+				// calculate the contribution of upward change
+				if ((currentValues[e] < pBehaviorData->max())
+						&& (!pBehaviorData->downOnly(this->lperiod)))
+				{
+					this->lstaticChangeContributions[pInfo].at(e)[2] =
+						pEffect->calculateChangeContribution(e, 1);
+				} else {
+					this->lstaticChangeContributions[pInfo].at(e)[2] = R_NaN;
+				}
+			}
+		}
+		delete pEffect;
+	}
+	delete[] currentValues;
+}
 
 /**
  * Calculates the statistics for the evaluation effects of the given

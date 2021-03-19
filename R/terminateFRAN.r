@@ -7,8 +7,16 @@ terminateFRAN <- function(z, x)
         z$theta[z$posj] <- z$theta[z$posj] * z$rate
 		if (!x$simOnly)
 		{
-			z$covtheta[z$posj, ] <- z$covtheta[z$posj, ] * z$rate
-			z$covtheta[, z$posj] <- z$covtheta[,z$posj ] * z$rate
+		  if (!x$gmm)
+		  {
+		    z$covtheta[z$posj, ] <- z$covtheta[z$posj, ] * z$rate
+		    z$covtheta[, z$posj] <- z$covtheta[,z$posj ] * z$rate
+		  }
+			else 
+			{ 
+			  z$covtheta[z$posj[-which(z$requestedEffects$type=="gmm")], ] <- z$covtheta[z$posj[-which(z$requestedEffects$type=="gmm")], ] * z$rate
+			  z$covtheta[, z$posj[-which(z$requestedEffects$type=="gmm")]] <- z$covtheta[,z$posj[-which(z$requestedEffects$type=="gmm")] ] * z$rate  
+			}
 		}	
     }
     f <- FRANstore()

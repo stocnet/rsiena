@@ -86,4 +86,4 @@ plot(ttp, effects=1:3, layout=c(3,1))
 }
 }
 
-\keyword{models}
+\keyword{methods}

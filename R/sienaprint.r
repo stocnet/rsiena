@@ -946,7 +946,7 @@ sienaFitThetaTable <- function(x, fromBayes=FALSE, tstat=FALSE, groupOnly=0, nfi
 	else
 	{
 		theEffects <- x$requestedEffects
-    theEffects <-theEffects[which(theEffects$type!='gmm'),]
+    	theEffects <- theEffects[which(theEffects$type!='gmm'),]
 	}
 	pp <- dim(theEffects)[1]
 	if (is.null(x$thetaFromFile))
@@ -961,8 +961,17 @@ sienaFitThetaTable <- function(x, fromBayes=FALSE, tstat=FALSE, groupOnly=0, nfi
     {
         nrates <- 0
     }
-	xp <- pp
-    pp <- pp + nrates
+	if (!x$gmm)
+	{
+	  xp <- pp
+	  pp <- pp + nrates
+	}
+	else
+	{ 
+	  pp <- sum(x$requestedEffects$include==TRUE)
+	  xp <- pp - sum(x$requestedEffects$type=="gmm")
+	  pp <- xp + nrates
+	}
     ## mydf stores the data before formatting
 	if (fromBayes)
 	{
@@ -1080,14 +1089,26 @@ sienaFitThetaTable <- function(x, fromBayes=FALSE, tstat=FALSE, groupOnly=0, nfi
     }
 	if (!is.null(x$covtheta))
 	{
-		ses <- sqrt(diag(x$covtheta))
-		ses[x$fixed] <- NA
+	  if (!x$gmm)
+	  {
+	    ses <- sqrt(diag(x$covtheta))
+	    ses[x$fixed] <- NA
+	  }
+	  else 
+	  {
+	    ses <- sqrt(diag(x$covtheta))
+	    ses[x$fixed[-which(x$requestedEffects$type=="gmm")]] <- NA  
+	  }
 	}
 	if (fromBayes)
 	{
 		atl <- averageTheta.last(x, groupOnly, nfirst = nfirst)
 		theta <- atl[[1]]
 		postSd <- sqrt(atl[[2]])
+	}
+  	if (x$gmm)
+  	{
+      theta <- x$theta[-which(x$requestedEffects$type=="gmm")]
 	}
 	else
 	{
@@ -1128,12 +1149,22 @@ sienaFitThetaTable <- function(x, fromBayes=FALSE, tstat=FALSE, groupOnly=0, nfi
         theEffects$effectName[theEffects$netType=='continuous'] <-
             contEffects$effectName
     }
-
-	mydf[nrates + (1:xp), 'row'] <-  1:xp
-	mydf[nrates + (1:xp), 'type' ] <- ifelse(theEffects$type == "creation",
-		"creat", theEffects$type)
-	mydf[nrates + (1:xp), 'text' ] <- theEffects$effectName
-	mydf[nrates + (1:xp), 'value' ] <- theta
+    if (!x$gmm)
+      {
+        mydf[nrates + (1:xp), 'row'] <-  1:xp
+        mydf[nrates + (1:xp), 'type' ] <- ifelse(theEffects$type == "creation",
+                                             "creat", theEffects$type)
+        mydf[nrates + (1:xp), 'text' ] <- theEffects$effectName
+        mydf[nrates + (1:xp), 'value' ] <- theta
+      }
+    else if (x$gmm)
+    { 
+      mydf[nrates + (1:xp), 'row'] <-  1:xp
+      mydf[nrates + (1:xp), 'type' ] <- ifelse(theEffects$type == "creation",
+                                               "creat", theEffects$type)
+      mydf[nrates + (1:xp), 'text' ] <- theEffects$effectName
+      mydf[nrates + (1:xp), 'value' ] <- theta
+    }
 
 	if (fromBayes) # then nrates=0
 	{

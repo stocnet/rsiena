@@ -24,29 +24,19 @@ if test -z "${R_HOME}"; then
   AC_MSG_ERROR([could not determine R_HOME])
 fi
 RBIN="${R_HOME}/bin/R"
+CC=`"${RBIN}" CMD config CC`;
+CFLAGS=`"${RBIN}" CMD config CFLAGS`
 LIBS="${PKG_LIBS}"
-
-# Checking for C++
-# base on: https://unconj.ca/blog/an-autoconf-primer-for-r-package-authors.html 
-CXX=`"${RBIN}" CMD config CXX`
-CXXFLAGS=`"${RBIN}" CMD config CXXFLAGS`
-CPPFLAGS=`"${RBIN}" CMD config CPPFLAGS`
-AC_LANG(C++)
-AC_PROG_CPP
 
 
 AC_PROG_CXX
 AC_PROG_CC
-
-# Check for typedefs, structures, and compiler characteristics
 AC_CHECK_HEADERS([sys/time.h unistd.h])
 AC_CHECK_HEADER_STDBOOL
 AC_C_INLINE
 AC_C_RESTRICT
 AC_TYPE_SIZE_T
 AC_CHECK_TYPES([ptrdiff_t])
-
-# Check for library functions
 AC_FUNC_ERROR_AT_LINE
 AC_FUNC_MALLOC
 AC_HEADER_MAJOR
@@ -164,29 +154,9 @@ if test -z "${MPI_INCLUDE_PATH}" ; then
     AC_MSG_CHECKING([for mpi root directory])
     for d in /opt/lib /usr/lib /usr /usr/local/lib /usr/local \
       /usr/lib64/mpi/gcc/openmpi; do
-      if test -f $d/include/openmpi-i386/mpi.h && test -d $d/lib/openmpi/lib; then
-      # This is what Fedora 17 had, adapted from pbdMPI package
-        MPI_ROOT=$d
-        MPITYPE="OPENMPI"
-        MPI_INCLUDE_PATH=$d/include/openmpi-i386
-        break
-      elif test -f $d/include/openmpi-x86_64/mpi.h && test -d $d/lib/openmpi/lib; then
-      # This is what Fedora 17 had
-        MPI_ROOT=$d
-        MPITYPE="OPENMPI"
-        MPI_INCLUDE_PATH=$d/include/openmpi-x86_64
-        break
-      elif test -f $d/include/openmpi-x86_64/mpi.h && test -d $d/lib64/openmpi/lib; then
-      # This is what Fedora 17 had
-        echo "I am here $d and it is OpenMPI"
-        MPI_ROOT=$d
-        MPITYPE="OPENMPI"
-        MPI_INCLUDE_PATH=$d/include/openmpi-x86_64
-        break
-      elif test -f $d/include/mpi.h && test -d $d/lib/openmpi; then
+      if test -f $d/include/mpi.h && test -d $d/lib/openmpi; then
         MPI_ROOT=$d
         MPI_TYPE="OPENMPI"
-        MPI_INCLUDE_PATH=$d/include/openmpi
         break
       elif test -f $d/include/openmpi/mpi.h && test -d $d/lib/openmpi; then
         MPI_ROOT=$d
@@ -268,12 +238,6 @@ if test -z "${MPI_INCLUDE_PATH}" ; then
   elif test -f ${MPI_ROOT}/libmpi.so; then
     dnl Fedora 10
     MPI_LIB_PATH="${MPI_ROOT}"
-  elif test -f ${MPI_ROOT}/lib/openmpi/lib/libmpi.so; then
-    dnl This is what Fedora 17 had
-    MPI_LIBPATH="${MPI_ROOT}/lib/openmpi/lib"
-  elif test -f ${MPI_ROOT}/lib64/openmpi/lib/libmpi.so; then
-    dnl This is what Fedora 17 had
-    MPI_LIBPATH="${MPI_ROOT}/lib64/openmpi/lib"
   elif test -f ${MPI_ROOT}/lib/openmpi/libmpi.so; then
     MPI_LIB_PATH="${MPI_ROOT}/lib/openmpi"
   elif test -f ${MPI_ROOT}/lib64/openmpi/libmpi.so; then

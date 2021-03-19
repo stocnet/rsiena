@@ -77,6 +77,14 @@ DataReport <- function(z, x, f)
 	if (z$cconditional)
 	{
 		Report("conditional moment estimation\n", outf)
+		if (x$gmm)
+		{
+			Report(' by the Generalized Method of Moments.\n', outf)
+		}
+		else
+		{
+			Report('.\n', outf)
+		}
 		Report(c('Conditioning variable is the total number of observed',
 				'changes ("distance") \n'), outf)
 		if (z$condtype == 'oneMode')
@@ -93,6 +101,10 @@ DataReport <- function(z, x, f)
 		else
 		{
 			Report(c("in behavioral variable", x$condname, '\n'), outf)
+		}
+		if (x$gmm)
+		{
+			Report('in the network variable.\n', outf)
 		}
 		if (observations == 1)
 		{
@@ -115,8 +127,16 @@ DataReport <- function(z, x, f)
 	}
 	else if (!z$maxlike)
 	{
-		Report("unconditional moment estimation.\n", outf)
-
+		Report("unconditional moment estimation\n", outf)
+		if (x$gmm)
+		{
+			Report(' by the Generalized Method of Moments.\n', outf)
+		}
+		else
+		{
+			Report('.\n', outf)
+		}
+		
 		#if (exogenous)
 		#{
 		#    Report("Changing composition: no conditional moment estimation.\n",
@@ -283,13 +303,38 @@ DataReport <- function(z, x, f)
 		}
 	}
 
-	fixed <- ifelse(z$fixed, '  (fixed) ', '')
-	tmp <- paste(sprintf("%3d",1:length(z$requestedEffects$effectName)), '. ',
-		format(paste(z$requestedEffects$type, ':  ',
-				z$requestedEffects$effectName,
-				sep = ''), width = 52),
-		sprintf("%9.4f", z$requestedEffects$initialValue), fixed, '\n',
-		sep = '', collapse = '')
+	if (!x$gmm)
+	{
+	  fixed <- ifelse(z$fixed, '  (fixed) ', '')
+	}
+	else 
+	{
+	  if (!z$cconditional)
+	  {
+	    fixed <- ifelse((z$fixed & !z$gmmEffects), '  (fixed) ', '')
+	  }
+	  else
+	  {
+	    fixed <- ifelse((z$fixed & !(z$requestedEffects$type=="gmm")), '  (fixed) ', '')
+	  }
+	}
+	if (!x$gmm)
+	{	tmp <- paste(sprintf("%3d",1:length(z$requestedEffects$effectName)), '. ',
+	               format(paste(z$requestedEffects$type, ':  ',
+	                            z$requestedEffects$effectName,
+	                            sep = ''), width = 52),
+	               sprintf("%9.4f", z$requestedEffects$initialValue), fixed, '\n',
+	               sep = '', collapse = '')
+	}
+	else
+	{
+	  tmp <- paste(sprintf("%3d",1:(length(z$requestedEffects$effectName)-sum(z$gmmEffects))), '. ',
+	               format(paste(z$requestedEffects$type[!z$gmmEffects], ':  ',
+	                            z$requestedEffects$effectName[!z$gmmEffects],
+	                            sep = ''), width = 52),
+	               sprintf("%9.4f", z$requestedEffects$initialValue[!z$gmmEffects]), fixed[!z$gmmEffects], '\n',
+	               sep = '', collapse = '')
+	}
 	Report(tmp, outf)
 	## targets:
 	Report("\n\nObserved values of target statistics are\n", outf)
@@ -308,7 +353,7 @@ DataReport <- function(z, x, f)
 				targets)),
 		'\n', sep = '', collapse = '')
 	Report(tmp, outf)
-	Report(c('\n', nrow(z$requestedEffects), 'parameters,',
+	Report(c('\n', nrow(z$requestedEffects)-sum(z$requestedEffects$type=="gmm"), 'parameters,',
 			nrow(z$requestedEffects),
 			'statistics\n'),outf)
 }

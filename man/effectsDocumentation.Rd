@@ -17,7 +17,7 @@ effectsDocumentation(effects = NULL, type = "html", display = (type=="html"),
     A Siena effects object, or NULL.
 }
   \item{type}{
-	Type of output required. Valid options are "html" or "latex".
+    Type of output required. Valid options are "html" or "latex".
 }
 \item{display}{
   Boolean: should the output be displayed after creation. Only
@@ -48,7 +48,11 @@ effectsDocumentation(effects = NULL, type = "html", display = (type=="html"),
   shortName, type (rate/evaluation/endowment/creation),
   the variables defined as \code{interaction1} and \code{interaction2}
   (see \code{\link{includeEffects}}) that specify this effect,
-  the value of an effect parameter - if any -, and the interactionType.
+  the value of an effect parameter - if any -, and the interactionType.\cr
+  The GMoM effects, which are those with \code{type=gmm}, are listed at the end.
+  For these, the distinction between the fields \code{name} and
+  \code{interaction1}, referring to the dependent and the explanatory roles
+  of the variables, has no meaning.\cr
   The default root file name is the name of the input effects object.
 }
 \value{
@@ -63,4 +67,4 @@ effectsDocumentation(effects = NULL, type = "html", display = (type=="html"),
 }
 % Add one or more standard keywords, see file "KEYWORDS" in the
 % R documentation directory.
-\keyword{ misc }
+\keyword{ print }
