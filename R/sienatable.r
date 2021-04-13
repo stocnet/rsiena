@@ -115,7 +115,7 @@ siena.table <- function(x, type='tex',
 	    max.t <- round(max.t1, digits = dd)
 	  }
 	  else
-	  { 
+	  {
 	    fixednogmm <- x$fixed[!x$gmmEffects]
 	    theta <- x$theta
 	    theta[diag(x$covtheta) < 0.0 | fixednogmm] <- NA
@@ -147,9 +147,9 @@ siena.table <- function(x, type='tex',
 		condvarno <- x$condvarno
 	}
 
+	effects$effectName <- fromObjectToText(effects$effectName, type=type)
 	max.eff.width <- max(nchar(effects$effectName))
 	effects$effectName <- format(effects$effectName,width=max.eff.width)
-	effects$effectName <- fromObjectToText(effects$effectName, type=type)
 
 	max.width <- function(theta)
 	{
@@ -431,7 +431,7 @@ siena.table <- function(x, type='tex',
 							max.t,".</TD> </TR> <TR> </TR>",
 							" <TR> <TD colspan=9 align=left>
 							Overall maximum convergence ratio ",
-							maxlincomb.t,".</TD> </TR> <TR> </TR>",							
+							maxlincomb.t,".</TD> </TR> <TR> </TR>",
 							sep="",collapse=""),"</TABLE>")
 		}
 		if (sig)
@@ -476,7 +476,7 @@ siena.table <- function(x, type='tex',
 		{
 			startdate <- NULL
 		}
-		else		
+		else
 		{
 			startdate <- paste("%Estimation date",x$startingDate)
 		}
@@ -582,9 +582,9 @@ siena.table <- function(x, type='tex',
 		{
 		  fixed.2 <- c(1:nn)[x$fixed[rows]]
 		}
-		else 
+		else
 		{
-		  fixed.2 <- c(1:nn)[fixednogmm[rows]]  
+		  fixed.2 <- c(1:nn)[fixednogmm[rows]]
 		}
 
 		if (condvarno == sections)
