@@ -143,12 +143,12 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	Effect * pEffect = 0;
 	string effectName = pEffectInfo->effectName();
 
-	// Defined so we can later on differentiate between effects for 
+	// Defined so we can later on differentiate between effects for
 	// continuous and discrete dependent behavior variables
 	string variableName = pEffectInfo->variableName();
-	ContinuousLongitudinalData * pContinuousData = 
+	ContinuousLongitudinalData * pContinuousData =
         dynamic_cast<ContinuousLongitudinalData *>(this->lpData->pContinuousData(variableName));
-	
+
 	// Handle the user-defined interaction effects first.
 
 	if (pEffectInfo->pEffectInfo1())
@@ -208,17 +208,17 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new ReciprocityEffect(pEffectInfo);
 	}
-	else if (effectName == "newrecip") 
+	else if (effectName == "newrecip")
 	{
 		pEffect = new ReciprocityGMMEffect(pEffectInfo,
 				ReciprocityGMMEffect::NEW);
-	} 
-	else if (effectName == "realrecip") 
+	}
+	else if (effectName == "realrecip")
 	{
 		pEffect = new ReciprocityGMMEffect(pEffectInfo,
 				ReciprocityGMMEffect::REAL);
 	}
-	else if (effectName == "persistrecip") 
+	else if (effectName == "persistrecip")
 	{
 		pEffect = new ReciprocityGMMEffect(pEffectInfo,
 				ReciprocityGMMEffect::PERSISTENT);
@@ -975,7 +975,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "from")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new InStarFunction(pEffectInfo->interactionName1(), 
+			new InStarFunction(pEffectInfo->interactionName1(),
 							(pEffectInfo->internalEffectParameter() >= 2)));
 	}
 	else if (effectName == "fromMutual")
@@ -984,7 +984,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			new ReciprocatedTwoPathFunction(pEffectInfo->interactionName1(),
 							(pEffectInfo->internalEffectParameter() >= 2)));
 	}
-	else if (effectName == "to") 
+	else if (effectName == "to")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 				new MixedTwoStepFunction(
@@ -1038,7 +1038,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 						FORWARD, BACKWARD, false));
 	}
 	else if (effectName == "mixedInXW")
-	{				
+	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 				new MixedTwoStepFunction(
 						pEffectInfo->variableName(),
@@ -1424,6 +1424,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new SimilarityEffect(pEffectInfo, false, false, false);
 	}
+	else if (effectName == "avInSim")
+	{
+		pEffect = new SimilarityIndegreeEffect(pEffectInfo, true, false);
+	}
+	else if (effectName == "totInSim")
+	{
+		pEffect = new SimilarityIndegreeEffect(pEffectInfo, false, false);
+	}
 	else if (effectName == "indeg")
 	{
 		if (pContinuousData)
@@ -1543,7 +1551,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "settingLogCreationActD")
 	{
 		pEffect = new SettingSizeEffect(pEffectInfo, true, true, false, true, true);
-	}	
+	}
 	else if (effectName == "avSimRecip")
 	{
 		pEffect = new ReciprocatedSimilarityEffect(pEffectInfo, true, false);
@@ -1559,6 +1567,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "totSimPopAlt")
 	{
 		pEffect = new SimilarityEffect(pEffectInfo, false, true, false);
+	}
+	else if (effectName == "avInSimPopAlt")
+	{
+		pEffect = new SimilarityIndegreeEffect(pEffectInfo, true, true);
+	}
+	else if (effectName == "totInSimPopAlt")
+	{
+		pEffect = new SimilarityIndegreeEffect(pEffectInfo, false, true);
 	}
 	else if (effectName == "popAlt")
 	{
@@ -1579,7 +1595,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			pEffect = new AverageAlterContinuousEffect(pEffectInfo);
 		}
 		else
-		{	
+		{
 		pEffect = new AverageAlterEffect(pEffectInfo, true, false);
 	}
 	}

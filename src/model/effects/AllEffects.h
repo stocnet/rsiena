@@ -108,6 +108,7 @@
 #include "HomCovariateTransitiveTripletsEffect.h"
 #include "SameCovariateTransitiveReciprocatedTripletsEffect.h"
 #include "SimilarityEffect.h"
+#include "SimilarityIndegreeEffect.h"
 #include "SimilarityWEffect.h"
 #include "SimilarityTransitiveTripletsEffect.h"
 #include "ThreeCyclesEffect.h"

@@ -285,6 +285,55 @@ myans
 myans$targets
 sum(XWX) # 86 OK
 
+
+############################################
+### check avSim, avInSim
+############################################
+
+mynet <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,avSim,name='mybeh',interaction1='mynet')
+myeff
+mymodel <- sienaModelCreate(projname=NULL)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# linear shape and quadratic shape
+(mbh <- mean(mybeh))
+sum(mybeh[,,2] - mbh) # OK linear shape
+sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
+
+# for avSim effect:
+# behavior at wave 2:
+zz <- mybeh[,,2]
+rangez <- attr(mydata$depvars[[2]], 'range')
+# similarity at wave 2:
+simi2 <- outer(zz, zz, function(x,y){1 - abs(x-y)/rangez})
+simi2 <- simi2 - attr(mydata$depvars[[2]], 'simMean')
+diag(simi2) <- 0
+divi <- function(a,b){ifelse(b==0, 0, a/b)}
+outdeg <- rowSums(s502)
+outdegs <- outer(outdeg, outdeg, function(x,y){divi(1,x)})
+diag(outdegs) <- 0
+sum(s502 * simi2*outdegs) # OK avSim
+# This can also be calculated by pre-multiplication by a diagonal matrix:
+sum(diag(divi(1,outdeg)) %*% s502 * simi2 ) # OK avSim
+
+# for avInSim effect:
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,avInSim,name='mybeh',interaction1='mynet')
+myeff
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+
+indeg <- colSums(s502)
+indegs <- outer(indeg, indeg, function(x,y){divi(1,x)})
+diag(indegs) <- 0
+sum(t(s502) * simi2*indegs) # OK avInSim
+# alternative:
+sum(diag(divi(1,indeg)) %*% t(s502) * simi2 ) # OK avInSim
+
 ############################################
 ############################################
 
