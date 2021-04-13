@@ -2,12 +2,13 @@
 
 ## 
 
-2021-04-12  
+2021-04-13  
 
 ## Changes in RSiena: 
 
 ### Effects:  
-   * New effects: avInSim, totInSim, avInSimPopAlt, totInSimPopAlt. 
+   * New effects: avInSim (thanks to Steffen Triebel), totInSim, 
+     avInSimPopAlt, totInSimPopAlt. 
 
 ### Improvements of functionality:  
    * funnelPlot adapted to lists of sienaFit objects
