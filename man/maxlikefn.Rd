@@ -13,8 +13,8 @@ promul0 = 0.5, pdiaginsdel = 0.1, fromFiniteDiff = FALSE,
 noSamples = 1, sampInterval = 50, int = 1)
 }
 \arguments{
-  \item{z}{control object, passed in automatically in Siena07}
-  \item{x}{model object, passed in automatically in Siena07}
+  \item{z}{control object, passed in automatically in siena07}
+  \item{x}{model object, passed in automatically in siena07}
   \item{INIT}{if TRUE, do initial processing. May be required to set up z}
   \item{TERM}{if TRUE, do end processing. }
   \item{data}{A siena object }

@@ -1,11 +1,30 @@
+# RSiena 1.2.34
+
+## 
+
+2021-04-12  
+
+## Changes in RSiena: 
+
+### Effects:  
+   * New effects: avInSim, totInSim, avInSimPopAlt, totInSimPopAlt. 
+
+### Improvements of functionality:  
+   * funnelPlot adapted to lists of sienaFit objects
+     containing missing estimates or standard errors.
+   * Small improvements (length of effect names) in meta.table and siena.table.  
+
+### Corrections  
+   * Correction of footer of CovariateDistance2EgoAltSimNetworkFunction.h.
+
+  
 # RSiena 1.2.33
 
 ## 
 
-2021-03-19
+2021-03-19  
 
-## Changes in RSiena:
-
+## Changes in RSiena:  
    * Adjusted `configure`, `cleanup` and `Makevars` files for just C++ checks.
    * Pandoc dropped as a system requirement.
  
