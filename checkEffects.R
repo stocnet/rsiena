@@ -42,7 +42,6 @@ diag(tpw2) <- 0
 sum(tpw*s503)
 sum(tpw2*s503) # OK
 
-
 (myeff <- setEffect(myeff,from.w.ind, name='mynet2',
 				interaction1='mynet1', interaction2='mynet1', parameter=2))
 ans2 <- siena07(mymodel, data=mydata, effects=myeff)
@@ -52,7 +51,6 @@ ind3 <- diag(sqrt(colSums(s501)))
 tpw3 <- s501 %*% ind3 %*% t(s501)
 diag(tpw3) <- 0
 sum(tpw3*s503) # OK
-
 
 myeff <- getEffects(mydata)
 (myeff <- setEffect(myeff,from.w.ind, name='mynet2',
@@ -64,7 +62,6 @@ tpw3 <- s501 %*% ind3 %*% t(s501)
 diag(tpw3) <- 0
 sum(tpw3*s503) # OK
 
-
 myeff <- getEffects(mydata)
 (myeff <- setEffect(myeff,from.w.ind, name='mynet2',
 				interaction1='mynet1', interaction2='mynet3', parameter=-1))
@@ -74,7 +71,6 @@ ind3 <- diag(1/(colSums(s503) + 1))
 tpw3 <- s501 %*% ind3 %*% t(s501)
 diag(tpw3) <- 0
 sum(tpw3*s503) # OK
-
 
 myeff <- getEffects(mydata)
 (myeff <- setEffect(myeff,from.w.ind, name='mynet2',
@@ -141,7 +137,6 @@ eq <- 1*outer(two, two, "==") # same two
 twop.eq <- (s502*eq) %*% s502
 tt.eq <- s502 * eq * twop.eq
 sum(tt.eq) # OK
-
 
 myeff <- getEffects(mydata)
 myeff <- includeEffects(myeff,transRecTrip)
@@ -247,7 +242,6 @@ ans$targets
 mixos <- t(s502) %*% s501
 sum(s502 * sqrt(mixos)) #  58.45997 OK
 
-
 ############################################
 ### check cl.XWX, cl.XWX1, cl.XWX2
 ############################################
@@ -272,23 +266,20 @@ diag(XWX)
 # for cl.XWX1 effect:
 myeff <- getEffects(mydata)
 myeff <- includeEffects(myeff, cl.XWX1, name="trust", interaction1="advice")
-myans <- siena07(mymodel, data = mydata, effects = myeff)
-myans
+(myans <- siena07(mymodel, data = mydata, effects = myeff))
 myans$targets
 sum(XWX) # 86 OK
 
 # for cl.XWX2 effect:
 myeff <- getEffects(mydata)
 myeff <- includeEffects(myeff, cl.XWX2, name="trust", interaction1="advice")
-myans <- siena07(mymodel, data = mydata, effects = myeff)
-myans
+(myans <- siena07(mymodel, data = mydata, effects = myeff))
 myans$targets
 sum(XWX) # 86 OK
 
-
-############################################
-### check avSim, avInSim
-############################################
+##########################################################################
+### check avSim, avInSim, totInSim, avInSimPopAlt, totInSimPopAlt
+##########################################################################
 
 mynet <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
 mybeh <- sienaDependent(s50a[,2:3], type="behavior")
@@ -333,6 +324,30 @@ diag(indegs) <- 0
 sum(t(s502) * simi2*indegs) # OK avInSim
 # alternative:
 sum(diag(divi(1,indeg)) %*% t(s502) * simi2 ) # OK avInSim
+
+# for avInSimPopAlt effect:
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,avInSimPopAlt,name='mybeh',interaction1='mynet')
+myeff
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+sum(diag(divi(1,indeg)) %*% t(s502) * simi2  %*% diag(indeg)) # OK avInSimPopAlt
+
+# for totInSim effect:
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,totInSim,name='mybeh',interaction1='mynet')
+myeff
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+sum(t(s502) * simi2 ) # OK totInSim
+
+# for totInSimPopAlt effect:
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,totInSimPopAlt,name='mybeh',interaction1='mynet')
+myeff
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+sum( t(s502) * simi2  %*% diag(indeg)) # OK totInSimPopAlt
 
 ############################################
 ############################################
