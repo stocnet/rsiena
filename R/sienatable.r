@@ -69,7 +69,7 @@ siena.table <- function(x, type='tex',
 			stop('x must be a sienaFit or sienaBayesFit object')
 		}
 	}
-	if (!x$gmm)
+	if (!gmm(x))
 	{
 	  effects <- x$requestedEffects
 	  p <- x$pp

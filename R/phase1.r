@@ -203,7 +203,7 @@ phase1.2 <- function(z, x, ...)
 	{
 		return(z)
 	}
-	z$SomeFixed <-z$SomeFixed | z$cdSomeFixed
+	z$SomeFixed <- z$SomeFixed | z$cdSomeFixed
 	if (z$SomeFixed)
 	{
 	  if (!z$gmm)

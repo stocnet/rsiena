@@ -98,7 +98,7 @@ PrintReport <- function(z, x)
 		{
 			Report("Network Dynamics\n", outf)
 		}
-		if (!x$simOnly & !x$gmm)
+		if (!x$simOnly & !gmm(x))
 		{
 			ses <- ifelse(diag(z$covtheta) >= 0.0 | z$fixed,
 					paste('  (', sprintf("%9.4f",sqrt(diag(z$covtheta))),
@@ -111,7 +111,7 @@ PrintReport <- function(z, x)
 					sprintf("%9.4f",z$theta),
 					' ---')
 		}
-		else if (!x$simOnly & x$gmm)
+		else if (!x$simOnly & gmm(x))
 		{ 
 		  ses <- ifelse(diag(z$covtheta) >= 0.0 | z$fixed[-which(z$gmmEffects==TRUE)],
 		                paste('  (', sprintf("%9.4f",sqrt(diag(z$covtheta))),
@@ -150,7 +150,7 @@ PrintReport <- function(z, x)
 		typetxt <- ifelse (z$requestedEffects$type == "creation", "creat",
 						  z$requestedEffects$type )
 		tmp <- paste(typetxt, typesp, z$requestedEffects$effectName, sep = '')
-		if (x$gmm)
+		if (gmm(x))
 		{
 		  typesp <- typesp[-which(z$gmmEffects==TRUE)]
 		  typetxt <- typetxt[-which(z$gmmEffects==TRUE)]
@@ -160,7 +160,7 @@ PrintReport <- function(z, x)
 		{
 			ses <- rep('  ', z$pp)
 		}
-		if(!x$gmm)
+		if(!gmm(x))
 		{
 		  tmp <- paste(sprintf("%2d", 1:length(z$requestedEffects$effectName)),
 		               '. ', format(substr(tmp, 1, 60), width=60),
@@ -175,7 +175,7 @@ PrintReport <- function(z, x)
 		}
 		if (nBehavs > 0 && nNetworks > 0)
 		{
-		  if(!x$gmm)
+		  if(!gmm(x))
 		  {
 		      nNetworkEff <- nrow(z$requestedEffects) - nrow(behEffects)
 		      tmpstr <- paste(nNetworkEff + 1, '. ', sep='')

@@ -7,7 +7,7 @@ terminateFRAN <- function(z, x)
         z$theta[z$posj] <- z$theta[z$posj] * z$rate
 		if (!x$simOnly)
 		{
-		  if (!x$gmm)
+		  if (!gmm(x))
 		  {
 		    z$covtheta[z$posj, ] <- z$covtheta[z$posj, ] * z$rate
 		    z$covtheta[, z$posj] <- z$covtheta[,z$posj ] * z$rate
