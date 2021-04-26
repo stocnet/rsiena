@@ -1407,22 +1407,42 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new QuadraticShapeEffect(pEffectInfo);
 	}
+	else if (effectName == "constant")
+	{
+		pEffect = new ConstantEffect(pEffectInfo);
+	}
 	else if ((effectName == "threshold") | (effectName == "threshold2") |
-	         (effectName == "threshold3") |(effectName == "threshold3"))
+	         (effectName == "threshold3") |(effectName == "threshold4"))
 	{
 		pEffect = new ThresholdShapeEffect(pEffectInfo);
 	}
 	else if (effectName == "avSim")
 	{
-		pEffect = new SimilarityEffect(pEffectInfo, true, false, false);
+		pEffect = new SimilarityEffect(pEffectInfo, true, false, false, true, true);
+	}
+	else if (effectName == "avAttHigher")
+	{
+		pEffect = new SimilarityEffect(pEffectInfo, true, false, false, true, false);
+	}
+	else if (effectName == "avAttLower")
+	{
+		pEffect = new SimilarityEffect(pEffectInfo, true, false, false, false, true);
 	}
 	else if (effectName == "avSim_gmm")
 	{
-		pEffect = new SimilarityEffect(pEffectInfo, true, false, false,true);
+		pEffect = new SimilarityEffect(pEffectInfo, true, false, false, true, true, true);
 	}
 	else if (effectName == "totSim")
 	{
-		pEffect = new SimilarityEffect(pEffectInfo, false, false, false);
+		pEffect = new SimilarityEffect(pEffectInfo, false, false, false, true, true);
+	}
+	else if (effectName == "totAttHigher")
+	{
+		pEffect = new SimilarityEffect(pEffectInfo, false, false, false, true, false);
+	}
+	else if (effectName == "totAttLower")
+	{
+		pEffect = new SimilarityEffect(pEffectInfo, false, false, false, false, true);
 	}
 	else if (effectName == "avInSim")
 	{
@@ -1441,7 +1461,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		else
 		{
 		pEffect = new IndegreeEffect(pEffectInfo);
-	}
+		}
 	}
 	else if (effectName == "indegSqrt")
 	{
@@ -1459,7 +1479,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		else
 		{
 		pEffect = new OutdegreeEffect(pEffectInfo);
-	}
+		}
 	}
 	else if (effectName == "outdegSqrt")
 	{
@@ -1562,11 +1582,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "avSimPopAlt")
 	{
-		pEffect = new SimilarityEffect(pEffectInfo, true, true, false);
+		pEffect = new SimilarityEffect(pEffectInfo, true, true, false, true, true);
 	}
 	else if (effectName == "totSimPopAlt")
 	{
-		pEffect = new SimilarityEffect(pEffectInfo, false, true, false);
+		pEffect = new SimilarityEffect(pEffectInfo, false, true, false, true, true);
 	}
 	else if (effectName == "avInSimPopAlt")
 	{
@@ -1750,11 +1770,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 //	else if (effectName == "RRDeg")
 //	{
-//		pEffect = new DoubleRecDegreeBehaviorEffect(pEffectInfo, 2); // crashes
+//		pEffect = new DoubleRecDegreeBehaviorEffect(pEffectInfo, 2); // leads to error
 //	}
 	else if (effectName == "avSimPopEgo")
 	{
-		pEffect = new SimilarityEffect(pEffectInfo, true, false, true);
+		pEffect = new SimilarityEffect(pEffectInfo, true, false, true, true, true);
 	}
 	else if (effectName == "effFrom")
 	{

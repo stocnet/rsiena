@@ -626,7 +626,7 @@ SEXP mlPeriod(SEXP DERIV, SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
 		// get simulated last state
 		pMLSimulation->gotoLastState();
 		const vector<DependentVariable *> rVariables = pMLSimulation->rVariables();
-		for (unsigned i = 0; i < numberVariables; i++)
+		for (int i = 0; i < numberVariables; i++)
 		{
 			SET_VECTOR_ELT(theseDeps, i, var_to_sexp(rVariables[i]));
 		}

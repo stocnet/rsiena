@@ -31,6 +31,7 @@ BehaviorEffect::BehaviorEffect(const EffectInfo * pEffectInfo) :
 	Effect(pEffectInfo)
 {
 	this->lpBehaviorData = 0;
+	this->linitialValues = 0;
 	this->lvalues = 0;
 }
 
@@ -50,15 +51,15 @@ void BehaviorEffect::initialize(const Data * pData,
 	Effect::initialize(pData, pState, period, pCache);
 
 	string name = this->pEffectInfo()->variableName();
-
 	this->lpBehaviorData = pData->pBehaviorData(name);
-
 	if (!this->lpBehaviorData)
 	{
 		throw logic_error(
 			"Data for behavior variable '" + name +"' expected.");
 	}
-
+	
+	this->linitialValues = this->lpBehaviorData->values(this->period());
+	
 	this->lvalues = pState->behaviorValues(name);
 }
 
@@ -84,6 +85,15 @@ int BehaviorEffect::n() const
 int BehaviorEffect::value(int actor) const
 {
 	return this->lvalues[actor];
+}
+
+
+/**
+ * Returns the initial behavior value of the given actor.
+ */
+int BehaviorEffect::initialValue(int actor) const
+{
+	return this->linitialValues[actor];
 }
 
 

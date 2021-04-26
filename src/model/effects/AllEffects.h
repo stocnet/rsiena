@@ -34,6 +34,7 @@
 #include "BehaviorInteractionEffect.h"
 #include "BetweennessEffect.h"
 #include "BothDegreesEffect.h"
+#include "ConstantEffect.h"
 #include "CovariateAlterEffect.h"
 #include "CovariateContrastEffect.h"
 #include "CovariateDiffEffect.h"

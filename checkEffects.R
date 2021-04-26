@@ -278,7 +278,7 @@ myans$targets
 sum(XWX) # 86 OK
 
 ##########################################################################
-### check avSim, avInSim, totInSim, avInSimPopAlt, totInSimPopAlt
+### check avSim, totSim, avInSim, totInSim, avInSimPopAlt, totInSimPopAlt
 ##########################################################################
 
 mynet <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
@@ -310,6 +310,51 @@ diag(outdegs) <- 0
 sum(s502 * simi2*outdegs) # OK avSim
 # This can also be calculated by pre-multiplication by a diagonal matrix:
 sum(diag(divi(1,outdeg)) %*% s502 * simi2 ) # OK avSim
+
+# totSim effect:
+myeff <- getEffects(mydata)
+# It turns out that for this data set, to get an estimate for totSim
+# you first have to include the outdeg effect.
+myeff <- includeEffects(myeff,outdeg,name='mybeh',interaction1='mynet')
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+myeff <- includeEffects(myeff,totSim,name='mybeh',interaction1='mynet')
+myeff
+(ans <- siena07(mymodel, data=mydata, effects=myeff, prevAns=ans))
+ans$targets
+sum(s502 * simi2 ) # OK totSim
+# Now try to get a model including totSim but without outdeg
+myeff <- includeEffects(myeff,outdeg,name='mybeh',interaction1='mynet', include=FALSE)
+(ans <- siena07(mymodel, data=mydata, effects=myeff, prevAns=ans))
+myeff <- updateTheta(myeff, ans)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+
+# for avSimPopAlt effect:
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,avSimPopAlt,name='mybeh',interaction1='mynet')
+myeff
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+
+indeg <- colSums(s502)
+sum(diag(divi(1,outdeg)) %*% (s502 * simi2) %*% diag(indeg)) # avSimPopAlt OK
+
+# for avSimPopEgo effect:
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,avSimPopEgo,name='mybeh',interaction1='mynet')
+myeff
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+indeg <- colSums(s502)
+sum(diag(divi(indeg,outdeg)) %*% s502 * simi2 ) #  OK avSimPopEgo
+
+# for totSimPopAlt effect:
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,totSimPopAlt,name='mybeh',interaction1='mynet')
+myeff
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+indeg <- colSums(s502)
+sum((s502 * simi2) %*% diag(indeg)) # avSimPopAlt OK
 
 # for avInSim effect:
 myeff <- getEffects(mydata)
@@ -349,6 +394,58 @@ myeff
 ans$targets
 sum( t(s502) * simi2  %*% diag(indeg)) # OK totInSimPopAlt
 
-############################################
-############################################
 
+##########################################################################
+### check avAttHigher, avAttLower, totAttHigher, totAttLower
+##########################################################################
+
+mynet <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+myeff <- getEffects(mydata)
+
+# for avAttHigher effect:
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,avAttHigher,name='mybeh',interaction1='mynet')
+myeff
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+
+# behavior at wave 2:
+zz <- mybeh[,,2]
+rangez <- attr(mydata$depvars[[2]], 'range')
+# higher similarity at wave 2:
+simim <- outer(zz, zz, function(x,y){1 - pmax(x-y,0)/rangez})
+diag(simim) <- 0
+divi <- function(a,b){ifelse(b==0, 0, a/b)}
+outdeg <- rowSums(s502)
+sum(diag(divi(1,outdeg)) %*% s502 * t(simim) ) # OK avAttHigher
+
+# for avAttLower effect:
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,avAttLower,name='mybeh',interaction1='mynet')
+myeff
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+sum(diag(divi(1,outdeg)) %*% s502 * (simim) ) # OK avAttLower
+
+# for totAttHigher effect:
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,totAttHigher,name='mybeh',interaction1='mynet')
+myeff
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+sum(s502 * t(simim) ) # OK totAttHigher
+
+# for totAttLower effect:
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,totAttLower,name='mybeh',interaction1='mynet')
+myeff
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+sum(s502 * (simim) ) # OK totAttLower
+
+
+
+
+  

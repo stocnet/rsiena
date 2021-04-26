@@ -1,21 +1,32 @@
 # RSiena 1.2.34
-
+   
 ## 
-
-2021-04-13  
-
+   
+2021-04-21  
+   
 ## Changes in RSiena: 
-
+   
 ### Effects:  
    * New effects: avInSim (thanks to Steffen Triebel), totInSim, 
-     avInSimPopAlt, totInSimPopAlt. 
-
+     avInSimPopAlt, totInSimPopAlt, constant,
+     avAttHigher, avAttLower, totAttHigher, totAttLower,
+   * Changed effects: endowment and creation types for avInSim
+     (brought in line with these types for avSim).
+    
 ### Improvements of functionality:  
    * funnelPlot adapted to lists of sienaFit objects
      containing missing estimates or standard errors.
    * Small improvements (length of effect names) in meta.table and siena.table.  
-
+   
+### Bug corrections  
+   * Restore backward compatibility with respect to checks of x$gmm.  
+   
+### Code improvements   
+   * Improved coding of SimilarityEffect, using new parts
+     of NetworkDependentBehaviorEffect.   
+   
 ### Corrections  
+   * Correction of footer of CovariateDistance2EgoAltSimNetworkFunction.h.  
    * Correction of footer of CovariateDistance2EgoAltSimNetworkFunction.h.
 
   

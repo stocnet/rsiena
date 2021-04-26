@@ -30,7 +30,8 @@ namespace siena {
  */
 AltersCovariateTotSimEffect::AltersCovariateTotSimEffect(
 		const EffectInfo * pEffectInfo) :
-	CovariateAndNetworkBehaviorEffect(pEffectInfo) {
+	CovariateAndNetworkBehaviorEffect(pEffectInfo) 
+{
 }
 
 /**

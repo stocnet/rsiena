@@ -47,7 +47,7 @@ InteractionCovariateEffect::InteractionCovariateEffect(
 			new SimilarityEffect(this->lpInteractingEffectInfo,
 				true,
 				false,
-				false);
+				false, false, false);
 	}
 	else if (totalSimilarity)// || pEffectInfo->internalEffectParameter() == 2)
 	{
@@ -55,7 +55,7 @@ InteractionCovariateEffect::InteractionCovariateEffect(
 			new SimilarityEffect(this->lpInteractingEffectInfo,
 				false,
 				false,
-				false);
+				false, false, false);
 	}
 	else if (averageAlter) // || pEffectInfo->internalEffectParameter() == 3)
 	{
