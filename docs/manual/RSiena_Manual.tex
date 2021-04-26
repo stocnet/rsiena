@@ -62,6 +62,7 @@
 \newcommand{\half}{{\textstyle \frac{1}{2}}}
 \newcommand{\neqsum}[3]
 {\, \sum_{\stackrel{\scriptstyle #1 = 1}{\scriptstyle #2 \neq #3}}^n \,}
+\newcommand{\fracd}[2]{\frac{\displaystyle #1}{\displaystyle #2}}
 
 \newcommand{\firsttabitem}{\hspace{4mm} $\bullet$ \hspace{1mm}}
 \newcommand{\tabitem}{\\ \\ \hspace{4mm} $\bullet$ \hspace{1mm}}
@@ -1519,11 +1520,12 @@ This can be turned off by constructing the covariate with the keyword
 convergence of the estimation algorithm.
 Therefore the advice is to use the default (centering) unless there are reasons to
 use non-centered covariates, such as when they are used as weights in effects
-(e.g., for inPopX).
-It is possible to include a given actor variable as a covariate in the centered
-as well as the non-centered version in the Siena data set.
+(e.g., for \texttt{inPopX}).
+It is possible to include a given actor variable in the Siena data set
+as a covariate in the centered as well as the non-centered version.
 See Section~\ref{S_center} on centering.
 
+\iffalse
 When an actor covariate is constant within waves, i.e.,
 within each wave it has the same value for all actors;
 or, more generally, when within each wave it has the same value for
@@ -1542,6 +1544,23 @@ it is therefore advisable to give data sets in which
 a given covariate has the same value for all actors
 one missing value in this covariate; purely to make
 the total list of effects independent of the observed data.
+
+from ONEWS / CHANGELOG:
+
+2018-03-21 R-Forge Revision 332
+# RSiena 1.2-9.
+
+## Changes in RSiena and RSienaTest:
+   * The dropping of the exclusion in effects.r of effects if the variance of a
+     covariate is 0, or a covariate has only two values, of version 1.1-306,
+     is  taken further (was incomplete).
+
+2017-05-10 R-Forge Revision 306
+## Changes in RSiena and RSienaTest:
+   * The exclusion in effects.r of effects if the variance of a covariate is 0,
+     or a covariate has only two values, is dropped (these effects have no
+     meaning, but their exclusion was a potential nuisance for meta-analyses).
+\fi
 
 
 
@@ -12494,7 +12513,9 @@ The list of these effects is the following.
  sum of centered similarity scores ${\rm sim}^z_{ij}$ between $i$
  and the other actors $j$ to whom he is tied,\\
  $s^{\rm beh}_{i\vit}(x, z) =
-            \sum_j x_{ij} ({\rm sim}^z_{ij} - \widehat{{\rm sim}^z}) $;
+            \sum_j x_{ij} ({\rm sim}^z_{ij} - \widehat{{\rm sim}^z}) $;\\
+ it may be helpful for estimating this effect also to include the
+ \texttt{outdeg} effect, with which it is correlated;
 
 
  \item {\em average incoming similarity effect} \texttt{(avInSim)}, defined by the
@@ -12557,7 +12578,7 @@ The list of these effects is the following.
  $s^{\rm beh}_{i\vit}(x, z) = x_{i+}^{-1} \,
         \sum_j x_{ij}  x_{+j} ({\rm sim}^z_{ij} - \widehat{{\rm sim}^z}) $;\\
  (and 0 if $x_{i+} = 0$) ;
- 
+
 
  \item {\em average incoming similarity $\times$ popularity alter effect}
  \texttt{(avInSimPopAlt)}, defined by the
@@ -12601,6 +12622,58 @@ The list of these effects is the following.
  sum of centered similarity scores ${\rm sim}^z_{ij}$ between $i$
  and the other actors $j$ to whom he is reciprocally tied, multiplied by their indegrees,\\
  $s^{\rm beh}_{i\vit}(x, z) =  \sum_j x_{ij} x_{ji} x_{+j} ({\rm sim}^z_{ij} - \widehat{{\rm sim}^z}) $;
+
+
+ \item {\em average attraction toward higher effect} \texttt{(avAttHigher)}, defined by the
+ average of non-centered similarity scores ${\rm sim}^z_{ij}$ between $i$
+ and the actors $j$ to whom he is tied, where the similarity
+ is replaced by 1 for those who have a lower behavior than $i$,
+ \begin{align*}
+ s^{\rm beh}_{i\vit}(x, z)  &\,=\, x_{i+}^{-1} \,
+           \sum_j x_{ij}\,\Big( I\{ z_j > z_i\} \, {\rm sim}^z_{ij} \,+\,
+           I\{ z_j \leq z_i\}   \Big) \\
+          & \,=\, x_{i+}^{-1} \,
+             \sum_j x_{ij}\, \left( 1 \,-\, \fracd{\max(z_j-z_i, 0)}{r_Z} \right)  ;
+ \end{align*}
+ (and 0 if $x_{i+} = 0$) ;\\
+ the definition of ${\rm sim}^z_{ij}$ is discussed in
+ section~\ref{S_internal}, see (\ref{simV}); $r_Z$ is the range of $Z$;
+
+ \item {\em average attraction toward lower effect} \texttt{(avAttLower)}, defined by the
+ average of non-centered similarity scores ${\rm sim}^z_{ij}$ between $i$
+ and the actors $j$ to whom he is tied, where the similarity
+ is replaced by 1 for those who have a higher behavior than $i$,
+ \begin{align*}
+ s^{\rm beh}_{i\vit}(x, z)  &\,=\, x_{i+}^{-1} \,
+           \sum_j x_{ij}\,\Big( I\{ z_j < z_i\} \, {\rm sim}^z_{ij} \,+\,
+           I\{ z_j \geq z_i\}   \Big) \\
+          & \,=\, x_{i+}^{-1} \,
+             \sum_j x_{ij}\, \left( 1 \,-\, \fracd{\max(z_i-z_j, 0)}{r_Z} \right)  ;
+ \end{align*}
+ (and 0 if $x_{i+} = 0$) ;
+
+
+ \item {\em total attraction toward higher effect} \texttt{(totAttHigher)}, defined by the
+ sum of non-centered similarity scores ${\rm sim}^z_{ij}$ between $i$
+ and the actors $j$ to whom he is tied, where the similarity
+ is replaced by 1 for those who have a lower behavior than $i$,
+ \begin{align*}
+ s^{\rm beh}_{i\vit}(x, z)  &\,=\,
+           \sum_j x_{ij}\,\Big( I\{ z_j > z_i\} \, {\rm sim}^z_{ij} \,+\,
+           I\{ z_j \leq z_i\}   \Big) \\
+          & \,=\, \sum_j x_{ij}\, \left( 1 \,-\, \fracd{\max(z_j-z_i, 0)}{r_Z} \right)  ;
+ \end{align*}
+
+ \item {\em total attraction toward lower effect} \texttt{(totAttLower)}, defined by the
+ sum of non-centered similarity scores ${\rm sim}^z_{ij}$ between $i$
+ and the actors $j$ to whom he is tied, where the similarity
+ is replaced by 1 for those who have a higher behavior than $i$,
+ \begin{align*}
+ s^{\rm beh}_{i\vit}(x, z)  &\,=\,
+           \sum_j x_{ij}\,\Big( I\{ z_j < z_i\} \, {\rm sim}^z_{ij} \,+\,
+           I\{ z_j \geq z_i\}   \Big) \\
+          & \,=\,  \sum_j x_{ij}\, \left( 1 \,-\, \fracd{\max(z_i-z_j, 0)}{r_Z} \right)  ;
+ \end{align*}
 
  \item {\em average alter effect} \texttt{(avAlt)},
  defined by  $i$'s
@@ -12850,7 +12923,7 @@ For the combined degree-effects, mentioned first, \texttt{F} means `Forward',
  \item {\em double outdegree effect} \texttt{(FFDeg)},\\
  $s^{\rm beh}_{i\vit}(x, z) = z_i \sum_j x_{1ij}\,x_{2ij} \,$;\\[0.2em]
  if the internal effect parameter $p$ is at least~2, the outdegree
- for $X_1$ is subtracted:\\
+ for $X_1$ is subtracted (perhaps this leads to confusion...):\\
  $s^{\rm beh}_{i\vit}(x, z) = z_i \Big( \sum_j x_{1ij}\,x_{2ij} \,-\,
   \sum_j x_{1ij} \Big)  \,$;\\
   note that in this case, the factor between $\Big( \ldots \Big)$
@@ -13253,7 +13326,7 @@ It is then important how to define the zero point of the covariate!
  \item {\em total similarity weighted by dyadic covariate $W$}
                        \texttt{(totSimW)} ,
                        a weighted version of  \texttt{totSim}; \\
-   $s^{\rm beh}_{i\vit}(x, z) =  z_i \, \sum_j x_{ij} \, w_{ij} \, ({\rm sim}^z_{ij} - \widehat{{\rm sim}^z})  .$
+   $s^{\rm beh}_{i\vit}(x, z) = \sum_j x_{ij} \, w_{ij} \, ({\rm sim}^z_{ij} - \widehat{{\rm sim}^z})  .$
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
 
@@ -15922,21 +15995,31 @@ which contains a more complete listing.
 \begin{itemize} % Also update version number in earlier places.
 
 
-\item 2021-04-12  package version 1.2.34.
+\item 2021-xx-xx  package version 1.2.34.
 
 Changes in RSiena:
 \begin{itemize}
-\item New effects: \texttt{avInSim} (thanks to Steffen Triebel), 
+\item New effects: \texttt{avInSim} (thanks to Steffen Triebel),
     \texttt{totInSim, avInSimPopAlt, totInSimPopAlt}.
 \item Improvements of functionality:\\
    \begin{itemize}
    \item \sfn{funnelPlot} adapted to lists of \sfn{sienaFit} objects
      containing missing estimates or standard errors.
-   \item Small improvements (length of effect names) in 
+   \item Small improvements (length of effect names) in
      \sfn{meta.table} and \sfn{siena.table}.
     \end{itemize}
 \end{itemize}
 
+
+
+\item 2021-04-14  R-Forge, \sfn{RSienaTest} version 1.2-29.
+
+Changes in RSienaTest:
+\begin{itemize}
+\item The pre-warming phase of \sfn{sienaBayes} is interrupted
+    (and followed by the warming phase) if no proposals were accepted
+    during two batches of iterations.
+\end{itemize}
 
 \item 2021-03-19  GitHub, package version 1.2.33.
 
