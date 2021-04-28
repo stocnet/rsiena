@@ -1,7 +1,7 @@
 #/******************************************************************************
 # * SIENA: Simulation Investigation for Empirical Network Analysis
 # *
-# * Web: http://www.stats.ox.ac.uk/~snidjers/siena
+# * Web: http://www.stats.ox.ac.uk/~snijders/siena
 # *
 # * File: Sienatest.r
 # *
@@ -304,6 +304,23 @@ EvaluateTestStatistic<- function(maxlike, test, redundant, dfra, msf, fra)
 }
 
 
+##@theEfNames internal RSiena function getting estimated effect names
+theEfNames <- function(ans){
+	if(length(unique(ans$requestedEffects$name)) > 1)
+	{
+		res <- paste(ans$requestedEffects$name, ans$requestedEffects$effectName, sep=': ')
+	}
+	else
+	{
+		res <- ans$requestedEffects$effectName
+	}
+	if (any(ans$requestedEffects$type != "eval"))
+	{
+		res <- paste(res, ans$requestedEffects$type, sep=' ')
+	}
+	res
+}
+
 ##@scoreTest Calculate score test
 score.Test <- function(ans, test=ans$test)
 	# use: ans must be a sienaFit object;
@@ -337,11 +354,7 @@ score.Test <- function(ans, test=ans$test)
 		onesided <- NULL
 	}
 	pval <- 1 - pchisq(teststat, df)
-	efnames <- paste(ans$effects$name[test], ans$effects$effectName[test], sep=': ')
-	if (any(ans$effects$type != "eval"))
-	{
-		efnames <- paste(efnames, ans$effects$type[test], sep=' ')
-	}
+	efnames <- theEfNames(ans)[test]
 	t.ans <- list(chisquare=teststat, df=df, pvalue=pval, onesided=onesided, efnames=efnames)
 	class(t.ans) <- "sienaTest"
 	t.ans
@@ -387,15 +400,43 @@ Multipar.RSiena <- function(ans, ...)
 {
 	p <- length(ans$theta)
 	tested <- c(...)
-	efnames <- paste(ans$effects$name[tested], ans$effects$effectName[tested], sep=': ')
-	if (any(ans$effects$type != "eval"))
-	{
-		efnames <- paste(efnames, ans$effects$type[tested], sep=' ')
-	}
+	efnames <- theEfNames(ans)[tested]
 	k <- length(tested)
 	A <- matrix(0, nrow=k, ncol=p)
 	A[cbind(1:k,tested)] <- 1
 	t.ans <- Wald.RSiena(A, ans)
+	t.ans$efnames <- efnames
+	t.ans
+}
+
+##@testSame.RSiena Test that two subvectors of parameter are identical
+testSame.RSiena <- function(ans, e1, e2){
+	if (length(e1) != length(e2))
+	{
+		stop('Tested parameters should have the same length')
+	}
+	p <- ans$pp
+	if ((min(e1) < 1) | (min(e2) < 1) | (max(e1) > p) | (max(e2) > p))
+	{
+		stop(paste('Tested parameters should have numbers between 1 and', p))
+	}
+	if (any(ans$fixed[c(e1,e2)]))
+	{
+		stop('Fixed parameters cannot be tested')
+	}
+	t <- length(e1)
+	efnames1 <- theEfNames(ans)[e1]
+	efnames2 <- theEfNames(ans)[e2]
+	if (t > 1)
+	{
+		max.width <- max(c(nchar(efnames1)))
+		efnames1 <- format(efnames1, width=max.width)
+	}
+	efnames <- paste(efnames1, ' == ', efnames2)
+	mat <- matrix(0,t,p)
+	for (i in seq_along(1:t)){mat[i,e1[i]] <- 1}
+	for (i in seq_along(1:t)){mat[i,e2[i]] <- -1}
+	t.ans <- Wald.RSiena(mat, ans)
 	t.ans$efnames <- efnames
 	t.ans
 }

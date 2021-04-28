@@ -4,6 +4,7 @@
 \alias{score.Test}
 \alias{scoreTest}
 \alias{sienaTest}
+\alias{testSame.RSiena}
 \title{  Wald and score tests for RSiena results }
 \description{
   These functions compute Wald-type and score-type tests for results
@@ -15,6 +16,8 @@ Wald.RSiena(A, ans)
 Multipar.RSiena(ans, \dots)
 
 score.Test(ans, test=ans$test)
+
+testSame.RSiena(ans, e1, e2)
 }
 \arguments{
   \item{A}{A \code{k} * \code{p} matrix, where \code{p = ans$pp},
@@ -29,6 +32,9 @@ score.Test(ans, test=ans$test)
   \item{test}{One or more integer numbers between 1 and \code{p},
     or a logical vector of length \code{p}; these should specify the tested
     effects (numbered as described for the \dots).}
+  \item{e1,e2}{Each an integer number between 1 and \code{p}, or a vector
+    of such numbers; the hypothesis tested is that the parameters for effects
+    with number/s \code{e1} are equal to those in \code{e2}.}
 }
 
 \details{The hypothesis tested by \code{Wald.RSiena}
@@ -37,7 +43,11 @@ score.Test(ans, test=ans$test)
 
    The hypothesis tested by \code{Multipar.RSiena} is that all
    parameters given in \eqn{\ldots} are 0. This is a special case of
-   the preceding.
+   \code{Wald.RSiena}.
+
+   The hypothesis tested by \code{testSame.RSiena} is that all
+   parameters given in \code{e1} are equal to those in \code{e2}.
+   This also is a special case of \code{Wald.RSiena}.
 
    The tested effects for \code{score.Test} should have been specified
    in \code{\link{includeEffects}} or \code{\link{setEffect}} with
@@ -48,7 +58,7 @@ score.Test(ans, test=ans$test)
    These tests should be carried out only when convergence is adequate
    (overall maximum convergence ratio less than 0.25
    and all \emph{t}-ratios for convergence less than 0.1 in absolute value).
-   
+
    These functions have their own print method, see \code{\link{print.sienaTest}}.
 }
 \value{An object of class \code{sienaTest}, which is a list with elements:
@@ -97,7 +107,6 @@ myeff1 <- includeEffects(myeff1, recip, include=FALSE)
 myeff1 <- includeEffects(myeff1, recip, type='creation')
 (myeff1 <- includeEffects(myeff1, recip, type='endow'))
 (ans1 <- siena07(myalgorithm, data=mydata, effects=myeff1, batch=TRUE))
-A <- matrix(c(0,1,-1), 1, 3)
-(Wald.RSiena(A, ans1))
+testSame.RSiena(ans1, 2, 3)
 }
 \keyword{ tests }
