@@ -12481,6 +12481,14 @@ with the behavioral variable itself.
  \underline{centered} dependent behavioral variable!\\
  Multiple versions of this effect are available to allow the use
  of more than one threshold.
+ 
+ \item {\em constant effect}    \texttt{(constant)},\\
+  an elementary effect for behavior,
+  indicating that the behavior stays constant: \\
+   $s^{\rm beh}_{i\vit}(x, z^0, z) =  I\{ z_i =  z^0_i \}  $ .\\ 
+   For estimation, this effect is totally collinear with the rate
+   effect; therefore its parameter cannot be estimated. It is only of theoretical
+   importance, and can be used perhaps in interaction with other effects.
 \end{startenum}
 Next there is a list of effects that have to do with the influence of
 the network on the behavior.
@@ -15995,21 +16003,30 @@ which contains a more complete listing.
 \begin{itemize} % Also update version number in earlier places.
 
 
-\item 2021-xx-xx  package version 1.2.34.
+\item 2021-04-28 GitHub, package version 1.2.34.
 
 Changes in RSiena:
 \begin{itemize}
 \item New effects: \texttt{avInSim} (thanks to Steffen Triebel),
-    \texttt{totInSim, avInSimPopAlt, totInSimPopAlt}.
-\item Improvements of functionality:\\
+    \texttt{totInSim, avInSimPopAlt, totInSimPopAlt, constant,
+     avAttHigher, avAttLower, totAttHigher, totAttLower}.
+\item Changed effects: endowment and creation types for \texttt{avInSim}
+     (brought in line with these types for \texttt{avSim}).
+\item Improvements of functionality:
    \begin{itemize}
    \item \sfn{funnelPlot} adapted to lists of \sfn{sienaFit} objects
      containing missing estimates or standard errors.
-   \item Small improvements (length of effect names) in
+   \item \sfn{plot.sienaGOF}: new parameter \texttt{position}.
+   \item Small improvements (constant length of effect names) in
      \sfn{meta.table} and \sfn{siena.table}.
     \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+   \item Restore backward compatibility with respect to checks of \texttt{x\$gmm}.
+   \item Correct names reported for tested effects (avoid error occurring 
+     if there are interactions without main effects).
+    \end{itemize}
 \end{itemize}
-
 
 
 \item 2021-04-14  R-Forge, \sfn{RSienaTest} version 1.2-29.
