@@ -551,7 +551,7 @@ summary.sienaGOF <- function(object, ...) {
 
 ##@plot.sienaGOF siena07 Plot method for sienaGOF
 plot.sienaGOF <- function (x, center=FALSE, scale=FALSE, violin=TRUE,
-		key=NULL, perc=.05, period=1, fontsize=12, ...)
+		key=NULL, perc=.05, period=1, position=4, fontsize=12, ...)
 {
 	## require(lattice)
 	args <- list(...)
@@ -783,7 +783,7 @@ plot.sienaGOF <- function (x, center=FALSE, scale=FALSE, violin=TRUE,
 			panel.xyplot(xAxis, obs[i,],  col="red", type="l", lwd=1, ...)
 			panel.xyplot(xAxis, obs[i,],  col="red", type="p", lwd=3, pch=19,
 					...)
-			panel.text(xAxis, obs[i,], labels=obsLabels[i,], pos=4)
+			panel.text(xAxis, obs[i,], labels=obsLabels[i,], pos=position)
 		}
 	}
 	bwplot(as.numeric(sims)~rep(xAxis, each=itns), horizontal=FALSE,
