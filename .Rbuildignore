@@ -6,4 +6,5 @@
 ^\.github$
 ^checkEffects.R$
 ^ONEWS$
+^README.md$
 ^.*\.code-workspace$

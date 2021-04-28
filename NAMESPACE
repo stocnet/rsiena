@@ -6,14 +6,15 @@ export(
 	sienaCompositionChangeFromFile, sienaDataCreate, sienaGroupCreate,
 	sienaModelCreate, sienaAlgorithmCreate, sienaNet, sienaDependent,
 	sienaNodeSet, xtable.sienaFit, varCovar, varDyadCovar, setEffect,
-	includeEffects, includeInteraction, includeGMoMStatistics, effectsDocumentation,
-	sienaDataConstraint, print.xtable.sienaFit, siena08, iwlsm, sienaTimeTest,
+	includeEffects, includeInteraction, includeGMoMStatistics, 
+   effectsDocumentation, sienaDataConstraint, print.xtable.sienaFit, 
+   siena08, iwlsm, sienaTimeTest,
 	includeTimeDummy, sienaGOF, descriptives.sienaGOF, sienaRI,
 	sparseMatrixExtraction, networkExtraction, behaviorExtraction,
 	OutdegreeDistribution, IndegreeDistribution, BehaviorDistribution,
 	TriadCensus, mixedTriadCensus, dyadicCov,
-	siena.table, xtable, score.Test, Wald.RSiena, Multipar.RSiena,
-   funnelPlot, meta.table
+	siena.table, xtable, score.Test, Wald.RSiena, Multipar.RSiena, 
+   testSame.RSiena, funnelPlot, meta.table
 )
 
 import(Matrix, lattice, parallel, MASS)

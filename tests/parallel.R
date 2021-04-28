@@ -47,6 +47,13 @@ print('test6')
 ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
               parallelTesting=TRUE, silent=TRUE)
 ans
+myeff <- includeEffects(myeff, recip, include=FALSE)
+myeff <- includeEffects(myeff, recip, type='endow')
+myeff <- includeEffects(myeff, recip, type='creation')
+ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
+              parallelTesting=TRUE, silent=TRUE)
+ans
+testSame.RSiena(ans, 3, 4)
 ##test7
 mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
 mydata <- sienaDataCreate(mynet1)
