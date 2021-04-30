@@ -5,7 +5,7 @@
 #
 
 AC_PREREQ([2.69])
-AC_INIT([RSiena], 1.2.33)
+AC_INIT([RSiena], @VERSION@)
 AC_CONFIG_SRCDIR([src])
 
 # Find the compiler and compiler flags used by R.
@@ -35,7 +35,20 @@ AC_SUBST(PKG_LIBS)
 PKG_SOURCES=$(cat src/sources.list)
 AC_SUBST(PKG_SOURCES)
 
-AC_OUTPUT(src/Makevars)
+# copy from GitHub repository neurodata/knorR repository
+AC_CONFIG_FILES([src/Makevars.tmp:src/Makevars.in], [
+    if test -f src/Makevars && cmp -s src/Makevars.tmp src/Makevars; then
+      AC_MSG_NOTICE([creating src/Makevars])
+      AC_MSG_NOTICE([src/Makevars is unchanged])
+      rm src/Makevars.tmp
+    else
+      AC_MSG_NOTICE([creating src/Makevars])
+      mv src/Makevars.tmp src/Makevars
+    fi
+  ]
+)
+
+AC_OUTPUT
 
 echo "
  --------------------------------------------------
