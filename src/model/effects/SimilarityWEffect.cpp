@@ -35,8 +35,8 @@ SimilarityWEffect::SimilarityWEffect(
 	this->laverage = average;
 	this->lalterPopularity = alterPopularity;
 	this->legoPopularity = egoPopularity;
-	this->lpar2 = (pEffectInfo->internalEffectParameter() >= 2);
-	// specifies type of denominator
+	this->lpar2 = (pEffectInfo->internalEffectParameter() >= 1.99);
+	// specifies type of denominator	
 }
 
 

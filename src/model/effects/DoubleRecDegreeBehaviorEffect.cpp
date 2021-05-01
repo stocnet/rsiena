@@ -85,8 +85,8 @@ DoubleRecDegreeBehaviorEffect::DoubleRecDegreeBehaviorEffect(
 	{
 		for ( ; iter.valid(); iter.next())
 		{
-			if (pSecondNetwork->tieValue(iter.actor(), actor) >= 1 &&
-					pSecondNetwork->tieValue(actor, iter.actor()) >= 1)
+			if ((pSecondNetwork->tieValue(iter.actor(), actor) >= 1) &&
+					(pSecondNetwork->tieValue(actor, iter.actor()) >= 1))
 			{
 				statistic++;
 			}

@@ -55,7 +55,7 @@ double CovariateSimilarityEffect::calculateContribution(int alter) const
 
 	if (!this->lreciprocal || this->inTieExists(alter))
 	{
-		change = this->similarity(this->ego(), alter);
+		change = this->actor_similarity(this->ego(), alter);
 	}
 
 	return change;
@@ -74,7 +74,7 @@ double CovariateSimilarityEffect::tieStatistic(int alter)
 	if (!this->missing(this->ego()) && !this->missing(alter) &&
 		(!this->lreciprocal || this->inTieExists(alter)))
 	{
-		statistic = this->similarity(this->ego(), alter);
+		statistic = this->actor_similarity(this->ego(), alter);
 	}
 
 	return statistic;

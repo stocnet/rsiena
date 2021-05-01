@@ -28,7 +28,7 @@ robmon <- function(z, x, useCluster, nbrNodes, initC, clusterString,
     z$gain <- x$firstg
     z$haveDfra <- FALSE
     z$maxlike <- x$maxlike
-    z$gmm <- x$gmm
+    z$gmm <- gmm(x)	
 	if (is.null(x$sf2.byIteration)) # keep compatible
 	{
 		z$sf2.byIteration <- TRUE
@@ -51,13 +51,13 @@ robmon <- function(z, x, useCluster, nbrNodes, initC, clusterString,
     z <- initializeFRAN(z, x, initC=FALSE, ...)
    ## If gmm=TRUE and no gmm effects are included, the algorithm stops and 
     ## asks the user to select the regular MoM estimation
-    if (x$gmm & sum(z$gmmEffects)==0)
+    if (gmm(x) & sum(z$gmmEffects)==0)
     {
         stop ("\n No gmm effects are selected. Use the regular Method of Moments estimation. \n")
     }
     ## If gmm=FALSE and gmm effects are included, the algorithm stops and 
     ## asks the user to select use the GMoM estimation
-    if (!x$gmm & sum(z$gmmEffects)>0)
+    if (!gmm(x) & sum(z$gmmEffects)>0)
     {
       stop ("\n gmm effects are selected. Use the Generalized Methods of Moments estimation. \n")
     }
@@ -184,7 +184,7 @@ robmon <- function(z, x, useCluster, nbrNodes, initC, clusterString,
     z$theta0 <- z$theta
 	## store starting value without any conditioning variables
     z$anyposj <- any(z$posj)
-    if (!x$gmm)
+    if (!gmm(x))
     {
       z$n1 <- 7 + 3 * z$pp
     }
@@ -397,18 +397,18 @@ robmon <- function(z, x, useCluster, nbrNodes, initC, clusterString,
 			z$se <- sqrt(diag(z$covtheta))
 			z$thetaValues <- NULL # not needed any longer, superseded by z$thetaUsed
 		}
-		else if (!x$gmm)
+		else if (!gmm(x))
 		{
 			z$covtheta <- matrix(0, z$pp, z$pp )
 			z$se <- rep(0, z$pp)
 		}
-		else if (x$gmm)
+		else if (gmm(x))
 	  	{
 	    	z$covtheta <- matrix(0, z$pp - sum(z$gmmEffects), z$pp- sum(z$gmmEffects))
 	    	z$se <- rep(0, z$pp- sum(z$gmmEffects))
 	  	}
 	}
-	else if (!x$gmm)
+	else if (!gmm(x))
 	{
 		z$diver<- (z$fixed | z$diver | diag(z$covtheta) < 1e-9) & (!z$AllUserFixed)
 		z$covtheta[z$diver, ] <- NA # was Root(diag(z$covtheta)) * 33

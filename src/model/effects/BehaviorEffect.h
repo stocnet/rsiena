@@ -68,6 +68,7 @@ public:
 protected:
 	int n() const;
 	int value(int actor) const;
+	int initialValue(int actor) const;
 	double centeredValue(int actor) const;
 	double overallCenterMean() const;
 	bool missing(int observation, int actor) const;
@@ -76,10 +77,12 @@ protected:
 	double similarityMean() const;
 	virtual void initializeStatisticCalculation();
 	virtual void cleanupStatisticCalculation();
+	const int * initialValues();
 
 private:
 	BehaviorLongitudinalData * lpBehaviorData;
 	const int * lvalues;
+	const int * linitialValues;
 	int lego;
 };
 

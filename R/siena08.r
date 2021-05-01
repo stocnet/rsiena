@@ -788,11 +788,11 @@ funnelPlot <- function(anslist, k, threshold=NULL, origin=TRUE,
 			min(sapply(anslist, function(x){x$pp})),'.', sep=''))
 	}
 	use <- sapply(anslist, function(x){!x$fixed[k]})
-	if (sum(use) == 0)
+	if (sum(use, na.rm=TRUE) == 0)
 	{
 		stop(paste('no estimations of parameter ',k,'.', sep=''))
 	}
-	notUsed <- sum(!use)
+	notUsed <- sum(!use, na.rm=TRUE)
 	efNames <- sapply(anslist, function(x){x$effects$effectName[k]})
 	if (!all(efNames == efNames[1]))
 	{
@@ -805,13 +805,13 @@ funnelPlot <- function(anslist, k, threshold=NULL, origin=TRUE,
 	se <- se0[use]
 	if (is.null(threshold))
 	{
-		threshold <- (1.1 * range(se)[2]) + 0.01
+		threshold <- (1.1 * range(se, na.rm=TRUE)[2]) + 0.01
 	}
 	use <- use[se < threshold]
-	tooLarge <- sum(se >= threshold)
+	tooLarge <- sum(se >= threshold, na.rm=TRUE)
 	use <- (se < threshold)
-	xxlim <- 1.1*range(th[use])
-	yylim <- c(0,1.1*range(se[use])[2])
+	xxlim <- 1.1*range(th[use], na.rm=TRUE)
+	yylim <- c(0,1.1*range(se[use], na.rm=TRUE)[2])
 	if ((plotAboveThreshold) & any(!use))
 	{
 		yylim[2] <- threshold+ 0.05
@@ -829,7 +829,7 @@ funnelPlot <- function(anslist, k, threshold=NULL, origin=TRUE,
 	lines(c(0,mi), c(0,  mi/(-1.96)), col='red')
 	if ((plotAboveThreshold) & any(!use))
 	{
-		points(th[!use], rep(threshold, sum(!use)), pch=8)
+		points(th[!use], rep(threshold, sum(!use, na.rm=TRUE)), pch=8)
 	}
 	if ((notUsed > 0) & verbose)
 	{
@@ -867,7 +867,7 @@ meta.table <- function(x, d=3, option=2,
 	sepsign <- ifelse(align, "&", ".")
 	numdig <- ifelse(align, 2, 1)
 	num2dig <- ifelse(align, 4, 2)
-    fromObjectToLaTeX <- function(a){
+    fromObjectToLaTeX <- function(a, mw=NULL){
 		b <- as.character(a)
 		b <- gsub('->', '$\\rightarrow$', fixed=TRUE, b)
 		b <- gsub('<-', '$\\leftarrow$', fixed=TRUE, b)
@@ -882,8 +882,18 @@ meta.table <- function(x, d=3, option=2,
 		b <- gsub('_', '-', fixed=TRUE, b)
 		b <- gsub('#', '.', fixed=TRUE, b)
 		b <- gsub('&', '.', fixed=TRUE, b)
-		b
+		format(b, width=mw)
 	}
+	if (is.null(x$startingDate))
+	{
+		startdate <- NULL
+	}
+	else
+	{
+		startdate <- x$startingDate
+	}
+	max.eff.width <- max(sapply(x$thetadf$effects,
+				function(x){nchar(as.character(fromObjectToLaTeX(x)))}))
 # header
 	line <- c(paste("% Table based on sienaMeta object",
                                deparse(substitute(x))))
@@ -891,7 +901,10 @@ meta.table <- function(x, d=3, option=2,
 	cat("% combined sienaFit objects", file=filename, append = TRUE)
 	line <- as.character(unique(x$thetadf$objname))
 	cat("\n%",line, "\n", file=filename, append = TRUE)
+	line <- c(paste("Estimation date",startdate))
+	cat("\n%",line, "\n", file=filename, append = TRUE)
 	neff <- length(unique((x$thetadf$effects))) # number of effects
+	nscores <- 0
 	if (option == 1)
  {
 # begin table 1
@@ -912,10 +925,9 @@ meta.table <- function(x, d=3, option=2,
 	cat(" \\\\", "\n", sep="", file=filename, append=TRUE)
 	cat("\\hline \n", file=filename, append=TRUE)
 # body 1
-	nscores <- 0
 	for (i in 1:neff)
 	{
-	line <- paste(fromObjectToLaTeX(x$thetadf$effects[i]), "&")
+	line <- paste(fromObjectToLaTeX(x$thetadf$effects[i], max.eff.width), "&")
 	line <- paste(line, x[[i]]$n1, " & ")
 	if (x[[i]]$n1 >= 2)
 	{
@@ -966,10 +978,9 @@ meta.table <- function(x, d=3, option=2,
 	cat("\\hline \n", file=filename, append=TRUE)
 	neff <- length(unique((x$thetadf$effects))) # number of effects
 # body 2
-	nscores <- 0
 	for (i in 1:neff)
 	{
-	line <- paste(fromObjectToLaTeX(x$thetadf$effects[i]), "&")
+	line <- paste(fromObjectToLaTeX(x$thetadf$effects[i], max.eff.width), "&")
 	line <- paste(line, x[[i]]$n1, " & ")
 	if (x[[i]]$n1 >= 2)
 	{
@@ -1021,7 +1032,7 @@ meta.table <- function(x, d=3, option=2,
 # body 3
 	for (i in 1:neff)
 	{
-	line <- paste(fromObjectToLaTeX(x$thetadf$effects[i]), "&")
+	line <- paste(fromObjectToLaTeX(x$thetadf$effects[i], max.eff.width), "&")
 	line <- paste(line, x[[i]]$n1, " & ")
 	if (x[[i]]$n1 >= 2)
 	{
@@ -1060,7 +1071,7 @@ meta.table <- function(x, d=3, option=2,
 # body 4
 	for (i in 1:neff)
 	{
-	line <- paste(fromObjectToLaTeX(x$thetadf$effects[i]), "&")
+	line <- paste(fromObjectToLaTeX(x$thetadf$effects[i], max.eff.width), "&")
 	line <- paste(line, formatC(x[[i]]$cjplusp, digits=3, format="f", decimal.mark=sepsign),
 					" & ", sep="")
 	line <- paste(line, formatC(x[[i]]$cjminusp, digits=3, format="f", decimal.mark=sepsign),
@@ -1069,6 +1080,9 @@ meta.table <- function(x, d=3, option=2,
 	}
 # tailer 4
 	cat("\\end{tabular}\n\n\n", file=filename, append=TRUE)
-	cat('Results written to file', filename,'.\n')
+	if (filename > "")
+	{
+		cat('Results written to file', filename,'.\n')
+	}
 }
 

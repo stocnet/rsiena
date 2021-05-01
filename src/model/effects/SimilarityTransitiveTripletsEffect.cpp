@@ -45,7 +45,7 @@ double SimilarityTransitiveTripletsEffect::calculateContribution(int alter) cons
 	// This number is not stored in a table and is calculated from scratch.
 
 	const Network * pNetwork = this->pNetwork();
-	double contribution1 = this->similarity(this->ego(), alter)
+	double contribution1 = this->actor_similarity(this->ego(), alter)
 		* this->pTwoPathTable()->get(alter);
 
 	// The following probably can be done more efficiently using
@@ -59,7 +59,7 @@ double SimilarityTransitiveTripletsEffect::calculateContribution(int alter) cons
 		int h = iter.actor();
 		if (pNetwork->tieValue(h, alter) >= 1)
 		{
-			contribution1 = contribution1 + this->similarity(this->ego(), h) ;
+			contribution1 = contribution1 + this->actor_similarity(this->ego(), h) ;
 		}
 	}
 
@@ -77,7 +77,7 @@ double SimilarityTransitiveTripletsEffect::tieStatistic(int alter)
 
 	if (!this->missing(this->ego()) && !this->missing(alter))
 	{
-		statistic = this->similarity(this->ego(), alter)
+		statistic = this->actor_similarity(this->ego(), alter)
 			* this->pTwoPathTable()->get(alter);
 	}
 

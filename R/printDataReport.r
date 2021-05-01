@@ -77,7 +77,7 @@ DataReport <- function(z, x, f)
 	if (z$cconditional)
 	{
 		Report("conditional moment estimation\n", outf)
-		if (x$gmm)
+		if (gmm(x))
 		{
 			Report(' by the Generalized Method of Moments.\n', outf)
 		}
@@ -102,7 +102,7 @@ DataReport <- function(z, x, f)
 		{
 			Report(c("in behavioral variable", x$condname, '\n'), outf)
 		}
-		if (x$gmm)
+		if (gmm(x))
 		{
 			Report('in the network variable.\n', outf)
 		}
@@ -128,7 +128,7 @@ DataReport <- function(z, x, f)
 	else if (!z$maxlike)
 	{
 		Report("unconditional moment estimation\n", outf)
-		if (x$gmm)
+		if (gmm(x))
 		{
 			Report(' by the Generalized Method of Moments.\n', outf)
 		}
@@ -303,7 +303,7 @@ DataReport <- function(z, x, f)
 		}
 	}
 
-	if (!x$gmm)
+	if (!gmm(x))
 	{
 	  fixed <- ifelse(z$fixed, '  (fixed) ', '')
 	}
@@ -318,7 +318,7 @@ DataReport <- function(z, x, f)
 	    fixed <- ifelse((z$fixed & !(z$requestedEffects$type=="gmm")), '  (fixed) ', '')
 	  }
 	}
-	if (!x$gmm)
+	if (!gmm(x))
 	{	tmp <- paste(sprintf("%3d",1:length(z$requestedEffects$effectName)), '. ',
 	               format(paste(z$requestedEffects$type, ':  ',
 	                            z$requestedEffects$effectName,

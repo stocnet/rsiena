@@ -26,7 +26,7 @@ sienaGOF(sienaFitObject, auxiliaryFunction,
         cluster=NULL, robust=FALSE, groupName="Data1",
         varName, tested=NULL, \dots)
 \method{plot}{sienaGOF}(x, center=FALSE, scale=FALSE, violin=TRUE, key=NULL,
-        perc=.05, period=1, fontsize=12, \dots)
+        perc=.05, period=1, position=4, fontsize=12, \dots)
 descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
         period=1, showAll=FALSE)
 }
@@ -75,6 +75,10 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
   \item{key}{ Keys in the plot for the levels of the auxiliary statistic
         (as given by parameter \code{levls} in the examples). }
   \item{perc}{ 1 minus confidence level for the confidence bands (two sided). }
+  \item{position}{ Position where the observed value is plotted: 1=under,
+        2=to the left, 3=above, 4=to the right of the red dot. Can be a single number
+        from 1 to 4, or a vector with positions for each statistic
+        (possibly recycled).}
   \item{fontsize}{ Font size for the observed values plotted.}
   \item{\dots}{Other arguments; for \code{sienaGOF()}, e.g., \code{levls} as a
        parameter for the auxiliary statistic in

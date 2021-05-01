@@ -48,6 +48,12 @@ protected:
 	inline const Network * pNetwork() const;
 	double totalAlterValue(int i) const;
 	double totalInAlterValue(int i) const;
+	int numberAlterHigher(int i) const;
+	int numberAlterLower(int i) const;
+	int numberAlterEqual(int i) const;
+	int numberAlterHigherPop(int i) const;
+	int numberAlterLowerPop(int i) const;
+	int numberAlterEqualPop(int i) const;
 	virtual void preprocessEgo(int ego);
 
 private:
@@ -61,6 +67,14 @@ private:
 	// total out- and in-alter values
 	double * ltotalAlterValues;
 	double * ltotalInAlterValues;
+	// number of higher, lower, and equal alter values
+	int * lnumberAlterHigher;
+	int * lnumberAlterLower;
+	int * lnumberAlterEqual;
+	// and weighted by alter indegrees
+	int * lnumberAlterHigherPop;
+	int * lnumberAlterLowerPop;
+	int * lnumberAlterEqualPop;
 };
 
 

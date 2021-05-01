@@ -32,11 +32,15 @@ public:
 	SimilarityEffect(const EffectInfo * pEffectInfo,
 		bool average,
 		bool alterPopularity,
-		bool egoPopularity);
+		bool egoPopularity,
+		bool hi,
+		bool lo);
 	SimilarityEffect(const EffectInfo * pEffectInfo,
 		bool average,
 		bool alterPopularity,
-		bool egoPopularity, const bool simulatedState);
+		bool egoPopularity,
+		bool hi,
+		bool lo, const bool simulatedState);
 
 	virtual double calculateChangeContribution(int actor,
 		int difference);
@@ -48,6 +52,9 @@ private:
 	bool laverage;
 	bool lalterPopularity;
 	bool legoPopularity;
+	bool lhi;
+	bool llo;
+	bool lcenter;
 };
 
 }

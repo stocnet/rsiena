@@ -13,11 +13,11 @@
 #include <stdexcept>
 #include "SimilarityEffect.h"
 #include "network/Network.h"
+#include "model/EffectInfo.h"
 #include "network/IncidentTieIterator.h"
 
 #include "model/variables/NetworkVariable.h"
 #include "model/variables/BehaviorVariable.h"
-
 
 using namespace std;
 
@@ -34,12 +34,16 @@ SimilarityEffect::SimilarityEffect(
 	const EffectInfo * pEffectInfo,
 	bool average,
 	bool alterPopularity,
-	bool egoPopularity) :
-		NetworkDependentBehaviorEffect(pEffectInfo)
+	bool egoPopularity,
+	bool hi,
+	bool lo) : NetworkDependentBehaviorEffect(pEffectInfo)
 {
 	this->laverage = average;
 	this->lalterPopularity = alterPopularity;
 	this->legoPopularity = egoPopularity;
+	this->lhi = hi;
+	this->llo = lo;
+	this->lcenter = true;
 }
 
 /**
@@ -55,12 +59,17 @@ SimilarityEffect::SimilarityEffect(
 	bool average,
 	bool alterPopularity,
 	bool egoPopularity,
+	bool hi,
+	bool lo,
 	const bool simulatedState) :
 		NetworkDependentBehaviorEffect(pEffectInfo,simulatedState)
 {
 	this->laverage = average;
 	this->lalterPopularity = alterPopularity;
 	this->legoPopularity = egoPopularity;
+	this->lhi = hi;
+	this->llo = lo;
+	this->lcenter = (pEffectInfo->internalEffectParameter() <= 1);
 }
 
 
@@ -77,40 +86,65 @@ double SimilarityEffect::calculateChangeContribution(int actor,
 	if (pNetwork->outDegree(actor) > 0)
 	{
 		// The formula for the average similarity effect:
-		// s_i(x) = avg(sim(v_i, v_j) - centeringConstant) over all neighbors
+		// s_i(x) = avg(sim(v_i, v_j) - similarityMean) over all neighbors
 		// j of i.
 		// sim(v_i, v_j) = 1.0 - |v_i - v_j| / observedRange
-		// We need to calculate the change delta in s_i(x), if we changed
-		// v_i to v_i + d (d being the given amount of change in v_i).
-		// To this end, we can disregard the centering constant and
-		// compute the average change in similarity, namely,
-		// avg(sim(v_i + d, v_j) - sim(v_i, v_j)) =
-		// avg(1 - |v_i+d-v_j|/range - 1 + |v_i-v_j|/range) =
-		// avg(|v_i-v_j| - |v_i+d-v_j|) / range,
-		// the average being taken over all neighbors of i.
-		// The reasoning for avg. similarity x popularity alter effect is
-		// similar.
-		// This is what is calculated below.
 
-		int oldValue = this->value(actor);
-		int newValue = oldValue + difference;
 		int totalChange = 0;
 
-		for (IncidentTieIterator iter = pNetwork->outTies(actor);
-			iter.valid();
-			iter.next())
+		if (this->lalterPopularity)
 		{
-			int j = iter.actor();
-			int alterValue = this->value(j);
-			int change =
-				std::abs(oldValue - alterValue) - std::abs(newValue - alterValue);
-
-			if (this->lalterPopularity)
+			if (difference > 0)
 			{
-				change *= pNetwork->inDegree(j);
+				if (this->lhi)
+				{
+					totalChange	+= this->numberAlterHigherPop(actor);
+				}
+				if (this->llo)
+				{
+					totalChange -= this->numberAlterEqualPop(actor);
+					totalChange -= this->numberAlterLowerPop(actor);
+				}
 			}
-
-			totalChange += change;
+			else if (difference < 0)
+			{
+				if (this->lhi)
+				{
+					totalChange -= this->numberAlterHigherPop(actor);
+					totalChange -= this->numberAlterEqualPop(actor);
+				}
+				if (this->llo)
+				{
+					totalChange += this->numberAlterLowerPop(actor);
+				}
+			}
+		}
+		else
+		{
+			if (difference > 0)
+			{
+				if (this->lhi)
+				{
+					totalChange	+= this->numberAlterHigher(actor);
+				}
+				if (this->llo)
+				{
+					totalChange -= this->numberAlterEqual(actor);
+					totalChange -= this->numberAlterLower(actor);
+				}
+			}
+			else if (difference < 0)
+			{
+				if (this->lhi)
+				{
+					totalChange -= this->numberAlterHigher(actor);
+					totalChange -= this->numberAlterEqual(actor);
+				}
+				if (this->llo)
+				{
+					totalChange += this->numberAlterLower(actor);
+				}
+			}
 		}
 
 		contribution = ((double) totalChange) / this->range();
@@ -118,6 +152,13 @@ double SimilarityEffect::calculateChangeContribution(int actor,
 		if (this->laverage)
 		{
 			contribution /= pNetwork->outDegree(actor);
+		}
+		else
+		{
+			if (this->lhi && this->llo && this->lcenter)
+			{
+				contribution -= (pNetwork->outDegree(actor) * this->similarityMean());
+			}
 		}
 
 		if (this->legoPopularity)
@@ -129,7 +170,6 @@ double SimilarityEffect::calculateChangeContribution(int actor,
 	return contribution;
 }
 
-
 /**
  * Returns the statistic corresponding to the given ego with respect to the
  * given values of the behavior variable.
@@ -137,10 +177,10 @@ double SimilarityEffect::calculateChangeContribution(int actor,
 double SimilarityEffect::egoStatistic(int ego,
 	double * currentValues)
 {
-	const Network * pNetwork = this->pNetwork();
-
 	double statistic = 0;
 	int neighborCount = 0;
+	int totalCount = 0;
+	const Network * pNetwork = this->pNetwork();
 
 	for (IncidentTieIterator iter = pNetwork->outTies(ego);
 		 iter.valid();
@@ -151,17 +191,45 @@ double SimilarityEffect::egoStatistic(int ego,
 		if (!this->missing(this->period(), j) &&
 			!this->missing(this->period() + 1, j))
 		{
-			double tieStatistic =
-				this->similarity(currentValues[ego], currentValues[j]);
-
+			double difValues = currentValues[j] - currentValues[ego];
 			if (this->lalterPopularity)
 			{
-				tieStatistic *= pNetwork->inDegree(j);
+				difValues *= pNetwork->inDegree(j);
 			}
 
-			statistic += tieStatistic;
+			if (this->lhi)
+			{
+				if (difValues > 0)
+				{
+					statistic += difValues;
+				}
+			}
+			if (this->llo)
+			{
+				if (difValues < 0)
+				{
+					statistic -= difValues;
+				}
+			}
 			neighborCount++;
+			if (this->lalterPopularity)
+			{
+				totalCount += pNetwork->inDegree(j);
+			}
 		}
+	} // until here loop outTies j
+
+	if (!this->lalterPopularity)
+	{
+		totalCount = neighborCount;
+	}
+			
+	statistic = totalCount - (statistic / this->range());
+
+// Center similarity for the avSim and related effects
+	if (this->lhi && this->llo && this->lcenter)
+	{
+		statistic = statistic - (totalCount * this->similarityMean());
 	}
 
 	if (this->laverage && neighborCount > 0)
@@ -194,9 +262,8 @@ double SimilarityEffect::egoEndowmentStatistic(int ego, const int * difference,
 	}
 
 	double statistic = 0;
+	int neighborCount = 0;
 	const Network * pNetwork = this->pNetwork();
-
-	double similarityMean =  this->similarityMean();
 
 	if (!this->missing(this->period(), ego) &&
 		!this->missing(this->period() + 1, ego))
@@ -206,6 +273,7 @@ double SimilarityEffect::egoEndowmentStatistic(int ego, const int * difference,
 			if (pNetwork->outDegree(ego))
 			{
 				double thisStatistic = 0;
+				double egoValue = currentValues[ego];
 
 				for (IncidentTieIterator iter = pNetwork->outTies(ego);
 					 iter.valid();
@@ -214,23 +282,24 @@ double SimilarityEffect::egoEndowmentStatistic(int ego, const int * difference,
 					if (!this->missing(this->period(), iter.actor()) &&
 						!this->missing(this->period() + 1, iter.actor()))
 					{
-						double alterValue = currentValues[iter.actor()];
-						double range = this->range();
-						thisStatistic += iter.value() *
-							(1.0 - fabs(alterValue - currentValues[ego]) /
-								range);
-						thisStatistic -= similarityMean;
+						int j = iter.actor();
+						double difValues = currentValues[j] - egoValue;
+						if (this->lhi)
+						{
+							if (difValues > 0)
+							{
+								thisStatistic += difValues;
+							}
+						}
+						if (this->llo)
+						{
+							if (difValues < 0)
+							{
+								thisStatistic -= difValues;
+							}
+						}
+						neighborCount++;
 					}
-				}
-
-				if (this->laverage)
-				{
-					thisStatistic /= pNetwork->outDegree(ego);
-				}
-
-				if (this->legoPopularity)
-				{
-					thisStatistic *= pNetwork->inDegree(ego);
 				}
 				statistic = thisStatistic;
 
@@ -240,34 +309,39 @@ double SimilarityEffect::egoEndowmentStatistic(int ego, const int * difference,
 
 				thisStatistic = 0;
 
+				egoValue = currentValues[ego] + difference[ego];
+
 				for (IncidentTieIterator iter = pNetwork->outTies(ego);
 					 iter.valid();
 					 iter.next())
 				{
-					if (!this->missing(this->period(), iter.actor()) &&
-						!this->missing(this->period() + 1, iter.actor()))
+					int j = iter.actor();
+					if (!this->missing(this->period(), j) &&
+						!this->missing(this->period() + 1, j))
 					{
-						double alterValue = currentValues[iter.actor()] +
-							difference[iter.actor()];
-						double range = this->range();
-						thisStatistic += iter.value() *
-							(1.0 - fabs(alterValue - (difference[ego] +
-									currentValues[ego]))
-								/ range);
-						thisStatistic -= similarityMean;
+						double difValues = currentValues[j] + difference[j] - egoValue;
+
+						if (this->lhi)
+						{
+							if (difValues > 0)
+							{
+								thisStatistic += difValues;
+							}
+						}
+						if (this->llo)
+						{
+							if (difValues < 0)
+							{
+								thisStatistic -= difValues;
+							}
+						}
 					}
 				}
-
-				if (this->laverage)
-				{
-					thisStatistic /= pNetwork->outDegree(ego);
-				}
-				if (this->legoPopularity)
-				{
-					thisStatistic *= pNetwork->inDegree(ego);
-				}
-
 				statistic -= thisStatistic;
+				if (this->laverage && neighborCount > 0)
+				{
+					statistic /= neighborCount;
+				}
 			}
 		}
 	}

@@ -2,27 +2,28 @@ Encoding: UTF-8
 Package: RSiena
 Type: Package
 Title: Siena - Simulation Investigation for Empirical Network Analysis
-Version: 1.2.33
-Date: 2021-03-19
+Version: 1.2.34
+Date: 2021-04-30
 Authors@R: c(person("Tom A.B.", "Snijders", role = c("cre", "aut"), email = "tom.snijders@nuffield.ox.ac.uk", comment = c(ORCID = "0000-0003-3157-4157")),
+              person("Ruth", "Ripley", role = "aut"),
               person("Christian", "Steglich", role = c("aut","ctb"), comment = c(ORCID = "0000-0002-9097-0873")),
               person("Johan", "Koskinen", role = c("aut","ctb"), comment = c(ORCID = "0000-0002-6860-325X")),
               person("Nynke", "Niezink", role = c("aut","ctb")),
-              person("Viviana", "Amati", role = c("aut","ctb")),
+              person("Viviana", "Amati", role = c("aut","ctb"), comment = c(ORCID = "0000-0003-1190-1237")),
               person("Christoph", "Stadtfeld", role = "ctb", comment = c(ORCID = "0000-0002-2704-2134")),
               person("James", "Hollway", role = "ctb", comment = c("IHEID", ORCID = "0000-0002-8361-9647")),
               person("Per", "Block", role = "ctb"),
               person("Robert", "Krause", role = "ctb"),
               person("Charlotte", "Greenan", role = "ctb"),
               person("Josh", "Lospinoso", role = "ctb"),
-              person("Michael", "Schweinberger", role = "ctb"),
+              person("Michael", "Schweinberger", role = "ctb", comment = c(ORCID = "0000-0003-3649-5386")),
               person("Mark", "Huisman", role = "ctb"),
               person("Krists", "Boitmanis", role = "ctr"),
               person("Felix", "Schoenenberger", role = "ctb"),
               person("Mark", "Ortmann", role = "ctb"),
               person("Marion", "Hoffman", role = "ctb"),
               person("Robert", "Hellpap", role = "ctb"),
-              person("Ruth", "Ripley", role = "aut"))
+              person("Alvaro", "Uzaheta", role = "ctb"))
 Maintainer: Tom A.B. Snijders <tom.snijders@nuffield.ox.ac.uk>
 Depends: R (>= 3.5.0)
 Imports:
@@ -37,7 +38,7 @@ Suggests:
     tools,
     codetools,
     tcltk,
-    testthat (>= 3.0.0)
+    testthat
 SystemRequirements: GNU make
 Description: The main purpose of this package is to perform simulation-based
    estimation of stochastic actor-oriented models for longitudinal network

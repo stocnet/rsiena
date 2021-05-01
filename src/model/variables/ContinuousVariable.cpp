@@ -37,11 +37,11 @@ ContinuousVariable::ContinuousVariable(ContinuousLongitudinalData * pData,
 {
 	this->lpActorSet = pSimulation->pSimulationActorSet(pData->pActorSet());
 	this->lpSimulation = pSimulation;
-	
+
 	this->lpData = pData;
 	this->lvalues = new double[this->n()];
 	this->lpFunction = new Function();
-	
+
 	this->leffectContribution = new double * [this->n()];
 	for (int i = 0; i < this->n(); i++)
 	{
@@ -83,11 +83,11 @@ void ContinuousVariable::initialize(int period)
 {
 	this->lperiod = period;
 	this->lsimulatedDistance = 0;
-	
+
 	this->lbasicScale = this->lpSimulation->pModel()->basicScaleParameter(period);
 	this->lbasicScaleScore = 0;
 	this->lbasicScaleDerivative = 0;
-		
+
 	// Copy the values from the corresponding observation.
 	for (int i = 0; i < this->n(); i++)
 	{
@@ -100,9 +100,9 @@ void ContinuousVariable::initialize(int period)
  */
 void ContinuousVariable::initializeFunction() const
 {
-	const vector<EffectInfo *> & rEffects = 
+	const vector<EffectInfo *> & rEffects =
 		this->lpSimulation->pModel()->rEvaluationEffects(this->name());
-	
+
 	EffectFactory factory(this->lpSimulation->pData());
 
 	for (unsigned i = 0; i < rEffects.size(); i++)
@@ -187,15 +187,15 @@ void ContinuousVariable::value(int actor, double newValue)
 void ContinuousVariable::calculateEffectContribution()
 {
 	const Function * pFunction = this->pFunction();
-	
+
 	for (unsigned i = 0; i < pFunction->rEffects().size(); i++)
 	{
 		ContinuousEffect * pEffect =
 			(ContinuousEffect *) pFunction->rEffects()[i];
-		
-		for (unsigned actor = 0; actor < this->n(); actor++) 
+
+		for (int actor = 0; actor < this->n(); actor++)
 		{
-			this->leffectContribution[actor][i] = 
+			this->leffectContribution[actor][i] =
 				pEffect->calculateChangeContribution(actor);
 		}
 	}
@@ -222,11 +222,11 @@ double ContinuousVariable::totalFunctionContribution(int actor) const
 
 
 /**
- * Updates the scores for effects according to the current step in the 
+ * Updates the scores for effects according to the current step in the
  * simulation.
  */
-void ContinuousVariable::accumulateScores(const vector<double> &actorMeans, 
-	                                const vector<double> &actorErrors, 
+void ContinuousVariable::accumulateScores(const vector<double> &actorMeans,
+	                                const vector<double> &actorErrors,
 									double dt)
 {
 	const SdeSimulation * sde = this->pSimulation()->pSdeSimulation();
@@ -236,45 +236,45 @@ void ContinuousVariable::accumulateScores(const vector<double> &actorMeans,
 	double Vardt = sde->wienerCoefficient();
 	double tau = this->pSimulation()->pModel()->basicScaleParameter(
 										this->pSimulation()->period());
-	
+
 	double errorxerror = 0; // inner product
-	for (unsigned actor = 0; actor < this->n(); actor++) 
+	for (int actor = 0; actor < this->n(); actor++)
 	{
 		errorxerror += actorErrors[actor] * actorErrors[actor];
 	}
-	
+
 	vector<double> bxeffects(this->n()); // inner product
 	for (unsigned i = 0; i < this->pFunction()->rEffects().size(); i++)
 	{
 		Effect * pEffect = this->pFunction()->rEffects()[i];
-		if (pEffect->pEffectInfo()->effectName() != "feedback" && 
+		if (pEffect->pEffectInfo()->effectName() != "feedback" &&
 			pEffect->pEffectInfo()->effectName() != "wiener")
 		{
-			for (unsigned actor = 0; actor < this->n(); actor++) 
+			for (int actor = 0; actor < this->n(); actor++)
 			{
 				bxeffects[actor] += pEffect->parameter() * leffectContribution[actor][i];
 			}
 		}
 	}
-	
+
 	for (unsigned i = 0; i < this->pFunction()->rEffects().size(); i++)
 	{
 		Effect * pEffect = this->pFunction()->rEffects()[i];
 		double score;
-		
+
 		if (pEffect->pEffectInfo()->effectName() == "feedback")
 		{
 			score = this->n() / (2*a) * (1 - g*g*tau*dt*Adt*Adt / Vardt);
 			double C1 = 1 / (2*a*Vardt) * (1 - tau*dt*g*g*Adt*Adt / Vardt);
 			double C2 = 0;
-			for (unsigned actor = 0; actor < this->n(); actor++) 
+			for (int actor = 0; actor < this->n(); actor++)
 			{
 				double temp = tau*dt*actorMeans[actor] + bxeffects[actor] / a * (tau*dt - (Adt-1)/a);
 				C2 += actorErrors[actor] * temp;
 			}
 			C2 *= -2;
-			
-			score += - C1 * errorxerror - 1/(2*Vardt) * C2; 
+
+			score += - C1 * errorxerror - 1/(2*Vardt) * C2;
 		}
 		else if (pEffect->pEffectInfo()->effectName() == "wiener")
 		{
@@ -283,30 +283,30 @@ void ContinuousVariable::accumulateScores(const vector<double> &actorMeans,
 		else // scores for parameters b
 		{
 			double errorxeffect = 0; // inner product
-			for (unsigned actor = 0; actor < this->n(); actor++) 
+			for (int actor = 0; actor < this->n(); actor++)
 			{
 				errorxeffect += actorErrors[actor] * leffectContribution[actor][i];
-			}			
+			}
 			score = 2 / ((Adt + 1)*g*g) * errorxeffect;
 		}
 
 		this->pSimulation()->score(pEffect->pEffectInfo(),
 			this->pSimulation()->score(pEffect->pEffectInfo()) + score);
 	}
-	
+
 	// score for parameter tau
 	double score = - this->n() * g*g*dt*Adt*Adt / (2*Vardt);
 	double C1 = - g*g*dt*Adt*Adt / (2*Vardt*Vardt);
 	double C2 = 0;
-	for (unsigned actor = 0; actor < this->n(); actor++) 
+	for (int actor = 0; actor < this->n(); actor++)
 	{
 		double temp = a*actorMeans[actor] + bxeffects[actor];
 		C2 += actorErrors[actor] * temp;
 	}
 	C2 *= -2*dt;
-	
-	score += - C1 * errorxerror - 1/(2*Vardt) * C2; 
-	
+
+	score += - C1 * errorxerror - 1/(2*Vardt) * C2;
+
 	score += this->pSimulation()->pSdeSimulation()->basicScaleScore();
 	this->pSimulation()->basicScaleScore(score);
 }

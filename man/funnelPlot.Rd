@@ -32,9 +32,9 @@ funnelPlot(anslist, k, threshold=NULL, origin=TRUE,
  significance threshold 0.05. Effects for which a score test
  was requested are not plotted (and reported to the console
  if \code{verbose}).\cr
- It is not checked whether the effects with number \code{k} are the same
- in all \code{sienaFit} objects. The effect name for the first object
- is used as the plot title.\cr
+ If not all effects with number \code{k} are the same
+ in all \code{sienaFit} objects, a warning is given.
+ The effect name for the first object is used as the plot title.\cr
  Another funnel plot is available as \code{\link{print.sienaMeta}}.
 }
 \value{

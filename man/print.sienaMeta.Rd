@@ -27,9 +27,11 @@ meta.table(x, d=3, option=2,
     \code{summary.sienaMeta} as appropriate.}
   \item{file}{Boolean: if TRUE, sends output to file named
     \code{x$projname.txt}. If FALSE, output is to the terminal.}
-  \item{reportEstimates}{Boolean: whether to report all estimates and standard errors.}
+  \item{reportEstimates}{Boolean: whether to report all estimates
+    and standard errors.}
   \item{extra}{Boolean: if TRUE, prints more information.}
-  \item{which}{Set of effects contained in the plot (given by sequence numbers).}
+  \item{which}{Set of effects contained in the plot
+    (given by sequence numbers).}
   \item{useBound}{Boolean: whether to restict plotted symbols to the bound
     used in the call of \code{sienaMeta}.}
   \item{layout}{Vector giving number of rows and columns
@@ -39,7 +41,7 @@ meta.table(x, d=3, option=2,
   \item{option}{1: results without normality assumptions;
     2: results with normality assumptions, with confidence intervals;
     3: results with normality assumptions, with standard errors.}
-  \item{filename}{filename for output.}
+  \item{filename}{filename for output; if "", printed to the console.}
   \item{align}{Whether to align numbers at the decimal point.}
   \item{\dots}{For extra arguments (none used at present).}
 }
@@ -119,7 +121,8 @@ print(meta)
 summary(meta)
 # For specifically presenting the Fisher combinations:
 # First determine the number of estimated effects:
-(neff <- sum(sapply(meta, function(x){ifelse(is.list(x),!is.null(x$cjplus),FALSE)})))
+(neff <- sum(sapply(meta, function(x){ifelse(is.list(x),
+        !is.null(x$cjplus),FALSE)})))
 Fishers <- t(sapply(1:neff,
         function(i){c(meta[[i]]$cjplus, meta[[i]]$cjminus,
                         meta[[i]]$cjplusp, meta[[i]]$cjminusp, 2*meta[[i]]$n1 )}))
@@ -134,5 +137,6 @@ plo[3]
 meta <- siena08(ans.1, ans.3, ans.4, bound=0.4)
 plot(meta, which=c(2,3), layout=c(2,1))
 plot(meta, which=c(2,3), layout=c(2,1), useBound=FALSE)
+meta.table(meta, option=3, file='')
 }}
 \keyword{print}

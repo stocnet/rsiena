@@ -198,10 +198,17 @@ NullChecks <- function()
 }
 
 ##@CheckBreaks siena07/GlobalFunctions Reads global flags
-
 CheckBreaks <- function()
 {
     UserInterruptFlag(UserInterrupt())
     EarlyEndPhase2Flag(EarlyEndPhase2())
     UserRestartFlag(UserRestart())
+}
+
+
+##@gmm siena07/GlobalFunctions checks gmm in a list, if any
+# purpose: backward compatibility
+gmm <- function(x)
+{
+    ifelse(is.null(x$gmm), FALSE, x$gmm)
 }
