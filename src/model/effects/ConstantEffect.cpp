@@ -9,7 +9,7 @@
  * ConstantEffect class.
  *****************************************************************************/
 
-#include <cstdlib>
+#include <cmath>
 #include "ConstantEffect.h"
 #include "model/variables/BehaviorVariable.h"
 #include "data/BehaviorLongitudinalData.h"
@@ -62,7 +62,8 @@ double ConstantEffect::calculateChangeContribution(int actor,
  */
 double ConstantEffect::egoStatistic(int ego, double * currentValues)
 {
-	return(- std::abs(currentValues[ego] + this->overallCenterMean() - this->initialValue(ego)));
+	return(- fabs(double (currentValues[ego] + 
+					this->overallCenterMean() - this->initialValue(ego))));
 }
 
 }

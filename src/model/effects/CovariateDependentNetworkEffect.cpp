@@ -46,7 +46,7 @@ CovariateDependentNetworkEffect::CovariateDependentNetworkEffect(
  * Constructor.
  *
  * @param pEffectInfo The effect info.
- * @param simulatedState If `true` the value(), missing() and similarity()
+ * @param simulatedState If `true` the value(), missing() and actor_similarity()
  *        functions uses the simulated state, if any or the value at the end
  *        of the period.
  */
@@ -195,7 +195,7 @@ bool CovariateDependentNetworkEffect::missing(int i) const
 /**
  * Returns the centered similarity of the given actors.
  */
-double CovariateDependentNetworkEffect::similarity(int i, int j) const
+double CovariateDependentNetworkEffect::actor_similarity(int i, int j) const
 {
 	double similarity = 0;
 

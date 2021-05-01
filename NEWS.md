@@ -2,7 +2,7 @@
    
 ## 
    
-2021-04-28  
+2021-04-30  
    
 ## Changes in RSiena: 
 
@@ -24,8 +24,8 @@
    
 ### Bug corrections  
    * Restore backward compatibility with respect to checks of x$gmm.  
-   * Correct names reported for tested effects by using ans$requestedEffects
-     instead of ans$effects.
+   * In test functions: correct names reported for tested effects by 
+     using ans$requestedEffects instead of ans$effects.
    
 ### Code improvements   
    * Improved coding of SimilarityEffect, using new parts
@@ -33,8 +33,12 @@
    * Changed unsigned actors to int in Continuousvariable and EpochSimulation;   
      int ...EffectCounts to unsigned in BehaviorVariable, 
      to avoid warnings in C++ compilation.
+   * Changed name of similarity(int i, int j) to actor_similarity
+     in order to avoid confusion with similarity(double v1, double v2).
    
 ### Corrections  
+   * Took out of NAMESPACE a few imported functions from graphics, stats, 
+     utils that were not used.  
    * Correction of footer of CovariateDistance2EgoAltSimNetworkFunction.h.
   
 # RSiena 1.2.33
