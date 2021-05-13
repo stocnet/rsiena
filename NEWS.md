@@ -1,3 +1,14 @@
+# RSiena 1.3.0
+   
+## 
+   
+2021-05-02  
+
+
+## Changes in RSiena:   
+   * Drop testthat in tests.   
+
+
 # RSiena 1.2.34
    
 ## 

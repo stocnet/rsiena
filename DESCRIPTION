@@ -2,8 +2,8 @@ Encoding: UTF-8
 Package: RSiena
 Type: Package
 Title: Siena - Simulation Investigation for Empirical Network Analysis
-Version: 1.2.34
-Date: 2021-04-30
+Version: 1.3.0
+Date: 2021-05-02
 Authors@R: c(person("Tom A.B.", "Snijders", role = c("cre", "aut"), email = "tom.snijders@nuffield.ox.ac.uk", comment = c(ORCID = "0000-0003-3157-4157")),
               person("Ruth", "Ripley", role = "aut"),
               person("Christian", "Steglich", role = c("aut","ctb"), comment = c(ORCID = "0000-0002-9097-0873")),
@@ -37,8 +37,7 @@ Suggests:
     network,
     tools,
     codetools,
-    tcltk,
-    testthat
+    tcltk
 SystemRequirements: GNU make
 Description: The main purpose of this package is to perform simulation-based
    estimation of stochastic actor-oriented models for longitudinal network
@@ -50,11 +49,11 @@ Description: The main purpose of this package is to perform simulation-based
    Actor-Oriented Models for Network Dynamics, Annual Review of Statistics and
    Its Application, 4, 343-363 <doi: 10.1146/annurev-statistics-060116-054035>.
    An extensive manual, scripts, and much further information is at the Siena
-   website <http://www.stats.ox.ac.uk/~snijders/siena>.
+   website <http://www.stats.ox.ac.uk/~snijders/siena/>.
 License: GPL-2 | GPL-3 | file LICENSE
 LazyData: yes
 Biarch: yes
 NeedsCompilation: yes
 BuildResaveData: no
-URL: http://www.stats.ox.ac.uk/~snijders/siena
+URL: http://www.stats.ox.ac.uk/~snijders/siena/
 Config/testthat/edition: 3
