@@ -145,7 +145,7 @@ bool CovariateNetworkAlterFunction::missing(int i) const
 /**
  * Returns the centered similarity of the given actors.
  */
-double CovariateNetworkAlterFunction::similarity(int i, int j) const
+double CovariateNetworkAlterFunction::actor_similarity(int i, int j) const
 {
 	double similarity = 0;
 

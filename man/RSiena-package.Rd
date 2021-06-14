@@ -12,10 +12,8 @@ Not only one-mode networks but also two-mode networks
 and multivariate networks are allowed.
 The models are stochastic actor-oriented models.
 
-Package \code{"RSienaTest"} is the development version, and
-is distributed through R-Forge, see
-\url{http://r-forge.r-project.org/R/?group_id=461}.
-Package \code{"RSiena"} is the official release.
+Recent versions of the package are distributed through GitHub,
+see \url{https://github.com/snlab-nl/rsiena/ }.
 }
 \details{
   The main flow of operations of this package is as follows.
@@ -36,7 +34,7 @@ Package \code{"RSiena"} is the official release.
   and which can be created by \code{\link{sienaAlgorithmCreate}}.
 
   Function \code{\link{siena07}} is used to fit a model.
- Function \code{\link{sienaGOF}} can be used for studying goodness of fit.
+  Function \code{\link{sienaGOF}} can be used for studying goodness of fit.
 
   A general introduction to the method is available in the tutorial paper
   Snijders, van de Bunt, and Steglich (2010).
@@ -45,11 +43,11 @@ Package \code{"RSiena"} is the official release.
   \tabular{ll}{
     Package: \tab RSiena\cr
     Type: \tab Package\cr
-    Version: \tab 1.2.34\cr
-    Date: \tab 2021-04-21\cr
-    Depends: \tab R (>= 3.0.0)\cr
-    Imports: \tab Matrix, lattice, parallel, MASS, methods\cr
-    Suggests: \tab xtable, network, tools, codetools, tcltk, knitr, rmarkdown\cr
+    Version: \tab 1.3.0\cr
+    Date: \tab 2021-05-02\cr
+    Depends: \tab R (>= 3.5.0)\cr
+    Imports: \tab Matrix, lattice, parallel, MASS, methods, xtable\cr
+    Suggests: \tab network, tools, codetools, tcltk\cr
     SystemRequirements: \tab GNU make\cr
     License: \tab GPL-2 | GPL-3 \cr
     LazyData: \tab yes\cr
@@ -63,7 +61,7 @@ Package \code{"RSiena"} is the official release.
   Contributions by Josh Lospinoso, Charlotte Greenan, Viviana Amati,
   Christian Steglich, Johan Koskinen, Mark Ortmann, Natalie Indlekofer,
   Christoph Stadtfeld, Per Block, Marion Hoffman, Michael Schweinberger,
-  and Robert Hellpap.
+  Robert Hellpap, and Alvaro Uzaheta.
 
   Maintainer: Tom A.B. Snijders <tom.snijders@nuffield.ox.ac.uk>
 }

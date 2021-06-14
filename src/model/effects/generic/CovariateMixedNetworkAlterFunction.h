@@ -47,7 +47,7 @@ public:
 protected:
 	double value(int i) const;
 	bool missing(int i) const;
-	double similarity(int i, int j) const;
+	double actor_similarity(int i, int j) const;
 	ConstantCovariate * pConstantCovariate() const;
 	ChangingCovariate * pChangingCovariate() const;
 	BehaviorLongitudinalData * pBehaviorData() const;

@@ -6,34 +6,35 @@ export(
 	sienaCompositionChangeFromFile, sienaDataCreate, sienaGroupCreate,
 	sienaModelCreate, sienaAlgorithmCreate, sienaNet, sienaDependent,
 	sienaNodeSet, xtable.sienaFit, varCovar, varDyadCovar, setEffect,
-	includeEffects, includeInteraction, includeGMoMStatistics, effectsDocumentation,
-	sienaDataConstraint, print.xtable.sienaFit, siena08, iwlsm, sienaTimeTest,
+	includeEffects, includeInteraction, includeGMoMStatistics, 
+   effectsDocumentation, sienaDataConstraint, print.xtable.sienaFit, 
+   siena08, iwlsm, sienaTimeTest,
 	includeTimeDummy, sienaGOF, descriptives.sienaGOF, sienaRI,
 	sparseMatrixExtraction, networkExtraction, behaviorExtraction,
 	OutdegreeDistribution, IndegreeDistribution, BehaviorDistribution,
 	TriadCensus, mixedTriadCensus, dyadicCov,
-	siena.table, xtable, score.Test, Wald.RSiena, Multipar.RSiena,
-   funnelPlot, meta.table
+	siena.table, xtable, score.Test, Wald.RSiena, Multipar.RSiena, 
+   testSame.RSiena, funnelPlot, meta.table
 )
 
 import(Matrix, lattice, parallel, MASS)
 importFrom("grDevices", "rgb", "xy.coords")
-importFrom("graphics", "axis", "barplot", "contour", "layout", "lines",
+importFrom("graphics", "axis", "barplot", "layout", "lines",
            "mtext", "pairs", "panel.smooth", "par", "pie", "plot",
-           "points", "stem", "strwidth", "text")
+           "points", "strwidth", "text")
 importFrom("methods", "as", "is", "hasArg")
 importFrom("stats", ".getXlevels", "acf", "as.formula", "coef",
            "contr.helmert", "cor", "cor.test", "cov", "density",
            "dnorm", "ecdf", "hatvalues", "lm", "lm.wfit", "mad",
            "mahalanobis", "median", "model.matrix", "model.offset",
            "model.response", "model.weights", "na.omit", "naprint",
-           "optim", "optimize", "pchisq", "plot.ts", "pnorm", "poly",
+           "optim", "optimize", "pchisq", "plot.ts", "pnorm", 
            "predict.lm", "pt", "qchisq", "qnorm", "quantile",
            "rWishart", "rnorm", "runif", "sd", "ts", "uniroot", "var",
            "weighted.mean", "weights")
-importFrom("utils", "browseURL", "capture.output", "edit",
+importFrom("utils", "browseURL", "edit",
            "flush.console", "getFromNamespace", "object.size",
-           "packageDescription", "read.csv", "read.delim",
+           "packageDescription", "read.csv",
            "read.table", "write.csv", "write.table")
 S3method(print, siena)
 S3method(print, sienaGroup)

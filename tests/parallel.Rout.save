@@ -1,6 +1,6 @@
 
-R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
-Copyright (C) 2020 The R Foundation for Statistical Computing
+R version 4.0.4 (2021-02-15) -- "Lost Library Book"
+Copyright (C) 2021 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -145,7 +145,7 @@ Total of 395 iteration steps.
 
 > score.Test(ans, 4)
 Tested effects:
- mynet1: outdegree-activity eval 
+ outdegree - activity eval 
 chi-squared = 5.52, d.f. = 1; one-sided Z = 2.35; two-sided p = 0.019. 
 > ##test6
 > mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
@@ -172,6 +172,37 @@ Overall maximum convergence ratio:    0.2334
 
 Total of 588 iteration steps.
 
+> myeff <- includeEffects(myeff, recip, include=FALSE)
+[1] effectName   include      fix          test         initialValue
+[6] parm        
+<0 rows> (or 0-length row.names)
+> myeff <- includeEffects(myeff, recip, type='endow')
+  effectName  include fix   test  initialValue parm type 
+1 reciprocity TRUE    FALSE FALSE          0   0    endow
+> myeff <- includeEffects(myeff, recip, type='creation')
+  effectName  include fix   test  initialValue parm type    
+1 reciprocity TRUE    FALSE FALSE          0   0    creation
+> ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
++               parallelTesting=TRUE, silent=TRUE)
+> ans
+Estimates, standard errors and convergence t-ratios
+
+                                       Estimate   Standard   Convergence 
+                                                    Error      t-ratio   
+  1. rate  basic rate parameter mynet1  3.1508  ( 0.5674   )   -0.0293   
+  2. eval  outdegree (density)         -1.0976  ( 0.1952   )   -0.0648   
+  3. endow reciprocity                  2.3709  ( 0.9090   )    0.0125   
+  4. creat reciprocity                  1.0175  ( 0.7842   )   -0.0142   
+
+Overall maximum convergence ratio:    0.0827 
+
+
+Total of 595 iteration steps.
+
+> testSame.RSiena(ans, 3, 4)
+Tested effects:
+ reciprocity endow  ==  reciprocity creation 
+chi-squared = 0.91, d.f. = 1; one-sided Z = 0.95; two-sided p = 0.341. 
 > ##test7
 > mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
 > mydata <- sienaDataCreate(mynet1)
@@ -631,4 +662,4 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 > 
 > proc.time()
    user  system elapsed 
-  27.76    0.56   28.43 
+  28.92    0.53   29.62 

@@ -632,7 +632,7 @@ void EpochSimulation::updateContinuousVariablesAndScores() {
 	vector<double> actorMeans(pVariable->n());
 	vector<double> actorErrors(pVariable->n());
 	
-	for (unsigned actor = 0; actor < pVariable->n(); actor++) 
+	for (int actor = 0; actor < pVariable->n(); actor++) 
 	{
 		// new value = deterministic part + random part
 		actorMeans[actor] = pVariable->totalFunctionContribution(actor);

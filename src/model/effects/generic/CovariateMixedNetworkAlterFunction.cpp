@@ -122,7 +122,7 @@ bool CovariateMixedNetworkAlterFunction::missing(int i) const
 /**
  * Returns the centered similarity of the given actors.
  */
-double CovariateMixedNetworkAlterFunction::similarity(int i, int j) const
+double CovariateMixedNetworkAlterFunction::actor_similarity(int i, int j) const
 {
 	double similarity = 0;
 

@@ -314,7 +314,7 @@ void BehaviorVariable::makeChange(int actor)
 	if (this->pSimulation()->pModel()->needDerivatives())
 	{
 		this->accumulateDerivatives(); // ABC
-	}		
+	}
 
 	if (this->pSimulation()->pModel()->needChain())
 	{
@@ -370,9 +370,9 @@ void BehaviorVariable::calculateProbabilities(int actor)
 	bool ismax = (currentValue >= this->lpData->max());
 	bool ismin = (currentValue <= this->lpData->min());
 
-	int evaluationEffectCount = this->pEvaluationFunction()->rEffects().size();
-	int endowmentEffectCount = this->pEndowmentFunction()->rEffects().size();
-	int creationEffectCount = this->pCreationFunction()->rEffects().size();
+	unsigned evaluationEffectCount = this->pEvaluationFunction()->rEffects().size();
+	unsigned endowmentEffectCount = this->pEndowmentFunction()->rEffects().size();
+	unsigned creationEffectCount = this->pCreationFunction()->rEffects().size();
 
 	// initialize for later use!
 	for (unsigned i = 0; i < evaluationEffectCount; i++)
@@ -397,17 +397,17 @@ void BehaviorVariable::calculateProbabilities(int actor)
 	{
 		this->lpChangeContribution = new map<const EffectInfo *, vector<double> >();
 // used to be:   >[evaluationEffectCount+endowmentEffectCount+creationEffectCount];
-		for (int i = 0; i < evaluationEffectCount; i++)
+		for (unsigned i = 0; i < evaluationEffectCount; i++)
 		{
 			vector<double> vec(3,0);
 			this->lpChangeContribution->insert(make_pair(this->pEvaluationFunction()->rEffects()[i]->pEffectInfo(), vec));
 		}
-		for (int i = 0; i < endowmentEffectCount; i++)
+		for (unsigned i = 0; i < endowmentEffectCount; i++)
 		{
 			vector<double> vec(3,0);
 			this->lpChangeContribution->insert(make_pair(this->pEndowmentFunction()->rEffects()[i]->pEffectInfo(), vec));
 		}
-		for (int i = 0; i < creationEffectCount; i++)
+		for (unsigned i = 0; i < creationEffectCount; i++)
 		{
 			vector<double> vec(3,0);
 			this->lpChangeContribution->insert(make_pair(this->pCreationFunction()->rEffects()[i]->pEffectInfo(), vec));
