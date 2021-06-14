@@ -817,6 +817,25 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new DifferenceFunction(pFirstFunction, pSecondFunction));
 	}
+    else if (effectName == "crprodInActIntn")
+    {
+        AlterFunction * pFirstFunction =
+            new EgoInDegreeFunction(pEffectInfo->interactionName1());
+        ConstantFunction * pSecondFunction =
+            new ConstantFunction(pEffectInfo->interactionName1(),
+                AVERAGE_IN_DEGREE);
+
+        if (pEffectInfo->internalEffectParameter() == 2)
+        {
+            pFirstFunction = new IntSqrtFunction(pFirstFunction);
+            pSecondFunction->pFunction(sqrt);
+        }
+
+        pEffect = new GenericNetworkEffect(pEffectInfo,
+            new ProductFunction(
+                new OutTieFunction(pEffectInfo->interactionName1()),
+                new DifferenceFunction(pFirstFunction, pSecond rsFunction)));
+    }
 	else if (effectName == "outPopIntn")
 	{
 		AlterFunction * pFirstFunction =
