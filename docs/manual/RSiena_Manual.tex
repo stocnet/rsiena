@@ -10598,7 +10598,12 @@ for $p=2$ \  $s^{\rm net}_{i\vit}(x) =
  for parameter $p = 2$ the square root of the out-degrees is taken:\\[0.4em]
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\,w_{ij}\sum_h x_{hj}\,w_{hj}   $ or\\[0.4em]
 for $p=2$ \  $s^{\rm net}_{i\vit}(x) =
-        \sum_j x_{ij}\,w_{ij} \sqrt{\sum_h x_{hj}\,w_{hj}^{\phantom{0}} }  $\ .\\
+        \sum_j x_{ij}\,w_{ij} \sqrt{\sum_h x_{hj}\,w_{hj}^{\phantom{0}} }  $\ ;\\
+
+\item {\em Interaction effect of main effect of $W$ on $X$ and in-degree in $W$ on $X$-activity effect} ($X$: $W$ $\times$ indeg.$^{1/p}$ $W$ activity)   \texttt{(crprodInActIntn)}\\
+ defined by the centered $W$-in-degree of $i$ times $i$'s out-degree in the joined $X$ \underline{and} $W$ network; for parameter $p = 2$ the square root of the $W$-in-degree is taken:\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) =   ({w_{+i}} - {\bar w})\, \sum_j x_{ij}\, w_{ij}$ or\\[0.4em]
+for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  (\sqrt{w_{+i}} - \sqrt{\bar w})\, \sum_j x_{ij} \,w_{ij}  $.\\
 
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}

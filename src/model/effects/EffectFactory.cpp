@@ -834,7 +834,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
         pEffect = new GenericNetworkEffect(pEffectInfo,
             new ProductFunction(
                 new OutTieFunction(pEffectInfo->interactionName1()),
-                new DifferenceFunction(pFirstFunction, pSecond rsFunction)));
+                new DifferenceFunction(pFirstFunction, pSecondFunction)));
     }
 	else if (effectName == "outPopIntn")
 	{

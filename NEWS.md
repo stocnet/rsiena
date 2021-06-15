@@ -1,7 +1,19 @@
-# RSiena 1.3.0
+# RSiena 1.3.1
    
 ## 
    
+2021-06-15
+
+## Changes in RSiena:   
+
+### Effects:
+   * New effect: crprodInActIntn (Nynke Niezink)
+   
+   
+# RSiena 1.3.0
+      
+## 
+      
 2021-05-02  
 
 

@@ -446,6 +446,29 @@ ans$targets
 sum(s502 * (simim) ) # OK totAttLower
 
 
+############################################
+### check crprodInActIntn
+############################################
 
+mynet1 <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- sienaNet(array(c(s503, s502), dim=c(50, 50, 2)))
+mydata <- sienaDataCreate(mynet1, mynet2)
 
-  
+myeff <- includeEffects(myeff, crprodInActIntn, name='mynet2', 
+                        interaction1='mynet1')
+myeff
+
+# for crprodInActIntn effect (parameter = 2):
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+ctr <- mean(c(colSums(s501), colSums(s502)))
+sum(rowSums(s502 * s501) * (sqrt(colSums(s501)) - sqrt(ctr))) # -4.937096 OK
+
+# for crprodInActIntn effect (parameter = 1):
+myeff <- setEffect(myeff, crprodInActIntn, name='mynet2',
+                   interaction1='mynet1', parameter=1)
+myeff
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+sum(rowSums(s502 * s501) * (colSums(s501) - ctr)) # -3.53 OK
+
