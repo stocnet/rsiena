@@ -795,7 +795,6 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 			z$thetaMat <- matrix(z$theta, nrow=nGroup, ncol=z$pp, byrow=TRUE)
 		}
 	}
-
 	# Here came an error
 	# Error: INTEGER() can only be applied to a 'integer', not a 'double'
 	# This was because storage.mode had not been set properly for some variable
@@ -2353,7 +2352,7 @@ updateTheta <- function(effects, prevAns, varName=NULL)
 	{
 		stop("effects is not a data.frame")
 	}
-	if (!inherits(prevAns, "sienaFit"))
+	if ((!inherits(prevAns, "sienaFit")) && (!inherits(prevAns, "sienaBayesFit")))
 	{
 		stop("prevAns is not an RSiena fit object")
 	}

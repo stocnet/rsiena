@@ -1,3 +1,17 @@
+# RSiena 1.3.1
+   
+## 
+   
+2021-xx-xx
+
+
+## Changes in RSiena:   
+   * updateTheta also accepts sienaBayesFit objects as prevAns.
+
+## Small corrections:   
+   * Message corrected in sienaDataCreate if there is an attribute "higher".
+
+
 # RSiena 1.3.0
    
 ## 
