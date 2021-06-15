@@ -688,6 +688,7 @@ doPhase1or3Iterations <- function(phase, z, x, zsmall, xsmall, nits, nits6=0,
 		}
 		if (z$int == 1)
 		{
+
 			zz <- x$FRAN(zsmall, xsmall)
 			if (!zz$OK)
 			{

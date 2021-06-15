@@ -5,9 +5,13 @@
 2021-06-15
 
 ## Changes in RSiena:   
+   * updateTheta also accepts sienaBayesFit objects as prevAns.
 
 ### Effects:
    * New effect: crprodInActIntn (Nynke Niezink)
+
+## Small corrections:   
+   * Message corrected in sienaDataCreate if there is an attribute "higher".
    
    
 # RSiena 1.3.0
