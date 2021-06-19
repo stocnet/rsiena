@@ -2,7 +2,7 @@
    
 ## 
    
-2021-06-15
+2021-07-20
 
 ## Changes in RSiena:   
    * updateTheta also accepts sienaBayesFit objects as prevAns.
@@ -10,7 +10,11 @@
 ### Effects:
    * New effect: crprodInActIntn (Nynke Niezink)
 
-## Small corrections:   
+## Small corrections:    
+   * If upOnly or downOnly, the (out)degree (density) effect is also excluded
+     for symmetric networks 
+     (this was reported in print01Report, but not carried out).
+     This happens in effects.r.
    * Message corrected in sienaDataCreate if there is an attribute "higher".
    
    

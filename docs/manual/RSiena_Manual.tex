@@ -5939,11 +5939,19 @@ This can be checked this by running \textsf{siena07} several times, with differe
 random number seeds (or the default \texttt{seed=NULL} which also gives different
 seeds every run).
 
+A more extensive way of checking this is presented in the scripts\\
+{\url{http://www.stats.ox.ac.uk/~snijders/siena/SE_checks.R}~} \\
+and \\
+{\url{http://www.stats.ox.ac.uk/~snijders/siena/RscriptStandardErrors.R}~} 
+\medskip
+
+
 To calculate the standard errors for a
 given set of estimates, when these estimates are good and do not need to be changed,
 algorithm settings can be used with \texttt{nsub=0}
 in \sfn{sienaAlgorithmCreate}, so phases 1 and 2 are
 skipped and the whole operation of \sfn{siena07} takes considerably less time.
+\medskip
 
 The method for estimating derivatives is set
 by the \sfn{findiff} parameter and the number of iterations in Phase~3
@@ -10653,12 +10661,7 @@ for $p=2$ \  $s^{\rm net}_{i\vit}(x) =
  for parameter $p = 2$ the square root of the out-degrees is taken:\\[0.4em]
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\,w_{ij}\sum_h x_{hj}\,w_{hj}   $ or\\[0.4em]
 for $p=2$ \  $s^{\rm net}_{i\vit}(x) =
-        \sum_j x_{ij}\,w_{ij} \sqrt{\sum_h x_{hj}\,w_{hj}^{\phantom{0}} }  $\ ;\\
-
-\item {\em Interaction effect of main effect of $W$ on $X$ and in-degree in $W$ on $X$-activity effect} ($X$: $W$ $\times$ indeg.$^{1/p}$ $W$ activity)   \texttt{(crprodInActIntn)}\\
- defined by the centered $W$-in-degree of $i$ times $i$'s out-degree in the joined $X$ \underline{and} $W$ network; for parameter $p = 2$ the square root of the $W$-in-degree is taken:\\[0.2em]
- $s^{\rm net}_{i\vit}(x) =   ({w_{+i}} - {\bar w})\, \sum_j x_{ij}\, w_{ij}$ or\\[0.4em]
-for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  (\sqrt{w_{+i}} - \sqrt{\bar w})\, \sum_j x_{ij} \,w_{ij}  $.\\
+        \sum_j x_{ij}\,w_{ij} \sqrt{\sum_h x_{hj}\,w_{hj}^{\phantom{0}} }  $\ .\\
 
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
