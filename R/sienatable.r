@@ -598,6 +598,7 @@ siena.table <- function(x, type='tex',
 		{
 			if (fromBayes)
 			{
+# hier gaat het denk ik mis			
 				remove <- is.na(sd.between)
 				mainTable$tstat1[-mid][-remove] <-
 					sapply(sd.between[rows],mystr,max.tstat.width)[1,][-remove]

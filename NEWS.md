@@ -5,10 +5,14 @@
 2021-07-27
 
 ## Changes in RSiena:   
-   * updateTheta also accepts sienaBayesFit objects as prevAns.
 
 ### Effects:
-   * New effect: crprodInActIntn (Nynke Niezink), XXW
+   * New effect: crprodInActIntn (Nynke Niezink), XXW.
+
+### Improvements of functionality: 
+   * Effects of type 'creation' or 'endow' represented in siena.table
+     by 'creation' and 'maintenance', respectively.
+   * updateTheta also accepts sienaBayesFit objects as prevAns.
 
 ## Small corrections:    
    * If upOnly or downOnly, the (out)degree (density) effect is also excluded

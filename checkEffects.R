@@ -562,3 +562,6 @@ myeff
 ans$targets
 sum(rowSums(s502 * s501) * (colSums(s501) - ctr)) # -3.53 OK
 
+
+
+
