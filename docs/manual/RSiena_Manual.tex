@@ -1757,7 +1757,7 @@ It is also reported in the
  output file produced by \sfn{print01Report()} and available -- e.g., for the first
 dependent variable -- as
 \begin{verbatim}
-\texttt{attr(mydata\$depvars[[1]], "balmean")}
+attr(mydata\$depvars[[1]], "balmean")
 \end{verbatim}
 Instead of \texttt{[[1]]} you can request a different number or
 the name of the variable.
@@ -7800,11 +7800,18 @@ will be significant.
   \item
   In the initialization phase, initial parameter values and the proposal
   covariance matrix for Metropolis-Hastings steps for groupwise parameters
-  are obtained from, first, Method of Moments estimation of a parameter vector
+  are obtained from.
+  This initialization has two parts.\\
+  First, Method of Moments estimation of a parameter vector
   assumed to be the same across the groups (in a multi-group estimation),
-  with step size \sfn{initgainGlobal},
-  followed by one subphase of the Robbins-Monro algorithm for Method of
-  Moments estimates for the groups separately, with step size \sfn{initgainGroupwise}.
+  with step size \texttt{initgainGlobal}.
+  This can be replaced by a run of \sfn{siena07} outside of \sfn{sienaBayes},
+  and giving the results of this run to \sfn{sienaBayes}
+  as the \texttt{prevAns} parameter.\\
+  The second part, if \texttt{initgainGroupwise} is greater than 0,
+  is one subphase of the Robbins-Monro algorithm for Method of
+  Moments estimates for each group separately, with step size
+  \texttt{initgainGroupwise}.
   The proposal covariance matrices then are scaled, in the
   function \sfn{improveMH}, to achieve about 25 out of 100 acceptances of
   Bayes proposals after single MH steps.
@@ -7813,18 +7820,20 @@ will be significant.
   a warming phase is done of \sfn{nwarm} Bayesian proposals
   each with a number of MH steps, followed again by the function \sfn{improveMH}.
   \item
-  Finally \sfn{nmain} repeats of \big(\sfn{nrunMHBatches} of a
-  number of MH steps sampling chains, plus \sfn{nSampVarying} MH steps
-  sampling the varying parameters ($\theta_j$) plus \sfn{nSampConst} MH steps
+  Finally \texttt{nmain} repeats of \Big\{\texttt{nrunMHBatches} repeats of a
+  number of MH steps sampling chains (the `inner loop'),
+  plus \texttt{nSampVarying} MH steps
+  sampling the varying parameters ($\theta_j$) plus \texttt{nSampConst} MH steps
   sampling the non-varying parameters ($\eta$) plus one Gibbs
   step sampling the global mean and covariance matrix of the varying parameters
-  ($\mu$ and $\Sigma$)\big) are performed.
-  In the warming as well as the final phase, the number of MH steps is
-  determined by parameter \sfn{mult} (``multiplication factor'')
+  ($\mu$ and $\Sigma$)\Big\} are performed.
+  In the warming as well as the final phase,
+  the number of MH steps in the inner loop is
+  determined by parameter \texttt{mult} (`multiplication factor')
   in the call of \sfn{sienaAlgorithmCreate} that created the algorithm object.
 \end{enumerate}
   The function \sfn{sienaBayes} is time-consuming. When starting to use it, it is advisable
-  to start with low values of \sfn{nmain} to explore computing time.
+  to start with low values of \texttt{nmain} to explore computing time.
   When the procedure seems to diverge, and for very small groups, it is
   advisable to use smaller values of the parameters \texttt{initgainGlobal}
   and \texttt{initgainGroupwise}; and perhaps \texttt{reductionFactor}.
@@ -7985,6 +7994,19 @@ with Jaccard coefficients at least 0.30.\index{Jaccard index}
 \subsubsection{How to choose the parameter settings for sienaBayes}
 \label{S_sienaBayesParameters}
 
+It is good to have an initial estimation as a multi-group estimation
+using the Method of Moments, i.e., using \sfn{siena07}, with
+an algorithm having
+\texttt{nsub=2} and a reduced value of \texttt{firstg}, e.g.,
+0.05 or less, and look at these results --
+they will give you a rough idea even if they are nowhere near convergence.
+If some of the estimated non-rate parameters are very large
+in absolute value, use a smaller value of \texttt{firstg}, such as 0.01 or 0.001.
+This result of  \sfn{siena07} can then be given as the \texttt{prevAns}
+parameter to \sfn{sienaBayes} (see the help page).
+Note that the parameter \texttt{firstg} corresponds to \texttt{initgainGlobal}
+of \sfn{sienaBayes}, if no  \texttt{prevAns} is used.
+
 It may be good to have an initial try run with\\
 \texttt{nwarm=5, nmain=10, nrunMHBatches=5, nImproveMH=20}
 (for speed) \\
@@ -8000,7 +8022,7 @@ The new value could be, e.g., 0.005 or 0.001 or 0.0. With the lower value
 of \texttt{initgainGroupwise}, dropping the groups concerned may be unnecessary,
 so don't drop groups too soon.
 
-For normal use, \texttt{nwarm=100, nmain=1000, nrunMHBatches=20, nImproveMH=100}
+For normal use, \texttt{nwarm=500, nmain=1000, nrunMHBatches=20, nImproveMH=100}
 may be reasonable.
 Computing time is roughly proportional to
 \texttt{nmain $\times$ nrunMHBatches}.
@@ -8051,12 +8073,41 @@ can be shown by requesting
 myeff[(myeff$randomEffects | (myeff$basicRate & (myeff$group==1) )) & myeff$include, ]
 \end{verbatim}
 }
+
+\noindent
+The list and order of only the non-varying effects
+can be shown by requesting
+{\small
+\begin{verbatim}
+myeff[myeff$include & (!myeff$basicRate) & (!myeff$randomEffects),]
+\end{verbatim}
+}
+\medskip
+
+\noindent
+\emph{Non-varying parameters}
 \smallskip
 
-For the non-varying parameters an improper flat prior is used,
+For the non-varying parameters ($\eta$, the greek letter `eta'),
+by default an improper flat prior is used,
 and nothing needs to be specified by the user.
 \smallskip
 
+However, there is the possibility to specify normal priors
+with mean 0 and a given variance. This can be useful for effects
+of group-level variables. The prior variances of the non-varying parameters
+are given by the parameter \texttt{priorSigEta}.
+This needs to be a vector with length equal to the number of
+non-varying parameters.
+Values \texttt{NA} indicate that a flat prior should be used
+(which can be interpreted as an infinite variance).
+\medskip
+
+\noindent
+\emph{Varying parameters}
+\smallskip
+
+\noindent
 The population distribution of the randomly varying parameters
 is assumed to be multivariate normal $\mathcal{N}(\mu, \Sigma)$.
 The conjugate prior for the multivariate normal distribution is used
@@ -8123,6 +8174,10 @@ the length would be 3+4=7 (3 for three periods +
 The prior covariance matrix of the varying parameters,
 \texttt{priorSigma}, is a symmetric square matrix of dimension
 equal to the length of \texttt{priorMu}.
+
+The treatment of these prior distributions
+should distinguish between the rate parameters and the parameters for the
+objective function.
 \medskip
 
 \noindent
@@ -8238,7 +8293,7 @@ m7 <- c(5, 5, -2, +1.5, 0, 0, 0)
 % diag(S7) <- c(2, 2, 1, 0.3, 0.2, 0.1, 0.1)
 
 
-\subsubsection{Operation of sienaBayes()}
+\subsubsection{Operation of \sfn{sienaBayes}}
 
 In Section \ref{S_sienaBayesParameters} it was already suggested to
 start with a run with very low values of the sample size settings for the

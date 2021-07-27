@@ -18,15 +18,16 @@ sienaNet(netarray, type=c("oneMode", "bipartite", "behavior", "continuous"),
 nodeSet="Actors", sparse=is.list(netarray), allowOnly=TRUE, imputationValues=NULL)
 }
 \arguments{
-  \item{netarray}{type="behavior" or "continuous": matrix 
+  \item{netarray}{\code{type="behavior"} or \code{"continuous"}: matrix 
     (actors \eqn{\times}{*} waves).\cr
-	type="oneMode" or "bipartite": array of values or list of sparse matrices
-    of type "dgTMatrix"; if an array is used, it should have
-	dimensions: for a one-network, \eqn{n \times n \times M}{n * n * M},
-	and for a two-mode network \eqn{n \times m \times M}{n * m * M}, 
-	where \code{n} is the number of actors, \code{m} is the number
-	of nodes in the second mode, and \code{M} is the number of waves.}
-  \item{type}{type of dependent variable, default "oneMode".}
+    \code{type="oneMode"} or \code{"bipartite"}: array of values or list of 
+    sparse matrices of type \code{dgTMatrix}; 
+    if an array is used, it should have dimensions: 
+    for a one-mode network, \eqn{n \times n \times M}{n * n * M},
+    and for a two-mode network \eqn{n \times m \times M}{n * m * M}, 
+    where \eqn{n} is the number of actors, \eqn{m} is the number
+    of nodes in the second mode, and \eqn{M} is the number of waves.}
+  \item{type}{type of dependent variable, default \code{oneMode}.}
   \item{nodeSet}{character string naming the appropriate node set.
     For a bipartite network, a vector containing 2 character strings:
     "rows" first, then "columns".}
@@ -49,7 +50,7 @@ nodeSet="Actors", sparse=is.list(netarray), allowOnly=TRUE, imputationValues=NUL
     TRUE is the appropriate option. When it is only the case for some of the
     periods, and for data sets that will be part of a multi-group object
     created by \code{\link{sienaGroupCreate}}, FALSE usually is preferable.}
-  \item{imputationValues}{for "behavior" or "continuous" dependent variables,
+  \item{imputationValues}{for \code{behavior} or \code{continuous} dependent variables,
     a matrix with imputation values can be included that will be used instead 
     of the default imputation values.}
 }
@@ -58,12 +59,13 @@ nodeSet="Actors", sparse=is.list(netarray), allowOnly=TRUE, imputationValues=NUL
   Siena model fit.
 }
 \value{
-  An object of class "sienaDependent". An array or (networks only) a list of sparse
-  matrices with attributes:
+  An object of class \code{sienaDependent}. An array or (networks only) a list of
+  sparse matrices with attributes:
   \item{netdims}{Dimensions of the network or behavior
     variable: senders, receivers (1 for behavior), periods}
   \item{type}{oneMode, bipartite or behavior}
-  \item{sparse}{Boolean: whether the network is given as a list of sparse matrices or not}
+  \item{sparse}{Boolean: whether the network is given as a list of sparse 
+    matrices or not}
   \item{nodeSet}{Character string with name(s) of node set(s)}
   \item{allowOnly}{The value of the \code{allowOnly} parameter}
 }

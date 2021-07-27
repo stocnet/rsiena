@@ -454,6 +454,7 @@ mynet1 <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
 mynet2 <- sienaNet(array(c(s503, s502), dim=c(50, 50, 2)))
 mydata <- sienaDataCreate(mynet1, mynet2)
 
+myeff <- getEffects(mydata)
 myeff <- includeEffects(myeff, crprodInActIntn, name='mynet2', 
                         interaction1='mynet1')
 myeff
