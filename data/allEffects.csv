@@ -144,6 +144,7 @@ dyadObjective,WX=>X closure of xxxxxx,WX=>X closure of xxxxxx,WXX,TRUE,xxxxxx,,e
 dyadObjective,XW=>X closure of xxxxxx,XW=>X closure of xxxxxx,XWX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 dyadObjective,XW=>X closure1 of xxxxxx,XW=>X closure1 of xxxxxx,XWX1,FALSE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 dyadObjective,XW=>X closure2 of xxxxxx,XW=>X closure2 of xxxxxx,XWX2,FALSE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
+dyadObjective,xxxxxx-weighted two-paths,sum xxxxxx-weighted two-paths,XXW,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 dyadBipartiteObjective,xxxxxx,Sum of ties x xxxxxx,X,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 dyadSecondBipartiteObjective,XW=>X closure of xxxxxx,XW=>X closure of xxxxxx,XWX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 dyadSecondBipartiteObjective,XW=>X closure1 of xxxxxx,XW=>X closure1 of xxxxxx,XWX1,FALSE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE

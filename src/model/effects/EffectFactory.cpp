@@ -435,6 +435,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new XWXClosureEffect(pEffectInfo, false, true);
 	}
+	else if (effectName == "XXW")
+	{
+		pEffect = new XXWClosureEffect(pEffectInfo, true, true);
+	}
 	else if (effectName == "altX")
 	{
 		pEffect = new CovariateAlterEffect(pEffectInfo, false, false, false);

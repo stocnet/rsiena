@@ -187,7 +187,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.3.0.
+This version was renewed for \RS version 1.3.1.
 \end{abstract}
 
 
@@ -1123,7 +1123,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.3.0).
+  identified by a version number (e.g.\ 1.3.1).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -5939,11 +5939,19 @@ This can be checked this by running \textsf{siena07} several times, with differe
 random number seeds (or the default \texttt{seed=NULL} which also gives different
 seeds every run).
 
+A more extensive way of checking this is presented in the scripts\\
+{\url{http://www.stats.ox.ac.uk/~snijders/siena/SE_checks.R}~} \\
+and \\
+{\url{http://www.stats.ox.ac.uk/~snijders/siena/RscriptStandardErrors.R}~}
+\medskip
+
+
 To calculate the standard errors for a
 given set of estimates, when these estimates are good and do not need to be changed,
 algorithm settings can be used with \texttt{nsub=0}
 in \sfn{sienaAlgorithmCreate}, so phases 1 and 2 are
 skipped and the whole operation of \sfn{siena07} takes considerably less time.
+\medskip
 
 The method for estimating derivatives is set
 by the \sfn{findiff} parameter and the number of iterations in Phase~3
@@ -9646,7 +9654,11 @@ Various different ways can be modeled in which
  is weighted by $w_{ih} $
  and the sum of these  weights measures the
  strength of the tendency toward closure of
- these mixed $W-X$ twopaths by a tie;
+ these mixed $W-X$ twopaths by a tie;\\
+ (this effect is implemented as an elementary effect;
+ it may be noted that the corresponding evaluation effect
+ is the \texttt{(WXX)} effect for $W + t(W)$,
+ where $t(W)$ is the transpose of $W$);
       \end{minipage}
 \hfill
 \begin{minipage}[t]{.15\textwidth}
@@ -9767,6 +9779,42 @@ by Maximum Likelihood and Bayesian estimation.
 \end{center}
 \vfill
 \end{minipage}
+
+
+\begin{minipage}[t]{.7\textwidth}
+ \item {\em covariate-weighted twopaths } \texttt{(XXW)},\\
+ $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, x_{jh}\, w_{ih}\,$;\\
+ this refers to two-paths weighted by the covariate:
+ each $X-X$ two-path $i \stackrel{X}{\rightarrow} j \stackrel{X}{\rightarrow} h$
+ is weighted by the value $w_{ih} $
+ for the pair of nodes at the start and the end of the two-path.\\
+ The covariate $W$ here always is used non-centered.
+      \end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\linethickness{0.3pt}
+\vfill
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
+\setplotarea x from 2 to 4, y from 0 to 3
+\put{\large$\bullet$} at  2 1
+\put{\large$\bullet$} at  4 1
+\put{\large$\bullet$} at  3 2.732
+\put{$i$} at 2 0.4
+\put{$j$} at 4 0.4
+\put{$h$} at 3 3.4
+\put{{\small $X$}} at 3.9 2.0
+\put{{\small $W$}} at 2.1 1.9
+\put{{\small $X$}} at 3   0.6
+\arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
+\arrow <2mm> [.2,.6]  from 2.1 1.1732 to 2.9 2.559
+\arrow <2mm> [.2,.6]  from 3.9 1.1732 to 3.1 2.559
+\endpicture
+\end{center}
+\vfill
+\end{minipage}
+
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
 \medskip
@@ -10653,12 +10701,7 @@ for $p=2$ \  $s^{\rm net}_{i\vit}(x) =
  for parameter $p = 2$ the square root of the out-degrees is taken:\\[0.4em]
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\,w_{ij}\sum_h x_{hj}\,w_{hj}   $ or\\[0.4em]
 for $p=2$ \  $s^{\rm net}_{i\vit}(x) =
-        \sum_j x_{ij}\,w_{ij} \sqrt{\sum_h x_{hj}\,w_{hj}^{\phantom{0}} }  $\ ;\\
-
-\item {\em Interaction effect of main effect of $W$ on $X$ and in-degree in $W$ on $X$-activity effect} ($X$: $W$ $\times$ indeg.$^{1/p}$ $W$ activity)   \texttt{(crprodInActIntn)}\\
- defined by the centered $W$-in-degree of $i$ times $i$'s out-degree in the joined $X$ \underline{and} $W$ network; for parameter $p = 2$ the square root of the $W$-in-degree is taken:\\[0.2em]
- $s^{\rm net}_{i\vit}(x) =   ({w_{+i}} - {\bar w})\, \sum_j x_{ij}\, w_{ij}$ or\\[0.4em]
-for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  (\sqrt{w_{+i}} - \sqrt{\bar w})\, \sum_j x_{ij} \,w_{ij}  $.\\
+        \sum_j x_{ij}\,w_{ij} \sqrt{\sum_h x_{hj}\,w_{hj}^{\phantom{0}} }  $\ .\\
 
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
@@ -15056,12 +15099,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.3.0.tar.gz|\\
+\verb|R CMD check RSiena_1.3.1.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.3.0.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.3.1.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16061,6 +16104,38 @@ which contains a more complete listing.
 
 \begin{small}
 \begin{itemize} % Also update version number in earlier places.
+
+
+\item 2021-07-27 GitHub, package version 1.3.1.
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects: \texttt{crprodInActIntn} (thanks to Nynke Niezink), 
+    \texttt{XXW}.
+\item Improvements of functionality:
+   \begin{itemize}
+   \item \sfn{updateTheta} also accepts \texttt{sienaBayesFit} objects 
+     as \texttt{prevAns}.
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+   \item If \texttt{upOnly} or \texttt{downOnly}, 
+     the \texttt{(out)degree (density)} effect is also excluded
+     for symmetric networks
+     (this was reported by \sfn{print01Report}, but not carried out).
+   \item Message corrected in \sfn{sienaDataCreate} if there is an attribute 
+   \texttt{higher}.
+    \end{itemize}
+\end{itemize}
+
+
+\item 2021-07-13  R-Forge, \sfn{RSienaTest} version 1.2-30.
+
+Changes in RSienaTest:
+\begin{itemize}
+\item \sfn{sienaBayes}: adaptation of \texttt{nwarm} and \texttt{nmain}
+     at the end of \texttt{initializeBayes} dropped.
+\end{itemize}
 
 \item 2021-05-02 CRAN/GitHub, package version 1.3.0.
 \medskip
