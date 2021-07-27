@@ -10653,8 +10653,8 @@ which is the average degree of $W$ across all observations.
 for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{+j}} - \sqrt{\bar w})  $;\\
 
  \item {\em Effect of in-degree in W on X-activity } ($X$: indegree$^{1/p}$ $W$ activity)  \texttt{(inActIntn)}\\
- defined by the $W$-in-degrees of $i$ (for $p = 2$ its square root)
- times $i$'s $X$-out-degree:\\[0.2em]
+ defined by the $W$-in-degrees of $i$ (for $p = 2$ the square roots)
+ times $i$'s $X$-out-degrees:\\[0.2em]
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, ({w_{+i}} - {\bar w})
                  =  x_{i+}\, ({w_{+i}} - {\bar w}) $ or\\[0.2em]
 for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{+i}} - \sqrt{\bar w})
@@ -10673,6 +10673,13 @@ for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{j+}} - \sqrt{\
                            x_{i+}\, ({w_{i+}} - {\bar w}) $ or\\[0.2em]
 for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{i+}} - \sqrt{\bar w}) =
                            x_{i+}\, (\sqrt{w_{i+}} - \sqrt{\bar w}) $;\\[0.2em]
+                           
+
+ \item {\em Interaction W $\times$ in-degree W activity } ($X$: $W$ x indegree$^{1/p}$ $W$ activity) 
+         \texttt{(crprodInActIntn)}\\
+ defined by the entrainment of $W$ by $X$ weighted by $W$-in-degrees of $i$ (for $p = 2$ the square roots):\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, w_{ij}\,({w_{+i}} - {\bar w}) $ or\\[0.2em]
+for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\,w_{ij}\, (\sqrt{w_{+i}} - \sqrt{\bar w}) $;\\[0.2em]
 
  \item {\em Effect of both in-degrees in W on X-popularity } ($X$: both indegrees$^{1/p}$ $W$ ) \texttt{(both)}\\
  defined by   the sum of  the $W$-in-degrees of the others to whom $i$ is tied
@@ -16110,20 +16117,20 @@ which contains a more complete listing.
 
 Changes in RSiena:
 \begin{itemize}
-\item New effects: \texttt{crprodInActIntn} (thanks to Nynke Niezink), 
+\item New effects: \texttt{crprodInActIntn} (thanks to Nynke Niezink),
     \texttt{XXW}.
 \item Improvements of functionality:
    \begin{itemize}
-   \item \sfn{updateTheta} also accepts \texttt{sienaBayesFit} objects 
+   \item \sfn{updateTheta} also accepts \texttt{sienaBayesFit} objects
      as \texttt{prevAns}.
     \end{itemize}
 \item Bug corrections:
    \begin{itemize}
-   \item If \texttt{upOnly} or \texttt{downOnly}, 
+   \item If \texttt{upOnly} or \texttt{downOnly},
      the \texttt{(out)degree (density)} effect is also excluded
      for symmetric networks
      (this was reported by \sfn{print01Report}, but not carried out).
-   \item Message corrected in \sfn{sienaDataCreate} if there is an attribute 
+   \item Message corrected in \sfn{sienaDataCreate} if there is an attribute
    \texttt{higher}.
     \end{itemize}
 \end{itemize}
