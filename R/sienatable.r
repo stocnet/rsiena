@@ -69,6 +69,10 @@ siena.table <- function(x, type='tex',
 			stop('x must be a sienaFit or sienaBayesFit object')
 		}
 	}
+	if (!(type %in% c('tex','html')))
+	{
+		stop('type should be either "tex" or "html"')
+	}
 	if (!gmm(x))
 	{
 	  effects <- x$requestedEffects
@@ -148,6 +152,11 @@ siena.table <- function(x, type='tex',
 	}
 
 	effects$effectName <- fromObjectToText(effects$effectName, type=type)
+	extraType <- effects$type
+	extraType <- vapply(extraType, function(tp){switch(tp,
+			'creation'='creation', 'endow'='maintenance', '')},
+			FUN.VALUE='a', USE.NAMES =FALSE)
+	effects$effectName <- paste(effects$effectName, extraType)
 	max.eff.width <- max(nchar(effects$effectName))
 	effects$effectName <- format(effects$effectName,width=max.eff.width)
 
@@ -715,4 +724,5 @@ siena.table <- function(x, type='tex',
 	##Saves the table to a file
 
 	write.table(table,file=file,row.names=F,col.names=F,sep="", quote=FALSE)
+	cat('Results for', deparse(substitute(x)), 'written to', file,'.\n')
 }
