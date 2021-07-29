@@ -2,6 +2,7 @@ useDynLib(RSiena, .registration = TRUE, .fixes="C_")
 
 export(
 	coCovar, coDyadCovar, getEffects, model.create, print01Report, siena07,
+	tidy, tidy.sienaFit,
 	sienaCompositionChange, updateTheta, updateSpecification,
 	sienaCompositionChangeFromFile, sienaDataCreate, sienaGroupCreate,
 	sienaModelCreate, sienaAlgorithmCreate, sienaNet, sienaDependent,
@@ -19,6 +20,7 @@ export(
 
 import(Matrix, lattice, parallel, MASS)
 importFrom("grDevices", "rgb", "xy.coords")
+importFrom("generics", "tidy")
 importFrom("graphics", "axis", "barplot", "layout", "lines",
            "mtext", "pairs", "panel.smooth", "par", "pie", "plot",
            "points", "strwidth", "text")
