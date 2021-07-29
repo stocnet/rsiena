@@ -46,7 +46,7 @@ for data set \code{x}.\cr
   \item{shortName}{short name for the effect}
   \item{interaction1}{second variable to define the effect, if any}
   \item{interaction2}{third variable to define the effect, if any}
-  \item{type}{"eval", "endow", "creation", or "rate"}
+  \item{type}{"eval", "endow", "creation", "rate", or "gmm"}
   \item{basicRate}{boolean: whether a basic rate parameter}
   \item{include}{boolean: include in the model to be fitted or not}
   \item{randomEffects}{boolean: random or fixed effect. Currently not used.}

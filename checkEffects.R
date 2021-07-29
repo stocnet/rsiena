@@ -277,6 +277,95 @@ myeff <- includeEffects(myeff, cl.XWX2, name="trust", interaction1="advice")
 myans$targets
 sum(XWX) # 86 OK
 
+############################################
+### check XWX
+############################################
+
+a1 <- as.matrix(read.table("aadv_t1.txt",header=F))
+a2 <- as.matrix(read.table("aadv_t2.txt",header=F))
+t1 <- as.matrix(read.table("ttr_t1.txt",header=F))
+t2 <- as.matrix(read.table("ttr_t2.txt",header=F))
+hi <- as.matrix(read.table("hier.txt"))
+
+#a1 <- a1[1:20,1:20]
+#a2 <- a2[1:20,1:20]
+#t1 <- t1[1:20,1:20]
+#t2 <- t2[1:20,1:20]
+a1 <- a1[30:49,30:49]
+a2 <- a2[30:49,30:49]
+t1 <- t1[30:49,30:49]
+t2 <- t2[30:49,30:49]
+a2[8:12,10:15] <- a1[8:12,10:15]
+t2[8:12,10:15] <- t1[8:12,10:15]
+hi <- hi[30:49,30:49]
+
+behav <- cbind(rowSums(a1) + colSums(t1), rowSums(a2) + colSums(t2))
+(behav <- behav %/% 3 + 1)
+behav[behav >= 3] <- 3
+table(behav)
+behav
+
+#### Defining RSiena variables
+)
+
+library(RSienaTest)
+advice <- sienaNet(array(c(a1,a2), dim=c(20,20,2)))
+trust  <- sienaNet(array(c(t1,t2), dim=c(20,20,2)))
+trust1 <- coDyadCovar(t1)
+hierarchy <- coDyadCovar(hi)
+beh <- sienaDependent(behav, type="behavior")
+
+# We just give the two networks to sienaDataCreate.
+# They have the same dimensions; this is necessary,
+# as they have the same nodeSet.
+
+mydata <- sienaDataCreate(advice,trust1)
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, X, XWX, interaction1='trust1')
+myeff
+
+mymodel <- sienaModelCreate(projname="XWX", seed=1234)
+ans <- siena07(mymodel, data=mydata, effects=myeff)
+ans
+ans$targets
+diag(a1) <- 0
+diag(a2) <- 0
+sum(abs(a1-a2))
+sum(a2)
+sum(a2*t(a2))
+diag(t1) <- 0
+mt1 <- sum(t1)/(20*19)
+sum(a2*(t1-mt1))
+XW <- 
+XW <- a2 %*% t1
+diag(XW) <- 0
+XWX <- XW * a2
+diag(XWX)
+sum(XWX) # OK
+# In other words: XWX uses uncentered W.
+
+
+
+
+advice <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+trust <- sienaDependent(array(c(s503, s501), dim=c(50, 50, 2)))
+mydata <- sienaDataCreate(advice,trust)
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, cl.XWX, name="trust", interaction1="advice")
+mymodel <- sienaModelCreate(projname = NULL, seed=123)
+myans <- siena07(mymodel, data = mydata, effects = myeff)
+myans
+myans$targets
+
+# for cl.XWX effect:
+XW <- s501 %*% s501
+diag(XW) <- 0
+XWX <- XW * s501
+diag(XWX)
+2*sum(XWX) # 172 OK
+
+
 ##########################################################################
 ### check avSim, totSim, avInSim, totInSim, avInSimPopAlt, totInSimPopAlt
 ##########################################################################
@@ -446,6 +535,33 @@ ans$targets
 sum(s502 * (simim) ) # OK totAttLower
 
 
+############################################
+### check crprodInActIntn
+############################################
+
+mynet1 <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- sienaNet(array(c(s503, s502), dim=c(50, 50, 2)))
+mydata <- sienaDataCreate(mynet1, mynet2)
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, crprodInActIntn, name='mynet2', 
+                        interaction1='mynet1')
+myeff
+
+# for crprodInActIntn effect (parameter = 2):
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+ctr <- mean(c(colSums(s501), colSums(s502)))
+sum(rowSums(s502 * s501) * (sqrt(colSums(s501)) - sqrt(ctr))) # -4.937096 OK
+
+# for crprodInActIntn effect (parameter = 1):
+myeff <- setEffect(myeff, crprodInActIntn, name='mynet2',
+                   interaction1='mynet1', parameter=1)
+myeff
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+sum(rowSums(s502 * s501) * (colSums(s501) - ctr)) # -3.53 OK
 
 
-  
+
+

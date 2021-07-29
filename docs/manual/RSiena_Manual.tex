@@ -187,7 +187,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.3.0.
+This version was renewed for \RS version 1.3.1.
 \end{abstract}
 
 
@@ -1123,7 +1123,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.3.0).
+  identified by a version number (e.g.\ 1.3.1).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -1757,7 +1757,7 @@ It is also reported in the
  output file produced by \sfn{print01Report()} and available -- e.g., for the first
 dependent variable -- as
 \begin{verbatim}
-\texttt{attr(mydata\$depvars[[1]], "balmean")}
+attr(mydata\$depvars[[1]], "balmean")
 \end{verbatim}
 Instead of \texttt{[[1]]} you can request a different number or
 the name of the variable.
@@ -5939,11 +5939,19 @@ This can be checked this by running \textsf{siena07} several times, with differe
 random number seeds (or the default \texttt{seed=NULL} which also gives different
 seeds every run).
 
+A more extensive way of checking this is presented in the scripts\\
+{\url{http://www.stats.ox.ac.uk/~snijders/siena/SE_checks.R}~} \\
+and \\
+{\url{http://www.stats.ox.ac.uk/~snijders/siena/RscriptStandardErrors.R}~}
+\medskip
+
+
 To calculate the standard errors for a
 given set of estimates, when these estimates are good and do not need to be changed,
 algorithm settings can be used with \texttt{nsub=0}
 in \sfn{sienaAlgorithmCreate}, so phases 1 and 2 are
 skipped and the whole operation of \sfn{siena07} takes considerably less time.
+\medskip
 
 The method for estimating derivatives is set
 by the \sfn{findiff} parameter and the number of iterations in Phase~3
@@ -7800,11 +7808,18 @@ will be significant.
   \item
   In the initialization phase, initial parameter values and the proposal
   covariance matrix for Metropolis-Hastings steps for groupwise parameters
-  are obtained from, first, Method of Moments estimation of a parameter vector
+  are obtained from.
+  This initialization has two parts.\\
+  First, Method of Moments estimation of a parameter vector
   assumed to be the same across the groups (in a multi-group estimation),
-  with step size \sfn{initgainGlobal},
-  followed by one subphase of the Robbins-Monro algorithm for Method of
-  Moments estimates for the groups separately, with step size \sfn{initgainGroupwise}.
+  with step size \texttt{initgainGlobal}.
+  This can be replaced by a run of \sfn{siena07} outside of \sfn{sienaBayes},
+  and giving the results of this run to \sfn{sienaBayes}
+  as the \texttt{prevAns} parameter.\\
+  The second part, if \texttt{initgainGroupwise} is greater than 0,
+  is one subphase of the Robbins-Monro algorithm for Method of
+  Moments estimates for each group separately, with step size
+  \texttt{initgainGroupwise}.
   The proposal covariance matrices then are scaled, in the
   function \sfn{improveMH}, to achieve about 25 out of 100 acceptances of
   Bayes proposals after single MH steps.
@@ -7813,18 +7828,20 @@ will be significant.
   a warming phase is done of \sfn{nwarm} Bayesian proposals
   each with a number of MH steps, followed again by the function \sfn{improveMH}.
   \item
-  Finally \sfn{nmain} repeats of \big(\sfn{nrunMHBatches} of a
-  number of MH steps sampling chains, plus \sfn{nSampVarying} MH steps
-  sampling the varying parameters ($\theta_j$) plus \sfn{nSampConst} MH steps
+  Finally \texttt{nmain} repeats of \Big\{\texttt{nrunMHBatches} repeats of a
+  number of MH steps sampling chains (the `inner loop'),
+  plus \texttt{nSampVarying} MH steps
+  sampling the varying parameters ($\theta_j$) plus \texttt{nSampConst} MH steps
   sampling the non-varying parameters ($\eta$) plus one Gibbs
   step sampling the global mean and covariance matrix of the varying parameters
-  ($\mu$ and $\Sigma$)\big) are performed.
-  In the warming as well as the final phase, the number of MH steps is
-  determined by parameter \sfn{mult} (``multiplication factor'')
+  ($\mu$ and $\Sigma$)\Big\} are performed.
+  In the warming as well as the final phase,
+  the number of MH steps in the inner loop is
+  determined by parameter \texttt{mult} (`multiplication factor')
   in the call of \sfn{sienaAlgorithmCreate} that created the algorithm object.
 \end{enumerate}
   The function \sfn{sienaBayes} is time-consuming. When starting to use it, it is advisable
-  to start with low values of \sfn{nmain} to explore computing time.
+  to start with low values of \texttt{nmain} to explore computing time.
   When the procedure seems to diverge, and for very small groups, it is
   advisable to use smaller values of the parameters \texttt{initgainGlobal}
   and \texttt{initgainGroupwise}; and perhaps \texttt{reductionFactor}.
@@ -7985,6 +8002,19 @@ with Jaccard coefficients at least 0.30.\index{Jaccard index}
 \subsubsection{How to choose the parameter settings for sienaBayes}
 \label{S_sienaBayesParameters}
 
+It is good to have an initial estimation as a multi-group estimation
+using the Method of Moments, i.e., using \sfn{siena07}, with
+an algorithm having
+\texttt{nsub=2} and a reduced value of \texttt{firstg}, e.g.,
+0.05 or less, and look at these results --
+they will give you a rough idea even if they are nowhere near convergence.
+If some of the estimated non-rate parameters are very large
+in absolute value, use a smaller value of \texttt{firstg}, such as 0.01 or 0.001.
+This result of  \sfn{siena07} can then be given as the \texttt{prevAns}
+parameter to \sfn{sienaBayes} (see the help page).
+Note that the parameter \texttt{firstg} corresponds to \texttt{initgainGlobal}
+of \sfn{sienaBayes}, if no  \texttt{prevAns} is used.
+
 It may be good to have an initial try run with\\
 \texttt{nwarm=5, nmain=10, nrunMHBatches=5, nImproveMH=20}
 (for speed) \\
@@ -8000,7 +8030,7 @@ The new value could be, e.g., 0.005 or 0.001 or 0.0. With the lower value
 of \texttt{initgainGroupwise}, dropping the groups concerned may be unnecessary,
 so don't drop groups too soon.
 
-For normal use, \texttt{nwarm=100, nmain=1000, nrunMHBatches=20, nImproveMH=100}
+For normal use, \texttt{nwarm=500, nmain=1000, nrunMHBatches=20, nImproveMH=100}
 may be reasonable.
 Computing time is roughly proportional to
 \texttt{nmain $\times$ nrunMHBatches}.
@@ -8051,12 +8081,41 @@ can be shown by requesting
 myeff[(myeff$randomEffects | (myeff$basicRate & (myeff$group==1) )) & myeff$include, ]
 \end{verbatim}
 }
+
+\noindent
+The list and order of only the non-varying effects
+can be shown by requesting
+{\small
+\begin{verbatim}
+myeff[myeff$include & (!myeff$basicRate) & (!myeff$randomEffects),]
+\end{verbatim}
+}
+\medskip
+
+\noindent
+\emph{Non-varying parameters}
 \smallskip
 
-For the non-varying parameters an improper flat prior is used,
+For the non-varying parameters ($\eta$, the greek letter `eta'),
+by default an improper flat prior is used,
 and nothing needs to be specified by the user.
 \smallskip
 
+However, there is the possibility to specify normal priors
+with mean 0 and a given variance. This can be useful for effects
+of group-level variables. The prior variances of the non-varying parameters
+are given by the parameter \texttt{priorSigEta}.
+This needs to be a vector with length equal to the number of
+non-varying parameters.
+Values \texttt{NA} indicate that a flat prior should be used
+(which can be interpreted as an infinite variance).
+\medskip
+
+\noindent
+\emph{Varying parameters}
+\smallskip
+
+\noindent
 The population distribution of the randomly varying parameters
 is assumed to be multivariate normal $\mathcal{N}(\mu, \Sigma)$.
 The conjugate prior for the multivariate normal distribution is used
@@ -8123,6 +8182,10 @@ the length would be 3+4=7 (3 for three periods +
 The prior covariance matrix of the varying parameters,
 \texttt{priorSigma}, is a symmetric square matrix of dimension
 equal to the length of \texttt{priorMu}.
+
+The treatment of these prior distributions
+should distinguish between the rate parameters and the parameters for the
+objective function.
 \medskip
 
 \noindent
@@ -8238,7 +8301,7 @@ m7 <- c(5, 5, -2, +1.5, 0, 0, 0)
 % diag(S7) <- c(2, 2, 1, 0.3, 0.2, 0.1, 0.1)
 
 
-\subsubsection{Operation of sienaBayes()}
+\subsubsection{Operation of \sfn{sienaBayes}}
 
 In Section \ref{S_sienaBayesParameters} it was already suggested to
 start with a run with very low values of the sample size settings for the
@@ -9591,7 +9654,11 @@ Various different ways can be modeled in which
  is weighted by $w_{ih} $
  and the sum of these  weights measures the
  strength of the tendency toward closure of
- these mixed $W-X$ twopaths by a tie;
+ these mixed $W-X$ twopaths by a tie;\\
+ (this effect is implemented as an elementary effect;
+ it may be noted that the corresponding evaluation effect
+ is the \texttt{(WXX)} effect for $W + t(W)$,
+ where $t(W)$ is the transpose of $W$);
       \end{minipage}
 \hfill
 \begin{minipage}[t]{.15\textwidth}
@@ -9712,6 +9779,42 @@ by Maximum Likelihood and Bayesian estimation.
 \end{center}
 \vfill
 \end{minipage}
+
+
+\begin{minipage}[t]{.7\textwidth}
+ \item {\em covariate-weighted twopaths } \texttt{(XXW)},\\
+ $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, x_{jh}\, w_{ih}\,$;\\
+ this refers to two-paths weighted by the covariate:
+ each $X-X$ two-path $i \stackrel{X}{\rightarrow} j \stackrel{X}{\rightarrow} h$
+ is weighted by the value $w_{ih} $
+ for the pair of nodes at the start and the end of the two-path.\\
+ The covariate $W$ here always is used non-centered.
+      \end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\linethickness{0.3pt}
+\vfill
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
+\setplotarea x from 2 to 4, y from 0 to 3
+\put{\large$\bullet$} at  2 1
+\put{\large$\bullet$} at  4 1
+\put{\large$\bullet$} at  3 2.732
+\put{$i$} at 2 0.4
+\put{$j$} at 4 0.4
+\put{$h$} at 3 3.4
+\put{{\small $X$}} at 3.9 2.0
+\put{{\small $W$}} at 2.1 1.9
+\put{{\small $X$}} at 3   0.6
+\arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
+\arrow <2mm> [.2,.6]  from 2.1 1.1732 to 2.9 2.559
+\arrow <2mm> [.2,.6]  from 3.9 1.1732 to 3.1 2.559
+\endpicture
+\end{center}
+\vfill
+\end{minipage}
+
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
 \medskip
@@ -10550,8 +10653,8 @@ which is the average degree of $W$ across all observations.
 for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{+j}} - \sqrt{\bar w})  $;\\
 
  \item {\em Effect of in-degree in W on X-activity } ($X$: indegree$^{1/p}$ $W$ activity)  \texttt{(inActIntn)}\\
- defined by the $W$-in-degrees of $i$ (for $p = 2$ its square root)
- times $i$'s $X$-out-degree:\\[0.2em]
+ defined by the $W$-in-degrees of $i$ (for $p = 2$ the square roots)
+ times $i$'s $X$-out-degrees:\\[0.2em]
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, ({w_{+i}} - {\bar w})
                  =  x_{i+}\, ({w_{+i}} - {\bar w}) $ or\\[0.2em]
 for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{+i}} - \sqrt{\bar w})
@@ -10570,6 +10673,13 @@ for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{j+}} - \sqrt{\
                            x_{i+}\, ({w_{i+}} - {\bar w}) $ or\\[0.2em]
 for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{i+}} - \sqrt{\bar w}) =
                            x_{i+}\, (\sqrt{w_{i+}} - \sqrt{\bar w}) $;\\[0.2em]
+                           
+
+ \item {\em Interaction W $\times$ in-degree W activity } ($X$: $W$ x indegree$^{1/p}$ $W$ activity) 
+         \texttt{(crprodInActIntn)}\\
+ defined by the entrainment of $W$ by $X$ weighted by $W$-in-degrees of $i$ (for $p = 2$ the square roots):\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, w_{ij}\,({w_{+i}} - {\bar w}) $ or\\[0.2em]
+for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\,w_{ij}\, (\sqrt{w_{+i}} - \sqrt{\bar w}) $;\\[0.2em]
 
  \item {\em Effect of both in-degrees in W on X-popularity } ($X$: both indegrees$^{1/p}$ $W$ ) \texttt{(both)}\\
  defined by   the sum of  the $W$-in-degrees of the others to whom $i$ is tied
@@ -14996,12 +15106,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.3.0.tar.gz|\\
+\verb|R CMD check RSiena_1.3.1.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.3.0.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.3.1.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16001,6 +16111,38 @@ which contains a more complete listing.
 
 \begin{small}
 \begin{itemize} % Also update version number in earlier places.
+
+
+\item 2021-07-27 GitHub, package version 1.3.1.
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects: \texttt{crprodInActIntn} (thanks to Nynke Niezink),
+    \texttt{XXW}.
+\item Improvements of functionality:
+   \begin{itemize}
+   \item \sfn{updateTheta} also accepts \texttt{sienaBayesFit} objects
+     as \texttt{prevAns}.
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+   \item If \texttt{upOnly} or \texttt{downOnly},
+     the \texttt{(out)degree (density)} effect is also excluded
+     for symmetric networks
+     (this was reported by \sfn{print01Report}, but not carried out).
+   \item Message corrected in \sfn{sienaDataCreate} if there is an attribute
+   \texttt{higher}.
+    \end{itemize}
+\end{itemize}
+
+
+\item 2021-07-13  R-Forge, \sfn{RSienaTest} version 1.2-30.
+
+Changes in RSienaTest:
+\begin{itemize}
+\item \sfn{sienaBayes}: adaptation of \texttt{nwarm} and \texttt{nmain}
+     at the end of \texttt{initializeBayes} dropped.
+\end{itemize}
 
 \item 2021-05-02 CRAN/GitHub, package version 1.3.0.
 \medskip

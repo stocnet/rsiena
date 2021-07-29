@@ -82,8 +82,10 @@ siena.table(x, type="tex", file=paste(deparse(substitute(x)), ".", type,sep=""),
   the estimates and standards errors of a \code{\link{sienaFit}} object.
   The table will be written to a file in the current directory and
   has a footnote reporting the maximum of the convergence t-ratios.
+  Endowment or creation effects will be denoted, respectively,
+  by 'maintenance' or 'creation'.
 
-  See the manual for how to import these tables easily into MS-Word.
+  See the manual for how to import the html tables easily into MS-Word.
 }
 \references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}
 }

@@ -401,29 +401,19 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 			objEffects$type == "eval",'randomEffects'] <- TRUE
 
 		objEffects$untrimmedValue <- rep(0, nrow(objEffects))
-		if (attr(depvar,'symmetric'))
+		if ((attr(depvar,'allUpOnly') || attr(depvar, 'allDownOnly')))
 		{
-			objEffects[objEffects$shortName == "density" &
-				objEffects$type == "eval",
-			c('include', "initialValue", "untrimmedValue")] <-
-				list(TRUE, starts$degree, starts$untrimmed)
-#			objEffects[objEffects$shortName=='transTriads' &
-#					   objEffects$type=='eval','include'] <- TRUE
+			objEffects <- objEffects[!objEffects$shortName == "density", ]
 		}
 		else
 		{
-			if (!(attr(depvar,'allUpOnly') || attr(depvar, 'allDownOnly')))
-			{
-				objEffects[objEffects$shortName == "density" &
-					objEffects$type == 'eval',
-				c('include', "initialValue", "untrimmedValue")] <-
-					list(TRUE, starts$degree, starts$untrimmed)
-			}
-			else
-			{
-				objEffects <-
-					objEffects[!objEffects$shortName == "density", ]
-			}
+			objEffects[objEffects$shortName == "density" &
+				objEffects$type == 'eval',
+			c('include', "initialValue", "untrimmedValue")] <-
+				list(TRUE, starts$degree, starts$untrimmed)
+		}
+		if (!(attr(depvar,'symmetric')))
+		{
 			objEffects[objEffects$shortName == 'recip'&
 				objEffects$type == 'eval', 'include'] <- TRUE
 		}

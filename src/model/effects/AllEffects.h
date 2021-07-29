@@ -126,6 +126,7 @@
 #include "WWXClosureEffect.h"
 #include "WXXClosureEffect.h"
 #include "XWXClosureEffect.h"
+#include "XXWClosureEffect.h"
 #include "AgreementTransitivityGMMEffect.h"
 #include "RealTransitivityGMMEffect.h"
 #include "ReciprocityGMMEffect.h"

@@ -3,14 +3,14 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: XWXClosureEffect.h
+ * File: XXWClosureEffect.h
  *
  * Description: This file contains the definition of the
- * XWXClosureEffect class.
+ * XXWClosureEffect class.
  *****************************************************************************/
 
-#ifndef XWXCLOSUREEFFECT_H_
-#define XWXCLOSUREEFFECT_H_
+#ifndef XXWCLOSUREEFFECT_H_
+#define XXWCLOSUREEFFECT_H_
 
 #include "DyadicCovariateDependentNetworkEffect.h"
 
@@ -20,11 +20,11 @@ namespace siena
 /**
  * XW => X closure of covariate effect (see manual).
  */
-class XWXClosureEffect : public DyadicCovariateDependentNetworkEffect
+class XXWClosureEffect : public DyadicCovariateDependentNetworkEffect
 {
 public:
-	XWXClosureEffect(const EffectInfo * pEffectInfo, bool tp, bool inst);
-	virtual ~XWXClosureEffect();
+	XXWClosureEffect(const EffectInfo * pEffectInfo, bool outst, bool inst);
+	virtual ~XXWClosureEffect();
 
 	virtual void initialize(const Data * pData,
 		State * pState, int period, Cache * pCache);
@@ -36,25 +36,28 @@ protected:
 	virtual double tieStatistic(int alter);
 
 private:
-	void calculateTwoPathSums(int i, const Network * pNetwork,
+	void calculateOutStarSums(int i, const Network * pNetwork,
 		double * sums) const;
 	void calculateInStarSums(int i, const Network * pNetwork,
 		double * sums) const;
-// note that this function differs from XXWClosureEffect.calculateInStarSums
+// note that this function differs from XWXClosureEffect.calculateInStarSums
 
-	// For a fixed i, this variable stores the value of sum_h x_{ih} w_{hj} for
+	// The network this effect is associated with
+	const Network * lpNetwork;
+
+	// For a fixed i, this variable stores the value of sum_h x_{hi} w_{hj} for
 	// each j.
-	double * ltwoPathSums;
+	double * loutStarSums;
 
-	// For a fixed i, this variable stores the value of sum_h x_{ih} w_{jh} for
+	// For a fixed i, this variable stores the value of sum_h w_{ih} x_{jh} for
 	// each j.
 	double * linStarSums;
 
 	// divide indicates whether there will be division by the indegree
-	bool ltp; // contribution from twopaths
+	bool loutst; // contribution from outstars
 	bool linst; // contribution from instars
 };
 
 }
 
-#endif /*XWXCLOSUREEFFECT_H_*/
+#endif /*XXWCLOSUREEFFECT_H_*/
