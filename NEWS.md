@@ -4,10 +4,8 @@
    
 2021-07-27
 
-## Changes in RSiena:   
-
 ### Effects:
-   * New effect: crprodInActIntn (Nynke Niezink), XXW.
+   * New effects: `crprodInActIntn` (Nynke Niezink), `XXW`.
 
 ### Improvements of functionality: 
    * Effects of type 'creation' or 'endow' represented in siena.table
@@ -15,11 +13,11 @@
    * updateTheta also accepts sienaBayesFit objects as prevAns.
 
 ## Small corrections:    
-   * If upOnly or downOnly, the (out)degree (density) effect is also excluded
+   * If `upOnly` or `downOnly`, the (out)degree (density) effect is also excluded
      for symmetric networks 
-     (this was reported in print01Report, but not carried out).
-     This happens in effects.r.
-   * Message corrected in sienaDataCreate if there is an attribute "higher".
+     (this was reported in `print01Report`, but not carried out).
+     This happens in `effects.r`.
+   * Message corrected in `sienaDataCreate` if there is an attribute "higher".
    
    
 # RSiena 1.3.0
@@ -28,10 +26,7 @@
       
 2021-05-02  
 
-
-## Changes in RSiena:   
-   * Drop testthat in tests.   
-
+   * Drop `testthat` in tests.   
 
 # RSiena 1.2.34
    
@@ -39,8 +34,6 @@
    
 2021-04-30  
    
-## Changes in RSiena: 
-
 ### New functions:
    * testSame.RSiena.
    
@@ -82,7 +75,6 @@
 
 2021-03-19  
 
-## Changes in RSiena:  
    * Adjusted `configure`, `cleanup` and `Makevars` files for just C++ checks.
    * Pandoc dropped as a system requirement.
  
@@ -91,8 +83,6 @@
 ## 
 
 2021-03-16
-
-## Changes in RSiena:
 
 ### Effects:
    * New effects: homXTransRecTrip, toU.
@@ -141,7 +131,6 @@
 
 2021-02-27
 
-## Changes in RSiena:
    * Generalized method of Moments implemented (Viviana Amati):
      see docs\manual\Changes_RSiena_GMoM.tex;
      new function includeGMoMStatistics, extended functionality of siena07.
@@ -157,7 +146,6 @@
 
 2021-02-23
 
-## Changes in RSiena:
    * Resolved issue with continuous dependent behavior variables 
      (Nynke Niezink).
 
@@ -167,7 +155,6 @@
 
 2020-12-10
 
-## Changes in RSiena:
    * New effects (due to Christoph Stadtfeld):
      transtrip.FR, transtrip.FE, transtrip.EE, WWX.EE, WWX.FR, WXX.FE,
      WXX.ER, XWX.ER, XWX.FE, to.2, toBack, toRecip.
@@ -198,7 +185,6 @@
 
 2020-09-30
 
-## Changes in RSiena:
    * Adapted filter "disjoint" so that it operates correctly
      also when the network is symmetric.
      Consequence: constraint that two networks are disjoint
@@ -222,7 +208,6 @@
 
 2020-09-17 
 
-## Changes in RSiena:
    * Changed requirement for tcltk to "Suggests", 
      and further modified / cleaned up DESCRIPTION.
    * In siena07: if (!requireNamespace("tcltk")) set batch to TRUE.
