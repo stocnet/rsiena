@@ -1027,7 +1027,7 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 		{
 			if (sum(nets) > 1)
 			{
-				Report(c("Network ", netnames[i], "\n"), sep = "", outf)
+				Report(c("Network ", netnames[i], ":\n"), sep = "", outf)
 			}
 			if (allDownOnly[i])
 			{

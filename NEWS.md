@@ -1,3 +1,16 @@
+# RSiena 1.3.2
+   
+## 
+   
+2021-07-29
+
+## Changes in RSiena:  
+
+### Improvements of functionality: 
+   * Effects of type 'creation' or 'endow' represented in siena.table
+     by 'creation' and 'maintenance', respectively.    
+     This was erroneously omitted in 1.3.1.
+
 # RSiena 1.3.1
    
 ## 
