@@ -161,6 +161,9 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
   \item{effects}{The included effects in the effects object to which are added
     the main effects of the requested interaction effects, if any.}
   \item{theta}{Estimated value of theta, if \code{x$simOnly=FALSE}.}
+  \item{thetas}{Matrix. First column is subphase; 
+    further columns are values of theta as used during this subphase of Phase 2,
+    if \code{x$nsub >= 1}.}
   \item{covtheta}{Estimated covariance matrix of theta; this is not available
     if \code{x$simOnly=TRUE}.}
   \item{se}{Vector of standard errors of estimated theta,

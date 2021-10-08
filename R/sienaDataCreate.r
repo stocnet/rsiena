@@ -41,7 +41,7 @@ addAttributes.coCovar <- function(x, name, ...)
 	{
 		attr(x, 'poszvar') <- TRUE
 	}
-	attr(x, 'range') <- rr$range[2] - rr$range[1]
+	attr(x, 'range') <- ifelse((rr$range[2] - rr$range[1]==0), 1, rr$range[2] - rr$range[1])
 	storage.mode(attr(x, 'range')) <- 'double'
 	attr(x, 'range2') <- range2
 	## attr(x, 'simTotal') <- rr$simTotal
@@ -190,7 +190,7 @@ addAttributes.varDyadCovar <- function(x, name, bipartite, ...)
 		nonMissingCounts <- colSums(!is.na(x), dims=2)
 	}
 	attr(x, "mean") <- ifelse(attr(x, "centered"), varmean, 0)
-	attr(x, "range") <- rr[2] - rr[1]
+	attr(x, "range") <- ifelse((rr[2] - rr[1]==0), 1, rr[2] - rr[1])
 	storage.mode(attr(x, "range")) <- "double"
 	attr(x, "name") <- name
 	attr(x, "nonMissingCount") <- nonMissingCounts
@@ -431,11 +431,11 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 		}
 		if (!validNodeSet(nattr[1], nrow(thisdycCovar)))
 		{
-			stop("dyadic covariate incorrect nbr rows", names(dycCovars)[i])
+			stop("dyadic covariate incorrect nbr rows ", names(dycCovars)[i])
 		}
 		if (!validNodeSet(nattr[2], ncol(thisdycCovar)))
 		{
-			 stop("dyadic covariate incorrect nbr columns",
+			 stop("dyadic covariate incorrect nbr columns ",
 				  names(dycCovars)[i])
 		 }
 		dycCovars[[i]] <- addAttributes(dycCovars[[i]], names(dycCovars)[i],
@@ -1053,7 +1053,7 @@ checkConstraints <- function(z)
 			symmetric2 <- symmetrics[net2]
 
 			if (type1 == type2 && type1 != "behavior" && nodes1 == nodes2
-				&& symmetric1 == symmetric2 && type1 != "continuous" 
+				&& symmetric1 == symmetric2 && type1 != "continuous"
 				&& type2 != "continuous")
 			{
 				higher[i] <- TRUE
@@ -1158,7 +1158,7 @@ rangeAndSimilarity<- function(vals, rvals=NULL)
 	{
 		rvals <- range(vals, na.rm=TRUE)
 	}
-	rvals1 <- rvals[2] - rvals[1]
+	rvals1 <- ifelse((rvals[2] - rvals[1]==0), 1, rvals[2] - rvals[1])
 	tmp <- apply(vals, 2, function(v)
 			 {
 				 sapply(1: length(v), function(x, y, r)
@@ -1177,7 +1177,7 @@ rangeAndSimilarity<- function(vals, rvals=NULL)
 	cnts <- tmp[seq(2, length(tmp), by=2)]
 	simTotal <- sum(raw)
 	simCnt <- sum(cnts)
-	simMean <- simTotal/simCnt
+	simMean <- ifelse(simCnt==0, 0, simTotal/simCnt)
 	list(simTotal=simTotal, simMean=simMean, range=rvals, simCnt=simCnt)
 }
 ##@groupRangeAndSimilarityAndMean DataCreate
@@ -1232,7 +1232,7 @@ groupRangeAndSimilarityAndMean <- function(group)
 			simCnt <- simCnt + tmp$simCnt
 			values <- c(values, unique(depvar))
 		}
-		simMean <- simTotal/simCnt
+		simMean <- ifelse(simCnt==0, 0, simTotal/simCnt)
 		bSim[net] <- simMean
 		bMoreThan2[net] <- length(unique(values)) > 2
 		if (anyMissing)
@@ -2492,5 +2492,5 @@ calcCovarDist2 <- function(covar, depvar, rval=NULL)
 		simTotal[i] <- tmp$simTotal
 		simCnt[i] <- tmp$simCnt
 	}
-	sum(simTotal)/sum(simCnt)
+	ifelse(sum(simCnt)==0, 0, sum(simTotal)/sum(simCnt))
 }

@@ -165,13 +165,19 @@ corresponding to the observation moments.
           The mean over actors of these degrees of certainty, given by
           formula (7) in Snijders (2004), is printed by the
           \code{print} method for \code{sienaRI} objects.}
-    \item{- \code{sigma}}{a list of effects by ego matrices of the values of the within-ego
-          standard deviations of the change statistics. Their averages (over egos)
-          are printed if \code{printSigma=TRUE}.}
+    \item{- \code{sigma}}{a list of effects by ego matrices of the values of
+          the within-ego standard deviations of the change statistics.
+          Their averages (over egos) are printed if \code{printSigma=TRUE}.}
     \item{- \code{changeStatistics}}{a list of arrays (effects by alters by egos)
           containing for each observation moment,
           the values of the change statistics for toggling the tie from actor
           to ego; this is produced only if \code{getChangeStats=TRUE}.}
+    \item{- \code{toggleProbabilities}}{an array of dimensions
+         ego \eqn{\times}{*} alter \eqn{\times}{*} wave for network
+         dependent variables,
+         and ego \eqn{\times}{*} 3 \eqn{\times}{*} wave for behavior variables,
+         giving the choice probabilities of ego in a ministep,
+         when the data are as in this wave.}
     }
 }
 

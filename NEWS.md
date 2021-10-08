@@ -1,3 +1,36 @@
+# RSiena 1.3.3
+   
+## 
+   
+2021-10-08
+
+## Changes in RSiena:  
+
+### Effects:
+   * internal effect parameter for diffusion rate effects ('at least p').
+   * New effect `outOutAvIntn`.
+   * `outOutActIntn` also made available for non-directed explanatory networks 
+     and for two-mode dependent networks.
+
+### Improvements of functionality: 
+   * `toggleProbabilities` added to output of `sienaRI`.
+   * Trial values of `theta` used during Phase 2 of `siena07` added 
+     to the `sienaFit` object `ans` as `ans$thetas`.
+   * warnings if a data object contains only missings, or only the same value.
+
+### Bug corrections  
+   * if a data set contains a constant covariate, the simX effect will not
+     run into an error any more; this is obtained by defining the `range` 
+     attribute of the constant covariate as 1 to prevent division by zero,
+     and the `simMean` attribute as 0 instead of `NaN` (`sienaDataCreate`). 
+     This is relevant especially for `sienaGroup` data sets, where covariates 
+     might be constant for some of the groups.`
+
+### Corrections of documentation: 
+   * In `sienaAlgorithmCreate`, the default values of `diagonalize` for MoM
+     is 0.2; this was corrected in the help file.
+     
+
 # RSiena 1.3.2
    
 ## 
@@ -7,8 +40,8 @@
 ## Changes in RSiena:  
 
 ### Improvements of functionality: 
-   * Effects of type 'creation' or 'endow' represented in siena.table
-     by 'creation' and 'maintenance', respectively.    
+   * Effects of type `creation` or `endow` represented in siena.table
+     by `creation` and `maintenance`, respectively.    
      This was erroneously omitted in 1.3.1.
 
 # RSiena 1.3.1
@@ -21,16 +54,16 @@
    * New effects: `crprodInActIntn` (Nynke Niezink), `XXW`.
 
 ### Improvements of functionality: 
-   * Effects of type 'creation' or 'endow' represented in siena.table
-     by 'creation' and 'maintenance', respectively.
-   * updateTheta also accepts sienaBayesFit objects as prevAns.
+   * Effects of type `creation` or `endow` represented in siena.table
+     by `creation` and `maintenance`, respectively.
+   * `updateTheta` also accepts `sienaBayesFit` objects as `prevAns`.
 
 ## Small corrections:    
-   * If `upOnly` or `downOnly`, the (out)degree (density) effect is also excluded
-     for symmetric networks 
+   * If `upOnly` or `downOnly`, the (out)degree (density) effect is also 
+     excluded for symmetric networks 
      (this was reported in `print01Report`, but not carried out).
      This happens in `effects.r`.
-   * Message corrected in `sienaDataCreate` if there is an attribute "higher".
+   * Message corrected in `sienaDataCreate` if there is an attribute `higher`.
    
    
 # RSiena 1.3.0
@@ -48,39 +81,41 @@
 2021-04-30  
    
 ### New functions:
-   * testSame.RSiena.
+   * `testSame.RSiena`.
    
 ### Effects:  
-   * New effects: avInSim (thanks to Steffen Triebel), totInSim, 
-     avInSimPopAlt, totInSimPopAlt, constant,
-     avAttHigher, avAttLower, totAttHigher, totAttLower.
-   * Changed effects: endowment and creation types for avInSim
-     (brought in line with these types for avSim).
+   * New effects: `avInSim` (thanks to Steffen Triebel), `totInSim`, 
+     `avInSimPopAlt`, `totInSimPopAlt`, `constant`,
+     `avAttHigher`, `avAttLower`, `totAttHigher`, `totAttLower`.
+   * Changed effects: endowment and creation types for `avInSim`
+     (brought in line with these types for `avSim`).
     
 ### Improvements of functionality:  
-   * funnelPlot adapted to lists of sienaFit objects
+   * `funnelPlot` adapted to lists of `sienaFit` objects
      containing missing estimates or standard errors.
-   * plot.sienaGOF: new parameter "position".
-   * Small improvements (length of effect names) in meta.table and siena.table.  
+   * `plot.sienaGOF`: new parameter `position`.
+   * Small improvements (length of effect names) in `meta.table` and 
+    `siena.table`.  
    
 ### Bug corrections  
-   * Restore backward compatibility with respect to checks of x$gmm.  
+   * Restore backward compatibility with respect to checks of `x$gmm`.  
    * In test functions: correct names reported for tested effects by 
-     using ans$requestedEffects instead of ans$effects.
+     using `ans$requestedEffects` instead of `ans$effects`.
    
 ### Code improvements   
-   * Improved coding of SimilarityEffect, using new parts
-     of NetworkDependentBehaviorEffect.   
-   * Changed unsigned actors to int in Continuousvariable and EpochSimulation;   
-     int ...EffectCounts to unsigned in BehaviorVariable, 
+   * Improved coding of `SimilarityEffect`, using new parts
+     of `NetworkDependentBehaviorEffect`.   
+   * Changed unsigned actors to int in `Continuousvariable` and 
+     `EpochSimulation`;   
+     int ...EffectCounts to unsigned in `BehaviorVariable`, 
      to avoid warnings in C++ compilation.
-   * Changed name of similarity(int i, int j) to actor_similarity
-     in order to avoid confusion with similarity(double v1, double v2).
+   * Changed name of `similarity(int i, int j)` to `actor_similarity`
+     in order to avoid confusion with `similarity(double v1, double v2)`.
    
 ### Corrections  
-   * Took out of NAMESPACE a few imported functions from graphics, stats, 
-     utils that were not used.  
-   * Correction of footer of CovariateDistance2EgoAltSimNetworkFunction.h.
+   * Took out of `NAMESPACE` a few imported functions from `graphics`, 
+     `stats`, `utils` that were not used.  
+   * Correction of footer of `CovariateDistance2EgoAltSimNetworkFunction.h`.
   
 # RSiena 1.2.33
 
@@ -104,8 +139,8 @@
      from, fromMutual.
    * Effects to, toU, toBack, toRecip, MixedInXW are dyadic.
    * Reinstated effect MixedInXW, also with sqrt version for parameter 2.
-   * Dropped effect to.2 (identical to "to") 
-     and MixedInWX (identical to "toBack").
+   * Dropped effect to.2 (identical to `to`) 
+     and MixedInWX (identical to `toBack`).
 
 ### Improvements of functionality:
    * effectsDocumentation now also includes gmm effects (at the bottom).
@@ -125,8 +160,8 @@
    * Correction in phase3.2 of a bug that sometimes led to an error message 
      if simOnly.
    * oneModeNet in effects.r: some further cases where the comparison of
-     types with 'behavior' is replaced by 
-     comparison with c('behavior', 'continuous').
+     types with `behavior` is replaced by 
+     comparison with c(`behavior`, `continuous`).
    * Extra check in phase1.2.
    * Temporarily drop the final part of test16,
      in view of an irreproducible error.
@@ -148,9 +183,9 @@
      see docs\manual\Changes_RSiena_GMoM.tex;
      new function includeGMoMStatistics, extended functionality of siena07.
    * Require R >= 3.5.0.
-   * xtable added to "Imports" (used to be in "Suggests").
+   * xtable added to `Imports` (used to be in `Suggests`).
    * dyadicCov made to accept also changing dyadic covariates.
-   * Used 'verbose' condition in sienaGOF also for last console output.
+   * Used `verbose` condition in sienaGOF also for last console output.
    * new arguments plotAboveThreshold and verbose for funnelPlot.
 
 # RSiena 1.2.30
@@ -175,9 +210,9 @@
    * New functions meta.table and funnelPlot.
    * For effect from.w.ind, option parameter=-1 added.
    * The to effect is an ego effect.
-   * New parameter 'tested' in sienaGOF.
+   * New parameter `tested` in sienaGOF.
    * For siena.table, some of the effectNames changed to nice strings,
-     so that LaTeX can run without errors if type='tex'.
+     so that LaTeX can run without errors if type=`tex`.
    * The object produced by siena08 now has IWLS estimates more easily 
      accessible, as object$muhat and object$se.muhat.
    * Error message in sienaTimeTest for sienaFit objects produced with
@@ -198,21 +233,21 @@
 
 2020-09-30
 
-   * Adapted filter "disjoint" so that it operates correctly
+   * Adapted filter `disjoint` so that it operates correctly
      also when the network is symmetric.
      Consequence: constraint that two networks are disjoint
      operates correctly also when one of the networks is symmetric
      and the other is not.
-   * Adapted filter "higher" so that it operates correctly
+   * Adapted filter `higher` so that it operates correctly
      also when the other network is symmetric.
      Consequence: constraint that one network is at least as high
      as another network operates correctly also when 
      the higher networks is symmetric and the other is not.
-   * In "CheckConstraints", used in "sienaDataCreate", the requirement 
+   * In `CheckConstraints`, used in `sienaDataCreate`, the requirement 
      was dropped that the two networks have the same symmetry property;
-     and for "higher" it is required that if the lower network
+     and for `higher` it is required that if the lower network
      is symmetric, the higher network is also symmetric.
-   * In "sienaDataConstraint", if type is "disjoint" or "atLeastOne",
+   * In `sienaDataConstraint`, if type is `disjoint` or `atLeastOne`,
      the constraint is also implemented for the pair (net2, net1).
    * Vignette basicRSiena added (was earlier available as a script);
      thanks to James Hollway.
@@ -221,9 +256,9 @@
 
 2020-09-17 
 
-   * Changed requirement for tcltk to "Suggests", 
+   * Changed requirement for tcltk to `Suggests`, 
      and further modified / cleaned up DESCRIPTION.
-   * In siena07: if (!requireNamespace("tcltk")) set batch to TRUE.
+   * In siena07: if `(!requireNamespace(tcltk))` set batch to TRUE.
    * In NAMESPACE drop tcltk
    * In sienaAlgorithmCreate, use the definitions for projname=NULL
      also if any environment variable _R_CHECK* is set.
