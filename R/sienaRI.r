@@ -183,7 +183,6 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 	effectIds <- paste(effectNa,effectTypes,networkInteraction, sep = ".")
 	currentDepName <- ""
 	depNumber <- 0
-
 	for(eff in 1:length(effectIds))
 	{
 		if(networkNames[eff] != currentDepName)
@@ -239,6 +238,14 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 			RHActors <-list()
 			changeStats <-list()
 			sigma <- list()
+			if (networkTypes[eff] == "behavior")
+			{
+				toggleProbabilities <- array(0, dim=c(actors, 3, waves))
+			}
+			else
+			{
+				toggleProbabilities <- array(0, dim=c(actors, actors, waves))
+			}
 			for(w in 1:waves)
 			{
 				currentDepEffectContributions <- conts[[1]][[w]][currentDepEffs]
@@ -277,7 +284,21 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 				# giving the probability of toggling the tie variable to the alters;
 				# the first row is for the unchanged parameter vector theta,
 				# each of the following has put one element of theta to 0.
-
+				# for behavior it is a matrix of dim (effects + 1) * 3
+				if (networkTypes[eff] == "behavior")
+				{
+					toggleProbabilities[,,w] <-
+						t(vapply(distributions, function(x){x[1,]}, rep(0,3)))
+				}
+				else
+				{
+					toggleProbabilities[,,w] <-
+						t(vapply(distributions, function(x){x[1,]}, rep(0,actors)))
+				}
+# toggleProbabilities is an array referring to ego * alter * wave,
+# giving the probability of ego in a ministep in the wave
+# toggling the tie variable to the alter.
+# for behavior 'alter' is to be replaced by 3
 				entropy_vector <- unlist(lapply(distributions,
 						function(x){entropy(x[1,])}))
 				## If one wishes another measure than the
@@ -320,6 +341,7 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 			if (getChangeStatistics){
 				RItmp$changeStatistics <- changeStats
 			}
+			RItmp$toggleProbabilities <- toggleProbabilities
 			class(RItmp) <- "sienaRI"
 			if(depNumber == 1){
 				RI <- RItmp
