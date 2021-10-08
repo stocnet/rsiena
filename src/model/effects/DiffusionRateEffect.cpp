@@ -36,7 +36,8 @@ namespace siena
 DiffusionRateEffect::DiffusionRateEffect(const NetworkVariable * pVariable,
 	const BehaviorVariable * pBehaviorVariable,
 	string effectName,
-	double parameter)
+	double parameter,
+	double internalEffectParameter)
 {
 	this->lpVariable = pVariable;
 	this->lpBehaviorVariable = pBehaviorVariable;
@@ -63,6 +64,15 @@ DiffusionRateEffect::DiffusionRateEffect(const NetworkVariable * pVariable,
 	this->lpTable = new DiffusionEffectValueTable(possibleDegreeNumer,
 			possibleDegreeDenom);
 	this->lpTable->parameter(parameter);
+	this->linternalEffectParameter = round(internalEffectParameter);
+	this->labsInternalEffectParameter = std::abs(this->linternalEffectParameter);
+	this->linternalNonZero = (this->linternalEffectParameter != 0);
+
+	if (((effectName == "infectDeg") | (effectName == "infectIn") |
+				(effectName == "infectOut")) & (this->linternalEffectParameter < 0))
+	{
+		throw logic_error("Negative internal parameter not permitted for effect "+effectName);
+	}
 }
 
 DiffusionRateEffect::DiffusionRateEffect(const NetworkVariable * pVariable,
@@ -70,13 +80,17 @@ DiffusionRateEffect::DiffusionRateEffect(const NetworkVariable * pVariable,
 	const ConstantCovariate * pConstantCovariate,
 	const ChangingCovariate * pChangingCovariate,
 	string effectName,
-	double parameter)
+	double parameter,
+	double internalEffectParameter)
 {
 	this->lpVariable = pVariable;
 	this->lpBehaviorVariable = pBehaviorVariable;
 	this->lpChangingCovariate = pChangingCovariate;
 	this->lpConstantCovariate = pConstantCovariate;
 	this->leffectName = effectName;
+	this->linternalEffectParameter = round(internalEffectParameter);
+	this->labsInternalEffectParameter = std::abs(this->linternalEffectParameter);
+	this->linternalNonZero = (this->linternalEffectParameter != 0);
 
 	double possibleDegreeNumer = 1;
 	double possibleDegreeDenom = 1;
@@ -91,6 +105,11 @@ DiffusionRateEffect::DiffusionRateEffect(const NetworkVariable * pVariable,
 	this->lpTable = new DiffusionEffectValueTable(possibleDegreeNumer,
 		possibleDegreeDenom);
 	this->lpTable->parameter(parameter);
+
+	if ((effectName == "infectCovar") & (this->linternalEffectParameter < 0))
+	{
+		throw logic_error("Negative internal parameter not permitted for effect "+effectName);
+	}
 }
 
 /**
@@ -110,14 +129,19 @@ double DiffusionRateEffect::proximityValue(Network * pNetwork, int i,
 		int egoNumer, int egoDenom) const
 {
 	int totalAlterValue = 0;
+	int numInfectedAlter = 0;
 	if (pNetwork->outDegree(i) > 0)
 	{
 		for (IncidentTieIterator iter = pNetwork->outTies(i);
 			 iter.valid();
 			 iter.next())
 		{
-			double alterValue = this->lpBehaviorVariable->
-				value(iter.actor());
+			double alterValue = this->lpBehaviorVariable->value(iter.actor());
+
+			if (alterValue >= 0.5)
+			{
+				numInfectedAlter++;
+			}
 
 			if (this->leffectName == "infectIn")
 			{
@@ -133,11 +157,26 @@ double DiffusionRateEffect::proximityValue(Network * pNetwork, int i,
 		}
 	}
 
+	if (this->linternalNonZero)
+	{
+		if (numInfectedAlter < this->labsInternalEffectParameter)
+		{
+			totalAlterValue = 0;
+		}
+		else if (this->linternalEffectParameter < 0)
+		{
+			if (totalAlterValue > this->labsInternalEffectParameter)
+			{
+				totalAlterValue = this->labsInternalEffectParameter;
+			}
+		}
+	}
+
 	totalAlterValue *= egoNumer;
 
 	if (totalAlterValue == 0)
 	{
-		return 1;
+		return 1; // = exp(0)
 	}
 	else
 	{
@@ -225,11 +264,12 @@ double DiffusionRateEffect::value(int i, int period) const
 		else
 		{
 			return pow(this->lpTable->value(1,1), totalAlterValue);
+// seems strange; can't this be made more efficient?
 		}
 	}
 	else
 	{
-		throw new logic_error("Unexpected diffusion rate effect type");
+		throw new logic_error("Unexpected diffusion rate effect type"+this->leffectName);
 	}
 }
 /**
@@ -246,6 +286,23 @@ void DiffusionRateEffect::parameter(double parameterValue) const
 double DiffusionRateEffect::parameter() const
 {
 	return this->lpTable->parameter();
+}
+
+/**
+ * Stores the internal effect parameter for the diffusion rate effect.
+ */
+void DiffusionRateEffect::internalEffectParameter(int parValue)
+{
+	this->linternalEffectParameter = parValue;
+	this->linternalNonZero = (this->linternalEffectParameter != 0);
+}
+
+/**
+ * Returns the internal effect parameter for the diffusion rate effect.
+ */
+int DiffusionRateEffect::internalEffectParameter() const
+{
+	return this->linternalEffectParameter;
 }
 
 

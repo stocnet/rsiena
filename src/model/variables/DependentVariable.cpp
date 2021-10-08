@@ -131,6 +131,7 @@ void DependentVariable::initializeRateFunction()
 	{
 		EffectInfo * pEffectInfo = rRateEffects[i];
 		double parameter = pEffectInfo->parameter();
+		double internalEffectParameter = pEffectInfo->internalEffectParameter();
 		string effectName = pEffectInfo->effectName();
 		string interactionName = pEffectInfo->interactionName1();
 		string interactionName2 = pEffectInfo->interactionName2();
@@ -339,7 +340,8 @@ void DependentVariable::initializeRateFunction()
 						new DiffusionRateEffect(pVariable,
 							pBehaviorVariable,
 							effectName,
-							parameter));
+							parameter,
+							internalEffectParameter));
 				}
 				else
 				{
@@ -371,7 +373,8 @@ void DependentVariable::initializeRateFunction()
 							pConstantCovariate,
 							pChangingCovariate,
 							effectName,
-							parameter));
+							parameter,
+							internalEffectParameter));
 				}
 				else
 				{
@@ -1090,6 +1093,7 @@ void DependentVariable::accumulateRateScores(double tau,
 		string effectName = pInfo->effectName();
 		string interactionName = pInfo->interactionName1();
 		string interactionName2 = pInfo->interactionName2();
+		int internalEffectParameter = pInfo->internalEffectParameter();
 		const BehaviorVariable * pBehaviorVariable =
 			dynamic_cast<const BehaviorVariable *>(this);
 
@@ -1123,7 +1127,7 @@ void DependentVariable::accumulateRateScores(double tau,
 					{
 						this->ldiffusionscores[pInfo] +=
 							calculateDiffusionRateEffect(pBehaviorVariable,
-								pNetwork, selectedActor, effectName);
+								pNetwork, selectedActor, effectName, internalEffectParameter);
 					}
 					else
 					{
@@ -1148,6 +1152,7 @@ void DependentVariable::accumulateRateScores(double tau,
 						this->ldiffusionscores[pInfo] +=
 							calculateDiffusionRateEffect(pBehaviorVariable,
 								pNetwork, selectedActor, effectName,
+								internalEffectParameter,
 								pConstantCovariate,
 								pChangingCovariate);
 					}
@@ -1503,6 +1508,7 @@ void DependentVariable::calculateScoreSumTerms()
 		string effectName = pInfo->effectName();
 		string interactionName = pInfo->interactionName1();
 		string interactionName2 = pInfo->interactionName2();
+		int internalEffectParameter = pInfo->internalEffectParameter();
 
 		const BehaviorVariable * pBehaviorVariable =
 			dynamic_cast<const BehaviorVariable *>(this);
@@ -1528,9 +1534,9 @@ void DependentVariable::calculateScoreSumTerms()
 			{
 				for (int i = 0; i < this->n(); i++)
 				{
-					timesRate += calculateDiffusionRateEffect(
-						pBehaviorVariable, pNetwork, i, effectName) *
-						this->lrate[i];
+					timesRate += calculateDiffusionRateEffect(pBehaviorVariable, 
+									pNetwork, i, effectName, internalEffectParameter) *
+										this->lrate[i];
 				}
 			}
 			else
@@ -1547,7 +1553,7 @@ void DependentVariable::calculateScoreSumTerms()
 				for (int i = 0; i < this->n(); i++)
 				{
 					timesRate += calculateDiffusionRateEffect(
-						pBehaviorVariable, pNetwork, i, effectName,
+						pBehaviorVariable, pNetwork, i, effectName, internalEffectParameter,
 						pConstantCovariate,
 						pChangingCovariate) *
 						this->lrate[i];
@@ -1747,14 +1753,20 @@ double DependentVariable::logOutDegreeScore(
 
 /**
  * Calculates the value of the diffusion rate effect for the given actor.
+ * This is used for the scores.
+ * function calculateDiffusionRateEffect in StatisticCalculator is used for the estimation statistic.
+ * This duplicates the results of DiffusionRateEffect::value,
+ * probably can be made more efficient by unduplicating (TS).
  */
 double DependentVariable::calculateDiffusionRateEffect(
 	const BehaviorVariable * pBehaviorVariable,
 	const Network * pNetwork,
-	int i, string effectName)
+	int i, string effectName,
+	int internalEffectParameter)
 {
 	double response = 1;
 	double totalAlterValue = 0;
+	int numInfectedAlter = 0;
 	if (pNetwork->outDegree(i) > 0)
 	{
 		if (effectName == "avExposure")
@@ -1772,6 +1784,11 @@ double DependentVariable::calculateDiffusionRateEffect(
 		{
 			double alterValue = pBehaviorVariable->
 				value(iter.actor());
+				
+			if (alterValue >= 0.5)
+			{
+				numInfectedAlter++;				
+			}
 
 			if (effectName == "infectIn")
 			{
@@ -1784,8 +1801,26 @@ double DependentVariable::calculateDiffusionRateEffect(
 
 			totalAlterValue += alterValue;
 		}
+	
+		if (internalEffectParameter != 0)
+		{
+			if (numInfectedAlter < std::abs(internalEffectParameter))
+			{
+				totalAlterValue = 0;
+			}
+			else if (internalEffectParameter < 0)
+			{
+				if (totalAlterValue + internalEffectParameter > 0)
+				{
+					totalAlterValue = - internalEffectParameter;
+				}
+			}		
+		}
+		
 		totalAlterValue *= response;
+	
 	}
+	
 	return totalAlterValue;
 }
 
@@ -1796,11 +1831,14 @@ double DependentVariable::calculateDiffusionRateEffect(
 double DependentVariable::calculateDiffusionRateEffect(
 	const BehaviorVariable * pBehaviorVariable,
 	const Network * pNetwork,
-	int i, string effectName, const ConstantCovariate * pConstantCovariate,
+	int i, string effectName,
+	int internalEffectParameter, 
+	const ConstantCovariate * pConstantCovariate,
 	const ChangingCovariate * pChangingCovariate)
 {
 	double response = 1;
 	double totalAlterValue = 0;
+	int numInfectedAlter = 0;
 	if (pNetwork->outDegree(i) > 0)
 	{
 		if (effectName == "susceptAvCovar")
@@ -1823,8 +1861,12 @@ double DependentVariable::calculateDiffusionRateEffect(
 			 iter.valid();
 			 iter.next())
 		{
-			double alterValue = pBehaviorVariable->
-				value(iter.actor());
+			double alterValue = pBehaviorVariable->value(iter.actor());
+				
+			if (alterValue >= 0.5)
+			{
+				numInfectedAlter++;				
+			}
 
 			if (effectName == "infectCovar")
 			{
@@ -1843,6 +1885,21 @@ double DependentVariable::calculateDiffusionRateEffect(
 				}
 			}
 			totalAlterValue += alterValue;
+		}
+		
+		if (internalEffectParameter != 0)
+		{
+			if (numInfectedAlter < std::abs(internalEffectParameter))
+			{
+				totalAlterValue = 0;
+			}
+			else if (internalEffectParameter < 0)
+			{
+				if (totalAlterValue + internalEffectParameter > 0)
+				{
+					totalAlterValue = - internalEffectParameter;
+				}
+			}		
 		}
 		totalAlterValue *= response;
 	}

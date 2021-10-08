@@ -69,7 +69,6 @@ SimilarityEffect::SimilarityEffect(
 	this->legoPopularity = egoPopularity;
 	this->lhi = hi;
 	this->llo = lo;
-	this->lcenter = (pEffectInfo->internalEffectParameter() <= 1);
 }
 
 

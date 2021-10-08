@@ -273,15 +273,15 @@ double StatisticCalculator::distance(ContinuousLongitudinalData * pData, int per
 double StatisticCalculator::totalDistance(int period) const
 {
 	double total = 0;
-	
-	for (map<ContinuousLongitudinalData *, double *>::const_iterator iter = 
+
+	for (map<ContinuousLongitudinalData *, double *>::const_iterator iter =
 			this->lcontinuousDistances.begin();
 		 iter != this->lcontinuousDistances.end();
 		 iter++)
 	{
 		total += iter->second[period];
 	}
-	
+
 	return total;
 }
 
@@ -310,7 +310,7 @@ int StatisticCalculator::settingDistance(LongitudinalData * pData,
 	return value;
 }
 
-void StatisticCalculator::calculateStatisticsInitNetwork(NetworkLongitudinalData * pNetworkData) 
+void StatisticCalculator::calculateStatisticsInitNetwork(NetworkLongitudinalData * pNetworkData)
 {
 	const Network * pPredictor = pNetworkData->pNetworkLessMissing(this->lperiod);
 	this->lpPredictorState->pNetwork(pNetworkData->name(), pPredictor);
@@ -1026,7 +1026,7 @@ void StatisticCalculator::calculateBehaviorStatistics(
 
 
 /**
- * Calculates the statistics for effects of the given continuous behavior 
+ * Calculates the statistics for effects of the given continuous behavior
  * variable.
  */
 void StatisticCalculator::calculateContinuousStatistics(
@@ -1057,7 +1057,7 @@ void StatisticCalculator::calculateContinuousStatistics(
 
  	EffectFactory factory(this->lpData);
  	Cache cache;
-	
+
 	for (unsigned i = 0; i < rEffects.size(); i++)
 	{
 		EffectInfo * pInfo = rEffects[i];
@@ -1323,7 +1323,7 @@ void StatisticCalculator::calculateNetworkRateStatistics(
 }
 /**
  * Calculates the statistics for the rate effects of the given
- * network variable.
+ * behavior variable.
  */
 void StatisticCalculator::calculateBehaviorRateStatistics(
 	BehaviorLongitudinalData * pBehaviorData)
@@ -1393,6 +1393,7 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 		string interactionName = pInfo->interactionName1();
 		string interactionName2 = pInfo->interactionName2();
 		string rateType = pInfo->rateType();
+		int internalEffectParameter = pInfo->internalEffectParameter();
 
 		if (rateType == "covariate")
 		{
@@ -1524,8 +1525,9 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 					{
 						statistic +=
 							this->calculateDiffusionRateEffect(pBehaviorData,
-								pStructural, i, effectName) *
-							difference[i];
+								pStructural, i, effectName,
+								internalEffectParameter) *
+													difference[i];
 					}
 					else
 					{
@@ -1550,8 +1552,9 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 							this->calculateDiffusionRateEffect(pBehaviorData,
 								pStructural,
 								pConstantCovariate,
-								pChangingCovariate, i, effectName) *
-							difference[i];
+								pChangingCovariate, i, effectName,
+								internalEffectParameter) *
+													difference[i];
 					}
 					else
 					{
@@ -1592,7 +1595,7 @@ void StatisticCalculator::calculateContinuousRateStatistics(
 			currentValues[i] = 0;
 		}
 	}
-	// Construct a vector of squared differences between current and 
+	// Construct a vector of squared differences between current and
 	// start of period. Differences for missing values are set to 0.
 	const double * start = pContinuousData->values(this->lperiod);
 
@@ -1608,7 +1611,7 @@ void StatisticCalculator::calculateContinuousRateStatistics(
 			difference[i] = 0;
 		}
 	}
-	
+
 	// basic rate distance (used for estimating the SDE scale parameters)
 	if (!this->lcontinuousDistances[pContinuousData])
 	{
@@ -1633,11 +1636,14 @@ void StatisticCalculator::calculateContinuousRateStatistics(
 /**
  * Calculates the value of the diffusion rate effect for the given actor.
  */
+ // note: calculateDiffusionRateEffect is also a function in DependentVariable
+ // (almost the same...)
 double StatisticCalculator::calculateDiffusionRateEffect(
 	BehaviorLongitudinalData * pBehaviorData, const Network * pStructural,
-	int i, string effectName)
+	int i, string effectName, int internalEffectParameter)
 {
 	double totalAlterValue = 0;
+	int numInfectedAlter = 0;
 	double response = 1;
 	if (pStructural->outDegree(i) > 0)
 	{
@@ -1656,7 +1662,12 @@ double StatisticCalculator::calculateDiffusionRateEffect(
 			 iter.next())
 		{
 			double alterValue = pBehaviorData->
-				value(this->lperiod,iter.actor());
+				value(this->lperiod,iter.actor());  // this is the value at the start of the period
+
+			if (alterValue >= 0.5)
+			{
+				numInfectedAlter++;
+			}
 
 			if (effectName == "infectIn")
 			{
@@ -1668,6 +1679,21 @@ double StatisticCalculator::calculateDiffusionRateEffect(
 			}
 
 			totalAlterValue += alterValue;
+		}
+
+		if (internalEffectParameter != 0)
+		{
+			if (numInfectedAlter < std::abs(internalEffectParameter))
+			{
+				totalAlterValue = 0;
+			}
+			else if (internalEffectParameter < 0)
+			{
+				if (totalAlterValue + internalEffectParameter > 0)
+				{
+					totalAlterValue = - internalEffectParameter;
+				}
+			}
 		}
 		totalAlterValue *= response;
 	}
@@ -1681,10 +1707,12 @@ double StatisticCalculator::calculateDiffusionRateEffect(
 	BehaviorLongitudinalData * pBehaviorData, const Network * pStructural,
 	const ConstantCovariate * pConstantCovariate,
 	const ChangingCovariate * pChangingCovariate,
-	int i, string effectName)
+	int i, string effectName, int internalEffectParameter)
 {
 	double totalAlterValue = 0;
 	double response = 1;
+	int numInfectedAlter = 0;
+
 	if (pStructural->outDegree(i) > 0)
 	{
 		if (effectName == "susceptAvCovar")
@@ -1712,6 +1740,11 @@ double StatisticCalculator::calculateDiffusionRateEffect(
 			double alterValue = pBehaviorData->
 				value(this->lperiod,iter.actor());
 
+			if (alterValue >= 0.5)
+			{
+				numInfectedAlter++;
+			}
+
 			if (effectName == "infectCovar")
 			{
 				if (pConstantCovariate)
@@ -1732,6 +1765,21 @@ double StatisticCalculator::calculateDiffusionRateEffect(
 			}
 
 			totalAlterValue += alterValue;
+		}
+
+		if (internalEffectParameter != 0)
+		{
+			if (numInfectedAlter < std::abs(internalEffectParameter))
+			{
+				totalAlterValue = 0;
+			}
+			else if (internalEffectParameter < 0)
+			{
+				if (totalAlterValue + internalEffectParameter > 0)
+				{
+					totalAlterValue = - internalEffectParameter;
+				}
+			}
 		}
 		totalAlterValue *= response;
 	}

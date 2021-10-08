@@ -44,14 +44,15 @@ public:
 	DiffusionRateEffect(const NetworkVariable * pVariable,
 		const BehaviorVariable * pBehaviorVariable,
 		std::string effectName,
-		double parameter);
+		double parameter,
+		double internalEffectParameter);
 	DiffusionRateEffect(const NetworkVariable * pVariable,
 		const BehaviorVariable * pBehaviorVariable,
 		const ConstantCovariate * pCovariate,
 		const ChangingCovariate * pChangingCovariate,
 		std::string effectName,
-		double parameter);
-
+		double parameter,
+		double internalEffectParameter);
 
 	virtual ~DiffusionRateEffect();
 	double proximityValue(Network * pNetwork, int i, int egoNumer,
@@ -59,6 +60,8 @@ public:
 	double value(int i, int period) const;
 	void parameter(double parameterValue) const;
 	double parameter() const;
+	void internalEffectParameter(int parValue);
+	int internalEffectParameter() const;
 
 private:
 	// The network variable this effect depends on
@@ -77,6 +80,9 @@ private:
 
 	DiffusionEffectValueTable * lpTable;
 	std::string leffectName;
+	int linternalEffectParameter;
+	int labsInternalEffectParameter;
+	bool linternalNonZero;
 
 };
 

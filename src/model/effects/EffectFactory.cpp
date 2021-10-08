@@ -1138,7 +1138,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new OutActDistance2Function(pEffectInfo->interactionName1(),
 							pEffectInfo->variableName(),
-							pEffectInfo->internalEffectParameter(), false, false));
+							pEffectInfo->internalEffectParameter(), false, false, false));
+	}
+	else if (effectName == "outOutAvIntn")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new OutActDistance2Function(pEffectInfo->interactionName1(),
+							pEffectInfo->variableName(),
+							pEffectInfo->internalEffectParameter(), false, false, true));
 	}
 	else if (effectName == "sharedTo")
 	{
