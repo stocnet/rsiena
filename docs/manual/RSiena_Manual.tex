@@ -187,7 +187,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.3.2.
+This version was renewed for \RS version 1.3.3.
 \end{abstract}
 
 
@@ -1123,7 +1123,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.3.2).
+  identified by a version number (e.g.\ 1.3.3).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -4535,7 +4535,7 @@ which can be downloaded from the \SI website.
     values with respect to parameters is diagonalized.
     The value 1 (total diagonalization) gives greatest stability;
     smaller values give greater efficiency.
-    The default is 0.2.
+    The default for MoM is 0.2.
 \item \texttt{doubleAveraging}\\
       This replaces the Robbins-Monro updating step by a double averaging
       step \citep{bather1989,SchwabeWalk96,KushnerYin03} which can be
@@ -10278,9 +10278,10 @@ with shortName \texttt{(sameXCycle4)}, \\[0.3em]
  in the actor set: for changing covariates, the mean of the wave at the
  start of the period; for behavioral dependent variables,
  the current mean.
- This effect is not meaningful for constant covariates.
+ This effect is not meaningful for constant covariates in single-group data.
  It is useful especially for multi-group data sets, where the average value
- varies between groups.
+ varies between groups, and where there are no constant covariates
+ in the multi-group object.
  Note that always, the average $\overline {v} $ is centered by the global mean.
  For multi-group data, global centering means centering over all groups.
 \end{enumerate}
@@ -10673,9 +10674,9 @@ for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{j+}} - \sqrt{\
                            x_{i+}\, ({w_{i+}} - {\bar w}) $ or\\[0.2em]
 for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{i+}} - \sqrt{\bar w}) =
                            x_{i+}\, (\sqrt{w_{i+}} - \sqrt{\bar w}) $;\\[0.2em]
-                           
 
- \item {\em Interaction W $\times$ in-degree W activity } ($X$: $W$ x indegree$^{1/p}$ $W$ activity) 
+
+ \item {\em Interaction W $\times$ in-degree W activity } ($X$: $W$ x indegree$^{1/p}$ $W$ activity)
          \texttt{(crprodInActIntn)}\\
  defined by the entrainment of $W$ by $X$ weighted by $W$-in-degrees of $i$ (for $p = 2$ the square roots):\\[0.2em]
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, w_{ij}\,({w_{+i}} - {\bar w}) $ or\\[0.2em]
@@ -10735,7 +10736,7 @@ but that are connected through $i$:
 \begin{minipage}[t]{.70\textwidth}
   mixed twopath activity effect ($X$: twopath$^{1/p}$ $W$ activity)  \texttt{(outOutActIntn)}
    defined by the outdegree of $i$
-   multiplied by sum of $X$-outdegrees of those to whom $i$ has an $X$-tie:\\
+   multiplied by sum of $X$-outdegrees of those to whom $i$ has a $W$-tie:\\
    for $p=1$, this is\\[0.4em]
  $s^{\rm net}_{i\vit}(x) =   x_{i+}\, \sum_h w_{ih} \big(x_{h+} - \bar x\big)$\\[0.4em]
  and for $p=2$, there is a square root transformation:\\[0.4em]
@@ -10767,6 +10768,17 @@ but that are connected through $i$:
 \end{center}
 \vfill
 \end{minipage}
+\item
+  mixed twopath average effect ($X$: twopath$^{1/p}$ $W$ average)  \texttt{(outOutAvIntn)},
+   defined by the outdegree of $i$
+   multiplied by the average of the $X$-outdegrees of those to whom $i$ has a $W$-tie:\\
+   for $p=1$, this is\\[0.4em]
+ $s^{\rm net}_{i\vit}(x) =   x_{i+}\, 
+     \frac{ \sum_h w_{ih} \big(x_{h+} - \bar x\big)}{\sum_h w_{ih}} $\\[0.4em]
+ and for $p=2$, there is a square root transformation:\\[0.4em]
+ $s^{\rm net}_{i\vit}(x) =  x_{i+},\ 
+ \frac{\sum_h w_{ih} \big(\sqrt{x_{h+}} - \sqrt{\bar x}\big)}{\sum_h w_{ih}}$\\[0.4em]
+ where $\bar x$ is the average degree over all waves.
 \end{enumerate}
 \smallskip
 Further there are a number of mixed triadic effects.
@@ -12430,6 +12442,9 @@ corresponding factors in the rate function are the following:
  \item The effect of actor covariates \texttt{(RateX)} with values
  $v_{hi}$ can be represented by the factor
  \[ \lambda^{\rm net}_{i2} = \exp(\sum_h \alpha_h \, v_{hi})\,. \]
+   If $v_{h}$ is a behavior variable, the non-centered value is used.
+% StatisticCalculator::calculateNetworkRateStatistics and DependentVariable::behaviorVariableRate
+% see DependentVariable::behaviorVariableRate and StatisticCalculator::calculateBehaviorRateStatistics
 
  \item The dependence on the position of the actor can be modeled
  as a function of the actor's out-degree \texttt{(outRate)},
@@ -13570,6 +13585,13 @@ if the associated parameter is denoted $\alpha_h$ for some $h$,
 and similarly for the contributions of the in-degrees and the
 reciprocated degrees.
 
+ \item The dependence on actor covariates or behavioral variables
+ \texttt{(RateX)} with values $v_{hi}$ multiplies the rate by a factor
+ \[ \exp(\alpha_h \, v_{hi})\,. \]
+   If $v_{h}$ is a behavioral variable, the non-centered value is used.
+% see DependentVariable::behaviorVariableRate and StatisticCalculator::calculateBehaviorRateStatistics
+
+
  \item[{\hspace*{-1ex}$\bigodot$}]
  For the analysis of diffusion of innovations,
   which is applicable if the behavior variable
@@ -13585,59 +13607,95 @@ reciprocated degrees.
  if the associated parameter is denoted $\alpha_h$ for some $h$,
  and the effect is $a_i(x)$.
 
-
+ The dependence on the internal effect parameter $p$ is similar for all
+ these diffusion effects, and is described after the
+  \verb|susceptAvCovar| effect.
+  
+ For models including these effects, it is recommended to use
+ an algorithm that leads to smaller step sizes, i.e.,
+ with a value for \texttt{firstg} lower than the default of 0.2.
 
 \item \emph{average exposure effect} (\verb|avExposure|),
   defined as the proportion of $i$'s alters who have adopted the innovation,
 \[
-a_{i\vit}(y) = \frac{\sum_{j=1}^n z_j\, x_{ij} }{\sum_{j=1}^n x_{ij}};
+a_{i\vit}(y) \, = \, \frac{\sum_{j=1}^n z_j\, x_{ij} }{\sum_{j=1}^n x_{ij}};
 \]
 
 \item \emph{total exposure effect} (\verb|totExposure|), defined as the
  number of $i$'s alters who have adopted the innovation,
 \[
-a_{i\vit}(y) = \sum_{j=1}^n z_j\, x_{ij} ;
+a_{i\vit}(y) \,=\, \sum_{j=1}^n z_j\, x_{ij} ;
 \]
 \item \emph{infection by indegree effect} (\verb|infectIn|),
   defined as the sum of indegrees of $i$'s alters who are also adopters of the innovation,
 \[
-a_{i\vit}(y)=\sum_{j=1}^n z_j \,x_{ij}\, x_{+j};
+a_{i\vit}(y) \, =\, \sum_{j=1}^n z_j \,x_{ij}\, x_{+j};
 \]
   for non-directed networks this is called the
    \emph{infection by degree effect} (\verb|infectDeg|);
 \item \emph{infection by outdegree effect} (\verb|infectOut|),
  defined as the sum of outdegrees of $i$'s alters who are also adopters of the innovation,
 \[
-a_{i\vit}(y)=\sum_{j=1}^n z_j\, x_{ij}\, x_{j+};
+a_{i\vit}(y)\, = \, \sum_{j=1}^n z_j\, x_{ij}\, x_{j+};
 \]
 \item \emph{infection by covariate effect} (\verb|infectCovar|),
  defined as the sum of covariate values of $i$'s alters who are also adopters of the innovation,
 \[
-a_{i\vit}(y)=\sum_{j=1}^n z_j\, x_{ij}\, v_j;
+a_{i\vit}(y)\, =\, \sum_{j=1}^n z_j\, x_{ij}\, v_j;
 \]
-\item \emph{susceptibility to average exposure by indegree effect} (\verb|susceptAvIn|),
+\item \emph{susceptibility to average exposure by indegree effect}
+ (\verb|susceptAvIn|),
  defined as the interaction between $i$'s indegree and $i$'s average exposure,
 \[
-a_{i\vit}(y)=x_{+i} \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij}};
+a_{i\vit}(y)\, = \,x_{+i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij}};
 \]
   for non-directed networks the equivalent effect is \verb|totExposure|;
 
-\item \emph{susceptibility to average exposure by covariate effect} (\verb|susceptAvCovar|),
+\item \emph{susceptibility to average exposure by covariate effect}
+ (\verb|susceptAvCovar|),
   defined as the interaction between $i$'s covariate value and $i$'s  average exposure,
 \[
-a_{i\vit}(y)=v_{i} \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij}}.
+a_{i\vit}(y) \, = \, v_{i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij}}.
 \]
 
 \end{enumerate}
+
+For all  these diffusion effects there is an additional dependence
+on the internal effect parameter $p$; the formulae given above are the default,
+valid for $p=0$.
+
+The parameter $p$ must be integer-valued. If $p > 0$, the contribution is
+changed to $a_{i\vit}(y) = 0$ if less than $p$ alters
+have adopted the innovation, i.e., if
+\[
+\sum_{j=1}^n  z_j\, x_{ij} \, < \, p \ .
+\]
+E.g., if $p=3$, then there is influence on actor $i$ only if
+this actor has at least three alters who have adopted the innovation.
+
+For the effects \verb|avExposure|, \verb|totExposure|, \verb|susceptAvIn|,
+and \verb|susceptAvCovar|, \\
+if $p < 0$,
+the same rule is applied with the minimum $|p|$, but if there
+are more than $|p|$ alters who have adopted the innovation,
+only the value $|p|$ is used.
+This means that for $p < 0$,
+$\sum_{j=1}^n  z_j\, x_{ij}$ in the formula for
+ $a_{i\vit}(y) $ is replaced by
+ \[
+ \left\{ \begin{array}{ll}
+                0 & \text{  if  } \sum_{j=1}^n  z_j\, x_{ij} < |p| \\[0.9ex]
+                p & \text{  if  } \sum_{j=1}^n  z_j\, x_{ij} \geq |p| \ .
+     \end{array} \right.
+ \]
 
 \subsection{Effects for estimation by Generalized Method of Moments}
 
 A variety of effects can be specified in \rst\ with \texttt{type='gmm'},
 as shown in \textsf{effectsDocumentation()}.
 These are not effects for the definition of the probability model,
-but for the estimation by the Generalized Method of Moments
-(Section~\ref{S_GMoM}).
-This is still in full development, and will be documented later.
+but for the estimation by the Generalized Method of Moments.
+This is documented in Section~\ref{S_GMoM}.
 
 \newpage
 \section{Parameter interpretation}
@@ -14863,14 +14921,15 @@ of {\rs} than the version you are using now.
 
 \noindent
 \emph{Solution.} \\
-First check that the short name was correctly spelled and
-is available in your version of {\rs}, by requesting
+First check that the short name was correctly spelled.\\
+If this is all right, then recreate the effects object.\\
+You can check that an effect is available in your version of
+{\rs} by requesting
 \begin{verbatim}
 effectsDocumentation(myeff)
 \end{verbatim}
-(where of course you should substitute the name of your effects object
+(where you should substitute the name of your effects object
 for \texttt{myeff}).
-If this is all right, then recreate the effects object.
 \end{indentation}
 \bigskip
 
@@ -14938,6 +14997,22 @@ on a dummy actor covariate (effect \texttt{rateX}), with parameter fixed
 to a large negative value such as --100, which is sufficiently close to
 infinity (recall the exponentation in the calculation of the rate function)
 to effectively prevent this actor from taking any ministeps.
+\end{indentation}
+\bigskip
+
+\noindent $\diamondsuit$ \emph{
+Error in matrix(0, nrow = sum(y[x, ] != 0), ncol = 3) :\\
+  invalid 'nrow' value (too large or NA) }
+\smallskip
+
+\begin{indentation}{0.04\textwidth}{0pt}
+\noindent
+You are using a dyadic covariate containing only missing values.
+\smallskip
+
+\noindent
+\emph{Solution.} \\
+Correct the definition of this dyadic covariate.
 \end{indentation}
 \bigskip
 
@@ -15108,12 +15183,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.3.2.tar.gz|\\
+\verb|R CMD check RSiena_1.3.3.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.3.2.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.3.3.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -15586,6 +15661,15 @@ Further some of the complex effectGroups are the following:
     statistics as usual for co-evolution models);
 \item \sfn{tripleNetworkObjective} is for combinations
     of three networks where for the two in the role of explanatory networks,
+\item \sfn{bipartiteNonSymmetricObjective} is for combination of 
+    a two-mode dependent network and a directed network
+    in the role of explanatory network;
+\item \sfn{bipartiteSymmetricObjective} is for combination of
+    a two-mode dependent network and a non-directed network
+    in the role of explanatory network;
+\item \sfn{bipartiteBipartiteObjective} is for combination of two
+    two-mode networks, one in the role of dependent network and the other
+    in the role of explanatory network;
 \item \sfn{dyadANetNetObjective} is for combinations
     of two networks and a dyadic covariate, where the network in the role
     of dependent network should be one-mode, and the dyadic covariate
@@ -16114,6 +16198,65 @@ which contains a more complete listing.
 \begin{small}
 \begin{itemize} % Also update version number in earlier places.
 
+\iffalse
+\template
+
+\item 2021-mm-dd GitHub, package version 1.x.x.
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects:
+   \begin{itemize}
+    \end{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+    \end{itemize}
+\item Corrections of documentation:
+   \begin{itemize}
+    \end{itemize}
+\end{itemize}
+\fi
+
+\item 2021-10-08 GitHub, package version 1.3.3.
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects:
+   \begin{itemize}
+   \item internal effect parameter for diffusion rate effects ('at least p').
+   \item New effect \texttt{outOutAvIntn}.
+   \item \texttt{outOutActIntn} also made available for non-directed explanatory networks
+     and for two-mode dependent networks.
+    \end{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+   \item \texttt{toggleProbabilities} added to output of \sfn{sienaRI}.
+   \item Trial values of \texttt{theta} used during Phase 2 of \sfn{siena07} added
+     to the object \texttt{ans} produced by
+     \texttt{sienaFit} object \texttt{ans} as \texttt{ans\$thetas}.
+   \item warnings if a data object contains only missings, or only the same value.
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+   \item if a data set contains a constant covariate, the \texttt{simX} effect will not
+     run into an error any more; this is obtained by defining the \texttt{range}
+     attribute of the constant covariate as 1 to prevent division by zero,
+     and the \texttt{simMean} attribute as 0 instead of \texttt{NaN} 
+     (\sfn{sienaDataCreate}).
+     This is relevant especially for \texttt{sienaGroup} data sets, where covariates
+     might be constant for some of the groups.
+    \end{itemize}
+\item Corrections of documentation:
+   \begin{itemize}
+   \item In \texttt{sienaAlgorithmCreate}, 
+   the default values of \texttt{diagonalize} for MoM
+     is 0.2; this was corrected in the help file.
+    \end{itemize}
+\end{itemize}
+
 
 \item 2021-07-29 GitHub, package version 1.3.2.
 
@@ -16125,8 +16268,8 @@ Changes in RSiena:
    \begin{itemize}
    \item \sfn{updateTheta} also accepts \texttt{sienaBayesFit} objects
      as \texttt{prevAns}.
-   \item Effects of type \texttt{creation} or \texttt{endow} represented in the output of 
-   \sfn{siena.table} by \texttt{creation} and \texttt{maintenance}, respectively. 
+   \item Effects of type \texttt{creation} or \texttt{endow} represented in the output of
+   \sfn{siena.table} by \texttt{creation} and \texttt{maintenance}, respectively.
     \end{itemize}
 \item Bug corrections:
    \begin{itemize}

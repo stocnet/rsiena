@@ -46,8 +46,8 @@
 \begin{document}
 
 \title{Class Design for Siena 4}
-\author{Krists Boitmanis}
-\date{September 8, 2009}
+\author{Krists Boitmanis; later additions by Tom Snijders}
+\date{September 28, 2021}
 \maketitle
 
 \section{Introduction}
@@ -757,7 +757,44 @@ for (unsigned i = 0; i < rCovariates.size(); i++)
 
 \section{Models}
 
-\subsection{Effects}
+\subsection{Effects in the rate function}
+
+Effects in the rate function are implemented as parts of the classes
+\nnm{DependentVariable} and \nnm{StatisticCalculator}.
+
+A special class of rate effects for behavior are the diffusion effects.
+These are implemented in a special class \nnm{DiffusionRateEffect}.
+
+To calculate the waiting times for the simulations,
+which implies the choice of variable and actor,
+class \nnm{DependentVariable} uses function
+\nnm{calculateRate} which calls functions \nnm{constantRates}, \nnm{structuralRate}, \nnm{diffusionRate}, \nnm{behaviorVariableRate},
+\nnm{updateCovariateRates}, and \nnm{settingRate}.
+The function \nnm{diffusionRate} uses values computed by class
+\nnm{DiffusionRateEffect}.
+
+The scores for the rate parameters are computed in function \nnm{calculateScoreSumTerms}. 
+
+The estimation statistics are computed in class \nnm{StatisticCalculator}.
+
+This architecture is not very transparent for the diffusion effects.
+These have some duplications, because class \nnm{DiffusionRateEffect}
+is used neither for \nnm{calculateScoreSumTerms} nor for 
+\nnm{StatisticCalculator}.
+This could be improved in the future.
+
+
+\subsection{Effects in the objective function}
+
+Effects for the objective function are defined by the class
+\nnm{Effect}, with derived classes \nnm{NetworkEffect} and \nnm{BehaviorEffect}.
+Network effects are implemented either as (general) effects or as generic network effects, explained in the next section.
+The construction as generic network effects is not always possible,
+but even when it is possible, this implementation was not always chosen
+(the choice was rather arbitrary).
+
+Section 18 of the RSiena manual contains a tutorial-style description
+of general effects.
 
 \subsubsection{Generic Network Effects}
 
@@ -765,7 +802,7 @@ for (unsigned i = 0; i < rCovariates.size(); i++)
 to specify an effect for a network variable $x^{(r)}$ if its evaluation and
 endowment statistics can be conveniently defined as
 \[\sum_{i \neq j} x_{ij}^{(r)} f_{ij}(y)\] and
-\[\sum_{i \neq j} (1-x_{ij}^{(r)}) x_{ij}^{(r)\mathrm{obs}}(t_m) f_{ij}(y^\mathrm{obs}(t_m)),\] respectivelly.
+\[\sum_{i \neq j} (1-x_{ij}^{(r)}) x_{ij}^{(r)\mathrm{obs}}(t_m) f_{ij}(y^\mathrm{obs}(t_m)),\] respectively.
 This function $f_{ij}(y)$ as well as the change contribution $\Delta_{kij}^X(y)$ should be specified as instances of the
 \nnm{AlterFunction} class and passed as parameters when creating the effect.
 
