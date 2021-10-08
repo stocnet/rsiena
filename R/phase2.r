@@ -62,6 +62,7 @@ phase2.1<- function(z, x, ...)
     Report(paste('\nPhase 2 has', x$nsub, 'subphases.\n'), cf)
     z$gain <- x$firstg
     z$reduceg <- x$reduceg
+	z$thetas <- NULL
     if (x$nsub <= 0)
     {
         Report('With 0 subphases, there is no phase 2.\n', cf)
@@ -224,10 +225,12 @@ doIterations<- function(z, x, subphase,...)
 	zsmall <- makeZsmall(z)
 	z$returnDeps <- FALSE
 	sumfra <- 0.0
+	thetas <- NULL
 	repeat
 	{
 		z$n <- z$n+1
 		z$nit <- z$nit + 1
+		thetas <- rbind(thetas, c(subphase, z$theta))
 		if (subphase == 1 && z$nit == 2)
 			z$time1 <- proc.time()[[3]]
 		if (subphase == 1 && z$nit == 11)
@@ -499,6 +502,7 @@ doIterations<- function(z, x, subphase,...)
 			}
 		}
 	}
+	z$thetas <- rbind(z$thetas, thetas)
 	z
 }
 
