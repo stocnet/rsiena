@@ -1534,7 +1534,7 @@ void DependentVariable::calculateScoreSumTerms()
 			{
 				for (int i = 0; i < this->n(); i++)
 				{
-					timesRate += calculateDiffusionRateEffect(pBehaviorVariable, 
+					timesRate += calculateDiffusionRateEffect(pBehaviorVariable,
 									pNetwork, i, effectName, internalEffectParameter) *
 										this->lrate[i];
 				}
@@ -1784,10 +1784,10 @@ double DependentVariable::calculateDiffusionRateEffect(
 		{
 			double alterValue = pBehaviorVariable->
 				value(iter.actor());
-				
+
 			if (alterValue >= 0.5)
 			{
-				numInfectedAlter++;				
+				numInfectedAlter++;
 			}
 
 			if (effectName == "infectIn")
@@ -1801,7 +1801,7 @@ double DependentVariable::calculateDiffusionRateEffect(
 
 			totalAlterValue += alterValue;
 		}
-	
+
 		if (internalEffectParameter != 0)
 		{
 			if (numInfectedAlter < std::abs(internalEffectParameter))
@@ -1814,13 +1814,13 @@ double DependentVariable::calculateDiffusionRateEffect(
 				{
 					totalAlterValue = - internalEffectParameter;
 				}
-			}		
+			}
 		}
-		
+
 		totalAlterValue *= response;
-	
+
 	}
-	
+
 	return totalAlterValue;
 }
 
@@ -1832,7 +1832,7 @@ double DependentVariable::calculateDiffusionRateEffect(
 	const BehaviorVariable * pBehaviorVariable,
 	const Network * pNetwork,
 	int i, string effectName,
-	int internalEffectParameter, 
+	int internalEffectParameter,
 	const ConstantCovariate * pConstantCovariate,
 	const ChangingCovariate * pChangingCovariate)
 {
@@ -1862,10 +1862,10 @@ double DependentVariable::calculateDiffusionRateEffect(
 			 iter.next())
 		{
 			double alterValue = pBehaviorVariable->value(iter.actor());
-				
+
 			if (alterValue >= 0.5)
 			{
-				numInfectedAlter++;				
+				numInfectedAlter++;
 			}
 
 			if (effectName == "infectCovar")
@@ -1886,7 +1886,7 @@ double DependentVariable::calculateDiffusionRateEffect(
 			}
 			totalAlterValue += alterValue;
 		}
-		
+
 		if (internalEffectParameter != 0)
 		{
 			if (numInfectedAlter < std::abs(internalEffectParameter))
@@ -1899,7 +1899,7 @@ double DependentVariable::calculateDiffusionRateEffect(
 				{
 					totalAlterValue = - internalEffectParameter;
 				}
-			}		
+			}
 		}
 		totalAlterValue *= response;
 	}
@@ -2075,9 +2075,6 @@ void DependentVariable::updateEffectParameters()
 			iter2++;
 		}
 	}
-
-
-
 }
 // ----------------------------------------------------------------------------
 // Section: Properties

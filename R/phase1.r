@@ -24,6 +24,10 @@ phase1.1 <- function(z, x, ...)
 	int <- z$int # used for multiple processes: number of processes for MoM
 	z <- AnnouncePhase(z, x)
 	z$phase1Its <- 0
+	if (z$returnThetas)
+	{
+		z$thetas <- c(0, z$theta)
+	}
 	## fix up iteration numbers if using multiple processes
 	if (10 %% int == 0)
 	{
