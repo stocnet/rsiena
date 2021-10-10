@@ -11,8 +11,7 @@
 ##@simstats0c siena07 Simulation Module
 simstats0c <- function(z, x, data=NULL, effects=NULL, fromFiniteDiff=FALSE,
                        returnDeps=FALSE, returnChains=FALSE, byWave=FALSE,
-					   returnDataFrame=FALSE, returnLoglik=FALSE,
-					   returnThetas=FALSE)
+					   returnDataFrame=FALSE, returnLoglik=FALSE)
 {
     ## retrieve stored information
     f <- FRANstore()
@@ -34,7 +33,6 @@ simstats0c <- function(z, x, data=NULL, effects=NULL, fromFiniteDiff=FALSE,
     {
         returnDeps <- z$returnDeps
     }
-	z$returnThetas <- returnThetas
     if (is.null(z$returnActorStatistics))
 	{
 		z$returnActorStatistics <- FALSE
