@@ -14,6 +14,7 @@
 siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	useCluster = FALSE, nbrNodes = 2,
 	thetaValues = NULL,
+    returnThetas = FALSE,
 	initC=TRUE,
 	clusterString=rep("localhost", nbrNodes), tt=NULL,
 	parallelTesting=FALSE, clusterIter=!x$maxlike,
@@ -43,6 +44,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	z <- NULL ## z is the object for all control information which may change.
 	## x is designed to be readonly. Only z is returned.
 	z$x <- x
+	z$returnThetas <- returnThetas
 
 	if (useCluster)
 	{

@@ -1359,6 +1359,25 @@ interesting constructions in this respect.
 
 
 
+\subsection{Actor statistics}
+
+\nnm{StatisticCalculator::StatisticCalculator} has an argument 
+\nnm{returnActorStatistics}, with the result that all calls of \nnm{evaluationStatistic}, \nnm{endowmentStatistic} and \nnm{creationStatistic} also return the contributions by actor.
+
+Functions \nnm{getTheActorStatistics} and \nnm{getActorStatistics} use\\ \nnm{returnActorStatistics}=\texttt{TRUE}.
+
+\nnm{siena07setup.cpp} has a non-exported function 
+\nnm{getTargetActorStatistics} that is used in \nnm{getTargets}.
+
+In \nnm{simstats.c}, if \nnm{returnActorStatistics}
+is present with value \texttt{TRUE} for the \nnm{sienaAlgorithm} object,
+the \nnm{actorStatistics} are returned as \texttt{ans[[10]]}.
+This possibility is not documented.
+
+Currently, the \nnm{sienaAlgorithm} object never is given a component\\
+\nnm{returnActorStatistics}.
+
+
 \subsection{Interaction effects for networks}
 
 User-defined interactions for network change are defined as follows.

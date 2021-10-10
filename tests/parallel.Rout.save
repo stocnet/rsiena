@@ -1,5 +1,5 @@
 
-R version 4.0.4 (2021-02-15) -- "Lost Library Book"
+R version 4.1.0 (2021-05-18) -- "Camp Pontanezen"
 Copyright (C) 2021 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
@@ -618,7 +618,8 @@ Overall maximum convergence ratio:    2.0268
 Total of 1451 iteration steps.
 
 > ##test16
-> #print('test16')
+> print('test16')
+[1] "test16"
 > set.seed(123) # simulate behavior data according to dZ(t) = [-0.1 Z + 1] dt + 1 dW(t)
 > y1 <- rnorm(50, 0,3)
 > y2 <- exp(-0.1) * y1 + (1-exp(-0.1)) * 1/ -0.1 + rnorm(50, 0, (exp(-0.2)- 1) / -0.2 * 1^2)
@@ -657,9 +658,79 @@ SDE par stand errors: 0.04669358 0.1223113 0.08791327
 > algorithmMoM <- sienaAlgorithmCreate(nsub=1, n3=20, seed=321)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > # (ans <- siena07(algorithmMoM, data = mydata, effects = myeff, batch=TRUE))
+> ##test17
+> print('test17')
+[1] "test17"
+> mynet <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+> sm1 <- 1*(s50s[,2] >= 2)
+> sm2 <- 1*(s50s[,3] >= 2)
+> sm2 <- pmax(sm1,sm2)
+> sm2[c(33,28,29,44)] <- 1
+> mybeh <- sienaDependent(cbind(sm1,sm2), type="behavior")
+> (mydata <- sienaDataCreate(mynet, mybeh))
+For some variables, in some periods, there are only increases, or only decreases.
+This will be respected in the simulations.
+If this is not desired, use allowOnly=FALSE when creating the dependent variables.
+Dependent variables:  mynet, mybeh 
+Number of observations: 2 
+
+Nodeset                  Actors 
+Number of nodes              50 
+
+Dependent variable mynet      
+Type               oneMode    
+Observations       2          
+Nodeset            Actors     
+Densities          0.046 0.047
+
+Dependent variable mybeh   
+Type               behavior
+Observations       2       
+Nodeset            Actors  
+Range              0 - 1   
+
+"uponly":  mybeh:    all periods
+> mymodel <- sienaModelCreate(projname=NULL, seed=1234, firstg=0.001, nsub=1, n3=10)
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> myeff <- getEffects(mydata)
+> (myeff <- setEffect(myeff,avExposure,type='rate',parameter=2,
++ 							name='mybeh',interaction1='mynet'))
+  effectName                            include fix   test  initialValue parm
+1 average exposure effect on rate mybeh TRUE    FALSE FALSE          0   2   
+  name  effectName                            include fix   test  initialValue
+1 mynet basic rate parameter mynet            TRUE    FALSE FALSE    4.69604  
+2 mynet outdegree (density)                   TRUE    FALSE FALSE   -1.48852  
+3 mynet reciprocity                           TRUE    FALSE FALSE    0.00000  
+4 mybeh rate mybeh period 1                   TRUE    FALSE FALSE    0.26000  
+5 mybeh average exposure effect on rate mybeh TRUE    FALSE FALSE    0.00000  
+  parm
+1 0   
+2 0   
+3 0   
+4 0   
+5 2   
+> (ans <- siena07(mymodel, data=mydata, effects=myeff))
+Estimates, standard errors and convergence t-ratios
+
+                                                Estimate   Standard   Convergence 
+                                                             Error      t-ratio   
+Network Dynamics 
+  1. rate basic rate parameter mynet             5.0309  ( 1.8002   )    3.1556   
+  2. eval outdegree (density)                   -1.5767  ( 0.1300   )    1.7004   
+  3. eval reciprocity                            0.4639  ( 0.3817   )   -6.0068   
+
+Behavior Dynamics
+  4. rate rate mybeh period 1                    0.3731  ( 0.2364   )   -1.2577   
+  5. rate average exposure effect on rate mybeh  0.4511  ( 1.4274   )   -3.5793   
+
+Overall maximum convergence ratio:   13.9256 
+
+
+Total of 290 iteration steps.
+
 > ## delete output file
 > if (file.exists('Siena.txt')){unlink('Siena.txt')}
 > 
 > proc.time()
    user  system elapsed 
-  28.92    0.53   29.62 
+  33.68    1.00   34.95 

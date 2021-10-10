@@ -44,6 +44,7 @@ siena.table <- function(x, type='tex',
 	}
 
 	objectName <- deparse(substitute(x))
+	fileName <- file
 	fromBayes <- FALSE
 	xkind.string <- "sienaFit"
 	tstat <- tstatPrint
@@ -490,7 +491,7 @@ siena.table <- function(x, type='tex',
 			startdate <- paste("%Estimation date",x$startingDate)
 		}
 		startTable <- tableSection(c(paste("% Table based on", xkind.string, "object",
-					deparse(substitute(x)), ',', date()),
+					objectName, ',', date()),
 					startdate,
 				paste("\\begin{tabular}{l",
 					linesep,
@@ -607,7 +608,6 @@ siena.table <- function(x, type='tex',
 		{
 			if (fromBayes)
 			{
-# hier gaat het denk ik mis			
 				remove <- is.na(sd.between)
 				mainTable$tstat1[-mid][-remove] <-
 					sapply(sd.between[rows],mystr,max.tstat.width)[1,][-remove]
@@ -618,8 +618,9 @@ siena.table <- function(x, type='tex',
 				{
 					if (type=='tex')
 					{
-						mainTable$tstat1[-mid][remove] <- "\\omit"
-						mainTable$tstat2[-mid][remove] <- "-"
+# This had to be dropped, gave a warning; or that is perhaps not serious?
+#						mainTable$tstat1[-mid][remove] <- "\\omit"
+#						mainTable$tstat2[-mid][remove] <- "-"
 					}
 				}
 			}
@@ -722,7 +723,6 @@ siena.table <- function(x, type='tex',
 	table <- rbind(table,endTable)
 
 	##Saves the table to a file
-
-	write.table(table,file=file,row.names=F,col.names=F,sep="", quote=FALSE)
-	cat('Results for', deparse(substitute(x)), 'written to', file,'.\n')
+	write.table(table,file=fileName,row.names=F,col.names=F,sep="", quote=FALSE)
+	cat('Results for', objectName, 'written to', fileName,'.\n')
 }

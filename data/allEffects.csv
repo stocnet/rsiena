@@ -444,6 +444,8 @@ unspecifiedContinuousInteraction,behavior xxxxxx: unspecified interaction,beh. x
 nonSymmetricSymmetricObjective,xxxxxx,sum crprod. with xxxxxx,crprod,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricSymmetricSObjective,degree^(1/#) xxxxxx popularity,sum ind. x centrd degr.^(1/#) xxxxxx,outPopIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricSymmetricSObjective,degree^(1/#) xxxxxx activity,sum outd. x centrd degr.^(1/#) xxxxxx,outActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
+nonSymmetricSymmetricObjective,twopath^(1/#) xxxxxx activity,sum deg. x 2path^(1/#) xxxxxx,outOutActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricSymmetricObjective,twopath^(1/#) xxxxxx average,average deg. x 2path^(1/#) xxxxxx,outOutAvIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricSymmetricObjective,both degrees^(1/#) xxxxxx,sum tied degree^(1/#) products xxxxxx,both,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricSymmetricObjective,duplex xxxxxx outdegree^(1/#) activity,sum dupl. xxxxxx outdeg.^(1/#),doubleOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,,FALSE
 nonSymmetricSymmetricSObjective,from xxxxxx agreement,"mixed triplets XWW, W = xxxxxx",from,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
@@ -463,6 +465,7 @@ nonSymmetricNonSymmetricObjective,xxxxxx x indeg.^(1/#) xxxxxx activity,sum crpr
 nonSymmetricNonSymmetricObjective,outdeg.^(1/#) xxxxxx popularity,sum indeg. x centrd outdeg.^(1/#) xxxxxx,outPopIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricNonSymmetricObjective,outdeg.^(1/#) xxxxxx activity,sum outdeg. x centrd outdeg.^(1/#) xxxxxx,outActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricNonSymmetricObjective,twopath^(1/#) xxxxxx activity,sum deg. x 2path^(1/#) xxxxxx,outOutActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricNonSymmetricObjective,twopath^(1/#) xxxxxx average,average deg. x 2path^(1/#) xxxxxx,outOutAvIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricNonSymmetricObjective,both degrees^(1/#) xxxxxx,sum tied deg.^(1/#) products xxxxxx,both,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricNonSymmetricObjective,duplex xxxxxx outdegree^(1/#) activity,sum dupl. xxxxxx outdeg.^(1/#),doubleOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,,FALSE
 nonSymmetricNonSymmetricObjective,duplex xxxxxx indegree^(1/#) popularity,sum dupl. xxxxxx indeg.^(1/#),doubleInPop,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
@@ -498,11 +501,15 @@ nonSymmetricNonSymmetricObjective,GWESP I -> K <- J(#) xxxxxx,Numb. edgew. shrd.
 nonSymmetricNonSymmetricObjective,GWESP I <> K <> J(#) xxxxxx,Numb. edgew. shrd. xxxxxx partn. in AND out twostars(#),gwespRRMix,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteNonSymmetricObjective,indegree^(1/#) xxxxxx activity,sum outd. x centrd ind.^(1/#) xxxxxx,inActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
 bipartiteNonSymmetricObjective,outdegree^(1/#) xxxxxx activity,sum outd. x centrd degree^(1/#) xxxxxx,outActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteNonSymmetricObjective,twopath^(1/#) xxxxxx activity,sum deg. x 2path^(1/#) xxxxxx,outOutActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteNonSymmetricObjective,twopath^(1/#) xxxxxx average,average deg. x 2path^(1/#) xxxxxx,outOutAvIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteNonSymmetricObjective,xxxxxx to agreement,"mixed triplets W->X=>X, W = xxxxxx",to,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteNonSymmetricObjective,xxxxxx (back) to agreement,"mixed triplets X(back)WW, W = xxxxxx",toBack,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteNonSymmetricObjective,mutual xxxxxx to agreement,"mixed triplets X(recip)WW, W = xxxxxx",toRecip,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteNonSymmetricObjective,shared xxxxxx (#) to agreement,"mixed 4cycles WWXX, W = xxxxxx",sharedTo,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 bipartiteSymmetricObjective,degree^(1/#) xxxxxx activity,sum outd. x centrd degre.^(1/#) xxxxxx,outActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteSymmetricObjective,twopath^(1/#) xxxxxx activity,sum deg. x 2path^(1/#) xxxxxx,outOutActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteSymmetricObjective,twopath^(1/#) xxxxxx average,average deg. x 2path^(1/#) xxxxxx,outOutAvIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteSymmetricObjective,xxxxxx to agreement,"mixed triplets W->X=>X, W = xxxxxx",to,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteSymmetricObjective,xxxxxx (backwards) to agreement,"mixed triplets X(backwards)WW, W = xxxxxx",toBack,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteSymmetricObjective,mutual xxxxxx to agreement,"mixed triplets X(reciprocal)WW, W = xxxxxx",toRecip,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
@@ -525,6 +532,7 @@ continuousWiener,wiener (xxxxxx.yyyyyy),Wiener process matrix (G_xxxxxx.yyyyyy),
 nonSymmetricBipartiteObjective,deg.^(1/#) xxxxxx popularity,sum degr x centrd degr^(1/#) xxxxxx,outPopIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricBipartiteObjective,deg.^(1/#) xxxxxx activity,sum deg. x centrd degree^(1/#) xxxxxx,outActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricBipartiteObjective,deg.^(1/#) xxxxxx dist.2 act.,sum deg. x 2path^(1/#) xxxxxx,outOutActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricBipartiteObjective,deg.^(1/#) xxxxxx dist.2 ave.,average deg. x 2path^(1/#) xxxxxx,outOutAvIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricBipartiteObjective,from xxxxxx agreement,"mixed triplets XWW, W = xxxxxx",from,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricBipartiteObjective,shared xxxxxx (#) to agreement,"mixed 4cycles WWXX, W = xxxxxx",sharedTo,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 nonSymmetricBipartiteObjective,Jaccard xxxxxx out-sim.,Jaccard xxxxxx out-sim.,JoutMix,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE

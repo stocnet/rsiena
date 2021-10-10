@@ -31,13 +31,14 @@ namespace siena
 
 OutActDistance2Function::OutActDistance2Function(
 	string firstNetworkName, string secondNetworkName, double parameter,
-					bool firstIn, bool secondIn) :
+					bool firstIn, bool secondIn, bool average) :
 					MixedNetworkAlterFunction(firstNetworkName, secondNetworkName)
 {
 	this->lsqrtTable = SqrtTable::instance();
 	this->lroot =  (parameter >= 2);
 	this->lfirstin = firstIn;
 	this->lsecondin = secondIn;
+	this->laverage = average;
 	this->lvariableName = secondNetworkName;
 }
 
@@ -88,6 +89,7 @@ double OutActDistance2Function::value(int alter)
 	const Network * pSecondNetwork = this->pSecondNetwork();
 	IncidentTieIterator iter;
 	int (Network::*pDegreeFunction)(int) const;
+	int deg = 0;
 
 	if (lfirstin)
 	{
@@ -114,12 +116,18 @@ double OutActDistance2Function::value(int alter)
 					statistic +=
 			(this->lsqrtTable->sqrt((pSecondNetwork->*pDegreeFunction)(iter.actor()))
 										- this->lavdegree);
+					deg++;
 				}
 				else
 				{
 			statistic += ((pSecondNetwork->*pDegreeFunction)(iter.actor()) 
 														- this->lavdegree);
-		}
+					deg++;
+				}
+	}
+	if ((deg > 0) && (this->laverage))
+	{
+		statistic /= deg;		
 	}
 	return statistic;
 }

@@ -32,7 +32,7 @@ class OutActDistance2Function: public MixedNetworkAlterFunction
 public:
 	OutActDistance2Function(std::string firstNetworkName,
 			std::string secondNetworkName, double parameter, bool firstIn,
-			bool secondIn);
+			bool secondIn, bool average);
 
 	virtual void initialize(const Data * pData,
 		State * pState, int period, Cache * pCache);
@@ -43,6 +43,7 @@ private:
 	bool lroot; // should the square root be taken?
 	bool lfirstin; // first tie in- or outgoing?
 	bool lsecondin; // second tie in- or outgoing?
+	bool laverage; // should the average be used?
 	double lavdegree; // average degree, all observations, secondNetworkName
 	std::string lvariableName; // local secondNetworkName
 	// Lookup table for fast square root calculations:

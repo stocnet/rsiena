@@ -124,7 +124,11 @@ sienaNodeSet <- function(n, nodeSetName="Actors", names=NULL)
 ##@coCovar Create
 coCovar <- function(val, centered=TRUE, nodeSet="Actors", imputationValues=NULL)
 {
-    ##vector, numeric or factor
+    ##val should be vector, numeric or factor
+	if (sum(!is.na(val))==0)
+	{
+		warning('Note: all values are missing.')
+	}
     if (!is.vector(val))
 	{
         stop("val must be a vector")
@@ -132,6 +136,13 @@ coCovar <- function(val, centered=TRUE, nodeSet="Actors", imputationValues=NULL)
     if (!(is.numeric(val) || is.factor(val)))
 	{
         stop("val must be numeric or a factor")
+	}
+	if (!is.factor(val))
+	{
+		if (var(val, na.rm=TRUE)==0)
+		{
+			warning('Note: all values are identical to ', mean(val, na.rm=TRUE),'.')
+		}
 	}
     if (!is.character(nodeSet))
 	{
@@ -170,6 +181,10 @@ varCovar<- function(val, centered=TRUE, nodeSet="Actors", imputationValues=NULL)
     if (!(is.numeric(val) || is.factor(val)))
 	{
         stop("val must be numeric or a factor")
+	}
+	if (sum(!is.na(val))==0)
+	{
+		warning('Note: all values are missing.')
 	}
     if (!is.character(nodeSet))
 	{
@@ -224,6 +239,17 @@ coDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
         }
         val <- list(val)
     }
+	if (sum(!is.na(val))==0)
+	{
+		warning('Note: all values are missing.')
+	}
+	if (!is.factor(val))
+	{
+		if (var(as.vector(val), na.rm=TRUE)==0)
+		{
+			warning('Note: all values are identical to ', mean(as.vector(val), na.rm=TRUE),'.')
+		}
+	}
     vardims <- dim(val)
     if (length(nodeSets) > 2)
     {
@@ -299,6 +325,17 @@ varDyadCovar<- function(val, centered=TRUE,
         vardims[3] <- length(val)
 
     }
+	if (sum(!is.na(val))==0)
+	{
+		warning('Note: all values are missing.')
+	}
+	if (!is.factor(val))
+	{
+		if (var(as.vector(val), na.rm=TRUE)==0)
+		{
+			warning('Note: all values are identical to ', mean(as.vector(val), na.rm=TRUE),'.')
+		}
+	}
     if (length(nodeSets) > 2)
         stop("nodeSets may only have one or two elements")
     if (!is.character(nodeSets))
@@ -388,7 +425,11 @@ sienaDependent <- function(netarray, type=c("oneMode","bipartite","behavior",
         netdims <- netdims[, 1]
         netdims[3] <- length(netarray)
     }
-    observations <- netdims[3]
+	if (sum(!is.na(netarray))==0)
+	{
+		warning('Note: all values are missing.')
+	}
+	observations <- netdims[3]
     if (observations < 2)
 	{
         stop("netarray must have at least two observations")

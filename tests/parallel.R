@@ -151,7 +151,7 @@ algo <- sienaAlgorithmCreate(nsub=2, n3=100, gmm=TRUE, seed=6)
 (ans <- siena07(algo, data=mydata, effects=myeff, batch=TRUE,
                 parallelTesting=TRUE, silent=TRUE))
 ##test16
-#print('test16')
+print('test16')
 set.seed(123) # simulate behavior data according to dZ(t) = [-0.1 Z + 1] dt + 1 dW(t)
 y1 <- rnorm(50, 0,3)
 y2 <- exp(-0.1) * y1 + (1-exp(-0.1)) * 1/ -0.1 + rnorm(50, 0, (exp(-0.2)- 1) / -0.2 * 1^2)
@@ -161,5 +161,19 @@ behavior <- sienaDependent(matrix(c(y1,y2), 50,2), type = "continuous")
 (myeff <- getEffects(mydata, onePeriodSde = TRUE))
 algorithmMoM <- sienaAlgorithmCreate(nsub=1, n3=20, seed=321)
 #(ans <- siena07(algorithmMoM, data = mydata, effects = myeff, batch=TRUE))
+##test17
+print('test17')
+mynet <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+sm1 <- 1*(s50s[,2] >= 2)
+sm2 <- 1*(s50s[,3] >= 2)
+sm2 <- pmax(sm1,sm2)
+sm2[c(33,28,29,44)] <- 1
+mybeh <- sienaDependent(cbind(sm1,sm2), type="behavior")
+(mydata <- sienaDataCreate(mynet, mybeh))
+mymodel <- sienaModelCreate(projname=NULL, seed=1234, firstg=0.001, nsub=1, n3=10)
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff,avExposure,type='rate',parameter=2,
+							name='mybeh',interaction1='mynet'))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
 ## delete output file
 if (file.exists('Siena.txt')){unlink('Siena.txt')}

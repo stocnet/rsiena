@@ -224,10 +224,18 @@ doIterations<- function(z, x, subphase,...)
 	zsmall <- makeZsmall(z)
 	z$returnDeps <- FALSE
 	sumfra <- 0.0
+	if (z$returnThetas)
+	{
+		thetas <- NULL
+	}
 	repeat
 	{
 		z$n <- z$n+1
 		z$nit <- z$nit + 1
+		if (z$returnThetas)
+		{
+			thetas <- rbind(thetas, c(subphase, z$theta))
+		}
 		if (subphase == 1 && z$nit == 2)
 			z$time1 <- proc.time()[[3]]
 		if (subphase == 1 && z$nit == 11)
@@ -498,6 +506,10 @@ doIterations<- function(z, x, subphase,...)
 				break
 			}
 		}
+	}
+	if (z$returnThetas)
+	{
+		z$thetas <- rbind(z$thetas, thetas)
 	}
 	z
 }

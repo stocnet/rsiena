@@ -337,7 +337,7 @@ sum(a2*t(a2))
 diag(t1) <- 0
 mt1 <- sum(t1)/(20*19)
 sum(a2*(t1-mt1))
-XW <- 
+XW <-
 XW <- a2 %*% t1
 diag(XW) <- 0
 XWX <- XW * a2
@@ -544,7 +544,7 @@ mynet2 <- sienaNet(array(c(s503, s502), dim=c(50, 50, 2)))
 mydata <- sienaDataCreate(mynet1, mynet2)
 
 myeff <- getEffects(mydata)
-myeff <- includeEffects(myeff, crprodInActIntn, name='mynet2', 
+myeff <- includeEffects(myeff, crprodInActIntn, name='mynet2',
                         interaction1='mynet1')
 myeff
 
@@ -561,6 +561,275 @@ myeff
 (ans <- siena07(mymodel, data=mydata, effects=myeff))
 ans$targets
 sum(rowSums(s502 * s501) * (colSums(s501) - ctr)) # -3.53 OK
+
+
+############################################
+### check rateX
+############################################
+
+library(RSiena)
+
+mynet <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mycov <- coCovar(s50s[,2])
+mydata <- sienaDataCreate(mynet, mybeh, mycov)
+myeff <- getEffects(mydata)
+(myeff <- includeEffects(myeff,RateX,type='rate',
+							name='mybeh',interaction1='mycov'))
+mymodel <- sienaModelCreate(projname=NULL)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+sum(abs(mybeh[,,1]-mybeh[,,2])) # OK rate
+mco <- mean(mycov)
+sum((mycov-mco)*abs(mybeh[,,1]-mybeh[,,2])) # OK RateX
+
+myeff <- getEffects(mydata)
+(myeff <- includeEffects(myeff,RateX,type='rate',
+							name='mybeh',interaction1='mybeh'))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+sum(abs(mybeh[,,1]-mybeh[,,2])) # OK rate
+mbh <- mean(mybeh)
+sum((mybeh[,,1])*abs(mybeh[,,1]-mybeh[,,2])) # OK RateX non-centered
+
+################################################################################
+### check totExposure and other diffusion effects
+################################################################################
+
+library(RSiena)
+
+mynet <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+sm1 <- 1*(s50s[,2] >= 2)
+sm2 <- 1*(s50s[,3] >= 2)
+sm2 <- pmax(sm1,sm2)
+sm2[c(33,28,29,44)] <- 1
+sminfl1 <- apply(s501,1,function(x){sum(x*sm1)})
+table(sminfl1*((sm2-sm1))) # no values larger than 2.
+sm1r <- sm1
+sm1r[11] <- 0
+table(sminfl1*((sm2-sm1r))) # one value larger than 2.
+mybeh <- sienaDependent(cbind(sm1,sm2), type="behavior")
+mybeh.r <- sienaDependent(cbind(sm1r,sm2), type="behavior")
+mycov <- coCovar(s50a[,1])
+(mydata <- sienaDataCreate(mynet, mybeh, mycov))
+(mydata.r <- sienaDataCreate(mynet, mybeh.r, mycov))
+# mydata.r for testing negative parameters
+
+mymodel <- sienaModelCreate(projname=NULL, seed=1234, firstg=0.01)
+mymodel2 <- sienaModelCreate(projname=NULL, seed=1234, firstg=0.1)
+mymodel4 <- sienaModelCreate(projname=NULL, seed=1234, firstg=0.001)
+
+myeff <- getEffects(mydata)
+(ans <- siena07(mymodel2, data=mydata, effects=myeff))
+myeff0 <- updateTheta(myeff, ans)
+
+myeff.r <- getEffects(mydata.r)
+(ans.r <- siena07(mymodel2, data=mydata.r, effects=myeff.r))
+myeff0.r <- updateTheta(myeff.r, ans.r)
+
+myeff <- includeEffects(myeff0,avExposure,type='rate',
+							name='mybeh',interaction1='mynet')
+(ans1 <- siena07(mymodel4, data=mydata, effects=myeff))
+ans1$targets
+sum(sm2-sm1) # OK rate
+
+divi <- function(x,y){ifelse(y==0, 0, x/y)}
+amean <- function(x,z){ifelse((sum(x)>0), sum(x*z)/sum(x), 0)}
+eff <- apply(s501,1,function(x){amean(x,sm2)})
+eff00 <- apply(s501,1,function(x){amean(x,sm1)})
+sum((sm2-sm1)*eff) #  this is not the target statistic for avExposure
+sum((sm2-sm1)*eff00) # OK  avExposure
+
+(myeff5 <- setEffect(myeff0,avExposure,type='rate', parameter=2,
+							name='mybeh',interaction1='mynet'))
+(ans5 <- siena07(mymodel4, data=mydata, effects=myeff5, prevAns=ans1))
+ans5$targets
+eff3 <- apply(s501,1,function(x){sum(x*sm1)})
+eff35 <- eff3
+eff35[eff35==1] <- 0
+outd <- rowSums(s501)
+sum((sm2-sm1)*divi(eff35, outd)) #  OK avExposure p=2
+
+(myeff6.r <- setEffect(myeff.r, avExposure,type='rate', parameter=-2,
+							name='mybeh.r',interaction1='mynet'))
+(ans6.r <- siena07(mymodel4, data=mydata.r, effects=myeff6.r, prevAns=ans5))
+ans6.r$targets
+eff3.r <- apply(s501,1,function(x){sum(x*sm1r)})
+eff56 <- eff3.r
+eff56[eff56==1] <- 0
+eff56[eff56>2] <- 2
+sum((sm2-sm1r)*divi(eff56, outd)) #   OK avExposure p=-2
+
+(myeff2 <- setEffect(myeff0,totExposure,type='rate',
+							name='mybeh',interaction1='mynet'))
+(ans2 <- siena07(mymodel4, data=mydata, effects=myeff2))
+ans2$targets
+sum(sm2-sm1) # OK rate
+eff3 <- apply(s501,1,function(x){sum(x*sm1)})
+sum((sm2-sm1)*eff3) # OK totExposure
+
+(myeff3 <- setEffect(myeff0,totExposure,type='rate', parameter=2,
+							name='mybeh',interaction1='mynet'))
+(ans3 <- siena07(mymodel4, data=mydata, effects=myeff3, prevAns=ans2))
+ans3$targets
+eff3 <- apply(s501,1,function(x){sum(x*sm1)})
+eff32 <- eff3
+eff32[eff32==1] <- 0
+sum((sm2-sm1)*eff32) # OK totExposure p=2
+
+(myeff4.r <- setEffect(myeff0.r,totExposure,type='rate', parameter=-2,
+							name='mybeh.r',interaction1='mynet'))
+(ans4.r <- siena07(mymodel4, data=mydata.r, effects=myeff4.r, prevAns=ans3))
+ans4.r$targets
+eff3.r <- apply(s501,1,function(x){sum(x*sm1r)})
+eff34.r <- eff3.r
+eff34.r[eff34.r==1] <- 0
+eff34.r[eff34.r>2] <- 2
+sum((sm2-sm1r)*eff34.r) # OK totExposure p=-2
+
+(myeff6 <- setEffect(myeff,infectIn,type='rate',
+							name='mybeh',interaction1='mynet'))
+(ans6 <- siena07(mymodel4, data=mydata, effects=myeff6))
+ans6$targets
+ind <- colSums(s501)
+eff3 <- apply(s501,1,function(x){sum(x*sm1)})
+eff7 <- sapply(1:50, function(i){sum(s501[i,]*ind*sm1)})
+sum((sm2-sm1)*eff7) #  OK infectIn
+
+(myeff7 <- setEffect(myeff,infectIn,type='rate', parameter=2,
+							name='mybeh',interaction1='mynet'))
+(ans7 <- siena07(mymodel4, data=mydata, effects=myeff7, prevAns=ans6))
+ans7$targets
+eff72 <- eff7
+eff72[eff3<2] <- 0
+sum((sm2-sm1)*eff72) #  OK infectIn p=2
+
+(myeff8 <- setEffect(myeff0,infectOut,type='rate', parameter=2,
+							name='mybeh', interaction1='mynet'))
+(ans8 <- siena07(mymodel4, data=mydata, effects=myeff8))
+ans8$targets
+outd <- rowSums(s501)
+eff3 <- apply(s501,1,function(x){sum(x*sm1)})
+eff8 <- sapply(1:50, function(i){sum(s501[i,]*outd*sm1)})
+eff82 <- eff8
+eff82[eff3<2] <- 0
+sum((sm2-sm1)*eff82) #  OK infectOut p=2
+
+(myeff9 <- setEffect(myeff0,infectCovar,type='rate',
+							name='mybeh', interaction1='mynet',
+							interaction2='mycov'))
+(ans9 <- siena07(mymodel4, data=mydata, effects=myeff9))
+ans9$targets
+(mcm <- mean(mycov))
+eff9 <- sapply(1:50, function(i){sum(s501[i,]*(mycov-mcm)*sm1)})
+sum((sm2-sm1)*eff9) #   infectCovar OK
+
+(myeffA <- setEffect(myeff.r,infectCovar,type='rate', parameter=2,
+							name='mybeh.r', interaction1='mynet',
+							interaction2='mycov'))
+(ansA <- siena07(mymodel4, data=mydata.r, effects=myeffA, prevAns=ans9))
+ansA$targets #
+eff3 <- apply(s501,1,function(x){sum(x*sm1r)})
+(mcm <- mean(mycov))
+effA <- sapply(1:50, function(i){sum(s501[i,]*(mycov-mcm)*sm1r)})
+effA2 <- effA
+effA2[eff3==1] <- 0
+sum((sm2-sm1r)*effA2) # OK infectCovar p=2
+
+(myeffB <- setEffect(myeff0.r,susceptAvIn,type='rate',
+							name='mybeh.r',interaction1='mynet'))
+(ansB <- siena07(mymodel4, data=mydata.r, effects=myeffB))
+ansB$targets
+eff3 <- apply(s501,1,function(x){sum(x*sm1r)})
+outd <- rowSums(s501)
+sum((sm2-sm1r)*colSums(s501)*divi(eff3, outd)) #  OK susceptAvIn
+
+(myeffC <- setEffect(myeff0.r, susceptAvIn,type='rate', parameter=2,
+							name='mybeh.r',interaction1='mynet'))
+(ansC <- siena07(mymodel4, data=mydata.r, effects=myeffC, prevAns=ansB))
+ansC$targets
+eff35 <- eff3
+eff35[eff3==1] <- 0
+sum((sm2-sm1r)*colSums(s501)*divi(eff35, outd)) #  OK susceptAvIn p=2
+
+(myeffD <- setEffect(myeff0.r,susceptAvIn,type='rate', parameter=-2,
+							name='mybeh.r',interaction1='mynet'))
+(ansD <- siena07(mymodel4, data=mydata.r, effects=myeffD, prevAns=ansC))
+ansD$targets
+eff35[eff3>2] <- 2
+outd <- rowSums(s501)
+sum((sm2-sm1r)*colSums(s501)*divi(eff35, outd)) #  OK susceptAvIn p=-2
+
+(myeffE <- setEffect(myeff0.r,susceptAvCovar,type='rate', parameter=0,
+							name='mybeh.r',interaction1='mynet',
+							interaction2='mycov'))
+(ansE <- siena07(mymodel4, data=mydata.r, effects=myeffE))
+ansE$targets
+eff3 <- apply(s501,1,function(x){sum(x*sm1r)})
+eff35 <- eff3
+(mcm <- mean(mycov))
+outd <- rowSums(s501)
+sum((sm2-sm1r)*(mycov-mcm)*divi(eff35, outd)) # susceptAvCovar OK
+
+(myeffE1 <- setEffect(myeff0.r,susceptAvCovar,type='rate', parameter=2,
+							name='mybeh.r',interaction1='mynet',
+							interaction2='mycov'))
+(ansE1 <- siena07(mymodel4, data=mydata.r, effects=myeffE1, prevAns=ansE))
+ansE1$targets
+eff35[eff3==1] <- 0
+sum((sm2-sm1r)*(mycov-mcm)*divi(eff35, outd)) # susceptAvCovar p=2 OK.
+
+(myeffF <- setEffect(myeff0.r,susceptAvCovar,type='rate', parameter=-2,
+							name='mybeh.r',interaction1='mynet',
+							interaction2='mycov'))
+(ansF <- siena07(mymodel4, data=mydata.r, effects=myeffF, prevAns=ansE1))
+ansF$targets
+eff35[eff3>2] <- 2
+sum((sm2-sm1r)*(mycov-mcm)*divi(eff35, outd)) # susceptAvCovar p=-2 OK
+
+
+################################################################################
+### check outOutActIntn and outOutAvIntn
+################################################################################
+
+mynet1 <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
+# construct actor covariate
+in1 <- colSums(s501)
+out1 <- rowSums(s501)
+center <- in1 + out1
+center <- 1*(center >= 5)
+central <- coCovar(center)
+mydata <- sienaDataCreate(mynet1, mynet2, central)
+mymodel <- sienaModelCreate(projname=NULL, seed=1234)
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, outOutActIntn, name="mynet1", interaction1="mynet2", parameter=1)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+sum(rowSums(s502)) # ok outdegree
+sum(rowSums(s502 * t(s502))) # OK recip
+(avdeg <- mean(rowSums(s502) + rowSums(s501))/2)
+sum(rowSums(s502)* (s502 %*% (rowSums(s502) - avdeg))) # OK outOutActIntn
+
+myeff2 <- getEffects(mydata)
+myeff2 <- setEffect(myeff2, outOutActIntn, name="mynet1", interaction1="mynet2", parameter=2)
+(ans2 <- siena07(mymodel, data=mydata, effects=myeff2))
+ans2$targets
+sum(rowSums(s502)* (s502 %*% (sqrt(rowSums(s502)) - sqrt(avdeg)))) # OK outOutActIntn p=2
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, outOutAvIntn, name="mynet1", interaction1="mynet2", parameter=1)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+(avdeg <- mean(rowSums(s502) + rowSums(s501))/2)
+sum((s502 %*% (rowSums(s502) - avdeg)) ) # OK outOutAvIntn, note that rowSums(s502) cancel
+
+myeff2 <- getEffects(mydata)
+myeff2 <- setEffect(myeff2, outOutAvIntn, name="mynet1", interaction1="mynet2", parameter=2)
+(ans2 <- siena07(mymodel, data=mydata, effects=myeff2))
+ans2$targets
+sum( (s502 %*% (sqrt(rowSums(s502)) - sqrt(avdeg)))) # OK outOutAvIntn p=2
 
 
 

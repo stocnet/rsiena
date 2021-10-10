@@ -16,6 +16,7 @@
 siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
         useCluster=FALSE, nbrNodes=2,
         thetaValues = NULL,
+		returnThetas = FALSE,
         initC=TRUE,
         clusterString=rep("localhost", nbrNodes), tt=NULL,
         parallelTesting=FALSE, clusterIter=!x$maxlike,
@@ -38,6 +39,7 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
     number of estimated parameters in the effects object (if conditional
     estimation is used, without the rate parameters for the conditioning
     dependent variable). Can only be used if \code{x$simOnly=TRUE}.}
+  \item{returnThetas}{Boolean: whether to return theta values of Phase 2 runs.}
   \item{initC}{Boolean: set to \code{TRUE} if the simulation will use C
    routines (currently always needed). Only for use if using
    multiple processors, to ensure all copies are initialised
@@ -161,6 +163,9 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
   \item{effects}{The included effects in the effects object to which are added
     the main effects of the requested interaction effects, if any.}
   \item{theta}{Estimated value of theta, if \code{x$simOnly=FALSE}.}
+  \item{thetas}{Matrix, returned if \code{returnThetas} and \code{x$nsub >= 1}.
+    First column is subphase; further columns are values of theta as generated 
+	during this subphase of Phase 2}
   \item{covtheta}{Estimated covariance matrix of theta; this is not available
     if \code{x$simOnly=TRUE}.}
   \item{se}{Vector of standard errors of estimated theta,

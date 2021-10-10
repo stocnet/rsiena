@@ -44,8 +44,8 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
     algorithm. Not to be touched.}
   \item{projname}{Character string name of project; the output file will be
     called projname.txt. No embedded spaces!!!\cr
-	If \code{projname=NULL}, output will be written to a file in the temporary
-	session directory, created as \code{\link{tempfile}(Siena)}.}
+    If \code{projname=NULL}, output will be written to a file in the temporary
+    session directory, created as \code{\link{tempfile}(Siena)}.}
   \item{MaxDegree}{Named vector of maximum degree values for
     corresponding networks. Allows to restrict the model to networks
     with degrees not higher than this maximum.
@@ -88,7 +88,7 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
     Has no effect for ML estimation.\cr
     Higher values are more stable, lower values potentially more efficient.
     Default: for ML estimation, diagonalize=0; for MoM estimation,
-    diagonalize = 1.0.}
+    diagonalize = 0.2.}
   \item{condvarno}{If \code{cond} (conditional simulation), the
     sequential number of the network
     or behavior variable on which to condition.}
