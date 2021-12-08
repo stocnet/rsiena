@@ -2,7 +2,7 @@
    
 ## 
    
-2021-12-07
+2021-12-08
 
 ## Changes in RSiena:  
 
@@ -22,7 +22,7 @@
      if it is applied to a list of length larger than 1, the attributes
      "range" and "range2" of behavioral variables of individual groups are
      computed as the range of the unions of the ranges of all the groups.
-     The same is done for dyadic covariates.
+     The same is done for covariates.
    * `print.sienaGroup` slightly extended.
    * Creation of covariates gives a warning (optional) if all values 
      are missing, and also if all non-missing values are the same.

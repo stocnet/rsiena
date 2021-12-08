@@ -101,7 +101,7 @@ Actor Oriented Models. \emph{Advances in Data Analysis and Computation},
 5:147-176.
 
 M. Schweinberger (2012). Statistical modeling of network panel data:
-Goodness-of-fit. \emph{British Journal of Statistical 
+Goodness-of-fit. \emph{British Journal of Statistical
 and Mathematical Psychology} \bold{65}, 263--281.}
 
 \author{Josh Lospinoso, Tom Snijders}
@@ -135,7 +135,7 @@ ans2 <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE)
 ## (Of course pasting these identical sets of three waves after each other
 ##  in a sequence of six is not really meaningful. It's just a demonstration.)
 
-myalgorithm <- sienaAlgorithmCreate(nsub=2, n3=50, seed=654, projname=NULL)
+myalgorithm <- sienaAlgorithmCreate(nsub=1, n3=50, seed=654, projname=NULL)
 mynet1 <- sienaDependent(array(c(s501, s502, s503, s501, s503, s502),
                                dim=c(50, 50, 6)))
 mydata <- sienaDataCreate(mynet1)
@@ -146,7 +146,7 @@ myeff <- includeTimeDummy(myeff, recip, timeDummy="2,3,5")
 myeff <- includeTimeDummy(myeff, balance, timeDummy="4")
 \dontrun{
 (ansp <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE))
-ttp <- sienaTimeTest(ansp)
+ttp <- sienaTimeTest(ansp, effects=1:4)
 
 ## Pairwise plots show
 plot(ttp, pairwise=TRUE)
@@ -174,21 +174,14 @@ myeff <- includeEffects(myeff, egoX, interaction1='time2')
 myeff <- includeEffects(myeff, egoX, interaction1='time3')
 myeff <- includeEffects(myeff, egoX, interaction1='time4')
 myeff <- includeEffects(myeff, egoX, interaction1='time5')
-## corresponding to myeff <- includeTimeDummy(myeff, recip, timeDummy="2,3,5"):
-myeff <- includeInteraction(myeff, egoX, recip, interaction1=c('time2', ''))
-myeff <- includeInteraction(myeff, egoX, recip, interaction1=c('time3', ''))
-myeff <- includeInteraction(myeff, egoX, recip, interaction1=c('time5', ''))
-## corresponding to myeff <- includeTimeDummy(myeff, balance, timeDummy="4"):
-myeff <- includeInteraction(myeff, egoX, balance, interaction1=c('time4', ''))
 \dontrun{
 (anspp <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE))
 ## anspp contains identical results as ansp above.
 }
 
-## A demonstration of RateX heterogeneity. Note that rate interactions are
-## not implemented in general, just for Rate x cCovar.
+## A demonstration of RateX heterogeneity. Note that rate interactions are not
+## implemented in general, just RateX which is the interaction Rate x cCovar.
 \dontrun{
-myalgorithm <- sienaAlgorithmCreate(nsub=4, n3=1000)
 mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
 myccov <- coCovar(s50a[,1])
 mydata <- sienaDataCreate(mynet1, myccov)
