@@ -135,6 +135,8 @@ public:
 	double reciprocalDegreeScore(const NetworkVariable * pNetwork) const;
 	double inverseOutDegreeScore(const NetworkVariable * pNetwork) const;
 	double logOutDegreeScore(const NetworkVariable * pNetwork) const;
+	double inverseInDegreeScore(const NetworkVariable * pNetwork) const;
+	double logInDegreeScore(const NetworkVariable * pNetwork) const;
 
 	// Diffusion effects
 
@@ -328,6 +330,13 @@ private:
 	// Scores for rate effects depending on log degree
 	std::map<const NetworkVariable *, double> llogOutDegreeScores;
 
+	// Scores for rate effects depending on inverse in degree
+	std::map<const NetworkVariable *, double> linverseInDegreeScores;
+
+	// Scores for rate effects depending on log in degree
+	std::map<const NetworkVariable *, double> llogInDegreeScores;
+
+
 	// Sum term for scores for rate effects depending on constant covariates
 	std::map<const ConstantCovariate *, double> lconstantCovariateSumTerm;
 
@@ -352,6 +361,12 @@ private:
 	// Sum term for scores for rate effects depending on log degree
 	std::map<const NetworkVariable *, double> llogOutDegreeSumTerm;
 
+	// Sum term for scores for rate effects depending on inverse degree
+	std::map<const NetworkVariable *, double> linverseInDegreeSumTerm;
+
+	// Sum term for scores for rate effects depending on log degree
+	std::map<const NetworkVariable *, double> llogInDegreeSumTerm;	
+
 	// Sum term for model B scores for rate effects depending on constant
 	// covariates
 	std::map<const ConstantCovariate *, double> lconstantCovariateModelBSumTerm;
@@ -372,6 +387,12 @@ private:
 
 	// Sum term for model B scores for rate effects depending on log degree
 	std::map<const NetworkVariable *, double> llogOutDegreeModelBSumTerm;
+
+	// Sum term for model B scores for rate effects depending on inverse in degree
+	std::map<const NetworkVariable *, double> linverseInDegreeModelBSumTerm;
+
+	// Sum term for model B scores for rate effects depending on log in degree
+	std::map<const NetworkVariable *, double> llogInDegreeModelBSumTerm;
 
 	// Indicates if the rates are valid and shouldn't be recalculated
 	// provided that the rates are constant during the period.

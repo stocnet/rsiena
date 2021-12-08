@@ -299,6 +299,34 @@ void DependentVariable::initializeRateFunction()
 				this->llogOutDegreeSumTerm[pVariable] = 0;
 				this->llogOutDegreeModelBSumTerm[pVariable] = 0;
 			}
+			else if (effectName == "inRateInv")
+			{
+				if (this->lpActorSet != pVariable->pReceivers())
+				{
+					throw std::invalid_argument("Mismatch of actor sets");
+				}
+
+				this->lstructuralRateEffects.push_back(
+						new StructuralRateEffect(pVariable,
+							INVERSE_IN_DEGREE_RATE, parameter));
+				this->linverseInDegreeScores[pVariable] = 0;
+				this->linverseInDegreeSumTerm[pVariable] = 0;
+				this->linverseInDegreeModelBSumTerm[pVariable] = 0;
+			}
+			else if (effectName == "inRateLog")
+			{
+				if (this->lpActorSet != pVariable->pReceivers())
+				{
+					throw std::invalid_argument("Mismatch of actor sets");
+				}
+
+				this->lstructuralRateEffects.push_back(
+						new StructuralRateEffect(pVariable, LOG_IN_DEGREE_RATE,
+							parameter));
+				this->llogInDegreeScores[pVariable] = 0;
+				this->llogInDegreeSumTerm[pVariable] = 0;
+				this->llogInDegreeModelBSumTerm[pVariable] = 0;
+			}			
 			else
 			{
 				throw domain_error("Unexpected rate effect " + effectName);
@@ -1080,6 +1108,35 @@ void DependentVariable::accumulateRateScores(double tau,
 		iter->second -= this->llogOutDegreeSumTerm[iter->first] * tau;
 	}
 
+	for (std::map<const NetworkVariable *, double>::iterator iter =
+			this->linverseInDegreeScores.begin();
+		iter != this->linverseInDegreeScores.end();
+		iter++)
+	{
+		const Network * pNetwork = iter->first->pNetwork();
+
+		if (this == pSelectedVariable)
+		{
+			iter->second += invertor(pNetwork->inDegree(selectedActor));
+		}
+
+		iter->second -= this->linverseInDegreeSumTerm[iter->first] * tau;
+	}
+
+	for (std::map<const NetworkVariable *, double>::iterator iter =
+			this->llogInDegreeScores.begin();
+		iter != this->llogInDegreeScores.end();
+		iter++)
+	{
+		const Network * pNetwork = iter->first->pNetwork();
+
+		if (this == pSelectedVariable)
+		{
+			iter->second += logarithmer(pNetwork->inDegree(selectedActor));
+		}
+
+		iter->second -= this->llogInDegreeSumTerm[iter->first] * tau;
+}
 
 	// Update scores for diffusion rate parameters
 
@@ -1312,6 +1369,38 @@ void DependentVariable::accumulateRateScores(double tau,
 				iter->second -= tau *
 					this->llogOutDegreeModelBSumTerm[iter->first];
 			}
+
+			for (std::map<const NetworkVariable *, double>::iterator iter =
+					this->linverseInDegreeScores.begin();
+					iter != this->linverseInDegreeScores.end();
+					iter++)
+			{
+				const Network * pNetwork = iter->first->pNetwork();
+
+				if (this == pSelectedVariable && this->successfulChange())
+				{
+					iter->second += invertor(pNetwork->inDegree(selectedActor))
+						+ invertor(pNetwork->inDegree(alter));
+				}
+				iter->second -= tau *
+					this->linverseInDegreeModelBSumTerm[iter->first];
+			}
+
+			for (std::map<const NetworkVariable *, double>::iterator iter =
+					this->llogInDegreeScores.begin();
+					iter != this->llogInDegreeScores.end();
+					iter++)
+			{
+				const Network * pNetwork = iter->first->pNetwork();
+
+				if (this == pSelectedVariable && this->successfulChange())
+				{
+					iter->second += logarithmer(pNetwork->inDegree(selectedActor))
+						+ logarithmer(pNetwork->inDegree(alter));
+				}
+				iter->second -= tau *
+					this->llogInDegreeModelBSumTerm[iter->first];
+			}
 	}
 }
 
@@ -1492,6 +1581,54 @@ void DependentVariable::calculateScoreSumTerms()
 		}
 		this->llogOutDegreeSumTerm[iter->first] = timesRate;
 		this->llogOutDegreeModelBSumTerm[iter->first] = 2 *
+			(this->ltotalRate * timesRate - timesRateSquared);
+
+	}
+
+	for (std::map<const NetworkVariable *, double>::iterator iter =
+			 this->linverseInDegreeScores.begin();
+		 iter != this->linverseInDegreeScores.end();
+		 iter++)
+	{
+		const Network * pNetwork = iter->first->pNetwork();
+
+		double timesRate = 0;
+		double timesRateSquared = 0;
+		for (int i = 0; i < this->n(); i++)
+		{
+			timesRate += invertor(pNetwork->inDegree(i)) * this->lrate[i];
+			if (this->symmetric() && this->networkModelTypeB())
+			{
+				timesRateSquared += invertor(pNetwork->inDegree(i)) *
+					this->lrate[i] * this->lrate[i];
+			}
+		}
+		this->linverseInDegreeSumTerm[iter->first] = timesRate;
+		this->linverseInDegreeModelBSumTerm[iter->first] = 2 *
+			(this->ltotalRate * timesRate - timesRateSquared);
+
+	}
+
+	for (std::map<const NetworkVariable *, double>::iterator iter =
+			 this->llogInDegreeScores.begin();
+		 iter != this->llogInDegreeScores.end();
+		 iter++)
+	{
+		const Network * pNetwork = iter->first->pNetwork();
+
+		double timesRate = 0;
+		double timesRateSquared = 0;
+		for (int i = 0; i < this->n(); i++)
+		{
+			timesRate += logarithmer(pNetwork->inDegree(i)) * this->lrate[i];
+			if (this->symmetric() && this->networkModelTypeB())
+			{
+				timesRateSquared += logarithmer(pNetwork->inDegree(i)) *
+					this->lrate[i] * this->lrate[i];
+			}
+		}
+		this->llogInDegreeSumTerm[iter->first] = timesRate;
+		this->llogInDegreeModelBSumTerm[iter->first] = 2 *
 			(this->ltotalRate * timesRate - timesRateSquared);
 
 	}
@@ -1745,6 +1882,40 @@ double DependentVariable::logOutDegreeScore(
 		throw invalid_argument(
 			string("Unknown network: ") +
 			"The given log outdegree rate effect is not " +
+			"part of the model.");
+	}
+
+	return iter->second;
+}
+
+double DependentVariable::inverseInDegreeScore(
+	const NetworkVariable * pNetworkData) const
+{
+	map<const NetworkVariable *, double>::const_iterator iter =
+		this->linverseInDegreeScores.find(pNetworkData);
+
+	if (iter == this->linverseInDegreeScores.end())
+	{
+		throw invalid_argument(
+			string("Unknown network: ") +
+			"The given inverse indegree rate effect is not " +
+			"part of the model.");
+	}
+
+	return iter->second;
+}
+
+double DependentVariable::logInDegreeScore(
+	const NetworkVariable * pNetworkData) const
+{
+	map<const NetworkVariable *, double>::const_iterator iter =
+		this->llogInDegreeScores.find(pNetworkData);
+
+	if (iter == this->llogInDegreeScores.end())
+	{
+		throw invalid_argument(
+			string("Unknown network: ") +
+			"The given log indegree rate effect is not " +
 			"part of the model.");
 	}
 
