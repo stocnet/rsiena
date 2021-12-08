@@ -1361,12 +1361,12 @@ interesting constructions in this respect.
 
 \subsection{Actor statistics}
 
-\nnm{StatisticCalculator::StatisticCalculator} has an argument 
+\nnm{StatisticCalculator::StatisticCalculator} has an argument
 \nnm{returnActorStatistics}, with the result that all calls of \nnm{evaluationStatistic}, \nnm{endowmentStatistic} and \nnm{creationStatistic} also return the contributions by actor.
 
 Functions \nnm{getTheActorStatistics} and \nnm{getActorStatistics} use\\ \nnm{returnActorStatistics}=\texttt{TRUE}.
 
-\nnm{siena07setup.cpp} has a non-exported function 
+\nnm{siena07setup.cpp} has a non-exported function
 \nnm{getTargetActorStatistics} that is used in \nnm{getTargets}.
 
 In \nnm{simstats.c}, if \nnm{returnActorStatistics}
@@ -1497,8 +1497,6 @@ The same holds for interactions between two ego effects and
 any third effect, because the interaction between two ego effects is again
 an ego effect.
 
-
-
 \subsection{Interaction effects for behavior}
 
 Interaction effects can be defined for those behavior effects
@@ -1555,6 +1553,26 @@ and the change contribution
 \]
 
 
+
+\subsection{Effects: interactionType}
+
+The effects object has a variable (column) that is called
+\texttt{interactionType}.
+See the manual.
+For network effects, the interaction type is \texttt{"ego"}, 
+\texttt{"dyadic"}, or \texttt{""} (blank);
+for behaviour effects, it is \texttt{"OK"} or \texttt{""}.
+This indicates, using the rules above, whether a interaction
+is allowed. This is checked in the internal RSiena function
+\nnm{fixUpEffectNames}. Since \texttt{"ego"} is stronger
+than \texttt{"dyadic"}, the former is used when the property is satisfied.
+
+For elementary network effects (see the manual) 
+the change statistics are not derived
+from an evaluation function. Therefore the requirement
+(\ref{Delta}) does not apply.  Elementary effects have
+\texttt{interactionType} set to "dyadic".
+ 
 \subsection{Weighted effects for behavior}
 
 Another concept, which is similar to interaction, is

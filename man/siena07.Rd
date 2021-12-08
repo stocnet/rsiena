@@ -16,7 +16,7 @@
 siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
         useCluster=FALSE, nbrNodes=2,
         thetaValues = NULL,
-		returnThetas = FALSE,
+        returnThetas = FALSE,
         initC=TRUE,
         clusterString=rep("localhost", nbrNodes), tt=NULL,
         parallelTesting=FALSE, clusterIter=!x$maxlike,
@@ -77,16 +77,18 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
   (These parameters are inserted through '\dots'.) See the examples.
 
  \code{siena07} runs a Robbins-Monro algorithm for parameter estimation
- according to the Method of Moments using the three-phase
- implementation in Snijders (2001) and
- Snijders, Steglich and Schweinberger (2007),
+  using the three-phase implementation described in Snijders (2001, 2017),
  with (if \code{x$findiff=FALSE})
- derivative estimation as in Schweinberger and Snijders (2007).\cr
+ derivative estimation as in Schweinberger and Snijders (2007).
+ The default is estimation according to the Method of Moments
+ as in Snijders, Steglich and Schweinberger (2007).
  If  \code{x$gmm=TRUE} and \code{myeff} contains one or more
  \code{gmm} statistics as included by function
  \code{\link{includeGMoMStatistics}}, the algorithm employs the
  Generalized Method of Moments as defined in Amati, Schoenenberger, and Snijders
- (2015, 2019).\cr
+ (2015, 2019).
+ If  \code{x$maxlike=TRUE}, estimation is done by Maximum Likelihood
+ implemented as in Snijders, Koskinen and Schweinberger (2010).\cr
  Phase 1 does a few iterations to
  estimate the derivative matrix of the targets with respect to the
  parameter vector. Phase 2 does the estimation. Phase 3 runs a
@@ -95,10 +97,6 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
  and also once to initialise the model fitting and once to complete it.
  Unless in batch mode, a tcl/tk screen is displayed to allow interruption
  and to show progress.
-
- If  \code{x$maxlike=TRUE}, estimation is done by Maximum Likelihood
- implemented as in Snijders, Koskinen and Schweinberger (2010); also using
- the three-phase Robbins-Monro algorithm.
 
  It is necessary to check that convergence has been achieved.
  The rule of thumb is that the all t-ratios for convergence should be
@@ -164,8 +162,8 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
     the main effects of the requested interaction effects, if any.}
   \item{theta}{Estimated value of theta, if \code{x$simOnly=FALSE}.}
   \item{thetas}{Matrix, returned if \code{returnThetas} and \code{x$nsub >= 1}.
-    First column is subphase; further columns are values of theta as generated 
-	during this subphase of Phase 2}
+    First column is subphase; further columns are values of theta as generated
+    during this subphase of Phase 2}
   \item{covtheta}{Estimated covariance matrix of theta; this is not available
     if \code{x$simOnly=TRUE}.}
   \item{se}{Vector of standard errors of estimated theta,

@@ -24,11 +24,13 @@ siena.table(x, type="tex", file=paste(deparse(substitute(x)), ".", type,sep=""),
 }
 \arguments{
   \item{object}{An object of class \code{\link{sienaFit}}, produced by
-    \code{\link{siena07}}.}
+    \code{\link{siena07}}. For \code{siena.table}, objects of class
+    \code{sienaBayes} are also permitted.}
   \item{x}{An object of class \code{sienaFit}, or
-    \code{summary.sienaFit} as appropriate.}
-  \item{matrices}{Boolean: whether also to print in the summary the 
-   covariance matrix of the estimates, the derivative matrix of expected 
+    \code{summary.sienaFit} as appropriate. For \code{siena.table},
+    objects of class \code{sienaBayes} are also permitted.}
+  \item{matrices}{Boolean: whether also to print in the summary the
+   covariance matrix of the estimates, the derivative matrix of expected
    statistics X by parameters, and the covariance matrix of the statistics.}
   \item{tstat}{Boolean: if this is NULL, the t-statistics for convergence
      will not be added to the report.}
