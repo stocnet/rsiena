@@ -1815,7 +1815,6 @@ double DependentVariable::outDegreeScore(
 	}
 
 	return iter->second;
-
 }
 
 
@@ -1991,7 +1990,6 @@ double DependentVariable::calculateDiffusionRateEffect(
 		totalAlterValue *= response;
 
 	}
-
 	return totalAlterValue;
 }
 
