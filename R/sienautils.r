@@ -122,10 +122,10 @@ sienaNodeSet <- function(n, nodeSetName="Actors", names=NULL)
 }
 
 ##@coCovar Create
-coCovar <- function(val, centered=TRUE, nodeSet="Actors", imputationValues=NULL)
+coCovar <- function(val, centered=TRUE, nodeSet="Actors", warn=TRUE, imputationValues=NULL)
 {
     ##val should be vector, numeric or factor
-	if (sum(!is.na(val))==0)
+	if ((sum(!is.na(val))==0) & warn)
 	{
 		warning('Note: all values are missing.')
 	}
@@ -139,7 +139,7 @@ coCovar <- function(val, centered=TRUE, nodeSet="Actors", imputationValues=NULL)
 	}
 	if (!is.factor(val))
 	{
-		if (var(val, na.rm=TRUE)==0)
+		if ((var(val, na.rm=TRUE)==0) & warn)
 		{
 			warning('Note: all values are identical to ', mean(val, na.rm=TRUE),'.')
 		}
@@ -171,7 +171,7 @@ coCovar <- function(val, centered=TRUE, nodeSet="Actors", imputationValues=NULL)
     out
 }
 ##@varCovar Create
-varCovar<- function(val, centered=TRUE, nodeSet="Actors", imputationValues=NULL)
+varCovar<- function(val, centered=TRUE, nodeSet="Actors", warn=TRUE, imputationValues=NULL)
 {
     ##matrix, numeric or factor, nrow = nactors and cols = observations-1
     if (!is.matrix(val))
@@ -182,9 +182,13 @@ varCovar<- function(val, centered=TRUE, nodeSet="Actors", imputationValues=NULL)
 	{
         stop("val must be numeric or a factor")
 	}
-	if (sum(!is.na(val))==0)
+	if ((sum(!is.na(val))==0) & warn)
 	{
 		warning('Note: all values are missing.')
+	}
+	if ((var(as.vector(val), na.rm=TRUE)==0) & warn)
+	{
+		warning('Note: all values are equal to ', mean(as.vector(val), na.rm=TRUE))
 	}
     if (!is.character(nodeSet))
 	{
@@ -215,7 +219,7 @@ varCovar<- function(val, centered=TRUE, nodeSet="Actors", imputationValues=NULL)
 
 ##@coDyadCovar Create
 coDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
-					   sparse=is(val,"dgTMatrix"),
+					   warn=TRUE, sparse=is(val,"dgTMatrix"),
 					   type=c("oneMode", "bipartite"))
 {
     ##matrix, numeric or factor, dims= those of net - must validate later or
@@ -239,13 +243,13 @@ coDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
         }
         val <- list(val)
     }
-	if (sum(!is.na(val))==0)
+	if ((sum(!is.na(val))==0) & warn)
 	{
 		warning('Note: all values are missing.')
 	}
 	if (!is.factor(val))
 	{
-		if (var(as.vector(val), na.rm=TRUE)==0)
+		if ((var(as.vector(val), na.rm=TRUE)==0) & warn)
 		{
 			warning('Note: all values are identical to ', mean(as.vector(val), na.rm=TRUE),'.')
 		}
@@ -298,9 +302,9 @@ coDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
     out
 }
 ##@varDyadCovar Create
-varDyadCovar<- function(val, centered=TRUE,
-						nodeSets=c("Actors","Actors"), sparse=is.list(val),
-					   type=c("oneMode", "bipartite"))
+varDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"), 
+						warn=TRUE, sparse=is.list(val),
+						type=c("oneMode", "bipartite"))
 {
     ##array, numeric or factor, dims= those of net by observations-1 -
     ##must validate later or list of sparse matrices
@@ -325,11 +329,11 @@ varDyadCovar<- function(val, centered=TRUE,
         vardims[3] <- length(val)
 
     }
-	if (sum(!is.na(val))==0)
+	if ((sum(!is.na(val))==0) & warn)
 	{
 		warning('Note: all values are missing.')
 	}
-	if (!is.factor(val))
+	if ((!is.factor(val)) & warn)
 	{
 		if (var(as.vector(val), na.rm=TRUE)==0)
 		{
