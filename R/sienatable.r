@@ -11,6 +11,36 @@
 ##  *
 ##  ***************************************************************************/
 
+
+##@shortBayesResult abbreviated sienaBayesFit results
+shortBayesResults <- function(x, nfirst=NULL){
+	if (!inherits(x, "sienaBayesFit"))
+	{
+		stop('x must be a sienaBayesFit object')
+	}
+	if (is.null(nfirst))
+	{
+		nfirst <- x$nwarm+1
+	}
+	df1 <- sienaFitThetaTable(x, fromBayes=TRUE, nfirst=nfirst)[[1]][,
+		c("text", "value", "se", "cFrom", "cTo", "postSd", "cSdFrom", "cSdTo" )]
+	df1$postSd[is.na(df1$cSdFrom)] <- NA
+	df1$postSd <- as.numeric(df1$postSd)
+	df1$cSdFrom <- as.numeric(df1$cSdFrom)
+	df1$cSdTo <- as.numeric(df1$cSdTo)
+	df2 <- as.data.frame(x$requestedEffects[,c("name","shortName", "interaction1", "interaction2",
+		"type", "randomEffects", "fix", "parm", "period", "effect1", "effect2", "effect3", "group")])
+	df2$period <- as.numeric(df2$period)
+	replace1 <- function(x){ifelse(x=="text", "effectName", x)}
+	replace2 <- function(x){ifelse(x=="value", "postMeanGlobal", x)}
+	replace3 <- function(x){ifelse(x=="se", "postSdGlobal", x)}
+	replace4 <- function(x){ifelse(x=="postSd", "postSdBetween", x)}
+	dfs <- cbind(df2, df1)
+	dfr <- dfs
+	names(dfr) <- replace1(replace2(replace3(replace4(names(dfs)))))
+	dfr
+}
+
 ##@siena.table siena07 Saves latex or html table of estimates
 ## for a sienaFit or sienaBayesFit object
 siena.table <- function(x, type='tex',
@@ -53,6 +83,7 @@ siena.table <- function(x, type='tex',
 		if (inherits(x, "sienaBayesFit"))
 		{
 			fromBayes <- TRUE
+			x$gmm <- FALSE # for compatibility
 			sig <- FALSE
 			tstat <- TRUE # for sienaBayesFit, the place for t-stats is used for between-groups sd.
 			if (is.null(nfirst))

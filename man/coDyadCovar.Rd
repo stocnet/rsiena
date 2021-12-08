@@ -6,7 +6,7 @@
 }
 \usage{
 coDyadCovar(val, centered=TRUE, nodeSets=c("Actors", "Actors"),
-    sparse=is(val,"dgTMatrix"), type=c("oneMode", "bipartite"))
+     warn=TRUE, sparse=is(val,"dgTMatrix"), type=c("oneMode", "bipartite"))
 }
 \arguments{
   \item{val}{Matrix of covariate values. May be sparse, of type "dgTMatrix". }
@@ -14,6 +14,8 @@ coDyadCovar(val, centered=TRUE, nodeSets=c("Actors", "Actors"),
   \item{nodeSets}{The name of the node sets with which this
     covariate is associated. If the entire data set contains more than
     one node set, then the node sets must be specified in all data objects.}
+  \item{warn}{Logical: is a warning given if all values are \code{NA},
+  or all non-missing values are the same.}
   \item{sparse}{Boolean: whether a sparse matrix or not.}
   \item{type}{oneMode or bipartite: whether the matrix refers to a one-mode
   or a bipartite (two-mode) network.}

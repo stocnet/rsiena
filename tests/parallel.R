@@ -74,7 +74,6 @@ ans <- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
 ##, verbose=TRUE)#,dll='../siena/src/RSiena.dll')
 ans
 ##test9
-
 mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
 mynet2 <- sienaDependent(s50a,type='behavior')
 mydata <- sienaDataCreate(mynet1, mynet2)
@@ -147,7 +146,7 @@ myeff <- getEffects(mydata)
 (myeff <- includeEffects(myeff, egoX, simX, interaction1="mynet2"))
 (myeff <- includeEffects(myeff, avSim, name="mynet2", interaction1="mynet1"))
 (myeff <- includeGMoMStatistics(myeff, simX_gmm, interaction1="mynet2"))
-algo <- sienaAlgorithmCreate(nsub=2, n3=100, gmm=TRUE, seed=6)
+algo <- sienaAlgorithmCreate(nsub=1, n3=100, gmm=TRUE, seed=6)
 (ans <- siena07(algo, data=mydata, effects=myeff, batch=TRUE,
                 parallelTesting=TRUE, silent=TRUE))
 ##test16
@@ -174,6 +173,18 @@ mymodel <- sienaModelCreate(projname=NULL, seed=1234, firstg=0.001, nsub=1, n3=1
 myeff <- getEffects(mydata)
 (myeff <- setEffect(myeff,avExposure,type='rate',parameter=2,
 							name='mybeh',interaction1='mynet'))
-(ans <- siena07(mymodel, data=mydata, effects=myeff))
+(ans <- siena07(mymodel, data=mydata, effects=myeff, batch=TRUE))
+##test18
+print('test18')
+myalgorithm <- sienaAlgorithmCreate(nsub=1, n3=10, seed=1293)
+mynet1 <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
+cova <- coCovar(1:32)
+cova2 <- coCovar(rep(0,32))
+mydata <- sienaDataCreate(mynet1, cova)
+mydata2 <- sienaDataCreate(mynet1, cova=cova2)
+mygroup <- sienaGroupCreate(list(mydata,mydata2))
+myeff <- getEffects(mygroup)
+myeff <- setEffect(myeff, simX, interaction1='cova')
+(ans <- siena07(myalgorithm, data=mygroup, effects=myeff, batch=TRUE))
 ## delete output file
 if (file.exists('Siena.txt')){unlink('Siena.txt')}

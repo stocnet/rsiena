@@ -5,7 +5,7 @@
   This function creates a constant covariate object from a vector.
   }
 \usage{
-coCovar(val, centered=TRUE, nodeSet="Actors", imputationValues=NULL)
+coCovar(val, centered=TRUE, nodeSet="Actors", warn=TRUE, imputationValues=NULL)
 }
 \arguments{
   \item{val}{Vector of covariate values}
@@ -13,6 +13,8 @@ coCovar(val, centered=TRUE, nodeSet="Actors", imputationValues=NULL)
   \item{nodeSet}{Name of node set: character string.
   If the entire data set contains more than one node set,
   then the node sets must be specified in all data objects.}
+  \item{warn}{Logical: is a warning given if all values are \code{NA},
+  or all non-missing values are the same.}
   \item{imputationValues}{Vector of covariate values of same
   length as \code{val}, to be used for imputation of
   \code{NA} values (if any) in \code{val}. Must not contain
@@ -20,7 +22,7 @@ coCovar(val, centered=TRUE, nodeSet="Actors", imputationValues=NULL)
 }
 \details{
   When part of a Siena data object,
-  the covariate is associated with the node set 
+  the covariate is associated with the node set
   \code{nodeSet} of the Siena data object.
   In practice, the node set needs to be specified only in the case of
   the use of the covariate with a two-mode network.\cr

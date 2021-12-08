@@ -212,7 +212,7 @@ SEXP ConstantCovariates(SEXP RpData, SEXP COCOVARLIST)
 	return R_NilValue;
 }
 /**
- *  Creates all the groups of constant covariates in the data
+ *  Creates all the groups of changing covariates in the data
  */
 
 SEXP ChangingCovariates(SEXP RpData, SEXP VARCOVARLIST)

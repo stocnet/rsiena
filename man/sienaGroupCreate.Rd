@@ -26,7 +26,8 @@ Also used internally for convenience with a single Siena data object.
 
 Each covariate should either be centered in all groups, or non-centered
 in all groups.
-For centered actor covariates, the original values are used, and the overall
+Centered actor covariates are re-centered at the overall mean.
+This means that the original values are used, and the overall
 mean of all non-missing observations is subtracted. Note that this implies
 that group-dependent variables that are constant for all actors in each
 group, can be used as centered actor covariates.

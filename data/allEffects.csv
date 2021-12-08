@@ -124,11 +124,15 @@ nonSymmetricRate,indegree effect on rate xxxxxx,Amount of change x indegrees,inR
 nonSymmetricRate,reciprocity effect on rate xxxxxx,Amount of change x reciprocity,recipRate,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,structural,0,0,0,0,,TRUE
 nonSymmetricRate,effect 1/outdegree on rate xxxxxx,Amount of change x (1/outdegrees),outRateInv,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,structural,0,0,0,0,,TRUE
 nonSymmetricRate,effect ln(outdegree+1) on rate xxxxxx,Amount of change x ln(outdegrees+1),outRateLog,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,rate,NA,structural,0,0,0,0,,TRUE
+nonSymmetricRate,effect 1/indegree on rate xxxxxx,Amount of change x (1/indegrees),inRateInv,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,structural,0,0,0,0,,TRUE
+nonSymmetricRate,effect ln(indegree+1) on rate xxxxxx,Amount of change x ln(indegrees+1),inRateLog,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,rate,NA,structural,0,0,0,0,,TRUE
 bipartiteRate,basic rate parameter xxxxxx,Amount of network change,Rate,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,1,NA,0,0,0,0,,FALSE
 bipartiteRate,constant xxxxxx rate (period nnnnnn),Amount of network change in period nnnnnn,Rate,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,nnnnnn,NA,0,0,0,0,,FALSE
 bipartiteRate,outdegree effect on rate xxxxxx,Amount of change x outdegrees,outRate,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,structural,0,0,0,0,,FALSE
 bipartiteRate,effect 1/outdegree on rate xxxxxx,Amount of change x (1/outdegrees),outRateInv,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,structural,0,0,0,0,,FALSE
 bipartiteRate,effect ln(outdegree+1) on rate xxxxxx,Amount of change x ln(outdegrees+1),outRateLog,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,rate,NA,structural,0,0,0,0,,FALSE
+bipartiteRate,effect 1/indegree on rate xxxxxx,Amount of change x (1/indegrees),inRateInv,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,structural,0,0,0,0,,FALSE
+bipartiteRate,effect ln(indegree+1) on rate xxxxxx,Amount of change x ln(indegrees+1),inRateLog,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,rate,NA,structural,0,0,0,0,,FALSE
 symmetricRate,basic rate parameter xxxxxx,Amount of network change,Rate,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,1,NA,0,0,0,0,,FALSE
 symmetricRate,constant xxxxxx rate (period nnnnnn),Amount of network change in period nnnnnn,Rate,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,nnnnnn,NA,0,0,0,0,,FALSE
 symmetricRate,degree effect on rate xxxxxx,Amount of change x outdegrees,outRate,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,structural,0,0,0,0,,FALSE

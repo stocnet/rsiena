@@ -241,6 +241,7 @@ includeInteraction <- function(myeff, ...,
 			myeff[intn, "include"] <- FALSE
 		}
 	}
+	myeff <- fixUpEffectNames(myeff)
 	if (verbose)
 	{
 		print.sienaEffects(myeff[intn,], includeRandoms = 

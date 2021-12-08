@@ -257,7 +257,6 @@ Overall maximum convergence ratio:    0.1564
 Total of 240 iteration steps.
 
 > ##test9
-> 
 > mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
 > mynet2 <- sienaDependent(s50a,type='behavior')
 > mydata <- sienaDataCreate(mynet1, mynet2)
@@ -586,7 +585,7 @@ Total of 266 iteration steps.
 11 mynet2 mynet2 quadratic shape          Regular  
 12 mynet2 mynet2 average similarity       Regular  
 13 mynet1 mynet2 similarity               GMoM     
-> algo <- sienaAlgorithmCreate(nsub=2, n3=100, gmm=TRUE, seed=6)
+> algo <- sienaAlgorithmCreate(nsub=1, n3=100, gmm=TRUE, seed=6)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > (ans <- siena07(algo, data=mydata, effects=myeff, batch=TRUE,
 +                 parallelTesting=TRUE, silent=TRUE))
@@ -597,25 +596,25 @@ Estimates, standard errors and convergence t-ratios
                                            Estimate   Standard   Convergence 
                                                         Error      t-ratio   
 Network Dynamics 
-   1. rate constant mynet1 rate (period 1)  6.4230  ( 1.2255   )   -0.0971   
-   2. rate constant mynet1 rate (period 2)  4.8422  ( 1.7337   )   -0.9100   
-   3. eval outdegree (density)             -2.6419  ( 0.1137   )    0.7748   
-   4. eval reciprocity                      2.5650  ( 0.1696   )    1.1617   
-   5. eval transitive triplets              0.5481  ( 0.1066   )   -0.2127   
-   6. eval mynet2 ego                       0.0080  ( 0.0922   )   -0.0077   
-   7. eval mynet2 similarity                0.7028  ( 0.5935   )    0.6421   
+   1. rate constant mynet1 rate (period 1)  5.6736  ( 0.6951   )   -0.7532   
+   2. rate constant mynet1 rate (period 2)  4.3793  ( 0.7939   )   -0.2401   
+   3. eval outdegree (density)             -2.5281  ( 0.1238   )    3.0663   
+   4. eval reciprocity                      2.7731  ( 0.2046   )    3.2600   
+   5. eval transitive triplets              0.4332  ( 0.0824   )   -0.8205   
+   6. eval mynet2 ego                       0.0220  ( 0.0772   )    1.7040   
+   7. eval mynet2 similarity                0.8670  ( 0.3446   )    1.4465   
 
 Behavior Dynamics
-   8. rate rate mynet2 (period 1)           1.3265  ( 0.3333   )    0.0952   
-   9. rate rate mynet2 (period 2)           1.7188  ( 0.8989   )    0.2547   
-  10. eval mynet2 linear shape              0.3632  ( 0.2048   )   -0.0884   
-  11. eval mynet2 quadratic shape          -0.1373  ( 0.1440   )   -0.3824   
-  12. eval mynet2 average similarity        1.9156  ( 2.0605   )   -0.2767   
+   8. rate rate mynet2 (period 1)           1.2663  ( 0.3007   )    1.0844   
+   9. rate rate mynet2 (period 2)           1.6833  ( 0.3537   )   -0.9834   
+  10. eval mynet2 linear shape              0.3607  ( 0.2267   )    0.5830   
+  11. eval mynet2 quadratic shape          -0.1885  ( 0.1240   )   -0.8490   
+  12. eval mynet2 average similarity        1.4133  ( 1.6348   )   -0.1432   
 
-Overall maximum convergence ratio:    2.0268 
+Overall maximum convergence ratio:    5.7962 
 
 
-Total of 1451 iteration steps.
+Total of 757 iteration steps.
 
 > ##test16
 > print('test16')
@@ -709,7 +708,54 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 3 0   
 4 0   
 5 2   
-> (ans <- siena07(mymodel, data=mydata, effects=myeff))
+> (ans <- siena07(mymodel, data=mydata, effects=myeff, batch=TRUE))
+
+Start phase 0 
+theta:  4.70 -1.49  0.00  0.26  0.00 
+
+Start phase 1 
+Phase 1 Iteration 1 Progress: 0%
+Phase 1 Iteration 2 Progress: 0%
+Phase 1 Iteration 3 Progress: 1%
+Phase 1 Iteration 4 Progress: 1%
+Phase 1 Iteration 5 Progress: 1%
+Phase 1 Iteration 10 Progress: 2%
+Phase 1 Iteration 15 Progress: 3%
+Phase 1 Iteration 20 Progress: 4%
+Phase 1 Iteration 25 Progress: 5%
+Phase 1 Iteration 30 Progress: 6%
+Phase 1 Iteration 35 Progress: 6%
+Phase 1 Iteration 40 Progress: 7%
+Phase 1 Iteration 45 Progress: 8%
+Phase 1 Iteration 50 Progress: 9%
+theta:  4.69767 -1.48890  0.00164  0.26062  0.00473 
+
+Start phase 2.1
+Phase 2 Subphase 1 Iteration 1 Progress: 56%
+Phase 2 Subphase 1 Iteration 2 Progress: 56%
+theta  4.69931 -1.48925  0.00370  0.26134  0.00668 
+ac 1.709 0.869 1.000 1.285 1.531 
+Phase 2 Subphase 1 Iteration 3 Progress: 56%
+Phase 2 Subphase 1 Iteration 4 Progress: 56%
+theta  4.7038 -1.4905  0.0104  0.2634  0.0116 
+ac 1.908 1.314 0.964 1.161 0.808 
+Phase 2 Subphase 1 Iteration 5 Progress: 56%
+Phase 2 Subphase 1 Iteration 6 Progress: 57%
+theta  4.7103 -1.4919  0.0180  0.2654  0.0192 
+ac 1.258 0.644 0.998 1.133 0.782 
+Phase 2 Subphase 1 Iteration 7 Progress: 57%
+Phase 2 Subphase 1 Iteration 8 Progress: 57%
+theta  4.7166 -1.4933  0.0257  0.2676  0.0272 
+ac 1.309 0.694 0.967 1.304 0.848 
+Phase 2 Subphase 1 Iteration 9 Progress: 57%
+Phase 2 Subphase 1 Iteration 10 Progress: 57%
+theta  4.7231 -1.4948  0.0337  0.2695  0.0356 
+ac 1.263 0.768 0.997 0.806 0.864 
+theta  5.031 -1.577  0.464  0.373  0.451 
+ac 0.904 0.940 0.987 0.626 0.676 
+theta:  5.031 -1.577  0.464  0.373  0.451 
+
+Start phase 3 
 Estimates, standard errors and convergence t-ratios
 
                                                 Estimate   Standard   Convergence 
@@ -728,9 +774,93 @@ Overall maximum convergence ratio:   13.9256
 
 Total of 290 iteration steps.
 
+> ##test18
+> print('test18')
+[1] "test18"
+> myalgorithm <- sienaAlgorithmCreate(nsub=1, n3=10, seed=1293)
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> mynet1 <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
+> cova <- coCovar(1:32)
+> cova2 <- coCovar(rep(0,32))
+Warning message:
+In coCovar(rep(0, 32)) : Note: all values are identical to 0.
+> mydata <- sienaDataCreate(mynet1, cova)
+> mydata2 <- sienaDataCreate(mynet1, cova=cova2)
+> mygroup <- sienaGroupCreate(list(mydata,mydata2))
+> myeff <- getEffects(mygroup)
+> myeff <- setEffect(myeff, simX, interaction1='cova')
+  effectName      include fix   test  initialValue parm
+1 cova similarity TRUE    FALSE FALSE          0   0   
+> (ans <- siena07(myalgorithm, data=mygroup, effects=myeff, batch=TRUE))
+
+Start phase 0 
+theta: -0.56  0.00  0.00 
+
+Start phase 1 
+Phase 1 Iteration 1 Progress: 0%
+Phase 1 Iteration 2 Progress: 0%
+Phase 1 Iteration 3 Progress: 1%
+Phase 1 Iteration 4 Progress: 1%
+Phase 1 Iteration 5 Progress: 1%
+Phase 1 Iteration 10 Progress: 2%
+Phase 1 Iteration 15 Progress: 3%
+Phase 1 Iteration 20 Progress: 5%
+Phase 1 Iteration 25 Progress: 6%
+Phase 1 Iteration 30 Progress: 7%
+Phase 1 Iteration 35 Progress: 8%
+Phase 1 Iteration 40 Progress: 9%
+Phase 1 Iteration 45 Progress: 10%
+Phase 1 Iteration 50 Progress: 11%
+theta: -0.6269  0.2876 -0.0143 
+
+Start phase 2.1
+Phase 2 Subphase 1 Iteration 1 Progress: 46%
+Phase 2 Subphase 1 Iteration 2 Progress: 46%
+theta -0.7100  0.6120 -0.0334 
+ac -8.587  0.918 -3.708 
+Phase 2 Subphase 1 Iteration 3 Progress: 47%
+Phase 2 Subphase 1 Iteration 4 Progress: 47%
+theta -0.893  1.483 -0.101 
+ac  1.221  0.941 -2.293 
+Phase 2 Subphase 1 Iteration 5 Progress: 47%
+Phase 2 Subphase 1 Iteration 6 Progress: 47%
+theta -1.040  1.938 -0.123 
+ac 1.598 0.682 0.774 
+Phase 2 Subphase 1 Iteration 7 Progress: 48%
+Phase 2 Subphase 1 Iteration 8 Progress: 48%
+theta -1.113  2.036 -0.122 
+ac 0.548 0.681 0.433 
+Phase 2 Subphase 1 Iteration 9 Progress: 48%
+Phase 2 Subphase 1 Iteration 10 Progress: 48%
+theta -1.1462  2.0525 -0.0622 
+ac 0.467 0.678 0.461 
+theta -1.14850  1.81475  0.00267 
+ac  0.00745 -0.00359  0.01501 
+theta: -1.14850  1.81475  0.00267 
+
+Start phase 3 
+Estimates, standard errors and convergence t-ratios
+
+                                   Estimate   Standard   Convergence 
+                                                Error      t-ratio   
+
+Rate parameters: 
+  0.1      Rate parameter period 1  3.1050  ( 0.4096   )             
+  0.2      Rate parameter period 2  3.4061  ( 0.5843   )             
+
+Other parameters: 
+  1.  eval outdegree (density)     -1.1485  ( 1.1638   )   -0.4229   
+  2.  eval reciprocity              1.8147  ( 0.9422   )   -0.1142   
+  3.  eval cova similarity          0.0027  ( 1.9694   )   -0.4641   
+
+Overall maximum convergence ratio:    0.5163 
+
+
+Total of 285 iteration steps.
+
 > ## delete output file
 > if (file.exists('Siena.txt')){unlink('Siena.txt')}
 > 
 > proc.time()
    user  system elapsed 
-  33.68    1.00   34.95 
+  25.84    0.56   26.54 

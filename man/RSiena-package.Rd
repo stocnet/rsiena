@@ -43,8 +43,8 @@ see \url{https://github.com/snlab-nl/rsiena/ }.
   \tabular{ll}{
     Package: \tab RSiena\cr
     Type: \tab Package\cr
-    Version: \tab 1.3.3\cr
-    Date: \tab 2021-10-09\cr
+    Version: \tab 1.3.4\cr
+    Date: \tab 2021-12-08\cr
     Depends: \tab R (>= 3.5.0)\cr
     Imports: \tab Matrix, lattice, parallel, MASS, methods, xtable\cr
     Suggests: \tab network, tools, codetools, tcltk\cr
@@ -61,7 +61,7 @@ see \url{https://github.com/snlab-nl/rsiena/ }.
   Contributions by Josh Lospinoso, Charlotte Greenan, Viviana Amati,
   Christian Steglich, Johan Koskinen, Mark Ortmann, Natalie Indlekofer,
   Christoph Stadtfeld, Per Block, Marion Hoffman, Michael Schweinberger,
-  Robert Hellpap, and Alvaro Uzaheta.
+  Robert Hellpap, Alvaro Uzaheta, and Steffen Triebel.
 
   Maintainer: Tom A.B. Snijders <tom.snijders@nuffield.ox.ac.uk>
 }

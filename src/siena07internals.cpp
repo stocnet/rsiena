@@ -1098,7 +1098,7 @@ void setupChangingCovariateGroup(SEXP VARCOVARGROUP, Data *pData)
 	for (int changingCovariate = 0;
 			changingCovariate < nChangingCovariate;
 			changingCovariate++)
-	{
+	{		
 		SEXP as;
 		PROTECT(as = install("nodeSet"));
 		SEXP actorSet = getAttrib(VECTOR_ELT(VARCOVARGROUP, changingCovariate),
@@ -1157,7 +1157,7 @@ void setupChangingCovariateGroup(SEXP VARCOVARGROUP, Data *pData)
 		SEXP Range = getAttrib(VECTOR_ELT(VARCOVARGROUP, changingCovariate),
 				range);
 		pChangingCovariate->range(REAL(Range)[0]);
-		UNPROTECT(8);
+		UNPROTECT(8);		
 	}
 }
 
@@ -1923,6 +1923,16 @@ void getStatistics(SEXP EFFECTSLIST,
 						{
 							score =
 								pVariable->logOutDegreeScore(pNetworkVariable);
+						}
+						else if (strcmp(effectName, "inRateInv") == 0)
+						{
+							score =
+								pVariable->inverseInDegreeScore(pNetworkVariable);
+						}
+						else if (strcmp(effectName, "inRateLog") == 0)
+						{
+							score =
+								pVariable->logInDegreeScore(pNetworkVariable);
 						}
 						else
 						{

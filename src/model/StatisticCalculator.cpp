@@ -1303,6 +1303,18 @@ void StatisticCalculator::calculateNetworkRateStatistics(
 						log(pStructural->outDegree(iter.ego()) + 1) *
 						iter.value();
 				}
+				else if (effectName == "inRateInv")
+				{
+					statistic +=
+						1.0 / (pStructural->inDegree(iter.ego()) + 1) *
+						iter.value();
+				}
+				else if (effectName == "inRateLog")
+				{
+					statistic +=
+						log(pStructural->inDegree(iter.ego()) + 1) *
+						iter.value();
+				}
 				else
 				{
 					throw domain_error("Unexpected rate effect " + effectName);
@@ -1495,6 +1507,18 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 				{
 					statistic +=
 						log(pStructural->outDegree(i) + 1) *
+						difference[i];
+				}
+				else if (effectName == "inRateInv")
+				{
+					statistic +=
+						1.0 / (pStructural->inDegree(i) + 1) *
+						difference[i];
+				}
+				else if (effectName == "inRateLog")
+				{
+					statistic +=
+						log(pStructural->inDegree(i) + 1) *
 						difference[i];
 				}
 				else

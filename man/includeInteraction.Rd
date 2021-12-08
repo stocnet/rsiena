@@ -116,7 +116,7 @@ alc <- varCovar(s50a)
 mydata <- sienaDataCreate(mynet, alc)
 myeff <- getEffects(mydata)
 myeff <- includeEffects(myeff, transTrip)
-myeff <- includeInteraction(myeff, recip, outAct)
+myeff <- includeInteraction(myeff, recip, inPop)
 myeff <- includeEffects(myeff, egoX, altX, simX, interaction1="alc")
 myeff <- includeInteraction(myeff, recip, simX, interaction1=c("", "alc"))
 myeff

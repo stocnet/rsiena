@@ -187,7 +187,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.3.3.
+This version was renewed for \RS version 1.3.4.
 \end{abstract}
 
 
@@ -1123,7 +1123,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.3.3).
+  identified by a version number (e.g.\ 1.3.4).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -1408,7 +1408,7 @@ will normally be distinct numbers.)
 # create empty adjacency matrix
 adj <- matrix(0, n, n)
 # put edge values in desired places
-adj[edges[, 1:2]] <- edges[, 3]
+adj[edges[, 1:2, drop=FALSE]] <- edges[, 3, drop=FALSE]
 \end{verbatim}
 Note that this starts with a matrix having all 0 entries,
 and results in a matrix with no 0 entries at all.
@@ -1705,7 +1705,7 @@ dyadic covariates are treated \underline{differently} from
 individual covariates:
 for dyadic covariates in multi-group data sets, centering is done by the
 within-group mean;
-actor covariates in multi-group data sets
+actor covariates in multi-group data sets  created by \sfn{sienaGroupCreate}
 are centered by the overall mean.
 
 For dependent behavioral variables, the effects are defined
@@ -1761,6 +1761,11 @@ attr(mydata\$depvars[[1]], "balmean")
 \end{verbatim}
 Instead of \texttt{[[1]]} you can request a different number or
 the name of the variable.
+\smallskip
+
+For multi-group data sets constructed by function \sfn{sienaGroupCreate},
+the attribute \texttt{"vCovarMean"} contains the overall means
+of the actor covariates.
 
 
 \subsubsection{Centering of behavioral variables}
@@ -2651,8 +2656,8 @@ the most important effects are as follows.
 The mathematical formulae for these and other effects are given
 in Chapter~\ref{S_math}. Here we give a more qualitative description.
 
-A default model choice could consist of (1) the out-degree and reciprocity
-effects; (2) one network closure effect,
+A default model choice could consist of (1) the out-degree (density)
+and reciprocity effects; (2) one network closure effect,
 e.g.\ transitive triplets, transitive ties, or gwesp;
 the transitive reciprocated triplets effect
 and/or the 3-cycles effect;
@@ -2679,7 +2684,9 @@ proximity used as a dyadic covariate. Especially for large networks
 The basic list of these and other effects is as follows.
 
 \begin{enumerate}
-\item The \emph{out-degree effect} which always must be included.
+\item The \emph{out-degree (density) effect} which always must be included,
+      to give the balance between creation and termination of ties
+      (conditionally on all other effects), and has the role of an intercept.
 \item The \emph{reciprocity effect} which practically always must be included.
 \item There is a choice among several network closure effects.
       Usually it will be sufficient to express the tendency to network
@@ -6315,7 +6322,7 @@ reciprocity: endowment              &  --1 & 640 & (0 & 703)\\
 gwespFF (transitivity)              &    1 & 810 & (0 & 077)\\
 indegree-popularity                 &  --0 & 053 & (0 & 019)\\
 outdegree-activity                  &    0 & 144 & (0 & 036)\\
-reciprocal degree-activity          &  --0 & 346 & (0 & 050)\\
+reciprocated degree-activity        &  --0 & 346 & (0 & 050)\\
 sex alter                           &  --0 & 137 & (0 & 084)\\
 sex ego                             &    0 & 038 & (0 & 095)\\
 same sex                            &    0 & 647 & (0 & 076)\\
@@ -7397,6 +7404,43 @@ as mentioned in Section~\ref{S_monotone}.
 This leads to model differences that in most cases will be undesirable.
 Therefore it is advisable in the original construction of the datasets
 to use \texttt{allowOnly = FALSE} in the call of \sfn{sienaDependent}.
+
+\subsection{Function \textsf{sienaGroupCreate}  }
+\label{S_multigroup}
+
+The function \textsf{sienaGroupCreate} operates on a list
+of \sfn{siena} data sets created by \sfn{sienaDataCreate},
+containing variables with the same names and of the same types.
+It creates a so-called \sfn{sienaGroup} object, which is a list of
+\sfn{siena} data objects with some additional information
+contained in attributes.
+This is used for options 2 and~4.
+For option~2 the numbers of waves may differ between the groups,
+for option~4 the groups all should have the same number of waves.
+
+For centered actor covariates, function \textsf{sienaGroupCreate}
+centers the original values again, now around the overall mean.
+This allows the use of centered actor covariates that are
+constant within groups.
+The \texttt{egoX} effect of a centered covariate,
+e.g., will be the sender effect of the original variable
+with grand-mean centering. For the \texttt{altX} effect the centering
+makes no difference.
+
+For actor covariates, function \textsf{sienaGroupCreate} recalculates
+attributes \texttt{range}, \texttt{range2}, and \texttt{simMean}.
+Since version 1.3.4,
+the attributes \texttt{range} and \texttt{range2} for each group are set
+at the range of this covariate in all groups.
+The \texttt{simMean} attribute
+of a group is set at the average of the similarity values
+for this group using the overall range.
+This implies that the parameters of the \texttt{simX} effect refer
+to the similarity transform (\ref{simV})
+normalized with respect to the same range
+$r_V$ for all groups; and the centering of this transform,
+which affects the parameter of the \texttt{outdegree (density)} effect,
+is group-specific.
 
 \subsection{Multi-group Siena analysis}
 \label{S_multigroup}
@@ -10443,9 +10487,11 @@ of $\breve v_j$ would be the same as the alter effect of $v_j$.
      the total of the covariate values of all their incoming ties,
      except for the possibly incoming tie from ego:
 \[
- s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} (x_{+j} - x_{ij}) \check v_j^{(-i)} \ .
-% for centered V this is   \,=\, \sum_j x_{ij} \sum_{h \neq i} x_{hj}\,v_h   \ .
+ s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} (x_{+j} - x_{ij}) \check v_j^{(-i)}
+                        \,=\ \sum_j x_{ij} \sum_{h \neq i} x_{hj}\,v_h  \ .
 \]
+    For a non-centered binary variable $V$ with values $v_j$ = 0 or~1,
+    this is a $V$-restricted version of indegree popularity.
 
 \item \emph{ego-(in-alter-distance-2) covariate - similarity} \texttt{(simEgoInDist2)},
       defined as the sum of centered similarity  between $i$
@@ -10773,10 +10819,10 @@ but that are connected through $i$:
    defined by the outdegree of $i$
    multiplied by the average of the $X$-outdegrees of those to whom $i$ has a $W$-tie:\\
    for $p=1$, this is\\[0.4em]
- $s^{\rm net}_{i\vit}(x) =   x_{i+}\, 
+ $s^{\rm net}_{i\vit}(x) =   x_{i+}\,
      \frac{ \sum_h w_{ih} \big(x_{h+} - \bar x\big)}{\sum_h w_{ih}} $\\[0.4em]
  and for $p=2$, there is a square root transformation:\\[0.4em]
- $s^{\rm net}_{i\vit}(x) =  x_{i+},\ 
+ $s^{\rm net}_{i\vit}(x) =  x_{i+},\
  \frac{\sum_h w_{ih} \big(\sqrt{x_{h+}} - \sqrt{\bar x}\big)}{\sum_h w_{ih}}$\\[0.4em]
  where $\bar x$ is the average degree over all waves.
 \end{enumerate}
@@ -12476,8 +12522,8 @@ if the associated parameter is denoted $\alpha_h$ for some $h$,
 and similarly for the contributions of the in-degrees and the
 reciprocated degrees.
 
- Nonlinear dependence of the exponent on out-degrees
- can also be specified;
+ Nonlinear dependence of the exponent on the degrees
+ can also be specified:
  \begin{itemize}
  \item inverse outdegree effect  \texttt{(outRateInv)} \\
  Denoting again the corresponding parameter by $\alpha_h$
@@ -12488,20 +12534,28 @@ reciprocated degrees.
  This effect multiplies the factor $\lambda^{\rm net}_{i3}$ by
  \[ \exp\Big( \ln\big(\alpha_h (x_{i+} +1)\big)\Big) \,=\,
                  \big(x_{i+} +1\big)^{\alpha_h} \ . \]
- \emph{This effect works properly only for non-conditional estimation
-    (set \texttt{cond = FALSE} in \sfn{sienaAlgorithmCreate()}).  }
-
+                 
+ \item inverse indegree effect  \texttt{(inRateInv)} \\
+ This effect multiplies the factor $\lambda^{\rm net}_{i3}$ by
+ \[ \exp\big( \alpha_h / (x_{+i} +1)\big) \ . \]
+ \item logarithmic indegree effect  \texttt{(inRateLog)} \\
+ This effect multiplies the factor $\lambda^{\rm net}_{i3}$ by
+ \[ \exp\Big( \ln\big(\alpha_h (x_{+i} +1)\big)\Big) \,=\,
+                 \big(x_{+i} +1\big)^{\alpha_h} \ . \]
 
  The exponential link function and logarithmic transformation collaborate
- to produce direct proportionality to (outdegree + 1), in case
- the parameter is $\alpha_h=1$.
+ to produce direct proportionality to (outdegree + 1) or (indegree + 1),
+ respectively, in case the parameter is $\alpha_h=1$.
  \end{itemize}
- For the two latter effects, the addition of 1 to the outdegrees avoids
+ For these effects, the addition of 1 to the degrees avoids
  problems (division by 0, logarithm of 0) that otherwise would occur
- when $ x_{i+} = 0$.
+ when $ x_{i+} = 0$ or $ x_{+i} = 0$ .
 
- For making the rates dependent on the outdegree,
- the \texttt{outRateLog} effect often gives the best fit.
+ For making the rates dependent on the degrees,
+ the  logarithmic effects often give the best fit. 
+
+ \emph{These effects work properly only for non-conditional estimation
+    (set \texttt{cond = FALSE} in \sfn{sienaAlgorithmCreate()}).  }
 \end{enumerate}
 
 When rate effects are included, sometimes it can be helpful to specify
@@ -13605,12 +13659,12 @@ reciprocated degrees.
   For all these effects, the rate function is multiplied by
  \[ \exp\big( \alpha_h \, a_{ih}(x)\big)\,, \]
  if the associated parameter is denoted $\alpha_h$ for some $h$,
- and the effect is $a_i(x)$.
+ and the effect is $a_{ih}(x)$.
 
  The dependence on the internal effect parameter $p$ is similar for all
  these diffusion effects, and is described after the
   \verb|susceptAvCovar| effect.
-  
+
  For models including these effects, it is recommended to use
  an algorithm that leads to smaller step sizes, i.e.,
  with a value for \texttt{firstg} lower than the default of 0.2.
@@ -13681,11 +13735,11 @@ are more than $|p|$ alters who have adopted the innovation,
 only the value $|p|$ is used.
 This means that for $p < 0$,
 $\sum_{j=1}^n  z_j\, x_{ij}$ in the formula for
- $a_{i\vit}(y) $ is replaced by
+ $a_{ik}(y) $ is replaced by
  \[
  \left\{ \begin{array}{ll}
                 0 & \text{  if  } \sum_{j=1}^n  z_j\, x_{ij} < |p| \\[0.9ex]
-                p & \text{  if  } \sum_{j=1}^n  z_j\, x_{ij} \geq |p| \ .
+                |p| & \text{  if  } \sum_{j=1}^n  z_j\, x_{ij} \geq |p| \ .
      \end{array} \right.
  \]
 
@@ -15183,12 +15237,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.3.3.tar.gz|\\
+\verb|R CMD check RSiena_1.3.4.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.3.3.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.3.4.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -15661,7 +15715,7 @@ Further some of the complex effectGroups are the following:
     statistics as usual for co-evolution models);
 \item \sfn{tripleNetworkObjective} is for combinations
     of three networks where for the two in the role of explanatory networks,
-\item \sfn{bipartiteNonSymmetricObjective} is for combination of 
+\item \sfn{bipartiteNonSymmetricObjective} is for combination of
     a two-mode dependent network and a directed network
     in the role of explanatory network;
 \item \sfn{bipartiteSymmetricObjective} is for combination of
@@ -16220,6 +16274,43 @@ Changes in RSiena:
 \end{itemize}
 \fi
 
+
+\item 2021-12-08 GitHub, package version 1.3.4.
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects:
+   \begin{itemize}
+   \item New effects  \texttt{inRateInv},  \texttt{inRateLog} (thanks to Steffen Triebel).
+    \end{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+
+   \item When an effects object with interaction effects is printed,
+     the names of the interacting effects are mentioned,
+     and prefixes \texttt{int.} and \texttt{i3.} were dropped.
+   \item The check of whether an interaction effect is allowed now is done
+     immediately when creating the interaction effect instead of waiting
+     for its use in \sfn{siena07}.
+   \item For function \sfn{sienaGroupCreate} some changes were made:
+     if it is applied to a list of length 1, attributes of the single group
+     are not recomputed;
+     if it is applied to a list of length larger than 1, the attributes
+     \texttt{range} and \texttt{range2} of behavioral variables of 
+     individual groups are
+     computed as the range of the unions of the ranges of all the groups.
+     The same is done for covariates.
+   \item \sfn{print.sienaGroup} slightly extended.
+   \item Creation of covariates gives a warning (optional) if all values
+     are missing, and also if all non-missing values are the same.
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+   \item Some bug corrections referring to the use of
+     \sfn{sienaBayes}, which will be integrated later with \rs.
+    \end{itemize}
+\end{itemize}
+
 \item 2021-10-08 GitHub, package version 1.3.3.
 
 Changes in RSiena:
@@ -16236,7 +16327,7 @@ Changes in RSiena:
    \item \texttt{toggleProbabilities} added to output of \sfn{sienaRI}.
    \item Trial values of \texttt{theta} used during Phase 2 of \sfn{siena07} added
      to the object \texttt{ans} produced by
-     \texttt{sienaFit} object \texttt{ans} as \texttt{ans\$thetas}.
+     \texttt{sienaFit}  as \texttt{ans\$thetas}.
    \item warnings if a data object contains only missings, or only the same value.
     \end{itemize}
 \item Bug corrections:
@@ -16244,14 +16335,14 @@ Changes in RSiena:
    \item if a data set contains a constant covariate, the \texttt{simX} effect will not
      run into an error any more; this is obtained by defining the \texttt{range}
      attribute of the constant covariate as 1 to prevent division by zero,
-     and the \texttt{simMean} attribute as 0 instead of \texttt{NaN} 
+     and the \texttt{simMean} attribute as 0 instead of \texttt{NaN}
      (\sfn{sienaDataCreate}).
      This is relevant especially for \texttt{sienaGroup} data sets, where covariates
      might be constant for some of the groups.
     \end{itemize}
 \item Corrections of documentation:
    \begin{itemize}
-   \item In \texttt{sienaAlgorithmCreate}, 
+   \item In \texttt{sienaAlgorithmCreate},
    the default values of \texttt{diagonalize} for MoM
      is 0.2; this was corrected in the help file.
     \end{itemize}

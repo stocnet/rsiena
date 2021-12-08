@@ -832,5 +832,38 @@ ans2$targets
 sum( (s502 %*% (sqrt(rowSums(s502)) - sqrt(avdeg)))) # OK outOutAvIntn p=2
 
 
+################################################################################
+### check inRateInv and inRateLog
+################################################################################
 
+
+mynet <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+mydata <- sienaDataCreate(mynet)
+mymodel <- sienaModelCreate(projname=NULL, seed=534, cond=FALSE, firstg=0.01)
+mymodel2 <- sienaModelCreate(projname=NULL, seed=534, cond=FALSE, firstg=0.02)
+myeff <- getEffects(mydata)
+effectsDocumentation(myeff)
+myeff <- includeEffects(myeff, inRate, type='rate')
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+(ans1 <- siena07(mymodel2, data=mydata, effects=myeff, prevAns=ans))
+ans$targets
+sum(abs(s501-s502)) ## OK Rate
+sum(colSums(s501)* rowSums(abs(s501-s502))) # OK inRate
+sum(s502) ## OK density
+sum(s502*t(s502)) ## OK recip
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, inRateInv, type='rate')
+mymodel0 <- sienaModelCreate(projname=NULL, seed=534, cond=FALSE)
+(ans <- siena07(mymodel0, data=mydata, effects=myeff))
+ans$targets
+sum(abs(s501-s502)) ## OK Rate
+sum((1/(colSums(s501)+1))* rowSums(abs(s501-s502))) # OK inRateInv
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, inRateLog, type='rate')
+(ans <- siena07(mymodel0, data=mydata, effects=myeff))
+ans$targets
+sum(abs(s501-s502)) ## OK Rate
+sum((log(colSums(s501)+1))* rowSums(abs(s501-s502))) # OK inRateLog
 

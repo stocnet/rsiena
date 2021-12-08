@@ -593,7 +593,7 @@ complete effect rows including endowment effect copies.
   \STATE Use \sfn{tripleNetworkObjective} effect group to add appropriate
     effects for pairs of other dependent networks
     (`other' meaning that they have the role of explanatory variables)
-    that either are both one-mode, 
+    that either are both one-mode,
     or both are bipartite with the same second node sets
   \ELSIF{bipartite which matches on nodeset 1}
   \STATE Use \sfn{nonSymmetricBipartiteObjective} effect group to add
@@ -1001,8 +1001,8 @@ $$ \sum_i 0.5 * \log(p_{i01} / p_{i10}) * p_i / \sum_i p_i $$
 
 \section{sienaGroupCreate}
 
-This function combines a list of siena data objects for common processing. It is
-also used to convert a single data object to a group one so that all later
+This function combines a list of siena data objects for common processing. 
+It is also used in \sfn{initializeFRAN} to convert a single data object to a group one so that all later
 processing can have a common argument.
 
 Some validation is performed to check that all the data objects match in terms
@@ -1022,10 +1022,9 @@ The following overall values are copied down to the individual objects:
 \begin{description}
 
 \item[dependent variables] symmetric, missing, structural, poszvar, range,
-min, max, moreThan2 (some only if behavior)
+moreThan2 (some only if behavior)
 \item[changing covariates] range,  poszvar, moreThan2
-\item[constant dyadic covariates] min, max
-\item[changing dyadic covariates] range
+\item[changing dyadic covariates] range, range2
 
 \end{description}
 \subsection{Group attributes}
@@ -1074,7 +1073,7 @@ attributes on the individual objects.
   process.
 \item[periodNos] A list of the period numbers (misses out the final one for each
   data object)
-\item[groupPeriods] Vecotr of the number of total number of periods for each
+\item[groupPeriods] Vector of the number of total number of periods for each
   data object.
 \item[netnodesets] A list containing the nodeset(s) for each dependent
   variable
@@ -1109,7 +1108,7 @@ attributes on the individual objects.
 \item[bSim] Overall similarity mean for behavior variables, NA for networks
 \item[bPoszvar] logical vector, NA for networks. For behavior variables TRUE if
   more than 1 distinct value in the overall values or any missing (always?)
-\item[bMorethan2] logical vecotr. NA for networks. For behavior variables
+\item[bMorethan2] logical vector. NA for networks. For behavior variables
   TRUE if more than 2 distinct values in overall variable, ignoring missings
 \item[cCovarPoszvar] logical vector for constant covariates indicating presence
   if more than one distinct value or any missing (overall). NB only exist if
@@ -1131,6 +1130,7 @@ attributes on the individual objects.
 \item[dycCovarRange2] matrix of min and max for constant dyadic covariates
 \item[dycCovarMean] vector of means for constant dyadic covariates
 \item[dyvCovarRange] vector of ranges for changing dyadic covariates
+\item[dyvCovarRange2] matrix of min and max for constant dyadic covariates
 \item[dyvCovarMean] vector of means for changing dyadic covariates
 \item[anyMissing] logical vector indicating any missing values in the each
   dependent variable
@@ -1152,7 +1152,7 @@ parameters required by the \nm{FRAN} to be used. As the distinction between the
 two parts is not complete, flags \nm{maxlike} and \nm{cconditional} are on the
 input object, although not logically relevant to the algorithm.
 
-There is user output written to a file (.out), together with optional additional
+There is user output written to a file (.txt), together with optional additional
 output to the console (suppressed unless \sfn{verbose=TRUE}), which can be
 redirected using the \verb|sink()| command.
 

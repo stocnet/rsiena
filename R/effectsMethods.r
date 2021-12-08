@@ -63,7 +63,7 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
             included <- included & !x$basicRate
         }
         specs <- specs[included, ]
-        if (nrow(specs) > 0) 
+        if (nrow(specs) > 0)
         {
             row.names(specs) <- 1:nrow(specs)
         }
@@ -114,7 +114,7 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
                   cat('\n Regular and GMoM statistics\n')
                   specs2 <- specs[specs$type=='gmm',]
                   specs3 <- rbind(specs1, specs2)
-                  specs3$Statistic <- c(rep("Regular",nrow(specs1)), 
+                  specs3$Statistic <- c(rep("Regular",nrow(specs1)),
                                         rep("GMoM",nrow(specs2)))
                   row.names(specs3) <- 1:nrow(specs3)
                   print(as.matrix(specs3[,c(1:2,9)]), quote=FALSE)

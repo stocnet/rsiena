@@ -6,7 +6,7 @@
 }
 \usage{
 varDyadCovar(val, centered=TRUE, nodeSets=c("Actors", "Actors"),
-    sparse=is.list(val), type=c("oneMode", "bipartite"))
+     warn=TRUE, sparse=is.list(val), type=c("oneMode", "bipartite"))
 }
 %- maybe also "usage" for other objects documented here.
 \arguments{
@@ -16,6 +16,8 @@ varDyadCovar(val, centered=TRUE, nodeSets=c("Actors", "Actors"),
   \item{nodeSets}{Names (character string) of the associated node sets.
    If the entire data set contains more than one node set,
    then the node sets must be specified in all data objects.}
+  \item{warn}{Logical: is a warning given if all values are \code{NA},
+  or all non-missing values are the same.}
   \item{sparse}{Boolean: whether sparse matrices or not.}
   \item{type}{oneMode or bipartite: whether the matrix refers to a one-mode
   or a bipartite (two-mode) network.}
@@ -28,11 +30,11 @@ varDyadCovar(val, centered=TRUE, nodeSets=c("Actors", "Actors"),
   In practice, the node set needs to be specified only in the case of
   the use of the covariate with a two-mode network.\cr
   The value of the changing covariate for wave \code{m} is supposed
-  in the simulations to be valid in the whole period from wave \code{m} 
+  in the simulations to be valid in the whole period from wave \code{m}
   to wave \code{m+1}.
   If the data set has \code{M} waves, this means that the values,
   if any, for wave \code{M} will not be used. Therefore, the number of columns
-  can be \code{M} or \code{M-1}; if the former, the values in the last 
+  can be \code{M} or \code{M-1}; if the former, the values in the last
   column will not be used.
 }
 \value{

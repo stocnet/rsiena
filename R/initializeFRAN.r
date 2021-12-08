@@ -2129,14 +2129,15 @@ fixUpEffectNames <- function(effects)
 				   tmpnames[-1] <- sub(paste(inters$name[1], ": ",
 											 sep=""), "", tmpnames[-1])
 				   tmpname <- paste(tmpnames, collapse = " x ")
-                   if (twoway && nchar(tmpname) < 38)
-                   {
-                       tmpname <- paste("int. ", tmpname)
-                   }
-                   if (!twoway)
-                   {
-                       tmpname <- paste("i3.", tmpname)
-                   }
+# following lines dropped, might be restored if desired
+#                   if (twoway && nchar(tmpname) < 38)
+#                   {
+#                       tmpname <- paste("int. ", tmpname)
+#                   }
+#                   if (!twoway)
+#                  {
+#                      tmpname <- paste("i3.", tmpname)
+#                  }
                    tmpname
                }, y=interactions, z=effects)
         effects[effects$shortName == "unspInt" & effects$include &
