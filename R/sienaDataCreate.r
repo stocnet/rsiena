@@ -1151,17 +1151,26 @@ checkConstraints <- function(z)
 }
 
 ##@rangeAndSimilarity DataCreate
-rangeAndSimilarity<- function(vals, rvals=NULL)
+rangeAndSimilarity <- function(vals, rvals=NULL)
 {
-	vals <- as.matrix(vals)
+	zeroOrNA <- function(x){ifelse(is.na(x), TRUE, (x==0))}
 	if (is.null(rvals))
 	{
 		rvals <- range(vals, na.rm=TRUE)
 	}
-	rvals1 <- ifelse((rvals[2] - rvals[1]==0), 1, rvals[2] - rvals[1])
-	tmp <- apply(vals, 2, function(v)
+	if (zeroOrNA(var(as.vector(vals), na.rm=TRUE)))
+	{
+		simTotal <- 0
+		simCnt <- sum(!is.na(vals))^2
+		simMean <- 0
+	}
+	else
+	{
+		vals <- as.matrix(vals)
+		rvals1 <- rvals[2] - rvals[1]
+		tmp <- apply(vals, 2, function(v)
 			 {
-				 sapply(1: length(v), function(x, y, r)
+				sapply(1: length(v), function(x, y, r)
 					{
 						z <- y
 						z[x] <- NA
@@ -1171,16 +1180,18 @@ rangeAndSimilarity<- function(vals, rvals=NULL)
 					},
 						y=v, r=rvals1)
 			 }
-				 )
-	tmp <- unlist(tmp)
-	raw <- tmp[seq(1, length(tmp), by=2)]
-	cnts <- tmp[seq(2, length(tmp), by=2)]
-	simTotal <- sum(raw)
-	simCnt <- sum(cnts)
-	simMean <- ifelse(simCnt==0, 0, simTotal/simCnt)
+					)
+		tmp <- unlist(tmp)
+		raw <- tmp[seq(1, length(tmp), by=2)]
+		cnts <- tmp[seq(2, length(tmp), by=2)]
+		simTotal <- sum(raw)
+		simCnt <- sum(cnts)
+		simMean <- ifelse(simCnt==0, 0, simTotal/simCnt)
+	}
 	list(simTotal=simTotal, simMean=simMean, range=rvals, simCnt=simCnt)
 }
 ##@groupRangeAndSimilarityAndMean DataCreate
+## calculates attributes at group level and re-centers actor covariates
 groupRangeAndSimilarityAndMean <- function(group)
 {
 	atts <- attributes(group)
@@ -1257,7 +1268,6 @@ groupRangeAndSimilarityAndMean <- function(group)
 		thisrange <- matrix(NA, ncol=length(group),nrow=2)
 		for (i in 1:length(group))
 		{
-
 			j <- match(atts$cCovars[covar], names(group[[i]]$cCovars))
 			if (is.na(j))
 			{
@@ -1277,7 +1287,6 @@ groupRangeAndSimilarityAndMean <- function(group)
 		##then calculate similarity
 		for (i in 1:length(group))
 		{
-
 			j <- match(atts$cCovars[covar], names(group[[i]]$cCovars))
 			tmp <- rangeAndSimilarity(group[[i]]$cCovars[[covar]],
 									  rr)
@@ -1313,15 +1322,15 @@ groupRangeAndSimilarityAndMean <- function(group)
 			{
 				stop(paste("Inconsistent centering for covariate", names(group[[i]]$vCovars)[j]))
 			}
-			if (attr(group[[i]]$vCovars[[j]],"centered"))
-			{
 			vartotal <- vartotal + attr(group[[i]]$vCovars[[j]], "vartotal")
 			nonMissingCount <- nonMissingCount +
-				attr(group[[i]]$vCovars[[j]], "nonMissingCount")
-			group[[i]]$vCovars[[j]] <- group[[i]]$vCovars[[j]] +
-				attr(group[[i]]$vCovars[[j]], "vartotal") /
 					attr(group[[i]]$vCovars[[j]], "nonMissingCount")
-		}
+			if (attr(group[[i]]$vCovars[[j]],"centered"))
+			{
+				group[[i]]$vCovars[[j]] <- group[[i]]$vCovars[[j]] +
+					attr(group[[i]]$vCovars[[j]], "vartotal") /
+						attr(group[[i]]$vCovars[[j]], "nonMissingCount")
+			}
 		}
 		varmean <- vartotal / nonMissingCount
 		j <- match(atts$vCovars[covar], names(group[[1]]$vCovars))
@@ -1346,7 +1355,6 @@ groupRangeAndSimilarityAndMean <- function(group)
 		values <- NULL
 		for (i in 1:length(group))
 		{
-
 			j <- match(atts$vCovars[covar], names(group[[i]]$vCovars))
 			if (is.na(j))
 			{
@@ -1369,7 +1377,6 @@ groupRangeAndSimilarityAndMean <- function(group)
 		##then calculate similarity. Note ignore final observation
 		for (i in 1:length(group))
 		{
-
 			j <- match(atts$vCovars[covar], names(group[[i]]$vCovars))
 			tmpmat <- group[[i]]$vCovars[[covar]]
 			tmp <- rangeAndSimilarity(tmpmat, rr)
@@ -1401,6 +1408,8 @@ groupRangeAndSimilarityAndMean <- function(group)
 	}
 	dyvCovarMean <- namedVector(NA, atts$dyvCovars)
 	dyvCovarRange <- namedVector(NA, atts$dyvCovars)
+	dyvCovarRange2 <- matrix(NA, 2, length(atts$dyvCovars))
+	colnames(dyvCovarRange2) <- atts$dyvCovars
 	for (covar in seq(along=atts$dyvCovars))
 	{
 		vartotal <- 0
@@ -1445,6 +1454,7 @@ groupRangeAndSimilarityAndMean <- function(group)
 		}
 		dyvCovarMean[covar] <- ifelse(centered, vartotal / nonMissingCount, 0)
 		rr <- range(thisrange, na.rm=TRUE)
+		dyvCovarRange2[,covar] <- rr
 		dyvCovarRange[covar] <- rr[2] - rr[1]
    }
 	attr(group, "bRange") <- bRange
@@ -1468,6 +1478,7 @@ groupRangeAndSimilarityAndMean <- function(group)
 	attr(group, "dycCovarRange") <- dycCovarRange
 	attr(group, "dycCovarRange2") <- dycCovarRange2
 	attr(group, "dyvCovarRange") <- dyvCovarRange
+	attr(group, "dyvCovarRange2") <- dyvCovarRange2
 	attr(group, "dyvCovarMean") <- dyvCovarMean
 	group
 }
@@ -1766,7 +1777,7 @@ sienaGroupCreate <- function(objlist, singleOK=FALSE, getDocumentation=FALSE)
 					numberNonMissingNetwork[observations + (1 : (newobs - 1))] +
 						attribs[["nonMissingEither"]]
 			}
-	   }
+		}
 		thisHigher <- attr(objlist[[i]], "higher")
 		thisDisjoint <- attr(objlist[[i]], "disjoint")
 		thisAtLeastOne <- attr(objlist[[i]], "atLeastOne")
@@ -1886,7 +1897,7 @@ sienaGroupCreate <- function(objlist, singleOK=FALSE, getDocumentation=FALSE)
 					varCovar(matrix(const[[j]],
 									ncol = objlist[[i]]$observations - 1,
 									nrow=length(const[[j]])),
-							 nodeSet=attr(const[[j]], "nodeSet"))
+							 nodeSet=attr(const[[j]], "nodeSet"), warn=FALSE)
 				newcovar <- copyAttributes(newcovar, const[[j]])
 				nVCovar <- nVCovar + 1
 				vars[[nVCovar]] <- newcovar
@@ -1909,7 +1920,7 @@ sienaGroupCreate <- function(objlist, singleOK=FALSE, getDocumentation=FALSE)
 				newcovar <-
 					varDyadCovar(array(const[[j]], dim=c(dim(const[[j]]),
 												   dim3)),
-								 nodeSets=attr(const[[j]], "nodeSet"))
+								 nodeSets=attr(const[[j]], "nodeSet"), warn=FALSE)
 				attr(newcovar, "vartotal") <- attr(const[[j]], "vartotal")
 				attr(newcovar, "nonMissingCount") <-
 					 attr(const[[j]], "nonMissingCount")
@@ -2033,43 +2044,46 @@ sienaGroupCreate <- function(objlist, singleOK=FALSE, getDocumentation=FALSE)
 	tmp <- getGroupNetRanges(group)
 	colnames(tmp) <- netnames
 	attr(group, "netRanges") <- tmp
-
-	##copy the global attributes down to individual level where appropriate
-	##group <- copyGroupAttributes(group, "depvars", "balmean", "balmean")
-	##group <- copyGroupAttributes(group, "depvars", "structmean",
-	## "structmean")
-	group <- copyGroupAttributes(group, "depvars", "symmetric", "symmetric")
-	##group <- copyGroupAttributes(group, "depvars", "averageInDegree",
-	##							   "averageInDegree")
-	##group <- copyGroupAttributes(group, "depvars", "averageOutDegree",
-	##							   "averageOutDegree")
-	##group <- copyGroupAttributes(group, "depvars", "bSim", "simMean")
-	group <- copyGroupAttributes(group, "depvars", "bposzvar", "poszvar")
-	group <- copyGroupAttributes(group, "depvars", "bRange", "range")
 	group <- copyGroupAttributes(group, "depvars", "behRange", "behRange")
-	group <- copyGroupAttributes(group, "depvars", "bMoreThan2",
+	if (length(group) >= 2)
+	{
+		##copy the global attributes down to individual level where appropriate
+		##group <- copyGroupAttributes(group, "depvars", "balmean", "balmean")
+		##group <- copyGroupAttributes(group, "depvars", "structmean",
+		## "structmean")
+		group <- copyGroupAttributes(group, "depvars", "symmetric", "symmetric")
+		##group <- copyGroupAttributes(group, "depvars", "averageInDegree",
+		##							   "averageInDegree")
+		##group <- copyGroupAttributes(group, "depvars", "averageOutDegree",
+		##							   "averageOutDegree")
+		##group <- copyGroupAttributes(group, "depvars", "bSim", "simMean")
+		group <- copyGroupAttributes(group, "depvars", "bposzvar", "poszvar")
+		group <- copyGroupAttributes(group, "depvars", "bRange", "range")
+		group <- copyGroupAttributes(group, "depvars", "bMoreThan2",
 								 "moreThan2")
-	group <- copyGroupAttributes(group, "depvars", "anyMissing", "missing")
-	group <- copyGroupAttributes(group, "depvars", "structural",
+		group <- copyGroupAttributes(group, "depvars", "anyMissing", "missing")
+		group <- copyGroupAttributes(group, "depvars", "structural",
 								 "structural")
-
-	##group <- copyGroupAttributes(group, "vCovars", "vCovarSim", "simMean")
-	group <- copyGroupAttributes(group, "vCovars", "vCovarRange", "range",
+		##group <- copyGroupAttributes(group, "vCovars", "vCovarSim", "simMean")
+		group <- copyGroupAttributes(group, "vCovars", "vCovarRange", "range",
 								 TRUE)
-	##group <- copyGroupAttributes(group, "vCovars", "vCovarMean", "mean",
-	## TRUE)
-	group <- copyGroupAttributes(group, "vCovars", "vCovarPoszvar",
+		##group <- copyGroupAttributes(group, "vCovars", "vCovarMean", "mean",
+		## TRUE)
+		group <- copyGroupAttributes(group, "vCovars", "vCovarPoszvar",
 								 "poszvar")
-	group <- copyGroupAttributes(group, "vCovars", "vCovarMoreThan2",
+		group <- copyGroupAttributes(group, "vCovars", "vCovarMoreThan2",
 								 "moreThan2")
-	##group <- copyGroupAttributes(group, "dycCovars", "dycCovarMean",
-	##	"mean")
-	group <- copyGroupAttributes(group, "dycCovars", "dycCovarRange2",
+		##group <- copyGroupAttributes(group, "dycCovars", "dycCovarMean",
+		##	"mean")
+		group <- copyGroupAttributes(group, "dycCovars", "dycCovarRange2",
 								 "range2", TRUE)
-	##group <- copyGroupAttributes(group, "dyvCovars", "dyvCovarMean",
-	## "mean")
-	group <- copyGroupAttributes(group, "dyvCovars", "dyvCovarRange",
+		##group <- copyGroupAttributes(group, "dyvCovars", "dyvCovarMean",
+		## "mean")
+		group <- copyGroupAttributes(group, "dyvCovars", "dyvCovarRange",
 								 "range", TRUE)
+		group <- copyGroupAttributes(group, "dyvCovars", "dyvCovarRange2",
+								 "range2", TRUE)
+	}
 	group
 }
 ##@copyGroupAttributes DataCreate

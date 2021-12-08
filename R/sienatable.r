@@ -53,6 +53,7 @@ siena.table <- function(x, type='tex',
 		if (inherits(x, "sienaBayesFit"))
 		{
 			fromBayes <- TRUE
+			x$gmm <- FALSE # for compatibility
 			sig <- FALSE
 			tstat <- TRUE # for sienaBayesFit, the place for t-stats is used for between-groups sd.
 			if (is.null(nfirst))
@@ -100,7 +101,7 @@ siena.table <- function(x, type='tex',
 
 	if (fromBayes)
 	{
-		xx <- shortBayesResults(x, nfirst=nfirst)
+		xx <- multiSiena::shortBayesResults(x, nfirst=nfirst)
 		theta <- xx$postMeanGlobal
 		ses <- xx$postSdGlobal
 		sd.between <- xx$postSdBetween

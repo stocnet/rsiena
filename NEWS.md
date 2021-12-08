@@ -1,3 +1,48 @@
+# RSiena 1.3.4
+   
+## 
+   
+2021-12-07
+
+## Changes in RSiena:  
+
+### Effects:
+  * New effects inRateInv, inRateLog (Steffen Triebel).
+
+### Improvements of functionality:  
+   * When an effects object with interaction effects is printed,
+     the names of the interacting effects are mentioned,
+     and prefixes "int." and "i3." were dropped.
+   * The check of whether an interaction effect is allowed now is done
+     immediately when creating the interaction effect instead of waiting
+     for its use in `siena07`. 
+   * For function `sienaGroupCreate` some changes were made:   
+     if it is applied to a list of length 1, attributes of the single group
+     are not recomputed;   
+     if it is applied to a list of length larger than 1, the attributes
+     "range" and "range2" of behavioral variables of individual groups are
+     computed as the range of the unions of the ranges of all the groups.
+     The same is done for dyadic covariates.
+   * `print.sienaGroup` slightly extended.
+   * Creation of covariates gives a warning (optional) if all values 
+     are missing, and also if all non-missing values are the same.
+
+### Bug corrections  
+   * if a `sienaGroup` object is given to `sienaBayes` and some of the covariates
+     are constant in one or more of the groups, the ``simX` effect will 
+     not run into an error any more; this is achieved by the first change
+     mentioned above for `sienaGroupCreate`.
+   * `sienaFitThetaTable` in `sienaprint.r` was corrected for `from sienaBayes`.
+   * `siena.table` was corrected for `sienaBayes` objects, and this possibility
+     was mentioned in the help file.
+
+### Coding changes:
+   * In `sienaprint.r`, methods and functions relating to `sienaBayes` omitted.
+
+### Tests:   
+   * Test 18, a test for ``sienaGroupCreate`, added to `parallel.R`.
+     
+
 # RSiena 1.3.3
    
 ## 
@@ -19,9 +64,9 @@
    * warnings if a data object contains only missings, or only the same value.
 
 ### Bug corrections  
-   * if a data set contains a constant covariate, the simX effect will not
-     run into an error any more; this is obtained by defining the `range` 
-     attribute of the constant covariate as 1 to prevent division by zero,
+   * if a data set contains a constant covariate, the simX effect will
+     not run into an error any more; this is obtained by defining the `range` 
+     attribute of the covariate as 1 to prevent division by zero,
      and the `simMean` attribute as 0 instead of `NaN` (`sienaDataCreate`). 
      This is relevant especially for `sienaGroup` data sets, where covariates 
      might be constant for some of the groups.`
