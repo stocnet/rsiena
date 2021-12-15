@@ -10,8 +10,7 @@
    * Corrected the check for effects in `initializeFRAN.r` which led to errors
      if interaction effects are included, because of the changes to
      `includeInteraction` in version 1.3.4.
-   
-## 
+
    
 2021-12-08
 
