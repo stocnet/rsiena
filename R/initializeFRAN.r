@@ -124,11 +124,11 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		{
 			## check that the effects match the data dependent variables
 			userlist <- apply(effects[effects$include,], 1, function(x)
-				paste(x[c("name", "effectName",
+				paste(x[c("name", "shortName",
 						"type", "groupName")],
 					collapse="|"))
 			deflist <- apply(defaultEffects, 1, function(x)
-				paste(x[c("name", "effectName",
+				paste(x[c("name", "shortName",
 						"type", "groupName")],
 					collapse="|"))
 			if (!all(userlist %in% deflist))

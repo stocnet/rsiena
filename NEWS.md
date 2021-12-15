@@ -1,13 +1,23 @@
-# RSiena 1.3.4
-   
+# RSiena 1.3.5
+
 ## 
+   
+2021-12-15
+
+## Changes in RSiena:  
+
+### Bug corrections  
+   * Corrected the check for effects in `initializeFRAN.r` which led to errors
+     if interaction effects are included, because of the changes to
+     `includeInteraction` in version 1.3.4.
+
    
 2021-12-08
 
 ## Changes in RSiena:  
 
 ### Effects:
-  * New effects inRateInv, inRateLog (Steffen Triebel).
+  * New effects `inRateInv`, `inRateLog` (Steffen Triebel).
 
 ### Improvements of functionality:  
    * When an effects object with interaction effects is printed,
@@ -167,6 +177,7 @@
 ## 
 
 2021-03-19  
+
 
    * Adjusted `configure`, `cleanup` and `Makevars` files for just C++ checks.
    * Pandoc dropped as a system requirement.

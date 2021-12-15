@@ -174,6 +174,12 @@ myeff <- includeEffects(myeff, egoX, interaction1='time2')
 myeff <- includeEffects(myeff, egoX, interaction1='time3')
 myeff <- includeEffects(myeff, egoX, interaction1='time4')
 myeff <- includeEffects(myeff, egoX, interaction1='time5')
+## corresponding to myeff <- includeTimeDummy(myeff, recip, timeDummy="2,3,5"):
+myeff <- includeInteraction(myeff, egoX, recip, interaction1=c('time2', ''))
+myeff <- includeInteraction(myeff, egoX, recip, interaction1=c('time3', ''))
+myeff <- includeInteraction(myeff, egoX, recip, interaction1=c('time5', ''))
+## corresponding to myeff <- includeTimeDummy(myeff, balance, timeDummy="4"):
+myeff <- includeInteraction(myeff, egoX, balance, interaction1=c('time4', ''))
 \dontrun{
 (anspp <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE))
 ## anspp contains identical results as ansp above.

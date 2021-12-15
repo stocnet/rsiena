@@ -1813,7 +1813,6 @@ double DependentVariable::outDegreeScore(
 			string("Unknown network: ") +
 			"The given outdegree rate effect is not part of the model.");
 	}
-
 	return iter->second;
 }
 
@@ -1830,7 +1829,6 @@ double DependentVariable::inDegreeScore(
 			string("Unknown network: ") +
 			"The given indegree rate effect is not part of the model.");
 	}
-
 	return iter->second;
 }
 
@@ -1848,7 +1846,6 @@ double DependentVariable::reciprocalDegreeScore(
 			"The given reciprocal degree rate effect is not " +
 			"part of the model.");
 	}
-
 	return iter->second;
 }
 
@@ -1866,7 +1863,6 @@ double DependentVariable::inverseOutDegreeScore(
 			"The given inverse outdegree rate effect is not " +
 			"part of the model.");
 	}
-
 	return iter->second;
 }
 
