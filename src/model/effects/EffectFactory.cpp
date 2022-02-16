@@ -1470,28 +1470,12 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "simAllNear")
 	{
-		pEffect = new AllSimilarityEffect(pEffectInfo, true, true, true);
+		pEffect = new AllSimilarityEffect(pEffectInfo, true);
 	}
 	else if (effectName == "simAllFar")
 	{
-		pEffect = new AllSimilarityEffect(pEffectInfo, true, true, false);
+		pEffect = new AllSimilarityEffect(pEffectInfo, false);
 	}
-//	else if (effectName == "simAllNearHigher")
-//	{
-//		pEffect = new AllSimilarityEffect(pEffectInfo, true, false, true);
-//	}
-//	else if (effectName == "simAllFarHigher")
-//	{
-//		pEffect = new AllSimilarityEffect(pEffectInfo, true, false, false);
-//	}
-//	else if (effectName == "simAllNearLower")
-//	{
-//		pEffect = new AllSimilarityEffect(pEffectInfo, false, true, true);
-//	}
-//	else if (effectName == "simAllFarLower")
-//	{
-//		pEffect = new AllSimilarityEffect(pEffectInfo, false, true, false);
-//	}
 	else if (effectName == "avSim")
 	{
 		pEffect = new SimilarityEffect(pEffectInfo, true, false, false, true, true);

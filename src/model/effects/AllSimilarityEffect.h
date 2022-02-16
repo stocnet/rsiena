@@ -26,16 +26,12 @@ class AllSimilarityEffect : public BehaviorEffect
 {
 public:
 	AllSimilarityEffect(const EffectInfo * pEffectInfo,
-		bool hi,
-		bool lo,
 		bool nearby);
 	virtual double calculateChangeContribution(int actor,
 		int difference);
 	virtual double egoStatistic(int ego, double * currentValues);
 
 private:
-	bool lhi;
-	bool llo;
 	bool lnear;
 	int lp;
 };
