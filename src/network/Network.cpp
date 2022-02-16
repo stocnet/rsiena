@@ -549,7 +549,7 @@ void Network::checkReceiverRange(int i) const {
 		throw std::out_of_range(
 				"The number " + toString(i) + " is not in the range [0,"
 						+ toString(this->lm)
-						+ ") of actors acting as receivers of ties");
+						+ ") of nodes acting as receivers of ties");
 	}
 }
 
