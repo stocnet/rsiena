@@ -37,10 +37,19 @@ short names to identify the effects which should be included or excluded.}
 \item{character}{Boolean: are the effect names character strings or not.}
   \item{verbose}{Boolean: should the print of altered effects be produced.}
 }
-\details{The effects indicated by the arguments \ldots, \code{type},
-  and (if necessary) \code{interaction1} and \code{interaction2}
-  are included or excluded
-  from the model specified by the effects object.
+\details{Recall from the help page for \code{\link{getEffects}}
+   that a Siena effects object (class \code{sienaEffects} or
+   \code{sienaGroupEffects}) is a \code{\link{data.frame}};
+   the rows in the data frame are the effects for this data set;
+   some of the columns/variables of the data frame
+   are used to identify the effect, other columns/variables define how this
+   effect is used in the estimation. \cr   
+   
+  The function \code{includeEffects} operates as an interface
+  setting the "include" column on selected rows of the effects object,
+  to the value requested (\code{TRUE} or \code{FALSE}).
+   The selected effects must be indicated by the arguments \ldots, \code{type},
+  and (if necessary) \code{interaction1} and \code{interaction2}.
   The names \code{interaction1} and \code{interaction2} do not refer
   to interactions between effects, but to dependence of effects on
   other variables in the data set.
@@ -48,16 +57,11 @@ short names to identify the effects which should be included or excluded.}
   The short names must not be set between quotes,
   unless you use \code{character=TRUE}.
 
-  The function \code{includeEffects} operates as an interface
-  setting the "include" column on selected rows of the effects object,
-  to the value requested (\code{TRUE} or \code{FALSE}).
-
-  The value of \code{myeff$initialValue} can be set by function
-  \code{\link{setEffect}}.
-  The function \code{\link{setEffect}} can operate on the effects object
-  in a more detailed way,
-  e.g., setting the value of \code{myeff$initialValue},
-  but applies to one effect at the time.
+  Note that the internal effect parameter has a default value which differs
+  between effects. This can be set by function \code{\link{setEffect}}.
+  Also the value of \code{myeff$initialValue} can be set by this function.
+  The function \code{\link{setEffect}} operates on the effects object
+  in a more detailed way, but applies to one effect at the time.
 
   Further information about Siena effects objects is given
   in the help page for \code{\link{getEffects}}.
@@ -70,7 +74,7 @@ short names to identify the effects which should be included or excluded.}
 }
 \value{
     An updated version of the input effects object, with the
-	\code{include}, \code{test}, and \code{fix}
+    \code{include}, \code{test}, and \code{fix}
     columns for one or more rows updated.
     Details of the rows altered will be printed.
 }
