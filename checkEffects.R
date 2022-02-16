@@ -867,3 +867,137 @@ ans$targets
 sum(abs(s501-s502)) ## OK Rate
 sum((log(colSums(s501)+1))* rowSums(abs(s501-s502))) # OK inRateLog
 
+
+################################################################################
+### check absOutDiffIntn
+################################################################################
+
+mynet1 <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
+mydata <- sienaDataCreate(mynet1, mynet2)
+mymodel <- sienaModelCreate(projname=NULL, seed=1234)
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, absOutDiffIntn, name="mynet2", interaction1="mynet1", parameter=1)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+sum(rowSums(s503)) # OK outdegree
+sum(rowSums(s503 * t(s503))) # OK recip
+ad <- abs(outer(rowSums(s501),rowSums(s501),"-"))
+sum(s503*ad) # OK absOutDiffIntn
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, absOutDiffIntn, name="mynet2", interaction1="mynet1", parameter=2)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+ad2 <- abs(outer(sqrt(rowSums(s501)),sqrt(rowSums(s501)),"-"))
+sum(s503*ad2) # OK absOutDiffIntn
+
+################################################################################
+### check recipRateInv and recipRateLog
+################################################################################
+
+mynet <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+mydata <- sienaDataCreate(mynet)
+mymodel <- sienaModelCreate(projname=NULL, seed=534, cond=FALSE, firstg=0.01)
+mymodel2 <- sienaModelCreate(projname=NULL, seed=534, cond=FALSE, firstg=0.02)
+myeff <- getEffects(mydata)
+effectsDocumentation(myeff)
+myeff <- includeEffects(myeff, recipRate, type='rate')
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+(ans1 <- siena07(mymodel2, data=mydata, effects=myeff, prevAns=ans))
+ans$targets
+sum(abs(s501-s502)) ## OK Rate
+sum(colSums(s501*t(s501))* rowSums(abs(s501-s502))) # OK recipRate
+sum(s502) ## OK density
+sum(s502*t(s502)) ## OK recip
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, recipRateInv, type='rate')
+mymodel0 <- sienaModelCreate(projname=NULL, seed=534, cond=FALSE)
+(ans <- siena07(mymodel0, data=mydata, effects=myeff))
+ans$targets
+sum(abs(s501-s502)) ## OK Rate
+sum((1/(colSums(s501*t(s501))+1))* rowSums(abs(s501-s502))) # OK recipRateInv
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, recipRateLog, type='rate')
+(ans <- siena07(mymodel0, data=mydata, effects=myeff))
+(ans <- siena07(mymodel0, data=mydata, effects=myeff, prevAns=ans))
+ans$targets
+sum(abs(s501-s502)) ## OK Rate
+sum((log(colSums(s501*t(s501))+1))* rowSums(abs(s501-s502))) # OK recipRateLog
+
+##########################################################################
+### check  SimAllNear,SimAllFar
+##########################################################################
+
+mynet <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
+z1 <- 1+.29*(1:50)
+set.seed(143)
+z2 <- z1 + rnorm(50) +0.2
+z1 <- trunc(z1)
+z2 <- trunc(z2)
+table(z2-z1)
+trunc(cbind(z1,z2))
+z2 <- pmax(1,pmin(z2,15))
+table(z2,z1)
+mybeh <- sienaDependent(cbind(z1,z2), type="behavior") # range 1:15
+(mydata <- sienaDataCreate(mynet, mybeh))
+myeff <- getEffects(mydata)
+effectsDocumentation(myeff)
+# for SimAllNear effect:
+(myeff <- setEffect(myeff,simAllNear,name='mybeh', parameter=2))
+myeff
+mymodel <- sienaModelCreate(projname=NULL, seed=514)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+
+(mbh <- mean(mybeh))
+sum(abs(z2-z1)) # OK rate
+sum((z2-mbh)) # OK linear
+sum((z2-mbh)^2) # OK quad
+
+p <- 2
+aot <- abs(outer(z2,z2,"-"))
+NN <- 1*(aot <= p)
+diag(NN) <- 0
+sum(NN*(p-aot)) # OK simAllNear
+
+# for SimAllFar effect:
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff,simAllFar,name='mybeh', parameter=4))
+mymodel <- sienaModelCreate(projname=NULL, seed=514, firstg=0.05, diagonalize=0.5)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+
+p <- 4
+aot <- abs(outer(z2,z2,"-"))
+FF <- 1*(aot >= p)
+diag(FF) <- 0
+sum(FF*(p-aot)) # OK simAllFar
+
+############################################
+### check avDegIntn
+############################################
+
+mynet1 <- sienaNet(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+mynet2 <- sienaNet(array(c(s503, s502, s501), dim=c(50, 50, 3)))
+(mydata <- sienaDataCreate(mynet1, mynet2))
+
+myeff <- getEffects(mydata)
+(myeff <- includeEffects(myeff, avDegIntn, name='mynet2',
+                interaction1='mynet1'))
+mymodel <- sienaModelCreate(projname=NULL, seed=514)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+(ans <- siena07(mymodel, data=mydata, effects=myeff, prevAns=ans))
+# convergence is very slow, which is natural for this effect with only 3 waves
+ans$targets
+
+sum(s502 + s501) # OK density
+sum(s502*t(s502) + s501*t(s501)) # OK recip
+(ad1 <- sum(s501)/50)
+(ad2 <- sum(s502)/50)
+p <- 2
+sum((ad1-p)*s502 + (ad2-p)*s501) # OK avDegIntn
+
