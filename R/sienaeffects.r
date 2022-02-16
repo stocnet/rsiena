@@ -93,7 +93,8 @@ includeEffects <- function(myeff, ..., include=TRUE, name=myeff$name[1],
 includeInteraction <- function(myeff, ...,
 				include=TRUE, name=myeff$name[1],
 				type="eval", interaction1=rep("", 3), interaction2=rep("", 3),
-				fix=FALSE, test=FALSE, parameter=NULL, random=FALSE,
+				parameter=NULL, fix=FALSE, test=FALSE, random=FALSE,
+				initialValue=0,
 				character=FALSE, verbose=TRUE)
 {
 	if (character)
@@ -229,6 +230,7 @@ includeInteraction <- function(myeff, ...,
 		myeff[intn, "test"] <- test
 		if (!is.null(parameter)) {myeff[intn, "parm"] <- parameter}
 		myeff[intn, "randomEffects"] <- random
+		myeff[intn, "initialValue"] <- initialValue
 	}
 	else
 	{
