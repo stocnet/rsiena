@@ -12,6 +12,7 @@
 #ifndef ALLEFFECTS_H_
 #define ALLEFFECTS_H_
 
+#include "AllSimilarityEffect.h"
 #include "AlterCovariateActivityEffect.h"
 #include "AltersCovariateAvAltEffect.h"
 #include "AltersCovariateAverageEffect.h"

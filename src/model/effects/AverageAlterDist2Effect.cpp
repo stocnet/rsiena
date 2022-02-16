@@ -77,7 +77,7 @@ double AverageAlterDist2Effect::calculateChangeContribution(int actor,
 			{
 				alterValue -= this->centeredValue(actor);
 			}
-			if (((pNetwork->outDegree(iter.actor()) - tieValue)> 0) & (this->ldivide2))
+			if (((pNetwork->outDegree(iter.actor()) - tieValue)> 0) && (this->ldivide2))
 			{
 				alterValue /= (pNetwork->outDegree(iter.actor()) - tieValue);
 			}
@@ -123,7 +123,7 @@ double AverageAlterDist2Effect::egoStatistic(int i, double * currentValues)
 			}
 		}
 // tieToi =  this->pNetwork()->tieValue(iter.actor(), i);
-		if ((pNetwork->outDegree(j) > tieToi) & (this->ldivide2))
+		if ((pNetwork->outDegree(j) > tieToi) && (this->ldivide2))
 		{
 			alterValue /= (pNetwork->outDegree(j) - tieToi);
 		}

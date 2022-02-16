@@ -33,7 +33,7 @@ BothDegreesEffect::BothDegreesEffect(
 	this->lcentered = centered;
 	this->lcentering = 0.0;
 	this->lvariableName = pEffectInfo->variableName();
-	if ((this->lcentered) & (this->lroot))
+	if ((this->lcentered) && (this->lroot))
 	{
 		throw std::logic_error(
 "centering and square root may not be combined for degree activity plus popularity effect.");

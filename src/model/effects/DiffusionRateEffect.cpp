@@ -69,7 +69,7 @@ DiffusionRateEffect::DiffusionRateEffect(const NetworkVariable * pVariable,
 	this->linternalNonZero = (this->linternalEffectParameter != 0);
 
 	if (((effectName == "infectDeg") | (effectName == "infectIn") |
-				(effectName == "infectOut")) & (this->linternalEffectParameter < 0))
+				(effectName == "infectOut")) && (this->linternalEffectParameter < 0))
 	{
 		throw logic_error("Negative internal parameter not permitted for effect "+effectName);
 	}
@@ -106,7 +106,7 @@ DiffusionRateEffect::DiffusionRateEffect(const NetworkVariable * pVariable,
 		possibleDegreeDenom);
 	this->lpTable->parameter(parameter);
 
-	if ((effectName == "infectCovar") & (this->linternalEffectParameter < 0))
+	if ((effectName == "infectCovar") && (this->linternalEffectParameter < 0))
 	{
 		throw logic_error("Negative internal parameter not permitted for effect "+effectName);
 	}

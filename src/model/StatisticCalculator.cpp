@@ -1315,6 +1315,22 @@ void StatisticCalculator::calculateNetworkRateStatistics(
 						log(pStructural->inDegree(iter.ego()) + 1) *
 						iter.value();
 				}
+				else if (effectName == "recipRateInv")
+				{
+					OneModeNetwork * pOneModeNetwork =
+						(OneModeNetwork *) pStructural;
+					statistic +=
+						1.0 / (pOneModeNetwork->reciprocalDegree(iter.ego()) + 1) *
+						iter.value();
+				}
+				else if (effectName == "recipRateLog")
+				{
+					OneModeNetwork * pOneModeNetwork =
+						(OneModeNetwork *) pStructural;
+					statistic +=
+						log(pOneModeNetwork->reciprocalDegree(iter.ego()) + 1) *
+						iter.value();
+				}
 				else
 				{
 					throw domain_error("Unexpected rate effect " + effectName);
@@ -1519,6 +1535,22 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 				{
 					statistic +=
 						log(pStructural->inDegree(i) + 1) *
+						difference[i];
+				}
+				else if (effectName == "recipRateInv")
+				{
+					OneModeNetwork * pOneModeNetwork =
+						(OneModeNetwork *) pStructural;
+					statistic +=
+						1.0 / (pOneModeNetwork->reciprocalDegree(i) + 1) *
+						difference[i];
+				}
+				else if (effectName == "recipRateLog")
+				{
+					OneModeNetwork * pOneModeNetwork =
+						(OneModeNetwork *) pStructural;
+					statistic +=
+						log(pOneModeNetwork->reciprocalDegree(i) + 1) *
 						difference[i];
 				}
 				else

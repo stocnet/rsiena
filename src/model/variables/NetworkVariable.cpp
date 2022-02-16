@@ -1222,9 +1222,9 @@ void NetworkVariable::calculateTieFlipProbabilities()
 		if (curSetting)
 		{
 			if (!permIter->valid())
-		{
+			{
 				error( "permIter size differs from setting size");
-		}
+			}
 			alter = permIter->actor();
 			permIter->next();
 		}
@@ -1295,22 +1295,25 @@ void NetworkVariable::calculateTieFlipProbabilities()
 			this->lprobabilities[alter] = R_NegInf;
 		}
 		maxValue = max(maxValue, this->lprobabilities[alter]);
-		}
+	}
 
-	if (permIter != 0) {
+	if (permIter != 0) 
+	{
 		permIter->reset();
 	}
 
 	for (int alteri = 0; alteri < m; alteri++) {
 		alter = alteri;
 
-		if (this->stepType() != -1) {
-			if (!permIter->valid()) {
+		if (this->stepType() != -1) 
+		{
+			if (!permIter->valid()) 
+			{
 				error( "permitted iter length != settings permitted size");
-		}
+			}
 			alter = permIter->actor();
 			permIter->next();
-	}
+		}
 	
 		if (this->lpermitted[alter])
 		{
@@ -1343,34 +1346,42 @@ void NetworkVariable::calculateTieFlipProbabilities()
 	}
 
 	// delete iter
-	if (permIter != 0) {
+	if (permIter != 0)
+	{
 		permIter->reset();
 	}
 
 	// Normalize
-	if (total > 0) {
+	if (total > 0)
+	{
 		// this loop requires that permIter processes its entries in ascending order (which it does)
 		for (int alter = 0; alter < m; alter++)
 		{
-			if (permIter != 0)
+			if (permIter != 0) // settings model
 			{
 				if (permIter->valid())
-	{
+				{
 					if (alter < permIter->actor())
-		{
+					{
 						lprobabilities[alter] = 0;
-					} else {
-						//            sum -= lprobabilities[alter];
+					} 
+					else 
+					{
 						lprobabilities[alter] /= total;
 						permIter->next();
 					}
-				} else {
+				}
+				else 
+				{
 					lprobabilities[alter] = 0;
 				}
-			} else if (lpermitted[alter]) {
-				// sum -= lprobabilities[alter];
-			this->lprobabilities[alter] /= total;
-			} else {
+			} // else non-settings model
+			else if (lpermitted[alter]) 
+			{
+				this->lprobabilities[alter] /= total;
+			} 
+			else 
+			{
 				this->lprobabilities[alter] = 0;
 			}
 		}

@@ -78,7 +78,7 @@ double AverageAlterInDist2Effect::calculateChangeContribution(int actor,
 			{
 				alterValue -= this->centeredValue(actor);
 			}
-			if (((pNetwork->inDegree(iter.actor()) - tieValue)> 0) & (this->ldivide2))
+			if (((pNetwork->inDegree(iter.actor()) - tieValue)> 0) && (this->ldivide2))
 			{
 				alterValue /= (pNetwork->inDegree(iter.actor()) - tieValue);
 			}
@@ -119,7 +119,7 @@ double AverageAlterInDist2Effect::egoStatistic(int i, double * currentValues)
 			}
 		}
 // tieFromi =  this->pNetwork()->tieValue(i, iter.actor());
-		if ((pNetwork->inDegree(j) > 1) & (this->ldivide2))
+		if ((pNetwork->inDegree(j) > 1) && (this->ldivide2))
 		{
 			alterValue /= (pNetwork->inDegree(j) - 1);
 				// there always is a tie i -> iteri.actor()

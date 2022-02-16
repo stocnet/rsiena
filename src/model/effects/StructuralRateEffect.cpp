@@ -49,6 +49,14 @@ StructuralRateEffect::StructuralRateEffect(const NetworkVariable * pVariable,
 	{
 		this->lpTable = new EffectValueTable(possibleDegree, logarithmer);
 }	
+    else if (this->ltype == INVERSE_RECIPROCAL_DEGREE_RATE)
+	{
+		this->lpTable = new EffectValueTable(possibleDegree, invertor);
+	}
+	else if (this->ltype == LOG_RECIPROCAL_DEGREE_RATE)
+	{
+		this->lpTable = new EffectValueTable(possibleDegree, logarithmer);
+}	
 	else
 	{
 		this->lpTable = new EffectValueTable(possibleDegree, identity);
@@ -86,6 +94,8 @@ double StructuralRateEffect::value(int i) const
 			return this->lpTable->value(pNetwork->inDegree(i));
 
 		case RECIPROCAL_DEGREE_RATE:
+		case INVERSE_RECIPROCAL_DEGREE_RATE:
+		case LOG_RECIPROCAL_DEGREE_RATE:
 			return this->lpTable->value(
 				(((OneModeNetwork *) pNetwork)->reciprocalDegree(i)));
 	}

@@ -327,6 +327,44 @@ void DependentVariable::initializeRateFunction()
 				this->llogInDegreeSumTerm[pVariable] = 0;
 				this->llogInDegreeModelBSumTerm[pVariable] = 0;
 			}			
+			else if (effectName == "recipRateInv")
+			{
+				if (!pVariable->oneModeNetwork())
+				{
+					throw std::invalid_argument(
+							"One-mode network variable expected");
+				}
+
+				if (this->lpActorSet != pVariable->pSenders())
+				{
+					throw std::invalid_argument("Mismatch of actor sets");
+				}
+
+				this->lstructuralRateEffects.push_back(
+						new StructuralRateEffect(pVariable, INVERSE_RECIPROCAL_DEGREE_RATE,
+							parameter));
+	 			this->linversereciprocalDegreeScores[pVariable] = 0;		
+				this->linversereciprocalDegreeSumTerm[pVariable] = 0;
+			}	
+			else if (effectName == "recipRateLog")
+			{
+				if (!pVariable->oneModeNetwork())
+				{
+					throw std::invalid_argument(
+							"One-mode network variable expected");
+				}
+
+				if (this->lpActorSet != pVariable->pSenders())
+				{
+					throw std::invalid_argument("Mismatch of actor sets");
+				}
+
+				this->lstructuralRateEffects.push_back(
+						new StructuralRateEffect(pVariable, LOG_RECIPROCAL_DEGREE_RATE,
+							parameter));
+	 			this->llogreciprocalDegreeScores[pVariable] = 0;		
+				this->llogreciprocalDegreeSumTerm[pVariable] = 0;
+			}
 			else
 			{
 				throw domain_error("Unexpected rate effect " + effectName);
@@ -1137,6 +1175,38 @@ void DependentVariable::accumulateRateScores(double tau,
 
 		iter->second -= this->llogInDegreeSumTerm[iter->first] * tau;
 }
+	for (std::map<const NetworkVariable *, double>::iterator iter =
+			this->linversereciprocalDegreeScores.begin();
+		iter != this->linversereciprocalDegreeScores.end();
+		iter++)
+	{
+	const OneModeNetwork * pNetwork =
+			(const OneModeNetwork *) iter->first->pNetwork();
+
+		if (this == pSelectedVariable)
+		{
+			iter->second += invertor(pNetwork->reciprocalDegree(selectedActor));
+		}
+
+		iter->second -= this->linversereciprocalDegreeSumTerm[iter->first] * tau;
+	}
+
+	for (std::map<const NetworkVariable *, double>::iterator iter =
+			this->llogreciprocalDegreeScores.begin();
+		iter != this->llogreciprocalDegreeScores.end();
+		iter++)
+	{
+		const OneModeNetwork * pNetwork =
+			(const OneModeNetwork *) iter->first->pNetwork();
+
+		if (this == pSelectedVariable)
+		{
+			iter->second += logarithmer(pNetwork->reciprocalDegree(selectedActor));
+		}
+
+		iter->second -= this->llogreciprocalDegreeSumTerm[iter->first] * tau;
+}
+
 
 	// Update scores for diffusion rate parameters
 
@@ -1633,6 +1703,38 @@ void DependentVariable::calculateScoreSumTerms()
 
 	}
 
+	for (std::map<const NetworkVariable *, double>::iterator iter =
+			 this->linversereciprocalDegreeScores.begin();
+		 iter != this->linversereciprocalDegreeScores.end();
+		 iter++)
+	{
+		const OneModeNetwork * pNetwork =
+			(const OneModeNetwork *) iter->first->pNetwork();
+
+		double timesRate = 0;
+		for (int i = 0; i < this->n(); i++)
+		{
+			timesRate += invertor(pNetwork->reciprocalDegree(i)) * this->lrate[i];
+		}
+		this->linversereciprocalDegreeSumTerm[iter->first] = timesRate;
+	}
+
+	for (std::map<const NetworkVariable *, double>::iterator iter =
+			 this->llogreciprocalDegreeScores.begin();
+		 iter != this->llogreciprocalDegreeScores.end();
+		 iter++)
+	{
+		const OneModeNetwork * pNetwork =
+			(const OneModeNetwork *) iter->first->pNetwork();
+
+		double timesRate = 0;
+		for (int i = 0; i < this->n(); i++)
+		{
+			timesRate += logarithmer(pNetwork->reciprocalDegree(i)) * this->lrate[i];
+		}
+		this->llogreciprocalDegreeSumTerm[iter->first] = timesRate;
+	}
+
 	// Update scores for diffusion rate parameters.
 
 	const vector<EffectInfo *> & rRateEffects =
@@ -1914,6 +2016,38 @@ double DependentVariable::logInDegreeScore(
 			"part of the model.");
 	}
 
+	return iter->second;
+}
+
+double DependentVariable::inversereciprocalDegreeScore(
+	const NetworkVariable * pNetworkData) const
+{
+	map<const NetworkVariable *, double>::const_iterator iter =
+		this->linversereciprocalDegreeScores.find(pNetworkData);
+
+	if (iter == this->linversereciprocalDegreeScores.end())
+	{
+		throw invalid_argument(
+			string("Unknown network: ") +
+			"The given inverse reciprocal degree rate effect is not " +
+			"part of the model.");
+	}
+	return iter->second;
+}
+
+double DependentVariable::logreciprocalDegreeScore(
+	const NetworkVariable * pNetworkData) const
+{
+	map<const NetworkVariable *, double>::const_iterator iter =
+		this->llogreciprocalDegreeScores.find(pNetworkData);
+
+	if (iter == this->llogreciprocalDegreeScores.end())
+	{
+		throw invalid_argument(
+			string("Unknown network: ") +
+			"The given log reciprocal degree rate effect is not " +
+			"part of the model.");
+	}
 	return iter->second;
 }
 
