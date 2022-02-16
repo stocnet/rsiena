@@ -1,7 +1,28 @@
-# RSiena 1.3.5
+# RSiena 1.3.6
 
 ## 
    
+2022-02-16
+
+## Changes in RSiena:  
+
+### Effects:
+  * New effects  `simAllNear`,`simAllFar`, `absOutDiffIntn`, `avDegIntn`.
+  * New effects `recipRateInv`, `recipRateLog` (Steffen Triebel).
+  * Default internal effect parameter for `outOutActIntn`, `outOutAvIntn`, 
+    and `both` changed from 2 to 1.
+
+### Improvements of functionality:  
+   * Function `includeInteraction` now also can modify the `initialValue`
+     of an effect; and the order of parameters for this function was changed,
+     bringing it in line with `setEffect`.
+   * Small clarifications of help pages for `includeInteraction` and
+     `setEffect`.
+   
+# RSiena 1.3.5
+
+##
+
 2021-12-15
 
 ## Changes in RSiena:  
@@ -11,7 +32,10 @@
      if interaction effects are included, because of the changes to
      `includeInteraction` in version 1.3.4.
 
-   
+# RSiena 1.3.4
+
+##
+
 2021-12-08
 
 ## Changes in RSiena:  
@@ -236,7 +260,7 @@
 2021-02-27
 
    * Generalized method of Moments implemented (Viviana Amati):
-     see docs\manual\Changes_RSiena_GMoM.tex;
+     see docs\manual\Changes\_RSiena\_GMoM.tex;
      new function includeGMoMStatistics, extended functionality of siena07.
    * Require R >= 3.5.0.
    * xtable added to `Imports` (used to be in `Suggests`).

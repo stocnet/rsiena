@@ -2,23 +2,23 @@ Encoding: UTF-8
 Package: RSiena
 Type: Package
 Title: Siena - Simulation Investigation for Empirical Network Analysis
-Version: 1.3.5
-Date: 2021-12-15
+Version: 1.3.6
+Date: 2022-02-16
 Authors@R: c(person("Tom A.B.", "Snijders", role = c("cre", "aut"), email = "tom.snijders@nuffield.ox.ac.uk", comment = c(ORCID = "0000-0003-3157-4157")),
               person("Ruth", "Ripley", role = "aut"),
+              person("Krists", "Boitmanis", role = c( "aut","ctb")),
               person("Christian", "Steglich", role = c("aut","ctb"), comment = c(ORCID = "0000-0002-9097-0873")),
               person("Johan", "Koskinen", role = c("aut","ctb"), comment = c(ORCID = "0000-0002-6860-325X")),
-              person("Nynke", "Niezink", role = c("aut","ctb")),
+              person("Nynke", "Niezink", role = c("aut","ctb"), comment = c(ORCID = "0000-0003-4199-4841")),
               person("Viviana", "Amati", role = c("aut","ctb"), comment = c(ORCID = "0000-0003-1190-1237")),
               person("Christoph", "Stadtfeld", role = "ctb", comment = c(ORCID = "0000-0002-2704-2134")),
               person("James", "Hollway", role = "ctb", comment = c("IHEID", ORCID = "0000-0002-8361-9647")),
-              person("Per", "Block", role = "ctb"),
+              person("Per", "Block", role = "ctb", comment = c(ORCID = "0000-0002-7583-2392")),
               person("Robert", "Krause", role = "ctb"),
               person("Charlotte", "Greenan", role = "ctb"),
               person("Josh", "Lospinoso", role = "ctb"),
               person("Michael", "Schweinberger", role = "ctb", comment = c(ORCID = "0000-0003-3649-5386")),
               person("Mark", "Huisman", role = "ctb"),
-              person("Krists", "Boitmanis", role = "ctr"),
               person("Felix", "Schoenenberger", role = "ctb"),
               person("Mark", "Ortmann", role = "ctb"),
               person("Marion", "Hoffman", role = "ctb"),
