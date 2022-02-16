@@ -27,12 +27,8 @@ namespace siena
  */
 AllSimilarityEffect::AllSimilarityEffect(
 	const EffectInfo * pEffectInfo,
-	bool hi,
-	bool lo,
 	bool nearby): BehaviorEffect(pEffectInfo)
 {
-	this->lhi = hi;
-	this->llo = lo;
 	this->lnear = nearby;
 	if (pEffectInfo->internalEffectParameter() < 0)
 	{
@@ -71,14 +67,14 @@ double AllSimilarityEffect::calculateChangeContribution(int actor,
 	for (int j = 0; j < this->n(); j++)
 	{
 		int zj = value(j);
-		if ((zj <= zi) && (this->llo) && (j != actor))
+		if ((zj <= zi) && (j != actor))
 		{
 			if (((zj > zi - this->lp) && (this->lnear)) || ((zj <= zi - this->lp) && (!this->lnear)))
 			{
 				contribution--;
 			}
 		}
-		if ((zj > zi) && (this->lhi) && (j != actor))
+		if ((zj > zi) && (j != actor))
 		{
 			if (((zj <= zi + this->lp) && (this->lnear)) || ((zj > zi + this->lp) && (!this->lnear)))
 			{
@@ -102,14 +98,14 @@ double AllSimilarityEffect::egoStatistic(int ego,
 	for (int j = 0; j < this->n(); j++)
 	{
 		double dif = currentValues[j]-zi;
-		if ((dif < 0) && (this->llo) && (j != ego))
+		if ((dif < 0) && (j != ego))
 		{
 			if (((dif > - this->lp) && (this->lnear)) || ((dif <= - this->lp) && (!this->lnear)))
 			{
 				statistic = statistic + this->lp + dif;
 			}
 		}
-		if ((dif > 0) && (this->lhi) && (j != ego))
+		if ((dif > 0) && (j != ego))
 		{
 			if (((dif < this->lp) && (this->lnear)) || ((dif > this->lp) && (!this->lnear)))
 			{
