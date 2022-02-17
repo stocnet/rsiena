@@ -977,7 +977,7 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 	if (someOnly)
 	{
 message('For some variables, in some periods, there are only increases, or only decreases.')
-message('This will be respected in the simulations.')
+message('This will be respected in the simulations. ')
 message('If this is not desired, use allowOnly=FALSE when creating the dependent variables.')
 	}
 	## create the object
@@ -1115,7 +1115,7 @@ checkConstraints <- function(z)
 						".\n"), sep="")
 		  })
 		message(report)
-		cat("This will be respected in the simulations.")
+		cat("This will be respected in the simulations. ")
 		cat("If this is not desired, change attribute 'higher'\n")
 		cat("by function sienaDataConstraint.\n")
 	}

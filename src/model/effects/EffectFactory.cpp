@@ -26,11 +26,13 @@
 #include "model/effects/generic/InDegreeFunction.h"
 #include "model/effects/generic/IntSqrtFunction.h"
 #include "model/effects/generic/DifferenceFunction.h"
+#include "model/effects/generic/AbsDiffFunction.h"
 #include "model/effects/generic/SumFunction.h"
 #include "model/effects/generic/EgoFunction.h"
 #include "model/effects/generic/EgoInDegreeFunction.h"
 #include "model/effects/generic/OutDegreeFunction.h"
 #include "model/effects/generic/EgoOutDegreeFunction.h"
+#include "model/effects/generic/DegreeFunction.h"
 #include "model/effects/generic/BetweennessFunction.h"
 #include "model/effects/generic/GwespFunction.h"
 #include "model/effects/generic/InStarFunction.h"
@@ -874,6 +876,28 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new DifferenceFunction(pFirstFunction, pSecondFunction));
 	}
+	else if (effectName == "absOutDiffIntn")
+	{
+		AlterFunction * pAlterOutdegreeFunction =
+			new OutDegreeFunction(pEffectInfo->interactionName1());
+		AlterFunction * pEgoOutdegreeFunction =
+			new EgoOutDegreeFunction(pEffectInfo->interactionName1());
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pAlterOutdegreeFunction =
+				new IntSqrtFunction(pAlterOutdegreeFunction);
+			pEgoOutdegreeFunction =
+				new IntSqrtFunction(pEgoOutdegreeFunction);
+		}
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new AbsDiffFunction(pAlterOutdegreeFunction,pEgoOutdegreeFunction));
+	}
+	else if (effectName == "avDegIntn")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+						new DegreeFunction(pEffectInfo->interactionName1(), 
+									pEffectInfo->internalEffectParameter()));
+	}
 	else if (effectName == "doubleOutAct")
 	{
 		string firstNetworkName = pEffectInfo->variableName();
@@ -965,7 +989,6 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		ConstantFunction * pSecondConstantFunction =
 			new ConstantFunction(pEffectInfo->interactionName1(),
 				AVERAGE_IN_DEGREE);
-
 		if (pEffectInfo->internalEffectParameter() == 2)
 		{
 			pAlterIndegreeFunction =
@@ -975,7 +998,6 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			pFirstConstantFunction->pFunction(sqrt);
 			pSecondConstantFunction->pFunction(sqrt);
 		}
-
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new ProductFunction(
 				new DifferenceFunction(pAlterIndegreeFunction,
@@ -1445,6 +1467,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	         (effectName == "threshold3") |(effectName == "threshold4"))
 	{
 		pEffect = new ThresholdShapeEffect(pEffectInfo);
+	}
+	else if (effectName == "simAllNear")
+	{
+		pEffect = new AllSimilarityEffect(pEffectInfo, true);
+	}
+	else if (effectName == "simAllFar")
+	{
+		pEffect = new AllSimilarityEffect(pEffectInfo, false);
 	}
 	else if (effectName == "avSim")
 	{

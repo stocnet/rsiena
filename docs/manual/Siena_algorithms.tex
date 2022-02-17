@@ -183,8 +183,10 @@
 
 This paper gives a sketch of the main algorithms used in RSiena.
 It is meant as background material for understanding the code of
-RSiena. It is intended to be included later on as part of the
-programmer's manual of RSiena.
+RSiena. 
+
+For the Generalized Method of Moments (`GMoM'), there is the
+separate text \sf{Changes\_RSiena\_GMoM.pdf}.
 
 \iffalse
 Changes in the version of May 17, 2011:\\
@@ -1559,7 +1561,7 @@ and the change contribution
 The effects object has a variable (column) that is called
 \texttt{interactionType}.
 See the manual.
-For network effects, the interaction type is \texttt{"ego"}, 
+For network effects, the interaction type is \texttt{"ego"},
 \texttt{"dyadic"}, or \texttt{""} (blank);
 for behaviour effects, it is \texttt{"OK"} or \texttt{""}.
 This indicates, using the rules above, whether a interaction
@@ -1567,12 +1569,12 @@ is allowed. This is checked in the internal RSiena function
 \nnm{fixUpEffectNames}. Since \texttt{"ego"} is stronger
 than \texttt{"dyadic"}, the former is used when the property is satisfied.
 
-For elementary network effects (see the manual) 
+For elementary network effects (see the manual)
 the change statistics are not derived
 from an evaluation function. Therefore the requirement
 (\ref{Delta}) does not apply.  Elementary effects have
 \texttt{interactionType} set to "dyadic".
- 
+
 \subsection{Weighted effects for behavior}
 
 Another concept, which is similar to interaction, is

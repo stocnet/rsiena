@@ -782,7 +782,7 @@ SEXP getTargetsChangeContributions(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST
 					}
 					else
 					{
-						choices = actors;
+						choices = actors; // is this wrong for bipartite?
 					}
 					for(int actor = 0; actor < actors; actor++)
 					{
@@ -813,7 +813,7 @@ SEXP getTargetsChangeContributions(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST
 				}
 				else
 				{
-					choices = actors;
+					choices = actors;// is this wrong for bipartite?
 				}
 				for(int actor = 0; actor < actors; actor++)
 				{

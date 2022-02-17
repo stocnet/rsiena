@@ -346,10 +346,11 @@ SEXP getBehaviorValues(const BehaviorVariable & behavior)
 SEXP getAdjacency(const Network& net)
 {
     int n=net.n();
-	SEXP ans = PROTECT(allocMatrix(INTSXP, n, n));
+    int m=net.m();
+	SEXP ans = PROTECT(allocMatrix(INTSXP, n, m));
     int *ians = INTEGER(ans);
-    /* initialise the memory: possibly only neccesary in case of error! */
-    for (int i = 0; i<n*n;i++)
+    /* initialise the memory: possibly only necessary in case of error! */
+    for (int i = 0; i<n*m;i++)
 	ians[i]=0;
     for (TieIterator iter=net.ties(); iter.valid(); iter.next())
     {

@@ -137,6 +137,8 @@ public:
 	double logOutDegreeScore(const NetworkVariable * pNetwork) const;
 	double inverseInDegreeScore(const NetworkVariable * pNetwork) const;
 	double logInDegreeScore(const NetworkVariable * pNetwork) const;
+	double inversereciprocalDegreeScore(const NetworkVariable * pNetwork) const;
+	double logreciprocalDegreeScore(const NetworkVariable * pNetwork) const;
 
 	// Diffusion effects
 
@@ -336,6 +338,11 @@ private:
 	// Scores for rate effects depending on log in degree
 	std::map<const NetworkVariable *, double> llogInDegreeScores;
 
+	// Scores for rate effects depending on inverse reciprocal degree
+	std::map<const NetworkVariable *, double> linversereciprocalDegreeScores;
+
+	// Scores for rate effects depending on log reciprocal degree
+	std::map<const NetworkVariable *, double> llogreciprocalDegreeScores;
 
 	// Sum term for scores for rate effects depending on constant covariates
 	std::map<const ConstantCovariate *, double> lconstantCovariateSumTerm;
@@ -366,6 +373,12 @@ private:
 
 	// Sum term for scores for rate effects depending on log degree
 	std::map<const NetworkVariable *, double> llogInDegreeSumTerm;	
+
+	// Sum term for scores for rate effects depending on inverse reciprocal degree
+	std::map<const NetworkVariable *, double> linversereciprocalDegreeSumTerm;
+
+	// Sum term for scores for rate effects depending on log reciprocal degree
+	std::map<const NetworkVariable *, double> llogreciprocalDegreeSumTerm;
 
 	// Sum term for model B scores for rate effects depending on constant
 	// covariates

@@ -1934,6 +1934,21 @@ void getStatistics(SEXP EFFECTSLIST,
 							score =
 								pVariable->logInDegreeScore(pNetworkVariable);
 						}
+						else if (strcmp(effectName, "outRateLog") == 0)
+						{
+							score =
+								pVariable->logOutDegreeScore(pNetworkVariable);
+						}
+						else if (strcmp(effectName, "recipRateInv") == 0)
+						{
+							score =
+								pVariable->inversereciprocalDegreeScore(pNetworkVariable);
+						}
+						else if (strcmp(effectName, "recipRateLog") == 0)
+						{
+							score =
+								pVariable->logreciprocalDegreeScore(pNetworkVariable);
+						}						
 						else
 						{
 

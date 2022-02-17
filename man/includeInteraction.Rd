@@ -9,7 +9,8 @@ Function to create user-specified interactions for a Siena model.
 \usage{
 includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
     type = "eval", interaction1 = rep("", 3), interaction2 = rep("", 3),
-    fix = FALSE, test = FALSE, parameter = NULL, random = FALSE,
+    parameter=NULL, fix=FALSE, test=FALSE, random=FALSE,
+    initialValue=0,
     character = FALSE, verbose = TRUE)
 }
 \arguments{
@@ -36,17 +37,18 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
     effect e.g. covariate name or behavior variable name.
     Trailing blanks may be omitted.
   }
+  \item{parameter}{
+    Value of internal effect parameter of this interaction effect.
+    If NULL, no change is made.}
   \item{fix}{
     Boolean. Are the effects to be fixed at the value stored in
     \code{myeff$initialValue} or not.}
   \item{test}{
     Boolean. Are the effects to be tested or not (requires \code{fix}).}
-  \item{parameter}{
-    Value of internal effect parameter of this interaction effect.
-	If NULL, no change is made.}
   \item{random}{For specifying that the interaction effect will vary randomly;
     not relevant for \code{RSiena} at this moment.
     Boolean required. Default FALSE.}
+  \item{initialValue}{Initial value for estimation. Default 0.}
   \item{character}{Boolean: are the effect names character strings or not.}
   \item{verbose}{Boolean: should the print of altered effects be produced.}
 }
@@ -70,7 +72,7 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   Interaction effects are constructed from effects with shortName
   \code{unspInt} (for networks) and \code{behUnspInt} (for behavior)
   by specifying their elements \code{effect1} and \code{effect2},
-  and possibly \code{effect3}.
+  and possibly \code{effect3}. The shortName is not altered by this function.
 
   The number of possible user-specified interaction effects is limited
   by the parameters \code{nintn} (for dependent network variables)
@@ -82,11 +84,6 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   refer to created interactions, but to dependence of the base effects on
   other variables in the data set.
   They are used to completely identify the effects.
-
-  To set attributes of interaction effects in the effects object,
-  function \code{\link{setEffect}} can also be used with short name
-  \code{unspInt} or \code{behUnspInt}, and further using parameters
-  \code{effect1} and \code{effect2}, and possibly \code{effect3}.
 
   Further information about Siena effects objects is given
   in the help page for \code{\link{getEffects}}.
