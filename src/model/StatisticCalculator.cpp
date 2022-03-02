@@ -664,7 +664,7 @@ void StatisticCalculator::calculateNetworkEvaluationStatistics(
 			}
 		}
 		delete pEffect;
-	}	
+	}
 	// Restore the predictor network
 	this->lpPredictorState->pNetwork(name, pPredictorNetwork);
 }
@@ -1822,12 +1822,9 @@ double StatisticCalculator::calculateDiffusionRateEffect(
 				}
 				else
 				{
-					throw logic_error(
-						"No individual covariate.");
+					throw logic_error("No individual covariate.");
 				}
-
 			}
-
 			totalAlterValue += alterValue;
 		}
 
@@ -1979,7 +1976,8 @@ void StatisticCalculator::calcDifferences(
 						map->find(make_pair(iter.ego(), iter.alter()))->second.push_back(
 								i);
 					}
-				} else
+				}
+				else
 				{
 					throw logic_error(
 							"No dyadic covariate named '"
