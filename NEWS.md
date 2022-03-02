@@ -13,7 +13,7 @@
 ### Corrections:
   * corrected sienaRI for behavioral variables.
     This required changes in 
-    `StatisticCalculator::calculateBehaviorGMMStatistics` and
+    `StatisticCalculator::calculateBehaviorStatistics` and
     `StatisticCalculator::calculateBehaviorGMMStatistics`.
   * dropped exclusion of bipartite for sienaRI (only continuous excluded),
     but only if there are fewer second-mode nodes than actors.
