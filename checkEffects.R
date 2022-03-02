@@ -993,6 +993,25 @@ mymodel <- sienaModelCreate(projname=NULL, seed=514)
 (ans <- siena07(mymodel, data=mydata, effects=myeff, prevAns=ans))
 # convergence is very slow, which is natural for this effect with only 3 waves
 ans$targets
+############################################
+### check avDeg
+############################################
+
+mynet <- sienaNet(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+(mydata <- sienaDataCreate(mynet))
+
+myeff <- getEffects(mydata)
+(myeff <- includeEffects(myeff, avDeg))
+mymodel <- sienaModelCreate(projname=NULL, seed=514, diagonalize=0.6)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+(ans <- siena07(mymodel, data=mydata, effects=myeff, prevAns=ans))
+# convergence is very slow, which is natural for this effect with only 3 waves
+ans$targets
+
+(ad2 <- sum(s502)/50)
+(ad3 <- sum(s503)/50)
+p <- 2
+sum((ad2-p)*s502 + (ad3-p)*s503) # OK avDeg
 
 sum(s502 + s501) # OK density
 sum(s502*t(s502) + s501*t(s501)) # OK recip
@@ -1000,4 +1019,35 @@ sum(s502*t(s502) + s501*t(s501)) # OK recip
 (ad2 <- sum(s502)/50)
 p <- 2
 sum((ad1-p)*s502 + (ad2-p)*s501) # OK avDegIntn
+
+############################################
+### check avDeg
+############################################
+
+mynet <- sienaNet(array(c(s501, s502, s503, s502, s501), dim=c(50, 50, 5)))
+(mydata <- sienaDataCreate(mynet))
+
+myeff <- getEffects(mydata)
+(myeff <- includeEffects(myeff, avDeg))
+mymodel <- sienaModelCreate(projname=NULL, seed=514, diagonalize=0.6, nsub=5)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+(ans <- siena07(mymodel, data=mydata, effects=myeff, prevAns=ans))
+(ans <- siena07(mymodel, data=mydata, effects=myeff, prevAns=ans))
+# convergence is very slow, which is natural for this effect with only 5 waves
+ans$targets
+
+(ad2 <- sum(s502)/50)
+(ad3 <- sum(s503)/50)
+(ad1 <- sum(s501)/50)
+p <- 2
+sum(2*(ad2-p)*s502 + (ad3-p)*s503 + (ad1-p)*s501) # OK avDeg
+
+myeff <- setEffect(myeff, density, initialValue=ans$theta[1], fix=TRUE, test=TRUE)
+myeff <- setEffect(myeff, recip, initialValue=ans$theta[2], fix=TRUE, test=TRUE)
+(ans1 <- siena07(mymodel, data=mydata, effects=myeff))
+myeff$fix <- FALSE
+myeff$test <- FALSE
+(ans2 <- siena07(mymodel, data=mydata, effects=myeff, prevAns=ans1))
+(ans3 <- siena07(mymodel, data=mydata, effects=myeff, prevAns=ans2))
+
 

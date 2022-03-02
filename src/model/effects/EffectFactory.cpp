@@ -357,6 +357,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new BothDegreesEffect(pEffectInfo, true);
 	}
+	else if (effectName == "avDeg")
+	{
+		pEffect = new AverageDegreeEffect(pEffectInfo);
+	}
 	else if (effectName == "outTrunc")
 	{
 		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, true, false);
