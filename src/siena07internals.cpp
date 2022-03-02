@@ -236,6 +236,7 @@ void updateParameters(SEXP EFFECTSLIST, SEXP THETA, vector<Data *> *
 	int intptr3Col;
 	int settingCol;
 
+// Get the column numbers:
 	getColNos(Names, &netTypeCol, &nameCol, &effectCol,
 		&parmCol, &int1Col, &int2Col, &initValCol,
 		&typeCol, &groupCol, &periodCol, &pointerCol,
@@ -1614,6 +1615,7 @@ void getChangeContributionStatistics(SEXP EFFECTSLIST,
 	int intptr3Col;
 	int settingCol;
 
+// Get the column numbers:
 	getColNos(Names, &netTypeCol, &nameCol, &effectCol,
 			&parmCol, &int1Col, &int2Col, &initValCol,
 			&typeCol, &groupCol, &periodCol, &pointerCol,
@@ -1628,7 +1630,8 @@ void getChangeContributionStatistics(SEXP EFFECTSLIST,
 		{
 			const char * effectType = CHAR(STRING_ELT(VECTOR_ELT(EFFECTS, typeCol), i));
 			const char * netType = CHAR(STRING_ELT(VECTOR_ELT(EFFECTS, netTypeCol), i));
-			if(strcmp(netType, "oneMode") == 0 || strcmp(netType, "behavior") == 0)
+			if(strcmp(netType, "oneMode") == 0 || strcmp(netType, "bipartite") == 0 || 
+									strcmp(netType, "behavior") == 0)
 			{
 				// todo At the moment, change contributions cannot be calculated for endowment or creation effects
 				// modifications in the corresponding methods (calculateNetworkEndowmentStatistics, calculateNetworkCreationStatistics,
@@ -1678,6 +1681,7 @@ void getActorStatistics(SEXP EFFECTSLIST,
 	int intptr3Col;
 	int settingCol;
 
+// Get the column numbers:
 	getColNos(Names, &netTypeCol, &nameCol, &effectCol,
 			&parmCol, &int1Col, &int2Col, &initValCol,
 			&typeCol, &groupCol, &periodCol, &pointerCol,
@@ -1741,7 +1745,8 @@ void getStatistics(SEXP EFFECTSLIST,
 	int intptr2Col;
 	int intptr3Col;
 	int settingCol;
-
+	
+// Get the column numbers:
 	getColNos(Names, &netTypeCol, &nameCol, &effectCol,
 			&parmCol, &int1Col, &int2Col, &initValCol,
 			&typeCol, &groupCol, &periodCol, &pointerCol,
@@ -2160,6 +2165,7 @@ void getScores(SEXP EFFECTSLIST, int period, int group,
 	int intptr3Col;
 	int settingCol;
 
+// Get the column numbers:
 	getColNos(Names, &netTypeCol, &nameCol, &effectCol,
 			&parmCol, &int1Col, &int2Col, &initValCol,
 			&typeCol, &groupCol, &periodCol, &pointerCol,

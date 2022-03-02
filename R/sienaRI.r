@@ -20,7 +20,7 @@ sienaRI <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL,
 	datatypes <- sapply(data$depvars, function(x){attr(x,"type")})
 	if (any(datatypes == "bipartite"))
 	{
-		stop("sienaRI works only for dependent variables of type 'oneMode' or 'behavior'")
+#		stop("sienaRI works only for dependent variables of type 'oneMode' or 'behavior'")
 	}
 	if(!is.null(ans))
 	{
@@ -40,7 +40,7 @@ sienaRI <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL,
 			stop("sienaRI does not yet work for models containing endowment or creation effects")
 		}
 		if (any(ans$effects$shortName %in% c("unspInt", "behUnspInt"))){
-			stop("sienaRI does not yet work for models containing interaction effects")
+			stop("sienaRI does not work for models containing interaction effects")
 		}
 		contributions <- getChangeContributions(algorithm = ans$x, data = data,
 			effects = ans$effects)
@@ -189,20 +189,33 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 		{
 			currentDepName <- networkNames[eff]
 			actors <- length(conts[[1]][[1]][[1]])
-			if (networkTypes[eff] == "oneMode")
-			{
-				choices <- actors
-			}else if(networkTypes[eff] == "behavior"){
-				choices <- 3
-			} else {
-				stop("so far, sienaRI works only for dependent variables of type 'oneMode' or 'behavior'")
-			}
 			depNumber <- depNumber + 1
 			currentDepEffs <- effects$name == currentDepName
 			effNumber <- sum(currentDepEffs)
 			depNetwork <- thedata$depvars[[depNumber]]
-			# impute for wave 1
 			if (networkTypes[eff] == "oneMode")
+			{
+				choices <- actors
+			}
+			else if (networkTypes[eff] == "behavior")
+			{
+				choices <- 3
+			}
+			else if (networkTypes[eff] == "bipartite")
+			{
+				if (dim(depNetwork)[2] >= actors)
+				{
+					stop("sienaRI does not work for bipartite networks with second mode >= first mode")
+				}
+				choices <- dim(depNetwork)[2] + 1				
+			}
+			else
+			{
+				stop("sienaRI does not work for dependent variables of type 'continuous'")
+			}		
+			
+			# impute for wave 1
+			if (networkTypes[eff] %in% c("oneMode", "bipartite"))
 			{
 				depNetwork[,,1][is.na(depNetwork[,,1])] <- 0
 			}
@@ -244,11 +257,17 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 			}
 			else
 			{
-				toggleProbabilities <- array(0, dim=c(actors, actors, waves))
+				toggleProbabilities <- array(0, dim=c(actors, choices, waves))
 			}
 			for(w in 1:waves)
 			{
 				currentDepEffectContributions <- conts[[1]][[w]][currentDepEffs]
+				if (networkTypes[eff] == "bipartite")
+				{
+					currentDepEffectContributions <- lapply(
+							currentDepEffectContributions, 
+							function(x){lapply(x,function(xx){xx[1:choices]})})
+				}
 				# conts[[1]] is periods by effects by actors by actors
 				currentDepEffectContributions <-
 					sapply(lapply(currentDepEffectContributions, unlist),
@@ -293,12 +312,14 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 				else
 				{
 					toggleProbabilities[,,w] <-
-						t(vapply(distributions, function(x){x[1,]}, rep(0,actors)))
+						t(vapply(distributions, function(x){x[1,]}, rep(0,choices)))
 				}
-# toggleProbabilities is an array referring to ego * alter * wave,
+# toggleProbabilities is an array referring to ego * choices * wave,
 # giving the probability of ego in a ministep in the wave
-# toggling the tie variable to the alter.
-# for behavior 'alter' is to be replaced by 3
+# to make this choice.
+# For oneMode networks choices are alters; 
+# for  bipartite choices are second mode nodes,and the last is "no change";
+# for behavior choices are to add -1, 0, +1.
 				entropy_vector <- unlist(lapply(distributions,
 						function(x){entropy(x[1,])}))
 				## If one wishes another measure than the

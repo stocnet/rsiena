@@ -12,7 +12,7 @@
  Section 3.1 of Indlekofer and Brandes (2013).
  The measure is based on the influence of effects on potential tie change or
  behavior change decisions of individual actors at the given observation
- moments.
+ moments (waves).
  It takes the data as well as the complete model specification into account.
  Therefore, necessary arguments are the analysed data given as a \code{siena}
  data object as well as the complete model specification represented either
@@ -108,11 +108,13 @@ Note that \code{sienaRI} works only with Method of Moments
 and that it does not yet work for endowment or creation effects
 (i.e., included effects have to be of type \code{eval}),
 and also not for models with interaction effects.
-It does not allow two-mode (bipartite) networks as dependent variables;
-but these can be represented as one-mode networks using structural zeros.
+For two-mode (bipartite) networks as dependent variables,
+it works only if the number of second-mode nodes is less than the
+number of actors.
 If the network is non-directed, the relative importances and entropy-based
 'degrees of certainty' are calculated for \code{modelType=2}
 ('forcing'; see  \code{\link{sienaAlgorithmCreate}}).
+For dependent behavior variable, \code{behModelType=1} ('standard') is assumed.
 
 If there are any missing tie values in the network data set, they are imputed by
 initial zeros and Last Observation Carried Forward. Structural zeros and ones
@@ -149,7 +151,7 @@ corresponding to the observation moments.
           importances of effects for each potential actor decision at
           observation moments. This is the numerator of equation (3)
           in Indlekofer and Brandes (2013).}
-    \item{- \code{expectedI}}{is a list that contains the expected
+    \item{- \code{expectedI}}{a list that contains the expected
           importances of effects
           aggregated over all actors in each observation.
           More precisely, it contains the averages of the actor related values
@@ -168,14 +170,19 @@ corresponding to the observation moments.
     \item{- \code{sigma}}{a list of effects by ego matrices of the values of
           the within-ego standard deviations of the change statistics.
           Their averages (over egos) are printed if \code{printSigma=TRUE}.}
-    \item{- \code{changeStatistics}}{a list of arrays (effects by alters by egos)
-          containing for each observation moment,
-          the values of the change statistics for toggling the tie from actor
-          to ego; this is produced only if \code{getChangeStats=TRUE}.}
-    \item{- \code{toggleProbabilities}}{an array of dimensions
-         ego \eqn{\times}{*} alter \eqn{\times}{*} wave for network
-         dependent variables,
-         and ego \eqn{\times}{*} 3 \eqn{\times}{*} wave for behavior variables,
+    \item{- \code{changeStatistics}}{a list of arrays
+          (effects by choices by egos)
+          containing for each observation wave,
+          the values of the change statistics for making this choice,
+          where for one-mode networks the choice is defined by the alters
+          with alter=ego referring to 'no change',
+          for two-mode networks the choice is defined by the second-mode nodes
+          with the last choice referring to 'no change',
+          and for behavior the choice is defined as
+          going down, staying constant, or going up;
+          this output is produced only if \code{getChangeStats=TRUE}.}
+    \item{- \code{toggleProbabilities}}{an array
+         (egos by choices by waves), where "choices" are as directly above,
          giving the choice probabilities of ego in a ministep,
          when the data are as in this wave.}
     }
@@ -191,7 +198,7 @@ corresponding to the observation moments.
   \emph{Mathematics and Social Sciences}, 168 (4), 31-41.
 }
 }
-\author{Natalie Indlekofer, some additions by Tom Snijders}
+\author{Natalie Indlekofer, additions by Tom Snijders}
 \examples{
 myalgorithm <- sienaAlgorithmCreate(nsub=1, n3=50, projname=NULL)
 mynet1 <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))

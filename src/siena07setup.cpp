@@ -400,7 +400,7 @@ SEXP effects(SEXP RpData, SEXP EFFECTSLIST)
 	int intptr3Col;
 	int settingCol;
 
-
+// Get the column numbers:
 	getColNos(Names, &netTypeCol, &nameCol, &effectCol,
 		&parmCol, &int1Col, &int2Col, &initValCol,
 		&typeCol, &groupCol, &periodCol, &pointerCol,
@@ -480,6 +480,7 @@ SEXP interactionEffects(SEXP RpModel, SEXP EFFECTSLIST)
 	int intptr3Col;
 	int settingCol;
 
+// Get the column numbers:
 	getColNos(Names, &netTypeCol, &nameCol, &effectCol,
 		&parmCol, &int1Col, &int2Col, &initValCol,
 		&typeCol, &groupCol, &periodCol, &pointerCol,
@@ -736,7 +737,7 @@ SEXP getTargetActorStatistics(SEXP dataptr, SEXP modelptr, SEXP effectslist, SEX
 }
 
 SEXP getTargetsChangeContributions(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST, SEXP PARALLELRUN)
-	{
+{
 	vector<Data *> * pGroupData = (vector<Data *> *) R_ExternalPtrAddr(DATAPTR);
 	Model * pModel = (Model *) R_ExternalPtrAddr(MODELPTR);
 
@@ -748,13 +749,13 @@ SEXP getTargetsChangeContributions(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST
 
 	SEXP altStats = PROTECT(allocVector(VECSXP, nGroups));
 	SEXP NETWORKTYPES = PROTECT(createRObjectAttributes(EFFECTSLIST, altStats));
-		int objEffects = length(NETWORKTYPES);
+	int objEffects = length(NETWORKTYPES);
 
 	for (size_t group = 0; group < nGroups; group++)
-		{
+	{
 		SET_VECTOR_ELT(altStats, group, allocVector(VECSXP, (*pGroupData)[group]->observationCount()));
 			for (int p = 0; p < (*pGroupData)[group]->observationCount(); p++)
-			{
+		{
 			SET_VECTOR_ELT(VECTOR_ELT(altStats,group), p, allocVector(VECSXP,objEffects));
 		}
 	}
@@ -770,42 +771,11 @@ SEXP getTargetsChangeContributions(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST
 			StatisticCalculator calculator(pData, pModel, &State, period, false, true);
 			vector<vector<double * > > changeContributions;
 			getChangeContributionStatistics(EFFECTSLIST, &calculator, &changeContributions);
-				int actors = pData->rDependentVariableData()[0]->n();
-				for(unsigned e = 0; e < changeContributions.size(); e++)
-				{
-				SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats,group), period+1),
-						e, allocVector(VECSXP,actors));
-					int choices;
-					if (strcmp(CHAR(STRING_ELT(NETWORKTYPES,e)), "behavior") == 0)
-					{
-						choices = 3;
-					}
-					else
-					{
-						choices = actors; // is this wrong for bipartite?
-					}
-					for(int actor = 0; actor < actors; actor++)
-					{
-					SEXP actorsVal = PROTECT(allocVector(REALSXP, choices));
-						double * d = REAL(actorsVal);
-						for(int i = 0; i< length(actorsVal); i++)
-						{
-							d[i]=changeContributions.at(e).at(actor)[i];
-						}
-					SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), period+1), e), actor, actorsVal);
-						UNPROTECT(1);
-					}
-				}
-			}
-			State State (pData, 0);
-		StatisticCalculator calculator(pData, pModel, &State, 0, false, true);
-			vector<vector<double * > > changeContributions;
-		getChangeContributionStatistics(EFFECTSLIST, &calculator, &changeContributions);
-		int actors = pData->rDependentVariableData()[0]->n();
+			int actors = pData->rDependentVariableData()[0]->n();
 			for(unsigned e = 0; e < changeContributions.size(); e++)
 			{
-			SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), 0),
-					e, allocVector(VECSXP, actors));
+				SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats,group), period+1),
+								e, allocVector(VECSXP,actors));
 				int choices;
 				if (strcmp(CHAR(STRING_ELT(NETWORKTYPES,e)), "behavior") == 0)
 				{
@@ -813,24 +783,58 @@ SEXP getTargetsChangeContributions(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST
 				}
 				else
 				{
-					choices = actors;// is this wrong for bipartite?
+					choices = actors; // will not work for bipartite
+					// But I did not find a convenient way to get knowledge of m() to here
 				}
 				for(int actor = 0; actor < actors; actor++)
 				{
-				SEXP actorsVal = PROTECT(allocVector(REALSXP, choices));
+					SEXP actorsVal = PROTECT(allocVector(REALSXP, choices));
 					double * d = REAL(actorsVal);
 					for(int i = 0; i< length(actorsVal); i++)
 					{
 						d[i]=changeContributions.at(e).at(actor)[i];
 					}
-				SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), 0), e), actor, actorsVal);
+					SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), period+1), e), 
+								actor, actorsVal);
 					UNPROTECT(1);
 				}
 			}
 		}
+		State State (pData, 0);
+		StatisticCalculator calculator(pData, pModel, &State, 0, false, true);
+			vector<vector<double * > > changeContributions;
+		getChangeContributionStatistics(EFFECTSLIST, &calculator, &changeContributions);
+		int actors = pData->rDependentVariableData()[0]->n();
+		for(unsigned e = 0; e < changeContributions.size(); e++)
+		{
+			SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), 0),
+				e, allocVector(VECSXP, actors));
+			int choices;
+			if (strcmp(CHAR(STRING_ELT(NETWORKTYPES,e)), "behavior") == 0)
+			{
+				choices = 3;
+			}
+			else
+			{						
+					choices = actors; // will not work for bipartite
+			}
+			for(int actor = 0; actor < actors; actor++)
+			{
+				SEXP actorsVal = PROTECT(allocVector(REALSXP, choices));
+				double * d = REAL(actorsVal);
+				for(int i = 0; i< length(actorsVal); i++)
+				{
+					d[i]=changeContributions.at(e).at(actor)[i];
+				}
+				SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), 0), e), 
+						actor, actorsVal);
+				UNPROTECT(1);
+			}
+		}
+	}
 	UNPROTECT(2);
 	return altStats;
-	}
+}
 
 /**
  *  Gets target values relative to the input data
