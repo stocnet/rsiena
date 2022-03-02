@@ -1,3 +1,38 @@
+# RSiena 1.3.8
+
+## 
+   
+2022-03-01
+
+## Changes in RSiena:  
+
+### Effects:
+  * Changed internal effect parameter for `simAllNear` to 2 and for
+    `simAllFar` to 4.
+
+### Corrections:
+  * corrected sienaRI for behavioral variables.
+    This required changes in 
+    `StatisticCalculator::calculateBehaviorGMMStatistics` and
+    `StatisticCalculator::calculateBehaviorGMMStatistics`.
+  * dropped exclusion of bipartite for sienaRI (only continuous excluded),
+    but only if there are fewer second-mode nodes than actors.
+    This required changes in 
+    `StatisticCalculator::calculateNetworkEvaluationStatistics`
+    and in `siena07internals::getChangeContributionStatistics'.
+
+
+# RSiena 1.3.7
+
+## 
+   
+2022-02-18
+
+## Changes in RSiena:  
+
+### Effects:
+  * New effect `avDeg`.
+
 # RSiena 1.3.6
 
 ## 
