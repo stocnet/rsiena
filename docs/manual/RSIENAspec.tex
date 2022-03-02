@@ -566,6 +566,8 @@ complete effect rows including endowment effect copies.
 \begin{algorithmic}
 \FORALL{dependent variables}
 \STATE Create appropriate effects
+\STATE Set \nnm{netType} to the value \nnm{oneMode},
+      \nnm{bipartite},  \nnm{behavior}, or \nnm{continuous}.
 \ENDFOR
 \end{algorithmic}
 \subsection{OneMode Network Effects}
@@ -1001,7 +1003,7 @@ $$ \sum_i 0.5 * \log(p_{i01} / p_{i10}) * p_i / \sum_i p_i $$
 
 \section{sienaGroupCreate}
 
-This function combines a list of siena data objects for common processing. 
+This function combines a list of siena data objects for common processing.
 It is also used in \sfn{initializeFRAN} to convert a single data object to a group one so that all later
 processing can have a common argument.
 
