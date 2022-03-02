@@ -96,8 +96,8 @@ behaviorObjective,xxxxxx threshold,xxxxxx number cent. >= threshold,threshold,TR
 behaviorObjective,xxxxxx threshold,xxxxxx number cent. >= threshold,threshold2,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,TRUE
 behaviorObjective,xxxxxx threshold,xxxxxx number cent. >= threshold,threshold3,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,TRUE
 behaviorObjective,xxxxxx threshold,xxxxxx number cent. >= threshold,threshold4,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,TRUE
-behaviorObjective,xxxxxx #-near similarity,xxxxxx sum # - abs dif <= #,simAllNear,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,TRUE
-behaviorObjective,xxxxxx #-far similarity,xxxxxx sum # - abs dif >= #,simAllFar,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,TRUE
+behaviorObjective,xxxxxx #-near similarity,xxxxxx sum # - abs dif <= #,simAllNear,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,,TRUE
+behaviorObjective,xxxxxx #-far similarity,xxxxxx sum # - abs dif >= #,simAllFar,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,4,objective,NA,NA,0,0,0,0,,TRUE
 behaviorObjective,xxxxxx average group,xxxxxx average group,avGroup,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorRate,rate xxxxxx period 1,Amount of behavioral change,Rate,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,1,NA,0,0,0,0,,FALSE
 behaviorRate,rate xxxxxx (period nnnnnn),Amount of behavioral change in period nnnnnn on xxxxxx,Rate,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,nnnnnn,NA,0,0,0,0,,FALSE
@@ -337,6 +337,7 @@ bipartiteObjective,anti in-isolates,Number of indegrees at least 1,antiInIso,TRU
 bipartiteObjective,anti in-near-isolates,Number of indegrees at least 2,antiInIso2,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 bipartiteObjective,indegree at least 2,Number of indegrees at least 2,in2Plus,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 bipartiteObjective,indegree at least 3,Number of indegrees at least 3,in3Plus,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
+bipartiteObjective,average degree,Outdegree sum squared/n - #,avDeg,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,,FALSE
 bipartiteObjective,out-in degree^(1/#) assortativity,Sum of out-in degree^(1/#) products,outInAss,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,,FALSE
 nonSymmetricObjective,outdegree (density),Number of ties,density,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,TRUE
 nonSymmetricObjective,reciprocity,Number of reciprocated ties,recip,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,TRUE
@@ -395,6 +396,7 @@ nonSymmetricObjective,anti in-near-isolates,Number of indegrees at least 2,antiI
 nonSymmetricObjective,indegree at least 2,Number of indegrees at least 2,in2Plus,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 nonSymmetricObjective,indegree at least 3,Number of indegrees at least 3,in3Plus,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 nonSymmetricObjective,isolate - popularity,N. actors (ind.=1 and outd.=0),isolatePop,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
+nonSymmetricObjective,average degree,Degree sum squared/n - #,avDeg,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,,FALSE
 nonSymmetricObjective,out-out degree^(1/#) assortativity,Sum of out-out degree^(1/#) products,outOutAss,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,,FALSE
 nonSymmetricObjective,out-in degree^(1/#) assortativity,Sum of out-in degree^(1/#) products,outInAss,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,,FALSE
 nonSymmetricObjective,in-out degree^(1/#) assortativity,Sum of in-out degree^(1/#) products,inOutAss,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
@@ -441,6 +443,7 @@ symmetricObjective,1/(degree+#)(degree+1+#),Sum 1/(degrees + #)(degrees + 1 + #)
 symmetricObjective,network-isolate,Number of isolates,isolateNet,FALSE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 symmetricObjective,anti in-isolates,Number of degrees at least 1,antiInIso,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 symmetricObjective,anti in-near-isolates,Number of degrees at least 2,antiInIso2,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
+symmetricObjective,average degree,Degree sum squared/n - #,avDeg,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,,FALSE
 symmetricObjective,Jaccard similarity,Jaccard similarity,Jout,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricRate,effect xxxxxx on rate,effect xxxxxx on rate,RateX,NA,xxxxxx,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,covariate,0,0,0,0,,FALSE
 covarNonSymmetricRate,effect xxxxxx on rate,Amount of change x xxxxxx,RateX,NA,xxxxxx,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,covariate,0,0,0,0,,FALSE
