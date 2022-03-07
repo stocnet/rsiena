@@ -188,7 +188,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.3.6.
+This version was renewed for \RS version 1.3.8.
 \end{abstract}
 
 
@@ -239,16 +239,21 @@ The website further contains references to many published examples,
 example scripts illustrating various possibilities of the package,
 course announcements, etc.
 
+\RS is a contributed package for the \R statistical system \citep{R}
+and can be installed in the usual way from \sfn{CRAN}; 
+see \url{http://cran.r-project.org}.
+Development versions of \RS are at 
+\url{https://github.com/snlab-nl/rsiena/}.
+Here also the most recent version is available
+at \url{https://github.com/snlab-nl/rsiena/releases}; 
+it is recommended to use this version.
+
 This is a manual for \rs;
 the manual is provisional in the sense
 that it is continually being updated, taking account of
-updates in the package.
-\RS is a contributed package for the \R statistical system \citep{R}
-which can be downloaded from
-\url{http://cran.r-project.org}. For the operation of \Rn,
-the reader is referred to the corresponding literature and help pages.
-%If desired, \SI can be operated \emph{apparently}
-%independently of \Rn, as is explained in Section~\ref{Gui}.
+updates in the package. For the operation of \Rn,
+the reader is referred to this manual, the help pages, 
+the website, and the corresponding literature.
 
 For working with \rs, please use jointly the following
 information:
@@ -262,25 +267,30 @@ information:
   \item the website
 {\small\url{http://www.stats.ox.ac.uk/~snijders/siena/}~},
         e.g., its \texttt{News} page and its \texttt{RSiena scripts} page;
-  \item the yahoo users' group for \SI meant to exchange information
+  \item the users' group for \SI meant to exchange information
         and technical advice; the address is
-        {\small\url{http://groups.yahoo.com/groups/stocnet/}~}.
+        {\small\url{https://groups.io/g/RSiena}~}.
 \end{enumerate}
 
 \RS was originally programmed by Ruth Ripley and Krists Boitmanis,
 in collaboration with Tom Snijders.
 Since May 2012 the maintainer is Tom Snijders.
-Further contributions were made by Josh Lospinoso, Charlotte Greenan,
-Felix Sch\"{o}nenberger,
-Christian Steglich, Johan Koskinen, Mark Ortmann, Nynke Niezink,
-Robert Hellpap, and Steffen Triebel.
+Major contributions were made by Josh Lospinoso, Charlotte Greenan,
+Michael Schweinberger,
+Felix Sch\"{o}nenberger, Johan Koskinen, Mark Ortmann, Nynke Niezink,
+Viviana Amati, and Mark Huisman.
+Other contributors include 
+Christian Steglich, Christoph Stadtfeld, Per Block, 
+Robert Krause, Marion Hoffman, Alvaro Uzaheta,
+Robert Hellpap, James Hollway, and Steffen Triebel.
 Currently, \RS is maintained by a research group
 at the University of Groningen, seconded by researchers in Z\"{u}rich,
-Konstanz, and Manchester.
+Melbourne, Geneva, and elsewhere.
 
-In addition to the `official' \R distribution of \rs, there is
-an additional distribution \sfn{RSienaTest} at R-Forge, which includes
-additional options that are still in the testing stage.
+In addition to the `official' \R distribution of \RS 
+and the \sfn{GitHub} development version, there is
+an additional distribution \sfn{RSienaTest} at \sfn{R-Forge}, 
+which includes additional options that are still in the testing stage.
 Some of the options described in this manual may apply to
 {\sf RSienaTest} only, with the plan to transfer this to \RS
 in the future.
@@ -288,7 +298,7 @@ in the future.
 \subsection{Acknowledgements}
 
 The development of \RS was carried out by researchers of the Universities
-of Oxford, Groningen, and Konstanz.
+of Oxford, Groningen, Konstanz, Z\"{u}rich, Manchester, and Melbourne.
 We are grateful to NIH (National Institutes of Health, USA)
 for their funding of programming \RS during 2008-2014.
 This was done
@@ -325,11 +335,11 @@ Ruth M. Ripley, Tom A.B. Snijders, Zs\'{o}fia Boda,
  Andr\'{a}s V\"{o}r\"{o}s, and Paulina Preciado, \the\year.
 Manual for SIENA version 4.0 (version \today).
 Oxford: University of Oxford, Department of Statistics; Nuffield College.
-\textsf{http://www.stats.ox.ac.uk/~snijders/siena/}.
+{\newline{\url{http://www.stats.ox.ac.uk/~snijders/siena/RSiena_manual.pdf}}},
 \smallskip
 
-
-A tutorial is \citet*{SnijdersEA10b}.
+A standard general reference is \citet{Snijders2017}.
+Tutorials are \citet*{SnijdersEA10b} and \citet{Kalish2020}.
 A basic reference for the network dynamics model is \citet{Snijders01}
 or \citet{Snijders05}.
 Basic references for the model of network-behavior co-evolution
@@ -347,12 +357,12 @@ and \citet{SchweinbergerSnijders07a} for the calculation of
 standard errors of the Method of Moments estimators.
 For assessing and correcting time heterogeneity, refer to
 \citet*{Lospinoso2011}.
-For goodness of fit assement and associated model
+For goodness of fit assessment and associated model
 selection considerations, refer to \citet{LospinosoSnijders2019}.
 A basic reference for the Bayesian estimation is \citet{KoskinenSnijders07}
 and for the maximum likelihood estimation \citet*{SnijdersEA10a}.
 For Generalized Method of Moments estimators,
-the reference is \citet*{ASS2015,ASS2019}.
+references are \citet*{ASS2015,ASS2019}.
 For the integrated multilevel network analysis implemented
 in function \sfn{sienaBayes}, the reference is \citet{KoskinenSnijders2022}.
 \smallskip
@@ -1116,7 +1126,7 @@ The website, {\small\url{http://www.stats.ox.ac.uk/~snijders/siena/}~}, contains
 various further publications (also in other languages than English) that may
 be helpful, as well as example scripts.
 There is a users' group for \SI to exchange information and seek technical
-advice; the address is {\small\url{http://groups.yahoo.com/groups/stocnet/}~}.
+advice; the address is {\small\url{https://groups.io/g/RSiena}~}.
 
 For technical problems running \rs, follow the following points.
 \begin{description}
@@ -1128,7 +1138,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.3.6).
+  identified by a version number (e.g.\ 1.3.8).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -9410,6 +9420,16 @@ and
  $s^{\rm net}_{i\vit}(x) = 1/(x_{i+} + p)(x_{i+} + p + 1)$;\\
  endowment effect only likelihood-based.
 
+ \item {\em average out-degree} ($X$: av.\ degree) \texttt{(avDeg)}\\
+ defined by the out-degree of $i$ multiplied by the
+ average outdegree centered by the internal effect parameter~$p$\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \big( \frac 1n \sum_h  {x_{h+}} \,-\, p \big)=
+                           x_{i+}\, \big( \frac 1n \sum_h x_{h+} \,-\, p \big) $ \, ;\\[0.2em]
+  this effect is a network-by-period level effect and therefore is useful only
+  for multigroup data sets or for data sets with many periods;\\
+  it may be beneficial for convergence to use a value of $p$ that is
+  close to the average degree (but constant, while this effect
+  is for the dynamic average outdegree);
 
  \item[{\hspace*{-1ex}$\bigodot$}] the following assortativity effects are,
  for $p=1$, various orientations of three-paths (plus a bit of two-paths):\\
@@ -10783,11 +10803,15 @@ for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{i+}} - \sqrt{\
 
  \item {\em Effect of average out-degree in W on X } ($X$: av.\ degree $W$)
  \texttt{(avDegIntn)}\\
- defined by the average $W$-out-degree of $i$, centered by the internal effect parameter~$p$\\[0.2em]
+ defined by the $X$-outdegree of $i$ multiplied by the
+ average $W$-out-degree, centered by the internal effect parameter~$p$\\[0.2em]
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \big( \frac 1n \sum_h  {w_{h+}} \,-\, p \big)=
                            x_{i+}\, \big( \frac 1n \sum_h w_{h+} \,-\, p \big) $ \, ;\\[0.2em]
   this effect is a network-by-period level effect and therefore is useful only
-  for multigroup data sets or for data sets with many periods;
+  for multigroup data sets or for data sets with many periods;\\
+  it may be beneficial for convergence to use a value of $p$ that is
+  close to the average $W$-degree (but constant, while this effect
+  is for the dynamic average outdegree);
 
  \item {\em Interaction W $\times$ in-degree W activity } ($X$: $W$ x indegree$^{1/p}$ $W$ activity)
          \texttt{(crprodInActIntn)}\\
@@ -10797,12 +10821,12 @@ for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\,w_{ij}\, (\sqrt{w_{+i}} -
 
  \item {\em Effect of absolute difference of both W out-degrees} ($X$: outdegree$^{1/p}$ $W$ abs. diff.) \texttt{(absOutDiffIntn)}\\
  defined by   the sum of the absolute difference of the $W$-out-degrees of alter and ego
- for all alters to whom $i$ is tied; 
+ for all alters to whom $i$ is tied;
  for parameter $p = 2$ the square roots of the $W$-out-degrees are taken:\\[0.2em]
  $s^{\rm net}_{i\vit}(x) =
    \sum_j x_{ij}\, | w_{i+} - w_{j+} | $ or\\[0.2em]
 for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, | \sqrt{w_{i+}} - \sqrt{w_{j+} } | $;\\[0.2em]
- this can be regarded as minus the similarity of the $W$-out-degrees 
+ this can be regarded as minus the similarity of the $W$-out-degrees
  (but without the division by the range);
 
  \item {\em Effect of both in-degrees in W on X-popularity } ($X$: both indegrees$^{1/p}$ $W$ ) \texttt{(both)}\\
@@ -14832,10 +14856,14 @@ proposed by \citet{IndlekoferBrandes2013},
 together with a measure for the (non-relative) \emph{importance of effects},
 can be calculated by \sfn{sienaRI()}.
 
-Ministeps in the {\saom} are random events with $n$ possible outcomes.
+Ministeps in the {\saom} are random events with $c$ possible outcomes;
+for one-mode networks $c=n$, for two-mode networks $c$ is the
+number of second-mode nodes +1 (for `no change'), for behavior
+$c=3$ (changes by --1, 0, or +1); there may be constraints
+diminishing the number of choices.
 Let us denote the probabilities with which
 actor $i$ in a ministep may change one of the outgoing ties by
-$p_{i}(\beta, x) = \big(p_{i1}(\beta, x), \ldots, p_{in}(\beta, x)\big)$.
+$p_{i}(\beta, x) = \big(p_{i1}(\beta, x), \ldots, p_{ic}(\beta, x)\big)$.
 The Indlekofer-Brandes measures are numerical answers to the question,
 `How strongly do these probabilities depend on each of the effects?'.
 In their paper, measures are proposed for expressing this per actor
@@ -14850,14 +14878,14 @@ The  relative importances can be averaged over actors to give
 
 The uncertainty in a random categorical variable
 can be measured by the \emph{entropy} \citep{Shannon1948}. For a probability
-distribution with probabilities $p = (p_1, \ldots, p_K)$ for
-an outcome with categories $1, \ldots, K$, it is defined as
+distribution with probabilities $p = (p_1, \ldots, p_c)$ for
+an outcome with categories $1, \ldots, c$, it is defined as
 \begin{equation}\label{entropy}
-  H(p) \,=\, - \sum_{k=1}^K p_k {}\,^2 \log(p_k) \ .
+  H(p) \,=\, - \sum_{k=1}^c p_k {}\,^2 \log(p_k) \ .
 \end{equation}
 This is 0 if the variable is deterministic, i.e., one of the categories
-has probability~1; the maximum value is ${}^2 \log(K)$, attained if all
-categories have the same probability $1/K$ (maximum uncertainty).
+has probability~1; the maximum value is ${}^2 \log(c)$, attained if all
+categories have the same probability $1/c$ (maximum uncertainty).
 
 Using a minus sign, the degree of certainty (as opposed to uncertainty)
 in the outcome of the ministep with probabilities
@@ -14892,7 +14920,8 @@ The  \emph{change statistics} $\delta_{ijk}(x)$
 for an effect $s_{ik}(x)$ are the changes in the
 value of this effect, for a given actor $i$, a given current state
 of the network $x$, and a given alter $j$, when the
-tie variable $x_{ij}$ would be toggled.
+tie variable $x_{ij}$ would be toggled
+(and analogous for behavioral dependent variables).
 These are the basic `variables' in the conditional multinomial
 logistic regression model that is at the heart of the \saom.
 Their \emph{within-actor} standard deviations $\sigma_k(x)$
@@ -14909,7 +14938,8 @@ and  printed by the print method for \sfn{sienaRI()} if \texttt{printSigma=TRUE}
 The change statistics themselves are potentially a lot of numbers
 ($n^2 \times M \times K$, where $M$ is the number of waves and $K$
 the number of effects in the model), and are only retained in the object
-produced by \sfn{sienaRI()} if \texttt{getChangeStats=TRUE}; see the help page.
+produced by \sfn{sienaRI()} if \texttt{getChangeStats=TRUE}; 
+see the help page for \sfn{sienaRI()}.
 
 \newpage
 \section{Error messages}
@@ -15370,12 +15400,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.3.6.tar.gz|\\
+\verb|R CMD check RSiena_1.3.8.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.3.6.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.3.8.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16408,6 +16438,27 @@ Changes in RSiena:
 \fi
 
 
+\item 2022-03-02 GitHub, package version 1.3.8.
+
+Changes in RSiena:
+\begin{itemize}
+\item  Effects:
+\begin{itemize}
+  \item New effect  \texttt{avDeg}.
+  \item Changed internal effect parameter for \texttt{simAllNear} to 2 and for
+    \texttt{simAllFar} to 4.
+\end{itemize}
+\item Improvements of functionality:
+\begin{itemize}
+   \item Function \sfn{sienaRI} was made available also for two-mode networks
+     (provided the number of second-mode nodes is smaller than the
+	 number of actors = first-mode nodes), and corrected
+	 for behavioral dependent variables.
+\end{itemize}
+
+\end{itemize}
+
+
 \item 2022-02-16 GitHub, package version 1.3.6.
 
 Changes in RSiena:
@@ -16420,7 +16471,7 @@ Changes in RSiena:
     and \texttt{both} changed from 2 to 1.
 \end{itemize}
 \item Improvements of functionality:
-\begin{itemize} 
+\begin{itemize}
    \item Function \sfn{includeInteraction} now also can modify the \texttt{initialValue}
      of an effect; and the order of parameters for this function was changed,
      bringing it in line with \sfn{setEffect}.

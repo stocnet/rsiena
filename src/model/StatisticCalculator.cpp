@@ -542,7 +542,7 @@ void StatisticCalculator::calculateBehaviorGMMStatistics(
 				// no change gives no contribution
 				this->lstaticChangeContributions[pInfo].at(e)[1] = 0;
 				// calculate the contribution of downward change
-				if ((currentValues[e] > pBehaviorData->min())
+				if ((currentState[e] > pBehaviorData->min())  // was currentValues
 						&& (!pBehaviorData->upOnly(this->lperiod)))
 				{
 					this->lstaticChangeContributions[pInfo].at(e)[0] =
@@ -551,7 +551,7 @@ void StatisticCalculator::calculateBehaviorGMMStatistics(
 					this->lstaticChangeContributions[pInfo].at(e)[0] = R_NaN;
 				}
 				// calculate the contribution of upward change
-				if ((currentValues[e] < pBehaviorData->max())
+				if ((currentState[e] < pBehaviorData->max())  // was currentValues
 						&& (!pBehaviorData->downOnly(this->lperiod)))
 				{
 					this->lstaticChangeContributions[pInfo].at(e)[2] =
@@ -613,6 +613,7 @@ void StatisticCalculator::calculateNetworkEvaluationStatistics(
 			this->lstatistics[pInfo] = pEffect->evaluationStatistic();
 		}
 
+// I think the following is used only for sienaRI; note the "static", this is used for observations only.
 		if (this->lcountStaticChangeContributions)
 		{
 			int egos = pCurrentLessMissingsEtc->n();
@@ -625,40 +626,47 @@ void StatisticCalculator::calculateNetworkEvaluationStatistics(
 				pEffect->initialize(this->lpData, this->lpPredictorState,
 						this->lperiod, &cache);
 				double * contributions = new double[egos];
-				this->lstaticChangeContributions[pInfo].at(e) = contributions;
-				pEffect->preprocessEgo(e);
-
-				// TODO determine permissible changes
-				// (see: NetworkVariable::calculatePermissibleChanges())
-				for (int a = 0; a < alters ; a++)
-				{
-					if(a == e)
+					this->lstaticChangeContributions[pInfo].at(e) = contributions;
+					pEffect->preprocessEgo(e);
+					// TODO determine permissible changes
+					// (see: NetworkVariable::calculatePermissibleChanges())
+					// TODO allow also bipartite; this requires knowledge of number of alters.
+//earlier:					for (int a = 0; a < alters ; a++)
+					for (int a = 0; a < egos ; a++)
 					{
-						this->lstaticChangeContributions[pInfo].at(e)[a] = 0;
-					}
-					else
-					{
-						// Tie withdrawal contributes the opposite of tie creating
-						if (pCurrentLessMissingsEtc->tieValue(e,a))
+						if ((a == e) && (pNetworkData->oneModeNetwork()))
 						{
-							this->lstaticChangeContributions[pInfo].at(e)[a] =
-								-pEffect->calculateContribution(a);
+							this->lstaticChangeContributions[pInfo].at(e)[a] = 0;
+						}
+						else if (a == alters)
+						{
+							this->lstaticChangeContributions[pInfo].at(e)[a] = 0;
+						}
+						else if (a > alters)
+						{
+							this->lstaticChangeContributions[pInfo].at(e)[a] = R_NaN;
 						}
 						else
 						{
-							this->lstaticChangeContributions[pInfo].at(e)[a] =
-								pEffect->calculateContribution(a);
+						// Tie withdrawal contributes the opposite of tie creating
+							if (pCurrentLessMissingsEtc->tieValue(e,a))
+							{
+								this->lstaticChangeContributions[pInfo].at(e)[a] =
+									-pEffect->calculateContribution(a);
+							}
+							else
+							{
+								this->lstaticChangeContributions[pInfo].at(e)[a] =
+									pEffect->calculateContribution(a);
+							}
 						}
 					}
-				}
 			}
 		}
 		delete pEffect;
 	}
-
 	// Restore the predictor network
 	this->lpPredictorState->pNetwork(name, pPredictorNetwork);
-
 }
 
 
@@ -869,7 +877,7 @@ void StatisticCalculator::calculateBehaviorStatistics(
 	{
 		difference[i] =
 			pBehaviorData->value(this->lperiod, i) - currentState[i];
-
+// is this correct? centering?
 		if (pBehaviorData->missing(this->lperiod, i) ||
 			pBehaviorData->missing(this->lperiod + 1, i))
 		{
@@ -926,7 +934,7 @@ void StatisticCalculator::calculateBehaviorStatistics(
 				// no change gives no contribution
 				this->lstaticChangeContributions[pInfo].at(e)[1] = 0;
 				// calculate the contribution of downward change
-				if ((currentValues[e] > pBehaviorData->min())
+				if ((currentState[e] > pBehaviorData->min())  // was currentValues
 						&& (!pBehaviorData->upOnly(this->lperiod)))
 				{
 					this->lstaticChangeContributions[pInfo].at(e)[0] =
@@ -937,7 +945,7 @@ void StatisticCalculator::calculateBehaviorStatistics(
 					this->lstaticChangeContributions[pInfo].at(e)[0] = R_NaN;
 				}
 				// calculate the contribution of upward change
-				if ((currentValues[e] < pBehaviorData->max())
+				if ((currentState[e] < pBehaviorData->max())  // was currentValues
 						&& (!pBehaviorData->downOnly(this->lperiod)))
 				{
 					this->lstaticChangeContributions[pInfo].at(e)[2] =
@@ -1814,12 +1822,9 @@ double StatisticCalculator::calculateDiffusionRateEffect(
 				}
 				else
 				{
-					throw logic_error(
-						"No individual covariate.");
+					throw logic_error("No individual covariate.");
 				}
-
 			}
-
 			totalAlterValue += alterValue;
 		}
 
@@ -1971,7 +1976,8 @@ void StatisticCalculator::calcDifferences(
 						map->find(make_pair(iter.ego(), iter.alter()))->second.push_back(
 								i);
 					}
-				} else
+				}
+				else
 				{
 					throw logic_error(
 							"No dyadic covariate named '"

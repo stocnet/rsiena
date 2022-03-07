@@ -990,6 +990,7 @@ SEXP createRObjectAttributes(SEXP EFFECTSLIST, SEXP& stats)
 	int intptr3Col;
 	int settingCol;
 
+// Get the column numbers:
 	getColNos(Names, &netTypeCol, &nameCol, &effectCol,
 				&parmCol, &int1Col, &int2Col, &initValCol,
 				&typeCol, &groupCol, &periodCol, &pointerCol,
