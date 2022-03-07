@@ -2,13 +2,17 @@
 
 ## 
    
-2022-03-01
+2022-03-07
 
 ## Changes in RSiena:  
 
 ### Effects:
   * Changed internal effect parameter for `simAllNear` to 2 and for
     `simAllFar` to 4.
+
+### Improvements of functionality: 
+  * In `sienaTimeTest`, added `warn=FALSE` to `varCovar()` to avoid warnings.
+  * Small improvements to help pages for `sienaGroupCreate` and `sienaGOF`.
 
 ### Corrections:
   * corrected sienaRI for behavioral variables.
