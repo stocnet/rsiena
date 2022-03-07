@@ -873,7 +873,7 @@ sienaTimeFix <- function(effects, data=NULL, getDocumentation=FALSE)
 	##@addVarCovar internal sienaTimeFix add a varying covariate
 	addVarCovar <- function(data, base, nodeSet, newname, dataSub)
 	{
-		base <- varCovar(base, nodeSet=nodeSet)
+		base <- varCovar(base, nodeSet=nodeSet, warn=FALSE)
 		base <- addAttributes.varCovar(base, name=dname)
 		data[[dataSub]]$vCovars <- c(data[[dataSub]]$vCovars, list(base))
 		n <- length(data[[dataSub]]$vCovars)

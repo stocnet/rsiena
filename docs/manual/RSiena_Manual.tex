@@ -3980,8 +3980,8 @@ this option.
 \subsection{Goodness of fit with auxiliary statistics: \sfn{sienaGOF}}
 \label{S_gof}
 
-There is available in RSienaTest a function \verb!sienaGOF!
-which permits users to assess the fit of the model with respect to
+The function  \verb!sienaGOF! in \RS permits users 
+to assess the fit of the model with respect to
 auxiliary statistics of networks, e.g. geodesic distributions,
 that are not explicitly fit by a particular effect,
 but are nonetheless important features of the network to represent by the
@@ -4007,7 +4007,7 @@ variables. These are listed in the help page for
 additional packages such as \texttt{igraph} and \texttt{sna},
 are available by copying script from the examples in the same help page.
 (The reason for this construction is to reduce dependencies
-of the basic \sfn{RSiena} on other packages.)
+of \RS on other packages.)
 
 The examples in the help pages for \sfn{sienaGOF} and \sfn{sienaGOF-auxiliary}
 give ample help for how to use this function.
@@ -4064,9 +4064,14 @@ The customary value of $p=0.05$ may be used as a threshold determining
 whether the fit is adequate, but this threshold is of even less
 importance here than it is in the case of regular hypothesis testing.
 
+If you have a multi-group estimation (see Section~\ref{S_multigroup}),
+\sfn{sienaGOF} needs to be applied to each group separately,
+using the \texttt{groupName} keyword, usually 
+\texttt{groupName="Data1"},  \texttt{groupName="Data2"}, etc.\
+(see the help page for \sfn{sienaGOF}). 
 
-
-For combining \sfn{sienaGOF} results for multiple groups, the resulting $p$-values
+For combining \sfn{sienaGOF} results for multiple groups, 
+the resulting $p$-values
 as calculated for each single group can be combined.
 The most suitable method here perhaps is the inverse normal method,
 also called Lipt\'{a}k's method; see \citet[][Section C.3]{HedgesOlkin85}.
@@ -4075,9 +4080,21 @@ and divides by $\sqrt{N}$ where $N$ is the number of combined studies,
 and tests the result in the standard normal distribution.
 %For the p-value of sienaGOF, consult the help page of sienaGOF.
 For the transformation to standard normal,
-you can use function \sfn{qnorm}
+you can use the \R function \sfn{qnorm}
 (check whether you need \texttt{qnorm(p)} or \texttt{qnorm(1-p)}).
 For testing in the standard normal you can use \sfn{pnorm}.
+
+Another good combination procedure is 
+Fisher's method for combining independent $p$-values, described also in
+\citet{HedgesOlkin85} and (briefly) in \citet[Chapter 3]{SnijdersBosker12}.
+The basic idea is that, for groups $k = 1, \ldots, K$
+which have given the $p$-values $p_k$, the test statistic is
+$- 2 \sum_k \ln(p_k)$ and it is tested in a chi-squared distribution
+with d.f.\ = $2K$.
+
+An illustration is in script \\
+\url{http://www.stats.ox.ac.uk/~snijders/siena/RscriptMultipleGroups.R}.
+
 
 
 \subsubsection{Composition change, missing data, and structural values in \sfn{sienaGOF} }
@@ -16408,9 +16425,9 @@ This presents the main changes, especially those directly visible to the user,
 in reverse time order from the current version until
 version 1.0.6 of end October 2009.
 For more complete information about changes,
-consult the NEWS.md file (in earlier versions
-this was the CHANGELOG file) in the source code,
-which contains a more complete listing.
+consult the \texttt{NEWS.md} file (in earlier versions
+this was the \texttt{CHANGELOG} file) in the source code,
+and the \texttt{ONWS} (`old news') file, which contain more complete listings.
 
 \begin{small}
 \begin{itemize} % Also update version number in earlier places.
@@ -16438,7 +16455,7 @@ Changes in RSiena:
 \fi
 
 
-\item 2022-03-02 GitHub, package version 1.3.8.
+\item 2022-03-07 GitHub, package version 1.3.8.
 
 Changes in RSiena:
 \begin{itemize}
@@ -16454,6 +16471,11 @@ Changes in RSiena:
      (provided the number of second-mode nodes is smaller than the
 	 number of actors = first-mode nodes), and corrected
 	 for behavioral dependent variables.
+  \item In \sfn{sienaTimeTest}, added \texttt{warn=FALSE} to 
+      \texttt{varCovar()} to avoid warnings.
+  \item Small improvements to help pages for \sfn{sienaGroupCreate} and 
+  \sfn{sienaGOF}.
+
 \end{itemize}
 
 \end{itemize}

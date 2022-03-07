@@ -534,6 +534,7 @@ summary.sienaGOF <- function(object, ...) {
 					a <- cbind( oneStepSpecs[,i, drop=FALSE] )
 					b <- matrix( c(oneStepMhd[[j]][i], ncol=1) )
 					rownames(b) <- c("MHD")
+# But b has 2 rows. Here the error occurs.
 					a <- rbind(a, b)
 					a <- round(a, 3)
 					cat("\n**Model including", colnames(a)[1], "\n")

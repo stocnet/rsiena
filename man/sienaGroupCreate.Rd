@@ -9,7 +9,7 @@
 sienaGroupCreate(objlist, singleOK = FALSE, getDocumentation=FALSE)
 }
 \arguments{
-  \item{objlist}{ List of objects of class "siena". }
+  \item{objlist}{ List of objects of class \code{siena}. }
   \item{singleOK}{ Boolean: is it OK to only have one object?}
   \item{getDocumentation}{Flag to allow documentation of internal
   functions, not for use by users.}
@@ -54,7 +54,7 @@ to ensure that these constraints are equal for all groups.
 }
 
 \value{
-An object of class "sienaGroup"; this is a list
+An object of class \code{sienaGroup}; this is a list
 containing the input objects, with attributes:
   \item{netnames}{names of the dependent variables in each set}
   \item{symmetric}{vector of booleans, one for each dependent
@@ -139,10 +139,23 @@ Group1 <- sienaDependent(array(c(N3401, HN3401), dim=c(45, 45, 2)))
 Group3 <- sienaDependent(array(c(N3403, HN3403), dim=c(37, 37, 2)))
 Group4 <- sienaDependent(array(c(N3404, HN3404), dim=c(33, 33, 2)))
 Group6 <- sienaDependent(array(c(N3406, HN3406), dim=c(36, 36, 2)))
-dataset.1 <- sienaDataCreate(Friends = Group1)
-dataset.3 <- sienaDataCreate(Friends = Group3)
-dataset.4 <- sienaDataCreate(Friends = Group4)
-dataset.6 <- sienaDataCreate(Friends = Group6)
-FourGroups <- sienaGroupCreate(list(dataset.1, dataset.3, dataset.4, dataset.6))
+# Illustration of the use of group-level variables:
+# dum1 is a dummy variable for group 1,
+# having constant value 1 in group 1, and constant value 0 in the other groups.
+dum1.1  <- coCovar(c(rep(1,45)), warn = FALSE)
+dum1.3  <- coCovar(c(rep(0,37)), warn = FALSE)
+dum1.4  <- coCovar(c(rep(0,33)), warn = FALSE)
+dum1.6  <- coCovar(c(rep(0,36)), warn = FALSE)
+# In a similar way, dummies for the other groups can be defined.
+dataset.1 <- sienaDataCreate(Friends = Group1, dum1 = dum1.1)
+dataset.3 <- sienaDataCreate(Friends = Group3, dum1 = dum1.3)
+dataset.4 <- sienaDataCreate(Friends = Group4, dum1 = dum1.4)
+dataset.6 <- sienaDataCreate(Friends = Group6, dum1 = dum1.6)
+(FourGroups <- sienaGroupCreate(list(dataset.1, dataset.3, dataset.4,
+                                     dataset.6)))
+class(FourGroups)
+# The main effect of the group-level variable is the \code{egoX} effect:
+myeff <- getEffects(FourGroups)
+(myeff <- includeEffects(myeff, egoX, interaction1 = "dum1"))
 }
 \keyword{ classes }
