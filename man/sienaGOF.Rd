@@ -95,6 +95,12 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
  of the periods, with the simulated values for the ends of the periods.
  The differences are assessed by combining the components of the auxiliary
  statistic using the Mahalanobis distance.
+ 
+ For \code{sienaFitObject}s that are \code{\link{sienaGroup}} objects,
+ if you are not sure about the \code{groupName}s to use, these can be retrieved
+ by the command \code{'names(sienaFitObject)'} 
+ (with the obvious substitution of  \code{sienaFitObject}).
+ Mostly they are \code{"Data1", "Data2"}, etc.
 
  The function does not work properly for data sets that include a
  \code{\link{sienaCompositionChange}} object. If you wish to test the
