@@ -188,7 +188,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.3.8.
+This version was renewed for \RS version 1.3.9.
 \end{abstract}
 
 
@@ -240,19 +240,19 @@ example scripts illustrating various possibilities of the package,
 course announcements, etc.
 
 \RS is a contributed package for the \R statistical system \citep{R}
-and can be installed in the usual way from \sfn{CRAN}; 
+and can be installed in the usual way from \sfn{CRAN};
 see \url{http://cran.r-project.org}.
-Development versions of \RS are at 
+Development versions of \RS are at
 \url{https://github.com/snlab-nl/rsiena/}.
 Here also the most recent version is available
-at \url{https://github.com/snlab-nl/rsiena/releases}; 
+at \url{https://github.com/snlab-nl/rsiena/releases};
 it is recommended to use this version.
 
 This is a manual for \rs;
 the manual is provisional in the sense
 that it is continually being updated, taking account of
 updates in the package. For the operation of \Rn,
-the reader is referred to this manual, the help pages, 
+the reader is referred to this manual, the help pages,
 the website, and the corresponding literature.
 
 For working with \rs, please use jointly the following
@@ -279,17 +279,17 @@ Major contributions were made by Josh Lospinoso, Charlotte Greenan,
 Michael Schweinberger,
 Felix Sch\"{o}nenberger, Johan Koskinen, Mark Ortmann, Nynke Niezink,
 Viviana Amati, and Mark Huisman.
-Other contributors include 
-Christian Steglich, Christoph Stadtfeld, Per Block, 
+Other contributors include
+Christian Steglich, Christoph Stadtfeld, Per Block,
 Robert Krause, Marion Hoffman, Alvaro Uzaheta,
 Robert Hellpap, James Hollway, and Steffen Triebel.
 Currently, \RS is maintained by a research group
 at the University of Groningen, seconded by researchers in Z\"{u}rich,
 Melbourne, Geneva, and elsewhere.
 
-In addition to the `official' \R distribution of \RS 
+In addition to the `official' \R distribution of \RS
 and the \sfn{GitHub} development version, there is
-an additional distribution \sfn{RSienaTest} at \sfn{R-Forge}, 
+an additional distribution \sfn{RSienaTest} at \sfn{R-Forge},
 which includes additional options that are still in the testing stage.
 Some of the options described in this manual may apply to
 {\sf RSienaTest} only, with the plan to transfer this to \RS
@@ -1138,7 +1138,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.3.8).
+  identified by a version number (e.g.\ 1.3.9).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -1913,6 +1913,16 @@ When endowment or creation effects are to be included in the
 model specification, changing structural values should not be used,
 and the method of joiners and leavers then also is preferable.
 
+It should be noted that if the model also contains behavioral dependent
+variables and structural zeros are used to represent changing
+composition of the network (or networks), the behavioral dependent variables
+still will be possible to change. To keep them from changing for the absent
+actors, a non-centered dummy actor variable can be used which is 1~for the absent
+actors and 0~for all others, and which is given a fixed \texttt{RateX} effect
+for the behavioral variables of a large negative value, e.g., --100;
+this effect should be fixed and \underline{not} tested.
+\bigskip
+
 Structurally determined values are defined by reserved codes in
 the input data: the value 10 indicates a structural zero, the
 value 11 indicates a structural one. Structurally determined
@@ -1933,7 +1943,8 @@ is preferable.
 Structural zeros offer the possibility of analyzing several
 networks simultaneously under the assumption that the parameters
 are identical.
-However, a preferable option to do this is given in Section~\ref{S_mulev}.
+However, a preferable option to do this is
+the multi-group option of Section~\ref{S_mulev}.
 E.g., if there are three networks with 12, 20 and
 15 actors, respectively, then these can be integrated into one
 network of 12 + 20 + 15 = 47 actors, by specifying that ties
@@ -3980,7 +3991,7 @@ this option.
 \subsection{Goodness of fit with auxiliary statistics: \sfn{sienaGOF}}
 \label{S_gof}
 
-The function  \verb!sienaGOF! in \RS permits users 
+The function  \verb!sienaGOF! in \RS permits users
 to assess the fit of the model with respect to
 auxiliary statistics of networks, e.g. geodesic distributions,
 that are not explicitly fit by a particular effect,
@@ -4066,11 +4077,11 @@ importance here than it is in the case of regular hypothesis testing.
 
 If you have a multi-group estimation (see Section~\ref{S_multigroup}),
 \sfn{sienaGOF} needs to be applied to each group separately,
-using the \texttt{groupName} keyword, usually 
+using the \texttt{groupName} keyword, usually
 \texttt{groupName="Data1"},  \texttt{groupName="Data2"}, etc.\
-(see the help page for \sfn{sienaGOF}). 
+(see the help page for \sfn{sienaGOF}).
 
-For combining \sfn{sienaGOF} results for multiple groups, 
+For combining \sfn{sienaGOF} results for multiple groups,
 the resulting $p$-values
 as calculated for each single group can be combined.
 The most suitable method here perhaps is the inverse normal method,
@@ -4084,7 +4095,7 @@ you can use the \R function \sfn{qnorm}
 (check whether you need \texttt{qnorm(p)} or \texttt{qnorm(1-p)}).
 For testing in the standard normal you can use \sfn{pnorm}.
 
-Another good combination procedure is 
+Another good combination procedure is
 Fisher's method for combining independent $p$-values, described also in
 \citet{HedgesOlkin85} and (briefly) in \citet[Chapter 3]{SnijdersBosker12}.
 The basic idea is that, for groups $k = 1, \ldots, K$
@@ -14955,7 +14966,7 @@ and  printed by the print method for \sfn{sienaRI()} if \texttt{printSigma=TRUE}
 The change statistics themselves are potentially a lot of numbers
 ($n^2 \times M \times K$, where $M$ is the number of waves and $K$
 the number of effects in the model), and are only retained in the object
-produced by \sfn{sienaRI()} if \texttt{getChangeStats=TRUE}; 
+produced by \sfn{sienaRI()} if \texttt{getChangeStats=TRUE};
 see the help page for \sfn{sienaRI()}.
 
 \newpage
@@ -15417,12 +15428,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.3.8.tar.gz|\\
+\verb|R CMD check RSiena_1.3.9.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.3.8.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.3.9.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16455,6 +16466,25 @@ Changes in RSiena:
 \fi
 
 
+\item 2022-03-18 GitHub, package version 1.3.9.
+
+Changes in RSiena:
+\begin{itemize}
+\item  Effects:
+\begin{itemize}
+  \item Corrected implementation of \texttt{simAllNear} and 
+    \texttt{simAllFar}.
+\end{itemize}
+\item Corrections:
+\begin{itemize}
+   \item  Small correction of \sfn{summary.sienaGOF}.
+   \item  Small correction of \sfn{sienaTimeTest}.
+\end{itemize}
+
+\end{itemize}
+
+
+
 \item 2022-03-07 GitHub, package version 1.3.8.
 
 Changes in RSiena:
@@ -16471,9 +16501,9 @@ Changes in RSiena:
      (provided the number of second-mode nodes is smaller than the
 	 number of actors = first-mode nodes), and corrected
 	 for behavioral dependent variables.
-  \item In \sfn{sienaTimeTest}, added \texttt{warn=FALSE} to 
+  \item In \sfn{sienaTimeTest}, added \texttt{warn=FALSE} to
       \texttt{varCovar()} to avoid warnings.
-  \item Small improvements to help pages for \sfn{sienaGroupCreate} and 
+  \item Small improvements to help pages for \sfn{sienaGroupCreate} and
   \sfn{sienaGOF}.
 
 \end{itemize}
