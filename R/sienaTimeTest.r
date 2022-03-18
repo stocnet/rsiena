@@ -331,16 +331,16 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 			nRowsToTest <- dim(toTest)[1]
 			excludedNumber <- sum(extraExclusions)
 			es <- ifelse((excludedNumber == 1), '', 's')
-			message("Automatic discovery of dependencies yielded the exclusion of effect", es)
+			efNames <- fitEffects[baseInFit,"effectName"]
+	cat("Automatic discovery of dependencies yielded the exclusion of effect", 
+							es, sep="")
 			if (excludedNumber <= 1)
-			{
-				message(paste(row(fitEffects)[baseInFit,drop=FALSE][extraExclusions,drop=FALSE][1],'.',
-						fitEffects$effectName[baseInFit,drop=FALSE][which(extraExclusions)],"\n "))
+			{			
+				cat(" ", efNames[extraExclusions],".\n ")
 			}
 			else
 			{
-				message(paste(row(fitEffects)[baseInFit,drop=FALSE][extraExclusions,drop=FALSE][,1],'.',
-						fitEffects$effectName[baseInFit,drop=FALSE][which(extraExclusions)],"\n "))
+				cat(" ", paste(efNames[extraExclusions], collapse=", "),".\n ")
 			}
 			rankSigma <- qr(sigma)$rank
 			if (rankSigma < dim(sigma)[1])

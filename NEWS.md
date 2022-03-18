@@ -1,3 +1,18 @@
+# RSiena 1.3.9
+
+## 
+   
+2022-03-18
+
+## Changes in RSiena:  
+
+### Effects:
+  * Corrected implementation of `simAllNear` and `simAllFar`.
+
+### Corrections:
+  * small correction of `summary.sienaGOF`.
+  * small correction of `sienaTimeTest`.
+
 # RSiena 1.3.8
 
 ## 

@@ -82,7 +82,7 @@ double AllSimilarityEffect::calculateChangeContribution(int actor,
 			}
 		}
 	}
-	return contribution;
+	return difference * contribution;
 }
 
 /**
