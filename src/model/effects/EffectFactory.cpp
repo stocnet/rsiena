@@ -1965,11 +1965,19 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "avAltW")
 	{
-		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,true, true);
+		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,true, true, true);
+	}
+	else if (effectName == "avInAltW")
+	{
+		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,true, true, false);
 	}
 	else if (effectName == "totAltW")
 	{
-		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,false, true);
+		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,false, true, true);
+	}
+	else if (effectName == "totInAltW")
+	{
+		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,false, true, false);
 	}
 	else if (effectName == "avSimW")
 	{
