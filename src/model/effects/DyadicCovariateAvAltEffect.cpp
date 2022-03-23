@@ -30,7 +30,7 @@ DyadicCovariateAvAltEffect::DyadicCovariateAvAltEffect(
 	DyadicCovariateAndNetworkBehaviorEffect(pEffectInfo)
 {
 	this->ldivide = divide;
-	// Indicates whether there will be division by the outdegree of ego
+	// Indicates whether there will be division by the degree
 	this->lasWeight = asWeight;
 	// Indicates that the dyadic covariate is used as a weight;
 	// if not, used as the variable.
