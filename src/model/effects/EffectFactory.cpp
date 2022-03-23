@@ -1957,11 +1957,19 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "avWAlt")
 	{
-		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,true, false);
+		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,true, false, true);
+	}
+	else if (effectName == "avWInAlt")
+	{
+		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,true, false, false);
 	}
 	else if (effectName == "totWAlt")
 	{
-		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,false, false);
+		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,false, false, true);
+	}
+	else if (effectName == "totWAlt")
+	{
+		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,false, false, false);
 	}
 	else if (effectName == "avAltW")
 	{
