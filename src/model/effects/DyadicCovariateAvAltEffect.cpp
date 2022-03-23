@@ -305,7 +305,7 @@ double DyadicCovariateAvAltEffect::egoEndowmentStatistic(int ego,
 			iter.valid(); iter.next())
 			{
 				int j = iter.actor();
-				if (!this->missingDyCo(ego,j))
+				if (!this->missingDyCo(j,ego))
 				{
 					double dycova = this->dycoValue(j, ego);
 					double alterValue = dycova * currentValues[j];
