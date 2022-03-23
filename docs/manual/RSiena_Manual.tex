@@ -13661,12 +13661,31 @@ It is then important how to define the zero point of the covariate!
 \end{equation}
       leading to the effect \\
        $s^{\rm beh}_{i\vit}(x, z) = z_i \, \breve w_i $.\\
+       
+\item \emph{in-alter's  average of dyadic covariate } effect on behavior $z$
+ \texttt{(avWInAlt)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      $i$'s in-alters' dyadic covariate-average $\breve w_h$ as defined by
+\begin{equation}
+  \breve w_h = \left\{\begin{array}{ll} \displaystyle
+         \frac{\sum_h x_{hi}w_{hi}}{x_{+i}}  &  \text{ if } x_{+i} > 0     \\
+         0                                &  \text{ if } x_{+i} = 0  .
+  \end{array}   \right.            \label{alt_avwa}
+\end{equation}
+      leading to the effect \\
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \, \breve w_h $.\\
 
 \item \emph{alter's  total of dyadic covariate W } effect on behavior $z$
  \texttt{(totWAlt)},\\
       defined as the product of $i$'s behavior $z_i$ and
       the sum of $i$'s alters' values of the dyadic covariate, \\
        $s^{\rm beh}_{i\vit}(x, z) = z_i \, \sum_h x_{ih}w_{ih}  $.\\
+
+\item \emph{in-alter's  total of dyadic covariate W } effect on behavior $z$
+ \texttt{(totWInAlt)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      the sum of $i$'s in-alters' values of the dyadic covariate, \\
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \, \sum_h x_{hi}w_{hi}  $.\\
 
  \item {\em average alter weighted by dyadic covariate $W$}
                        \texttt{(avAltW)},
