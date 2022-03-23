@@ -26,7 +26,7 @@ namespace siena
  * Constructor.
  */
 DyadicCovariateAvAltEffect::DyadicCovariateAvAltEffect(
-	const EffectInfo * pEffectInfo, bool divide, bool asWeight) :
+	const EffectInfo * pEffectInfo, bool divide, bool asWeight, bool outgoing) :
 	DyadicCovariateAndNetworkBehaviorEffect(pEffectInfo)
 {
 	this->ldivide = divide;
@@ -35,6 +35,8 @@ DyadicCovariateAvAltEffect::DyadicCovariateAvAltEffect(
 	// Indicates that the dyadic covariate is used as a weight;
 	// if not, used as the variable.
 	this->lpar2 = (pEffectInfo->internalEffectParameter() >= 2);
+	// Indicates wether in or outgoing ties should be used
+	this->loutgoing = outgoing;
 	// specifies type of denominator
 	if (!lasWeight) {lpar2 = false;}
 }
@@ -49,63 +51,122 @@ double DyadicCovariateAvAltEffect::calculateChangeContribution(int actor,
 {
 	double contribution = 0;
 	const Network * pNetwork = this->pNetwork();
-
-	if (pNetwork->outDegree(actor) > 0)
+	if (loutgoing)
 	{
-		double totalAlterValue = 0;
-		double totalWeightValue = 0;
-
-		if (this->ldivide)
+		if (pNetwork->outDegree(actor) > 0)
 		{
-			for (IncidentTieIterator iter = pNetwork->outTies(actor);
-				iter.valid();
-				iter.next())
+			double totalAlterValue = 0;
+			double totalWeightValue = 0;
+	
+			if (this->ldivide)
 			{
-				int j = iter.actor();                // identifies alter
-				double dycova = this->dycoValue(actor, j);
-				if (lasWeight)
+				for (IncidentTieIterator iter = pNetwork->outTies(actor);
+					iter.valid();
+					iter.next())
 				{
-					totalAlterValue += (double) this->centeredValue(j) * dycova;
+					int j = iter.actor();                // identifies alter
+					double dycova = this->dycoValue(actor, j);
+					if (lasWeight)
+					{
+						totalAlterValue += (double) this->centeredValue(j) * dycova;
+					}
+					else
+					{
+						totalAlterValue += (double) dycova;
+					}
+					if (lpar2)
+					{
+						totalWeightValue += (double) dycova;
+					}
+					else
+					{
+						totalWeightValue += 1;
+					}
 				}
-				else
+				if (fabs(totalWeightValue) > EPSILON)  //  normally this will be a comparison of 0 against >= 1
 				{
-					totalAlterValue += (double) dycova;
-				}
-				if (lpar2)
-				{
-					totalWeightValue += (double) dycova;
-				}
-				else
-				{
-					totalWeightValue += 1;
+					contribution = (double) difference * totalAlterValue / totalWeightValue;
 				}
 			}
-			if (fabs(totalWeightValue) > EPSILON)  //  normally this will be a comparison of 0 against >= 1
+			else
 			{
-				contribution = (double) difference * totalAlterValue / totalWeightValue;
-			}
-		}
-		else
-		{
-			for (IncidentTieIterator iter = pNetwork->outTies(actor);
-				iter.valid();
-				iter.next())
-			{
-				int j = iter.actor();                // identifies alter
-				double dycova = this->dycoValue(actor, j);
-				if (lasWeight)
+				for (IncidentTieIterator iter = pNetwork->outTies(actor);
+					iter.valid();
+					iter.next())
 				{
-					totalAlterValue += (this->centeredValue(j) * dycova);
+					int j = iter.actor();                // identifies alter
+					double dycova = this->dycoValue(actor, j);
+					if (lasWeight)
+					{
+						totalAlterValue += (this->centeredValue(j) * dycova);
+					}
+					else
+					{
+						totalAlterValue += (double) dycova;
+					}
 				}
-				else
-				{
-					totalAlterValue += (double) dycova;
-				}
+			contribution = difference * totalAlterValue;
 			}
-		contribution = difference * totalAlterValue;
 		}
 	}
-
+	else
+	{
+		if (pNetwork->inDegree(actor) > 0)
+		{
+			double totalAlterValue = 0;
+			double totalWeightValue = 0;
+	
+			if (this->ldivide)
+			{
+				for (IncidentTieIterator iter = pNetwork->inTies(actor);
+					iter.valid();
+					iter.next())
+				{
+					int j = iter.actor();                // identifies alter
+					double dycova = this->dycoValue(j, actor);
+					if (lasWeight)
+					{
+						totalAlterValue += (double) this->centeredValue(j) * dycova;
+					}
+					else
+					{
+						totalAlterValue += (double) dycova;
+					}
+					if (lpar2)
+					{
+						totalWeightValue += (double) dycova;
+					}
+					else
+					{
+						totalWeightValue += 1;
+					}
+				}
+				if (fabs(totalWeightValue) > EPSILON)  //  normally this will be a comparison of 0 against >= 1
+				{
+					contribution = (double) difference * totalAlterValue / totalWeightValue;
+				}
+			}
+			else
+			{
+				for (IncidentTieIterator iter = pNetwork->inTies(actor);
+					iter.valid();
+					iter.next())
+				{
+					int j = iter.actor();                // identifies alter
+					double dycova = this->dycoValue(j, actor);
+					if (lasWeight)
+					{
+						totalAlterValue += (this->centeredValue(j) * dycova);
+					}
+					else
+					{
+						totalAlterValue += (double) dycova;
+					}
+				}
+			contribution = difference * totalAlterValue;
+			}
+		}
+	}
 	return contribution;
 }
 
@@ -118,34 +179,64 @@ double DyadicCovariateAvAltEffect::egoStatistic(int ego, double * currentValues)
 	double statistic = 0;
 	const Network * pNetwork = this->pNetwork();
 	double totalWeightValue = 0;
-
-	for (IncidentTieIterator iter = pNetwork->outTies(ego);
-		 iter.valid();
-		 iter.next())
+	if (loutgoing)
 	{
-		int j = iter.actor();
-		if (!this->missingDyCo(ego,j))
+		for (IncidentTieIterator iter = pNetwork->outTies(ego);
+			 iter.valid();
+			 iter.next())
 		{
-			double dycova = this->dycoValue(ego, j);
-			if (lasWeight)
+			int j = iter.actor();
+			if (!this->missingDyCo(ego,j))
 			{
-				statistic += currentValues[j] * dycova;
-			}
-			else
-			{
-				statistic += (double) dycova;
-			}
-			if (lpar2)
-			{
-				totalWeightValue += (double) dycova;
-			}
-			else
-			{
-				totalWeightValue += 1;
+				double dycova = this->dycoValue(ego, j);
+				if (lasWeight)
+				{
+					statistic += currentValues[j] * dycova;
+				}
+				else
+				{
+					statistic += (double) dycova;
+				}
+				if (lpar2)
+				{
+					totalWeightValue += (double) dycova;
+				}
+				else
+				{
+					totalWeightValue += 1;
+				}
 			}
 		}
 	}
-
+	else
+	{
+		for (IncidentTieIterator iter = pNetwork->inTies(ego);
+			 iter.valid();
+			 iter.next())
+		{
+			int j = iter.actor();
+			if (!this->missingDyCo(j,ego))
+			{
+				double dycova = this->dycoValue(j, ego);
+				if (lasWeight)
+				{
+					statistic += currentValues[j] * dycova;
+				}
+				else
+				{
+					statistic += (double) dycova;
+				}
+				if (lpar2)
+				{
+					totalWeightValue += (double) dycova;
+				}
+				else
+				{
+					totalWeightValue += 1;
+				}
+			}
+		}
+	}
 	statistic *= currentValues[ego];
 	if ((this->ldivide) && (fabs(totalWeightValue) > EPSILON)) // normally, comparison between 0 and >= 1
 	{
@@ -167,39 +258,78 @@ double DyadicCovariateAvAltEffect::egoEndowmentStatistic(int ego,
 	double statistic = 0;
 	const Network * pNetwork = this->pNetwork();
 	double totalWeightValue = 0;
-
-	if (difference[ego] > 0 && (pNetwork->outDegree(ego) > 0)) // otherwise, nothing to calculate...
+	if (loutgoing)
 	{
-		double thisStatistic = 0;
-		double previousStatistic = 0;
-		for (IncidentTieIterator iter = pNetwork->outTies(ego);
-										iter.valid(); iter.next())
+		if (difference[ego] > 0 && (pNetwork->outDegree(ego) > 0)) // otherwise, nothing to calculate...
 		{
-			int j = iter.actor();
-			if (!this->missingDyCo(ego,j))
+			double thisStatistic = 0;
+			double previousStatistic = 0;
+			for (IncidentTieIterator iter = pNetwork->outTies(ego);
+											iter.valid(); iter.next())
 			{
-				double dycova = this->dycoValue(ego, j);
-				double alterValue = dycova * currentValues[j];
-				double alterPreviousValue = dycova *
-								(currentValues[j] + difference[j]);
-				thisStatistic += alterValue;
-				previousStatistic += alterPreviousValue;
-				if (lpar2)
+				int j = iter.actor();
+				if (!this->missingDyCo(ego,j))
 				{
-					totalWeightValue += (double) dycova;
-				}
-				else
-				{
-					totalWeightValue += 1;
+					double dycova = this->dycoValue(ego, j);
+					double alterValue = dycova * currentValues[j];
+					double alterPreviousValue = dycova *
+									(currentValues[j] + difference[j]);
+					thisStatistic += alterValue;
+					previousStatistic += alterPreviousValue;
+					if (lpar2)
+					{
+						totalWeightValue += (double) dycova;
+					}
+					else
+					{
+						totalWeightValue += 1;
+					}
 				}
 			}
+			thisStatistic *= currentValues[ego];
+			previousStatistic *= (currentValues[ego] + difference[ego]);
+			statistic = (thisStatistic - previousStatistic) * currentValues[ego];
+			if ((this->ldivide) && (fabs(totalWeightValue) > 1e-15))// normally, comparison between 0 and >= 1
+			{
+				statistic /= totalWeightValue;
+			}
 		}
-		thisStatistic *= currentValues[ego];
-		previousStatistic *= (currentValues[ego] + difference[ego]);
-		statistic = (thisStatistic - previousStatistic) * currentValues[ego];
-		if ((this->ldivide) && (fabs(totalWeightValue) > 1e-15))// normally, comparison between 0 and >= 1
+	}
+	else
+	{
+		if (difference[ego] > 0 && (pNetwork->inDegree(ego) > 0)) // otherwise, nothing to calculate...
 		{
-			statistic /= totalWeightValue;
+			double thisStatistic = 0;
+			double previousStatistic = 0;
+			for (IncidentTieIterator iter = pNetwork->inTies(ego);
+			iter.valid(); iter.next())
+			{
+				int j = iter.actor();
+				if (!this->missingDyCo(ego,j))
+				{
+					double dycova = this->dycoValue(j, ego);
+					double alterValue = dycova * currentValues[j];
+					double alterPreviousValue = dycova *
+									(currentValues[j] + difference[j]);
+					thisStatistic += alterValue;
+					previousStatistic += alterPreviousValue;
+					if (lpar2)
+					{
+						totalWeightValue += (double) dycova;
+					}
+					else
+					{
+						totalWeightValue += 1;
+					}
+				}
+			}
+			thisStatistic *= currentValues[ego];
+			previousStatistic *= (currentValues[ego] + difference[ego]);
+			statistic = (thisStatistic - previousStatistic) * currentValues[ego];
+			if ((this->ldivide) && (fabs(totalWeightValue) > 1e-15))// normally, comparison between 0 and >= 1
+			{
+				statistic /= totalWeightValue;
+			}
 		}
 	}
 	return statistic;
