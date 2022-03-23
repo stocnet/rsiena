@@ -13679,10 +13679,28 @@ It is then important how to define the zero point of the covariate!
                     z_i \big( \sum_j x_{ij} \, w_{ij} \, z_j \big)  /
                                 \big (\sum_j w_{ij} \,x_{ij}\big) ;$\\
  (and the mean behavior, i.e. $0$, if the ratio is 0/0) ;
+ 
+  \item {\em average in-alter weighted by dyadic covariate $W$}
+                       \texttt{(avAltW)},
+                       a weighted version of  \texttt{avInAlt};\\
+                       depending on the parameter value (1 or 2):\\
+  parameter = 1 : \ $s^{\rm beh}_{i\vit}(x, z) =
+                     z_i \big( \sum_j x_{ji} \, w_{ji} \, z_j \big)  /
+                                        \big (\sum_j x_{ji}\big)$\\
+   parameter = 2 : \  $s^{\rm beh}_{i\vit}(x, z) =
+                    z_i \big( \sum_j x_{ji} \, w_{ji} \, z_j \big)  /
+                                \big (\sum_j w_{ji} \,x_{ji}\big) ;$\\
+ (and the mean behavior, i.e. $0$, if the ratio is 0/0) ;
+ 
  \item {\em total alter weighted by dyadic covariate $W$}
                        \texttt{(totAltW)},
                        a weighted version of  \texttt{totAlt};\\
    $s^{\rm beh}_{i\vit}(x, z) =  z_i \, \sum_j x_{ij} \, w_{ij} \, z_j  ;$
+
+ \item {\em total in-alter weighted by dyadic covariate $W$}
+                       \texttt{(totInAltW)},
+                       a weighted version of  \texttt{totAlt};\\
+   $s^{\rm beh}_{i\vit}(x, z) =  z_i \, \sum_j x_{ji} \, w_{ji} \, z_j  ;$
 
  \item {\em average similarity weighted by dyadic covariate $W$}
                        \texttt{(avSimW)},
