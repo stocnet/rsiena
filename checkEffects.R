@@ -15,6 +15,92 @@
 library(RSiena)
 
 ############################################
+### check totInAltW and avInAltW
+############################################
+
+beh2 <- s50a[,2] - mean(s50a[,1:2])
+set.seed(123)
+dcova <- matrix(runif(2500),50,50)
+
+s3 <- dcova
+diag(s3) <- NA
+dcov_c <- dcova - mean(s3,na.rm = TRUE)
+
+mynet <- sienaNet(array(c(s501, s502), dim = c(50, 50, 2)))
+beh <- sienaDependent(s50a[,1:2],type = 'behavior')
+dcov <- coDyadCovar(dcova)
+mydata <- sienaDataCreate(mynet,dcov,beh)
+mymodel <- sienaModelCreate(projname = 'test', seed = 1234)
+
+
+# avInAltW p1
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,avInAltW, name = 'beh',
+                        interaction1 = 'mynet', interaction2 = 'dcov')
+myeff <- setEffect(myeff,avInAltW, name = 'beh',
+                   interaction1 = 'mynet', interaction2 = 'dcov',
+                   parameter = 1)
+ans1 <- siena07(mymodel, data = mydata, effects = myeff)
+ans1$targets
+
+sum(rowSums(t(s501 * dcov_c) %*% diag(beh2),na.rm = TRUE)
+     / colSums(s501 ,na.rm = TRUE) * beh2, na.rm = TRUE) # OK
+
+
+# avInAltW p2
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,avInAltW, name = 'beh',
+                        interaction1 = 'mynet', interaction2 = 'dcov')
+myeff <- setEffect(myeff,avInAltW, name = 'beh',
+                   interaction1 = 'mynet', interaction2 = 'dcov',
+                   parameter = 2)
+ans1 <- siena07(mymodel, data = mydata, effects = myeff)
+ans1$targets
+
+
+sum(rowSums(t(s501 * dcov_c) %*% diag(beh2),na.rm = TRUE)
+     / colSums(s501 * dcov_c ,na.rm = TRUE) * beh2, na.rm = TRUE)  # OK
+
+# avWInAlt
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,avWInAlt, name = 'beh',
+                        interaction1 = 'mynet', interaction2 = 'dcov')
+
+ans1 <- siena07(mymodel, data = mydata, effects = myeff)
+ans1$targets
+
+
+sum((colSums(s501 * dcov_c,na.rm = TRUE)
+     / colSums(s501,na.rm = TRUE)) * beh2, na.rm = TRUE) # OK
+
+#totInAltW !!! target statistic of totAltW and totInAltW are the same
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,totInAltW, name = 'beh',
+                        interaction1 = 'mynet', interaction2 = 'dcov')
+
+ans1 <- siena07(mymodel, data = mydata, effects = myeff)
+ans1$targets
+
+sum(rowSums(s501 * dcov_c %*% diag(beh2),na.rm = TRUE) * beh2) #OK
+
+# totWInAlt CRASH!!!!
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,totWInAlt, name = 'beh',
+                        interaction1 = 'mynet', interaction2 = 'dcov')
+
+ans1 <- siena07(mymodel, data = mydata, effects = myeff)
+ans1$targets
+
+sum(colSums(s501 * dcov_c,na.rm = TRUE) * beh2) #Crash!
+
+
+
+
+
+
+############################################
 ### check from.w.ind
 ############################################
 
