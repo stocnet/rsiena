@@ -58,7 +58,7 @@ double DyadicCovariateAvAltEffect::calculateChangeContribution(int actor,
 			double totalAlterValue = 0;
 			double totalWeightValue = 0;
 	
-			if (this->ldivide)
+			if (this->ldivide) // av
 			{
 				for (IncidentTieIterator iter = pNetwork->outTies(actor);
 					iter.valid();
@@ -88,7 +88,7 @@ double DyadicCovariateAvAltEffect::calculateChangeContribution(int actor,
 					contribution = (double) difference * totalAlterValue / totalWeightValue;
 				}
 			}
-			else
+			else // tot
 			{
 				for (IncidentTieIterator iter = pNetwork->outTies(actor);
 					iter.valid();
@@ -109,14 +109,14 @@ double DyadicCovariateAvAltEffect::calculateChangeContribution(int actor,
 			}
 		}
 	}
-	else
+	else // incoming
 	{
 		if (pNetwork->inDegree(actor) > 0)
 		{
 			double totalAlterValue = 0;
 			double totalWeightValue = 0;
 	
-			if (this->ldivide)
+			if (this->ldivide) // average
 			{
 				for (IncidentTieIterator iter = pNetwork->inTies(actor);
 					iter.valid();
@@ -124,15 +124,15 @@ double DyadicCovariateAvAltEffect::calculateChangeContribution(int actor,
 				{
 					int j = iter.actor();                // identifies alter
 					double dycova = this->dycoValue(j, actor);
-					if (lasWeight)
+					if (lasWeight) //avInAltW
 					{
 						totalAlterValue += (double) this->centeredValue(j) * dycova;
 					}
-					else
+					else //avWInAlt
 					{
 						totalAlterValue += (double) dycova;
 					}
-					if (lpar2)
+					if (lpar2) // type of weight
 					{
 						totalWeightValue += (double) dycova;
 					}
@@ -146,7 +146,7 @@ double DyadicCovariateAvAltEffect::calculateChangeContribution(int actor,
 					contribution = (double) difference * totalAlterValue / totalWeightValue;
 				}
 			}
-			else
+			else // tot
 			{
 				for (IncidentTieIterator iter = pNetwork->inTies(actor);
 					iter.valid();
@@ -154,11 +154,11 @@ double DyadicCovariateAvAltEffect::calculateChangeContribution(int actor,
 				{
 					int j = iter.actor();                // identifies alter
 					double dycova = this->dycoValue(j, actor);
-					if (lasWeight)
+					if (lasWeight) //totInAltW
 					{
 						totalAlterValue += (this->centeredValue(j) * dycova);
 					}
-					else
+					else // totWInAlt
 					{
 						totalAlterValue += (double) dycova;
 					}
