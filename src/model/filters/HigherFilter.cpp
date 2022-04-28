@@ -27,7 +27,7 @@ HigherFilter::HigherFilter(const NetworkVariable * pOwnerVariable,
 {
 	const NetworkVariable * pNetworkVariable1 = this->pVariable();
 	const NetworkVariable * pNetworkVariable2 = this->pOtherVariable();
-	lsymmetric <- pNetworkVariable2->symmetric() && !pNetworkVariable1->symmetric();
+	lsymm = ((pNetworkVariable2->symmetric()) && (!pNetworkVariable1->symmetric()));
 //  The extra steps for a symmetric other network are superfluous
 //  if the owner network is also symmetric.
 }
@@ -62,10 +62,10 @@ void HigherFilter::filterPermittedChanges(int ego, bool * permitted)
 		iter2.next();
 	}
 	
-	if (this->lsymmetric)
+	if (this->lsymm)
 	{
 		IncidentTieIterator iter1 = pNetwork1->outTies(ego);
-		IncidentTieIterator iter2 = pNetwork2->inTies(ego);
+		IncidentTieIterator iter2 = pNetwork2->inTies(ego, "hf");
 
 		while (iter2.valid())
 		{
@@ -99,7 +99,7 @@ bool HigherFilter::validMiniStep(const NetworkChange * pMiniStep)
 	int i = pMiniStep->ego();
 	int j = pMiniStep->alter();
 
-	if  (this->lsymmetric)
+	if  (this->lsymm)
 	{
 		return !pNetwork1->tieValue(i, j) || 
 				!(pNetwork2->tieValue(i, j) || pNetwork2->tieValue(j, i)) ;

@@ -338,7 +338,7 @@ void NetworkVariable::initialize(int period)
 		if (!this->pReceivers()->active(i))
 		{
 			for (IncidentTieIterator iter =
-					this->lpData->pStructuralTieNetwork(period)->inTies(i);
+					this->lpData->pStructuralTieNetwork(period)->inTies(i, "nwva");
 				iter.valid();
 				iter.next())
 			{
@@ -400,7 +400,7 @@ void NetworkVariable::actOnJoiner(const SimulationActorSet * pActorSet,
 		// Activate the ties from active senders according to the
 		// initial observation of the period.
 
-		for (IncidentTieIterator iter = pStartNetwork->inTies(actor);
+		for (IncidentTieIterator iter = pStartNetwork->inTies(actor, "nwvb");
 			iter.valid();
 			iter.next())
 		{
@@ -417,7 +417,7 @@ void NetworkVariable::actOnJoiner(const SimulationActorSet * pActorSet,
 
 		for (IncidentTieIterator iter =
 				this->lpData->pStructuralTieNetwork(this->period())->inTies(
-					actor);
+					actor, "nwvc");
 			iter.valid();
 			iter.next())
 		{
@@ -458,7 +458,7 @@ void NetworkVariable::actOnLeaver(const SimulationActorSet * pActorSet,
 
 		for (IncidentTieIterator iter =
 				this->lpData->pStructuralTieNetwork(this->period())->inTies(
-					actor);
+					actor, "nwvd");
 			iter.valid();
 			iter.next())
 		{

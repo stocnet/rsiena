@@ -1176,8 +1176,8 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "sharedTo")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-						new MixedThreeCyclesFunction(pEffectInfo->variableName(),
-							pEffectInfo->interactionName1(),
+						new MixedThreeCyclesFunction(pEffectInfo->interactionName1(),
+							pEffectInfo->variableName(),
 							pEffectInfo->internalEffectParameter()));
 	}
 	else if (effectName == "toU")
@@ -1967,7 +1967,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,false, false, true);
 	}
-	else if (effectName == "totWAlt")
+	else if (effectName == "totWInAlt")
 	{
 		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,false, false, false);
 	}

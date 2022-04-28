@@ -219,7 +219,7 @@ int Network::increaseTieValue(int i, int j, int v) {
  */
 int Network::changeTieValue(int i, int j, int v, ChangeType type) {
 	this->checkSenderRange(i);
-	this->checkReceiverRange(j);
+	this->checkReceiverRange(j, "changeTieValue");
 
 	// Retrieve the old value
 	int oldValue = 0;
@@ -298,7 +298,7 @@ void Network::onTieIntroduction(int i, int j) {
  */
 int Network::tieValue(int i, int j) const {
 	this->checkSenderRange(i);
-	this->checkReceiverRange(j);
+	this->checkReceiverRange(j, "tieValue");
 
 	// Look for the tie
 	std::map<int, int>::const_iterator iter = this->lpOutTies[i].find(j);
@@ -377,7 +377,16 @@ TieIterator Network::ties() const {
  * Returns an iterator over incoming ties of the actor <i>i</i>.
  */
 IncidentTieIterator Network::inTies(int i) const {
-	this->checkReceiverRange(i);
+	this->checkReceiverRange(i, "inTies");
+	return IncidentTieIterator(this->lpInTies[i]);
+}
+
+
+/**
+ * Returns an iterator over incoming ties of the actor <i>i</i>, with message
+ */
+IncidentTieIterator Network::inTies(int i, std::string mess) const {
+	this->checkReceiverRange(i, mess + " inTies");
 	return IncidentTieIterator(this->lpInTies[i]);
 }
 
@@ -395,7 +404,7 @@ IncidentTieIterator Network::outTies(int i, int lowerBound) const {
  * the sender not less than the given bound.
  */
 IncidentTieIterator Network::inTies(int i, int lowerBound) const {
-	this->checkReceiverRange(i);
+	this->checkReceiverRange(i, "inTies with lowerBound");
 	return IncidentTieIterator(this->lpInTies[i], lowerBound);
 }
 
@@ -415,7 +424,7 @@ IncidentTieIterator Network::outTies(int i) const {
  * Returns the number of incoming ties of the actor <i>i</i>.
  */
 int Network::inDegree(int i) const {
-	this->checkReceiverRange(i);
+	this->checkReceiverRange(i, "inDegree");
 	return this->lpInTies[i].size();
 }
 
@@ -484,8 +493,8 @@ int Network::maxTieValue() const {
  * <i>j</i>.
  */
 int Network::outTwoStarCount(int i, int j) const {
-	this->checkReceiverRange(i);
-	this->checkReceiverRange(j);
+	this->checkReceiverRange(i, "outTwoStarCount i");
+	this->checkReceiverRange(j, "outTwoStarCount j");
 	return commonActorCount(this->inTies(i), this->inTies(j));
 }
 
@@ -512,7 +521,7 @@ bool Network::complete() const {
  */
 bool Network::hasEdge(int ego, int alter) const {
 	checkSenderRange(ego);
-	checkReceiverRange(alter);
+	checkReceiverRange(alter, "hasEdge");
 	return lpOutTies[ego].find(alter) != lpOutTies[ego].end();
 }
 
@@ -549,6 +558,20 @@ void Network::checkReceiverRange(int i) const {
 		throw std::out_of_range(
 				"The number " + toString(i) + " is not in the range [0,"
 						+ toString(this->lm)
+						+ ") of nodes acting as receivers of ties");
+	}
+}
+
+
+/**
+ * Tests if the given actor is in the valid range of receivers and throws an
+ * std::out_of_range exception, if not; with an additional message
+ */
+void Network::checkReceiverRange(int i, std::string message) const {
+	if (i < 0 || i >= this->lm) {
+		throw std::out_of_range(
+				message + ": The number " + toString(i) + 
+				" is not in the range [0," + toString(this->lm)
 						+ ") of nodes acting as receivers of ties");
 	}
 }

@@ -12,6 +12,7 @@
 #define HIGHERFILTER_H_
 
 #include "NetworkDependentFilter.h"
+#include <string>
 
 namespace siena
 {
@@ -30,7 +31,7 @@ public:
 	virtual bool validMiniStep(const NetworkChange * pMiniStep);
 	
 private:
-	bool lsymmetric;
+	bool lsymm;
 };
 
 }
