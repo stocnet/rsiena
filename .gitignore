@@ -17,3 +17,4 @@ config.log
 config.status
 *.code-workspace
 *.gz
+*.Rproj
