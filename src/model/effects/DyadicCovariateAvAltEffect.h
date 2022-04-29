@@ -48,7 +48,6 @@ private:
 	bool lpar2;
 	// indicates if out-ties or in-ties are to be used
 	bool loutgoing;
-
 };
 
 }
