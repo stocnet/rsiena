@@ -147,7 +147,7 @@ void NetworkCache::initialize(int ego)
 
 		if (ego >= 0 && ego < this->lpNetwork->n())
 		{
-			for (IncidentTieIterator iter = this->lpNetwork->inTies(ego);
+			for (IncidentTieIterator iter = this->lpNetwork->inTies(ego, "nwc");
 				iter.valid();
 				iter.next())
 			{

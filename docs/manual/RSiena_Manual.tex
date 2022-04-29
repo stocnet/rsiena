@@ -188,7 +188,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.3.9.
+This version was renewed for \RS version 1.3.10.
 \end{abstract}
 
 
@@ -1138,7 +1138,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.3.9).
+  identified by a version number (e.g.\ 1.3.10).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -13648,7 +13648,6 @@ It is then important how to define the zero point of the covariate!
 \begin{enumerate}
 \setcounter{enumi}{\value{savenumi}}
 
-
 \item \emph{alter's  average of dyadic covariate } effect on behavior $z$
  \texttt{(avWAlt)},\\
       defined as the product of $i$'s behavior $z_i$ and
@@ -13662,11 +13661,43 @@ It is then important how to define the zero point of the covariate!
       leading to the effect \\
        $s^{\rm beh}_{i\vit}(x, z) = z_i \, \breve w_i $.\\
 
+\item \emph{in-alter's  average of dyadic covariate } effect on behavior $z$
+ \texttt{(avWInAlt)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      $i$'s in-alters' dyadic covariate-average $\breve w_h$ as defined by
+\begin{equation}
+  \breve w_h = \left\{\begin{array}{ll} \displaystyle
+         \frac{\sum_h x_{hi}w_{hi}}{x_{+i}}  &  \text{ if } x_{+i} > 0     \\
+         0                                &  \text{ if } x_{+i} = 0  .
+  \end{array}   \right.            \label{alt_avwa}
+\end{equation}
+      leading to the effect \\
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \, \breve w_h $.\\
+
+\item \emph{in-alter's  average of dyadic covariate } effect on behavior $z$
+ \texttt{(avWInAlt)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      $i$'s in-alters' dyadic covariate-average $\breve w_h$ as defined by
+\begin{equation}
+  \breve w_h = \left\{\begin{array}{ll} \displaystyle
+         \frac{\sum_h x_{hi}w_{ih}}{x_{+i}}  &  \text{ if } x_{+i} > 0     \\
+         0                                &  \text{ if } x_{+i} = 0  .
+  \end{array}   \right.            \label{alt_avwa}
+\end{equation}
+      leading to the effect \\
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \, \breve w_h $.\\
+
 \item \emph{alter's  total of dyadic covariate W } effect on behavior $z$
  \texttt{(totWAlt)},\\
       defined as the product of $i$'s behavior $z_i$ and
       the sum of $i$'s alters' values of the dyadic covariate, \\
        $s^{\rm beh}_{i\vit}(x, z) = z_i \, \sum_h x_{ih}w_{ih}  $.\\
+
+\item \emph{in-alter's  total of dyadic covariate W } effect on behavior $z$
+ \texttt{(totWInAlt)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      the sum of $i$'s in-alters' values of the dyadic covariate, \\
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \, \sum_h x_{hi}w_{ih}  $.\\
 
  \item {\em average alter weighted by dyadic covariate $W$}
                        \texttt{(avAltW)},
@@ -13679,10 +13710,28 @@ It is then important how to define the zero point of the covariate!
                     z_i \big( \sum_j x_{ij} \, w_{ij} \, z_j \big)  /
                                 \big (\sum_j w_{ij} \,x_{ij}\big) ;$\\
  (and the mean behavior, i.e. $0$, if the ratio is 0/0) ;
+
+  \item {\em average in-alter weighted by dyadic covariate $W$}
+                       \texttt{(avInAltW)},
+                       a weighted version of  \texttt{avInAlt};\\
+                       depending on the parameter value (1 or 2):\\
+  parameter = 1 : \ $s^{\rm beh}_{i\vit}(x, z) =
+                     z_i \big( \sum_j x_{ji} \, w_{ij} \, z_j \big)  /
+                                        \big (\sum_j x_{ji}\big)$\\
+   parameter = 2 : \  $s^{\rm beh}_{i\vit}(x, z) =
+                    z_i \big( \sum_j x_{ji} \, w_{ij} \, z_j \big)  /
+                                \big (\sum_j w_{ij} \,x_{ji}\big) ;$\\
+ (and the mean behavior, i.e. $0$, if the ratio is 0/0) ;
+
  \item {\em total alter weighted by dyadic covariate $W$}
                        \texttt{(totAltW)},
                        a weighted version of  \texttt{totAlt};\\
    $s^{\rm beh}_{i\vit}(x, z) =  z_i \, \sum_j x_{ij} \, w_{ij} \, z_j  ;$
+
+ \item {\em total in-alter weighted by dyadic covariate $W$}
+                       \texttt{(totInAltW)},
+                       a weighted version of  \texttt{totInAlt};\\
+   $s^{\rm beh}_{i\vit}(x, z) =  z_i \, \sum_j x_{ji} \, w_{ij} \, z_j  ;$
 
  \item {\em average similarity weighted by dyadic covariate $W$}
                        \texttt{(avSimW)},
@@ -15428,12 +15477,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.3.9.tar.gz|\\
+\verb|R CMD check RSiena_1.3.10.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.3.9.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.3.10.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16466,13 +16515,29 @@ Changes in RSiena:
 \fi
 
 
+\item 2022-04-28 GitHub, package version 1.3.10
+
+Changes in RSiena:
+\begin{itemize}
+\item  Effects:
+\begin{itemize}
+  \item New effects  \texttt{avInAltW}, \texttt{avWInAlt}, \texttt{totInAltW}, \texttt{totWInAlt} (help from Robert Krause).
+  \item Corrected implementation of \texttt{sharedTo}.
+\end{itemize}
+\item Corrections:
+\begin{itemize}
+  \item Bug corrected that occurred when several two-mode networks were included in the dependent variables, with an order restriction between them (\texttt{HigherFilter}, \texttt{DisjointFilter}).
+\end{itemize}
+
+\end{itemize}
+
 \item 2022-03-18 GitHub, package version 1.3.9.
 
 Changes in RSiena:
 \begin{itemize}
 \item  Effects:
 \begin{itemize}
-  \item Corrected implementation of \texttt{simAllNear} and 
+  \item Corrected implementation of \texttt{simAllNear} and
     \texttt{simAllFar}.
 \end{itemize}
 \item Corrections:

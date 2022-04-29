@@ -1176,8 +1176,8 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "sharedTo")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-						new MixedThreeCyclesFunction(pEffectInfo->variableName(),
-							pEffectInfo->interactionName1(),
+						new MixedThreeCyclesFunction(pEffectInfo->interactionName1(),
+							pEffectInfo->variableName(),
 							pEffectInfo->internalEffectParameter()));
 	}
 	else if (effectName == "toU")
@@ -1957,19 +1957,35 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "avWAlt")
 	{
-		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,true, false);
+		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,true, false, true);
+	}
+	else if (effectName == "avWInAlt")
+	{
+		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,true, false, false);
 	}
 	else if (effectName == "totWAlt")
 	{
-		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,false, false);
+		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,false, false, true);
+	}
+	else if (effectName == "totWInAlt")
+	{
+		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,false, false, false);
 	}
 	else if (effectName == "avAltW")
 	{
-		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,true, true);
+		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,true, true, true);
+	}
+	else if (effectName == "avInAltW")
+	{
+		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,true, true, false);
 	}
 	else if (effectName == "totAltW")
 	{
-		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,false, true);
+		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,false, true, true);
+	}
+	else if (effectName == "totInAltW")
+	{
+		pEffect = new DyadicCovariateAvAltEffect(pEffectInfo,false, true, false);
 	}
 	else if (effectName == "avSimW")
 	{

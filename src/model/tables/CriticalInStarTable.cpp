@@ -67,7 +67,7 @@ void CriticalInStarTable::calculate()
 			// pointing to h is critical. Just iterate over incoming ties of
 			// h to reach them all.
 
-			for (IncidentTieIterator iter1 = pNetwork->inTies(h);
+			for (IncidentTieIterator iter1 = pNetwork->inTies(h, "cist1");
 				iter1.valid();
 				iter1.next())
 			{
@@ -88,7 +88,7 @@ void CriticalInStarTable::calculate()
 
 			bool found = false;
 
-			for (IncidentTieIterator iter1 = pNetwork->inTies(h);
+			for (IncidentTieIterator iter1 = pNetwork->inTies(h, "cist2");
 				iter1.valid() && !found;
 				iter1.next())
 			{

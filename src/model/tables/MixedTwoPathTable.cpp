@@ -56,7 +56,7 @@ void MixedTwoPathTable::calculate()
 	else if (this->lfirstStepDirection == BACKWARD)
 	{
 		this->performFirstStep(
-				this->pFirstNetwork()->inTies(this->ego()));
+				this->pFirstNetwork()->inTies(this->ego(), "mtpt1"));
 	}
 	else if (this->lfirstStepDirection == EITHER)
 	{
@@ -102,7 +102,7 @@ void MixedTwoPathTable::performFirstStep(Iterator iter)
 		else if (this->lsecondStepDirection == BACKWARD)
 		{
 			this->performSecondStep(
-					this->pSecondNetwork()->inTies(middleActor));
+					this->pSecondNetwork()->inTies(middleActor, "mtpt2"));
 		}
 		else if (this->lsecondStepDirection == EITHER)
 		{

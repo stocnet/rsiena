@@ -58,7 +58,7 @@ void TwoPathTable::calculate()
 	else if (this->lfirstStepDirection == BACKWARD)
 	{
 		this->performFirstStep(
-			this->pNetwork()->inTies(this->ego()));
+			this->pNetwork()->inTies(this->ego(), "tpt1"));
 	}
 	else
 	{
@@ -99,7 +99,7 @@ void TwoPathTable::performFirstStep(Iterator iter)
 		else if (this->lsecondStepDirection == BACKWARD)
 		{
 			this->performSecondStep(
-				this->pNetwork()->inTies(middleActor));
+				this->pNetwork()->inTies(middleActor, "tpt2"));
 		}
 		else
 		{

@@ -28,7 +28,7 @@ DisjointFilter::DisjointFilter(const NetworkVariable * pOwnerVariable,
 {
 	const NetworkVariable * pNetworkVariable1 = this->pVariable();
 	const NetworkVariable * pNetworkVariable2 = this->pOtherVariable();
-	lsymmetric <- pNetworkVariable1->symmetric() && !pNetworkVariable2->symmetric();
+	this->lsymm = ((pNetworkVariable1->symmetric()) && (!pNetworkVariable2->symmetric()));
 //  The extra steps for a symmetric owner network are superfluous
 //  if the other network is also symmetric.
 }
@@ -63,10 +63,10 @@ void DisjointFilter::filterPermittedChanges(int ego, bool * permitted)
 		iter2.next();
 	}
 
-	if (this->lsymmetric)
+	if (this->lsymm)
 	{
 		IncidentTieIterator iter1 = pNetwork1->outTies(ego);
-		IncidentTieIterator iter2 = pNetwork2->inTies(ego);
+		IncidentTieIterator iter2 = pNetwork2->inTies(ego, "djf");
 		while (iter2.valid())
 		{
 			while (iter1.valid() && iter1.actor() < iter2.actor())
@@ -98,7 +98,7 @@ bool DisjointFilter::validMiniStep(const NetworkChange * pMiniStep)
 	int i = pMiniStep->ego();
 	int j = pMiniStep->alter();
 
-	if  (this->lsymmetric)
+	if  (this->lsymm)
 	{
 		return (pNetwork1->tieValue(i, j) ||
 				!(pNetwork2->tieValue(i, j) || pNetwork2->tieValue(j, i)));

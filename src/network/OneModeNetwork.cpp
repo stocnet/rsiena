@@ -285,7 +285,7 @@ int OneModeNetwork::twoPathCount(int i, int j) const {
  */
 int OneModeNetwork::truncatedTwoPathCount(int i, int j, int threshold) const {
 	this->checkSenderRange(i);
-	this->checkReceiverRange(j);
+	this->checkReceiverRange(j, "truncatedTwoPathCount");
 
 	// Iterate the outgoing ties of i and incoming ties of j simultaneously
 	// and count the number of matching neighbors. Stop as soon as the
@@ -317,7 +317,7 @@ int OneModeNetwork::truncatedTwoPathCount(int i, int j, int threshold) const {
 bool OneModeNetwork::noTwoPaths(int i, int j,
 		int intermediateActorUpperBound) const {
 	this->checkSenderRange(i);
-	this->checkReceiverRange(j);
+	this->checkReceiverRange(j, "noTwoPaths");
 
 	// Iterate the outgoing ties of i and incoming ties of j simultaneously
 	// and check if there are no matching neighbors below the given bound.
@@ -360,7 +360,7 @@ bool OneModeNetwork::existsTwoPath(int i, int j) const {
 bool OneModeNetwork::atMostKTwoPaths(int i, int j, int k,
 		int & twoPathCount) const {
 	this->checkSenderRange(i);
-	this->checkReceiverRange(j);
+	this->checkReceiverRange(j,"atMostKTwoPaths");
 
 	// Iterate the outgoing ties of i and incoming ties of j simultaneously
 	// and count the number of matching neighbors. Stop as soon as their number

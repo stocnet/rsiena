@@ -28,7 +28,7 @@ namespace siena
 class DyadicCovariateAvAltEffect : public DyadicCovariateAndNetworkBehaviorEffect
 {
 public:
-	DyadicCovariateAvAltEffect(const EffectInfo * pEffectInfo, bool divide, bool asWeight);
+	DyadicCovariateAvAltEffect(const EffectInfo * pEffectInfo, bool divide, bool asWeight, bool outgoing);
 
 	virtual double calculateChangeContribution(int actor,
 		int difference);
@@ -46,6 +46,8 @@ private:
 	bool lasWeight;
 	// lpar2 specifies that the internal effect parameter is 2
 	bool lpar2;
+	// indicates if out-ties or in-ties are to be used
+	bool loutgoing;
 };
 
 }

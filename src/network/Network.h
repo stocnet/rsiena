@@ -14,6 +14,7 @@
 
 #include <map>
 #include <list>
+#include <string>
 
 namespace siena {
 
@@ -66,6 +67,7 @@ public:
 	TieIterator ties() const;
 	IncidentTieIterator inTies(int i) const;
 	IncidentTieIterator outTies(int i) const;
+	IncidentTieIterator inTies(int i, std::string mess) const;
 	IncidentTieIterator inTies(int i, int lowerBound) const;
 	IncidentTieIterator outTies(int i, int lowerBound) const;
 
@@ -94,6 +96,7 @@ protected:
 	virtual void onTieIntroduction(int i, int j);
 	void checkSenderRange(int i) const;
 	void checkReceiverRange(int i) const;
+	void checkReceiverRange(int i, std::string message) const;
 	virtual int maxTieCount() const;
 
 	// set of network change listener

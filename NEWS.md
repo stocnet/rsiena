@@ -1,3 +1,25 @@
+# RSiena 1.3.10
+
+## 
+   
+2022-04-28
+
+## Changes in RSiena:  
+
+### Corrections:
+  * Bug corrected that occurred when several two-mode networks were included
+    in the dependent variables, with an order restriction between them.
+    (Correction of `HigherFilter` and `DisjointFilter`).
+
+### Effects:
+  * New effects `avInAltW`, `avWInAlt`, `totInAltW`, `totWInAlt` 
+    (with help from Robert Krause).
+  * Corrected implementation of `sharedTo`.
+  
+### Code modifications:
+  * Several modifications to enable traceback of errors occurring
+    in checkSenderRange called in inTies.
+
 # RSiena 1.3.9
 
 ## 

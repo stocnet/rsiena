@@ -10,13 +10,14 @@
 ### See if estimation with default algorithm will converge,
 ### and check the target statistic.
 ### Note: this does not check the effect itself, only the statistic.
+### Checks of later effects are appended at the end.
 ################################################################################
 
 library(RSiena)
 
-############################################
+################################################################################
 ### check from.w.ind
-############################################
+################################################################################
 
 mynet1 <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
 mynet2 <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
@@ -82,9 +83,9 @@ tpw3 <- s501 %*% ind3 %*% t(s501)
 diag(tpw3) <- 0
 sum(tpw3*s503) # OK
 
-############################################
+################################################################################
 ### check transtripX
-############################################
+################################################################################
 
 mynet <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
 
@@ -109,9 +110,9 @@ twopc <- s502 %*% diag(rep(1:5,10)) %*% (s502)
 diag(twopc) <- 0
 sum(twopc*s502) # OK
 
-############################################
+################################################################################
 ### check homXTransTrip, homXTransRecTrip
-############################################
+################################################################################
 
 mynet <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
 
@@ -156,9 +157,9 @@ twop.eq <- (s502*eq) %*% s502
 tt.eq.r <- s502 * t(s502) * eq * twop.eq
 sum(tt.eq.r) # OK
 
-############################################
+################################################################################
 ### check to, toU
-############################################
+################################################################################
 
 advice <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
 trust <- sienaDependent(array(c(s503, s501), dim=c(50, 50, 2)))
@@ -209,9 +210,9 @@ WUXX <- WUX * s501
 sum(diag(WUXX)) # 0 OK
 sum(WUXX) # 90 OK
 
-############################################
+################################################################################
 ### check toBack, MixedInXW
-############################################
+################################################################################
 
 mynet1 <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
 mynet2 <- sienaNet(array(c(s503, s502), dim=c(50, 50, 2)))
@@ -242,9 +243,9 @@ ans$targets
 mixos <- t(s502) %*% s501
 sum(s502 * sqrt(mixos)) #  58.45997 OK
 
-############################################
+################################################################################
 ### check cl.XWX, cl.XWX1, cl.XWX2
-############################################
+################################################################################
 
 advice <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
 trust <- sienaDependent(array(c(s503, s501), dim=c(50, 50, 2)))
@@ -277,9 +278,9 @@ myeff <- includeEffects(myeff, cl.XWX2, name="trust", interaction1="advice")
 myans$targets
 sum(XWX) # 86 OK
 
-############################################
+################################################################################
 ### check XWX
-############################################
+################################################################################
 
 a1 <- as.matrix(read.table("aadv_t1.txt",header=F))
 a2 <- as.matrix(read.table("aadv_t2.txt",header=F))
@@ -345,9 +346,6 @@ diag(XWX)
 sum(XWX) # OK
 # In other words: XWX uses uncentered W.
 
-
-
-
 advice <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
 trust <- sienaDependent(array(c(s503, s501), dim=c(50, 50, 2)))
 mydata <- sienaDataCreate(advice,trust)
@@ -366,9 +364,9 @@ diag(XWX)
 2*sum(XWX) # 172 OK
 
 
-##########################################################################
+################################################################################
 ### check avSim, totSim, avInSim, totInSim, avInSimPopAlt, totInSimPopAlt
-##########################################################################
+################################################################################
 
 mynet <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
 mybeh <- sienaDependent(s50a[,2:3], type="behavior")
@@ -484,9 +482,9 @@ ans$targets
 sum( t(s502) * simi2  %*% diag(indeg)) # OK totInSimPopAlt
 
 
-##########################################################################
+################################################################################
 ### check avAttHigher, avAttLower, totAttHigher, totAttLower
-##########################################################################
+################################################################################
 
 mynet <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
 mybeh <- sienaDependent(s50a[,2:3], type="behavior")
@@ -535,9 +533,9 @@ ans$targets
 sum(s502 * (simim) ) # OK totAttLower
 
 
-############################################
+################################################################################
 ### check crprodInActIntn
-############################################
+################################################################################
 
 mynet1 <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
 mynet2 <- sienaNet(array(c(s503, s502), dim=c(50, 50, 2)))
@@ -563,9 +561,9 @@ ans$targets
 sum(rowSums(s502 * s501) * (colSums(s501) - ctr)) # -3.53 OK
 
 
-############################################
+################################################################################
 ### check rateX
-############################################
+################################################################################
 
 library(RSiena)
 
@@ -977,9 +975,9 @@ FF <- 1*(aot >= p)
 diag(FF) <- 0
 sum(FF*(p-aot)) # OK simAllFar
 
-############################################
+################################################################################
 ### check avDegIntn
-############################################
+################################################################################
 
 mynet1 <- sienaNet(array(c(s501, s502, s503), dim=c(50, 50, 3)))
 mynet2 <- sienaNet(array(c(s503, s502, s501), dim=c(50, 50, 3)))
@@ -993,9 +991,9 @@ mymodel <- sienaModelCreate(projname=NULL, seed=514)
 (ans <- siena07(mymodel, data=mydata, effects=myeff, prevAns=ans))
 # convergence is very slow, which is natural for this effect with only 3 waves
 ans$targets
-############################################
+################################################################################
 ### check avDeg
-############################################
+################################################################################
 
 mynet <- sienaNet(array(c(s501, s502, s503), dim=c(50, 50, 3)))
 (mydata <- sienaDataCreate(mynet))
@@ -1020,9 +1018,9 @@ sum(s502*t(s502) + s501*t(s501)) # OK recip
 p <- 2
 sum((ad1-p)*s502 + (ad2-p)*s501) # OK avDegIntn
 
-############################################
+################################################################################
 ### check avDeg
-############################################
+################################################################################
 
 mynet <- sienaNet(array(c(s501, s502, s503, s502, s501), dim=c(50, 50, 5)))
 (mydata <- sienaDataCreate(mynet))
@@ -1050,4 +1048,115 @@ myeff$test <- FALSE
 (ans2 <- siena07(mymodel, data=mydata, effects=myeff, prevAns=ans1))
 (ans3 <- siena07(mymodel, data=mydata, effects=myeff, prevAns=ans2))
 
+################################################################################
+### check sharedTo
+################################################################################
 
+mynet1 <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
+mydata <- sienaDataCreate(mynet1, mynet2)
+mymodel <- sienaModelCreate(projname=NULL, seed=1234)
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, sharedTo, name="mynet2", interaction1="mynet1", parameter=1)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# 115 116  70 106 122  90 154
+intwostars1 <- (s501) %*% t(s501)
+intwostars3 <- (s503) %*% t(s503)
+diag(intwostars1) <- 0
+diag(intwostars3) <- 0
+sum(intwostars1 * intwostars3) # OK
+
+###
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, sharedTo, name="mynet2", interaction1="mynet1", parameter=2)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# 115 116  70 106 122  90 139.7484
+sum(sqrt(intwostars1) * intwostars3) # OK
+
+###
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, sharedTo, name="mynet2", interaction1="mynet1", parameter=3)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# 115 116  70 106 122  90 139.7484
+n <- 50
+intwostars2 <- (s502) %*% t(s502)
+diag(intwostars2) <- 0
+(cc <- (n/(2*(n-1)))*mean(intwostars1 + intwostars2))
+sum((intwostars1-cc) * intwostars3) # OK
+
+###
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, sharedTo, name="mynet2", interaction1="mynet1", parameter=4)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# 115 116  70 106 122  90 44.01341
+sum((sqrt(intwostars1)-sqrt(cc)) * intwostars3) # OK
+
+################################################################################
+### check totInAltW, avInAltW, totWInAlt, avWInAlt
+################################################################################
+
+beh2 <- s50a[,2] - mean(s50a[,1:2])
+set.seed(123)
+dcova <- matrix(runif(2500),50,50)
+s3 <- dcova
+diag(s3) <- NA
+dcov_c <- dcova - mean(s3,na.rm = TRUE)
+
+mynet <- sienaNet(array(c(s501, s502), dim = c(50, 50, 2)))
+beh <- sienaDependent(s50a[,1:2],type = 'behavior')
+dcov <- coDyadCovar(dcova)
+mydata <- sienaDataCreate(mynet,dcov,beh)
+mymodel <- sienaModelCreate(projname = NULL, seed = 1234)
+
+# avInAltW p1
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff,avInAltW, name = 'beh',
+                   interaction1 = 'mynet', interaction2 = 'dcov',
+                   parameter = 1)
+(ans1 <- siena07(mymodel, data = mydata, effects = myeff))
+ans1$targets
+
+(mbh <- mean(beh))
+divi <- function(a,b){ifelse(b==0, 0, a/b)}
+mdc <- attr(mydata$dycCovars[[1]],'mean')
+avinwalt <-  divi( ((dcova - mdc)*t(s501)) %*% (beh[,,2] - mbh), colSums(s501))
+sum( (beh[,,2] - mbh) * avinwalt ) # avInAltW OK
+
+# avInAltW p2
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff,avInAltW, name = 'beh',
+                   interaction1 = 'mynet', interaction2 = 'dcov',
+                   parameter = 2)
+(ans1 <- siena07(mymodel, data = mydata, effects = myeff))
+ans1$targets
+avinwalt <-  divi( ((dcova - mdc)*t(s501)) %*% (beh[,,2] - mbh), 
+					rowSums(t(s501)*(dcova-mdc)))
+sum( (beh[,,2] - mbh) * avinwalt ) # avInAltW OK
+
+# avWInAlt
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,avWInAlt, name = 'beh',
+                        interaction1 = 'mynet', interaction2 = 'dcov')
+(ans1 <- siena07(mymodel, data = mydata, effects = myeff))
+ans1$targets
+sum(divi(rowSums(t(s501) * dcov_c), colSums(s501)) * beh2) # avWInAlt OK
+	 
+# totInAltW 
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,totInAltW, name = 'beh',
+                        interaction1 = 'mynet', interaction2 = 'dcov')
+(ans1 <- siena07(mymodel, data = mydata, effects = myeff))
+ans1$targets
+sum(rowSums(t(s501) * dcov_c %*% diag(beh2)) * beh2) # totInAltW OK
+
+# totWInAlt 
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,totWInAlt, name = 'beh',
+                        interaction1 = 'mynet', interaction2 = 'dcov')
+(ans1 <- siena07(mymodel, data = mydata, effects = myeff))
+ans1$targets
+sum(rowSums(t(s501) * dcov_c) * beh2) # totWInAlt OK
