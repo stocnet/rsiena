@@ -15,6 +15,7 @@ inst/doc
 autom4te.cache
 config.log
 config.status
+docs/
 *.code-workspace
 *.gz
 *.Rproj
