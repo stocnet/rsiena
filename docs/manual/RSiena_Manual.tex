@@ -190,7 +190,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.3.10.
+This version was renewed for \RS version 1.3.11.
 \end{abstract}
 
 
@@ -1140,7 +1140,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.3.10).
+  identified by a version number (e.g.\ 1.3.11).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -15491,12 +15491,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.3.10.tar.gz|\\
+\verb|R CMD check RSiena_1.3.11.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.3.10.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.3.11.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16527,6 +16527,29 @@ Changes in RSiena:
     \end{itemize}
 \end{itemize}
 \fi
+
+
+\item 2022-05-30 GitHub, package version 1.3.11
+
+Changes in RSiena:
+
+\begin{itemize}
+\item  Corrections:
+\begin{itemize}
+\item  Correction in  \texttt{effects.r} of error that led to warning
+    in R 4.2.0 for multivariate networks.
+\item  Correction of help page for  \texttt{sienaGOF} (\texttt{groupName}).
+ \item  Correction of  \texttt{igraphNetworkExtraction} in the help page for
+     \texttt{sienaGOF-auxiliary}.
+\end{itemize}
+\item  Improvements of functionality:
+\begin{itemize}
+\item  Further explanation of  \texttt{mixedTriadCensus} in the help page for
+     \texttt{sienaGOF-auxiliary}.
+\end{itemize}
+\end{itemize}
+
+
 
 
 \item 2022-04-28 GitHub, package version 1.3.10
