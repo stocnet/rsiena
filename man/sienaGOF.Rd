@@ -96,10 +96,10 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
  The differences are assessed by combining the components of the auxiliary
  statistic using the Mahalanobis distance.
  
- For \code{sienaFitObject}s that are \code{\link{sienaGroup}} objects,
+ For \code{sienaFitObject}s that were made for a multi-group data set,
  if you are not sure about the \code{groupName}s to use, these can be retrieved
- by the command \code{'names(sienaFitObject)'} 
- (with the obvious substitution of  \code{sienaFitObject}).
+ by the command \code{'names(dataObject)'} (where \code{dataObject} is 
+ the data used to produce the \code{sienaFitObject}).
  Mostly they are \code{"Data1", "Data2"}, etc.
 
  The function does not work properly for data sets that include a

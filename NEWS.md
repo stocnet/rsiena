@@ -1,3 +1,23 @@
+# RSiena 1.3.11
+
+## 
+   
+2022-05-30
+
+## Changes in RSiena:  
+
+### Corrections:   
+  * Correction in `effects.r` of error that led to warning
+    for multivariate networks.
+  * Correction of help page for `sienaGOF` (`groupName`).
+  * Correction of `igraphNetworkExtraction` in the help page for
+    `sienaGOF-auxiliary`.
+
+### Improvements of functionality: 
+  * Further explanation of `mixedTriadCensus` in the help page for
+    `sienaGOF-auxiliary`.
+
+
 # RSiena 1.3.10
 
 ## 

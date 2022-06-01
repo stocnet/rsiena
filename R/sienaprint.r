@@ -1150,22 +1150,11 @@ sienaFitThetaTable <- function(x, fromBayes=FALSE, tstat=FALSE, groupOnly=0, nfi
         theEffects$effectName[theEffects$netType=='continuous'] <-
             contEffects$effectName
     }
-    if (!gmm(x))
-      {
-        mydf[nrates + (1:xp), 'row'] <-  1:xp
-        mydf[nrates + (1:xp), 'type' ] <- ifelse(theEffects$type == "creation",
-                                             "creat", theEffects$type)
-        mydf[nrates + (1:xp), 'text' ] <- theEffects$effectName
-        mydf[nrates + (1:xp), 'value' ] <- theta
-      }
-    else # if (gmm(x))
-    { 
       mydf[nrates + (1:xp), 'row'] <-  1:xp
       mydf[nrates + (1:xp), 'type' ] <- ifelse(theEffects$type == "creation",
                                                "creat", theEffects$type)
       mydf[nrates + (1:xp), 'text' ] <- theEffects$effectName
       mydf[nrates + (1:xp), 'value' ] <- theta
-    }
 
 	if (fromBayes) # then nrates=0
 	{
