@@ -73,9 +73,9 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
     cumulative (<=) distributions?}
   \item{dc}{Dyadic covariate: either a matrix with dimensions
     \eqn{n \times n}{n * n}; or, as period-dependent values,
-	an array with dimensions \eqn{n \times n \times (M-1)}{n * n * (M-1)};
+    an array with dimensions \eqn{n \times n \times (M-1)}{n * n * (M-1)};
     where \eqn{n} is the number of actors and \eqn{M} is the number of waves.
-	There may be more time points, but those after \eqn{(M-1)} will not be used.}
+    There may be more time points, but those after \eqn{(M-1)} will not be used.}
 }
 \details{
  The statistics should be chosen to represent features of the network
@@ -132,7 +132,15 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
   Holland-Leinhardt triad census according to the algorithm by Batagelj and Mrvar.
 
  \code{mixedTriadCensus} returns a named vector, the distribution of the
-  mixed triad census of Hollway, Lomi, Pallotti,and Stadtfeld (2017).
+  mixed triad census of Hollway, Lomi, Pallotti, and Stadtfeld (2017).
+  See their Figure 1 for the meaning of the codes.
+  In this figure, ties between the bottom nodes are for the first network,
+  ties from the bottom to the top nodes are for the second network.
+  The mixed triad census can be used for pairs of dependent networks of which
+  the first must be one-mode and the second can be one-mode or two-mode.
+  If the second is one-mode, the set of triads considered is only a subset
+  of all mixed triads, and ties in the figure are directed upward;
+  existence of other ties is not considered.
 
  \code{dyadicCov} returns a named vector, the frequencies of the non-missing
   non-zero values dc(ego,alter) of the observed or simulated (ego,alter) ties.
@@ -238,7 +246,7 @@ mycov.egoalter <- outer(10*mycov, mycov ,'+')
 diag(mycov.egoalter) <- 0
 dim(mycov.egoalter) # 50 * 50 matrix
 # This is a dyadic variable indicating ego-alter combinations of mycov.
-# This construction works since mycov has integer values 
+# This construction works since mycov has integer values
 # not outside the interval from 1 to 9.
 # All cells of this matrix contain a two-digit number,
 # left digit is row (ego) value, right digit is column (alter) value.
@@ -246,8 +254,8 @@ dim(mycov.egoalter) # 50 * 50 matrix
 mycov.egoalter[1:10,1:12]
 # The number of values is the square of the number of values of mycov;
 # therefore, unwise to do this for a monadic covariate with more than 5 values.
-gof.mycov <- sienaGOF(ans, dyadicCov, verbose=TRUE, varName="mynet1", 
-    dc=mycov.egoalter)  
+gof.mycov <- sienaGOF(ans, dyadicCov, verbose=TRUE, varName="mynet1",
+    dc=mycov.egoalter)
 plot(gof.mycov)
 descriptives.sienaGOF(gof.mycov, showAll=TRUE)
 
@@ -286,7 +294,7 @@ twoeff <- includeEffects(twoeff, to, name="twomodenet",
                             interaction1="onemodenet")
 twoeff
 # Shorter phases 2 and 3, just for example:
-twoalgorithm <- sienaAlgorithmCreate(projname="twomode", nsub=1, n3=100, 
+twoalgorithm <- sienaAlgorithmCreate(projname="twomode", nsub=1, n3=100,
                                      seed=5634)
 (ans <- siena07(twoalgorithm, data=twodata, effects=twoeff, returnDeps=TRUE,
    batch=TRUE))
@@ -309,7 +317,7 @@ plot(gof.two, center=TRUE, scale=TRUE)
 # However, changing structurally fixed values are not taken into account.
 igraphNetworkExtraction <- function(i, data, sims, period, groupName, varName) {
   require(igraph)
-  dimsOfDepVar<- attr(data[[groupName]]$depvars[[varName]], "netdims")
+  dimsOfDepVar <- attr(data[[groupName]]$depvars[[varName]], "netdims")[1]
   missings <- is.na(data[[groupName]]$depvars[[varName]][,,period]) |
     is.na(data[[groupName]]$depvars[[varName]][,,period+1])
   if (is.null(i)) {
