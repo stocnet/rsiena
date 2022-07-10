@@ -387,6 +387,18 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 					SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(sims, group), i), period,
 							var_to_sexp(rVariables[i]));
 				}
+                
+                const vector<ContinuousVariable *> rContinuousVariables =
+                    pEpochSimulation->rContinuousVariables();
+                for (unsigned i = 0; i < rContinuousVariables.size(); i++)
+                {
+                    ContinuousVariable * pContinuousVariable =
+                        rContinuousVariables[i];
+                    SEXP theseValues = getContinuousValues(*pContinuousVariable);
+                        SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(sims,
+                                    group), i + rVariables.size()),
+                                    period, theseValues);
+                }
 			}
 			if (returnChains)
 			{
