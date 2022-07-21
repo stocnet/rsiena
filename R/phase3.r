@@ -422,7 +422,7 @@ CalculateDerivative3<- function(z,x)
 			sub <- which(diag(dfra) < 0)
 			dfra[sub,] <- 0
 			dfra[,sub] <- 0
-			dfra[sub, sub] <- 1
+			diag(dfra)[sub] <- 1
 			Report(c("Warning: diagonal element(s)", sub,
 					" of derivative matrix < 0\n"), cf)
 		}
