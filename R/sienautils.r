@@ -320,7 +320,7 @@ varDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
     {
          if (!is.list(val))
             stop("values must be an array or a list of sparse matrices")
-        if (!all(sapply(val, function(x) inherits(x,"TsparseMatrix"))))
+        if (!all(sapply(val, function(x){inherits(x,"TsparseMatrix", which = FALSE)})))
             stop("not a list of sparse triples matrices")
         vardims <- sapply(val, dim) ## dimensions of matrices in columns
         if (any(vardims != vardims[, 1]))
@@ -417,7 +417,7 @@ sienaDependent <- function(netarray, type=c("oneMode","bipartite","behavior",
 		{
             stop("netarray must be an array or a list of sparse matrices")
 		}
-        if (!all(sapply(netarray, function(x) inherits(x,"TsparseMatrix"))))
+        if (!all(sapply(netarray, function(x){inherits(x,"TsparseMatrix", which = FALSE)})))
 		{
             stop("not a list of sparse triples matrices")
 		}

@@ -865,7 +865,7 @@ bool MLSimulation::insertPermute(int c0)
     pLeftMiniStep->logOptionSetProbability(lospr0);
 
     bool misdat = pLeftMiniStep->missing(this->pChain()->period());
-    if (misdat & !pLeftMiniStep->missingEnd(this->pChain()->period()))
+    if (misdat && !pLeftMiniStep->missingEnd(this->pChain()->period()))
     {
 		delete pLeftMiniStep;
 		return false;
@@ -1020,7 +1020,7 @@ bool MLSimulation::insertPermute(int c0)
 				pMiniStep->makeChange(pVariable);
 			} else
 			{
-				if ((this->pModel()->localML()) & !(i < this->lthisPermutationLength))
+				if ((this->pModel()->localML()) && !(i < this->lthisPermutationLength))
 				{
 					pLeftMiniStep->makeChange(pVariableInsert);
 				}
@@ -1055,7 +1055,7 @@ bool MLSimulation::insertPermute(int c0)
 				newOptionSetProbability[i] = lospr;
 				newChoiceProbability[i] = lcpr;
 
-				if ((this->pModel()->localML()) & !(i < this->lthisPermutationLength))
+				if ((this->pModel()->localML()) && !(i < this->lthisPermutationLength))
 				{
 					pRightMiniStep->makeChange(pVariableInsert);
 				}
@@ -1070,7 +1070,7 @@ bool MLSimulation::insertPermute(int c0)
     // Need to re-execute left step if the interval size is bigger
     // than this->lthisPermutationLength
 
-    if ((interval.size() > this->lthisPermutationLength) &
+    if ((interval.size() > this->lthisPermutationLength) &&
 		(this->pModel()->localML()))
     {
 		pLeftMiniStep->makeChange(pVariableInsert);
@@ -1533,7 +1533,7 @@ bool MLSimulation::deletePermute(int c0)
 
 			} else
 			{
-				if ((this->pModel()->localML()) &
+				if ((this->pModel()->localML()) &&
                     !(i < this->lthisPermutationLength))
 				{
 					pMiniStepB->makeChange(pVariableDelete);
@@ -1570,7 +1570,7 @@ bool MLSimulation::deletePermute(int c0)
 				newOptionSetProbability[i] = lospr;
 				newChoiceProbability[i] = lcpr;
 
-				if ((this->pModel()->localML()) &
+				if ((this->pModel()->localML()) &&
                     !(i < this->lthisPermutationLength))
 				{
 					pMiniStepA->makeChange(pVariableDelete);
@@ -1585,7 +1585,7 @@ bool MLSimulation::deletePermute(int c0)
     }
 
 
-    if ((this->pModel()->localML())&
+    if ((this->pModel()->localML())&&
 		(interval.size() > this->lthisPermutationLength))
     {
         pMiniStepB->makeChange(pVariableDelete);
@@ -2957,9 +2957,9 @@ bool MLSimulation::neighbourhoodChange(MiniStep * pMiniStep1,
 		}
 		if ((pMiniStep2->networkMiniStep())&&(pMiniStep1->networkMiniStep()))
 		{
-			if (pNetworkVariable->pNetwork()->tieValue(ego1,ego)|
-				pNetworkVariable->pNetwork()->tieValue(alter1,ego)|
-				pNetworkVariable->pNetwork()->tieValue(ego,ego1)|
+			if (pNetworkVariable->pNetwork()->tieValue(ego1,ego) ||
+				pNetworkVariable->pNetwork()->tieValue(alter1,ego) ||
+				pNetworkVariable->pNetwork()->tieValue(ego,ego1) ||
 				pNetworkVariable->pNetwork()->tieValue(ego,alter1))
 			{myties = 1;} else {myties = 0;}
 
@@ -2967,8 +2967,8 @@ bool MLSimulation::neighbourhoodChange(MiniStep * pMiniStep1,
 			{
 				// Both ministeps change the same network
 
-				if ( (ego==ego1) | (ego==alter1) |
-					(myties==1)|net)
+				if ( (ego==ego1) || (ego==alter1) ||
+					(myties==1) || net)
 				{
 					addToInterval = true;
 				}
@@ -2976,7 +2976,7 @@ bool MLSimulation::neighbourhoodChange(MiniStep * pMiniStep1,
 				// Multiplex: ministeps change different network with same
 				// actor sets
 
-				if ( (ego==ego1) | (ego==alter1) |
+				if ( (ego==ego1) || (ego==alter1) ||
 					(myties==1))
 				{
 					addToInterval = true;
@@ -2987,7 +2987,7 @@ bool MLSimulation::neighbourhoodChange(MiniStep * pMiniStep1,
 
 			// Ministep1 is a network change; ministep2 a behaviour change
 
-			if ((ego==ego1)|(ego==alter1)|
+			if ((ego==ego1) || (ego==alter1) ||
 				(pNetworkVariable->pNetwork()->tieValue(ego,alter1)))
 			{
 				addToInterval = true;
@@ -3001,7 +3001,7 @@ bool MLSimulation::neighbourhoodChange(MiniStep * pMiniStep1,
 
 			// Both ministeps changes the same behaviour
 
-			if ((ego==ego1)|net)
+			if ((ego==ego1) || net)
 			{
 				addToInterval = true;
 			}

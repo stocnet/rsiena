@@ -1520,8 +1520,8 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new ConstantEffect(pEffectInfo);
 	}
-	else if ((effectName == "threshold") | (effectName == "threshold2") |
-	         (effectName == "threshold3") |(effectName == "threshold4"))
+	else if ((effectName == "threshold") || (effectName == "threshold2") |
+	         (effectName == "threshold3") || (effectName == "threshold4"))
 	{
 		pEffect = new ThresholdShapeEffect(pEffectInfo);
 	}

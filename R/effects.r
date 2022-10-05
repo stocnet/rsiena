@@ -429,7 +429,8 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 			objEffects <- rbind(objEffects, createEffects(
 				"nonSymmetricSymmetricSObjective", paste0("primary(", varname, ")") , name=varname,
 				groupName=groupName, group=group, netType=netType))
-			settingOnlys <- sapply(attr(depvar,"settingsinfo"), function(s) s$only)
+			settingOnlys <- vapply(attr(depvar,"settingsinfo"), function(s){s$only},
+								FUN.VALUE="a")
 			if (settingOnlys[1] == 'none') 
 			{
 				useSettingsModel  <- FALSE

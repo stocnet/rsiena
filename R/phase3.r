@@ -98,7 +98,7 @@ phase3.2 <- function(z, x, ...)
         Report('There was a problem in obtaining convergence.\n', outf)
         Report(c('Therefore, the program decided tentatively to fix',
 				 'parameter(s)',
-               c(1:z$pp)[z$newfixed], '.\n'), outf)
+					(1:z$pp)[z$newfixed], '.\n'), outf)
         Report(c('It may be better to start all over again,',
                  'with better initial values or a reduced model.\n',
                  '(Check that you entered the data properly!)\n'), outf)

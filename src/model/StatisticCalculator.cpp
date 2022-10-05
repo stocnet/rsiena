@@ -1738,7 +1738,7 @@ double StatisticCalculator::calculateDiffusionRateEffect(
 			{
 				alterValue *= pStructural->inDegree(iter.actor());
 			}
-			else if ((effectName == "infectOut") | (effectName == "infectDeg"))
+			else if ((effectName == "infectOut") || (effectName == "infectDeg"))
 			{
 				alterValue *= pStructural->outDegree(iter.actor());
 			}

@@ -41,7 +41,6 @@ public:
 
 	virtual double value(int alter);
 	virtual int intValue(int alter);
-
 };
 
 }

@@ -46,7 +46,7 @@ double SettingSizeEffect::calculateContribution(int alter) const
 	double contribution = 0;
 	if (this->lcreation)
 	{
-		if ((!this->outTieExists(alter))& (this->stepType() == 1)) // primary setting
+		if ((!this->outTieExists(alter)) && (this->stepType() == 1)) // primary setting
 		{
 			contribution = this->settingDegree() - this->outDegree();
 			if (contribution >= 1)

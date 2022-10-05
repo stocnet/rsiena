@@ -36,7 +36,6 @@ class Cache;
  */
 class NetworkWithPrimaryEffect : public NetworkEffect
 {
-
 public:
 	NetworkWithPrimaryEffect(const EffectInfo * pEffectInfo);
 

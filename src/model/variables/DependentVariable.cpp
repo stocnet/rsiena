@@ -2094,7 +2094,7 @@ double DependentVariable::calculateDiffusionRateEffect(
 			{
 				alterValue *= pNetwork->inDegree(i);
 			}
-			else if ((effectName == "infectOut") | (effectName == "infectDeg"))
+			else if ((effectName == "infectOut") || (effectName == "infectDeg"))
 			{
 				alterValue *= pNetwork->outDegree(i);
 			}

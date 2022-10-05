@@ -1592,7 +1592,7 @@ describeTheSetting <- function(depvar)
 		dtsonly  <- sapply(dtsonly, function(x){ifelse(is.na(x),'both',x)})
 		dts <- cbind(dtsn, dtsid, dtstype, dtscovar, dtsonly)
 		colnames(dts) <- c('dependent variable', 'setting', 'type', 'covariate', 'direction')
-		rownames(dts) <- 1:dim(dts)[1]
+		rownames(dts) <- 1:seq_len(dtsn)
 	}
 	dts
 }

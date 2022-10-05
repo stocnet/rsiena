@@ -8,6 +8,7 @@
 
 ### Updates:
   * Changes to comply with new version of `Matrix` package.
+  * Replacements in some C++ functions of single & and | operators by && and ||.
 ### Corrections:  
   * `universalOffset` initialized as 0; it was earlier initialized as
     the maximum real number (`NetworkLongitudinalData.cpp`). 

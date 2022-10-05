@@ -55,7 +55,7 @@ DiffusionRateEffect::DiffusionRateEffect(const NetworkVariable * pVariable,
 		possibleDegreeNumer *= max(this->lpVariable->n(), this->lpVariable->m());
 		possibleDegreeDenom = max(this->lpVariable->n(), this->lpVariable->m());
 	}
-	if ((effectName == "infectDeg") | (effectName == "infectIn") |
+	if ((effectName == "infectDeg") || (effectName == "infectIn") ||
 										(effectName == "infectOut"))
 	{
 		possibleDegreeNumer *= max(this->lpVariable->n(),
@@ -68,7 +68,7 @@ DiffusionRateEffect::DiffusionRateEffect(const NetworkVariable * pVariable,
 	this->labsInternalEffectParameter = std::abs(this->linternalEffectParameter);
 	this->linternalNonZero = (this->linternalEffectParameter != 0);
 
-	if (((effectName == "infectDeg") | (effectName == "infectIn") |
+	if (((effectName == "infectDeg") || (effectName == "infectIn") ||
 				(effectName == "infectOut")) && (this->linternalEffectParameter < 0))
 	{
 		throw logic_error("Negative internal parameter not permitted for effect "+effectName);
@@ -147,7 +147,7 @@ double DiffusionRateEffect::proximityValue(Network * pNetwork, int i,
 			{
 				alterValue *= pNetwork->inDegree(iter.actor());
 			}
-			else if ((this->leffectName == "infectDeg") |
+			else if ((this->leffectName == "infectDeg") ||
 						(this->leffectName == "infectOut"))
 			{
 				alterValue *= pNetwork->outDegree(iter.actor());

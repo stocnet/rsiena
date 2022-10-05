@@ -231,7 +231,7 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 				# Make sure the diagonals are not treated as structurals
 				if (networkTypes[eff] == "oneMode")
 				{
-					for (m in 1:dim(depNetwork)[3]){diag(depNetwork[,,m]) <- 0}
+					for (m in 1:(dim(depNetwork)[3])){diag(depNetwork[,,m]) <- 0}
 				}
 			structurals <- (depNetwork >= 10)
 			if (networkTypes[eff] == "oneMode"){
@@ -292,7 +292,7 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 				if (networkTypes[eff] == "oneMode")
 				{
 					#	structuralsw <- structurals[,,w]
-					for (ff in 1:dim(cdec)[1]){cdec[ff,,][t(structurals[,,w])] <- NA}
+					for (ff in 1:(dim(cdec)[1])){cdec[ff,,][t(structurals[,,w])] <- NA}
 				}
 				distributions <- apply(cdec, 3,
 					calculateDistributions, theta[which(currentDepEffs)])
@@ -734,7 +734,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 			layout(layoutMatrix,widths= c((nactors/6)+10,3.5+2.5*(rad^2)),
 				heights=c(rep(height,waves),legendHeight))
 		}else{
-			layoutMatrix <- matrix(c(1:(2*waves)), byrow= TRUE,
+			layoutMatrix <- matrix((1:(2*waves)), byrow= TRUE,
 				ncol=2, nrow=waves)
 			layout(layoutMatrix,widths = c((nactors/6)+10,7+2.5*(rad^2)),
 				heights=rep(height,waves))
@@ -742,11 +742,11 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 	}else{
 		if(legend)
 		{
-			layoutMatrix <- matrix(c(1:(waves+1)), byrow= TRUE,
+			layoutMatrix <- matrix((1:(waves+1)), byrow= TRUE,
 				ncol=1, nrow=(waves+1))
 			layout(layoutMatrix)
 		}else{
-			layoutMatrix <- matrix(c(1:waves), byrow= TRUE, ncol=1, nrow=waves)
+			layoutMatrix <- matrix((1:waves), byrow= TRUE, ncol=1, nrow=waves)
 			layout(layoutMatrix, heights=2*rep(height,waves))
 			# no widths, because these are only relative numbers,
 			# so requiring constant widths is redundant
