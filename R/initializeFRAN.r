@@ -113,7 +113,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		{
 			stop("not valid siena data object")
 		}
-		## check the effects object
+		## check the effects object		
 		defaultEffects <- getEffects(data)
 		if (is.null(effects))
 		{
@@ -679,7 +679,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 	##store address of model
 	f$pModel <- pModel
 	ans <- reg.finalizer(f$pModel, clearModel, onexit = FALSE)
-	if (x$MaxDegree == 0 || is.null(x$MaxDegree))
+	if (all(x$MaxDegree == 0) || is.null(x$MaxDegree))
 	{
 		MAXDEGREE <- NULL
 	}
@@ -688,7 +688,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		MAXDEGREE <- x$MaxDegree
 		storage.mode(MAXDEGREE) <- "integer"
 	}
-	if (x$UniversalOffset == 0 || is.null(x$UniversalOffset))
+	if (all(x$UniversalOffset == 0) || is.null(x$UniversalOffset))
 	{
 		UNIVERSALOFFSET <- NULL
 	}
@@ -697,7 +697,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		UNIVERSALOFFSET <- x$UniversalOffset
 		storage.mode(UNIVERSALOFFSET) <- "double"
 	}
-	if ((length(x$modelType) == 0)||all(x$modelType == 0) || is.null(x$modelType))
+	if ((length(x$modelType) == 0)|| (all(x$modelType == 0)) || is.null(x$modelType))
 	{
 		MODELTYPE <-  NULL
 	}
@@ -706,7 +706,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		MODELTYPE <- x$modelType
 		storage.mode(MODELTYPE) <- "integer"
 	}
-	if ((length(x$behModelType) == 0)||(x$behModelType == 0) || is.null(x$behModelType))
+	if ((length(x$behModelType) == 0)|| (all(x$behModelType == 0)) || is.null(x$behModelType))
 	{
 		BEHMODELTYPE <-  NULL
 	}

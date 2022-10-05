@@ -367,7 +367,7 @@ phase3.2 <- function(z, x, ...)
 				message('The following is approximately a linear combination ')
 				message('for which the data carries no information:\n', thetext)
 				message('It is advisable to drop one or more of these effects.')
-				if (any(z$fixed || any(z$newfixed)))
+				if (any(z$fixed) || any(z$newfixed))
 				{
 					Report(c('(This may be unimportant, and related to the fact\n',
 							'that some parameters are fixed.)\n'), outf)

@@ -11,6 +11,7 @@
 
 #include "MixedTwoStepFunction.h"
 #include <stdexcept>
+#include <cstdlib>
 #include "utils/SqrtTable.h"
 #include "model/tables/TwoNetworkCache.h"
 #include "model/tables/MixedEgocentricConfigurationTable.h"
@@ -29,13 +30,14 @@ namespace siena
 MixedTwoStepFunction::MixedTwoStepFunction(std::string firstNetworkName,
                                            std::string secondNetworkName, 
                                            Direction firstDirection, 
-                                           Direction secondDirection, bool root) :
+                                           Direction secondDirection, double par) :
 	MixedNetworkAlterFunction(firstNetworkName, secondNetworkName)
 {
 	this->lpTable = 0;
 	this->ldirection1 = firstDirection;
 	this->ldirection2 = secondDirection;
-	this->lroot = root;
+	this->lroot = (std::abs(par-2) < 0.001);
+	this->ltrunc = (std::abs(par-3) < 0.001);
 	this->lsqrtTable = SqrtTable::instance();
 }
 
@@ -86,6 +88,17 @@ double MixedTwoStepFunction::value(int alter)
 	if (this->lroot)
 	{
 		return this->lsqrtTable->sqrt(this->lpTable->get(alter));
+	}
+	else if (this->ltrunc)
+	{
+		if (this->lpTable->get(alter) >= 1)
+		{
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
 	}
 	else
 	{

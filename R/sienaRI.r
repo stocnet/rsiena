@@ -167,6 +167,7 @@ getChangeContributions <- function(algorithm, data, effects)
 expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 	getChangeStatistics=FALSE, effectNames = NULL)
 {
+	rms <- function(xx){sqrt((1/dim(xx)[2])*rowSums(xx^2,na.rm=TRUE))}
 	waves <- length(conts[[1]])
 	effects <- effects[effects$include == TRUE,]
 	noRate <- effects$type != "rate"
@@ -207,13 +208,13 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 				{
 					stop("sienaRI does not work for bipartite networks with second mode >= first mode")
 				}
-				choices <- dim(depNetwork)[2] + 1				
+				choices <- dim(depNetwork)[2] + 1
 			}
 			else
 			{
 				stop("sienaRI does not work for dependent variables of type 'continuous'")
-			}		
-			
+			}
+
 			# impute for wave 1
 			if (networkTypes[eff] %in% c("oneMode", "bipartite"))
 			{
@@ -251,6 +252,7 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 			RHActors <-list()
 			changeStats <-list()
 			sigma <- list()
+			sigmas <- matrix(NA, sum(currentDepEffs), waves)
 			if (networkTypes[eff] == "behavior")
 			{
 				toggleProbabilities <- array(0, dim=c(actors, 3, waves))
@@ -265,7 +267,7 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 				if (networkTypes[eff] == "bipartite")
 				{
 					currentDepEffectContributions <- lapply(
-							currentDepEffectContributions, 
+							currentDepEffectContributions,
 							function(x){lapply(x,function(xx){xx[1:choices]})})
 				}
 				# conts[[1]] is periods by effects by actors by actors
@@ -279,6 +281,7 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 				{
 					cdec <- array(cdec, dim=c(1,dim(cdec)))
 				}
+##
 				rownames(cdec) <- effectNa[currentDepEffs]
 				if (getChangeStatistics)
 				{
@@ -317,7 +320,7 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 # toggleProbabilities is an array referring to ego * choices * wave,
 # giving the probability of ego in a ministep in the wave
 # to make this choice.
-# For oneMode networks choices are alters; 
+# For oneMode networks choices are alters;
 # for  bipartite choices are second mode nodes,and the last is "no change";
 # for behavior choices are to add -1, 0, +1.
 				entropy_vector <- unlist(lapply(distributions,
@@ -341,7 +344,11 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 				expectedI[[w]] <- rowMeans(RIs_matrix, na.rm=TRUE)
 				sigma[[w]] <- apply(cdec, c(1,3), sd, na.rm=TRUE)
 				rownames(sigma[[w]]) <- effectNa[currentDepEffs]
+				sigmas[,w] <- rms(sigma[[w]])
 			}
+			rownames(sigmas) <- effectNa[currentDepEffs]
+			meansigmas <- rms(sigmas)
+			names(meansigmas) <- effectNa[currentDepEffs]
 			RItmp <- NULL
 			RItmp$dependentVariable <- currentDepName
 			RItmp$expectedRI <- expectedRI
@@ -351,6 +358,8 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 			RItmp$absoluteSumActors <- absoluteSumActors
 			RItmp$RHActors <- RHActors
 			RItmp$sigma <- sigma
+			RItmp$sigmas <- sigmas
+			RItmp$meansigmas <- meansigmas
 			if(!is.null(effectNames))
 			{
 				RItmp$effectNames <- effectNames[currentDepEffs]
@@ -491,11 +500,6 @@ print.sienaRI <- function(x, printSigma = FALSE, ...){
 	line3 <- line2
 	line4 <- format(" R_H ('degree of certainty')", width = 61)
 	line5 <- line2
-	if (printSigma)
-	{
-		sigmas <- matrix(sapply(x$sigma,rowMeans,na.rm=TRUE), effs, waves)
-		# construction with matrix because of the possibility effs=1
-	}
 	for (w in 1:length(colNames))
 	{
 		line1 <- paste(line1, format(colNames[w], width=8),"  ", sep = "")
@@ -509,7 +513,7 @@ print.sienaRI <- function(x, printSigma = FALSE, ...){
 		if (printSigma)
 		{
 			line5 <- paste(line5,
-				format(round(sigmas[,w], 4), width=8, nsmall=4),"  ",sep="")
+				format(round(x$sigmas[,w], 4), width=8, nsmall=4),"  ",sep="")
 		}
 	}
 	line2 <- paste(line2, rep('\n',effs), sep="")
@@ -521,7 +525,7 @@ print.sienaRI <- function(x, printSigma = FALSE, ...){
 	cat(as.matrix(line4),'\n', sep='')
 	if (printSigma)
 	{
-		cat("\n sigma (within-ego standard deviation of change statistics):\n\n")
+		cat("\n sigma (average within-ego standard deviation of change statistics):\n\n")
 		line5 <- paste(line5, rep('\n',effs), sep="")
 		cat('\n',as.matrix(line5),'\n', sep='')
 	}

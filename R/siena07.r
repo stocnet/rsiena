@@ -45,14 +45,12 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	## x is designed to be readonly. Only z is returned.
 	z$x <- x
 	z$returnThetas <- returnThetas
-
 	if (useCluster)
 	{
 		if (parallelTesting)
 		{
 			stop("cannot parallel test with multiple processes")
 		}
-
 		if (!length(cl))
 		{
 			clusterType <- match.arg(clusterType)

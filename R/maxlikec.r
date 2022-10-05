@@ -185,12 +185,12 @@ reformatDerivs <- function(z, f, derivList)
     ## of the matrix. Need to be put into a symmetric matrix.
     ## Tricky part is getting the rates in the right place!
     ## Note that we do not yet deal with rate effects other than the basic
-    dff <- as(matrix(0, z$pp, z$pp), "dsyMatrix")
+    dff <- as(matrix(0, z$pp, z$pp), "symmetricMatrix")
     nPeriods <- length(derivList)
 	dff2 <- vector("list", nPeriods)
 	if (z$byWave)
 	{
-		tmp <- as(matrix(0, z$pp, z$pp), "dsyMatrix")
+		tmp <- as(matrix(0, z$pp, z$pp), "symmetricMatrix")
 		dff2[] <- tmp
 	}
     for (period in 1:nPeriods)

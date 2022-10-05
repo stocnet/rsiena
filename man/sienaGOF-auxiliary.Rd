@@ -146,12 +146,12 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
   non-zero values dc(ego,alter) of the observed or simulated (ego,alter) ties.
 
  \code{sparseMatrixExtraction} returns the simulated network as a
-  \code{dgCMatrix};
-  this is the "standard" class for sparse numeric matrices in the
-  \code{Matrix} package. See the help file for \code{\link{dgCMatrix-class}}.\cr
+  \code{"TsparseMatrix"};
+  this is the virtual class for sparse numeric matrices
+  represented by triplets in the \code{Matrix} package.\cr
   Tie variables for ordered pairs with a missing value for wave=period or
-  period+1 are zeroed;
-  note that this also is done in RSiena for calculation of target statistics.
+  period+1 are zeroed; note that this also is done
+  in \code{RSiena} for calculation of target statistics.
   Tie variables that are structurally determined at the beginning of a period
   are used to replace observed values at the end of the period;
   tie variables that are structurally determined at the end, but not
@@ -270,7 +270,6 @@ plot(goftc, center=TRUE, scale=TRUE)
 # it is advisable in the plot to center and scale.
 # note the keys at the x-axis (widen the plot if they are not clear).
 descriptives.sienaGOF(goftc)
-round(descriptives.sienaGOF(goftc, center=TRUE, scale=TRUE), 0)
 
 \dontrun{
 ### The mixed triad census for co-evolution of one-mode and two-mode networks:
@@ -294,7 +293,7 @@ twoeff <- includeEffects(twoeff, to, name="twomodenet",
                             interaction1="onemodenet")
 twoeff
 # Shorter phases 2 and 3, just for example:
-twoalgorithm <- sienaAlgorithmCreate(projname="twomode", nsub=1, n3=100,
+twoalgorithm <- sienaAlgorithmCreate(projname=NULL, nsub=1, n3=100,
                                      seed=5634)
 (ans <- siena07(twoalgorithm, data=twodata, effects=twoeff, returnDeps=TRUE,
    batch=TRUE))

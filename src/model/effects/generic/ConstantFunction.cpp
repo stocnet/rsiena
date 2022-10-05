@@ -69,6 +69,10 @@ void ConstantFunction::initialize(const Data * pData,
 		{
 			this->lconstant = pNetworkData->averageOutDegree();
 		}
+		else if (this->lconstantType == AVERAGE_RECIP_DEGREE)
+		{
+			this->lconstant = pNetworkData->averageReciprocalDegree();
+		}
 
 		if (this->lpFunction)
 		{
@@ -85,7 +89,8 @@ void ConstantFunction::initialize(const Data * pData,
 bool ConstantFunction::networkConstant() const
 {
 	return this->lconstantType == AVERAGE_IN_DEGREE ||
-		this->lconstantType == AVERAGE_OUT_DEGREE;
+		this->lconstantType == AVERAGE_OUT_DEGREE ||
+		this->lconstantType == AVERAGE_RECIP_DEGREE;
 }
 
 
