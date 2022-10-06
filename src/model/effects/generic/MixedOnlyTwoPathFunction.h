@@ -3,18 +3,17 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: MixedTwoStepFunction.h
+ * File: MixedOnlyTwoPath.h
  *
  * Description: This file contains the definition of the
- * MixedTwoStepFunction class.
+ * ThreeCyclesFunction class.
  *****************************************************************************/
 
-#ifndef MIXEDTWOSTEPFUNCTION_H_
-#define MIXEDTWOSTEPFUNCTION_H_
+#ifndef MIXEDONLYTWOPATHFUNCTION_H_
+#define MIXEDONLYTWOPATHFUNCTION_H_
 
 #include "MixedNetworkAlterFunction.h"
 #include "IntAlterFunction.h"
-#include "network/NetworkUtils.h"
 
 namespace siena
 {
@@ -24,42 +23,26 @@ namespace siena
 // ----------------------------------------------------------------------------
 
 class SqrtTable;
-class MixedConfigurationTable;
-
 // ----------------------------------------------------------------------------
-// Section: MixedTwoStepFunction class
+// Section: MixedOnlyTwoPath class
 // ----------------------------------------------------------------------------
-
 
 /**
- * Defines a function that returns the number of two-paths between
- * the ego and alters in a network of the given name.
+ * For sharedTo effect (see manual).
  */
-class MixedTwoStepFunction:
-public MixedNetworkAlterFunction, IntAlterFunction
+class MixedOnlyTwoPath : public MixedNetworkAlterFunction, IntAlterFunction
 {
 public:
-	MixedTwoStepFunction(std::string firstNetworkName, std::string secondNetworkName,
-						Direction firstDirection, Direction secondDirection, double par);
+	MixedOnlyTwoPath(std::string dependentNetworkName,
+			std::string explanatoryNetworkName, double parameter);
 
 	virtual void initialize(const Data * pData,
-		State * pState,
-		int period,
-		Cache * pCache);
+			State * pState, int period, Cache * pCache);
 
 	virtual double value(int alter);
 	virtual int intValue(int alter);
-
-private:
-	MixedConfigurationTable * lpTable;
-	Direction ldirection1;
-	Direction ldirection2;
-	bool ltrunc; // should the value be truncated?
-	bool lroot; // should the square root be taken?
-	// Lookup table for fast square root calculations:
-	SqrtTable * lsqrtTable;
 };
 
 }
 
-#endif /* MIXEDTWOSTEPFUNCTION_H_ */
+#endif /* MIXEDONLYTWOPATHFUNCTION_H_ */

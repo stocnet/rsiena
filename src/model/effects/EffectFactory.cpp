@@ -32,6 +32,7 @@
 #include "model/effects/generic/EgoInDegreeFunction.h"
 #include "model/effects/generic/OutDegreeFunction.h"
 #include "model/effects/generic/EgoOutDegreeFunction.h"
+#include "model/effects/generic/EgoRecipDegreeFunction.h"
 #include "model/effects/generic/DegreeFunction.h"
 #include "model/effects/generic/BetweennessFunction.h"
 #include "model/effects/generic/GwespFunction.h"
@@ -400,6 +401,54 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "inInAss")
 	{
 		pEffect = new InInDegreeAssortativityEffect(pEffectInfo);
+	}
+	else if (effectName == "outAct_ego")
+	{
+		string networkName = pEffectInfo->variableName();
+		AlterFunction * pFirstFunction =
+			new EgoOutDegreeFunction(pEffectInfo->variableName());
+		ConstantFunction * pSecondFunction =
+			new ConstantFunction(pEffectInfo->variableName(),
+				AVERAGE_OUT_DEGREE);
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pFirstFunction = new IntSqrtFunction(pFirstFunction);
+			pSecondFunction->pFunction(sqrt);
+		}
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new DifferenceFunction(pFirstFunction, pSecondFunction));
+	}
+	else if (effectName == "inAct_ego")
+	{
+		string networkName = pEffectInfo->variableName();
+		AlterFunction * pFirstFunction =
+			new EgoInDegreeFunction(pEffectInfo->variableName());
+		ConstantFunction * pSecondFunction =
+			new ConstantFunction(pEffectInfo->variableName(),
+				AVERAGE_IN_DEGREE);
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pFirstFunction = new IntSqrtFunction(pFirstFunction);
+			pSecondFunction->pFunction(sqrt);
+		}
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new DifferenceFunction(pFirstFunction, pSecondFunction));
+	}
+	else if (effectName == "reciAct_ego")
+	{
+		string networkName = pEffectInfo->variableName();
+		AlterFunction * pFirstFunction =
+			new EgoRecipDegreeFunction(pEffectInfo->variableName());
+		ConstantFunction * pSecondFunction =
+			new ConstantFunction(pEffectInfo->variableName(),
+				AVERAGE_RECIP_DEGREE);
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pFirstFunction = new IntSqrtFunction(pFirstFunction);
+			pSecondFunction->pFunction(sqrt);
+		}
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new DifferenceFunction(pFirstFunction, pSecondFunction));
 	}
 	else if (effectName == "X")
 	{
@@ -1039,7 +1088,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 				new MixedTwoStepFunction(
 						pEffectInfo->interactionName1(),
 						pEffectInfo->variableName(),
-						FORWARD, FORWARD, (pEffectInfo->internalEffectParameter()>=2)));
+						FORWARD, FORWARD, pEffectInfo->internalEffectParameter()));
 	}
 	else if (effectName == "toBack") // formerly mixedInWX
 	{
@@ -1047,7 +1096,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 				new MixedTwoStepFunction(
 						pEffectInfo->interactionName1(),
 						pEffectInfo->variableName(),
-						BACKWARD, FORWARD, (pEffectInfo->internalEffectParameter()>=2)));
+						BACKWARD, FORWARD, pEffectInfo->internalEffectParameter()));
 		}
 	else if (effectName == "toRecip")
 	{
@@ -1055,8 +1104,12 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 				new MixedTwoStepFunction(
 						pEffectInfo->interactionName1(),
 						pEffectInfo->variableName(),
-						RECIPROCAL, FORWARD, (pEffectInfo->internalEffectParameter()>=2)));
-		}
+						RECIPROCAL, FORWARD, pEffectInfo->internalEffectParameter()));
+	}
+	else if (effectName == "toAny")
+	{
+		pEffect = new MixedOnlyTwoPathEffect(pEffectInfo);
+	}
 	else if (effectName == "cl.XWX")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
@@ -1064,11 +1117,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			new MixedTwoStepFunction(
 						pEffectInfo->variableName(),
 						pEffectInfo->interactionName1(),
-						FORWARD, FORWARD, false),
+						FORWARD, FORWARD, 0),
 			new MixedTwoStepFunction(
 						pEffectInfo->variableName(),
 						pEffectInfo->interactionName1(),
-						FORWARD, BACKWARD, false)));
+						FORWARD, BACKWARD, 0)));
 	}
 	else if (effectName == "cl.XWX1")
 	{
@@ -1076,7 +1129,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 					new MixedTwoStepFunction(
 						pEffectInfo->variableName(),
 						pEffectInfo->interactionName1(),
-						FORWARD, FORWARD, false));
+						FORWARD, FORWARD, 0));
 	}
 	else if (effectName == "cl.XWX2")
 	{
@@ -1084,7 +1137,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			new  MixedTwoStepFunction(
 						pEffectInfo->variableName(),
 						pEffectInfo->interactionName1(),
-						FORWARD, BACKWARD, false));
+						FORWARD, BACKWARD, 0));
 	}
 	else if (effectName == "mixedInXW")
 	{
@@ -1092,7 +1145,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 				new MixedTwoStepFunction(
 						pEffectInfo->variableName(),
 						pEffectInfo->interactionName1(),
-						BACKWARD, FORWARD, (pEffectInfo->internalEffectParameter()>=2)));
+						BACKWARD, FORWARD, pEffectInfo->internalEffectParameter()));
 	}
 	/*
 	 * Mixed two step effects with flexible iterators (added by Christoph)
@@ -1108,56 +1161,56 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new MixedTwoStepFunction(pEffectInfo->variableName(), // not mixed, TwoStepFunction equivalent not implemented
 					pEffectInfo->variableName(),
-					EITHER, EITHER, false));
+					EITHER, EITHER, 0));
 	}
 	else if (effectName == "transTrip.FE")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new MixedTwoStepFunction(pEffectInfo->variableName(), // not mixed, TwoStepFunction equivalent not implemented
 					pEffectInfo->variableName(),
-					FORWARD, EITHER, false));
+					FORWARD, EITHER, 0));
 	}
 	else if (effectName == "WWX.EE")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new MixedTwoStepFunction(pEffectInfo->interactionName1(), // not mixed
 					pEffectInfo->interactionName1(),
-					EITHER, EITHER, false));
+					EITHER, EITHER, 0));
 	}
 	else if (effectName == "WXX.FE")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new MixedTwoStepFunction(pEffectInfo->interactionName1(),
 					pEffectInfo->variableName(),
-					FORWARD, EITHER, false));
+					FORWARD, EITHER, 0));
 	}
 	else if (effectName == "XWX.ER")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new MixedTwoStepFunction(pEffectInfo->variableName(),
 					pEffectInfo->interactionName1(),
-					EITHER, RECIPROCAL, false));
+					EITHER, RECIPROCAL, 0));
 	}
 	else if (effectName == "WWX.FR")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new MixedTwoStepFunction(pEffectInfo->interactionName1(),  // not mixed
 					pEffectInfo->interactionName1(),
-					FORWARD, RECIPROCAL, false));
+					FORWARD, RECIPROCAL, 0));
 	}
 	else if (effectName == "WXX.ER")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new MixedTwoStepFunction(pEffectInfo->interactionName1(),
 					pEffectInfo->variableName(),
-					EITHER, RECIPROCAL, false));
+					EITHER, RECIPROCAL, 0));
 	}
 	else if (effectName == "XWX.FE")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new MixedTwoStepFunction(pEffectInfo->variableName(),
 					pEffectInfo->interactionName1(),
-					FORWARD, EITHER, false));
+					FORWARD, EITHER, 0));
 	}
 	else if (effectName == "outOutActIntn")
 	{
@@ -1467,8 +1520,8 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new ConstantEffect(pEffectInfo);
 	}
-	else if ((effectName == "threshold") | (effectName == "threshold2") |
-	         (effectName == "threshold3") |(effectName == "threshold4"))
+	else if ((effectName == "threshold") || (effectName == "threshold2") |
+	         (effectName == "threshold3") || (effectName == "threshold4"))
 	{
 		pEffect = new ThresholdShapeEffect(pEffectInfo);
 	}
@@ -1592,49 +1645,93 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new InIsolateDegreeEffect(pEffectInfo);
 	}
+	else if (effectName == "nonPrimary")
+	{
+		pEffect = new PrimaryCompressionEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "nonPCompress")
+	{
+		pEffect = new PrimaryCompressionEffect(pEffectInfo, false, true);
+	}
+	else if (effectName == "primary")
+	{
+		pEffect = new PrimaryCompressionEffect(pEffectInfo, true, false);
+	}
+	else if (effectName == "primCompress")
+	{
+		pEffect = new PrimaryCompressionEffect(pEffectInfo, true, true);
+	}
+	else if (effectName == "primDegAct")
+	{
+		pEffect = new PrimarySettingEffect(pEffectInfo, false, false, false, false);
+	}
+	else if (effectName == "primDegActDiff")
+	{
+		pEffect = new PrimarySettingEffect(pEffectInfo, true, false, false, false);
+	}
+	else if (effectName == "primDegActDiffSqrt")
+	{
+		pEffect = new PrimarySettingEffect(pEffectInfo, true, false, true, false);
+	}
+	else if (effectName == "primDegActSqrt")
+	{
+		pEffect = new PrimarySettingEffect(pEffectInfo, false, false, true, false);
+	}
+	else if (effectName == "primDegActLog")
+	{
+		pEffect = new PrimarySettingEffect(pEffectInfo, false, true, false, false);
+	}
+	else if (effectName == "primDegActInv")
+	{
+		pEffect = new PrimarySettingEffect(pEffectInfo, false, false, false, true);
+	}
 	else if (effectName == "settingSizeAct")
 	{
-		pEffect = new SettingSizeEffect(pEffectInfo, false, false, false, false, false);
+		pEffect = new SettingSizeEffect(pEffectInfo, false, false, false, false, false, false);
 	}
 	else if (effectName == "settingSizeActSqrt")
 	{
-		pEffect = new SettingSizeEffect(pEffectInfo, false, false, true, false, false);
+		pEffect = new SettingSizeEffect(pEffectInfo, false, false, true, false, false, false);
 	}
 	else if (effectName == "settingSizeActLog")
 	{
-		pEffect = new SettingSizeEffect(pEffectInfo, false, true, false, false, false);
+		pEffect = new SettingSizeEffect(pEffectInfo, false, true, false, false, false, false);
+	}
+	else if (effectName == "settingSizeActInv")
+	{
+		pEffect = new SettingSizeEffect(pEffectInfo, false, false, false, true, false, false);
 	}
 	else if (effectName == "settingOppAct")
 	{
-		pEffect = new SettingSizeEffect(pEffectInfo, true, false, false, false, false);
+		pEffect = new SettingSizeEffect(pEffectInfo, true, false, false, false, false, false);
 	}
 	else if (effectName == "settingOppActSqrt")
 	{
-		pEffect = new SettingSizeEffect(pEffectInfo, true, false, true, false, false);
+		pEffect = new SettingSizeEffect(pEffectInfo, true, false, true, false, false, false);
 	}
 	else if (effectName == "settingOppActLog")
 	{
-		pEffect = new SettingSizeEffect(pEffectInfo, true, true, false, false, false);
+		pEffect = new SettingSizeEffect(pEffectInfo, true, true, false, false, false, false);
 	}
 	else if (effectName == "settingLogCreationAct")
 	{
-		pEffect = new SettingSizeEffect(pEffectInfo, true, true, false, true, false);
+		pEffect = new SettingSizeEffect(pEffectInfo, true, true, false, false, true, false);
 	}
 	else if (effectName == "settingOppActD")
 	{
-		pEffect = new SettingSizeEffect(pEffectInfo, true, false, false, false, true);
+		pEffect = new SettingSizeEffect(pEffectInfo, true, false, false, false, false, true);
 	}
 	else if (effectName == "settingOppActSqrtD")
 	{
-		pEffect = new SettingSizeEffect(pEffectInfo, true, false, true, false, true);
+		pEffect = new SettingSizeEffect(pEffectInfo, true, false, true, false, false, true);
 	}
 	else if (effectName == "settingOppActLogD")
 	{
-		pEffect = new SettingSizeEffect(pEffectInfo, true, true, false, false, true);
+		pEffect = new SettingSizeEffect(pEffectInfo, true, true, false, false, false, true);
 	}
 	else if (effectName == "settingLogCreationActD")
 	{
-		pEffect = new SettingSizeEffect(pEffectInfo, true, true, false, true, true);
+		pEffect = new SettingSizeEffect(pEffectInfo, true, true, false, false, true, true);
 	}
 	else if (effectName == "avSimRecip")
 	{

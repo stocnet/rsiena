@@ -25,7 +25,6 @@ namespace siena
 
 class Network;
 
-
 // ----------------------------------------------------------------------------
 // Section: Class definition
 // ----------------------------------------------------------------------------
@@ -75,8 +74,11 @@ public:
 		//calculated in calculateProperties
 	double averageSquaredOutDegree() const;// average over all observations,
 		//calculated in calculateProperties
+	double averageReciprocalDegree() const;// average over all observations,
+		//calculated in calculateProperties; 0 if two-mode
 	void averageInDegree(double val);
 	void averageOutDegree(double val);
+	void averageReciprocalDegree(double val);
 	virtual double observedDistribution(int value, int observation) const;
 	void modelType(int type);
 	int modelType() const;
@@ -126,14 +128,15 @@ private:
 	// The average out-degree (and squared out-degree) over all senders and observations
 	double laverageOutDegree;
 	double laverageSquaredOutDegree;
+	
+	// The average reciprocal degree over all receivers and observations
+	double laverageReciprocalDegree;
 
 	// The density of the network at each observation with the missing
 	// values excluded from the calculation.
-
 	double * ldensity;
 
 	// Flag: is this data object bipartite or oneMode.
-
 	bool loneMode;
 
 	// vector of setting names for this network
@@ -141,5 +144,4 @@ private:
 };
 
 }
-
 #endif /*NETWORKLONGITUDINALDATA_H_*/

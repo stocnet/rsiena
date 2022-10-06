@@ -14,6 +14,7 @@
  * Runs simulations.
  */
 
+
 #include <stdexcept>
 #include <vector>
 #include <cstring>
@@ -330,6 +331,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 					}
 				}
 			}
+
 			/* only needed for forward chains */
 			if (pModel->needChain())
 			{
@@ -337,6 +339,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 			}
 			/* run the epoch simulation for this period */
 			pEpochSimulation->runEpoch(period);
+
 			State State(pEpochSimulation);
 			StatisticCalculator Calculator(pData, pModel, &State,
 				period);
@@ -353,6 +356,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 				rfra[iii + effectNo] = statistic[effectNo];
 				rscores[iii + effectNo] = score[effectNo];
 			}
+
 			if(returnActorStatistics)
 			{
 				StatisticCalculator Calculator(pData, pModel, &State, period, returnActorStatistics);

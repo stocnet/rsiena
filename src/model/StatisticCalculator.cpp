@@ -615,7 +615,8 @@ void StatisticCalculator::calculateNetworkEvaluationStatistics(
 
 // I think the following is used only for sienaRI; note the "static", this is used for observations only.
 		if (this->lcountStaticChangeContributions)
-		{
+		{			
+//	Rprintf(" this->lcountStaticChangeContributions in calculateNetworkEvaluationStatistics \n");
 			int egos = pCurrentLessMissingsEtc->n();
 			int alters = pCurrentLessMissingsEtc->m();
 			vector<double *> egosMap(egos);
@@ -1737,7 +1738,7 @@ double StatisticCalculator::calculateDiffusionRateEffect(
 			{
 				alterValue *= pStructural->inDegree(iter.actor());
 			}
-			else if ((effectName == "infectOut") | (effectName == "infectDeg"))
+			else if ((effectName == "infectOut") || (effectName == "infectDeg"))
 			{
 				alterValue *= pStructural->outDegree(iter.actor());
 			}

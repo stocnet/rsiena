@@ -3,54 +3,55 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: SettingSizeEffect.h
+ * File: PrimaryCompressionEffect.h
  *
  * Description: This file contains the definition of the
  * SettingSizeEffect class.
  *****************************************************************************/
 
-#ifndef SETTINGSIZEEFFECT_H_
-#define SETTINGSIZEEFFECT_H_
+#ifndef PRIMARYCOMPRESSIONEFFECT_H_
+#define PRIMARYCOMPRESSIONEFFECT_H_
 
-#include "SettingsNetworkEffect.h"
+#include "NetworkWithPrimaryEffect.h"
 
 namespace siena
 {
 
 // ----------------------------------------------------------------------------
-// Section: SettingSizeEffect class
+// Section: PrimaryCompressionEffect class
 // ----------------------------------------------------------------------------
 
 /**
  * This class defines the setting size effects.
  */
  
-class SettingSizeEffect : public SettingsNetworkEffect
+class PrimaryCompressionEffect : public NetworkWithPrimaryEffect
 {
 public:
-	SettingSizeEffect(const EffectInfo * pEffectInfo,
-		bool difference,
-		bool logar,
-		bool root,
-		bool inv,
-		bool creation,
-		bool evalDifference);
+	PrimaryCompressionEffect(const EffectInfo * pEffectInfo,
+		bool inside, bool useSize);
+	virtual void initialize(const Data * pData, State * pState,	int period,
+			Cache * pCache);
 
+	virtual void preprocessEgo(int ego);
 	virtual double calculateContribution(int alter) const;
 	virtual double egoStatistic(int ego, const Network * pNetwork);
+	virtual bool egoEffect() const;
+	
+protected:
+	virtual double tieStatistic(int alter);
 
 private:
 	double lparameter;
-	bool ldifference;
-	bool llogar;
-	bool lroot;
-	bool linv;
-	bool lcreation;
-	bool levalDifference;
-	bool levalLog;
-	bool levalSqrt;
+	bool linside;
+	bool luseSize;
+	
+	// log((n-1-lprimDegree)/lparameter):
+	double llogNonPrimary;
+	// log((lprimDegree-outdegree(ego))/lparameter):
+	double llogPrimary;
 };
 
 }
 
-#endif /*SETTINGSIZEEFFECT_H_*/
+#endif /*PRIMARYCOMPRESSIONEFFECT_H_*/

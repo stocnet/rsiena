@@ -7,10 +7,12 @@
 \title{Functions to assess the relative importance of effects at observation
        moments}
 \description{
- The function \code{sienaRI} returns the relative importance of effects
+ The function \code{sienaRI} computes various effect sizes for
+ Stochastic Actor-oriented Models.
+ As its value it returns the relative importance of effects
  of a SAOM according to the measure of relative importance described in
  Section 3.1 of Indlekofer and Brandes (2013).
- The measure is based on the influence of effects on potential tie change or
+ This is based on the influence of effects on potential tie change or
  behavior change decisions of individual actors at the given observation
  moments (waves).
  It takes the data as well as the complete model specification into account.
@@ -19,8 +21,9 @@
  by an estimated \code{sienaFit} object or by the triple consisting of a
  suitable parameter vector \code{theta} and the corresponding
  \code{sienaAlgorithm} and \code{sienaEffects} objects.\cr
- Entropy-based effect sizes as in Snijders (2004) and the within-ego
- standard deviations of change statistics are also computed.
+ Other measures useful for effect sizes are entropy-based
+ effect sizes as in Snijders (2004) and the within-ego
+ standard deviations of change statistics.
  If \code{getChangeStats=TRUE}, the arrays of change statistics are stored
  in the \code{sienaRI} object.}
 \usage{
@@ -62,8 +65,9 @@ sienaRI(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL,
   \item{getChangeStats}{Boolean: If \code{TRUE}, an array of change statistics
                is added to the \code{sienaRI} object.}
   \item{x}{\code{sienaRI} object resulting from a call to \code{sienaRI}.}
-  \item{printSigma}{Boolean: If \code{TRUE}, average within-ego standard
-       deviations of change statistics ('\code{sigma}'), are included in the print.}
+  \item{printSigma}{Boolean: If \code{TRUE},
+       average within-actor standard deviations of change statistics
+       ('\code{sigma}') are included in the print.}
   \item{actors}{vector of integers: set of actors to be included in the plot;
        if \code{NULL}, all actors.}
   \item{col}{Colors used in the plot. If \code{col=NULL} a default color
@@ -114,13 +118,17 @@ number of actors.
 If the network is non-directed, the relative importances and entropy-based
 'degrees of certainty' are calculated for \code{modelType=2}
 ('forcing'; see  \code{\link{sienaAlgorithmCreate}}).
-For dependent behavior variable, \code{behModelType=1} ('standard') is assumed.
+For dependent behavior variables, \code{behModelType=1} ('standard') is assumed.
 
 If there are any missing tie values in the network data set, they are imputed by
 initial zeros and Last Observation Carried Forward. Structural zeros and ones
 are replaced by \code{NA} and treated as impossible choices in the probability
 vectors and ignored in the standard deviations; but the change statistics
 for these dyads still are given in \code{changeStatistics} (if requested).
+
+The averages reported in the components \code{sigmas} (average across actors)
+and \code{meansigmas} (average across waves) are obtained by averaging at the
+variance level and then taking square roots.
 }
 \value{
  If the model contains only one dependent variable, \code{sienaRI} returns
@@ -161,18 +169,23 @@ corresponding to the observation moments.
           calculated for each potential actor decision at observation moments.
           This is the denominator of equation (3)
           in Indlekofer and Brandes (2013).}
-    \item{- \code{RHActors}}{a list that contains the degree of certainty in
+    \item{- \code{RHActors}}{a list that contains the degree of certainty,
+          also called degree of determination, in
           the potential ministep taken by an actor at the observation moments;
           this is R_H(i,x) of formula (6) in Snijders (2004).
           The mean over actors of these degrees of certainty, given by
           formula (7) in Snijders (2004), is printed by the
           \code{print} method for \code{sienaRI} objects.}
     \item{- \code{sigma}}{a list of effects by ego matrices of the values of
-          the within-ego standard deviations of the change statistics.
-          Their averages (over egos) are printed if \code{printSigma=TRUE}.}
+          the within-ego standard deviations of the change statistics.}
+    \item{- \code{sigmas}}{effects by wave matrices of averages
+         (see above for how this is done; across actors) of \code{sigma}.
+          These are printed if \code{printSigma=TRUE}.}
+    \item{- \code{meansigmas}}{average (see above for how this is done)
+          over waves of \code{sigmas}.}
     \item{- \code{changeStatistics}}{a list of arrays
           (effects by choices by egos)
-          containing for each observation wave,
+          containing, for each observation wave,
           the values of the change statistics for making this choice,
           where for one-mode networks the choice is defined by the alters
           with alter=ego referring to 'no change',
@@ -204,16 +217,22 @@ myalgorithm <- sienaAlgorithmCreate(nsub=1, n3=50, projname=NULL)
 mynet1 <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
 mydata <- sienaDataCreate(mynet1)
 myeff <- getEffects(mydata)
-myeff <- includeEffects(myeff, density, recip, transTies, nbrDist2)
+myeff <- includeEffects(myeff, density, recip, outAct, inPop)
+(myeff <- setEffect(myeff, reciAct, parameter=1))
 ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE)
-
 RI <- sienaRI(mydata, ans)
 RI
+print(RI, printSigma=TRUE)
+# average within-ego standard deviations of change statistics by wave:
+RI$sigmas
+# sigma averaged over waves:
+RI$meansigmas
+# semi-standardized parameters by wave:
+ans$theta * RI$meansigmas
 \dontrun{
 plot(RI, addPieChart=TRUE)
 plot(RI, actors=1:20, addPieChart=TRUE, radius=1.08)
 }
-
 myalgorithm <- sienaAlgorithmCreate(nsub=1, n3=50, projname=NULL)
 mynet2 <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
 mybeh <- sienaDependent(s50a[,2:3], type="behavior")

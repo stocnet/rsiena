@@ -199,6 +199,21 @@ sum(diag(SWXX)) # 0 OK
 sum(SWXX) # 78.38478 OK
 
 myeff <- getEffects(mydata)
+myeff <- setEffect(myeff,to,name="trust",interaction1="advice", parameter=3)
+myeff
+mymodel <- sienaModelCreate(projname = NULL, seed=123)
+(myans <- siena07(mymodel, data = mydata, effects = myeff))
+myans$targets
+
+# for to effect, parameter=3:
+# W=advice , X=trust
+WX <- s501 %*% s501
+diag(WX) <- 0
+tWXX <- 1*(WX >= 1) * s501
+sum(diag(tWXX)) # 0 OK
+sum(tWXX) # 73 OK
+
+myeff <- getEffects(mydata)
 myeff <- includeEffects(myeff,toU,name="trust",interaction1="advice", interaction2="dcov")
 (myans <- siena07(mymodel, data = mydata, effects = myeff))
 myans$targets
@@ -1160,3 +1175,29 @@ myeff <- includeEffects(myeff,totWInAlt, name = 'beh',
 (ans1 <- siena07(mymodel, data = mydata, effects = myeff))
 ans1$targets
 sum(rowSums(t(s501) * dcov_c) * beh2) # totWInAlt OK
+
+
+################################################################################
+### check toAny
+################################################################################
+
+advice <- sienaDependent(array(c(s502, s501), dim=c(50, 50, 2)))
+trust <- sienaDependent(array(c(s503, s501), dim=c(50, 50, 2)))
+# dyadic covariate
+suppressWarnings(mat <- matrix(c(0,1,0,0,4,0,2,0,0), 50,50))
+dcov <- coDyadCovar(mat, centered=FALSE)
+mydata <- sienaDataCreate(advice,trust,dcov)
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,toAny,name="trust",interaction1="advice")
+myeff
+mymodel <- sienaModelCreate(projname = NULL, seed=123)
+(myans <- siena07(mymodel, data = mydata, effects = myeff))
+myans$targets
+
+# for toAny effect:
+# W=advice , X=trust
+XX <- s501 %*% t(s501)
+diag(XX) <- 0
+tXX <- 1*(XX >= 1)
+sum(tXX * s502) # 56 OK

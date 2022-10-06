@@ -1846,7 +1846,7 @@ double DependentVariable::settingRateScore(string setting) const
 		this->lsettingRateScores.find(setting);
 	if (iter == this->lsettingRateScores.end())
 	{
-		throw invalid_argument("Unknown setting.");
+		throw invalid_argument("Unknown setting in settingRateScore.");
 	}
 	return iter->second;
 }
@@ -2094,7 +2094,7 @@ double DependentVariable::calculateDiffusionRateEffect(
 			{
 				alterValue *= pNetwork->inDegree(i);
 			}
-			else if ((effectName == "infectOut") | (effectName == "infectDeg"))
+			else if ((effectName == "infectOut") || (effectName == "infectDeg"))
 			{
 				alterValue *= pNetwork->outDegree(i);
 			}

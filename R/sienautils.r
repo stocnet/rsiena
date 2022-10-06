@@ -219,7 +219,7 @@ varCovar<- function(val, centered=TRUE, nodeSet="Actors", warn=TRUE, imputationV
 
 ##@coDyadCovar Create
 coDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
-					   warn=TRUE, sparse=is(val,"dgTMatrix"),
+					   warn=TRUE, sparse=inherits(val,"TsparseMatrix"),
 					   type=c("oneMode", "bipartite"))
 {
     ##matrix, numeric or factor, dims= those of net - must validate later or
@@ -237,9 +237,9 @@ coDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
     }
     else
     {
-        if (!is(val, "dgTMatrix"))
+        if (!inherits(val, "TsparseMatrix"))
         {
-            stop("not a sparse triples matrices")
+            stop("not a sparse triples matrix")
         }
         val <- list(val)
     }
@@ -320,7 +320,7 @@ varDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
     {
          if (!is.list(val))
             stop("values must be an array or a list of sparse matrices")
-        if (!all(sapply(val, function(x) is(x,"dgTMatrix"))))
+        if (!all(sapply(val, function(x){inherits(x,"TsparseMatrix", which = FALSE)})))
             stop("not a list of sparse triples matrices")
         vardims <- sapply(val, dim) ## dimensions of matrices in columns
         if (any(vardims != vardims[, 1]))
@@ -417,7 +417,7 @@ sienaDependent <- function(netarray, type=c("oneMode","bipartite","behavior",
 		{
             stop("netarray must be an array or a list of sparse matrices")
 		}
-        if (!all(sapply(netarray, function(x) is(x,"dgTMatrix"))))
+        if (!all(sapply(netarray, function(x){inherits(x,"TsparseMatrix", which = FALSE)})))
 		{
             stop("not a list of sparse triples matrices")
 		}
@@ -511,15 +511,15 @@ sienaDependent <- function(netarray, type=c("oneMode","bipartite","behavior",
     {
         if (sparse)
         {
-            netarray <- lapply(netarray, function(x)as(drop0(x), "dgTMatrix"))
+            netarray <- lapply(netarray, function(x)as(drop0(x), "TsparseMatrix"))
             if (!all(sapply(netarray, function(x)
                         {
                             tmp <- x@x
-                                all(is.na(tmp) | tmp == 1 | tmp == 10 |
+                            all(is.na(tmp) | tmp == 1 | tmp == 10 |
                                     tmp == 11 )
                             }
                                 )))
-                 stop("entries in networks must be 0, 1, 10 or 11")
+                 stop("entries in networks must be 0, 1, 10, 11, or NA")
          }
         else
         {
@@ -566,19 +566,6 @@ sienaDependent <- function(netarray, type=c("oneMode","bipartite","behavior",
 
 ##@sienaNet Create
 sienaNet <- sienaDependent
-
-##@validateSienaDependent Miscellaneous not used yet
-validateSienaDependent <- function(net)
-{
-    if (!inherits(net,"sienaDependent"))
-	{
-        stop ("Not a sienaDependent object")
-	}
-    if (!attr(net, "type") %in% c("oneMode", "bipartite", "behavior"))
-	{
-        stop ("invalid type in net")
-	}
-}
 
 ##@sienaDataConstraint DataCreate
 sienaDataConstraint <- function(x, net1, net2, type=c("higher",

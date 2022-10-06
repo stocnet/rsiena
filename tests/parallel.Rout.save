@@ -1,6 +1,6 @@
 
-R version 4.1.0 (2021-05-18) -- "Camp Pontanezen"
-Copyright (C) 2021 The R Foundation for Statistical Computing
+R version 4.2.1 (2022-06-23 ucrt) -- "Funny-Looking Kid"
+Copyright (C) 2022 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -474,12 +474,12 @@ Estimates, standard errors and convergence t-ratios
 
                                    Estimate   Standard   Convergence 
                                                 Error      t-ratio   
-  1. rate basic rate parameter net  3.7505  ( 0.3841   )   0.6758    
-  2. eval outdegree (density)      -1.6225  ( 0.3358   )   1.3177    
-  3. eval reciprocity               1.8051  ( 0.2445   )   1.5288    
-  4. eval indegree - popularity     0.1246  ( 0.0449   )   1.6988    
+  1. rate basic rate parameter net  3.7816  ( 0.4178   )   0.6167    
+  2. eval outdegree (density)      -1.5840  ( 0.3353   )   2.9602    
+  3. eval reciprocity               1.8606  ( 0.2314   )   1.4786    
+  4. eval indegree - popularity     0.1082  ( 0.0440   )   2.5318    
 
-Overall maximum convergence ratio:    2.9012 
+Overall maximum convergence ratio:    4.7198 
 
 
 Total of 266 iteration steps.
@@ -781,9 +781,7 @@ Total of 290 iteration steps.
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > mynet1 <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
 > cova <- coCovar(1:32)
-> cova2 <- coCovar(rep(0,32))
-Warning message:
-In coCovar(rep(0, 32)) : Note: all values are identical to 0.
+> cova2 <- coCovar(rep(0,32), warn=FALSE)
 > mydata <- sienaDataCreate(mynet1, cova)
 > mydata2 <- sienaDataCreate(mynet1, cova=cova2)
 > mygroup <- sienaGroupCreate(list(mydata,mydata2))
@@ -834,6 +832,9 @@ Phase 2 Subphase 1 Iteration 9 Progress: 48%
 Phase 2 Subphase 1 Iteration 10 Progress: 48%
 theta -1.1462  2.0525 -0.0622 
 ac 0.467 0.678 0.461 
+Phase 2 Subphase 1 Iteration 200 Progress: 94%
+theta -1.1846  1.8371 -0.0175 
+ac  0.0184 -0.0096  0.0546 
 theta -1.14850  1.81475  0.00267 
 ac  0.00745 -0.00359  0.01501 
 theta: -1.14850  1.81475  0.00267 
@@ -863,4 +864,4 @@ Total of 285 iteration steps.
 > 
 > proc.time()
    user  system elapsed 
-  25.84    0.56   26.54 
+  13.17    0.25   13.64 

@@ -76,6 +76,7 @@ public:
 	virtual bool egoEffect() const;
 
 protected:
+	int n() const;
 	virtual double statistic(const Network * pSummationTieNetwork);
 	virtual std::pair<double, double * > statistic(const Network * pSummationTieNetwork, bool needActorStatistics);
 	virtual void initializeStatisticCalculation();

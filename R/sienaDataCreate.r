@@ -1500,7 +1500,7 @@ namedVector <- function(vectorValue, vectorNames, listType=FALSE)
 
 ##@createSettings DataCreate
 # create a settings structure for sienaData object x
-createSettings <- function(x, varName=1)
+createSettings <- function(x, varName=1, model=TRUE)
 ##
 {
 	if (!inherits(x, 'siena'))
@@ -1515,9 +1515,11 @@ createSettings <- function(x, varName=1)
 	{
 		stop('varName should refer to a dependent network variable in x')
 	}
+	universalOnly <- ifelse(model, "up", "none")
 	attr(x$depvars[[varName]], 'settingsinfo') <- list(
-		list(id="universal", type="universal", only="up", covariate=""),
+		list(id="universal", type="universal", only=universalOnly, covariate=""),
 		list(id="primary", type="primary", only="both", covariate=""))
+# universal MUST be mentioned first here, and primary second.
 	x
 }
 
@@ -1553,7 +1555,7 @@ hasSettings <- function(x, varName=NULL)
 			}
 		}
 	}
-	hasSettingsi <- rep('',FALSE)
+	hasSettingsi <- rep(FALSE, length(varNames))
 	for (i in seq(along = varNames))
 	{
 		hasSettingsi[i] <- (!is.null(attr(x$depvars[[varNames[i]]], 'settingsinfo')))
@@ -1590,7 +1592,7 @@ describeTheSetting <- function(depvar)
 		dtsonly  <- sapply(dtsonly, function(x){ifelse(is.na(x),'both',x)})
 		dts <- cbind(dtsn, dtsid, dtstype, dtscovar, dtsonly)
 		colnames(dts) <- c('dependent variable', 'setting', 'type', 'covariate', 'direction')
-		rownames(dts) <- 1:dim(dts)[1]
+		rownames(dts) <- 1:seq_len(dtsn)
 	}
 	dts
 }

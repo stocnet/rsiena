@@ -1,3 +1,40 @@
+# RSiena 1.3.12
+
+## 
+   
+2022-10-06
+
+## Changes in RSiena:  
+
+### Updates:
+  * Changes to comply with new version of `Matrix` package.
+  * Replacements in some C++ functions of single & and | operators by && and ||.
+### Corrections:  
+  * `universalOffset` initialized as 0; it was earlier initialized as
+    the maximum real number (`NetworkLongitudinalData.cpp`). 
+  * `thetaStore` deleted (was trash in `phase2.r`).
+  * Various comparisons for vectors with 0 changed to using `all`
+    to avoid warnings (`initializeFRAN.r`).
+### Code modifications:
+  * `sigmas` and `meansigmas` added to `sienaRI` object.
+  * Print of standard deviations in the `sienaRI` object for `printSigma=TRUE` 
+    changed to using averages at the variance level.
+  * If `returnThetas` in the call of `siena07`, also simulated estimation statistics
+    during Phase 2 (deviations from targets) are returned.
+### Effects:
+  * Several new effects related to primary setting:
+    `nonPCompress`, `primCompress`, `primary`, `primDegAct`,
+    `primDegActDiff`, `primDegActDiffSqrt`, `primDegActSqrt`,
+    `primDegActLog`, `primDegActInv`.
+  * `gwdspFB` effect added for two-mode networks.
+  * New effects `outAct_ego`, `inAct_ego`,`reciAct_ego`, `toAny`.
+  * For effects `to`, `toBack`, `toRecip`, `mixedInXW`, 
+    internal effect parameter 3 now specifies truncation of the number of 
+    twosteps (change to `MixedTwoStepFunction`). 
+### Improvements of documentation:
+  * Modified help page for `sienaRI`.
+  * Small modifications of help page for `sienaGOF`.
+
 # RSiena 1.3.11
 
 ## 

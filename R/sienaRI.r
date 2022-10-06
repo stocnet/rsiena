@@ -167,6 +167,7 @@ getChangeContributions <- function(algorithm, data, effects)
 expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 	getChangeStatistics=FALSE, effectNames = NULL)
 {
+	rms <- function(xx){sqrt((1/dim(xx)[2])*rowSums(xx^2,na.rm=TRUE))}
 	waves <- length(conts[[1]])
 	effects <- effects[effects$include == TRUE,]
 	noRate <- effects$type != "rate"
@@ -207,13 +208,13 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 				{
 					stop("sienaRI does not work for bipartite networks with second mode >= first mode")
 				}
-				choices <- dim(depNetwork)[2] + 1				
+				choices <- dim(depNetwork)[2] + 1
 			}
 			else
 			{
 				stop("sienaRI does not work for dependent variables of type 'continuous'")
-			}		
-			
+			}
+
 			# impute for wave 1
 			if (networkTypes[eff] %in% c("oneMode", "bipartite"))
 			{
@@ -230,7 +231,7 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 				# Make sure the diagonals are not treated as structurals
 				if (networkTypes[eff] == "oneMode")
 				{
-					for (m in 1:dim(depNetwork)[3]){diag(depNetwork[,,m]) <- 0}
+					for (m in 1:(dim(depNetwork)[3])){diag(depNetwork[,,m]) <- 0}
 				}
 			structurals <- (depNetwork >= 10)
 			if (networkTypes[eff] == "oneMode"){
@@ -251,6 +252,7 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 			RHActors <-list()
 			changeStats <-list()
 			sigma <- list()
+			sigmas <- matrix(NA, sum(currentDepEffs), waves)
 			if (networkTypes[eff] == "behavior")
 			{
 				toggleProbabilities <- array(0, dim=c(actors, 3, waves))
@@ -265,7 +267,7 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 				if (networkTypes[eff] == "bipartite")
 				{
 					currentDepEffectContributions <- lapply(
-							currentDepEffectContributions, 
+							currentDepEffectContributions,
 							function(x){lapply(x,function(xx){xx[1:choices]})})
 				}
 				# conts[[1]] is periods by effects by actors by actors
@@ -279,6 +281,7 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 				{
 					cdec <- array(cdec, dim=c(1,dim(cdec)))
 				}
+##
 				rownames(cdec) <- effectNa[currentDepEffs]
 				if (getChangeStatistics)
 				{
@@ -289,7 +292,7 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 				if (networkTypes[eff] == "oneMode")
 				{
 					#	structuralsw <- structurals[,,w]
-					for (ff in 1:dim(cdec)[1]){cdec[ff,,][t(structurals[,,w])] <- NA}
+					for (ff in 1:(dim(cdec)[1])){cdec[ff,,][t(structurals[,,w])] <- NA}
 				}
 				distributions <- apply(cdec, 3,
 					calculateDistributions, theta[which(currentDepEffs)])
@@ -317,7 +320,7 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 # toggleProbabilities is an array referring to ego * choices * wave,
 # giving the probability of ego in a ministep in the wave
 # to make this choice.
-# For oneMode networks choices are alters; 
+# For oneMode networks choices are alters;
 # for  bipartite choices are second mode nodes,and the last is "no change";
 # for behavior choices are to add -1, 0, +1.
 				entropy_vector <- unlist(lapply(distributions,
@@ -341,7 +344,11 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 				expectedI[[w]] <- rowMeans(RIs_matrix, na.rm=TRUE)
 				sigma[[w]] <- apply(cdec, c(1,3), sd, na.rm=TRUE)
 				rownames(sigma[[w]]) <- effectNa[currentDepEffs]
+				sigmas[,w] <- rms(sigma[[w]])
 			}
+			rownames(sigmas) <- effectNa[currentDepEffs]
+			meansigmas <- rms(sigmas)
+			names(meansigmas) <- effectNa[currentDepEffs]
 			RItmp <- NULL
 			RItmp$dependentVariable <- currentDepName
 			RItmp$expectedRI <- expectedRI
@@ -351,6 +358,8 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 			RItmp$absoluteSumActors <- absoluteSumActors
 			RItmp$RHActors <- RHActors
 			RItmp$sigma <- sigma
+			RItmp$sigmas <- sigmas
+			RItmp$meansigmas <- meansigmas
 			if(!is.null(effectNames))
 			{
 				RItmp$effectNames <- effectNames[currentDepEffs]
@@ -491,11 +500,6 @@ print.sienaRI <- function(x, printSigma = FALSE, ...){
 	line3 <- line2
 	line4 <- format(" R_H ('degree of certainty')", width = 61)
 	line5 <- line2
-	if (printSigma)
-	{
-		sigmas <- matrix(sapply(x$sigma,rowMeans,na.rm=TRUE), effs, waves)
-		# construction with matrix because of the possibility effs=1
-	}
 	for (w in 1:length(colNames))
 	{
 		line1 <- paste(line1, format(colNames[w], width=8),"  ", sep = "")
@@ -509,7 +513,7 @@ print.sienaRI <- function(x, printSigma = FALSE, ...){
 		if (printSigma)
 		{
 			line5 <- paste(line5,
-				format(round(sigmas[,w], 4), width=8, nsmall=4),"  ",sep="")
+				format(round(x$sigmas[,w], 4), width=8, nsmall=4),"  ",sep="")
 		}
 	}
 	line2 <- paste(line2, rep('\n',effs), sep="")
@@ -521,7 +525,7 @@ print.sienaRI <- function(x, printSigma = FALSE, ...){
 	cat(as.matrix(line4),'\n', sep='')
 	if (printSigma)
 	{
-		cat("\n sigma (within-ego standard deviation of change statistics):\n\n")
+		cat("\n sigma (average within-ego standard deviation of change statistics):\n\n")
 		line5 <- paste(line5, rep('\n',effs), sep="")
 		cat('\n',as.matrix(line5),'\n', sep='')
 	}
@@ -730,7 +734,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 			layout(layoutMatrix,widths= c((nactors/6)+10,3.5+2.5*(rad^2)),
 				heights=c(rep(height,waves),legendHeight))
 		}else{
-			layoutMatrix <- matrix(c(1:(2*waves)), byrow= TRUE,
+			layoutMatrix <- matrix((1:(2*waves)), byrow= TRUE,
 				ncol=2, nrow=waves)
 			layout(layoutMatrix,widths = c((nactors/6)+10,7+2.5*(rad^2)),
 				heights=rep(height,waves))
@@ -738,11 +742,11 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 	}else{
 		if(legend)
 		{
-			layoutMatrix <- matrix(c(1:(waves+1)), byrow= TRUE,
+			layoutMatrix <- matrix((1:(waves+1)), byrow= TRUE,
 				ncol=1, nrow=(waves+1))
 			layout(layoutMatrix)
 		}else{
-			layoutMatrix <- matrix(c(1:waves), byrow= TRUE, ncol=1, nrow=waves)
+			layoutMatrix <- matrix((1:waves), byrow= TRUE, ncol=1, nrow=waves)
 			layout(layoutMatrix, heights=2*rep(height,waves))
 			# no widths, because these are only relative numbers,
 			# so requiring constant widths is redundant

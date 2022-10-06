@@ -52,7 +52,7 @@ NetworkLongitudinalData::NetworkLongitudinalData(int id,
 	this->lnetworksLessMissingStarts = new Network * [observationCount];
 	this->lmaxDegree = std::numeric_limits<int>::max();
 	this->lmodelType = 1;
-	this->luniversalOffset = numeric_limits<double>::max();
+	this->luniversalOffset = 0;
 	this->ldensity = new double[observationCount];
 	this->loneMode = oneMode;
 
@@ -123,6 +123,7 @@ void NetworkLongitudinalData::calculateProperties()
 
 	this->laverageInDegree = 0;
 	this->laverageOutDegree = 0;
+	this->laverageReciprocalDegree = 0;
 	this->laverageSquaredInDegree = 0;
 	this->laverageSquaredOutDegree = 0;
 
@@ -157,7 +158,20 @@ void NetworkLongitudinalData::calculateProperties()
 
 		int nonMissingCount = this->n() * this->lpReceivers->n();
 
-		if (this->pActorSet() == this->lpReceivers)
+		if (this->loneMode)
+		{
+			const OneModeNetwork * pONetwork =
+					dynamic_cast<const OneModeNetwork *>(pNetwork);	
+			if (!pONetwork)
+			{
+				throw logic_error("One-mode network expected in NetworkLongitudinalData.");
+			}
+			for (int i = 0; i < this->pActorSet()->n(); i++)
+			{
+				this->laverageReciprocalDegree += pONetwork->reciprocalDegree(i);
+			}
+		}
+		else
 		{
 			// Don't count the diagonal entries for one-mode networks
 			nonMissingCount -= this->n();
@@ -183,6 +197,8 @@ void NetworkLongitudinalData::calculateProperties()
 	this->laverageSquaredInDegree /=
 		this->lpReceivers->n() * this->observationCount();
 	this->laverageSquaredOutDegree /=
+		this->pActorSet()->n() * this->observationCount();
+	this->laverageReciprocalDegree /=
 		this->pActorSet()->n() * this->observationCount();
 
 	// data-less-missing-values is used in calculating statistics. Since it
@@ -448,6 +464,13 @@ void NetworkLongitudinalData::averageOutDegree(double val)
 	this->laverageOutDegree = val;
 }
 
+/**
+ * Store the average reciprocal degree over all senders and observations.
+ */
+void NetworkLongitudinalData::averageReciprocalDegree(double val)
+{
+	this->laverageReciprocalDegree = val;
+}
 
 /**
  * Returns the average in-degree over all receivers and observations.
@@ -482,7 +505,15 @@ double NetworkLongitudinalData::averageSquaredOutDegree() const
 	return this->laverageSquaredOutDegree;
 }
 
-
+/**
+ * Returns the average reciprocal degree over all senders and observations.
+ * and 0 if two-mode
+ */
+double NetworkLongitudinalData::averageReciprocalDegree() const
+{
+	return this->laverageReciprocalDegree;
+}
+	
 /**
  * Returns the relative frequency of the given value among the
  * observed value at the given observation.
