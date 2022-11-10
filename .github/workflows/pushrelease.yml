@@ -26,11 +26,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         
-      - uses: r-lib/actions/setup-r@master
+      - uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.config.r }}
-      - uses: r-lib/actions/setup-pandoc@master
-        
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
       - name: Install Mac dependencies
         if: runner.os == 'macOS'
         run: |
@@ -38,50 +39,20 @@ jobs:
           brew install autoconf
           brew install automake
 
-      - name: Query dependencies
-        run: |
-          install.packages('remotes')
-          saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
-          writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
-        shell: Rscript {0}
-
-      - name: Cache R packages
-        if: runner.os != 'Windows'
-        uses: actions/cache@v1
+      - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          path: ${{ env.R_LIBS_USER }}
-          key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
-          restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
+          cache-version: 2
+          extra-packages: |
+            any::rcmdcheck
+            any::covr
+            any::remotes
+          needs: check
 
-      - name: Install system dependencies
-        if: runner.os == 'Linux'
-        run: |
-          while read -r cmd
-          do
-            eval sudo $cmd
-          done < <(Rscript -e 'cat(remotes::system_requirements("ubuntu", "20.04"), sep = "\n")')
-
-      - name: Install dependencies
-        run: |
-          remotes::install_deps(dependencies = TRUE)
-          remotes::install_cran("rcmdcheck")
-        shell: Rscript {0}
-
-#      - name: Document
-#        run: Rscript -e 'roxygen2::roxygenise()'
-
-      - name: Check
+      - uses: r-lib/actions/check-r-package@v2
         env:
-          _R_CHECK_CRAN_INCOMING_REMOTE_: false
-        run: rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran", "--no-build-vignettes", "--no-vignettes"), error_on = "warning", check_dir = "check")
-        shell: Rscript {0}
-
-      - name: Upload check results
-        if: failure()
-        uses: actions/upload-artifact@main
+          _R_CHECK_FORCE_SUGGESTS_: false
         with:
-          name: ${{ runner.os }}-r${{ matrix.config.r }}-results
-          path: check
+          upload-snapshots: true
 
       - name: Binary
         run: |
@@ -101,6 +72,8 @@ jobs:
     name: Bump version and release
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout one
         uses: actions/checkout@master
@@ -118,12 +91,12 @@ jobs:
         uses: actions/checkout@v2
       - name: Create Release
         id: create_release
-        uses: ncipollo/release-action@v1
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.newtag.outputs.tag }}
-          name: Release ${{ steps.newtag.outputs.tag }}
+          release_name: Release ${{ steps.newtag.outputs.tag }}
           draft: false
           prerelease: false
           
