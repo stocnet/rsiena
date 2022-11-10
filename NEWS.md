@@ -1,3 +1,28 @@
+# RSiena 1.3.14
+
+## 
+   
+2022-11-04
+
+## Changes in RSiena:  
+
+### Note:
+  * CRAN version.
+
+### Corrections:
+  * Update `configure` and  `configure.ac` (with help from Brian Ripley). 
+
+# RSiena 1.3.13
+
+## 
+   
+2022-10-07
+
+## Changes in RSiena:  
+
+### Updates:
+  * Replacements in EffectFactory.cpp of single | operator by ||.
+
 # RSiena 1.3.12
 
 ## 

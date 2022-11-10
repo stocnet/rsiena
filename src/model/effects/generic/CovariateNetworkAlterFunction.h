@@ -47,9 +47,9 @@ protected:
 	// for which it is 0.
 	double covmean() const;
 
-	double value(int alter) const;
+	double value(int alter);
 	bool missing(int i) const;
-	double actor_similarity(int i, int j) const;
+	double actor_similarity(int i, int j);
 	ConstantCovariate * pConstantCovariate() const;
 	ChangingCovariate * pChangingCovariate() const;
 	BehaviorLongitudinalData * pBehaviorData() const;

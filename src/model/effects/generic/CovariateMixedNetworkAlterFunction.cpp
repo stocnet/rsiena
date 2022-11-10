@@ -83,7 +83,7 @@ void CovariateMixedNetworkAlterFunction::initialize(const Data * pData,
 /**
  * Returns the covariate value for the given actor.
  */
-double CovariateMixedNetworkAlterFunction::value(int alter) const
+double CovariateMixedNetworkAlterFunction::value(int alter)
 {
 	if (this->lpConstantCovariate)
 	{
@@ -122,7 +122,7 @@ bool CovariateMixedNetworkAlterFunction::missing(int i) const
 /**
  * Returns the centered similarity of the given actors.
  */
-double CovariateMixedNetworkAlterFunction::actor_similarity(int i, int j) const
+double CovariateMixedNetworkAlterFunction::actor_similarity(int i, int j)
 {
 	double similarity = 0;
 
