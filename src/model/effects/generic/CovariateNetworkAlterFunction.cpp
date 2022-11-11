@@ -105,7 +105,7 @@ double CovariateNetworkAlterFunction::covmean() const
 /**
  * Returns the covariate value for the given actor.
  */
-double CovariateNetworkAlterFunction::value(int alter)
+double CovariateNetworkAlterFunction::value(int alter) const
 {
 	if (this->lpConstantCovariate)
 	{
@@ -145,7 +145,7 @@ bool CovariateNetworkAlterFunction::missing(int i) const
 /**
  * Returns the centered similarity of the given actors.
  */
-double CovariateNetworkAlterFunction::actor_similarity(int i, int j)
+double CovariateNetworkAlterFunction::actor_similarity(int i, int j) const
 {
 	double similarity = 0;
 

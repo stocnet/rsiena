@@ -45,9 +45,9 @@ public:
 		State * pState, int period, Cache * pCache);
 
 protected:
-	double value(int i);
+	double value(int i) const;
 	bool missing(int i) const;
-	double actor_similarity(int i, int j);
+	double actor_similarity(int i, int j) const;
 	ConstantCovariate * pConstantCovariate() const;
 	ChangingCovariate * pChangingCovariate() const;
 	BehaviorLongitudinalData * pBehaviorData() const;
