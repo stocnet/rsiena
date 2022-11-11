@@ -190,7 +190,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.3.11.
+This version was renewed for \RS version 1.3.12.
 \end{abstract}
 
 
@@ -291,11 +291,11 @@ Melbourne, Geneva, and elsewhere.
 
 In addition to the `official' \R distribution of \RS
 and the \sfn{GitHub} development version, there is
-an additional distribution \sfn{RSienaTest} at \sfn{R-Forge},
-which includes additional options that are still in the testing stage.
-Some of the options described in this manual may apply to
-{\sf RSienaTest} only, with the plan to transfer this to \RS
-in the future.
+the old distribution \sfn{RSienaTest} at \sfn{R-Forge},
+which includes some additional options,
+but of which the maintenance is discontinued.
+A few options described in this manual may apply to
+{\sf RSienaTest} only.
 
 \subsection{Acknowledgements}
 
@@ -335,7 +335,7 @@ reference to this manual is the following.  \smallskip
 \noindent
 Ruth M. Ripley, Tom A.B. Snijders, Zs\'{o}fia Boda,
  Andr\'{a}s V\"{o}r\"{o}s, and Paulina Preciado, \the\year.
-Manual for SIENA version 4.0 (version \today).
+Manual for RSiena  (version \today).
 Oxford: University of Oxford, Department of Statistics; Nuffield College.
 {\newline{\url{http://www.stats.ox.ac.uk/~snijders/siena/RSiena_manual.pdf}}},
 \smallskip
@@ -891,13 +891,12 @@ of the software appear).
             the combination of \texttt{Notepad++} with \texttt{NppToR}.\\
             For Mac, you may also need \sfn{X11}, which is
             used for \sfn{tcltk}; but this is not a necessity. See the FAQ list for R on Mac.
-	\item	Install the package \RS or \sfn{RSienaTest}, with dependencies.
+	\item	Install the package \rs, with dependencies.
             The other packages used are  \sfn{parallel}
             and \sfn{tools} (all included in the basic \R distribution);
             \sfn{Matrix}, \sfn{MASS}, \sfn{lattice}, \sfn{codetools}
-            (`recommended' packages included in most R distributions);
-            \sfn{network} and \sfn{xtable}; and, for \sfn{RSienaTest},
-            \sfn{RUnit}. \sfn{tcltk} is optional.
+            (`recommended' packages included in most R distributions),
+            \sfn{network} and \sfn{xtable}. \sfn{tcltk} is optional.
             For goodness of fit testing it will be useful also to
             install \sfn{sna} and \sfn{igraph}.
 %            For constructing the vignette in \RS the
@@ -909,7 +908,7 @@ of the software appear).
             what is available at CRAN, go to\\
 \url{http://cran.r-project.org/web/packages/RSiena/} .\\
             However, it is advisable to have the latest version of \RS
-            or \sfn{RSienaTest} from GitHub or the \SI website.
+            from GitHub or the \SI website.
             You can go to\\
             \url{https://github.com/snlab-nl/rsiena/releases}\\
             or to\\
@@ -934,20 +933,8 @@ This can be done in Windows using the dropdown menu under \texttt{Packages},
 and for all Operating Systems using function \sfn{install.packages}
 with \texttt{repos = NULL}.\\
 In \sfn{RStudio}, go to \texttt{Tools  $\rightarrow$ Install packages}
-and choose \texttt{Install From: Package archive file (zip; tar.gz)}.
-
-            Installation of \texttt{RSienaTest}
-            from the R-Forge repository can be done as follows.
-            \begin{itemize}
-            \item for Windows:\\
-            \texttt{install.packages("RSienaTest", repos="http://R-Forge.R-project.org")}
-            \item for Mac the binary file code is not available on R-Forge, but the source code
-            may also work:\\
-            \texttt{install.packages("RSienaTest", repos="http://R-Forge.R-project.org", type = "source")}\\
-            If this does not work, download the binary for your Operating System and
-            install it, as indicated above for \sf{RSiena}.
-            \end{itemize}
-   \end{enumerate}
+and choose\\ \texttt{Install From: Package archive file (zip; tar.gz)}.
+\end{enumerate}
 
 
 \subsection{Using \SI within \Rn}
@@ -957,12 +944,13 @@ and choose \texttt{Install From: Package archive file (zip; tar.gz)}.
             (see Section~\ref{S_datatypes}):
 	\begin{enumerate}
 		\item Network data should be in objects of class matrix or
-            sparse matrix (edgelist);
+            sparse matrix\\ (\texttt{"TsparseMatrix-class"}, package \sf{Matrix}).
 		\item	Behavioral data should be in objects of class matrix;
 		\item	Individual constant covariates should be in objects of
             class vector or should be in columns or rows of a matrix;
 		\item	Individual varying covariates should be in objects of class matrix;
-		\item	Dyadic covariates should be in objects of class matrix.
+		\item	Dyadic covariates should be in objects of class matrix
+               or \texttt{"TsparseMatrix-class"}.
 	\end{enumerate}
 	\item	All missing data should be set to \texttt{NA} (see Section~\ref{S_missing}).
 	\item Check whether your data objects meet the following criteria:
@@ -1358,10 +1346,12 @@ outside R. \fi
 
 Missing values must be indicated in the way usual for \Rn,
 by \texttt{NA}.
+\iffalse
 For data specification by the function
 \textsf{sienaDataCreateFromSession} (only available in \rst),
 instead of \texttt{NA} any numerical code can be used
 given that this is indicated to be a missing value code.
+\fi
 
 If the data set is such that it is never observed that ties are terminated,
 then the network dynamics is automatically specified internally in such a way
@@ -5068,7 +5058,7 @@ Output can be obtained in several ways.
         produces in the working directory a html file with the \texttt{ans}
         results in
         tabular form. The \textsf{xtable} package has many further options.\\
-  \item In package \sfn{RSienaTest}, the function \sfn{siena.table}
+  \item The function \sfn{siena.table}
         is available which serves a similar purpose,
         but not using \textsf{xtable}.
         This function writes the table to a file;
@@ -7905,7 +7895,7 @@ will be significant.
   The function \sfn{sienaBayes} is for Bayesian estimation of one group or
   of multiple groups all having the same number of waves and the same
   model specification.
-  It is available in packages \rst\ and \MS (see the \SI website).
+  It is available in package \MS (see the \SI website).
   The methodology is explained in \citet{KoskinenSnijders2022}.
   The parameters -- excepting the basic rate parameters -- can be either
   randomly varying between groups according to a multivariate
@@ -14015,7 +14005,7 @@ $\sum_{j=1}^n  z_j\, x_{ij}$ in the formula for
 
 \subsection{Effects for estimation by Generalized Method of Moments}
 
-A variety of effects can be specified in \rst\ with \texttt{type='gmm'},
+A variety of effects can be specified with \texttt{type='gmm'},
 as shown in \textsf{effectsDocumentation()}.
 These are not effects for the definition of the probability model,
 but for the estimation by the Generalized Method of Moments.
@@ -15104,7 +15094,7 @@ sink()
 \subsection{After updating}
 
 \noindent
-Updates of \RS and \textsf{RSienaTest} are not always completely backward
+Updates of \RS are not always completely backward
 compatible. When updating the version, you may have to create
 effects objects and algorithm objects again. If there is
 incomplete backward compatibility with respect to
@@ -15493,7 +15483,7 @@ immediately above the
 siena source tree. Here we assume the source tree is in a directory
 called \sfn{RSiena}. (You may have minor
 difficulties if it is not the same as the name of the package you are trying to
-build or install: you can do all these things with \sfn{RSienaTest} also.)
+build or install.)
 
 For Windows computers, the following `type' instructions are Dos commands.
 A convenient way to apply them are by including them in a batch

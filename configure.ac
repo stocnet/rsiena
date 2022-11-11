@@ -9,7 +9,7 @@ AC_INIT([RSiena], @VERSION@)
 AC_CONFIG_SRCDIR([src])
 
 # Find the compiler and compiler flags used by R.
-R_HOME=`R RHOME`
+: ${R_HOME=`R RHOME`}
 if test -z "${R_HOME}"; then
   AC_MSG_ERROR([could not determine R_HOME])
 fi
