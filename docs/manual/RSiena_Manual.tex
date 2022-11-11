@@ -190,7 +190,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.3.12.
+This version was renewed for \RS version 1.3.14.
 \end{abstract}
 
 
@@ -1128,7 +1128,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.3.12).
+  identified by a version number (e.g.\ 1.3.14).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -15503,12 +15503,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.3.12.tar.gz|\\
+\verb|R CMD check RSiena_1.3.14.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.3.12.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.3.14.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16554,6 +16554,17 @@ Changes in RSiena:
 
 
 \fi
+
+
+
+
+\item 2022-10-06 CRAN / GitHub, package version 1.3.14
+
+Changes in RSiena:
+\begin{itemize}
+\item Some changes for increasing the compatibility with various
+      hardware platforms.
+\end{itemize}
 
 \item 2022-10-06 GitHub, package version 1.3.12
 
