@@ -1,3 +1,16 @@
+# RSiena 1.3.15
+
+## 
+   
+2022-11-24
+
+## Changes in RSiena:  
+
+### Corrections:
+  * `siena08`: correct p-value `pTsq` for overall test statistic `Tsq`
+  * Correct "objname" to "projname" in `meta.table` (`siena08.r`).
+  * Simplify LaTeX output of `meta.table`. 
+
 # RSiena 1.3.14
 
 ## 
