@@ -902,19 +902,9 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 		modelname, ">>.\n\n"), sep="", outf)
 	Report(c("Date and time:", format(Sys.time(), "%d/%m/%Y %X"), "\n\n"), outf)
 	packageValues <- packageDescription(pkgname, fields=c("Version", "Date"))
-	rforgeRevision <-  packageDescription(pkgname,
-		fields="Repository/R-Forge/Revision")
-	if (is.na(rforgeRevision))
-	{
-		revision <- ""
-	}
-	else
-	{
-		revision <- paste(" R-forge revision: ", rforgeRevision, " ", sep="")
-	}
 	Report(c(paste(pkgname, "version "), packageValues[[1]],
 			" (", format(as.Date(packageValues[[2]]), "%d %m %Y"), ")",
-			revision, "\n\n"), sep="", outf)
+			"\n\n"), sep="", outf)
 
 	if (!inherits(data, 'sienaGroup'))
 	{

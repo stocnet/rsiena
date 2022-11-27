@@ -2,12 +2,13 @@
 
 ## 
    
-2022-11-24
+2022-11-27
 
 ## Changes in RSiena:  
 
 ### Corrections:
   * `siena08`: correct p-value `pTsq` for overall test statistic `Tsq`
+  * `print.summary.sienaMeta`, `siena07`, `print01Report`: drop RForge revision.
   * Correct "objname" to "projname" in `meta.table` (`siena08.r`).
   * Simplify LaTeX output of `meta.table`. 
 

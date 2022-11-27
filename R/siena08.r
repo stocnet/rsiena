@@ -83,7 +83,6 @@ siena08 <- function(..., projname="sienaMeta", bound=5, alpha=0.05, maxit=20)
                                                    sep=": "),
                                              tconv=x$tconv,
                                              version=rep(x$version, n),
-                                             revision=rep(x$revision, n),
                                              scoretests=scoretests,
                                              ## add anything more needed
                                              ## for the report
@@ -521,21 +520,8 @@ print.summary.sienaMeta <- function(x, file=FALSE, extra=TRUE, ...)
 					"%d/%m/%Y %X"), "\n\n"), outf)
 		packageValues <- packageDescription(pkgname,
 			fields=c("Version", "Date"))
-		rforgeRevision <-  packageDescription(pkgname,
-			fields=
-				"Repository/R-Forge/Revision")
-		if (is.na(rforgeRevision))
-		{
-			revision <- ""
-		}
-		else
-		{
-			revision <- paste(" R-forge revision: ", rforgeRevision,
-				" ", sep="")
-		}
 		Report(c(paste(pkgname, "version "), packageValues[[1]], " (",
-				format(as.Date(packageValues[[2]]), "%d %m %Y"), ")",
-				revision, "\n\n"), sep="", outf)
+				format(as.Date(packageValues[[2]]), "%d %m %Y"), ")\n\n"), sep="", outf)
 	}
 	Report(c("================================= SIENA08 ",
 			"================================================\n",
@@ -584,7 +570,7 @@ print.summary.sienaMeta <- function(x, file=FALSE, extra=TRUE, ...)
 		sep="", outf)
 	Report(c("\nThe projects contain the parameters as follows",
 			"(1=present, 0=absent):\n\n"), outf)
-	row1 <- c(1:nEffects)
+	row1 <- (1:nEffects)
 	rows <- do.call(rbind, tapply(x$thetadf$effects,
 			x$thetadf$projname, function(x)
 			{
