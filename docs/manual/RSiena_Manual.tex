@@ -179,9 +179,10 @@
 \noindent \SI (for {\sf Simulation Investigation for Empirical
 Network Analysis}) is a computer program that carries out the
 statistical estimation of models for the evolution of social
-networks according to the dynamic actor-oriented model of \citet{Snijders01,
-Snijders05}, \citet*{SnijdersEA07}, \citet*{SnijdersEA10a},
-and \citet{KoskinenSnijders2022}.
+networks according to the dynamic actor-oriented model of
+which an overview is in \citet{Snijders2017},
+and also the random coefficient multilevel network model of
+\citet{KoskinenSnijders2022}.
 This is the manual for \rs,
 a contributed package to the statistical system \Rn.
 It complements, but does not replace the help pages
@@ -190,7 +191,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.3.12.
+This version was renewed for \RS version 1.3.15.
 \end{abstract}
 
 
@@ -287,7 +288,7 @@ Robert Krause, Marion Hoffman, Alvaro Uzaheta,
 Robert Hellpap, James Hollway, and Steffen Triebel.
 Currently, \RS is maintained by a research group
 at the University of Groningen, seconded by researchers in Z\"{u}rich,
-Melbourne, Geneva, and elsewhere.
+Stockholm, Geneva, and elsewhere.
 
 In addition to the `official' \R distribution of \RS
 and the \sfn{GitHub} development version, there is
@@ -1128,7 +1129,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.3.12).
+  identified by a version number (e.g.\ 1.3.15).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -8899,7 +8900,8 @@ and for maintaining existing ties.
 \put{$h$} at 3 3.4
 \arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
 \arrow <2mm> [.2,.6]  from 3.8 1 to 2.2 1
-\arrow <2mm> [.2,.6]  from 2.9 2.559 to 2.1 1.1732
+%\arrow <2mm> [.2,.6]  from 2.9 2.559 to 2.1 1.1732
+\arrow <2mm> [.2,.6]  from 2.1 1.1732 to 2.9 2.559 
 \arrow <2mm> [.2,.6]  from 3.1 2.559 to 3.9 1.1732
 \endpicture
 \end{center}
@@ -15503,12 +15505,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.3.12.tar.gz|\\
+\verb|R CMD check RSiena_1.3.15.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.3.12.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.3.15.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16552,8 +16554,32 @@ Changes in RSiena:
     \end{itemize}
 \end{itemize}
 
-
 \fi
+
+
+\item 2022-11-27 GitHub, package version 1.3.15
+
+Changes in RSiena:
+\begin{itemize}
+\item Correction:
+    \begin{itemize}
+    \item Correction: \sfn{siena08}: correct $p$-value \texttt{pTsq} for overall 
+        test statistic \texttt{Tsq}.
+    \end{itemize}
+\item Improvements of functionality:
+    \begin{itemize}
+    \item Minor improvements in  \sfn{meta.table}.
+    \end{itemize}
+\end{itemize}
+
+
+\item 2022-10-06 CRAN / GitHub, package version 1.3.14
+
+Changes in RSiena:
+\begin{itemize}
+\item Some changes for increasing the compatibility with various
+      hardware platforms.
+\end{itemize}
 
 \item 2022-10-06 GitHub, package version 1.3.12
 

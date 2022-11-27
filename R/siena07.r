@@ -233,20 +233,10 @@ InitReports <- function(z, seed, newseed)
 	Report(c("Date and time:", format(Sys.time(),"%d/%m/%Y %H:%M:%S")), outf)
 	Report("\nNew results follow.\n", outf)
 	Report("-----------------------------------\n", outf)
-	rforgeRevision <-  packageDescription(pkgname,
-		fields="Repository/R-Forge/Revision")
-	if (is.na(rforgeRevision))
-	{
-		revision <- ""
-	}
-	else
-	{
-		revision <- paste(" R-forge revision: ", rforgeRevision, " ", sep="")
-	}
 	version <- packageDescription(pkgname, fields = "Version")
 	Report(c(paste("\n", pkgname, " version ", sep = ""), version, " (",
 		format(as.Date(packageDescription(pkgname, fields = "Date")), "%d %b %y"),
-		")", revision, "\n\n"), sep = "", outf)
+		")", "\n\n"), sep = "", outf)
 	if (z$x$simOnly)
 	{
 		Heading(1, outf, "Simulations.")
@@ -267,7 +257,6 @@ InitReports <- function(z, seed, newseed)
 	{
 		Report(sprintf("Current random number seed is %d.\n", seed), outf)
 	}
-	z$revision <- revision
 	z$version <- version
 	z$startingDate <- date()
 	z
