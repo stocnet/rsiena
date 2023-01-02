@@ -3037,7 +3037,7 @@ actor;
       covariates (and mostly also for ordinal variables),
       the identity effect is suitable for categorical variables;
 \item the interaction effect of covariate-similarity with reciprocity;
-\item the effect of the covariate of those to whom the actor is
+\item the effect of the covariate of those to whom the actor isf
       indirectly connected, i.e., through one intermediary but not
       with a direct tie; this value-at-a-distance can represent
       effects of indirectly accessed social capital.
@@ -3649,7 +3649,7 @@ is defined by the `\texttt{interactionType}' of the effects.
 
 Interactions can be specified by the function \sfn{includeInteraction},
 explained in the following subsections.
-The basis of the implementation is provided by the definition, 
+The basis of the implementation is provided by the definition,
 by \si, of `unspecified interaction effects'.
 The interacting effects are given by
 the columns \texttt{effect1} and \texttt{effect2},
@@ -3700,13 +3700,15 @@ be said to be interacting with the dependent variable (network or behavior).
 \subsubsection{Interaction effects for network dynamics}
 
 The following kinds of user-defined interactions are possible
-for network dynamics of directed one-mode networks 
+for network dynamics of directed one-mode networks
 as well as bipartite networks.
 \begin{description}
 \item[a.]
   Ego effects of actor variables can interact with all effects.
   \item[b.] Dyadic effects can interact with each other.
 \end{description}
+For undirected networks, ego effects can only interact with ego effects and
+dyadic effects can only interact with dyadic effects.
 Whether an effect is an ego effect or a dyadic effect is defined by
 the column \texttt{interactionType} in the effects data frame.
 This column is shown in the list of effects that is displayed
@@ -3715,10 +3717,11 @@ in a browser by using the function:
 \verb|effectsDocumentation()|
 \bigskip
 
-Thus a two-way interaction must be between two dyadic effects or between one
-ego effect and another effect. A three-way interaction may be between three
-dyadic effects, two dyadic effects and an ego effect, or two ego effects and
-another effect.
+Thus, in directed networks, a two-way interaction must be between two dyadic
+effects or between one ego effect and another effect. A three-way interaction
+may be between three dyadic effects, two dyadic effects and an ego effect, or
+two ego effects and another effect. In undirected networks all three effects
+must be either ego or dyadic effect.
 
 All effects used in interactions must be defined on the same network
 (in the role of dependent variable): that for
@@ -3760,7 +3763,7 @@ and \texttt{covNetNet} (there are many more).
 
 For non-directed (symmetric) networks, what makes sense as standard interaction
 effects depends on the \texttt{modelType} as well as on the
- \texttt{interactionType} of the effects. These distinctions have not been fully 
+ \texttt{interactionType} of the effects. These distinctions have not been fully
 implemented.
 
 \subsubsection{Interaction effects for behavior dynamics}
