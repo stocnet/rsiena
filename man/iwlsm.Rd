@@ -169,7 +169,7 @@ psi.iwlsm(u, k, deriv = 0, w, sj2, hh)
 \references{
   Venables, W. N. and Ripley, B. D. (2002)
   \emph{Modern Applied Statistics with S.}  Fourth edition.  Springer.
-  See also \url{http://www.stats.ox.ac.uk/~snijders/siena/}
+  See also \url{https://www.stats.ox.ac.uk/~snijders/siena/}
 }
 \author{Ruth Ripley}
 \note{The function has been changed as little as possible, but

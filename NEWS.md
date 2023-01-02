@@ -1,3 +1,20 @@
+# RSiena 1.3.16
+
+## 
+   
+2022-12-14
+
+## Changes in RSiena:  
+
+### Corrections:
+
+### Effects:
+    `inPopIntnX`, `inActIntnX`, `outPopIntnX`, `outActIntnX`, `sameXInPopIntn`, 
+    `sameXOutPopIntn`, sameXInActIntn`, `sameXOutActIntn` restored
+    (these had got lost in some way...).
+### Updates:
+  * All occurrences of `http` in `R` and `Rd` files changed to `https`.
+
 # RSiena 1.3.15
 
 ## 
@@ -141,7 +158,7 @@
 ## Changes in RSiena:  
 
 ### Effects:
-  * Changed internal effect parameter for `simAllNear` to 2 and for
+  * Changed default internal effect parameter for `simAllNear` to 2 and for
     `simAllFar` to 4.
 
 ### Improvements of functionality: 

@@ -101,7 +101,7 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   and "behUnspInt" for behavior effects. \cr
   If \code{verbose=TRUE}, details of the fields altered will be printed.
 }
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley, Tom Snijders}
 \seealso{
   \code{\link{getEffects}}, \code{\link{setEffect}},

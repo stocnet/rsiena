@@ -15,14 +15,14 @@ and for which there are no missing values.
  of alcohol consumption and smoking data for the three time points.
 }
 \source{
-\url{http://www.stats.ox.ac.uk/~snijders/siena/s50_data.zip}
+\url{https://www.stats.ox.ac.uk/~snijders/siena/s50_data.zip}
 }
 \references{
 West, P. and Sweeting, H. (1995) Background Rationale and Design of the
 West of Scotland 11-16 Study.
 Working Paper No. 52. MRC Medical Sociology Unit Glasgow.
 
-See \url{http://www.stats.ox.ac.uk/~snijders/siena/s50_data.htm}
+See \url{https://www.stats.ox.ac.uk/~snijders/siena/s50_data.htm}
 }
 \seealso{\code{\link{s501}}, \code{\link{s502}}, \code{\link{s503}},
          \code{\link{s50a}}, \code{\link{s50s}}

@@ -44,8 +44,8 @@ see \url{https://github.com/snlab-nl/rsiena/ }.
   \tabular{ll}{
     Package: \tab RSiena\cr
     Type: \tab Package\cr
-    Version: \tab 1.3.15\cr
-    Date: \tab 2022-11-27\cr
+    Version: \tab 1.3.16\cr
+    Date: \tab 2022-12-14\cr
     Depends: \tab R (>= 3.5.0)\cr
     Imports: \tab Matrix, lattice, parallel, MASS, methods, xtable\cr
     Suggests: \tab network, tools, codetools, tcltk\cr
@@ -94,8 +94,8 @@ see \url{https://github.com/snlab-nl/rsiena/ }.
       Pearson, Michael A. (2010). Dynamic networks and behavior:
       Separating selection from influence. \emph{Sociological Methodology}
       \bold{40}, 329--393.
-    \item The manual: \url{http://www.stats.ox.ac.uk/~snijders/siena/RSiena_Manual.pdf}
-    \item The website: \url{http://www.stats.ox.ac.uk/~snijders/siena/}.
+    \item The manual: \url{https://www.stats.ox.ac.uk/~snijders/siena/RSiena_Manual.pdf}
+    \item The website: \url{https://www.stats.ox.ac.uk/~snijders/siena/}.
   }
 }
 \seealso{\code{\link{siena07}}}

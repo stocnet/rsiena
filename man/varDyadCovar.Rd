@@ -41,7 +41,7 @@ varDyadCovar(val, centered=TRUE, nodeSets=c("Actors", "Actors"),
   Returns the covariate as an object of class "varDyadCovar", in which
   form it can be used as an argument to \code{SienaDataCreate}.
 }
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley}
 \seealso{\code{\link{sienaDataCreate}}, \code{\link{coDyadCovar}},
 \code{\link{coCovar}}, \code{\link{varCovar}},

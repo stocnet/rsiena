@@ -22,7 +22,7 @@
 }
 \seealso{\code{\link{getEffects}}}
 \references{
-  See \url{http://www.stats.ox.ac.uk/~snijders/siena/}
+  See \url{https://www.stats.ox.ac.uk/~snijders/siena/}
 }
 \author{Ruth Ripley
 }

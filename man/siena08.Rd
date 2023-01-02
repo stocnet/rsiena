@@ -109,7 +109,7 @@ siena08(..., projname = "sienaMeta", bound = 5, alpha = 0.05, maxit=20)
   evolution. \emph{Journal of Mathematical Sociology} \bold{27}, 123--151.
 
   See also the manual (Section 11.2)
-  and \url{http://www.stats.ox.ac.uk/~snijders/siena/}
+  and \url{https://www.stats.ox.ac.uk/~snijders/siena/}
 }
 \author{Ruth Ripley, Tom Snijders}
 

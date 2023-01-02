@@ -78,7 +78,7 @@ short names to identify the effects which should be included or excluded.}
     columns for one or more rows updated.
     Details of the rows altered will be printed.
 }
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley }
 \seealso{
   \code{\link{getEffects}}, \code{\link{setEffect}},

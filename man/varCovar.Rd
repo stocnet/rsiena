@@ -45,7 +45,7 @@ varCovar(val, centered=TRUE, nodeSet="Actors",  warn=TRUE,
   Returns the covariate as an object of class "varCovar", in which
   form it can be used as an argument to \code{\link{sienaDataCreate}}.
 }
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley}
 \seealso{\code{\link{sienaDataCreate}}, \code{\link{coCovar}},
 \code{\link{coDyadCovar}}, \code{\link{varDyadCovar}},

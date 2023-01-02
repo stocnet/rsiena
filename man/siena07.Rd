@@ -245,8 +245,8 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
     Separating selection from influence.
     \emph{Sociological Methodology} \bold{40}, 329--393.
    \item Information about the implementation of the algorithm is in
-     \url{http://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf}.
-   \item Further see \url{http://www.stats.ox.ac.uk/~snijders/siena/} .
+     \url{https://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf}.
+   \item Further see \url{https://www.stats.ox.ac.uk/~snijders/siena/} .
     }
 }
 \author{Ruth Ripley, Tom Snijders, Viviana Amati, Felix Schoenenberger}

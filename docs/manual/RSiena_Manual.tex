@@ -495,7 +495,7 @@ currently implemented model types, which will help researchers determine what
 kind of analyses they are able to carry out with {\saom}s
 given the data at hand.
 
-A minimal dataset suitable for analysis with \SI consists of two observations of
+A minimal dataset suitable for analysis with \RS consists of two observations of
 a single network defined on the same set of nodes. In this case, one is able to
 test how the structure of the network contributes to its own evolution.
 However, depending on the data available, further modeling options may be
@@ -517,7 +517,7 @@ In all these cases, the data can also include covariates: observed variables
 that influence the dynamics, but of which the values are not themselves
 modeled.
 
-In the first two cases, one can assess with \SI the ways and the extent
+In the first two cases, one can assess with \RS the ways and the extent
 to which changes in a given one- or two-mode network depend on the network
 structure itself and on covariates. The third option, modeling changes in
 an individual behavior on its own, without reference to its embeddedness
@@ -665,7 +665,7 @@ between structure and covariates are possible. Some examples for effects:
 \textbf{Dependent variables: network evaluation, creation and endowment functions}\\
 \label{S_endow}
 
-As we discussed earlier, \SI is capable of analyzing and modeling the
+As we discussed earlier, \RS is capable of analyzing and modeling the
 evolution of networks and behavior, jointly or separately.
 Consequently, a model may have more than one dependent variable.
 Here we introduce the ways network and behavior dependent variables
@@ -755,7 +755,7 @@ green cases to that of blue cases.
 \end{table}
 
 According to this distinction, network evolution may be modeled
-in \SI by three functions: the evaluation, creation and endowment functions.
+in \RS by three functions: the evaluation, creation and endowment functions.
 Effects can appear as components of one or two of these functions in a single model,
 but never in all three (this would lead to perfect collinearity).
 Using only the evaluation effect assumes that the creation and endowment
@@ -792,7 +792,7 @@ different impact) of effects for the increase and the decrease of behavior.
 \subsubsection{Outline of estimation procedure}
 \label{S_estim}
 \noindent
-\SI estimates parameters by the function \sfn{siena07()}
+\RS estimates parameters by the function \sfn{siena07()}
 and (alternatively) \sfn{sienacpp()}, using the following procedure:
 \begin{enumerate}
 \item  Certain statistics are used that reflect the parameter values;\\
@@ -873,11 +873,11 @@ The estimation algorithm is such that the fact that there is convergence
 	\item	Checking for time heterogeneity (Sections~\ref{S_timetest1}
             and \ref{S_timetest2})
 	\item	Goodness of fit (Section~\ref{S_gof})
-	\item	Meta-analysis of \SI results (Section~\ref{S_Siena08})
+	\item	Meta-analysis of \RS results (Section~\ref{S_Siena08})
 	\item	Simulation without estimation (Section~\ref{S_sim})
 \end{itemize}
 
-\subsection{Installing \R and \SI }
+\subsection{Installing \R and \RS }
 \label{S_use}
 \noindent
 This and the next section give an overview of steps one needs to go through from
@@ -938,7 +938,7 @@ and choose\\ \texttt{Install From: Package archive file (zip; tar.gz)}.
 \end{enumerate}
 
 
-\subsection{Using \SI within \Rn}
+\subsection{Using \RS within \Rn}
 
    \begin{enumerate}
 	\item	Load data (networks, behavior, covariates) into \R
@@ -964,7 +964,7 @@ and choose\\ \texttt{Install From: Package archive file (zip; tar.gz)}.
 	\end{enumerate}
    If a two-mode network is studied, then of course there will
    be two node sets.
-	\item	Create \SI objects for each data object using the appropriate
+	\item	Create data objects suitable for \RS using the appropriate
                 functions (see Section~\ref{S_datatypes}):
 	\begin{enumerate}
 		\item	\sfn{sienaDependent()} for networks and behavior variables;
@@ -977,7 +977,7 @@ and choose\\ \texttt{Install From: Package archive file (zip; tar.gz)}.
                 be specified which nodeset it is defined on, using the
                 \sfn{nodeSets} argument in the above functions.
 	\end{enumerate}
-	\item	Create a \SI data object containing all the \SI objects
+	\item	Create a \textsf{siena} data object containing all the objects
             specified above using the function \sfn{sienaDataCreate()}
             (see Section~\ref{S_datatypes}).
 	\item	Use \sfn{getEffects()} to create an effects object.
@@ -1014,7 +1014,7 @@ outlined in the previous section, providing additional details and options: \\
 	\item \sfn{Rscript01DataFormat.R}: gives a brief overview of \R functions
             and data formats that are essential for using \rs.
 	\item \sfn{Rscript02SienaVariableFormat.R}: shows how to prepare data
-            for a \SI analysis, including the creation of \RS objects;
+            for a \RS analysis, including the creation of \RS objects;
             and how to specify effects for \RS models.
 	\item \sfn{Rscript03SienaRunModel.R}:
            shows how to carry out the estimation and look at the results;
@@ -1136,7 +1136,7 @@ For technical problems running \rs, follow the following points.
   or \\
   \verb|packageDescription("RSiena")|. The version is
   near the top. It is also displayed at the
-  start of \SI output files.
+  start of \RS output files.
 \item[Check your version of \Rn] When there is a new version or revision of \RS
   it will only be available to you automatically if you are running the most
   recent major version of \Rn. (You can force an installation if
@@ -1160,7 +1160,7 @@ For technical problems running \rs, follow the following points.
 \section{Steps of modelling}
 \label{S_parts}
 
-The operation of the \SI program is comprised of five main parts:
+The operation of the \RS program is comprised of five main parts:
 \begin{enumerate}
  \item input of basic data description (see Section~\ref{S_InputData});
  \item model specification (see Section~\ref{S_modspec});
@@ -1197,7 +1197,7 @@ model specifications followed by estimation or simulation.
 \section{Input data}
 \label{S_InputData}
 
-\SI is a program for the statistical analysis
+\RS is a program for the statistical analysis
 of repeated measures of social networks, and requires, at the very
 least, network data collected at two or more time points. It is also possible
 to include other types of variables in the models -- these are discussed in
@@ -1214,14 +1214,14 @@ shows further options for users to define their data.
 As we discussed in Section~\ref{S_datvareff}, dependent variables in {\saom}s are defined from
 network or behavioral data. Independent variables (effects) are defined
 from individual or dyadic covariate data, which can be constant or varying.
-\SI requires each of these data types to have a specific format -- this is
+\RS requires each of these data types to have a specific format -- this is
 presented in the current section.
 
 In general, data specification in \RS consists of two steps.
 First, the role of each variable to be used must be defined using
 the functions \sfn{sienaDependent()}, \sfn{coCovar()}, \sfn{varCovar()},
 \sfn{coDyadCovar()}, \sfn{varDyadCovar()}, or \sfn{sienaCompositionChange()}.
-Second, the variables must be combined into one \RS data set by the function
+Second, the variables must be combined into one \sfn{siena} data set by the function
 \sfn{sienaDataCreate()}.
 This function puts together the data set and carries out some
 preliminary calculations.
@@ -1441,7 +1441,7 @@ or the simulated data from \sfn{siena07} (for \texttt{i != NULL}).
 
 \subsubsection{Behavioral data}
 
-\SI also allows dependent behavior variables. This can be used in studies
+\RS also allows dependent behavior variables. This can be used in studies
 of the co-evolution of networks and behavior, as described
 in \citet*{SnijdersEA07} and \citet*{SteglichEA10}.
 These behavior (or `action') variables represent
@@ -1660,7 +1660,7 @@ The two transformations are the following:
 Dyadic similarity is relevant for variables that can be treated as
 interval-level variables; dyadic identity is relevant for categorical variables.
 
-In addition, \SI offers the possibility of user-defined two- and three-variable
+In addition, \RS offers the possibility of user-defined two- and three-variable
 interactions between covariates; see Section~\ref{S_int_eff}.
 
 
@@ -1875,7 +1875,7 @@ This is treated in Section~\ref{S_constraints}.
 It is allowed that some of the values in the digraph are
 structurally determined, i.e., deterministic rather than random.
 This is analogous to the phenomenon of `structural zeros' in
-contingency tables, but in \SI not only structural zeros but also
+contingency tables, but in \RS not only structural zeros but also
 structural ones are allowed. A structural zero means that it is
 certain that there is no tie from actor $i$ to actor $j$; a
 structural one means that it is certain that there is a tie. This
@@ -1963,7 +1963,7 @@ represent that the rate of change and the out-degree effect are
 different between the components, while all other parameters are
 the same.
 
-It will be automatically discovered by \SI when monadic covariates
+It will be automatically discovered by \RS when monadic covariates
 depend only on these components defined by structural zeros,
 between which tie values are not allowed.
 For such variables, only the ego effects are defined
@@ -1973,7 +1973,7 @@ This is because the other effects then are meaningless.
 If at least one case is missing,
 then the other covariate effects are made available.
 
-When \SI simulates networks including some structurally determined values,
+When \RS simulates networks including some structurally determined values,
 if these values are constant across all observations then
 the simulated tie values are likewise constant.
 If the structural fixation varies over time, the situation
@@ -2013,7 +2013,7 @@ structural zeros; see Section~\ref{S_ML}.
 \subsubsection{Missing data}
 \label{S_missing}
 
-\SI allows that there are some missing data on network variables,
+\RS allows that there are some missing data on network variables,
 on covariates, and on dependent action
 variables.  Missing data must be indicated by
 the usual missing data code for \Rn, \texttt{NA}.
@@ -2120,7 +2120,7 @@ See
 for a further description.
 \medskip
 
-The default method in \SI for treating missing behavioral data in \SI was compared
+The default method in \RS for treating missing behavioral data in \RS was compared
 with several alternative methods in \citet{ZandbergHuisman2019}, and was found to
 perform quite well.
 
@@ -2136,7 +2136,7 @@ Methods for co-evolution studies are in preparation.
 \subsubsection{Composition change: joiners and leavers}
 \label{S_comp}
 
-\SI can also be used to analyze networks of which the composition
+\RS can also be used to analyze networks of which the composition
 changes over time, because actors join or leave the network
 between the observations.
 This can be done in two ways: using the method of \citet{HuismanSnijders03},
@@ -2473,9 +2473,9 @@ In Chapter~\ref{S_math} almost all effects are evaluation effects,
 and the effects that are elementary (and not evaluation) effects
 are mentioned as such.
 
-\subsubsection{Specification in \SI}
+\subsubsection{Specification in \RS}
 
-The model specification is defined in \SI by the so-called
+The model specification is defined in \RS by the so-called
 \emph{effects object}, which formally is an object of class
 \sfn{sienaEffects} or, for multiple groups as discussed in Chapter~\ref{S_mulev}
 of class \sfn{sienaGroupEffects}.
@@ -2506,7 +2506,7 @@ The \sfn{type} can be set in the functions \sfn{includeEffects},
 \sfn{setEffect}, and \sfn{includeInteraction}.
 
 A list of all effects available in the current version of
-\SI with their \sfn{shortName}s can be displayed in a browser
+\RS with their \sfn{shortName}s can be displayed in a browser
 by using the function:
 
 \verb|effectsDocumentation()| \\
@@ -2639,7 +2639,7 @@ More elaborate explanations are in
 
 The evaluation, creation, and endowment functions are constructed as a
 linear combination of the effects:
-\begin{equation}
+\begin{equation}  \label{obj.fu}
 f_i(x) \, = \, \sum_k \beta_k \, s_{ik}(x)
 \end{equation}
 where $\beta_k$ are parameters and $s_{ik}(x)$ are effects.
@@ -3501,7 +3501,7 @@ coefficients are zero (see Section~\ref{S_test}).
 
 Dynamics for non-directed networks is explained in \citet{SnijdersPickup16}.
 
-\SI detects automatically when the networks all are non-directed,
+\RS detects automatically when the networks all are non-directed,
 and then employs a model for this special case.
 For non-directed networks, the Model Type has five possible values,
 as described in \citet{SnijdersPickup16}.
@@ -3641,9 +3641,16 @@ This leads to a distinction between ad hoc interaction effects and standard
 interaction effects.
 Ad hoc interaction effects have to be defined specifically in each case,
 like \texttt{transRecTrip}; Section~\ref{S_f} contains many other examples.
-Standard interaction effects can be defined directly by their change statistics.
-The basis is provided by the initial definition, by \si, of `unspecified
-interaction effects'.
+Standard interaction effects can be defined directly.
+The change statistic of a standard interaction effect is the product of the
+change statistics of the interacting effects.
+This does not always make sense; whether it is permitted
+is defined by the `\texttt{interactionType}' of the effects.
+
+Interactions can be specified by the function \sfn{includeInteraction},
+explained in the following subsections.
+The basis of the implementation is provided by the definition, 
+by \si, of `unspecified interaction effects'.
 The interacting effects are given by
 the columns \texttt{effect1} and \texttt{effect2},
 and for three-way interaction effects, \texttt{effect3},
@@ -3655,9 +3662,6 @@ they are also required individually.
 (In most cases this is advisable.)
 The number of possible user-defined interaction effects is limited,
 and is set in the call of \sfn{getEffects()}.
-
-Interactions can be specified by the function \sfn{includeInteraction},
-explained in the following subsections.
 
 All effects have a so-called  \texttt{interactionType},
 defined by the column \texttt{interactionType} in the effects data frame.
@@ -3696,7 +3700,8 @@ be said to be interacting with the dependent variable (network or behavior).
 \subsubsection{Interaction effects for network dynamics}
 
 The following kinds of user-defined interactions are possible
-for network dynamics.
+for network dynamics of directed one-mode networks 
+as well as bipartite networks.
 \begin{description}
 \item[a.]
   Ego effects of actor variables can interact with all effects.
@@ -3751,6 +3756,12 @@ interaction effects that cannot be created in this way;
 for example, those with short names
 \texttt{transRecTrip}, \texttt{simRecipX},  \texttt{avSimEgoX},
 and \texttt{covNetNet} (there are many more).
+\medskip
+
+For non-directed (symmetric) networks, what makes sense as standard interaction
+effects depends on the \texttt{modelType} as well as on the
+ \texttt{interactionType} of the effects. These distinctions have not been fully 
+implemented.
 
 \subsubsection{Interaction effects for behavior dynamics}
 \label{S_beh_infl}
@@ -3868,7 +3879,7 @@ which may affect the efficiency of the algorithms and
 the accuracy of the results (for a given number of iterations).
 It is recommended to choose the default algorithm (3);
 and to choose as scale factor of the proposal distribution $0$---which
-would be a pointless scale factor, but which communicates to \SI
+would be a pointless scale factor, but which communicates to \RS
 that the user wishes to leave the determination of the scale factor to
 the defaults within the algorithm,
 which features an adaptive method for determining suitable scale factors.
@@ -4760,7 +4771,7 @@ this may have several reasons.
       This can be the case, e.g., when there is a large heterogeneity
       between the actors which is not well represented by effects
       of covariates.
-      The out-degrees and in-degrees are given in the begin of the \SI output
+      The out-degrees and in-degrees are given in the begin of the \RS output
       to be able to check whether there are outlying actors having very high
       in- or out-degrees, or a deviating dynamics in their degrees.
       Strong heterogeneity between the actors will have to be
@@ -5270,7 +5281,7 @@ and can be dropped for that reason.
 
 \subsection{Other estimation procedures}
 
-\SI can estimate models by four estimation methods:
+\RS can estimate models by four estimation methods:
 the (unconditional or conditional)
 Method of Moments \citep*[`MoM', the default; ][]{Snijders01, SnijdersEA07};
 the Generalized Method of Moments \citep*[`GMoM', see][]{ASS2015,ASS2019};
@@ -5701,7 +5712,7 @@ It is recommended to make a short run with the default algorithm (1),
 and then to make a longer run with algorithm (3);
 and to choose as scale factor of the proposal
 distribution $0$---which would be a pointless scale factor,
-but which communicates to \SI that the user wishes to
+but which communicates to \RS that the user wishes to
 leave the determination of the scale factor to the defaults provided in the algorithm,
 which features an adaptive method for determining suitable
 scale factors.
@@ -5719,7 +5730,7 @@ Schweinberger (see Section \ref{R_functions}).
 \subsection{Supplementing {\tt R} functions}
 \label{R_functions}
 
-To examine the MCMC output of \SI for Maximum Likelihood (ML) and Bayesian estimation,
+To examine the MCMC output of \RS for Maximum Likelihood (ML) and Bayesian estimation,
 the {\tt R} functions {\tt siena}\_{\tt mle} and {\tt siena}\_{\tt bayes} can be used,
 respectively,
 which were programmed by Michael Schweinberger.
@@ -5779,7 +5790,7 @@ Examples are provided by \verb@siena_mle("alcohol", 1, 3, 50)@ and\\
 \subsubsection{Conditional and unconditional estimation}
 \label{S_cond}
 
-\SI has two methods for MoM estimation and simulation:
+\RS has two methods for MoM estimation and simulation:
 \hypertarget{T_S_cond}{conditional and unconditional}. They differ
 in the {\em stopping rule} for the simulations of the network
 evolution. In unconditional estimation, the simulations of the
@@ -6062,6 +6073,28 @@ parameter or combination of parameters).
 The remedy here usually is to drop some of the effects.
 \medskip
 
+When \sfn{siena07} finds near-perfect collinearity at the end of the
+estimation algorithm, it will give a warning message of the following kind.
+
+\begin{verbatim}
+*** Standard errors not reliable ***
+The following is approximately a linear combination
+for which the data carries no information:
+0.5 * beta[8] + -0.41 * beta[9] + 1 * beta[14]
+It is advisable to drop one or more of these effects.
+\end{verbatim}
+
+\noindent
+This is based on automatic detection of linear dependencies
+between the terms in the objective function (or linear predictor)
+(\ref{obj.fu}). The coefficients are rounded.
+This warning message signals that, very probably,
+the combination of the effects mentioned causes the multicollinearity.
+This multicollinearity is signaled for the parameter values as
+obtained at the end of the algorithm.
+\bigskip
+
+
 In cases with strong but not complete multicollinearity,
 i.e., correlations between some parameter estimates
 (or some of their linear combinations) being close but not equal to --1 or +1,
@@ -6113,7 +6146,7 @@ are not very reliable if they are of the order of 0.02 or less.
 \section{Tests}
 \label{S_test}
 
-Estimated parameters in \SI can be of three kinds:
+Estimated parameters in \RS can be of three kinds:
 basic rate parameters, indicated by the letter $\rho$ (rho), and specific for a
 dependent variable -- period combination; other parameters for the rate function
 (which may be absent from the model), indicated by the letter $\alpha$ (alpha);
@@ -6650,7 +6683,7 @@ suggesting that this parameter is positive, which agrees with the one-sided test
 
 \subsubsection{Multi-parameter tests}
 
-In the case where $K > 1$ model parameters are restricted, \SI
+In the case where $K > 1$ model parameters are restricted, \RS
 reports for the score test, in the \sfn{summary} and in the output file,
 the test statistic with $K$ degrees of freedom. A low
 $p$-value of the joint test would indicate that the
@@ -6659,7 +6692,7 @@ test with $K$ degrees of freedom gives no clue as to what parameters
 should be included into the model: the poor goodness-of-fit could be
 due to only one of the $K$ restricted parameters, it could be due to
 two of the $K$ restricted parameters, or due to all of them. Hence
-\SI carries out, in addition to the joint test with $K$ degrees of
+\RS carries out, in addition to the joint test with $K$ degrees of
 freedom, additional tests with one degree of freedom that test the
 single parameters one-by-one. The goodness-of-fit table is as
 follows:
@@ -7352,7 +7385,7 @@ This totally depends on the data set at hand.
 \section{Multilevel network analysis}
 \label{S_mulev}
 
-For combining \SI results of several independent networks,
+For combining \RS results of several independent networks,
 there are four options.
 (`Independent'  networks here means that the sets of actors are
 disjoint, and it may be assumed that there are no direct influences
@@ -7421,7 +7454,7 @@ differences depending on the basic rate (and perhaps other) parameters
 that are
 allowed to differ between the different networks, and of course
 also depending on the randomness of the estimation algorithm.
-The second option is more `natural' given the design of \SI and
+The second option is more `natural' given the design of \RS and
 will normally run faster than the first.
 Therefore the second option seems preferable to the first.
 
@@ -7538,8 +7571,8 @@ to changing covariates, because the groups now are regarded
 as multiple observations.
 
 This is done by the function \textsf{sienaGroupCreate} which creates
-a so-called \texttt{sienaGroupEffects} object, which is a list of
-\texttt{sienaEffect} objects with some additional information.
+a so-called \texttt{sienaGroup} object, which is a list of
+\texttt{siena} objects with some additional information.
 
 As an example, suppose that three Siena data sets with names {\tt sub1}, {\tt sub2},
 and {\tt sub3} are combined. Suppose {\tt sub1} has 21 actors and
@@ -7644,7 +7677,7 @@ option \texttt{method = "REML"}.
 
 Still another possibility is offered by the package \sfn{mvmeta}
 \citep{Gasparrini2012}.
-This was used in conjunction with \SI by
+This was used in conjunction with \RS by
 \citet{An2015}, who showed how to use this for incorporating
 group-level explanatory variables, using a fixed effects
 as well as a random effects approach, the latter with
@@ -8901,7 +8934,7 @@ and for maintaining existing ties.
 \arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
 \arrow <2mm> [.2,.6]  from 3.8 1 to 2.2 1
 %\arrow <2mm> [.2,.6]  from 2.9 2.559 to 2.1 1.1732
-\arrow <2mm> [.2,.6]  from 2.1 1.1732 to 2.9 2.559 
+\arrow <2mm> [.2,.6]  from 2.1 1.1732 to 2.9 2.559
 \arrow <2mm> [.2,.6]  from 3.1 2.559 to 3.9 1.1732
 \endpicture
 \end{center}
@@ -9018,7 +9051,7 @@ the {\em number of four-cycles} with shortName \texttt{(cycle4)} \\
  \mid x_{ih}(t_m) - x_{jh}(t_m) \mid \,.\]
  This may also be regarded as \emph{structural equivalence
  with respect to outgoing ties}.
- (In \SI versions before 3.324, this was divided by $n-2$, which for larger
+ (In \RS versions before 3.324, this was divided by $n-2$, which for larger
  networks tended to lead to quite large estimates and standard errors.
  Therefore in version 3.324, the division by $n-2$
  -- which had not always been there -- was dropped.)
@@ -9288,7 +9321,7 @@ and
  the in-degrees of the others to whom $i$ is tied,\\
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, x_{+j} =
  \sum_j x_{ij} \sum_h x_{hj} = \sum_j x_{ij} (\sum_{h \neq i} x_{hj} + 1)$;\\
- in \SI 3 until version 3.313, this effect was multiplied by a factor $1/n$;\\
+ in \RS 3 until version 3.313, this effect was multiplied by a factor $1/n$;\\
  in \RS this effect has had a bug until version 1.1-219;\\
  in \RS the target statistic for this effect was multiplied by a factor $n$ until version 1.1-241;
 
@@ -9352,6 +9385,17 @@ and
  $s^{\rm net}_{i\vit}(x) = x_{i+}\, x_{+i}$;\\
  endowment effect only likelihood-based;
 
+ \item {\em in-degree related activity ego effect} \texttt{(inAct\_ego)},
+ 	 defined as the elementary effect version of the  half-centered  cross-product
+ of the actor's in- and out-degrees,\\
+ $ f^{\rm net,\, el}_{i\vit}(x) = \big(  x_{+i} - \bar x_{+.}\big)$\ ,\\
+ where\\
+ $ \bar x_{+.} \,=\,  \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij} \ $ ;
+ for internal effect parameter $p=2$, it is defined by\\
+ $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{   x_{+i} - \bar x_{+.}} $ \ ; \\
+ since this is an elementary effect, it can be used in interactions
+ and in endowment and creation functions;
+
  \item {\em in-degree related activity effect (centered)} \texttt{(inAct.c)},
  defined by the sum of
  the cross-product of the actor's out- and centered in-degrees,\\
@@ -9365,13 +9409,24 @@ and
 \item \emph{in-isolate Outdegree effect}, (\texttt{inIsDegree}), the
       (additional) out-degree (or activity)
       effect for actors with in-degree zero, defined as the out-degree
-      but only if the actor has in-degree zero,
+      but only if the actor has in-degree zero,\\
  $s^{\rm net}_{i\vit}(x, z) =   I\{x_{+i} = 0 \}\, \sum_j x_{ij}   $ ;\\
 
  \item {\em out-degree related activity effect} \texttt{(outAct)},
- 	 defined as the squared out-degree of the actor,
+ 	 defined as the squared out-degree of the actor,\\
  $s^{\rm net}_{i\vit}(x) = x^2_{i+}$;\\
  endowment effect only likelihood-based;
+
+ \item {\em out-degree related activity ego effect} \texttt{(outAct\_ego)},
+ 	 defined as the elementary effect version of the half-centered
+ squared out-degree of the actor,\\
+ $ f^{\rm net,\, el}_{i\vit}(x)  =  \big(  x_{i+} - \bar x_{.+}\big)$ ,\\
+ where\\
+ $ \bar x_{.+} \,=\,  \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij} \ ;  $ \\
+ for internal effect parameter $p=2$, it is defined by\\
+ $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{  x_{i+} - \bar x_{.+}} $ \ ; \\
+ since this is an elementary effect, it can be used in interactions
+ and in endowment and creation functions;
 
  \item {\em out-degree related activity effect (centered)} \texttt{(outAct.c)},
  defined by the out-degree times the centered out-degree of the actor,\\
@@ -9388,7 +9443,18 @@ and
  $s^{\rm net}_{i\vit}(x) =   x_{i+}\, x^{(r)}_{i} $; \\
  where the reciprocal degree is defined as above;\\
  for internal effect parameter $p=2$, it is defined by\\
- $s^{\rm net}_{i\vit}(x) =   x_{i+}\, \sqrt{x^{(r)}_{i}} $; \\
+ $s^{\rm net}_{i\vit}(x) =   x_{i+}\, \sqrt{x^{(r)}_{i}} $ \ ; \\
+
+ \item {\em reciprocal degree related activity ego effect} \texttt{(reciAct\_ego)},
+ 	 defined as the elementary effect version of the
+ degree of $i$ multiplied by $i$'s centered reciprocal degree,\\
+ $ f^{\rm net,\, el}_{i\vit}(x)  =  \big( x^{(r)}_{i} - \bar x^{(r)} \big) $, \\
+ where \\
+ $ \bar x^{(r)}  \,=\, \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij}\,x_{ji} \ ;  $ \\
+ for internal effect parameter $p=2$, it is defined by\\
+ $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{ x^{(r)}_{i} - \bar x^{(r)}} $ \ ; \\
+ since this is an elementary effect, it can be used in interactions
+ and in endowment and creation functions;
 
  \item {\em out-degree up to $p$} (\emph{truncated out-degree}),
  where $p$ is some constant
@@ -10650,7 +10716,7 @@ the generality already now.
 \iffalse
  \item {\em user-defined interaction effects}
  as described in Section~\ref{S_int_eff}. The internal effect parameter
- is decomposed by \SI into its two or three constituents, see
+ is decomposed by \RS into its two or three constituents, see
  in the mentioned section. The interaction is defined on a tie basis:
  if two interacting effects are defined by
  $s^{\rm net}_{ia}(x) = \sum_j s^a_{ij}(x)$ and
@@ -10759,16 +10825,16 @@ These conditions are hopefully clear from logical considerations,
 and drawing a little diagram of the involved nodes and arrows
 will be helpful in cases of doubt.
 
-In the \SI output for groups with multiple networks,
+In the \RS output for groups with multiple networks,
 the dependent network in each given effect is indicated by
 the first part of the effect name.
 In the list below, a more or less normally formulated name is given first,
-then the name used in \SI between parentheses,
+then the name used in \RS between parentheses,
 using $X$ as the name for the dependent network and $W$
 as the name for the explanatory network,
 then between parentheses in \texttt{typewriter font} the \texttt{shortName}
 as used by \rs.
-Since this is a co-evolution model, \SI will include also the effects
+Since this is a co-evolution model, \RS will include also the effects
 where the roles of $X$ and $W$ are reversed.
 
 The first three effects are dyadic. The first can be regarded
@@ -11215,6 +11281,7 @@ Further there are a number of mixed triadic effects.
 \put{{\small $X$}} at 3.9 1.9
 \put{{\small $X$}} at 3   0.6
 \arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
+\arrow <2mm> [.2,.6]  from 2.1 1.1732 to 2.9 2.559
 \arrow <2mm> [.2,.6]  from 2.9 2.559 to 2.1 1.1732
 \arrow <2mm> [.2,.6]  from 3.1 2.559 to 3.9 1.1732
 \endpicture
@@ -12781,7 +12848,7 @@ period.
 Function $\xi$ (\emph{xi}) is called the distributional tendency
 function and is represented according to \citet[formula (17)]{Snijders03} by
 \[ \xi(s) \,=\, \exp\left(\alpha_1 \,-\, \alpha_2 \log(s+1) - \frac{\alpha_3}{s+1}\right)  \ . \]
-where the names given in \SI are
+where the names given in \RS are
 \begin{itemize}
  \item $\alpha_1$ : out-degrees effect;
  \item $\alpha_2$ : logarithmic out-degree effect;
@@ -16563,7 +16630,7 @@ Changes in RSiena:
 \begin{itemize}
 \item Correction:
     \begin{itemize}
-    \item Correction: \sfn{siena08}: correct $p$-value \texttt{pTsq} for overall 
+    \item Correction: \sfn{siena08}: correct $p$-value \texttt{pTsq} for overall
         test statistic \texttt{Tsq}.
     \end{itemize}
 \item Improvements of functionality:
@@ -16642,8 +16709,6 @@ Changes in RSiena:
 \end{itemize}
 
 
-
-
 \item 2022-04-28 GitHub, package version 1.3.10
 
 Changes in RSiena:
@@ -16685,8 +16750,8 @@ Changes in RSiena:
 \begin{itemize}
 \item  Effects:
 \begin{itemize}
-  \item New effect  \texttt{avDeg}.
-  \item Changed internal effect parameter for \texttt{simAllNear} to 2 and for
+  \item New effect \texttt{avDeg}.
+  \item Changed default internal effect parameter for \texttt{simAllNear} to 2 and for
     \texttt{simAllFar} to 4.
 \end{itemize}
 \item Improvements of functionality:

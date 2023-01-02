@@ -229,7 +229,7 @@ We recommend the following heuristic approach to model checking:
 
 \references{
 \itemize{
-\item See \url{http://www.stats.ox.ac.uk/~snijders/siena/}
+\item See \url{https://www.stats.ox.ac.uk/~snijders/siena/}
   for general information on RSiena.
 \item Lospinoso, J.A. and Snijders, T.A.B. (2019).
   Goodness of fit for stochastic actor-orientedmodels.

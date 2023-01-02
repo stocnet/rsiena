@@ -60,7 +60,7 @@ updateSpecification(effects.to, effects.from, name.to=NULL, name.from=NULL)
   In most cases, using \code{\link{siena07}} with \code{prevAns} will be more
   efficient.
 }
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley, Tom A.B. Snijders}
 
 \seealso{\code{\link{siena07}}, \code{\link{getEffects}}

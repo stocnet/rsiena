@@ -112,7 +112,7 @@ terminateFRAN(z, x)
   \code{initializeFRAN} and \code{terminateFRAN} return the control
     object \code{z}.
 }
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley }
 \seealso{\code{\link{siena07}} }
 \examples{
