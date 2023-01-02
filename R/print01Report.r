@@ -1,7 +1,7 @@
 #/******************************************************************************
 # * SIENA: Simulation Investigation for Empirical Network Analysis
 # *
-# * Web: http://www.stats.ox.ac.uk/~snijders/siena
+# * Web: https://www.stats.ox.ac.uk/~snijders/siena
 # *
 # * File: print01Report.r
 # *
@@ -1001,7 +1001,7 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 						attr(x$depvars[[match(netnames[i], names(x$depvars))]],
 							"uponly")
 					}))
-				periods <- periodNos[(1:length(periodsUp))[periodsUp]]
+				periods <- periodNos[(seq_along(periodsUp))[periodsUp]]
 				Report(paste(periods, " => ", periods + 1, ";",
 							 sep=""), fill=80, outf)
 				Report("This will be respected in the simulations.\n\n", outf)

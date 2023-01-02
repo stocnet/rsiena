@@ -131,7 +131,7 @@ containing the input objects, with attributes:
     networks, NA for behavior variables}
 }
 \references{See the Section on Multi-group Siena analysis in the manual
-   available from \url{http://www.stats.ox.ac.uk/~snijders/siena/ }.}
+   available from \url{https://www.stats.ox.ac.uk/~snijders/siena/ }.}
 \author{ Ruth Ripley, Modification by Tom Snijders }
 \seealso{\code{\link{sienaDataCreate}}, \code{\link{sienaDataConstraint}} }
 \examples{

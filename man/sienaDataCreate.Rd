@@ -42,7 +42,7 @@ model fit. The components of the object are.
 \item{compositionChange}{List of composition change objects
   corresponding to the node sets}
 }
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley}
 \seealso{
 \code{\link{sienaDependent}}, \code{\link{coCovar}}, \code{\link{varCovar}},

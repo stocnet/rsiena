@@ -80,7 +80,7 @@ meta.table(x, d=3, option=2,
   evolution". \emph{Journal of Mathematical Sociology}, 27: 123--151, 2003.
 
   See also the Siena manual and
-  \url{http://www.stats.ox.ac.uk/~snijders/siena/}
+  \url{https://www.stats.ox.ac.uk/~snijders/siena/}
 }
 \author{Ruth Ripley, Tom Snijders
 }

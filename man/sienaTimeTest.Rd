@@ -92,7 +92,7 @@ sienaTimeTest(sienaFit, effects=NULL, excludedEffects=NULL, condition=FALSE)
     estimates, and \eqn{p}-values for the individual interactions.}
 }
 
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}
   for general information on RSiena.
 
 J.A. Lospinoso, M. Schweinberger, T.A.B. Snijders, and R.M. Ripley

@@ -70,7 +70,7 @@ nodeSet="Actors", sparse=is.list(netarray), allowOnly=TRUE, imputationValues=NUL
   \item{nodeSet}{Character string with name(s) of node set(s)}
   \item{allowOnly}{The value of the \code{allowOnly} parameter}
 }
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/} .}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/} .}
 \author{Ruth Ripley and Tom A.B. Snijders}
 \seealso{\code{\link{sienaDataCreate}}, \code{\link{sienaNodeSet}},
    \code{\link{sienaDataConstraint}}}

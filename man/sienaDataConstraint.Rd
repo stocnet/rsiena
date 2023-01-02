@@ -26,7 +26,7 @@ sienaDataConstraint(x, net1, net2,
 \value{
   Updated Siena data object.
 }
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley}
 \seealso{\code{\link{sienaDataCreate}}, \code{\link{sienaGroupCreate}}}
 

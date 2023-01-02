@@ -42,5 +42,5 @@ This data frame is used internally to construct effect objects.
 }
 \details{
 Used to define effects. Not for general user use.}
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \keyword{datasets}

@@ -177,7 +177,7 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
 \item Batagelj, V., and Mrvar, A. (2001).
   A subquadratic triad census algorithm for large sparse networks with small
   maximum degree. \emph{Social Networks}, 23, 237-243.
-\item See \url{http://www.stats.ox.ac.uk/~snijders/siena/}
+\item See \url{https://www.stats.ox.ac.uk/~snijders/siena/}
   for general information on RSiena.
 \item Holland, P.W., and Leinhardt, S. (1976).
   Local structure in social networks. \emph{Sociological Methodology}, 6, 1-45.

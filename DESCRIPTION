@@ -2,8 +2,8 @@ Encoding: UTF-8
 Package: RSiena
 Type: Package
 Title: Siena - Simulation Investigation for Empirical Network Analysis
-Version: 1.3.15
-Date: 2022-11-27
+Version: 1.3.16
+Date: 2023-01-02
 Authors@R: c(person("Tom A.B.", "Snijders", role = c("cre", "aut"), email = "tom.snijders@nuffield.ox.ac.uk", comment = c(ORCID = "0000-0003-3157-4157")),
               person("Ruth", "Ripley", role = "aut"),
               person("Krists", "Boitmanis", role = c( "aut","ctb")),
@@ -36,19 +36,18 @@ Description: The main purpose of this package is to perform simulation-based
    multivariate networks, which can be directed, non-directed, or two-mode;
    and associated actor variables.
    There are also functions for testing parameters and checking goodness of fit.
-   An overview of these models is given in Tom A.B. Snijders (2017), Stochastic
-   Actor-Oriented Models for Network Dynamics, Annual Review of Statistics and
-   Its Application, 4, 343-363 <doi: 10.1146/annurev-statistics-060116-054035>.
+   An overview of these models is given in Tom A.B. Snijders (2017), "Stochastic
+   Actor-Oriented Models for Network Dynamics", Annual Review of Statistics and
+   Its Application, 4, 343-363 <doi:10.1146/annurev-statistics-060116-054035>.
    An extensive manual, scripts, and much further information is at the Siena
-   website <http://www.stats.ox.ac.uk/~snijders/siena/>.
+   website <https://www.stats.ox.ac.uk/~snijders/siena/>.
 License: GPL-2 | GPL-3 | file LICENSE
 LazyData: yes
 Biarch: yes
 NeedsCompilation: yes
 BuildResaveData: no
-URL: http://www.stats.ox.ac.uk/~snijders/siena/
+URL: <https://www.stats.ox.ac.uk/~snijders/siena/>
 Config/testthat/edition: 3
-Packaged: 2022-10-09 09:46:09 UTC; ripley
 Author: Tom A.B. Snijders [cre, aut] (<https://orcid.org/0000-0003-3157-4157>),
   Ruth Ripley [aut],
   Krists Boitmanis [aut, ctb],
@@ -71,4 +70,3 @@ Author: Tom A.B. Snijders [cre, aut] (<https://orcid.org/0000-0003-3157-4157>),
   Alvaro Uzaheta [ctb],
   Steffen Triebel [ctb]
 Repository: CRAN
-Date/Publication: 2022-10-07 23:20:02 UTC

@@ -182,7 +182,7 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
   Robbins-Monro algorithm. Those not
   available as arguments can be changed manually where desired.\cr
   Further information about the implementation of the algorithm is in \cr
-  http://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf.\cr
+  https://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf.\cr
   Some of the examples use \code{projname=NULL}; this is just for the sake of
   checking the examples, not necessarily intended for normal use.
 }
@@ -194,7 +194,7 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
    Stochastic Actor-Oriented Models for Network Dynamics.
    In: Jennifer N. Victor, Mark Lubell and Alexander H. Montgomery,
    Oxford Handbook of Political Networks. Oxford University Press, 2016.
-\item Also see \url{http://www.stats.ox.ac.uk/~snijders/siena/}
+\item Also see \url{https://www.stats.ox.ac.uk/~snijders/siena/}
 }}
 \author{Ruth Ripley and Tom A.B. Snijders}
 \seealso{\code{\link{siena07}}, \code{\link{simstats0c}}.}

@@ -1,7 +1,7 @@
 ## /***************************************************************************
 ##  * SIENA: Simulation Investigation for Empirical Network Analysis
 ##  *
-##  * Web: http://www.stats.ox.ac.uk/~snijders/siena
+##  * Web: https://www.stats.ox.ac.uk/~snijders/siena
 ##  *
 ##  * File: sienatable.r
 ##  *
@@ -606,7 +606,7 @@ siena.table <- function(x, type='tex',
 		}
 
 		mainTable <- rbind(mydf2(nrate),mydf(m),mydf2(nn-nrate))
-		mid <- nrate+c(1:2)
+		mid <- nrate+(1:2)
 
 		if (m == 2)
 		{
@@ -618,14 +618,14 @@ siena.table <- function(x, type='tex',
 		mainTable$se1[-mid] <- sapply(ses[rows],mystr,max.ses.width)[1,]
 		mainTable$se2[-mid] <- sapply(ses[rows],mystr)[2,]
 
-		basicRates <- c(1:nwaves)
+		basicRates <- (1:nwaves)
 		if (!x$gmm)
 		{
-		  fixed.2 <- c(1:nn)[x$fixed[rows]]
+		  fixed.2 <- (1:nn)[x$fixed[rows]]
 		}
 		else
 		{
-		  fixed.2 <- c(1:nn)[fixednogmm[rows]]
+		  fixed.2 <- (1:nn)[fixednogmm[rows]]
 		}
 
 		if (condvarno == sections)
@@ -728,7 +728,7 @@ siena.table <- function(x, type='tex',
 		for (i in 1:nNetworks)
 		{
 			sections <- sections+1
-			thisNetTable <- mainLatex(c(1:p)[effects$name == netNames[i]],sections)
+			thisNetTable <- mainLatex((1:p)[effects$name == netNames[i]],sections)
 			table <- rbind(table,thisNetTable)
 		}
 	}
@@ -746,7 +746,7 @@ siena.table <- function(x, type='tex',
 		for (i in 1:nBehavs)
 		{
 			sections <- sections+1
-			thisBehTable <- mainLatex(c(1:p)[effects$name == behNames[i]],sections)
+			thisBehTable <- mainLatex((1:p)[effects$name == behNames[i]],sections)
 			table <- rbind(table,thisBehTable)
 		}
 	}

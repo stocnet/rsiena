@@ -1,7 +1,7 @@
 ##*****************************************************************************
 ## * SIENA: Simulation Investigation for Empirical Network Analysis
 ## *
-## * Web: http://www.stats.ox.ac.uk/~snijders/siena
+## * Web: https://www.stats.ox.ac.uk/~snijders/siena
 ## *
 ## * File: sienaTimeTest.r
 ## *
@@ -793,7 +793,7 @@ plot.sienaTimeTest <- function(x, pairwise=FALSE, effects,
 			xyplot(valsplus ~ period1 | effectName, data=toTest,
 				type = "p", as.table=TRUE, bty="n",
 				xlab="Wave", ylab="Parameter Value", auto.key=TRUE,
-				scales=list(relation='free', x=list(at=c(0:(nWaves+1)),
+				scales=list(relation='free', x=list(at=0:(nWaves+1),
 						labels=c(" ", waveNumbers, " "))), subscripts=TRUE,
 				par.strip.text=list(lines=2.2), #layout=layout,
 				xlim=c(0, nWaves + 1), prepanel=function(x, y, ...)

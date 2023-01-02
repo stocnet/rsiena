@@ -33,7 +33,7 @@ class TwoNetworkCache;
 // ----------------------------------------------------------------------------
 
 /**
- * The base class for all network effects.
+ * The base class for all network effects depending on another network.
  */
 class MixedNetworkEffect : public NetworkEffect
 {

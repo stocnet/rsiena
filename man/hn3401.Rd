@@ -22,7 +22,7 @@ and were collected under the direction of Chris Baerveldt.
  those with name HN... are the second wave.
 }
 \source{
-\url{http://www.stats.ox.ac.uk/~snijders/siena/CB_data.zip}
+\url{https://www.stats.ox.ac.uk/~snijders/siena/CB_data.zip}
 }
 \references{
 Houtzager, B. & Baerveldt, C. (1999). Just like Normal.
@@ -35,7 +35,7 @@ A Multilevel Network Study of the Effects of Delinquent Behavior
 on Friendship Evolution.
 \emph{Journal of Mathematical Sociology} 27, 123-151.
 
-See \url{http://www.stats.ox.ac.uk/~snijders/siena/BaerveldtData.html}
+See \url{https://www.stats.ox.ac.uk/~snijders/siena/BaerveldtData.html}
 }
 \examples{
 mynet <- sienaDependent(array(c(N3401, HN3401), dim=c(45, 45, 2)))

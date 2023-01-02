@@ -1,7 +1,7 @@
 ##/*****************************************************************************
 ## * SIENA: Simulation Investigation for Empirical Network Analysis
 ## *
-## * Web: http://www.stats.ox.ac.uk/~snijders/siena
+## * Web: https://www.stats.ox.ac.uk/~snijders/siena
 ## *
 ## * File: sienaprint.r
 ## *
@@ -30,7 +30,7 @@ print.siena <- function(x, ...)
 			uponlys <- t(uponlys)
 		}
 		# now rows are periods; columns are dependent variables
-		for (j in 1:dim(uponlys)[2])
+		for (j in seq_len(dim(uponlys)[2]))
 		{
 			if (any(uponlys[,j]))
 			{

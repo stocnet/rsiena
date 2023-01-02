@@ -72,7 +72,7 @@ testSame.RSiena(ans, e1, e2)
               of the tested effects.}
 }
 }
-\references{See the manual and \url{http://www.stats.ox.ac.uk/~snijders/siena/}}
+\references{See the manual and \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Tom Snijders}
 \seealso{ \code{\link{siena07}}, \code{\link{print.sienaTest}} }
 

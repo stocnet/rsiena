@@ -32,7 +32,7 @@ class Cache;
 // ----------------------------------------------------------------------------
 
 /**
- * The base class for all network effects.
+ * The base class for all network effects depending on the primary setting.
  */
 class NetworkWithPrimaryEffect : public NetworkEffect
 {

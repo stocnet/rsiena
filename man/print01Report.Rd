@@ -24,7 +24,7 @@ print01Report(data, modelname = "Siena", getDocumentation=FALSE)
 \value{
   No value returned.
 }
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley }
 
 \examples{

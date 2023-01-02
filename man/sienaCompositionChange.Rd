@@ -87,8 +87,8 @@ sienaCompositionChangeFromFile(filename, nodeSet = "Actors",
    \item Huisman, M. E. and Snijders, T. A. B. (2003).
    Statistical analysis of longitudinal network data with changing composition.
    \emph{Sociological Methods & Research}, 32, 253-287.
-   \item The manual: \url{http://www.stats.ox.ac.uk/~snijders/siena/RSiena_Manual.pdf}
-   \item Further see \url{http://www.stats.ox.ac.uk/~snijders/siena/}
+   \item The manual: \url{https://www.stats.ox.ac.uk/~snijders/siena/RSiena_Manual.pdf}
+   \item Further see \url{https://www.stats.ox.ac.uk/~snijders/siena/}
    }}
 \author{Ruth Ripley }
 \seealso{

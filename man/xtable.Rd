@@ -20,7 +20,7 @@ xtable(x, ...)
   Value returned from \code{\link{xtable.sienaFit}}
 }
 \references{
-\url{http://www.stats.ox.ac.uk/~snijders/siena/}}
+\url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley}
 \seealso{\code{\link{xtable.sienaFit}}}
 
