@@ -149,7 +149,7 @@ printInitialDescription <- function(data, effects, modelName="Siena",
 					tmp <- getNetworkStartingVals(depvar)
 				}
 				atts <- attributes(depvar)
-				matchange <- tmp$tmp[-c(1:2), , drop=FALSE]
+				matchange <- tmp$tmp[-(1:2), , drop=FALSE]
 				## if symmetric: divide by 2
 				if (gpatts$symmetric[net])
 				{

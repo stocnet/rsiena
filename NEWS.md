@@ -2,7 +2,7 @@
 
 ## 
    
-2022-12-14
+2023-01-02
 
 ## Changes in RSiena:  
 
@@ -14,6 +14,7 @@
     (these had got lost in some way...).
 ### Updates:
   * All occurrences of `http` in `R` and `Rd` files changed to `https`.
+  * `seq_len` used and superfluous c() omitted in various R files.
 
 # RSiena 1.3.15
 

@@ -40,7 +40,7 @@ effectsDocumentation <- function(effects= NULL, type="html",
 	}
 	else
 	{
-		x$row <- 1:dim(x)[1]
+		x$row <- seq_len(dim(x)[1])
 	}
 	x <- x[, c(9, 1:8)]
 

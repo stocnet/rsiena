@@ -30,7 +30,7 @@ print.siena <- function(x, ...)
 			uponlys <- t(uponlys)
 		}
 		# now rows are periods; columns are dependent variables
-		for (j in 1:dim(uponlys)[2])
+		for (j in seq_len(dim(uponlys)[2]))
 		{
 			if (any(uponlys[,j]))
 			{
