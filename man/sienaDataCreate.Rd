@@ -12,7 +12,9 @@ sienaDataCreate(..., nodeSets=NULL, getDocumentation=FALSE)
 \arguments{
   \item{\dots}{objects of class \code{\link{sienaDependent}},
     \code{\link{coCovar}}, \code{\link{varCovar}}, \code{\link{coDyadCovar}},
-  \code{\link{varDyadCovar}}, and/or \code{\link{sienaCompositionChange}}.
+  \code{\link{varDyadCovar}}, and/or \code{\link{sienaCompositionChange}};
+  or a list of such objects, of which the first element should not be
+  a \code{\link{sienaCompositionChange}} object.
   There should be at least one \code{\link{sienaDependent}} object.}
   \item{nodeSets}{list of Siena node sets. Default is the single node
     set named "Actors", length equal to the number of rows in the first
@@ -55,6 +57,8 @@ model fit. The components of the object are.
 mynet <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
 mybeh <- sienaDependent(s50a, type="behavior")
 mydata <- sienaDataCreate(mynet, mybeh)
+# This gives the same result as
+mydata <- sienaDataCreate(list(mynet, mybeh))
 ## And for a two-mode network
 mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)), nodeSet="senders")
 senders <- sienaNodeSet(50, nodeSetName="senders")

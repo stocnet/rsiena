@@ -17,7 +17,8 @@ sienaGOF <- function(
 		sienaFitObject,	auxiliaryFunction,
 		period=NULL, verbose=FALSE, join=TRUE, twoTailed=FALSE,
 		cluster=NULL, robust=FALSE,
-		groupName="Data1", varName, tested=NULL, ...)
+		groupName="Data1", varName, tested=NULL,
+		giveNAWarning=TRUE, ...)
 	{
 	## require(MASS)
 	## require(Matrix)
@@ -88,7 +89,7 @@ sienaGOF <- function(
 		period <- 1:(attr(sienaFitObject$f[[1]]$depvars[[1]], "netdims")[3] - 1)
 	}
 
-	 obsStatsByPeriod <- lapply(period, function (j) {
+	obsStatsByPeriod <- lapply(period, function (j) {
 						matrix(
 						auxiliaryFunction(NULL,
 								sienaFitObject$f,
@@ -170,6 +171,18 @@ sienaGOF <- function(
 	  )
 	}
 
+	## Give a warning in case of missings.
+	nmissings <- vapply(simStatsByPeriod,
+		function(sp){apply(sp, 2, function(x){sum(is.na(x))})},
+					FUN.VALUE=rep(0,dim(simStatsByPeriod[[1]])[2]))
+	rownames(nmissings) <- plotKey
+	if ((sum(nmissings) > 0) & giveNAWarning)
+	{
+		cat("Number of missing values in the simulated functions:\n")
+		print(t(nmissings))
+		warning("Some simulated values are missing.")
+	}
+
 	## Aggregate by period if necessary to produce simStats
 	if (join)
 	{
@@ -213,11 +226,12 @@ sienaGOF <- function(
 		}
 		else
 		{
-			a <- cov(simulated)
+			a <- cov(simulated, use="pairwise.complete.obs")
+			a[is.na(a)] <- 0
 		}
 		ainv <- ginv(a)
 		arank <- rankMatrix(a)
-		expectation <- colMeans(simulated);
+		expectation <- colMeans(simulated)
 		centeredSimulations <- scale(simulated, scale=FALSE)
 		if (variates==1)
 		{
@@ -285,8 +299,10 @@ sienaGOF <- function(
 	}
 	else
 	{
-		covInvByPeriod <- lapply(period, function(i) ginv(
-							cov(simStatsByPeriod[[i]]) ))
+		covInvByPeriod <- lapply(period, function(i){
+				b <- cov(simStatsByPeriod[[i]], use="pairwise.complete.obs")
+				b[is.na(b)] <- 0
+				ginv(b)})
 	}
 
 	obsMhd <- sapply(period, function (i) {
@@ -327,7 +343,7 @@ sienaGOF <- function(
 					t(sienaFitObject$targets2[effectsToInclude, , drop=FALSE])
 			G <- sienaFitObject$sf2[, , effectsToInclude, drop=FALSE] -
 					rep(obsSuffStats, each=nSims)
-			sigma <- cov(apply(G, c(1, 3), sum))
+			sigma <- cov(apply(G, c(1, 3), sum), use="pairwise.complete.obs")
 			SF <- sienaFitObject$ssc[ , , effectsToInclude, drop=FALSE]
 			dimnames(SF)[[3]] <- effectsObject$effectName[effectsToInclude]
 			dimnames(G) <- dimnames(SF)
@@ -440,6 +456,7 @@ sienaGOF <- function(
 	attr(res, "simTime") <- attr(simStats,"time")
 	attr(res, "twoTailed") <- twoTailed
 	attr(res, "joined") <- join
+	attr(res, "nmissings") <- nmissings
 	res
 }
 
@@ -509,6 +526,11 @@ print.sienaGOF <- function (x, ...) {
 summary.sienaGOF <- function(object, ...) {
 	x <- object
 	print(x)
+	if (sum(attr(x, "nmissings"))> 0){
+		cat("\nThere were missing values in the simulated statistics.\n")
+		cat("Their number (by period):\n")
+		print(t(attr(x, "nmissings")))
+	}
 	if (attr(x, "scoreTest")) {
 		oneStepSpecs <- attr(x, "oneStepSpecs")
 		oneStepMhd <- attr(x, "oneStepMahalanobisDistances")
