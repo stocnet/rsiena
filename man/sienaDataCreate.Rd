@@ -4,8 +4,8 @@
 \title{Function to create a Siena data object}
 \description{
 Creates a Siena data object from input dependent variables
-(networks and possibly behavioural variables), covariates, and
-composition change objects.}
+    (networks and possibly behavioural variables), covariates, and
+    composition change objects.}
 \usage{
 sienaDataCreate(..., nodeSets=NULL, getDocumentation=FALSE)
 }
@@ -13,7 +13,7 @@ sienaDataCreate(..., nodeSets=NULL, getDocumentation=FALSE)
   \item{\dots}{objects of class \code{\link{sienaDependent}},
     \code{\link{coCovar}}, \code{\link{varCovar}}, \code{\link{coDyadCovar}},
   \code{\link{varDyadCovar}}, and/or \code{\link{sienaCompositionChange}};
-  or a list of such objects, of which the first element should not be
+  or a list of such objects, of which the first element must not be
   a \code{\link{sienaCompositionChange}} object.
   There should be at least one \code{\link{sienaDependent}} object.}
   \item{nodeSets}{list of Siena node sets. Default is the single node
@@ -25,16 +25,16 @@ sienaDataCreate(..., nodeSets=NULL, getDocumentation=FALSE)
     functions, not for use by users.}
 }
 \details{
-The function checks that the objects fit, that there is at least one network,
-and adds various attributes to each dependent variable describing the
+The function checks that the objects fit, that there is at least one dependent
+variable, and adds various attributes to each dependent variable describing the
 data. If there is more than one nodeSet they must all be specified.
 Function \code{\link{print01Report}} will give a basic description of the data
 object and is a check useful, e.g., for diagnosing problems.
 }
 \value{
 An object of class "siena" which is designed to be used in a siena
-model fit. The components of the object are.
-\item{nodeSets}{List of node sets involved}
+model fit by \code{link{siena07}}. The components of the object are:
+\item{nodeSets}{List of node setss}
 \item{observations}{Integer indicating number of waves of data}
 \item{depvars}{List of networks and behavior variables}
 \item{cCovars}{List of constant covariates}
