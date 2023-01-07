@@ -1,3 +1,17 @@
+# RSiena 1.3.17
+
+## 
+   
+2023-01-06
+
+## Changes in RSiena:  
+
+### Improvements of functionality:
+  * `sienaGOF` now accepts simulated auxiliary statistics containing missing
+    values. If there are any, this will be reported with a warning
+    if `giveNAWarning` is `TRUE`.
+  * `sienaDataCreate` now also accepts, as "...", a list of such objects.
+
 # RSiena 1.3.16
 
 ## 
@@ -10,7 +24,7 @@
 
 ### Effects:
     `inPopIntnX`, `inActIntnX`, `outPopIntnX`, `outActIntnX`, `sameXInPopIntn`, 
-    `sameXOutPopIntn`, sameXInActIntn`, `sameXOutActIntn` restored
+    `sameXOutPopIntn`, `sameXInActIntn`, `sameXOutActIntn` restored
     (these had got lost in some way...).
 ### Updates:
   * All occurrences of `http` in `R` and `Rd` files changed to `https`.

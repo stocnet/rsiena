@@ -235,7 +235,22 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 	dots <- as.list(substitute(list(...)))[-1] ##first entry is the word 'list'
 	if (length(dots) == 0)
 	{
-		stop('need some networks')
+		stop('need some objects')
+	}
+	if (length(dots) == 1)
+	{
+		ldots <- list(...)
+		dotsIsList <- (is.list(ldots[[1]]))
+# If dotsIsList, it needs to be a list of variables
+		if (dotsIsList) 
+		{
+			dots <- as.list(substitute(...))[-1]
+			narg <- length(ldots)
+		}
+	}
+	else
+	{
+		dotsIsList <- FALSE
 	}
 	nm <- names(dots)
 	if (is.null(nm))
@@ -255,7 +270,14 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 	{
 		nm[fixup] <- dep
 	}
-	dots <- list(...)
+	if (!dotsIsList)
+	{
+		dots <- list(...)
+	}
+	else
+	{
+		dots <- (...)
+	}
 	names(dots) <- nm
 	if (any(duplicated(nm)))
 	{
