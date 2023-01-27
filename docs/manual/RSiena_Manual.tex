@@ -1588,8 +1588,11 @@ variable. Changing covariates, on the other hand, have one such
 value for each period between measurement points. If there are $M$
 waves (i.e., observation moments) of network data,
 this covers $M-1$ periods, and accordingly,
-for specifying a single changing dyadic covariate,
+for specifying a single changing one-mode dyadic covariate,
 a $n \times n \times (M-1)$ array is needed.
+
+Two-mode dyadic covariates also are possible; see the help pages for 
+\sfn{coDyadCovar} and \sfn{coDyadCovar}, 
 
 The internal operation of \RS is not scale-independent.
 It is advisable to scale the covariates so that they have
@@ -4203,6 +4206,9 @@ the results are not always completely satisfactory. We shall see below
 how the satisfactory convergence of the algorithm can be checked,
 and how to go on if this is not satisfactory.
 
+
+
+
 Much of what follows is about the use of \sfn{siena07()}
 but applies equally to \sfn{sienacpp()}.
 The difference between these two functions is that
@@ -5561,8 +5567,10 @@ on average the target statistics are equal to their observed values;
 whereas ML tries to find parameters for which the probability to arrive
 in the observed data for the end of the waves, given the beginning
 of the waves, is maximal. The MoM simulations take account only of the
-observations at the start of the wave; the ML simulations connect the
-observations at the start of the wave with the observation at the end of the wave.
+observations at the start of the wave; the ML simulations
+augment the data by connecting the
+observations at the start of each wave with the observation at the end of the wave.
+Such a connection may be called a \emph{change path}.
 This is more complicated, and therefore more time-consuming.
 Technical accounts of the MoM are in \citet{Snijders01,SnijdersEA07},
 of the ML estimator in \citet{SnijdersEA10a}.
@@ -5621,16 +5629,20 @@ Unfortunately, this solution is not available for
 \sfn{sienaBayes}.
 \end{enumerate}
 
+The ML estimation algorithm uses Metropolis-Hastings steps
+to simulate the score function, which is the expected value
+of the augmented-data score function;
+see \citet{SnijdersEA10a}.
 For ML estimation, an important parameter for tuning the
 algorithm is the so-called \textsf{multiplication factor},
 given in \sfn{sienaAlgorithmCreate()} as the argument \texttt{mult}.
 This determines the number of Metropolis-Hastings steps taken
-for simulating each new network.
+for simulating each new change path.
 The number of steps (sometimes called `sampling frequency' in the literature)
 is the multiplication factor multiplied by the sum over dependent variables
 of the distances between successive waves.
 When this is too low, the
-sequentially simulated networks are too similar, which will
+sequentially simulated change paths are too similar, which will
 lead to high autocorrelation in the generated statistics.
 This leads to poor performance of the algorithm.
 These autocorrelations are given in the output file. When some
@@ -5675,6 +5687,22 @@ as a vector is in
 \url{https://www.stats.ox.ac.uk/~snijders/siena/sienaBayes_s.pdf};
 this is formulated there for \sfn{sienaBayes}, but applies
 equally well for ML estimation using \sfn{siena07}.
+\medskip
+
+The Metropolis Hastings algorithm uses a proposal distribution
+composed of steps; see \citet{SnijdersEA10a} and
+\href{http://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf}{\texttt{Siena\_algorithms.pdf}}.
+Abbreviated names of these steps are ``InsDiag", ``CancDiag", ``Permute", ``InsPerm",
+``DelPerm", ``InsMiss", ``DelMiss", ``InsMisdat", ``DelMisdat", and ``Move".
+The ``Move" step was added in version 1.3.18, and is described in
+\citet{Greenan2015}.
+The probabilities of the first 7 steps are determined by the parameter \texttt{prML}
+in  \textsf{sienaAlgorithmCreate}. The probability of  ``Move" is 1 minus the sum
+of these 7 probabilities; ``InsMisdat" and ``DelMisdat" are offspring of ``InsPerm" and
+``DelPerm" and don't need their own proposal probability.
+ ``InsMiss" and  ``DelMiss" are superfluous when there are no missing data,
+but this is taken care of automatically and does not need to be specified in \texttt{prML}.
+\medskip
 
 Another parameter of the algorithm that sometimes needs tuning
 (but less often than the multiplication factor)
@@ -7937,7 +7965,9 @@ will be significant.
   The parameters -- excepting the basic rate parameters -- can be either
   randomly varying between groups according to a multivariate
   normal distribution, or non-varying and constant across groups.
-  The difference is made by setting the parameter \texttt{random} in
+  (Note that the term `non-varying' here does not mean that parameters
+  are fixed, only that they do not vary \underline{between groups}.)
+  The difference is made by setting the keyword \texttt{random} in
   the function \sfn{setEffect}. The default is that only the out-degree (density)
   effect is randomly varying, but it is advisable to specify
   this for a larger set of effects.
@@ -7956,16 +7986,16 @@ will be significant.
   For the groupwise parameters normal distributions are assumed with conjugate
   priors. The prior distribution for the basic rate parameters is determined
   in a data-dependent way. For the non-varying parameters,
-  a flat prior is assumed.
+  the default is to assume a flat prior.
 
   The procedure consists of three parts: initialization, warming,
   main phase.
   \begin{enumerate}
   \item
   In the initialization phase, initial parameter values and the proposal
-  covariance matrix for Metropolis-Hastings steps for groupwise parameters
-  are obtained from.
-  This initialization has two parts.\\
+  covariance matrix for Metropolis-Hastings (`MH') steps for groupwise parameters
+  are obtained.
+  This initialization has four parts.\\
   First, Method of Moments estimation of a parameter vector
   assumed to be the same across the groups (in a multi-group estimation),
   with step size \texttt{initgainGlobal}.
@@ -7976,7 +8006,14 @@ will be significant.
   is one subphase of the Robbins-Monro algorithm for Method of
   Moments estimates for each group separately, with step size
   \texttt{initgainGroupwise}.
-  The proposal covariance matrices then are scaled, in the
+  Special precautions are taken here for dealing with group-level monadic variables,
+  to prevent the issues that arise with such variables in normal use of \sfn{siena07}.\\
+  Third, \texttt{nprewarm} pre-warming steps are taken. These are MH steps where the
+  proposal covariance matrices are used directly (i.e., without scaling)
+  for random walk proposals. Prewarming is stopped when too few
+  acceptances are observed.\\
+  The fourth part of the initialization scales
+  the proposal covariance matrices, in the
   function \sfn{improveMH}, to achieve about 25 out of 100 acceptances of
   Bayes proposals after single MH steps.
   \item
@@ -8462,6 +8499,11 @@ m7 <- c(5, 5, -2, +1.5, 0, 0, 0)
 In Section \ref{S_sienaBayesParameters} it was already suggested to
 start with a run with very low values of the sample size settings for the
 MCMC procedure.
+
+It is advisable to use multiple processes (`parallel computing') for 
+\sfn{sienaBayes}; see Section~\ref{S_multipleProcesses} where it is explained 
+that parallelization is different for \sfn{sienaBayes} than for MoM
+estimation by \sfn{siena07}.
 
 When the procedure has made a good start but the MCMC sample seems too
 short, you can make a prolonged analysis using the \texttt{prevBayes} option,
@@ -16633,7 +16675,7 @@ Changes in RSiena (including those for version 1.3.16):
 \begin{itemize}
 \item Effects:
     \begin{itemize}
-    \item  \texttt{inPopIntnX},  \texttt{inActIntnX},  \texttt{outPopIntnX},  
+    \item  \texttt{inPopIntnX},  \texttt{inActIntnX},  \texttt{outPopIntnX},
      \texttt{outActIntnX},  \texttt{sameXInPopIntn},\\
      \texttt{sameXOutPopIntn}, \texttt{sameXInActIntn},  \texttt{sameXOutActIntn} restored
     (these had got lost in some way...).

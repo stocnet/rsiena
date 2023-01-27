@@ -1,5 +1,5 @@
 
-R version 4.2.1 (2022-06-23 ucrt) -- "Funny-Looking Kid"
+R version 4.2.2 (2022-10-31 ucrt) -- "Innocent and Trusting"
 Copyright (C) 2022 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
@@ -465,7 +465,7 @@ Total of 588 iteration steps.
 > myeff <- includeEffects(myeff, inPop)
   effectName            include fix   test  initialValue parm
 1 indegree - popularity TRUE    FALSE FALSE          0   0   
-> algo <- sienaAlgorithmCreate(nsub=1, n3=20, maxlike=TRUE, seed=15, mult=1)
+> algo <- sienaAlgorithmCreate(nsub=1, n3=20, maxlike=TRUE, seed=15, mult=1, prML=1)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > (ans <- siena07(algo, data=dataset, effects=myeff, batch=TRUE, silent=TRUE))
 Estimated by Maximum Likelihood
@@ -480,6 +480,25 @@ Estimates, standard errors and convergence t-ratios
   4. eval indegree - popularity     0.1082  ( 0.0440   )   2.5318    
 
 Overall maximum convergence ratio:    4.7198 
+
+
+Total of 266 iteration steps.
+
+> algo <- sienaAlgorithmCreate(nsub=1, n3=20, maxlike=TRUE, seed=15, mult=1, prML=2)
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> (ans <- siena07(algo, data=dataset, effects=myeff, batch=TRUE, silent=TRUE))
+Estimated by Maximum Likelihood
+
+Estimates, standard errors and convergence t-ratios
+
+                                   Estimate   Standard   Convergence 
+                                                Error      t-ratio   
+  1. rate basic rate parameter net  3.9141  ( 0.4096   )   -0.5145   
+  2. eval outdegree (density)      -1.5350  ( 0.3908   )    0.1883   
+  3. eval reciprocity               1.8075  ( 0.3141   )    0.3479   
+  4. eval indegree - popularity     0.0878  ( 0.0445   )    0.1091   
+
+Overall maximum convergence ratio:    0.8862 
 
 
 Total of 266 iteration steps.
@@ -861,4 +880,4 @@ Total of 285 iteration steps.
 > 
 > proc.time()
    user  system elapsed 
-  13.17    0.25   13.64 
+  11.17    0.07   21.76 

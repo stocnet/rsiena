@@ -1,3 +1,16 @@
+# RSiena 1.3.18
+
+## 
+   
+2023-01-12
+
+## Changes in RSiena:  
+### Improvements of functionality:
+  * Additional type of move for MH proposal distribution
+    for likelihood estimation (thanks to Charlotte Greenan).
+  * List elements `accepts`, `rejects`, `aborts` for `sienaFit` objects
+    produced by ML estimation improved/corrected by reorganizing them in C++.
+
 # RSiena 1.3.17
 
 ## 

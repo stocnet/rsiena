@@ -52,9 +52,9 @@ MLSimulation::MLSimulation(Data * pData, Model * pModel) :
 	this->laspect = NETWORK;
 	for (int i = 0; i < NBRTYPES; i++)
 	{
-		this->lrejections[i] = 0;
-		this->lacceptances[i] = 0;
-		this->laborted[i] = 0;
+//		this->lrejections[i] = 0;
+//		this->lacceptances[i] = 0;
+		this->laborts[i] = 0;
 	}
 	this->lthisPermutationLength = 0;
 }
@@ -297,12 +297,16 @@ void MLSimulation::setUpProbabilityArray()
 		this->pModel()->insertRandomMissingProbability();
 	this->lprobabilityArray[6] =
 		this->pModel()->deleteRandomMissingProbability();
+	this->lprobabilityArray[7] = 1 - this->lprobabilityArray[0] - 
+		this->lprobabilityArray[1] - this->lprobabilityArray[2] - 
+		this->lprobabilityArray[3] - this->lprobabilityArray[4] - 
+		this->lprobabilityArray[5] - this->lprobabilityArray[6];
 
 	for (int i = 0; i < NBRTYPES; i++)
 	{
-		this->lrejections[i] = 0;
-		this->lacceptances[i] = 0;
-		this->laborted[i] = 0;
+//		this->lrejections[i] = 0;
+//		this->lacceptances[i] = 0;
+		this->laborts[i] = 0;
 	}
 }
 
@@ -312,7 +316,7 @@ void MLSimulation::setUpProbabilityArray()
  */
 void MLSimulation::MLStep()
 {
-	int stepType = nextIntWithProbabilities(7, this->lprobabilityArray);
+	int stepType = nextIntWithProbabilities(NBRTYPES, this->lprobabilityArray);
 	int c0 = this->lcurrentPermutationLength;
 //	PrintValue(getChainDF(*this->pChain()));
 	bool accept = false;
@@ -344,19 +348,24 @@ void MLSimulation::MLStep()
 	case 6:
 		accept = this->deleteMissing();
 		break;
+	case 7:
+		accept = this->move();
+		break;
 	}
-	if (accept)
-	{
-		this->lacceptances[stepType]++;
-	}
-	else if (!R_IsNaN(this->lproposalProbability))
-	{
-		this->lrejections[stepType]++;
-	}
-	else
-	{
-		this->laborted[stepType]++;
-	}
+// The following is done within the classes insertDiagonalMiniStep etc.
+// as part of recordOutcome
+//	if (accept)
+//	{
+//		this->lacceptances[stepType]++;
+//	}
+//	else if (!R_IsNaN(this->lproposalProbability))
+//	{
+//		this->lrejections[stepType]++;
+//	}
+//	else
+//	{
+//		this->laborted[stepType]++;
+//	}
 //	Rprintf("%d %d %f\n",stepType, accept, this->lproposalProbability);
 }
 
@@ -373,7 +382,7 @@ void MLSimulation::recordOutcome(const MiniStep & miniStep, bool accept,
 	{
 		pVariable =	this->lvariables[0];
 	}
-	if (misdat)
+	if (misdat) // changes stepType INSPERM or DELPERM to INSMISDAT, DELMISDAT.
 	{
 		stepType = stepType + 4;
 	}
@@ -387,7 +396,8 @@ void MLSimulation::recordOutcome(const MiniStep & miniStep, bool accept,
 	}
 	else
 	{
-		pVariable->incrementAborts(stepType);
+//		pVariable->incrementAborts(stepType);
+		this->incrementAborts(stepType);
 	}
 }
 
@@ -640,6 +650,476 @@ bool MLSimulation::cancelDiagonalMiniStep()
 		this->pChain()->remove(pMiniStep);
 		delete pMiniStep;
 	}
+
+	return accept;
+}
+
+/**
+ * Implements the MH_move Metropolis-Hastings step.
+ */
+bool MLSimulation::move()
+{
+	//// not implemented for non simple rates
+	if (!this->simpleRates())
+	{
+		return false;
+	}
+
+	if (this->pChain()->ministepCount() <= 2)
+	{
+		return false;
+	}
+
+	bool accept = false;
+
+	MiniStep * pMiniStepA = this->pChain()->randomMiniStep();
+
+	while ((pMiniStepA == this->pChain()->pLast()) ||
+		(pMiniStepA->diagonal()))
+	{
+		pMiniStepA = this->pChain()->randomMiniStep();
+	}
+
+	// We will move A to before a ministep in the interval {pFirst, ..., pLast}
+	MiniStep * pFirst = this->pChain()->pFirst()->pNext();
+	MiniStep * pLast = this->pChain()->pLast();
+
+	MiniStep * pMiniStepD = pMiniStepA->pNextWithSameOption();
+
+	if (pMiniStepD)
+	{
+		if (pMiniStepD->pPrevious()==pMiniStepA)
+		{
+			return false;
+		}
+		pLast = pMiniStepD->pPrevious();
+	}
+
+	MiniStep * pMiniStepE = pMiniStepA->pPreviousWithSameOption();
+
+	if (pMiniStepE)
+	{
+		if (pMiniStepE->pNext()==pMiniStepA)
+		{
+			return false;
+		}
+		pFirst = pMiniStepE->pNext();
+		pFirst = pFirst->pNext();
+	}
+
+	int intLength = this->pChain()->intervalLength(pFirst, pLast)-1;
+
+	//// Position of ministepA
+
+	int piCount = 0;
+	MiniStep * pMiniStepC = pFirst;
+	while (pMiniStepC != pMiniStepA)
+	{
+		piCount++;
+		pMiniStepC = pMiniStepC->pNext();
+	}
+	int positionA = piCount;
+
+	////CHOOSING MINISTEPB
+
+	double * newReciprocalRate = new double[intLength];
+	double * newOptionSetProbability = new double[intLength];
+	double * newChoiceProbability = new double[intLength];
+
+	double * reciprocalRateA = 0;
+	double * optionSetProbabilityA = 0;
+	double * choiceProbabilityA = 0;
+
+	if (this->pModel()->localML())
+	{
+		reciprocalRateA = new double[intLength];
+		optionSetProbabilityA = new double[intLength];
+		choiceProbabilityA = new double[intLength];
+	}
+
+	bool * updateProb = new bool[intLength];
+	double * pi = new double[intLength];
+
+	pi[0] = 1;
+	piCount = 0;
+
+	// SETTING PI AND UPDATE
+	for (int k=0;k < intLength;k++)
+	{
+		updateProb[k] = false;
+	}
+	for (int k=1;k < intLength;k++)
+	{
+		pi[k] = 0;
+	}
+
+	MiniStep * pMiniStepAReverse = pMiniStepA->createReverseMiniStep();
+	pMiniStepC = pFirst;
+
+	// CREATING VARIABLES, EGOS AND ALTERS FOR MiniSteps A AND C
+	DependentVariable * pVariableA = this->lvariables[pMiniStepA->variableId()];
+	NetworkVariable * pNetworkVariableA =
+		dynamic_cast<NetworkVariable *>(pVariableA);
+	DependentVariable * pVariableC = this->lvariables[pMiniStepC->variableId()];
+	NetworkVariable * pNetworkVariableC =
+		dynamic_cast<NetworkVariable *>(pVariableC);
+	int egoA = pMiniStepA->ego();
+	int alterA = 0;
+	if (pMiniStepA->networkMiniStep())
+	{
+		alterA = dynamic_cast<NetworkChange *>(pMiniStepA)->alter();
+	}
+	int egoC = pMiniStepC->ego();
+	int alterC = 0;
+	if (pMiniStepC->networkMiniStep())
+	{
+		alterC = dynamic_cast<NetworkChange *>(pMiniStepC)->alter();
+	}
+
+	this->setStateBefore(pFirst);
+
+	this->calculateRates();
+	double rrA = 1 / this->grandTotalRate();
+	double osprA = pVariableA->rate(egoA) * rrA;
+	double cprA = pVariableA->probability(pMiniStepA);
+	double rHere = osprA * cprA;
+
+	if (this->pModel()->localML())
+	{
+		reciprocalRateA[0] = rrA;
+		optionSetProbabilityA[0] = log(osprA);
+		choiceProbabilityA[0] = log(cprA);
+	}
+
+	bool Adone = false;
+
+	// Calculating values of pi
+
+	while (pMiniStepC != pLast)
+	{
+		if (pMiniStepC == pMiniStepA)
+		{
+			Adone = true;
+			pMiniStepC->makeChange(pVariableC);
+		} else {
+			piCount++;
+			pi[piCount] = pi[piCount-1];
+
+			if (pVariableC->pActorSet() == pVariableA->pActorSet())
+			{
+				bool N2 = true;
+				if (this->pModel()->localML())
+				{
+					N2 = this->neighbourhoodChange(pMiniStepA,pMiniStepC,
+						pVariableA,pNetworkVariableA,egoA,alterA);
+				} else {
+					N2 = this->smallNeighbourhoodChange(pMiniStepA,pMiniStepC,
+														pVariableA,pNetworkVariableA,egoA,alterA);
+				}
+				if (N2)
+				{
+					double rr = 0;
+					double ospr = 0;
+					double cpr =  0;
+					double cCurrent = 0;
+
+					if (Adone)
+					{
+						pMiniStepAReverse->makeChange(pVariableA);
+						this->calculateRates();
+						rr = 1 / this->grandTotalRate();
+						ospr = pVariableC->rate(egoC) * rr;
+						cpr = pVariableC->probability(pMiniStepC);
+						pMiniStepA->makeChange(pVariableA);
+						cCurrent = pMiniStepC->logChoiceProbability() +
+							pMiniStepC->logOptionSetProbability();
+						pi[piCount] *= ((cpr*ospr)/exp(cCurrent));
+
+					} else {
+						pMiniStepA->makeChange(pVariableA);
+						this->calculateRates();
+						rr = 1 / this->grandTotalRate();
+						ospr = pVariableC->rate(egoC) * rr;
+						cpr = pVariableC->probability(pMiniStepC);
+						pMiniStepAReverse->makeChange(pVariableA);
+						cCurrent = pMiniStepC->logChoiceProbability() +
+							pMiniStepC->logOptionSetProbability();
+						pi[piCount] *= (exp(cCurrent)/(cpr*ospr));
+					}
+					newReciprocalRate[piCount] = rr;
+					newOptionSetProbability[piCount] = log(ospr);
+					newChoiceProbability[piCount] = log(cpr);
+					updateProb[piCount] = true;
+				}
+
+				pMiniStepC->makeChange(pVariableC);
+
+				if (Adone) {pMiniStepAReverse->makeChange(pVariableA);}
+
+				N2 = true;
+				if (this->pModel()->localML())
+				{
+					N2 = this->neighbourhoodChange(pMiniStepC,pMiniStepA,
+						pVariableC,
+						pNetworkVariableC,
+						egoC,alterC);
+				} else {
+					N2 = this->smallNeighbourhoodChange(pMiniStepC,pMiniStepA,
+														pVariableC,
+														pNetworkVariableC,
+														egoC,alterC);
+				}
+
+				if (N2)
+				{
+					double rPrev = rHere;
+					this->calculateRates();
+					rrA = 1 / this->grandTotalRate();
+					osprA = pVariableA->rate(egoA) * rrA;
+					cprA = pVariableA->probability(pMiniStepA);
+					rHere = osprA * cprA;
+					pi[piCount] *= (rHere/rPrev);
+				}
+				if (Adone) {pMiniStepA->makeChange(pVariableA);}
+
+			} else {//if actor set don't match
+				pMiniStepC->makeChange(pVariableC);
+			}
+
+			if (this->pModel()->localML())
+			{
+				reciprocalRateA[piCount] = rrA;
+				optionSetProbabilityA[piCount] = log(osprA);
+				choiceProbabilityA[piCount] = log(cprA);
+			}
+		}
+
+		pMiniStepC = pMiniStepC->pNext();
+		if (pMiniStepC != this->pChain()->pLast())
+		{
+			pVariableC = this->lvariables[pMiniStepC->variableId()];
+			pNetworkVariableC =
+				dynamic_cast<NetworkVariable *>(pVariableC);
+			egoC = pMiniStepC->ego();
+			alterC = 0;
+			if (pMiniStepC->networkMiniStep()) {alterC = dynamic_cast<NetworkChange *>(pMiniStepC)->alter();}
+		}
+
+	}
+
+	delete pMiniStepAReverse;
+
+	// Making pi sum to 1
+	double piSum = 0;
+	for (int k=0;k<intLength;k++)
+	{
+		piSum += pi[k];
+	}
+	for (int k=0;k<intLength;k++)
+	{
+		pi[k] /= piSum;
+	}
+
+
+	int miniStepChoice = nextIntWithProbabilities(intLength, pi);
+
+	// Will give no change
+		if (miniStepChoice == positionA)
+		{
+			return false;
+		}
+
+	double lcprA = 0;
+	double losprA = 0;
+
+	if (this->pModel()->localML())
+	{
+		accept = true;
+		lcprA = choiceProbabilityA[miniStepChoice];
+		losprA = optionSetProbabilityA[miniStepChoice];
+		rrA = reciprocalRateA[miniStepChoice];
+		this->lproposalProbability = 1;
+
+	} else {
+
+	MiniStep * pMiniStepB = pFirst;
+
+	for (int k=0;k<miniStepChoice;k++)
+	{
+		pMiniStepB = pMiniStepB->pNext();
+	}
+
+	if (!(miniStepChoice < positionA))
+	{
+		pMiniStepB = pMiniStepB->pNext();
+	}
+
+	// A proposed to be inserted before B
+	double logProbChange = -pMiniStepA->logChoiceProbability();
+
+		MiniStep * pFirstA = 0;
+		MiniStep * pSecondA = 0;
+
+		int count = 0;
+		if (miniStepChoice < positionA)
+		{
+			pFirstA = pMiniStepB;
+			pSecondA = pMiniStepA;
+			count = miniStepChoice;
+		} else {
+			pFirstA = pMiniStepA;
+			pSecondA = pMiniStepB;
+			count = positionA;
+		}
+
+		double rr = 0;
+		double lcpr = 0;
+		double ospr = 0;
+		double cpr = 0;
+		this->setStateBefore(pFirstA);
+		if (miniStepChoice < positionA)
+		{
+			this->calculateRates();
+			rrA = 1 / this->grandTotalRate();
+			osprA = pVariableA->rate(egoA) * rrA;
+			losprA = log(osprA);
+			lcprA = log(pVariableA->probability(pMiniStepA));
+			logProbChange += lcprA;
+			pMiniStepA->makeChange(pVariableA);
+			pMiniStepC = pFirstA;
+		} else {
+			pMiniStepC = pFirstA->pNext();
+		}
+		pVariableC = this->lvariables[pMiniStepC->variableId()];
+
+		// Calculate probabilities between pFirstA and pSecondA
+		while (pMiniStepC != pSecondA)
+		{
+			count++;
+			if (pVariableC->pActorSet() == pVariableA->pActorSet())
+			{
+				if (updateProb[count])
+				{
+					lcpr = newChoiceProbability[count];
+
+				} else {
+					this->calculateRates();
+					rr = 1 / this->grandTotalRate();
+					cpr = pVariableC->probability(pMiniStepC);
+					ospr = pVariableC->rate(egoC) * rr;
+					lcpr = log(cpr);
+
+					newReciprocalRate[count] = rr;
+					newOptionSetProbability[count] = log(ospr);
+					newChoiceProbability[count] = lcpr;
+					updateProb[count] = true;
+				}
+
+				logProbChange += lcpr;
+				logProbChange -= pMiniStepC->logChoiceProbability();
+			}
+
+			pMiniStepC->makeChange(pVariableC);
+			pMiniStepC = pMiniStepC->pNext();
+			if (pMiniStepC != this->pChain()->pLast())
+			{
+				pVariableC = this->lvariables[pMiniStepC->variableId()];
+			}
+		}
+
+		if (!(miniStepChoice < positionA))
+		{
+			this->calculateRates();
+			rrA = 1 / this->grandTotalRate();
+			osprA = pVariableA->rate(egoA) * rrA;
+			losprA = log(osprA);
+			lcprA = log(pVariableA->probability(pMiniStepA));
+			logProbChange += lcprA;
+		}
+
+	this->lproposalProbability = exp(logProbChange)*pi[positionA]/pi[miniStepChoice];
+
+	if (this->lproposalProbability > 1)
+	{
+		this->lproposalProbability = 1;
+	}
+	}
+
+	accept = nextDouble() < this->lproposalProbability;
+
+	if (accept)
+	{
+
+	// Move miniStepA, and update the neccesary probabilities
+
+	pMiniStepC = pFirst;
+
+	//Otherwise pMiniStepC will be removed below.
+	if (pFirst == pMiniStepA)
+	{
+		pMiniStepC = pMiniStepC->pNext();
+	}
+	this->pChain()->remove(pMiniStepA);
+
+	bool startUpdating = false;
+	bool stopUpdating = false;
+
+	piCount = 0;
+
+	while(pMiniStepC != pLast)
+	{
+		if (piCount == miniStepChoice)
+		{
+			this->pChain()->insertBefore(pMiniStepA, pMiniStepC);
+			stopUpdating = startUpdating;
+			startUpdating = true;
+		}
+		if (piCount == positionA)
+		{
+			stopUpdating = startUpdating;
+			startUpdating = true;
+		}
+		if (stopUpdating)
+		{
+			break;
+		}
+		piCount++;
+
+		if (startUpdating)
+		{
+			if (updateProb[piCount])
+			{
+				pMiniStepC->logChoiceProbability(newChoiceProbability[piCount]);
+				pMiniStepC->reciprocalRate(newReciprocalRate[piCount]);
+				pMiniStepC->logOptionSetProbability(
+					newOptionSetProbability[piCount]);
+			}
+		}
+		pMiniStepC = pMiniStepC->pNext();
+
+	}
+
+	// If we move A to directly before pLast
+	if (miniStepChoice==intLength-1)
+	{
+		this->pChain()->insertBefore(pMiniStepA, pLast);
+	}
+
+		pMiniStepA->reciprocalRate(rrA);
+		pMiniStepA->logOptionSetProbability(losprA);
+		pMiniStepA->logChoiceProbability(lcprA);
+	}
+
+	this->recordOutcome(*pMiniStepA, accept, MOVE, false);
+
+	delete[] newReciprocalRate;
+	delete[] newOptionSetProbability;
+	delete[] newChoiceProbability;
+	delete[] pi;
+	delete[] updateProb;
+	delete[] reciprocalRateA;
+	delete[] optionSetProbabilityA;
+	delete[] choiceProbabilityA;
 
 	return accept;
 }
@@ -2593,7 +3073,7 @@ bool MLSimulation::validDeleteMissingStep(MiniStep * pMiniStepA,
 
 /**
  * Creates and returns a new mini step for the given option and difference
- * parameter (the later for behavior changes only).
+ * parameter (the latter for behavior changes only).
  */
 MiniStep * MLSimulation::createMiniStep(const Option * pOption,
 	int difference, bool diagonal) const
@@ -2621,6 +3101,15 @@ MiniStep * MLSimulation::createMiniStep(const Option * pOption,
 	return pMiniStep;
 }
 
+
+/**
+ * increments the number of aborted steps
+ * for the given steptype for this variable
+ */
+void MLSimulation::incrementAborts(int stepType)
+{
+	this->laborts[stepType]++;
+}
 
 // ----------------------------------------------------------------------------
 // Section: Accessors
@@ -2696,24 +3185,24 @@ double MLSimulation::missingBehaviorProbability() const
 /**
  * Returns the number of acceptances for this steptype.
  */
-int MLSimulation::acceptances(int stepType) const
-{
-	return this->lacceptances[stepType];
-}
+//int MLSimulation::acceptances(int stepType) const
+//{
+//	return this->lacceptances[stepType];
+//}
 
 /**
  * Returns the number of rejections for this steptype.
  */
-int MLSimulation::rejections(int stepType) const
-{
-	return this->lrejections[stepType];
-}
+//int MLSimulation::rejections(int stepType) const
+//{
+//	return this->lrejections[stepType];
+//}
 /**
  * Returns the number of aborted steps for this steptype.
  */
-int MLSimulation::aborted(int stepType) const
+int MLSimulation::aborts(int stepType) const
 {
-	return this->laborted[stepType];
+	return this->laborts[stepType];
 }
 
 /**
@@ -2909,6 +3398,31 @@ void MLSimulation::createEndStateDifferences()
 	// Rprintf("xx %d %d %d end create end state diff\n",
 	// 	this->lendStateDifferences.size(), period, this->pChain()->ministepCount() - 1);
 }
+
+
+	/**
+	 * Calculates whether toggling a ministep affects the small neighbourhood of the
+	 * ego of another ministep.
+	 */
+	bool MLSimulation::smallNeighbourhoodChange(MiniStep * pMiniStep1,
+												MiniStep * pMiniStep2,
+												DependentVariable * pVariable,
+												NetworkVariable * pNetworkVariable,
+												int ego1, int alter1)
+	{
+		//// Won't work for behaviour and multiplex networks.
+		bool addToInterval = false;
+
+		int ego = pMiniStep2->ego();
+		int alter = dynamic_cast<NetworkChange *>(pMiniStep2)->alter();
+
+		if ((ego==ego1) || (ego==alter1) || (alter==ego1) || (alter==alter1))
+		{
+			addToInterval = true;
+		}
+		return addToInterval;
+	}
+
 
 /**
  * Calculates whether toggling a ministep affects the neighbourhood of the ego

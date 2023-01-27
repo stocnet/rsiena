@@ -21,7 +21,16 @@ storeinFRANstore <- function(...)
 ##@phase2.1 siena07 Start phase 2
 phase2.1<- function(z, x, ...)
 {
-	## require(tcltk)
+		if (ifelse(is.null(x$phase2imp),FALSE,x$phase2imp))
+		{
+			z$addChainToStore <- TRUE
+			z$nbrNodes <- 1
+			z$storedChains <- TRUE
+			z$nGroup <- 1
+			z$thetaList <- list()
+			z$nCount <- 1
+		}
+	
     #initialise phase2
     if (x$maxlike)
     {
@@ -270,7 +279,13 @@ doIterations<- function(z, x, subphase,...)
 
 		if (z$int == 1) ## then no parallel runs at this level
 		{
-			zz <- x$FRAN(zsmall, xsmall)
+			if (ifelse(is.null(x$phase2imp),FALSE,x$phase2imp))
+			{
+				zz <- x$FRAN(zsmall, xsmall,  returnLoglik=TRUE, returnChains=TRUE)
+				z$myloglik2 <- c(z$myloglik2, sum(zz$loglik))
+			} else {
+				zz <- x$FRAN(zsmall, xsmall)
+			}
 			fra <- colSums(zz$fra) - z$targets
 			
 			
@@ -505,6 +520,13 @@ doIterations<- function(z, x, subphase,...)
 			z <- doMoreUpdates(z, x, x$moreUpdates * subphase)
 			zsmall$theta <- z$theta
 		}
+	
+		if (ifelse(is.null(x$phase2imp),FALSE,x$phase2imp))
+		{
+			z$thetaList[[z$nCount]] <- z$theta
+			z$nCount <- z$nCount + 1
+		}
+		
 		##check for user interrupt
 		CheckBreaks()
 		if (UserInterruptFlag() || UserRestartFlag() || EarlyEndPhase2Flag())
@@ -523,6 +545,16 @@ doIterations<- function(z, x, subphase,...)
 			}
 		}
 	}
+	if (ifelse(is.null(x$phase2imp),FALSE,x$phase2imp))
+	{
+		cat(z$nit)
+		z$nAll <- c(z$nAll, z$nit)
+		if (subphase==x$nsub)
+		{
+			z <- stdError(z,x,subphase=4, ...)
+		}
+	}
+	
 	if (z$returnThetas)
 	{
 		z$thetas <- rbind(z$thetas, thetas)

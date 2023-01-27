@@ -14,6 +14,17 @@
 ##@phase3 siena07 Does phase 3
 phase3 <- function(z, x, ...)
 {
+	if (is.null(x$lrt))
+	{
+		x$lrt <- FALSE
+	}
+	if (x$lrt)
+	{
+		z$myloglik <- NULL
+		z$myfra <- NULL
+		z$addChainToStore <- TRUE
+	}
+	
     ## initialize phase 3
     f <- FRANstore()
     DisplayTheta(z)
@@ -399,6 +410,27 @@ phase3.2 <- function(z, x, ...)
 	z$errorMessage.cov <- errorMessage.cov
 	z$sf.invcov <- NULL
 	## ans<-InstabilityAnalysis(z)
+	
+	if (x$lrt)
+	{
+		z$nGroup <- 1
+		
+		if (ifelse(is.null(x$thermo), FALSE, x$thermo))
+		{
+			z <- thermo(z,x,subphase=4, ...) 
+		}
+		
+		if (ifelse(is.null(x$bridge1), FALSE, x$bridge1))
+		{
+			z <- bridge1(z,x,subphase=4, ...)
+		}
+		
+		z$nbrNodes <- 1
+		f <- FRANstore()
+		.Call("clearStoredChains", PACKAGE=pkgname,
+		f$pModel, keep = 0,1)
+	}
+	
 	z
 }
 
@@ -688,8 +720,20 @@ doPhase1or3Iterations <- function(phase, z, x, zsmall, xsmall, nits, nits6=0,
 		}
 		if (z$int == 1)
 		{
-
-			zz <- x$FRAN(zsmall, xsmall)
+			if (is.null(x$lrt))
+			{
+				x$lrt <- FALSE
+			}
+			if (!x$lrt)
+			{
+				zz <- x$FRAN(zsmall, xsmall)
+			} else {
+				zz <- x$FRAN(zsmall, xsmall, returnLoglik=TRUE, returnChains=TRUE)
+				z$myloglik <- c(z$myloglik, sum(zz$loglik))
+				fra <- colSums(zz$fra) - z$targets
+				z$myfra <- rbind(z$myfra, fra)
+			}
+			
 			if (!zz$OK)
 			{
 				z$OK <- zz$OK

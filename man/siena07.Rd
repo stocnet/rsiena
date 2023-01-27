@@ -222,9 +222,13 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
    \item Amati, Viviana, Schoenenberger, Felix, and Snijders, Tom A. B. (2019).
     Contemporaneous statistics for estimation in stochastic actor-oriented
     co-evolution models. \emph{Psychometrika} \bold{84}, 1068-1096.
-   \item Schweinberger, Michael, and Snijders,
-    Tom A.B. (2007). Markov models for digraph panel data:
-    Monte Carlo-based derivative estimation.
+   \item Greenan, Charlotte (2015).
+    \emph{Evolving Social Network Analysis: developments in statistical
+    methodology for dynamic stochastic actor-oriented models}.
+    DPhil dissertation, University of Oxford.
+   \item Schweinberger, Michael, and Snijders, Tom A.B. (2007).
+    Markov models for digraph panel data:
+    Monte Carlo based derivative estimation.
     \emph{Computational Statistics and Data Analysis} \bold{51}, 4465--4483.
     \item Snijders, Tom A.B. (2001).
     The statistical evaluation of social network dynamics.
@@ -232,7 +236,8 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
    \item Snijders, Tom A.B. (2017). Stochastic Actor-Oriented Models for Network
    Dynamics. \emph{Annual Review of Statistics and Its Application}
     \bold{4}, 343--363.
-   \item Snijders, Tom A. B., Koskinen, Johan, and Schweinberger, Michael (2010).
+   \item Snijders, Tom A. B., Koskinen, Johan, and Schweinberger,
+    Michael (2010).
     Maximum likelihood estimation for social network dynamics.
     \emph{Annals of Applied Statistics} \bold{4}, 567--588.
    \item Snijders, Tom A.B., Steglich, Christian E.G., and Schweinberger,

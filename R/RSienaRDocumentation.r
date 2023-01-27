@@ -1,7 +1,7 @@
 #/******************************************************************************
 # * SIENA: Simulation Investigation for Empirical Network Analysis
 # *
-# * Web: https://www.stats.ox.ac.uk/~snidjers/siena
+# * Web: https://www.stats.ox.ac.uk/~snijders/siena
 # *
 # * File: RSienaRDocumentation.r
 # *
