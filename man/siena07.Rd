@@ -180,6 +180,7 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
   \item{tmax}{maximum absolute t-statistic for convergence for
     non-fixed parameters.}
   \item{tconv.max}{overall maximum convergence ratio.}
+  \item{ac3}{If \code{x$maxlike=TRUE}: autocorrelations of statistics in Phase 3.}
   \item{targets}{Observed statistics; for ML, zero vector.}
   \item{targets2}{Observed statistics by wave,
     starting with second wave; for ML, zero matrix.}

@@ -297,9 +297,9 @@ void MLSimulation::setUpProbabilityArray()
 		this->pModel()->insertRandomMissingProbability();
 	this->lprobabilityArray[6] =
 		this->pModel()->deleteRandomMissingProbability();
-	this->lprobabilityArray[7] = 1 - this->lprobabilityArray[0] - 
-		this->lprobabilityArray[1] - this->lprobabilityArray[2] - 
-		this->lprobabilityArray[3] - this->lprobabilityArray[4] - 
+	this->lprobabilityArray[7] = 1 - this->lprobabilityArray[0] -
+		this->lprobabilityArray[1] - this->lprobabilityArray[2] -
+		this->lprobabilityArray[3] - this->lprobabilityArray[4] -
 		this->lprobabilityArray[5] - this->lprobabilityArray[6];
 
 	for (int i = 0; i < NBRTYPES; i++)
@@ -904,7 +904,6 @@ bool MLSimulation::move()
 			alterC = 0;
 			if (pMiniStepC->networkMiniStep()) {alterC = dynamic_cast<NetworkChange *>(pMiniStepC)->alter();}
 		}
-
 	}
 
 	delete pMiniStepAReverse;
@@ -919,7 +918,6 @@ bool MLSimulation::move()
 	{
 		pi[k] /= piSum;
 	}
-
 
 	int miniStepChoice = nextIntWithProbabilities(intLength, pi);
 
@@ -941,21 +939,18 @@ bool MLSimulation::move()
 		this->lproposalProbability = 1;
 
 	} else {
+		MiniStep * pMiniStepB = pFirst;
 
-	MiniStep * pMiniStepB = pFirst;
-
-	for (int k=0;k<miniStepChoice;k++)
-	{
-		pMiniStepB = pMiniStepB->pNext();
-	}
-
-	if (!(miniStepChoice < positionA))
-	{
-		pMiniStepB = pMiniStepB->pNext();
-	}
-
+		for (int k=0;k<miniStepChoice;k++)
+		{
+			pMiniStepB = pMiniStepB->pNext();
+		}
+		if (!(miniStepChoice < positionA))
+		{
+			pMiniStepB = pMiniStepB->pNext();
+		}
 	// A proposed to be inserted before B
-	double logProbChange = -pMiniStepA->logChoiceProbability();
+		double logProbChange = -pMiniStepA->logChoiceProbability();
 
 		MiniStep * pFirstA = 0;
 		MiniStep * pSecondA = 0;
@@ -1008,13 +1003,11 @@ bool MLSimulation::move()
 					cpr = pVariableC->probability(pMiniStepC);
 					ospr = pVariableC->rate(egoC) * rr;
 					lcpr = log(cpr);
-
 					newReciprocalRate[count] = rr;
 					newOptionSetProbability[count] = log(ospr);
 					newChoiceProbability[count] = lcpr;
 					updateProb[count] = true;
 				}
-
 				logProbChange += lcpr;
 				logProbChange -= pMiniStepC->logChoiceProbability();
 			}
@@ -1037,74 +1030,68 @@ bool MLSimulation::move()
 			logProbChange += lcprA;
 		}
 
-	this->lproposalProbability = exp(logProbChange)*pi[positionA]/pi[miniStepChoice];
-
-	if (this->lproposalProbability > 1)
-	{
-		this->lproposalProbability = 1;
-	}
+		this->lproposalProbability = exp(logProbChange)*pi[positionA]/pi[miniStepChoice];
+		if (this->lproposalProbability > 1)
+		{
+			this->lproposalProbability = 1;
+		}
 	}
 
 	accept = nextDouble() < this->lproposalProbability;
 
 	if (accept)
 	{
-
 	// Move miniStepA, and update the neccesary probabilities
-
-	pMiniStepC = pFirst;
+		pMiniStepC = pFirst;
 
 	//Otherwise pMiniStepC will be removed below.
-	if (pFirst == pMiniStepA)
-	{
-		pMiniStepC = pMiniStepC->pNext();
-	}
-	this->pChain()->remove(pMiniStepA);
-
-	bool startUpdating = false;
-	bool stopUpdating = false;
-
-	piCount = 0;
-
-	while(pMiniStepC != pLast)
-	{
-		if (piCount == miniStepChoice)
+		if (pFirst == pMiniStepA)
 		{
-			this->pChain()->insertBefore(pMiniStepA, pMiniStepC);
-			stopUpdating = startUpdating;
-			startUpdating = true;
+			pMiniStepC = pMiniStepC->pNext();
 		}
-		if (piCount == positionA)
-		{
-			stopUpdating = startUpdating;
-			startUpdating = true;
-		}
-		if (stopUpdating)
-		{
-			break;
-		}
-		piCount++;
+		this->pChain()->remove(pMiniStepA);
 
-		if (startUpdating)
+		bool startUpdating = false;
+		bool stopUpdating = false;
+		piCount = 0;
+
+		while(pMiniStepC != pLast)
 		{
-			if (updateProb[piCount])
+			if (piCount == miniStepChoice)
 			{
-				pMiniStepC->logChoiceProbability(newChoiceProbability[piCount]);
-				pMiniStepC->reciprocalRate(newReciprocalRate[piCount]);
-				pMiniStepC->logOptionSetProbability(
-					newOptionSetProbability[piCount]);
+				this->pChain()->insertBefore(pMiniStepA, pMiniStepC);
+				stopUpdating = startUpdating;
+				startUpdating = true;
 			}
-		}
-		pMiniStepC = pMiniStepC->pNext();
+			if (piCount == positionA)
+			{
+				stopUpdating = startUpdating;
+				startUpdating = true;
+			}
+			if (stopUpdating)
+			{
+				break;
+			}
+			piCount++;
 
-	}
+			if (startUpdating)
+			{
+				if (updateProb[piCount])
+				{
+					pMiniStepC->logChoiceProbability(newChoiceProbability[piCount]);
+					pMiniStepC->reciprocalRate(newReciprocalRate[piCount]);
+					pMiniStepC->logOptionSetProbability(
+						newOptionSetProbability[piCount]);
+				}
+			}
+			pMiniStepC = pMiniStepC->pNext();
+		}
 
 	// If we move A to directly before pLast
-	if (miniStepChoice==intLength-1)
-	{
-		this->pChain()->insertBefore(pMiniStepA, pLast);
-	}
-
+		if (miniStepChoice==intLength-1)
+		{
+			this->pChain()->insertBefore(pMiniStepA, pLast);
+		}
 		pMiniStepA->reciprocalRate(rrA);
 		pMiniStepA->logOptionSetProbability(losprA);
 		pMiniStepA->logChoiceProbability(lcprA);
@@ -1120,7 +1107,6 @@ bool MLSimulation::move()
 	delete[] reciprocalRateA;
 	delete[] optionSetProbabilityA;
 	delete[] choiceProbabilityA;
-
 	return accept;
 }
 
@@ -3498,7 +3484,6 @@ bool MLSimulation::neighbourhoodChange(MiniStep * pMiniStep1,
 			}
 
 		} else if (pMiniStep1->networkMiniStep()) {
-
 			// Ministep1 is a network change; ministep2 a behaviour change
 
 			if ((ego==ego1) || (ego==alter1) ||
@@ -3507,20 +3492,15 @@ bool MLSimulation::neighbourhoodChange(MiniStep * pMiniStep1,
 				addToInterval = true;
 			}
 		} else if (pMiniStep2->networkMiniStep()) {
-
 			// Ministep1 is a behaviour change, ministep2 a network change
-
 			addToInterval = true;
 		} else if (this->lvariables[pMiniStep2->variableId()]== pVariable){
-
 			// Both ministeps changes the same behaviour
-
 			if ((ego==ego1) || net)
 			{
 				addToInterval = true;
 			}
 		} else {
-
 			// Ministeps change different behaviours
 			addToInterval = true;
 		}

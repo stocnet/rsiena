@@ -2,14 +2,17 @@
 
 ## 
    
-2023-01-12
+2023-01-29
 
 ## Changes in RSiena:  
 ### Improvements of functionality:
-  * Additional type of move for MH proposal distribution
+  * Additional step type `move` for MH proposal distribution
     for likelihood estimation (thanks to Charlotte Greenan).
+  * Accordingly, parameters changed that are used in `sienaAlgorithmCreate`
+   for probabilities of MH steps, now summarized in `prML`; with a new default.
   * List elements `accepts`, `rejects`, `aborts` for `sienaFit` objects
     produced by ML estimation improved/corrected by reorganizing them in C++.
+  * List element ac3 added to `sienaFit` object if `maxlike`.
 
 # RSiena 1.3.17
 

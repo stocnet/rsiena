@@ -191,7 +191,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.3.17.
+This version was renewed for \RS version 1.3.18.
 \end{abstract}
 
 
@@ -1129,7 +1129,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.3.17).
+  identified by a version number (e.g.\ 1.3.18).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -1591,8 +1591,8 @@ this covers $M-1$ periods, and accordingly,
 for specifying a single changing one-mode dyadic covariate,
 a $n \times n \times (M-1)$ array is needed.
 
-Two-mode dyadic covariates also are possible; see the help pages for 
-\sfn{coDyadCovar} and \sfn{coDyadCovar}, 
+Two-mode dyadic covariates also are possible; see the help pages for
+\sfn{coDyadCovar} and \sfn{coDyadCovar},
 
 The internal operation of \RS is not scale-independent.
 It is advisable to scale the covariates so that they have
@@ -5620,11 +5620,13 @@ is not available.
       but through its dependence with other
       variables it still has consequences different from \texttt{NA}.
 \end{itemize}
+A solution for the problem of structural zeros at the end
+of a period may be to replace them by \texttt{NA}.
+
 For data sets with multiple periods (i.e., three or more waves), the
-analysis using ML still is possible by arranging the data
+analysis using ML still is possible
+\citep[as proposed by][]{delaHayeETAl2017} by arranging the data
 as a multi-group data set (Section~\ref{S_multigroup}).
-This may be a solution for the problem of structural zeros at the end
-of a period: replace them by \texttt{NA}.
 Unfortunately, this solution is not available for
 \sfn{sienaBayes}.
 \end{enumerate}
@@ -5679,7 +5681,7 @@ to keep the highest autocorrelation less than 0.4.
 Note that the multiplication factor can be given as one number,
 but also as a vector, with the number of elements equal to the number of
 basic rate parameters in the effects object; i.e., the number
-of periods times the number of waves. This permits to set a high
+of periods times the number of waves. This permits setting a high
 value of the multiplication factor for only some period-wave combinations.
 
 Some advice about how to set the value of the multiplication factor
@@ -5829,7 +5831,7 @@ network evolution in each time period (and the co-evolution of the
 behavioral dimensions, if any are included) carry on until the
 predetermined time length (chosen as 1.0
 for each time period between consecutive observation moments) has elapsed.
-This is expained in \citet[][Section 4.2]{Snijders01}.
+This is explained in \citet[][Section 4.2]{Snijders01}.
 
 In conditional estimation, in each period
 the simulations run on until a stopping
@@ -8500,8 +8502,8 @@ In Section \ref{S_sienaBayesParameters} it was already suggested to
 start with a run with very low values of the sample size settings for the
 MCMC procedure.
 
-It is advisable to use multiple processes (`parallel computing') for 
-\sfn{sienaBayes}; see Section~\ref{S_multipleProcesses} where it is explained 
+It is advisable to use multiple processes (`parallel computing') for
+\sfn{sienaBayes}; see Section~\ref{S_multipleProcesses} where it is explained
 that parallelization is different for \sfn{sienaBayes} than for MoM
 estimation by \sfn{siena07}.
 
@@ -15617,12 +15619,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.3.17.tar.gz|\\
+\verb|R CMD check RSiena_1.3.18.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.3.17.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.3.18.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16647,7 +16649,7 @@ and the \texttt{ONWS} (`old news') file, which contain more complete listings.
 \iffalse
 \template
 
-\item 2022-mm-dd GitHub, package version 1.x.x.
+\item 2023-mm-dd GitHub, package version 1.x.x.
 
 
 Changes in RSiena:
@@ -16668,6 +16670,27 @@ Changes in RSiena:
 
 \fi
 
+
+\item 2023-01-29 GitHub, package version 1.3.18.
+
+Changes in RSiena:
+\begin{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+  \item Additional step type \texttt{move} for MH proposal distribution
+    for likelihood estimation (thanks to Charlotte Greenan).
+  \item Accordingly, parameters changed that are used in \sfn{sienaAlgorithmCreate}
+   for probabilities of moves, now summarized in \texttt{prML}; with a new default.
+  \item List elements \texttt{accepts}, \texttt{rejects}, \texttt{aborts} 
+    for \sfn{sienaFit} objects
+    produced by ML estimation improved/corrected by reorganizing them in C++.
+  \item List element \texttt{ac3} added to \sfn{sienaFit} object if \texttt{maxlike}.
+    \end{itemize}
+\item Corrections of documentation:
+   \begin{itemize}
+    \item Extended explanation of maximum likelihood estimation.
+    \end{itemize}
+\end{itemize}
 
 \item 2023-01-06 GitHub, package version 1.3.17
 

@@ -303,6 +303,7 @@ phase3.2 <- function(z, x, ...)
                      format(sfl, width=8, digits=4),
                      '\n', collapse="", sep=""), cf)
         Report ('\n', cf)
+		z$ac3 <- sfl
     }
     for (j in 1:z$pp)
 	{

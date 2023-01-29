@@ -285,6 +285,8 @@ getProbabilitiesFromC <- function(z, index=1, getScores=FALSE)
 		stop("Error in getProbabilitiesFromC")
 	}
 	# Sum the log probabilities for the periods corresponding to each group
+# TODO: change the following sapply into vapply;
+# what is the type of result???
 	logprob <- sapply(anss, "[[", 1)
 	ans[[1]] <- sapply(1:z$nGroup, function(i){sum(logprob[callGrid[,1]==i])})
 	if (getScores)
@@ -323,7 +325,8 @@ getLikelihoods <- function(theta, z, getScores=FALSE, iterSequence)
 		}
 		if (any(iterSequence < 0))
 		{
-			browser()
+			cat("length(z$lik0) = ", length(z$lik0), " in getLikelihoods\n")
+			stop("Error in getLikelihoods")
 		}
 		anss <-	lapply(iterSequence, function(i, z)
 				   getProbabilitiesFromC(z, i, getScores=getScores), z=z)
@@ -340,6 +343,8 @@ getLikelihoods <- function(theta, z, getScores=FALSE, iterSequence)
 #		anss <- parLapply(z$cl, iterSequence, forwardGetProbabilitiesFromC,
 #						z, getScores=getScores)
 	}
+# TODO: change the following sapply into vapply;
+# what is the type of result???
 	lik <- sapply(anss, "[[", 1)
 	sc <- sapply(anss, "[[", 2)
 	deriv <- sapply(anss, "[[", 3)
