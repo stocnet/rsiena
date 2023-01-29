@@ -68,7 +68,7 @@ DependentVariable::DependentVariable(string name,
 	this->lpCreationFunction = new Function();
 	this->lacceptances.resize(NBRTYPES, 0);
 	this->lrejections.resize(NBRTYPES, 0);
-	this->laborts.resize(NBRTYPES, 0);
+//	this->laborts.resize(NBRTYPES, 0);
 
 	NetworkLongitudinalData * pNetworkData =
 		dynamic_cast<NetworkLongitudinalData *>(
@@ -2493,10 +2493,10 @@ void DependentVariable::incrementRejections(int stepType)
  * increments the number of aborted steps
  * for the given steptype for this variable
  */
-void DependentVariable::incrementAborts(int stepType)
-{
-	this->laborts[stepType]++;
-}
+//void DependentVariable::incrementAborts(int stepType)
+//{
+//	this->laborts[stepType]++;
+//}
 
 /**
  * returns the number of accepted steps
@@ -2518,9 +2518,9 @@ int DependentVariable::rejections(int stepType) const
  * returns the number of aborted steps
  * for the given steptype for this variable
  */
-int DependentVariable::aborts(int stepType) const
-{
-	return this->laborts[stepType];
-}
+//int DependentVariable::aborts(int stepType) const
+//{
+//	return this->laborts[stepType];
+//}
 
 }

@@ -17,7 +17,10 @@ enum Aspect {NETWORK, BEHAVIOR};
  */
 
 enum MHStepType {INSDIAG, CANCDIAG, PERMUTE, INSPERM, DELPERM, INSMISS,
-				 DELMISS, INSMISDAT, DELMISDAT, NBRTYPES};
+				 DELMISS, INSMISDAT, DELMISDAT, MOVE, NBRTYPES};
+// This is an implicit way of defining NBRTYPES as the number of step types, 10.
+// INSMISDAT and DELMISDAT are versions of INSPERM and DELPERM
+// that do not have their own probability for selecting a stepType.
 
 // ----------------------------------------------------------------------------
 // Section: Forward declarations
@@ -27,7 +30,7 @@ class MiniStep;
 class Option;
 class DependentVariable;
 class NetworkVariable;
-    
+
 /**
  * This class provides the functionality necessary for simulating an ML model
  * between two observations.
@@ -55,15 +58,17 @@ public:
     	MiniStep * pLastMiniStep);
     void executeMiniSteps(MiniStep * pFirstMiniStep, MiniStep * pLastMiniStep);
 
-	int acceptances(int stepType) const;
-	int rejections(int stepType) const;
-	int aborted(int stepType) const;
+//	int acceptances(int stepType) const;
+//	int rejections(int stepType) const;
+	int aborts(int stepType) const;
+	void incrementAborts(int stepType);
 
     // Metropolis-Hastings steps
 
 	bool insertDiagonalMiniStep();
 	bool cancelDiagonalMiniStep();
 	bool permute(int c0);
+	bool move();
 	bool insertPermute(int c0);
 	bool deletePermute(int c0);
 	bool insertMissing();
@@ -78,7 +83,7 @@ public:
 	void missingBehaviorProbability(double probability);
 	double missingBehaviorProbability() const;
 
-// The currentPermutationLength defines the length of the stretch 
+// The currentPermutationLength defines the length of the stretch
 // that is permuted in a **permute step.
 // It is between a minimum and a maximum value, defined in the algorithm.
 // It is dynamically updated, depending on the acceptance rates.
@@ -94,13 +99,17 @@ public:
 	void recordOutcome(const MiniStep & miniStep, bool accept,
 		int stepType, bool misdat);
 
+    bool smallNeighbourhoodChange(MiniStep * pMiniStep1, MiniStep * pMiniStep2,
+                             DependentVariable * pVariable,
+                             NetworkVariable * pNetworkVariable,
+                             int ego1, int alter1);
     bool neighbourhoodChange(MiniStep * pMiniStep1, MiniStep * pMiniStep2,
                              DependentVariable * pVariable,
                              NetworkVariable * pNetworkVariable,
                              int ego1, int alter1);
-							 
-	void gotoLastState(); 
-    
+
+	void gotoLastState();
+
 
 private:
 	void setStateBefore(MiniStep * pMiniStep);
@@ -115,10 +124,10 @@ private:
 	double lproposalProbability;
 	bool lmissingData;
 	Aspect laspect;
-	double lprobabilityArray[7];
-	int lacceptances[NBRTYPES];
-	int lrejections[NBRTYPES];
-	int laborted[NBRTYPES];
+	double lprobabilityArray[8];// probabilities of MH step types
+//	int lacceptances[NBRTYPES];
+//	int lrejections[NBRTYPES];
+	int laborts[NBRTYPES];
 	double lmissingNetworkProbability;
 	double lmissingBehaviorProbability;
 	// current length of permuted interval

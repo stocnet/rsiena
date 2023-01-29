@@ -127,7 +127,7 @@ maxlikec <- function(z, x, data=NULL, effects=NULL,
 			ans[[4]] <- lapply(anss, "[[", 4)
 		}
     }
-
+	
     FRANstore(f)
 
     if (z$Deriv && !onlyLoglik) ## need to reformat the derivatives
@@ -239,5 +239,115 @@ reformatDerivs <- function(z, f, derivList)
         }
     }
     list(dff, dff2)
+}
+
+##@getProbabilitiesFromC siena07 with maxLike gets loglik from chains in C
+## new for rsiena version 1.3.18
+# used in getLikelihoods
+getProbabilitiesFromC <- function(z, index=1, getScores=FALSE)
+{
+	## expects maximum likelihood parallelisations
+	f <- FRANstore()
+
+	callGrid <- z$callGrid
+	## z$int2 is the number of processors if iterating by period, so 1 means
+	## we are not. Can only parallelize by period!
+	if (nrow(callGrid) == 1)
+	{
+		theta <- z$thetaMat[1,]
+		ans <- .Call(C_getChainProbabilities, PACKAGE = pkgname, f$pData,
+					 f$pModel, as.integer(1), as.integer(1),
+					 as.integer(index), f$myeffects, theta, getScores)
+		anss <- list(ans)
+	}
+	else
+	{
+		if (z$int2 == 1 )
+		{
+			anss <- apply(callGrid, 1,
+						  doGetProbabilitiesFromC, z$thetaMat, index, getScores)
+		}
+		else
+		{
+			use <- 1:(min(nrow(callGrid), z$int2))
+			anss <- parRapply(z$cl[use], callGrid,
+							  doGetProbabilitiesFromC, z$thetaMat, index,
+							  getScores)
+		}
+	}
+	ans <- list()
+# It was the following - must be wrong
+#	ans[[1]] <- sum(sapply(anss, "[[", 1))
+	if (nrow(callGrid) != length(anss))
+	{
+		cat("Error: nrow(callGrid) = ", nrow(callGrid), "; length(anss) = ",
+			length(anss),"\n")
+		stop("Error in getProbabilitiesFromC")
+	}
+	# Sum the log probabilities for the periods corresponding to each group
+# TODO: change the following sapply into vapply;
+# what is the type of result???
+	logprob <- sapply(anss, "[[", 1)
+	ans[[1]] <- sapply(1:z$nGroup, function(i){sum(logprob[callGrid[,1]==i])})
+	if (getScores)
+	{
+		ans[[2]] <- sapply(anss, "[[", 2) # it was rowSums of this
+	}
+	ans[[3]] <- sapply(anss, "[[", 3)
+	ans
+}
+
+
+##@doGetProbabilitiesFromC Maximum likelihood
+doGetProbabilitiesFromC <- function(x, thetaMat, index, getScores)
+{
+# thetaMat <- z$thetaMat # [1,]
+# getScores <- TRUE
+# x <- c(1,1)
+	f <- FRANstore()
+	theta <- thetaMat[x[1], ]
+#	gcp <-
+	.Call(C_getChainProbabilities, PACKAGE = pkgname, f$pData,
+		  f$pModel, as.integer(x[1]), as.integer(x[2]),
+		  as.integer(index), f$myeffects, theta, getScores)
+}
+
+
+##@getLikelihoods algorithms Get likelihoods from C for stored chainss
+getLikelihoods <- function(theta, z, getScores=FALSE, iterSequence)
+{
+	z$thetaMat <- matrix(theta, nrow=1)
+	if (z$maxlike || z$nbrNodes == 1)
+	{
+		if (missing(iterSequence))
+		{
+			iterSequence <- length(z$lik0) : 1
+		}
+		if (any(iterSequence < 0))
+		{
+			cat("length(z$lik0) = ", length(z$lik0), " in getLikelihoods\n")
+			stop("Error in getLikelihoods")
+		}
+		anss <-	lapply(iterSequence, function(i, z)
+				   getProbabilitiesFromC(z, i, getScores=getScores), z=z)
+	}
+	else
+	{
+		stop("getLikelihoods used in different case; look at algorithm.r")
+#		if (missing(iterSequence))
+#		{
+#			blocksize <- ceiling(z$nIter / z$nbrNodes)
+#			iterSequence <- blocksize : 1
+#			iterSequence <- rep(iterSequence, z$nbrNodes)[1:z$nIter]
+#		}
+#		anss <- parLapply(z$cl, iterSequence, forwardGetProbabilitiesFromC,
+#						z, getScores=getScores)
+	}
+# TODO: change the following sapply into vapply;
+# what is the type of result???
+	lik <- sapply(anss, "[[", 1)
+	sc <- sapply(anss, "[[", 2)
+	deriv <- sapply(anss, "[[", 3)
+	list(lik=lik, sc=sc, deriv=deriv)
 }
 

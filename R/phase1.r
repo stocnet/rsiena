@@ -216,7 +216,7 @@ phase1.2 <- function(z, x, ...)
 	    z$dfra[outer(z$fixed, z$fixed, '|')] <- 0
 	    diag(z$dfra)[z$fixed] <- 1.0
 	    z$mnfra[z$fixed] <- 0.0
-	    z$sf[ , z$fixed] <- 0	    
+	    z$sf[ , z$fixed] <- 0
 	  }
 	  else
 	  {
@@ -224,7 +224,7 @@ phase1.2 <- function(z, x, ...)
 	    z$dfra[outer(z$fixed & !z$gmmEffects, z$fixed & !z$gmmEffects, '|')] <- 0
 	    diag(z$dfra)[z$fixed & !z$gmmEffects] <- 1.0
 	    z$mnfra[z$fixed & !z$gmmEffects] <- 0.0
-	    z$sf[ , z$fixed & !z$gmmEffects] <- 0		    
+	    z$sf[ , z$fixed & !z$gmmEffects] <- 0
 	  }
 	}
 	# Manage derivative matrix
@@ -255,14 +255,14 @@ phase1.2 <- function(z, x, ...)
 		}
 	}
 	else if (z$gmm)
-	{ 
+	{
 	  # qxq covariance matrix of the statistics
 	  sigmagmm <- cov(t(apply(z$sf2, 1, function(x) colSums(x)) - z$targets))
 	  W <- solve(sigmagmm) # Matrix of GMoM weights
 	  gamma <- z$dfra[,-which(z$gmmEffects==TRUE)] # gammaT qxp matrix of first order derivatives
 	  B0 <- t(gamma) %*% W
 	  B <- solve(diag(sqrt(rowSums(B0*B0)))) %*% B0 # Row-normlized matrix B
-	  D0 <- B %*% gamma # Matrix D = B * gammaT 
+	  D0 <- B %*% gamma # Matrix D = B * gammaT
 	  if (inherits(try(dinvGmm <- solve(D0), silent=TRUE), "try-error"))
 	  {
 	    Report('Error message for inversion of dfra: \n', cf)
@@ -296,7 +296,7 @@ phase1.2 <- function(z, x, ...)
 	}
 	# Partial diagonalization of derivative matrix
 	# for use if 0 < x$diagonalize < 1.
-	if (!z$gmm) 
+	if (!z$gmm)
 	{
 	  temp <- (1-x$diagonalize)*z$dfra +
 	    x$diagonalize*diag(diag(z$dfra), nrow=dim(z$dfra)[1])
@@ -307,7 +307,7 @@ phase1.2 <- function(z, x, ...)
 	  z$dinvv <- solve(temp)
 	}
 	else
-	{	  
+	{
 	  temp <- (1-x$diagonalize)*dinvGmm +
 	    x$diagonalize*diag(diag(dinvGmm), nrow=dim(dinvGmm)[1])
 	  temp[which(z$fixed & !z$gmmEffects), ] <- 0.0
@@ -332,14 +332,14 @@ phase1.2 <- function(z, x, ...)
 			format(0.5 * x$firstg, digits = 5, nsmall = 5, width = 8), '.\n'),
 		cf, sep='')
 	fchange <- 0.5 * x$firstg * fchange
-	if (!z$gmm) 
+	if (!z$gmm)
 	{
 	fchange[z$fixed] <- 0.0
 	}
 	else
 	{
 	  fchange[which(z$fixed & !z$gmmEffects)] <- 0.0
-	}	
+	}
 	##check if jump is too large
 	maxrat<- max(abs(fchange / z$scale))
 	if (maxrat > 10.0)
@@ -430,12 +430,12 @@ CalculateDerivative <- function(z, x)
 			return(z)
 		}
 	}
-	if (!z$gmm) 
+	if (!z$gmm)
   	{
 		dfra[outer(z$fixed,z$fixed,'|')] <- 0
 		diag(dfra)[z$fixed] <- 1.0
-  	} 
-  	else 
+  	}
+  	else
   	{
     	dfra[outer(z$fixed & !z$gmmEffects, z$fixed & !z$gmmEffects,'|')] <- 0
     	diag(dfra)[z$fixed & !z$gmmEffects] <- 1.0
@@ -630,10 +630,22 @@ createSiena07stores <- function(z, nIterations, f)
 	if (!z$sf2.byIteration){ z$ssc <- NULL}
 	if (z$maxlike)
 	{
-		## misdat steps are separated out giving 9 types
-		z$accepts <- array(0, dim=c(nIterations, z$nDependentVariables, 9))
-		z$rejects <- array(0, dim=c(nIterations, z$nDependentVariables, 9))
-		z$aborts <- array(0, dim=c(nIterations, z$nDependentVariables, 9))
+		## misdat steps are separated out giving 10 types
+		z$accepts <- array(0, dim=c(nIterations, z$nDependentVariables, 10))
+		z$rejects <- array(0, dim=c(nIterations, z$nDependentVariables, 10))
+		z$aborts <- array(0, dim=c(nIterations, z$nDependentVariables, 10))
+		dimnames(z$accepts) <- list(NULL, NULL,
+				c("InsDiag", "CancDiag", "Permute", "InsPerm",
+				"DelPerm", "InsMiss",
+				"DelMiss", "InsMisdat", "DelMisdat", "Move"))
+		dimnames(z$rejects) <- list(NULL, NULL,
+				c("InsDiag", "CancDiag", "Permute", "InsPerm",
+				"DelPerm", "InsMiss",
+				"DelMiss", "InsMisdat", "DelMisdat", "Move"))
+		dimnames(z$aborts) <- list(NULL, NULL,
+				c("InsDiag", "CancDiag", "Permute", "InsPerm",
+				"DelPerm", "InsMiss",
+				"DelMiss", "InsMisdat", "DelMisdat", "Move"))
 	}
 	z$npos <- rep(0, z$pp)
 	if (!is.null(z$cconditional) && z$cconditional)

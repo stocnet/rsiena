@@ -20,8 +20,8 @@ sienaAlgorithmCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
      dolby=TRUE, maxlike = FALSE, gmm = FALSE, diagonalize=0.2*!maxlike,
      condvarno = 0, condname = "", firstg = 0.2, reduceg = 0.5,
      cond = NA, findiff = FALSE, seed = NULL,
-     pridg=0.05, prcdg=0.05, prper=0.2, pripr=0.3, prdpr=0.3,
-     prirms=0.05, prdrms=0.05, maximumPermutationLength=40,
+     prML=2,
+     maximumPermutationLength=40,
      minimumPermutationLength=2, initialPermutationLength=20,
      modelType=NULL, behModelType=NULL, mult=5, simOnly=FALSE, localML=FALSE,
      truncation=5, doubleAveraging=0, standardizeVar=(diagonalize<1),
@@ -32,8 +32,8 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
      dolby=TRUE, maxlike = FALSE, gmm = FALSE, diagonalize=0.2*!maxlike,
      condvarno = 0, condname = "", firstg = 0.2, reduceg = 0.5,
      cond = NA, findiff = FALSE, seed = NULL,
-     pridg=0.05, prcdg=0.05, prper=0.2, pripr=0.3, prdpr=0.3,
-     prirms=0.05, prdrms=0.05, maximumPermutationLength=40,
+     prML=2, 
+	 maximumPermutationLength=40,
      minimumPermutationLength=2, initialPermutationLength=20,
      modelType=NULL, behModelType=NULL, mult=5, simOnly=FALSE, localML=FALSE,
      truncation=5, doubleAveraging=0, standardizeVar=(diagonalize<1),
@@ -109,20 +109,10 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
     differences. If FALSE, use scores.}
   \item{seed}{Integer. Starting value of random seed. Not used if
     parallel testing.}
-  \item{pridg}{Real number. Probability used in Metropolis-Hastings
-    routine in ML estimation. See Siena_Algorithms.pdf.}
-  \item{prcdg}{Real number. Probability used in Metropolis-Hastings
-    routine in ML estimation. See Siena_Algorithms.pdf.}
-  \item{prper}{Real number. Probability used in Metropolis-Hastings
-    routine in ML estimation. See Siena_Algorithms.pdf.}
-  \item{pripr}{Real number. Probability used in Metropolis-Hastings
-    routine in ML estimation. See Siena_Algorithms.pdf.}
-  \item{prdpr}{Real number. Probability used in Metropolis-Hastings
-    routine in ML estimation. See Siena_Algorithms.pdf.}
-  \item{prirms}{Real number. Probability used in Metropolis-Hastings
-    routine in ML estimation. See Siena_Algorithms.pdf.}
-  \item{prdrms}{Real number. Probability used in Metropolis-Hastings
-    routine in ML estimation. See Siena_Algorithms.pdf.}
+  \item{prML}{Either one real number, or a vector of 7 numbers.
+    Determines update probabilities used in Metropolis-Hastings
+    routine in ML estimation. Should be nonnegative; if a vector,
+    the sum should be <= 1. See \code{Details}.}
   \item{maximumPermutationLength}{Maximum length of permutation in steps in ML
     estimation.}
   \item{minimumPermutationLength}{Minimum length of permutation in steps in ML
@@ -150,9 +140,9 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
     between the observations at start and finish of the wave (and rounded).
     Decreasing \code{mult} below a certain value has no further effect.\cr
      \code{mult} can be either a number (which needs to be positive) or a vector
-    of numbers, of length equal to the total number of periods. Note that for 
+    of numbers, of length equal to the total number of periods. Note that for
     multi-group data, the total number of periods is equal to the number
-    of groups times the number of periods per group 
+    of groups times the number of periods per group
     (if the latter is constant).}
   \item{simOnly}{Logical: If TRUE, then the calculation of the covariance
     matrix and standard errors of the estimates at the end of
@@ -180,16 +170,23 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
   \code{\link{siena07}}.
   This function creates an object with the elements required to control the
   Robbins-Monro algorithm. Those not
-  available as arguments can be changed manually where desired.\cr
+  available as arguments can be changed manually when desired.\cr
+  The value \code{prML=1} defines the defaults valid in RSiena up to version
+  1.3.16. \code{prML=2} is the new default.\cr
+  If \code{prML} is given as a vector of 7 probabilities, these are,
+  consecutively: the probabilities of inserting a diagonal step, deleting a
+  diagonal step, permuting, inserting a CCP, deleting a CCP, inserting random
+  missing, deleting random missing; the residual (1 minus the sum)
+  is the probability of a move step.\cr
   Further information about the implementation of the algorithm is in \cr
-  https://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf.\cr
+  \url{https://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf}.\cr
   Some of the examples use \code{projname=NULL}; this is just for the sake of
   checking the examples, not necessarily intended for normal use.
 }
 \value{Returns an object of class \code{sienaAlgorithm} containing
   values implied by the parameters.}
 \references{ \itemize{
-\item For the model types: \cr 
+\item For the model types: \cr
    Tom A. B. Snijders and Mark Pickup,
    Stochastic Actor-Oriented Models for Network Dynamics.
    In: Jennifer N. Victor, Mark Lubell and Alexander H. Montgomery,

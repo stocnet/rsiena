@@ -17,23 +17,25 @@ sienaModelCreate <- function(fn,
 	maxlike=FALSE, gmm=FALSE, diagonalize=0.2*!maxlike,
 	condvarno=0, condname='',
 	firstg=0.2, reduceg=0.5, cond=NA, findiff=FALSE,  seed=NULL,
-	pridg=0.05, prcdg=0.05, prper=0.2, pripr=0.3, prdpr=0.3,
-	prirms=0.05, prdrms=0.05, maximumPermutationLength=40,
+	prML=2,
+#	pridg=0.05, prcdg=0.05, prper=0.2, pripr=0.3, prdpr=0.3,
+#	prirms=0.05, prdrms=0.05,
+	maximumPermutationLength=40,
 	minimumPermutationLength=2, initialPermutationLength=20,
 	modelType=NULL, behModelType=NULL, mult=5, simOnly=FALSE, localML=FALSE,
 	truncation=5, doubleAveraging=0, standardizeVar=(diagonalize<1),
 	lessMem=FALSE)
 {
 	model <- NULL
-	checking <- any(grepl("_R_CHECK", names(Sys.getenv()))) 
+	checking <- any(grepl("_R_CHECK", names(Sys.getenv())))
 	if (is.null(projname) | checking)
 	{
 		model$projname <- tempfile("Siena")
 		if (checking)
-		{		
-	cat('If you use this algorithm object, siena07 will create/use an output file', 
+		{
+	cat('If you use this algorithm object, siena07 will create/use an output file',
 				paste('Siena','.txt',sep=''),'.\n')
-		
+
 		}
 		else
 		{
@@ -47,7 +49,7 @@ sienaModelCreate <- function(fn,
 		if (is.character(projname))
 		{
 			model$projname <- projname
-			cat('If you use this algorithm object, siena07 will create/use an output file', 
+			cat('If you use this algorithm object, siena07 will create/use an output file',
 				paste(model$projname,'.txt',sep=''),'.\n')
 		}
 		else
@@ -151,13 +153,51 @@ sienaModelCreate <- function(fn,
 		model$UniversalOffset <- Offset
 	}
 	model$randomSeed <- seed
-	model$pridg <- pridg
-	model$prcdg <- prcdg
-	model$prper <- prper
-	model$pripr <- pripr
-	model$prdpr <- prdpr
-	model$prirms <- prirms
-	model$prdrms <- prdrms
+	if (length (prML) == 1)
+	{
+		if (prML <= 1) # old default
+#	pridg=0.05, prcdg=0.05, prper=0.2, pripr=0.3, prdpr=0.3,
+#	prirms=0.05, prdrms=0.05,
+		{
+			model$pridg <-  0.05   # insert diagonal
+			model$prcdg <-  0.05   # cancel diagonal
+			model$prper <-  0.2    # permute
+			model$pripr <-  0.3    # insert permute (CCP)
+			model$prdpr <-  0.3    # delete permute (CCP)
+			model$prirms <- 0.05   # insert random missing
+			model$prdrms <- 0.05   # delete random missing
+			# prob(move) = 0
+		}
+		else  # prML == 2 new default
+		{
+			model$pridg <-  0.05   # insert diagonal
+			model$prcdg <-  0.05   # cancel diagonal
+			model$prper <-  0      # permute
+			model$pripr <-  0.3    # insert permute (CCP)
+			model$prdpr <-  0.3    # delete permute (CCP)
+			model$prirms <- 0.05   # insert random missing
+			model$prdrms <- 0.05   # delete random missing
+			# prob(move) = 0.2
+		}
+	}
+	else
+	{
+		if (length(prML) != 7)
+		{
+			stop("prML should have length 1 or 7")
+		}
+		if ((sum(prML)> 1) | (min(prML) < 0))
+		{
+			stop("prML should have nonnegative numbers with a sum <= 1")
+		}
+		model$pridg <- prML[1]    # insert diagonal
+		model$prcdg <- prML[2]    # cancel diagonal
+		model$prper <- prML[3]    # permute
+		model$pripr <- prML[4]    # insert permute (CCP)
+		model$prdpr <- prML[5]    # delete permute (CCP)
+		model$prirms <- prML[6]   # insert random missing
+		model$prdrms <- prML[7]   # delete random missing
+	}
 	model$maximumPermutationLength <- maximumPermutationLength
 	model$minimumPermutationLength <- minimumPermutationLength
 	model$initialPermutationLength <- initialPermutationLength

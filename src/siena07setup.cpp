@@ -1057,19 +1057,19 @@ SEXP mlMakeChains(SEXP DATAPTR, SEXP MODELPTR,
 				pMLSimulation->rVariables();
 			int numberVariables = rVariables.size();
 
-			SEXP accepts1 = PROTECT(allocMatrix(INTSXP, numberVariables, 9));
-			SEXP rejects1 = PROTECT(allocMatrix(INTSXP, numberVariables, 9));
-			SEXP aborts1 = PROTECT(allocVector(INTSXP, 9));
+			SEXP accepts1 = PROTECT(allocMatrix(INTSXP, numberVariables, NBRTYPES));
+			SEXP rejects1 = PROTECT(allocMatrix(INTSXP, numberVariables, NBRTYPES));
+			SEXP aborts1 = PROTECT(allocVector(INTSXP, NBRTYPES));
 			int * iaccepts = INTEGER(accepts1);
 			int * irejects = INTEGER(rejects1);
 			int * iaborts = INTEGER(aborts1);
-			for (int i = 0; i < 9; i++)
+			for (int i = 0; i < NBRTYPES; i++)
 			{
-				iaborts[i] = pMLSimulation->aborted(i);
+				iaborts[i] = pMLSimulation->aborts(i);
 				for (int j = 0; j < numberVariables; j++)
 				{
-					iaccepts[i + 9 * j] = rVariables[j]->acceptances(i);
-					irejects[i + 9 * j] = rVariables[j]->rejections(i);
+					iaccepts[i + NBRTYPES * j] = rVariables[j]->acceptances(i);
+					irejects[i + NBRTYPES * j] = rVariables[j]->rejections(i);
 				}
 			}
 			SET_VECTOR_ELT(accepts, periodFromStart, accepts1);

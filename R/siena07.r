@@ -208,6 +208,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	time1 <-  proc.time()['elapsed']
 	Report(c("Total computation time", round(time1 - time0, digits=2),
 			"seconds.\n"), outf)
+z$compTime <- round(time1 - time0, digits=2)
 
 	if (useCluster)
 	{
