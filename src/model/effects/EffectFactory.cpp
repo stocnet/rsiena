@@ -450,6 +450,22 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new DifferenceFunction(pFirstFunction, pSecondFunction));
 	}
+	else if (effectName == "inPop_dya")
+	{
+		string networkName = pEffectInfo->variableName();
+		AlterFunction * pFirstFunction =
+			new InDegreeFunction(pEffectInfo->variableName());
+		ConstantFunction * pSecondFunction =
+			new ConstantFunction(pEffectInfo->variableName(),
+				AVERAGE_IN_DEGREE);
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pFirstFunction = new IntSqrtFunction(pFirstFunction);
+			pSecondFunction->pFunction(sqrt);
+		}
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new DifferenceFunction(pFirstFunction, pSecondFunction));
+	}
 	else if (effectName == "X")
 	{
 		pEffect = new DyadicCovariateMainEffect(pEffectInfo);
@@ -666,6 +682,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			new SameCovariateInTiesFunction(networkName, covariateName, true, true, false);
 		AlterFunction * pStatisticFunction =
 			new SameCovariateInTiesFunction(networkName, covariateName, true, true, true);
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pChangeFunction = new IntSqrtFunction(pChangeFunction);
+			pStatisticFunction = new IntSqrtFunction(pStatisticFunction);
+		}
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}
@@ -677,6 +698,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			new SameCovariateInTiesFunction(networkName, covariateName, false, true, false);
 		AlterFunction * pStatisticFunction =
 			new SameCovariateInTiesFunction(networkName, covariateName, false, true, true);
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pChangeFunction = new IntSqrtFunction(pChangeFunction);
+			pStatisticFunction = new IntSqrtFunction(pStatisticFunction);
+		}
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}
@@ -948,7 +974,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "avDegIntn")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-						new DegreeFunction(pEffectInfo->interactionName1(), 
+						new DegreeFunction(pEffectInfo->interactionName1(),
 									pEffectInfo->internalEffectParameter()));
 	}
 	else if (effectName == "doubleOutAct")

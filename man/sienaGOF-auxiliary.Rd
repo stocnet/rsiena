@@ -85,7 +85,7 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
  they will be supplemented in due time by statistics depending on networks and
  behavior jointly.
  The examples below give a number of other statistics, using the packages
- sna and igraph.
+ \code{sna} and \code{igraph}.
 
  The \code{levls} parameter must be adapted to the range of values that is
  considered important. For indegrees and outdegrees, the whole range should
@@ -129,7 +129,8 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
   observed or simulated behavioral variable for the values in \code{levls}.
 
  \code{TriadCensus} returns a named vector, the distribution of the
-  Holland-Leinhardt triad census according to the algorithm by Batagelj and Mrvar.
+  Holland-Leinhardt triad census according to the algorithm by
+  Batagelj and Mrvar.
 
  \code{mixedTriadCensus} returns a named vector, the distribution of the
   mixed triad census of Hollway, Lomi, Pallotti, and Stadtfeld (2017).
@@ -161,15 +162,16 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
   To treat the objects returned by this function as regular matrices,
   it is necessary to attach the \code{Matrix} package in your session.
 
-\code{networkExtraction} returns the network as an edge list of class "network"
-  according to the network package (used for package sna).
+\code{networkExtraction} returns the network as an edge list of class
+  \code{network} according to the \code{network} package
+  (used for package \code{sna}).
   Missing values and structural values are treated as in
   \code{sparseMatrixExtraction}, see above.
 
 \code{behaviorExtraction} returns the dependent behavior
   variable as an integer vector.
   Values for actors with a missing value for wave=period or period+1 are
-  transformed to NA.
+  transformed to \code{NA}.
 }
 
 \references{
@@ -188,9 +190,9 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
   Goodness of fit for stochastic actor-orientedmodels.
   \emph{Methodological Innovations}, 12:2059799119884282.
 \item Parimalarangan S., Slota, G.M., and Madduri, K. (2017).
- Fast parallel graph triad census and triangle counting on shared-memory platforms,
- 2017 IEEE International Parallel and Distributed Processing Symposium Workshops
- (IPDPSW), Lake Buena Vista, FL, pp. 1500-1509.
+ Fast parallel graph triad census and triangle counting on shared-memory
+  platforms, 2017 IEEE International Parallel and Distributed Processing
+  Symposium Workshops (IPDPSW), Lake Buena Vista, FL, pp. 1500-1509.
 }
 }
 \author{Josh Lospinoso, Tom Snijders}

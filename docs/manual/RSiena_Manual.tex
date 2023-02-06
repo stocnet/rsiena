@@ -191,7 +191,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.3.18.
+This version was renewed for \RS version 1.3.19.
 \end{abstract}
 
 
@@ -1129,7 +1129,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.3.18).
+  identified by a version number (e.g.\ 1.3.19).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -9388,6 +9388,20 @@ and
  relatively less important than the same differences between low
  in-degrees;
 
+
+ \item {\em in-degree related popularity dyadic effect} \texttt{(inPop\_dya)},
+ 	 defined as the elementary effect version of the half-centered
+ squared in-degree of the other to whom $i$ is tied,\\
+ $ f^{\rm net,\, el}_{i\vit}(x)  =  \big(  x_{+j} - \bar x_{+.}\big)$ ,\\
+ where\\
+ $ \bar x_{+.} \,=\,  \frac{1}{MK} \sum_{m=1}^M \sum_{i,j} x_{ij} \ ,  $ \\
+ with $K$ the number of $j$ (for one-mode networks this is $n$,
+ for two-mode networks this is the number of nodes in the second mode);\\
+ for internal effect parameter $p=2$, it is defined by\\
+ $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{  x_{+j}}  - \sqrt{ \bar x_{+.}} $ \ ; \\
+ since this is an elementary effect, it can be used in interactions
+ and in endowment and creation functions;
+
  \item {\em out-degree related popularity effect} \texttt{(outPop)}
  (earlier called {\em activity} or {\em activity of alter effect}), defined by
   the sum of the out-degrees
@@ -9439,7 +9453,7 @@ and
  where\\
  $ \bar x_{+.} \,=\,  \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij} \ $ ;
  for internal effect parameter $p=2$, it is defined by\\
- $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{   x_{+i} - \bar x_{+.}} $ \ ; \\
+ $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{   x_{+i}} - \sqrt{\bar x_{+.}} $ \ ; \\
  since this is an elementary effect, it can be used in interactions
  and in endowment and creation functions;
 
@@ -9471,7 +9485,7 @@ and
  where\\
  $ \bar x_{.+} \,=\,  \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij} \ ;  $ \\
  for internal effect parameter $p=2$, it is defined by\\
- $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{  x_{i+} - \bar x_{.+}} $ \ ; \\
+ $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{  x_{i+}} -  \sqrt{\bar x_{.+}} $ \ ; \\
  since this is an elementary effect, it can be used in interactions
  and in endowment and creation functions;
 
@@ -9499,7 +9513,7 @@ and
  where \\
  $ \bar x^{(r)}  \,=\, \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij}\,x_{ji} \ ;  $ \\
  for internal effect parameter $p=2$, it is defined by\\
- $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{ x^{(r)}_{i} - \bar x^{(r)}} $ \ ; \\
+ $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{ x^{(r)}_{i}} - \sqrt{\bar x^{(r)}} $ \ ; \\
  since this is an elementary effect, it can be used in interactions
  and in endowment and creation functions;
 
@@ -10109,7 +10123,7 @@ the following effects are available:
  $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, v_j$;
 
  \item {\em covariate squared - alter} or {\em squared covariate-related popularity} \texttt{(altSqX)},
- defined by the sum of the squared centered covariate over all actors to whom $i$ has a tie,
+ defined by the sum of the squared covariate over all actors to whom $i$ has a tie,
  (not included if the variable has range less than 2)\\
  $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, v_j^2$;
 
@@ -10140,7 +10154,7 @@ the following effects are available:
 
  \item {\em covariate squared - ego} or {\em squared covariate-related activity}
  \texttt{(egoSqX)},
- defined by $i$'s out-degree weighted by his covariate value,\\
+ defined by $i$'s out-degree weighted by his covariate value squared,\\
  $s^{\rm net}_{i\vit}(x) = v_i^2 \, x_{i+} $;
 
  \item {\em right threshold covariate ego}
@@ -10315,7 +10329,9 @@ the following effects are available:
 \texttt{(sameXInPop)} defined by the
  number of incoming ties received by those to whom $i$ is tied
  and sent by others who have the same covariate value as $i$,\\
- $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sum_h x_{hj}\, I\{v_i = v_h \} $;
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sum_h x_{hj}\, I\{v_i = v_h \} $;\\
+
+ for internal effect parameter $p=2$, it is defined by\\
 
  \item {\em indegree popularity from different covariate}
 \texttt{(diffXInPop)} defined by the
@@ -15619,12 +15635,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.3.18.tar.gz|\\
+\verb|R CMD check RSiena_1.3.19.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.3.18.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.3.19.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16671,6 +16687,32 @@ Changes in RSiena:
 \fi
 
 
+\item 2023-02-06 GitHub, package version 1.3.19.
+
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects:
+   \begin{itemize}
+  \item New effect \texttt{inPop\_dya} .
+  \item Parameter 2 allowed for \texttt{sameXInPop} , \texttt{diffXInPop}.
+    \end{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+  \item \sfn{coCovar} now accepts vectors with at least one non-missing value.
+    \end{itemize}
+\item Coding:
+   \begin{itemize}
+   \item \texttt{siena07internals.cpp} adapted to be compatible with new
+   \texttt{clang 16} C++ compiler (thanks to Brian Ripley).
+    \end{itemize}
+\item Corrections of documentation:
+   \begin{itemize}
+  \item Help page for \sfn{siena07} corrected with respect to \texttt{x\$lessMem}.
+    \end{itemize}
+\end{itemize}
+
+
 \item 2023-01-29 GitHub, package version 1.3.18.
 
 Changes in RSiena:
@@ -16681,10 +16723,12 @@ Changes in RSiena:
     for likelihood estimation (thanks to Charlotte Greenan).
   \item Accordingly, parameters changed that are used in \sfn{sienaAlgorithmCreate}
    for probabilities of moves, now summarized in \texttt{prML}; with a new default.
-  \item List elements \texttt{accepts}, \texttt{rejects}, \texttt{aborts} 
+  \item List elements \texttt{accepts}, \texttt{rejects}, \texttt{aborts}
     for \sfn{sienaFit} objects
     produced by ML estimation improved/corrected by reorganizing them in C++.
-  \item List element \texttt{ac3} added to \sfn{sienaFit} object if \texttt{maxlike}.
+  \item List element \texttt{ac3}
+  (auto-correlations of statistics during Phase 3)
+    added to  \sfn{sienaFit} object produced by  \sfn{siena07} for ML estimation.
     \end{itemize}
 \item Corrections of documentation:
    \begin{itemize}

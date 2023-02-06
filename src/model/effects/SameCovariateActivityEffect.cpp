@@ -102,7 +102,6 @@ double SameCovariateActivityEffect::calculateContribution(int alter) const
 		contribution *= 2;
 		contribution++;
 	}
-
 	return contribution;
 }
 
@@ -159,7 +158,6 @@ double SameCovariateActivityEffect::tieStatistic(int alter)
 			}
 		}
 	}
-
 	return contribution;
 }
 

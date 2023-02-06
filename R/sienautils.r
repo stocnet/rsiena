@@ -122,26 +122,35 @@ sienaNodeSet <- function(n, nodeSetName="Actors", names=NULL)
 }
 
 ##@coCovar Create
-coCovar <- function(val, centered=TRUE, nodeSet="Actors", warn=TRUE, imputationValues=NULL)
+coCovar <- function(val, centered=TRUE, nodeSet="Actors", warn=TRUE, 
+													imputationValues=NULL)
 {
     ##val should be vector, numeric or factor
-	if ((sum(!is.na(val))==0) & warn)
+	if (all(is.na(val)))
 	{
-		warning('Note: all values are missing.')
+		stop("all values are missing")
 	}
     if (!is.vector(val))
 	{
         stop("val must be a vector")
 	}
-    if (!(is.numeric(val) || is.factor(val)))
+    if (!(is.numeric(val) || is.factor(val) || (all(is.na(val)))))
 	{
         stop("val must be numeric or a factor")
 	}
-	if (!is.factor(val))
+	if (warn)
 	{
-		if ((var(val, na.rm=TRUE)==0) & warn)
+		if (sum(!is.na(val)) == 1)
 		{
-			warning('Note: all values are identical to ', mean(val, na.rm=TRUE),'.')
+			warning("Note: only one value is non-missing.")
+		}
+		else if (!is.factor(val)) 
+		{
+			if (var(val, na.rm=TRUE)==0)
+			{
+				warning('Note: all non-missing values are identical to ', 
+							mean(val, na.rm=TRUE),'.')
+			}
 		}
 	}
     if (!is.character(nodeSet))
