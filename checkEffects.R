@@ -1148,7 +1148,7 @@ myeff <- setEffect(myeff,avInAltW, name = 'beh',
                    parameter = 2)
 (ans1 <- siena07(mymodel, data = mydata, effects = myeff))
 ans1$targets
-avinwalt <-  divi( ((dcova - mdc)*t(s501)) %*% (beh[,,2] - mbh), 
+avinwalt <-  divi( ((dcova - mdc)*t(s501)) %*% (beh[,,2] - mbh),
 					rowSums(t(s501)*(dcova-mdc)))
 sum( (beh[,,2] - mbh) * avinwalt ) # avInAltW OK
 
@@ -1159,8 +1159,8 @@ myeff <- includeEffects(myeff,avWInAlt, name = 'beh',
 (ans1 <- siena07(mymodel, data = mydata, effects = myeff))
 ans1$targets
 sum(divi(rowSums(t(s501) * dcov_c), colSums(s501)) * beh2) # avWInAlt OK
-	 
-# totInAltW 
+
+# totInAltW
 myeff <- getEffects(mydata)
 myeff <- includeEffects(myeff,totInAltW, name = 'beh',
                         interaction1 = 'mynet', interaction2 = 'dcov')
@@ -1168,7 +1168,7 @@ myeff <- includeEffects(myeff,totInAltW, name = 'beh',
 ans1$targets
 sum(rowSums(t(s501) * dcov_c %*% diag(beh2)) * beh2) # totInAltW OK
 
-# totWInAlt 
+# totWInAlt
 myeff <- getEffects(mydata)
 myeff <- includeEffects(myeff,totWInAlt, name = 'beh',
                         interaction1 = 'mynet', interaction2 = 'dcov')
@@ -1201,3 +1201,107 @@ XX <- s501 %*% t(s501)
 diag(XX) <- 0
 tXX <- 1*(XX >= 1)
 sum(tXX * s502) # 56 OK
+
+
+################################################################################
+### check outAct_ego, reciAct_ego, inPop_dya
+################################################################################
+
+mynet <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+mydata <- sienaDataCreate(mynet)
+mymodel <- sienaModelCreate(projname=NULL, seed=534)
+myeff <- getEffects(mydata)
+effectsDocumentation(myeff)
+myeff <- includeEffects(myeff, outAct)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+sum(rowSums(s502)^2) # OK
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, outAct_ego)
+(ans1 <- siena07(mymodel, data=mydata, effects=myeff))
+ans1$targets
+(xbar <- (mean(rowSums(s501)) + mean(rowSums(s502)))/2)
+sum(rowSums(s502)*(rowSums(s502)-xbar)) # OK
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, outAct_ego, parameter=2)
+(ans2 <- siena07(mymodel, data=mydata, effects=myeff))
+ans2$targets
+sum(rowSums(s502)*(sqrt(rowSums(s502))-sqrt(xbar))) # OK
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, reciAct_ego)
+(ans1 <- siena07(mymodel, data=mydata, effects=myeff))
+ans1$targets
+(xbar <- (mean(rowSums(s501*t(s501))) + mean(rowSums(s502*t(s502))))/2)
+sum(rowSums(s502)*(rowSums(s502*t(s502))-xbar)) # OK
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, reciAct_ego, parameter=2)
+(ans2 <- siena07(mymodel, data=mydata, effects=myeff))
+ans2$targets
+sum(rowSums(s502)*(sqrt(rowSums(s502*t(s502)))-sqrt(xbar))) # OK
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, inPop_dya)
+(ans1 <- siena07(mymodel, data=mydata, effects=myeff))
+ans1$targets
+(xbar <- (mean(colSums(s501)) + mean(colSums(s502)))/2)
+sum(colSums(s502)*(colSums(s502)-xbar)) # OK
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, inPop_dya, parameter=2)
+(ans2 <- siena07(mymodel, data=mydata, effects=myeff))
+ans2$targets
+sum(colSums(s502)*(sqrt(colSums(s502))-sqrt(xbar))) # OK
+
+
+
+################################################################################
+### check sameXInPop, diffXInPop
+################################################################################
+
+mynet <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+
+# construct actor covariate
+(five <- rep(1:5,10))
+five <- coCovar(five, centered=FALSE)
+
+mydata <- sienaDataCreate(mynet, five)
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,inPop)
+myeff <- includeEffects(myeff,sameXInPop,interaction1='five')
+myeff
+mymodel <- sienaModelCreate(projname=NULL, seed=1234)
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# check target statistics: indegree popularity
+sum((colSums(s502))^2) # 386 OK
+# check target statistics: sameXInPop
+samef <- 1*outer(five,five,FUN="==")
+sum(diag(t(s502) %*% samef %*% s502))
+sum(s502 * (samef %*% s502))
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff,sameXInPop,interaction1='five', parameter=2)
+myeff
+(ans1 <- siena07(mymodel, data=mydata, effects=myeff))
+ans1$targets
+sum(s502 * sqrt(samef %*% s502)) # OK
+
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,diffXInPop,interaction1='five')
+myeff
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+difff <- 1*outer(five,five,FUN="!=")
+sum(s502 * (difff %*% s502)) # OK
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff,diffXInPop,interaction1='five', parameter=2)
+myeff
+(ans1 <- siena07(mymodel, data=mydata, effects=myeff))
+ans1$targets
+sum(s502 * sqrt(difff %*% s502)) # OK
+
+
+
+

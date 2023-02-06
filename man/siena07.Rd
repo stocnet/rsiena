@@ -175,7 +175,7 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
   \item{dfra}{Matrix of estimated derivatives.}
   \item{sf}{Matrix of simulated deviations from targets in phase 3.}
   \item{sf2}{Array of periodwise deviations from simulations in phase 3.
-    Not included if \code{x$lessMem=FALSE}.}
+    Not included if \code{x$lessMem=TRUE}.}
   \item{tconv}{t-statistics for convergence.}
   \item{tmax}{maximum absolute t-statistic for convergence for
     non-fixed parameters.}
@@ -186,7 +186,7 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
     starting with second wave; for ML, zero matrix.}
   \item{ssc}{Score function contributions for each wave for each
     simulation in phase 3. Not included if finite difference method is used
-    or if \code{x$lessMem=FALSE}.}
+    or if \code{x$lessMem=TRUE}.}
   \item{scores}{Score functions, added over waves, for each
     simulation in phase 3. Only included
     if \code{x$lessMem=FALSE}.}

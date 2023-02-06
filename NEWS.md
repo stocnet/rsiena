@@ -1,3 +1,20 @@
+# RSiena 1.3.19
+
+## 
+   
+2023-02-06
+
+## Changes in RSiena:  
+### Coding:
+  * `siena07internals.cpp` adapted to be compatible with new clang 16 C++ 
+    compiler (thanks to Brian Ripley).
+### New effects:
+  * New effect `inPop_dya`.
+  * Parameter 2 for `sameXInPop`, `diffXInPop`.
+### Corrections:
+  * Help page for `siena07` corrected with respect to `x$lessMem`.
+
+
 # RSiena 1.3.18
 
 ## 
