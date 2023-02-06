@@ -9387,7 +9387,7 @@ and
  also it is often reasonable to assume that differences between high in-degrees are
  relatively less important than the same differences between low
  in-degrees;
- 
+
 
  \item {\em in-degree related popularity dyadic effect} \texttt{(inPop\_dya)},
  	 defined as the elementary effect version of the half-centered
@@ -10123,7 +10123,7 @@ the following effects are available:
  $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, v_j$;
 
  \item {\em covariate squared - alter} or {\em squared covariate-related popularity} \texttt{(altSqX)},
- defined by the sum of the squared centered covariate over all actors to whom $i$ has a tie,
+ defined by the sum of the squared covariate over all actors to whom $i$ has a tie,
  (not included if the variable has range less than 2)\\
  $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, v_j^2$;
 
@@ -10153,8 +10153,7 @@ the following effects are available:
  $s^{\rm net}_{i\vit}(x) = v_i \, x_{i+} $;
 
  \item {\em covariate squared - ego} or {\em squared covariate-related activity}
- \texttt{(
- )},
+ \texttt{(egoSqX)},
  defined by $i$'s out-degree weighted by his covariate value squared,\\
  $s^{\rm net}_{i\vit}(x) = v_i^2 \, x_{i+} $;
 
@@ -16698,9 +16697,13 @@ Changes in RSiena:
   \item New effect \texttt{inPop\_dya} .
   \item Parameter 2 allowed for \texttt{sameXInPop} , \texttt{diffXInPop}.
     \end{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+  \item \sfn{coCovar} now accepts vectors with at least one non-missing value.
+    \end{itemize}
 \item Coding:
    \begin{itemize}
-   \item \texttt{siena07internals.cpp} adapted to be compatible with new 
+   \item \texttt{siena07internals.cpp} adapted to be compatible with new
    \texttt{clang 16} C++ compiler (thanks to Brian Ripley).
     \end{itemize}
 \item Corrections of documentation:
