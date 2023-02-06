@@ -13,6 +13,8 @@
   * Parameter 2 for `sameXInPop`, `diffXInPop`.
 ### Corrections:
   * Help page for `siena07` corrected with respect to `x$lessMem`.
+### Improvements of functionality:
+  * `coCovar` now can handle variables with only one non-missing value.
 
 
 # RSiena 1.3.18
