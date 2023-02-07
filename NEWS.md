@@ -2,7 +2,7 @@
 
 ## 
    
-2023-02-06
+2023-02-07
 
 ## Changes in RSiena:  
 ### Coding:
@@ -10,11 +10,13 @@
     compiler (thanks to Brian Ripley).
 ### New effects:
   * New effect `inPop_dya`.
-  * Parameter 2 for `sameXInPop`, `diffXInPop`.
+  * Parameter 2 for `sameXInPop` and `diffXInPop`.
 ### Corrections:
   * Help page for `siena07` corrected with respect to `x$lessMem`.
 ### Improvements of functionality:
-  * `coCovar` now can handle variables with only one non-missing value.
+  * `coCovar` and `varCovar` now can handle variables with only one 
+    non-missing value, but will stop with an error message 
+    if all values are missing.
 
 
 # RSiena 1.3.18

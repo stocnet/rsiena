@@ -179,10 +179,15 @@ coCovar <- function(val, centered=TRUE, nodeSet="Actors", warn=TRUE,
     attr(out, "imputationValues") <- imputationValues
     out
 }
+
 ##@varCovar Create
 varCovar<- function(val, centered=TRUE, nodeSet="Actors", warn=TRUE, imputationValues=NULL)
 {
     ##matrix, numeric or factor, nrow = nactors and cols = observations-1
+	if (all(is.na(val)))
+	{
+		stop("all values are missing")
+	}
     if (!is.matrix(val))
 	{
         stop("val must be a matrix")
@@ -191,13 +196,20 @@ varCovar<- function(val, centered=TRUE, nodeSet="Actors", warn=TRUE, imputationV
 	{
         stop("val must be numeric or a factor")
 	}
-	if ((sum(!is.na(val))==0) & warn)
+	if (warn)
 	{
-		warning('Note: all values are missing.')
-	}
-	if ((var(as.vector(val), na.rm=TRUE)==0) & warn)
-	{
-		warning('Note: all values are equal to ', mean(as.vector(val), na.rm=TRUE))
+		if (sum(!is.na(val)) == 1)
+		{
+			warning("Note: only one value is non-missing.")
+		}
+		else if (!is.factor(val)) 
+		{
+			if (var(as.vector(val), na.rm=TRUE)==0)
+			{
+				warning('Note: all non-missing values are identical to ', 
+							mean(val, na.rm=TRUE),'.')
+			}
+		}
 	}
     if (!is.character(nodeSet))
 	{
