@@ -12886,7 +12886,7 @@ reciprocated degrees.
 
 When rate effects are included, sometimes it can be helpful to specify
 a smaller value for the initial gain parameter in \sfn{sienaAlgorithmCreate()};
-e.g., \texttt{firstg=0.01} or even  \texttt{firstg=0.001}.
+e.g., \texttt{firstg = 0.01} or even  \texttt{firstg = 0.001}.
 When the estimation algorithm diverges and any rate effects are in the model,
 this option should be considered.
 With a smaller \texttt{firstg} parameter convergence will be slower, but also
@@ -13035,7 +13035,7 @@ with the behavioral variable itself.
 \end{startenum}
 Next there is a list of effects that have to do with the influence of
 the network on the behavior.
-To specify such effects in \RS using, e.g., function \sfn{includeEffects},
+To specify such effects in \RS using, e.g., function \sfn{includeEffects()},
 it is necessary\footnote{If this behavior variable is the only dependent
 variable, then this is not necessary. But this seldom happens.}
 to specify the dependent behavior variable
@@ -13280,7 +13280,7 @@ The list of these effects is the following.
  $s^{\rm beh}_{i\vit}(x, z) =
         z_i\,  \big( \sum_j x_{ij}\, x_{+j} \,z_j \big) $;
 
-\item only in RSienaTest:  \emph{average Simmelian alter effect}, (\texttt{avSimmelianAlt}), the effect of
+\item only in RSienaTest:  \emph{average Simmelian alter effect}, \texttt{(avSimmelianAlt)}, the effect of
       the average behavior for the Simmelian alters. The Simmelian transformation of the network is
       the network composed of all ties embedded in at least one complete triad:
 \[
@@ -13298,7 +13298,7 @@ The list of these effects is the following.
                                 / \big (\sum_j x^{\rm{simm}}_{ij}\big)  $\\
  (and the mean behavior, i.e. $0$, if the ratio is 0/0) ;
 
-\item only in RSienaTest: \emph{total Simmelian alter effect}, (\texttt{totSimmelianAlt}), the effect of
+\item only in RSienaTest: \emph{total Simmelian alter effect}, \texttt{(totSimmelianAlt)}, the effect of
       the sum of behavior for the Simmelian alters, defined by\\
  $s^{\rm beh}_{i\vit}(x, z) =  z_i \big( \sum_j x^{\rm{simm}}_{ij}\, z_j \big)  $;
 
