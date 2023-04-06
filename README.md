@@ -68,3 +68,25 @@ please install the `{remotes}` package from CRAN and then enter into the console
 The development version of RSiena can be similarly installed as:
 
 `remotes::install_github("snlab-nl/rsiena@develop")`
+
+## Citation
+
+To cite the RSiena package in publications use:
+
+> Ruth M. Ripley, Tom A. B. Snijders, Zsofia Boda, Andras Voros, and Paulina Preciado(2023). Manual
+> for Siena version 4.0. R package version 1.3.19.
+> https://www.cran.r-project.org/web/packages/RSiena/.
+
+A BibTeX entry for LaTeX users is
+
+```bib
+@TechReport{,
+  title = {Manual for {Siena} version 4.0},
+  author = {Ruth M. Ripley and Tom A. B. Snijders and Zsofia B'{o}da and Andr'{a}s V"{o}r"{o}s and Paulina Preciado},
+  year = {2023},
+  institution = {Oxford: University of Oxford, Department of Statistics; Nuffield College},
+  note = {R package version 1.3.19. https://www.cran.r-project.org/web/packages/RSiena/},
+}
+```
+
+For more references, see https://www.stats.ox.ac.uk/~snijders/siena/. 
