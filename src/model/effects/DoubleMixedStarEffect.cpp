@@ -47,7 +47,6 @@ void DoubleMixedStarEffect::initialize(const Data * pData,
 	MixedNetworkEffect::initialize(pData, pState, period, pCache);
 //	this->lpFirstNetworkCache = pCache->pNetworkCache(this->lpFirstNetwork);
 	this->lpTable = this->pTwoNetworkCache()->pTwoPathTable();
-
 }
 
 /**
