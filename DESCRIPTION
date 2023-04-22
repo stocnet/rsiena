@@ -38,7 +38,6 @@ Description: The main purpose of this package is to perform simulation-based
    There are also functions for testing parameters and checking goodness of fit.
    An overview of these models is given in Snijders (2017),
    <doi:10.1146/annurev-statistics-060116-054035>.
-URL: <https://www.stats.ox.ac.uk/~snijders/siena/>, <https://github.com/snlab-nl/rsiena/>
 License: GPL-2 | GPL-3 | file LICENSE
 LazyData: yes
 Biarch: yes

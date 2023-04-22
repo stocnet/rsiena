@@ -78,13 +78,11 @@ double DoubleMixedStarEffect::calculateContribution(int alter) const
 					statistic++;
 				}
 			}
-
 		if (this->lroot)
 		{
 			statistic = this->lsqrtTable->sqrt(statistic);
 		}
 	}
-
 	return statistic;
 }
 
