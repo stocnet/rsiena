@@ -1,3 +1,41 @@
+# RSiena 1.3.20
+
+## 
+   
+2023-04-22
+
+## Changes in RSiena:  
+### Coding:
+### New effects:
+### Corrections:
+  * `updateSpecification` (in `effectsMethods`) now also updates 
+    internal parameter values.
+  * In `TriadCensus`, the empty network will not lead to an error
+    but be reported with the correct triad census.
+  * For `reciAct`, check whether internal parameter ==2 replaced by check whether
+    absolute difference from 2 is less than 0.001.
+  * In `phase2.r`, `z$sd` is calculated using `sqrt(pmax(..., 0))` to avoid the
+    extremely rare case of a negative calculated variance.
+  * In `sienaDataCreate`, handling of structurally determined values 
+    in `checkConstraints` corrected (thanks to issue raised by Jos Elkink).
+### Improvements of functionality:
+  * The keyword `parameter` in `includeInteraction` was dropped because it did
+    not have any consequences. The help page for `includeInteraction` now 
+    explains how internal effect parameters for user-defined interactions
+    are determined.
+  * The column `dimnames` of the `Simulations` array returned by `sienaGOF` 
+    are set to the names of the elements of the auxiliary function.
+  * Standard deviations added to output of `descriptives.sienaGOF`.
+  * Improved error message in `initializeFRAN` in the case of mismatch between
+    effects objects.
+  * Warning in `sienaAlgorithmCreate` if `(maxlike && (!is.null(MaxDegree)))`.
+    This is now also mentioned in the help page for `sienaAlgorithmCreate`.
+### Documentation:
+  * Reference about score-type test added to `Wald.Rd`.
+  * In the help page for `sienaDependent`, it is mentioned that if there are 
+    one-mode as well as two-mode dependent networks,
+    the one-mode networks should come first.
+
 # RSiena 1.3.19
 
 ## 
@@ -17,7 +55,6 @@
   * `coCovar` and `varCovar` now can handle variables with only one 
     non-missing value, but will stop with an error message 
     if all values are missing.
-
 
 # RSiena 1.3.18
 

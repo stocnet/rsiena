@@ -9,7 +9,8 @@ Codes: 1 = best friendship; 2 = friendship; 3 = friendly relationship;
 4 = neutral relationship; 5 = troubled relationship; 0 = unknown person.
 }
 \format{
-  Adjacency matrix for the network at time point 4.
+  Adjacency matrix for the "at least friendly relationship"
+  network at time point 4.
 }
 \source{
   vrnd32t4.dat from

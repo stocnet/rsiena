@@ -32,7 +32,8 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
 }
 \arguments{
   \item{sienaFitObject}{Results of class \code{\link{sienaFit}}, produced by a
-    call to \code{\link{siena07}} with \code{returnDeps = TRUE}.}
+    call to \code{\link{siena07}} with \code{returnDeps = TRUE} and
+    \code{maxlike=FALSE} (the latter is the default, the former is not).}
   \item{auxiliaryFunction}{Function to be used to calculate
     the auxiliary statistics;
     this can be a user-defined function, e.g. depending on the \code{sna}
@@ -72,7 +73,7 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
   \item{x}{ Result from a call to sienaGOF. }
   \item{center}{ Whether to center the statistics by median during plotting.}
   \item{scale}{ Whether to scale the statistics by range during plotting.
-                scale=\code{TRUE} makes little sense without also 
+                scale=\code{TRUE} makes little sense without also
                 center=\code{TRUE}.}
   \item{violin}{ Use violin plots (vs. box plots only)? }
   \item{key}{ Keys in the plot for the levels of the auxiliary statistic
@@ -89,7 +90,7 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
        for \code{plot.sienaGOF()}, e.g., the usual plotting parameters
        \code{main}, \code{xlab}, \code{ylab}, \code{cex}, \code{cex.main},
        \code{cex.lab}, and \code{cex.axis}.}
-  \item{showAll}{If \code{FALSE}, drops statistics with variance 0, 
+  \item{showAll}{If \code{FALSE}, drops statistics with variance 0,
        like in the plot.}
 }
 \details{
@@ -222,12 +223,14 @@ We recommend the following heuristic approach to model checking:
     \code{descriptives.sienaGOF} returns a matrix giving numerical
     information about what is plotted in the \code{plot} method:
     maximum, upper percentile, mean, median, lower percentile, minimum,
+    and standard deviation
     of the simulated distributions of the auxiliary statistics, the
     observed values, and the proportions of simulated values greater
     and greater-or-equal than the observed values.
     If \code{center=TRUE} the median is subtracted
     from mean, median, and percentiles; if \code{scale=TRUE}
-    these numbers are divided by (maximum - minimum). \cr
+    these numbers and the standard deviation
+    are divided by (maximum - minimum). \cr
     If \code{showAll=FALSE}, statistics with variance 0 will be dropped.
 }
 
@@ -304,9 +307,12 @@ myalgorithm.c <- sienaAlgorithmCreate(nsub=4, n3=1000, seed=1265)
 gofi.1 <- sienaGOF(ans.c, TriadCensus, verbose=TRUE, varName="mynet1")
 cl <- makeCluster(n.clus)
 gofi.cl <- sienaGOF(ans.c, TriadCensus, varName="mynet1", cluster=cl)
+cl <- makeCluster(2)
+gofi.cl2 <- sienaGOF(ans.c, TriadCensus, varName="mynet1", cluster=cl2)
 # compare simulation times
 attr(gofi.1,"simTime")
 attr(gofi.cl,"simTime")
+attr(gofi.cl2,"simTime")
 }
 
 }

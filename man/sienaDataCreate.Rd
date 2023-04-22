@@ -15,7 +15,9 @@ sienaDataCreate(..., nodeSets=NULL, getDocumentation=FALSE)
   \code{\link{varDyadCovar}}, and/or \code{\link{sienaCompositionChange}};
   or a list of such objects, of which the first element must not be
   a \code{\link{sienaCompositionChange}} object.
-  There should be at least one \code{\link{sienaDependent}} object.}
+  There should be at least one \code{\link{sienaDependent}} object.\cr
+  If there are one-mode as well as two-mode dependent networks,
+  the one-mode networks should be mentioned first.}
   \item{nodeSets}{list of Siena node sets. Default is the single node
     set named "Actors", length equal to the number of rows in the first
     object of class "sienaDependent". If the entire data set contains more than
@@ -27,7 +29,7 @@ sienaDataCreate(..., nodeSets=NULL, getDocumentation=FALSE)
 \details{
 The function checks that the objects fit, that there is at least one dependent
 variable, and adds various attributes to each dependent variable describing the
-data. If there is more than one nodeSet they must all be specified.
+data. If there is more than one nodeSet they must all be specified.\cr
 Function \code{\link{print01Report}} will give a basic description of the data
 object and is a check useful, e.g., for diagnosing problems.
 }

@@ -32,8 +32,8 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
      dolby=TRUE, maxlike = FALSE, gmm = FALSE, diagonalize=0.2*!maxlike,
      condvarno = 0, condname = "", firstg = 0.2, reduceg = 0.5,
      cond = NA, findiff = FALSE, seed = NULL,
-     prML=2, 
-	 maximumPermutationLength=40,
+     prML=2,
+     maximumPermutationLength=40,
      minimumPermutationLength=2, initialPermutationLength=20,
      modelType=NULL, behModelType=NULL, mult=5, simOnly=FALSE, localML=FALSE,
      truncation=5, doubleAveraging=0, standardizeVar=(diagonalize<1),
@@ -51,7 +51,8 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
     with degrees not higher than this maximum.
     Names should be the names of all dependent network variables,
     in the same order as in the Siena data set.\cr
-    Default as well as value 0 imply no restrictions.}
+    Default as well as value 0 imply no restrictions.\cr
+    This option is not available for maximum likelihood estimation.}
   \item{Offset}{Named vector of offset values for symmetric networks with
     \code{modelType = 3} (M.1), and for universal setting in Settings model.
     Names should be the names of all dependent network variables,
