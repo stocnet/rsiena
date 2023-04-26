@@ -7,7 +7,6 @@
 ![GitHub All Releases](https://img.shields.io/github/downloads/snlab-nl/rsiena/total)
 ![](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)
 
-## About
 
 SIENA is a program for the statistical analysis of network data, with the focus on social networks.
 Networks here are understood as entire (complete) networks, not as personal (egocentered) networks: 
@@ -16,6 +15,39 @@ except perhaps for a moderate amount of missing data.
 The name SIENA stands for Simulation Investigation for Empirical Network Analysis.
 The R package is called RSiena; there also is the development package RSienaTest,
 available from R-Forge.
+
+## Installation
+
+For most people, the best way to install RSiena is to install the latest version from CRAN:
+
+```r
+install.packages("RSiena")
+```
+
+The latest binary release on GitHub will have newer features:
+
+```r
+# On Windows:
+install.packages("https://github.com/snlab-nl/rsiena/releases/latest/download/RSiena.zip", repos = NULL)
+
+# On Linux
+install.packages("https://github.com/snlab-nl/rsiena/releases/latest/download/RSiena.tar.gz", repos = NULL)
+
+# On Mac
+install.packages("https://github.com/snlab-nl/rsiena/releases/latest/download/RSiena.tgz", repos = NULL)
+```
+
+To install the source version from GitHub install the `{remotes}` package and then run the following. NB: this requires compilation of `C++` source files so it may take some time.
+
+```r
+# latest version
+remotes::install_github("snlab-nl/rsiena@main")
+
+# development version
+remotes::install_github("snlab-nl/rsiena@develop")
+```
+
+## Data types
 
 SIENA is designed for analyzing various types of data as dependent variables:
 
