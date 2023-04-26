@@ -249,7 +249,7 @@ diag(mycov.egoalter) <- 0
 dim(mycov.egoalter) # 50 * 50 matrix
 # This is a dyadic variable indicating ego-alter combinations of mycov.
 # This construction works since mycov has integer values
-# not outside the interval from 1 to 9.
+# not outside the interval from 1 to 9 (actually, only 1 to 3).
 # All cells of this matrix contain a two-digit number,
 # left digit is row (ego) value, right digit is column (alter) value.
 # See the top left part of the matrix:

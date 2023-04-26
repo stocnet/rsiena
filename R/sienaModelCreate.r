@@ -28,6 +28,10 @@ sienaModelCreate <- function(fn,
 {
 	model <- NULL
 	checking <- any(grepl("_R_CHECK", names(Sys.getenv())))
+	if (maxlike && (!is.null(MaxDegree)))
+	{
+		warning("maxlike and MaxDegree are incompatible")
+	}	
 	if (is.null(projname) | checking)
 	{
 		model$projname <- tempfile("Siena")
@@ -35,7 +39,6 @@ sienaModelCreate <- function(fn,
 		{
 	cat('If you use this algorithm object, siena07 will create/use an output file',
 				paste('Siena','.txt',sep=''),'.\n')
-
 		}
 		else
 		{

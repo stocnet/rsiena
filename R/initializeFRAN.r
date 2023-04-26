@@ -113,7 +113,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		{
 			stop("not valid siena data object")
 		}
-		## check the effects object		
+		## check the effects object
 		defaultEffects <- getEffects(data)
 		if (is.null(effects))
 		{
@@ -137,7 +137,9 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 				print(userlist[bad])
 				cat("invalid effect requested: see above; \n")
 				cat("there seems to be a mismatch between data set and effects object.\n")
-				stop("Perhaps the effects object must be created from scratch.")
+				cat("This may have been caused by the use of different versions of RSiena")
+				cat("for creating the effects object and now running siena07.\n")
+				stop("Try creating the effects object with the current version of RSiena.")
 			}
 		}
 		if (!inherits(effects, "data.frame"))

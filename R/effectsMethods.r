@@ -306,7 +306,7 @@ updateSpecification <- function(effects.to, effects.from, name.to=NULL, name.fro
     effects.to$include[use] <- TRUE
     effects.to$fix[use] <- prevEffects$fix[correspondence][use]
     effects.to$test[use] <- prevEffects$test[correspondence][use]
-    effects.to$parameter[use] <- prevEffects$parameter[correspondence][use]
+    effects.to$parm[use] <- prevEffects$parm[correspondence][use]
     effects.to$randomEffects[use] <- prevEffects$randomEffects[correspondence][use]
     effects.to
 }

@@ -133,6 +133,7 @@ sienaGOF <- function(
 					function (i){auxiliaryFunction(i, sienaFitObject$f,
 						sienaFitObject$sims, j, groupName, varName, ...)})
 				simStatsByPeriod <- matrix(simStatsByPeriod, ncol=iterations)
+				dimnames(simStatsByPeriod)[[1]] <-	plotKey
 				dimnames(simStatsByPeriod)[[2]] <-	1:iterations
 				t(simStatsByPeriod)
 				}))
@@ -165,6 +166,7 @@ sienaGOF <- function(
 					flush.console()
 					simStatsByPeriod <-
 							matrix(simStatsByPeriod, ncol=iterations)
+					dimnames(simStatsByPeriod)[[1]] <-	plotKey
 					dimnames(simStatsByPeriod)[[2]] <-	1:iterations
 					t(simStatsByPeriod)
 					})
@@ -862,9 +864,10 @@ descriptives.sienaGOF <- function (x, center=FALSE, scale=FALSE,
 		key <- key[screen]
 	}
 
-	sims.themin <- apply(sims, 2, min)
-	sims.themax <- apply(sims, 2, max)
-	sims.mean <- apply(sims, 2, mean)
+	sims.themin <- apply(sims, 2, min, na.rm=TRUE)
+	sims.themax <- apply(sims, 2, max, na.rm=TRUE)
+	sims.mean <- apply(sims, 2, mean, na.rm=TRUE)
+	sims.sd <- apply(sims, 2, sd, na.rm=TRUE)
 	sims.min <- pmin(sims.themin, obs)
 	sims.max <- pmax(sims.themax, obs)
 
@@ -889,6 +892,7 @@ descriptives.sienaGOF <- function (x, center=FALSE, scale=FALSE,
 		sims.mean <- sims.mean/sims.range
 		sims.min <- sims.min/sims.range
 		sims.max <- sims.max/sims.range
+		sims.sd <- sims.sd/sims.range
 	}
 
 	screen <- sapply(1:ncol(obs),function(i){
@@ -913,18 +917,19 @@ descriptives.sienaGOF <- function (x, center=FALSE, scale=FALSE,
 				sort(sims[,i])[ind.upper]  )
 	ypg <- sapply(1:ncol(sims), function(i)	mean(sims[,i] > obs[1,i]))
 	ypp <- sapply(1:ncol(sims), function(i)	mean(sims[,i] >= obs[1,i]))
-    violins <- matrix(NA, 9, ncol(sims))
+    violins <- matrix(NA, 10, ncol(sims))
 	violins[1,] <- sims.themax
 	violins[2,] <- yperc.upper
 	violins[3,] <- sims.mean
 	violins[4,] <- yperc.mid
 	violins[5,] <- yperc.lower
 	violins[6,] <- sims.themin
-	violins[7,] <- obs
-    violins[8, ] <- ypg
-    violins[9, ] <- ypp
+	violins[7,] <- sims.sd
+	violins[8,] <- obs
+    violins[9, ] <- ypg
+    violins[10, ] <- ypp
     rownames(violins) <- c("max", "perc.upper", "mean", "median",
-        "perc.lower", "min", "obs", "p>", "p>=")
+        "perc.lower", "min", "sd", "obs", "p>", "p>=")
 	colnames(violins) <- key
 	violins
 }
@@ -1414,25 +1419,27 @@ TriadCensus <- function (i, obsData, sims, period, groupName, varName, levls = 1
           "300"  = 0)
 
   # iterate through all non-empty dyads (from lower to higher ID)
-  for(i in 1:N){
-    for(j in neighborsHigher[[i]]){
-      # set of nodes that are linked to i and j
-      third <- setdiff( union(neighbors[[i]], neighbors[[j]]),
-                    c(i, j) )
-      # store triads with just one tie
-      triadType <- ifelse(matReciprocal[i,j] == 2, 3, 2)
-      tc[triadType] <- tc[triadType] + N - length(third) - 2
-      for (k in third){
+  if (length(neighborsHigher) > 0){ # else mat is the zero matrix
+	for(ii in 1:N){
+		for(j in neighborsHigher[[ii]]){
+      # set of nodes that are linked to ii and j
+		third <- setdiff( union(neighbors[[ii]], neighbors[[j]]),
+                    c(ii, j) )
+		# store triads with just one tie
+		triadType <- ifelse(matReciprocal[ii,j] == 2, 3, 2)
+		tc[triadType] <- tc[triadType] + N - length(third) - 2
+		for (k in third){
         # only store triads once
-        if(j < k || ( i < k && k < j && !(k %in% neighbors[[i]]) ) ){
-          t1 <- matDirected[i,j]
-          t2 <- matDirected[j,k]
-          t3 <- matDirected[i,k]
-          triadType <- lookup[t1, t2, t3]
-          tc[triadType] <- tc[triadType] + 1
-        }
-      }
-    }
+			if(j < k || ( ii < k && k < j && !(k %in% neighbors[[ii]]) ) ){
+				t1 <- matDirected[ii,j]
+				t2 <- matDirected[j,k]
+				t3 <- matDirected[ii,k]
+				triadType <- lookup[t1, t2, t3]
+				tc[triadType] <- tc[triadType] + 1
+				}
+			}
+		}
+	}
   }
   # assign residual to empty triad count
   tc[1] <- 1/6 * N*(N-1)*(N-2) - sum(tc[2:16])

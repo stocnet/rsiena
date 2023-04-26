@@ -32,6 +32,9 @@ class Network;
 /**
  * This class stores varied information regarding a specific ego in a network
  * for repeated use.
+ * Note that first network = W (explanatory network),
+ * second network = X (dependent network)
+
  */
 class TwoNetworkCache
 {

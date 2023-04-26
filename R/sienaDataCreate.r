@@ -1101,8 +1101,12 @@ checkConstraints <- function(z)
 					{
 						var2 <- depvar2[,, obs]
 					}
-					var1[var1 %in% c(10, 11)] <- var1[var1 %in% c(10, 11)] - 10
-					var2[var2 %in% c(10, 11)] <- var2[var2 %in% c(10, 11)] - 10
+#					var1[var1 %in% c(10, 11)] <- var1[var1 %in% c(10, 11)] - 10
+#					var2[var2 %in% c(10, 11)] <- var2[var2 %in% c(10, 11)] - 10
+					var1[var1==10] <- 0
+					var1[var1==11] <- 1
+					var2[var2==10] <- 0
+					var2[var2==11] <- 1
 					## higher
 					if (any(var1 - var2 < 0, na.rm=TRUE))
 					{
