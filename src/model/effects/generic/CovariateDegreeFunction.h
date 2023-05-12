@@ -29,7 +29,7 @@ public:
 		int period,
 		Cache * pCache);
 
-		virtual double value(int alter);
+		virtual double value(int alter) const;
 
 private:
 	bool lexcludeMissing;

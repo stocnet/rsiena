@@ -59,7 +59,7 @@ void HomCovariateMixedTwoPathFunction::initialize(const Data * pData,
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double HomCovariateMixedTwoPathFunction::value(int alter)
+double HomCovariateMixedTwoPathFunction::value(int alter) const
 {
 	int statistic = 0;
 	if (!(this->lexcludeMissing && this->missing(alter)))
@@ -75,11 +75,11 @@ double HomCovariateMixedTwoPathFunction::value(int alter)
 				// 2-paths:
 				if (!(this->lexcludeMissing && this->missing(h)))
 					{
-				if ((fabs(this->CovariateMixedNetworkAlterFunction::value(h) -
-				this->CovariateMixedNetworkAlterFunction::value(this->ego()))
+				if ((fabs(this->CovariateMixedNetworkAlterFunction::covvalue(h) -
+				this->CovariateMixedNetworkAlterFunction::covvalue(this->ego()))
 									< EPSILON) &&
-				(fabs(this->CovariateMixedNetworkAlterFunction::value(alter)
-				- this->CovariateMixedNetworkAlterFunction::value(this->ego()))
+				(fabs(this->CovariateMixedNetworkAlterFunction::covvalue(alter)
+				- this->CovariateMixedNetworkAlterFunction::covvalue(this->ego()))
 									< EPSILON) &&
 								(pFirstNetwork->tieValue(h, alter) >= 1))
 						{

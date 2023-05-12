@@ -50,7 +50,7 @@ void EgoRecipDegreeFunction::initialize(const Data * pData,
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double EgoRecipDegreeFunction::value(int alter)
+double EgoRecipDegreeFunction::value(int alter) const
 {// but does not depend on alter
 	const OneModeNetwork * pONetwork =
 		dynamic_cast<const OneModeNetwork *>(this->pNetwork());	

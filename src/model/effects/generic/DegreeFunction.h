@@ -24,7 +24,7 @@ class DegreeFunction: public NetworkAlterFunction
 {
 public:
 	DegreeFunction(std::string networkName, double par);
-	virtual double value(int alter);
+	virtual double value(int alter) const;
 	
 private:
 	double lp;

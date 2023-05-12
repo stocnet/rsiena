@@ -57,7 +57,7 @@ void ProductFunction::preprocessEgo(int ego)
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double ProductFunction::value(int alter)
+double ProductFunction::value(int alter) const
 {
 	double value = this->lpFirstFunction->value(alter);
 

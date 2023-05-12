@@ -13,7 +13,7 @@
 ### Checks of later effects are appended at the end.
 ################################################################################
 
-library(RSiena)
+# library(RSiena)
 
 ################################################################################
 ### check from.w.ind
@@ -293,91 +293,6 @@ myeff <- includeEffects(myeff, cl.XWX2, name="trust", interaction1="advice")
 myans$targets
 sum(XWX) # 86 OK
 
-################################################################################
-### check XWX
-################################################################################
-
-a1 <- as.matrix(read.table("aadv_t1.txt",header=F))
-a2 <- as.matrix(read.table("aadv_t2.txt",header=F))
-t1 <- as.matrix(read.table("ttr_t1.txt",header=F))
-t2 <- as.matrix(read.table("ttr_t2.txt",header=F))
-hi <- as.matrix(read.table("hier.txt"))
-
-#a1 <- a1[1:20,1:20]
-#a2 <- a2[1:20,1:20]
-#t1 <- t1[1:20,1:20]
-#t2 <- t2[1:20,1:20]
-a1 <- a1[30:49,30:49]
-a2 <- a2[30:49,30:49]
-t1 <- t1[30:49,30:49]
-t2 <- t2[30:49,30:49]
-a2[8:12,10:15] <- a1[8:12,10:15]
-t2[8:12,10:15] <- t1[8:12,10:15]
-hi <- hi[30:49,30:49]
-
-behav <- cbind(rowSums(a1) + colSums(t1), rowSums(a2) + colSums(t2))
-(behav <- behav %/% 3 + 1)
-behav[behav >= 3] <- 3
-table(behav)
-behav
-
-#### Defining RSiena variables
-)
-
-library(RSienaTest)
-advice <- sienaNet(array(c(a1,a2), dim=c(20,20,2)))
-trust  <- sienaNet(array(c(t1,t2), dim=c(20,20,2)))
-trust1 <- coDyadCovar(t1)
-hierarchy <- coDyadCovar(hi)
-beh <- sienaDependent(behav, type="behavior")
-
-# We just give the two networks to sienaDataCreate.
-# They have the same dimensions; this is necessary,
-# as they have the same nodeSet.
-
-mydata <- sienaDataCreate(advice,trust1)
-
-myeff <- getEffects(mydata)
-myeff <- includeEffects(myeff, X, XWX, interaction1='trust1')
-myeff
-
-mymodel <- sienaModelCreate(projname="XWX", seed=1234)
-ans <- siena07(mymodel, data=mydata, effects=myeff)
-ans
-ans$targets
-diag(a1) <- 0
-diag(a2) <- 0
-sum(abs(a1-a2))
-sum(a2)
-sum(a2*t(a2))
-diag(t1) <- 0
-mt1 <- sum(t1)/(20*19)
-sum(a2*(t1-mt1))
-XW <-
-XW <- a2 %*% t1
-diag(XW) <- 0
-XWX <- XW * a2
-diag(XWX)
-sum(XWX) # OK
-# In other words: XWX uses uncentered W.
-
-advice <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-trust <- sienaDependent(array(c(s503, s501), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(advice,trust)
-myeff <- getEffects(mydata)
-myeff <- includeEffects(myeff, cl.XWX, name="trust", interaction1="advice")
-mymodel <- sienaModelCreate(projname = NULL, seed=123)
-myans <- siena07(mymodel, data = mydata, effects = myeff)
-myans
-myans$targets
-
-# for cl.XWX effect:
-XW <- s501 %*% s501
-diag(XW) <- 0
-XWX <- XW * s501
-diag(XWX)
-2*sum(XWX) # 172 OK
-
 
 ################################################################################
 ### check avSim, totSim, avInSim, totInSim, avInSimPopAlt, totInSimPopAlt
@@ -580,7 +495,6 @@ sum(rowSums(s502 * s501) * (colSums(s501) - ctr)) # -3.53 OK
 ### check rateX
 ################################################################################
 
-library(RSiena)
 
 mynet <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
 mybeh <- sienaDependent(s50a[,2:3], type="behavior")
@@ -609,7 +523,6 @@ sum((mybeh[,,1])*abs(mybeh[,,1]-mybeh[,,2])) # OK RateX non-centered
 ### check totExposure and other diffusion effects
 ################################################################################
 
-library(RSiena)
 
 mynet <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
 sm1 <- 1*(s50s[,2] >= 2)
@@ -706,7 +619,7 @@ sum((sm2-sm1r)*eff34.r) # OK totExposure p=-2
 ans6$targets
 ind <- colSums(s501)
 eff3 <- apply(s501,1,function(x){sum(x*sm1)})
-eff7 <- sapply(1:50, function(i){sum(s501[i,]*ind*sm1)})
+eff7 <- vapply(1:50, function(i){sum(s501[i,]*ind*sm1)}, FUN.VALUE=1)
 sum((sm2-sm1)*eff7) #  OK infectIn
 
 (myeff7 <- setEffect(myeff,infectIn,type='rate', parameter=2,
@@ -723,7 +636,7 @@ sum((sm2-sm1)*eff72) #  OK infectIn p=2
 ans8$targets
 outd <- rowSums(s501)
 eff3 <- apply(s501,1,function(x){sum(x*sm1)})
-eff8 <- sapply(1:50, function(i){sum(s501[i,]*outd*sm1)})
+eff8 <- vapply(1:50, function(i){sum(s501[i,]*outd*sm1)}, FUN.VALUE=1)
 eff82 <- eff8
 eff82[eff3<2] <- 0
 sum((sm2-sm1)*eff82) #  OK infectOut p=2
@@ -734,7 +647,7 @@ sum((sm2-sm1)*eff82) #  OK infectOut p=2
 (ans9 <- siena07(mymodel4, data=mydata, effects=myeff9))
 ans9$targets
 (mcm <- mean(mycov))
-eff9 <- sapply(1:50, function(i){sum(s501[i,]*(mycov-mcm)*sm1)})
+eff9 <- vapply(1:50, function(i){sum(s501[i,]*(mycov-mcm)*sm1)}, FUN.VALUE=1)
 sum((sm2-sm1)*eff9) #   infectCovar OK
 
 (myeffA <- setEffect(myeff.r,infectCovar,type='rate', parameter=2,
@@ -744,7 +657,7 @@ sum((sm2-sm1)*eff9) #   infectCovar OK
 ansA$targets #
 eff3 <- apply(s501,1,function(x){sum(x*sm1r)})
 (mcm <- mean(mycov))
-effA <- sapply(1:50, function(i){sum(s501[i,]*(mycov-mcm)*sm1r)})
+effA <- vapply(1:50, function(i){sum(s501[i,]*(mycov-mcm)*sm1r)}, FUN.VALUE=1)
 effA2 <- effA
 effA2[eff3==1] <- 0
 sum((sm2-sm1r)*effA2) # OK infectCovar p=2
@@ -1303,5 +1216,142 @@ ans1$targets
 sum(s502 * sqrt(difff %*% s502)) # OK
 
 
+################################################################################
+### check altInDist2, totInDist2
+################################################################################
+
+mynet1 <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- sienaNet(array(c(s503, s502), dim=c(50, 50, 2)))
+# construct actor covariate
+in1 <- colSums(s501)
+out1 <- rowSums(s501)
+center <- in1 + out1
+table(center)
+center <- round(center/5)
+table(center)
+
+central <- coCovar(center)
+mydata <- sienaDataCreate(mynet1, mynet2, central)
+
+myeff <- getEffects(mydata)
+mymodel <- sienaModelCreate(projname=NULL, seed=1234, nsub=2, n3=200)
+myeff <- includeEffects(myeff,altInDist2,name='mynet2',
+                 interaction1='central')
+
+ans <- siena07(mymodel, data=mydata, effects=myeff)
+ans$targets
+# 115.00 116.00  70.00 106.00 116.00  70.00  11.64
+
+sum(mynet1[,,2]) # OK
+sum(mynet1[,,2]*t(mynet1[,,2])) # OK
+sum(mynet2[,,2]) # OK
+sum(mynet2[,,2]*t(mynet2[,,2])) # OK
+ind <- colSums(mynet2[,,2])
+
+# for altInDist2
+cova <- central - mean(central)
+divi <- function(x,y){ifelse(y==0, 0, x/y)}
+vv <- matrix(NA, length(central),length(central))
+for (i in seq_along(central)) {
+  for(j in seq_along(central)){vv[i,j] <-
+      divi((sum(mynet2[,j,2]*cova) - mynet2[i,j,2]*cova[i]),(ind[j] - mynet2[i,j,2]))}}
+
+sum(mynet2[,,2]*vv) # OK
+
+# for totInDist2
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,totInDist2,name='mynet2',
+                 interaction1='central')
+ans <- siena07(mymodel, data=mydata, effects=myeff)
+ans$targets
+# [1] 115.0 116.0  70.0 106.0 116.0  70.0  35.6
+for (i in seq_along(central)) {
+  for(j in seq_along(central)){vv[i,j] <-
+      (sum(mynet2[,j,2]*cova) - mynet2[i,j,2]*cova[i])}}
+
+sum(mynet2[,,2]*vv) # OK
+
+################################################################################
+
+# Now for two-mode
+
+# Create fake network data
+set.seed(12321)
+wave1 <- matrix(0,12,10)
+for(i in 1:120){
+  wave1[i] <- sample(c(0,1),1, prob=c(0.7,0.3))
+}
+wave2 <- wave1
+for (i in 1:120){
+  wave2[i] <- abs(wave1[i] - 0.5 + sample(c(-0.5,0.5),1, prob=c(0.3,0.7)))
+}
+
+# Create fake ego and alter covariate data
+covego1 <- sample(0:8, 12, replace=T)
+covego2 <- sample(0:8, 12, replace=T)
+covalt <- sample(0:8, 10, replace=T)
+covego3 <- c(1,1,1,1,2,2,2,2,3,3,3,3)
+
+# Identify nodesets
+senders <- sienaNodeSet(12, nodeSetName="senders")
+recipients <- sienaNodeSet(10, nodeSetName="recipients")
+
+# Make dependent networks and behaviour
+network <- sienaDependent(array(c(wave1, wave2), dim=c(12,10,2)),
+                          type="bipartite", nodeSet=c("senders","recipients"),
+						  allowOnly=FALSE)
+
+# Make covariates
+covaralt <- coCovar(covalt, nodeSet="recipients")
+covarego <- coCovar(covego1, nodeSet="senders")
+covarego3 <- coCovar(covego3, nodeSet="senders")
+
+# Put it all together
+nbdata <- sienaDataCreate(network, covaralt, covarego,
+                nodeSets=list(senders,recipients))
+nbdata
+
+nbEffects <- getEffects(nbdata)
+nbEffects <- setEffect(nbEffects , altInDist2, interaction1="covarego")
+(ans <- siena07(mymodel, data=nbdata, effects=nbEffects))
+ans$targets
+length(covarego)
+ind <- colSums(wave2)
+cova <- covarego - mean(covarego)
+divi <- function(x,y){ifelse(y==0, 0, x/y)}
+vv <- matrix(NA, 12,10)
+for (i in 1:12) {
+  for(j in 1:10){vv[i,j] <-
+      divi((sum(wave2[,j]*cova) - wave2[i,j]*cova[i]),(ind[j] - wave2[i,j]))}}
+
+sum(wave2*vv) # OK
+
+################################################################################
+### check altDist2, totDist2
+################################################################################
 
 
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+myvar <- coCovar(s50a[,2])
+mydata <- sienaDataCreate(mynet, myvar)
+
+myalgorithm <- sienaAlgorithmCreate(projname=NULL, nsub=2, n3=100, seed=12345)
+myalgorithm <- sienaAlgorithmCreate(projname=NULL, seed=12345)
+
+# outdist
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, altDist2, interaction1="myvar", parameter=1)
+(ans <- siena07(myalgorithm, data=mydata, effects=myeff))
+ans$targets
+
+# calculation of target for altDist2:
+divi <- function(x,y){ifelse(y==0, 0, x/y)}
+mat <- s503
+diag(mat) <- 0
+table(mat, useNA='always')
+cova <- as.double( myvar - mean(myvar))
+#mat
+totv <- mat %*% cova 
+avv <- divi(totv,rowSums(mat))
+ef <- mat %*% (avv) # effect
+sum(ef) # 12.35 OK

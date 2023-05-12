@@ -77,7 +77,7 @@
 \newcommand{\Rn}{{\sf R}}
 \newcommand{\rs}{{\sf RSiena}}
 \newcommand{\rst}{{\sf RSienaTest}}
-\newcommand{\RS}{{\sf \textsf{RSiena}}}
+\newcommand{\RS}{{\sf \textsf{RSiena} }}
 \newcommand{\SI}{{\sf SIENA }}
 \newcommand{\SN}{{\sf StOCNET }}
 \newcommand{\si}{{\sf SIENA}}
@@ -191,7 +191,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.3.20.
+This version was renewed for \RS version 1.3.22.
 \end{abstract}
 
 
@@ -1129,7 +1129,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.3.20).
+  identified by a version number (e.g.\ 1.3.22).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -1563,13 +1563,13 @@ from ONEWS / CHANGELOG:
 2018-03-21 R-Forge Revision 332
 #\textsf{RSiena}1.2-9.
 
-## Changes in\textsf{RSiena}and RSienaTest:
+## Changes in \textsf{RSiena}and RSienaTest:
    * The dropping of the exclusion in effects.r of effects if the variance of a
      covariate is 0, or a covariate has only two values, of version 1.1-306,
      is  taken further (was incomplete).
 
 2017-05-10 R-Forge Revision 306
-## Changes in\textsf{RSiena}and RSienaTest:
+## Changes in\textsf{RSiena}and \textsf{RSienaTest}:
    * The exclusion in effects.r of effects if the variance of a covariate is 0,
      or a covariate has only two values, is dropped (these effects have no
      meaning, but their exclusion was a potential nuisance for meta-analyses).
@@ -1941,47 +1941,7 @@ If there are a lot of structurally determined values
 then unconditional estimation  (see Section~\ref{S_cond})
 is preferable.
 
-Structural zeros offer the possibility of analyzing several
-networks simultaneously under the assumption that the parameters
-are identical.
-However, a preferable option to do this is
-the multi-group option of Section~\ref{S_mulev}.
-E.g., if there are three networks with 12, 20 and
-15 actors, respectively, then these can be integrated into one
-network of 12 + 20 + 15 = 47 actors, by specifying that ties
-between actors in different networks are structurally impossible.
-This means that the three adjacency matrices are combined in one
-$47 \times 47$ data matrix, with values 10 for all entries that
-refer to the tie from an actor in one network to an actor in a
-different network. In other words, the adjacency matrices will be
-composed of three diagonal blocks, and the off-diagonal blocks
-will have all entries equal to 10. In this example, the number of
-actors per network (12 to 20) is rather small to obtain good
-parameter estimates, but if the additional assumption of identical
-parameter values for the three networks is reasonable, then the
-combined analysis may give good estimates.
-
-In such a case where $K$ networks (in the preceding paragraph, the
-example had $K = 3$) are combined artificially into one bigger
-network, it will often be helpful to define $K-1$ dummy variables
-at the actor level to distinguish between the $K$ components.
-These dummy variables can be given effects in the rate function
-and in the evaluation function (for `ego"), which then will
-represent that the rate of change and the out-degree effect are
-different between the components, while all other parameters are
-the same.
-
-It will be automatically discovered by \RS when monadic covariates
-depend only on these components defined by structural zeros,
-between which tie values are not allowed.
-For such variables, only the ego effects are defined
-and not the other effects defined for the regular
-actor covariates and described in Section ~\ref{S_eff_cov}.
-This is because the other effects then are meaningless.
-If at least one case is missing,
-then the other covariate effects are made available.
-
-When \RS simulates networks including some structurally determined values,
+When \RS\ simulates networks including some structurally determined values,
 if these values are constant across all observations then
 the simulated tie values are likewise constant.
 If the structural fixation varies over time, the situation
@@ -2016,6 +1976,53 @@ For estimation by Maximum Likelihood, treated in Section~\ref{S_ML},
 structural zeros operate differently than for the Method of Moments,
 and probably it is not a good idea to use changing
 structural zeros; see Section~\ref{S_ML}.
+\bigskip
+
+Structural zeros offer the possibility of analyzing several
+networks simultaneously under the assumption that the parameters
+are identical.
+However, a preferable option to do this is
+the multi-group option of Section~\ref{S_mulev}.
+
+The following explanation of the option of using structural zeros
+to analyze several networks simultaneously is given mainly
+for historical reasons (to understand earlier publications);
+\underline{this is not a recommended option}.
+
+E.g., if there are three networks with 12, 20 and
+15 actors, respectively, then these can be integrated into one
+network of 12 + 20 + 15 = 47 actors, by specifying that ties
+between actors in different networks are structurally impossible.
+This means that the three adjacency matrices are combined in one
+$47 \times 47$ data matrix, with values 10 for all entries that
+refer to the tie from an actor in one network to an actor in a
+different network. In other words, the adjacency matrices will be
+composed of three diagonal blocks, and the off-diagonal blocks
+will have all entries equal to 10. In this example, the number of
+actors per network (12 to 20) is rather small to obtain good
+parameter estimates, but if the additional assumption of identical
+parameter values for the three networks is reasonable, then the
+combined analysis may give good estimates.
+
+In such a case where $K$ networks (in the preceding paragraph, the
+example had $K = 3$) are combined artificially into one bigger
+network, it will often be helpful to define $K-1$ dummy variables
+at the actor level to distinguish between the $K$ components.
+These dummy variables can be given effects in the rate function
+and in the evaluation function (for `ego"), which then will
+represent that the rate of change and the out-degree effect are
+different between the components, while all other parameters are
+the same.
+
+It will be automatically discovered by \RS\ when monadic covariates
+depend only on these components defined by structural zeros,
+between which tie values are not allowed.
+For such variables, only the ego effects are defined
+and not the other effects defined for the regular
+actor covariates and described in Section ~\ref{S_eff_cov}.
+This is because the other effects then are meaningless.
+If at least one case is missing,
+then the other covariate effects are made available.
 
 
 \subsubsection{Missing data}
@@ -2587,6 +2594,10 @@ as a result.
 Then the probability of the network obtained from this step depends on
 something called the objective function $u_i(x^0, x)$ which will be defined
 in a moment.
+Let $x \in \mathcal C$ be some network that could be obtained as a result
+of the ministep; then $x$ will be the same as $x^0$, except perhaps for
+the tie $i \rightarrow j$ for some $j$; this tie might exist in $x$ but not in 
+$x^0$, or vice versa.
 The probability that the next network is $x$ is given by
 \begin{equation}
      \frac{\exp(u_i(x^0, x)\big)}
@@ -3585,6 +3596,33 @@ The numerical interpretation is different from that in the first two models.
 
 Some effects specially designed for non-directed networks
 are presented in Section~\ref{S_NonDirEff}.
+
+
+\subsection{Model Type: directed networks}
+\label{S_modeltype_dir}
+
+As of version 1.3-22, there are additional model options for dynamics
+of directed one-mode networks, specified by the parameter \sfn{modelType} in function
+\textsf{sienaAlgorithmCreate}.
+The value \texttt{modelType = 1} is the default for directed networks, values
+\texttt{modelType = 7, 8, 9, 10} are options included for the purpose
+of investigating the consequences of details of the specification of the ministep.
+
+These values implement the so-called \emph{double step}.  
+The ministeps are explained above in Section~\ref{S_logic} and more in detail
+in Section~\ref{S_mathmod}. 
+A double step is defined by a ministep taken by some focal actor $i$;
+suppose this means the creation or termination of the tie
+$i \rightarrow j$ for some $j$; then a following ministep is taken by actor $j$.
+In these model specifications the `pure' ministeps and the double steps
+are mixed randomly.
+For the respective values \texttt{modelType = 7, 8, 9, 10},
+the probability that a double step is taken is, respectively,
+0.25, 0.50, 0.75, and 1.00.
+
+These model types are not intended for use in regular applications.
+
+
 
 \subsection{Model Type: behavior}
 \label{S_modeltype_beh}
@@ -5711,6 +5749,8 @@ of these 7 probabilities; `InsMisdat' and `DelMisdat' are offspring of `InsPerm"
 `DelPerm' and don't need their own proposal probability.
  `InsMiss' and  `DelMiss' are superfluous when there are no missing data,
 but this is taken care of automatically and does not need to be specified in \texttt{prML}.
+Currently, `Move' steps cannot be taken for data sets with
+more than one dependent variable.
 \medskip
 
 Another parameter of the algorithm that sometimes needs tuning
@@ -7641,7 +7681,7 @@ One aspect of this is by looking at the descriptives for change
 produced by \textsf{print01Report}, and checking that the
 tendencies in the dependent variable or variables, upward/stable/downward,
 are not too different between the groups.
-The \textsf{sienaTimetest} function can be used for
+The \textsf{sienaTimeTest} function can be used for
 formally testing this assumption.
 Moderate violations ($p$-values larger than 0.01) will probably
 be acceptable in the sense that the combined results
@@ -9753,7 +9793,7 @@ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, I\{x_{+j} = 1, x_{j+} = 0 \} $ .\\
 
 \begin{enumerate}
 \setcounter{enumi}{\value{savenumi}}
-\item only in RSienaTest: \emph{Simmelian outdegree effect}, (\texttt{simmelian}), the effect of
+\item only in \textsf{RSienaTest}: \emph{Simmelian outdegree effect}, (\texttt{simmelian}), the effect of
       the Simmelian outdegree. The Simmelian transformation of the network is
       the network composed of all ties embedded in at least one complete triad:
 \[
@@ -10398,7 +10438,7 @@ the following effects are available:
                 \sum_h x_{ih}\,x_{hi}\, I\{v_i \neq v_h \} $;
 
 
-\item only in RSienaTest:  \emph{Simmelian alter X effect}, (\texttt{simmelianAltX}), the effect of
+\item only in \textsf{RSienaTest}:  \emph{Simmelian alter X effect}, (\texttt{simmelianAltX}), the effect of
       Simmelian ties weighted by alter's value of $X$. The Simmelian transformation of the network is
       the network composed of all ties embedded in at least one complete triad:
 \[
@@ -10597,12 +10637,12 @@ to whom $j$ is tied, and defined mathematically by
 \begin{equation}
   \breve v_j = \left\{\begin{array}{ll} \displaystyle
          \frac{\sum_h x_{jh}v_h}{x_{j+}}  &  \text{ if } x_{j+} > 0     \\
-         0                                &  \text{ if } x_{j+} = 0  .
+         \bar v                                &  \text{ if } x_{j+} = 0  ,
   \end{array}   \right.            \label{alt_av}
 \end{equation}
-(If $v$ is centered ---the default---, the value of 0 in case $x_{j+} = 0$
-is also the mean value of the original variable.)\\
-(It may be noted that this constructed variable $\breve v_j$
+where $\bar v$ is the overall observed mean of $V$ (for changing
+actor covariates and behavioral variables, the mean over all waves).\\
+(It may be noted that, for centered $V$, this constructed variable $\breve v_j$
 will not itself have exactly a zero mean generally.)
 
 Note that this value is being updated during the simulations.
@@ -10637,7 +10677,7 @@ of $\breve v_j$ would be the same as the alter effect of $v_j$.
   \breve v_j^{(-i)} = \left\{\begin{array}{ll} \displaystyle
          \frac{\sum_{h \neq i} x_{jh}v_h}{x_{j+} - x_{ji}}  &
                                        \text{ if } x_{j+} - x_{ji} > 0     \\
-         0                                &  \text{ if } x_{j+}- x_{ji} = 0  .
+         \bar v                               &  \text{ if } x_{j+}- x_{ji} = 0  .
   \end{array}   \right.            \label{alt_av2}
 \end{equation}
       To compute the contribution for this effect, note that
@@ -10736,9 +10776,10 @@ of $\breve v_j$ would be the same as the alter effect of $v_j$.
   \check v_j^{(-i)} = \left\{\begin{array}{ll} \displaystyle
          \frac{\sum_{h \neq i} x_{hj}\,v_h}{x_{+j} - x_{ij}}  &
                                        \text{ if } x_{+j} - x_{ij} > 0     \\
-         0                                &  \text{ if } x_{+j}- x_{ij} = 0  .
+         \bar v                                &  \text{ if } x_{+j}- x_{ij} = 0  ,
   \end{array}   \right.            \label{alt_inav2}
 \end{equation}
+where $\bar v$ is (again) the global mean of $V$.
 
 
 \item \emph{total covariate - in - alter at distance 2} \texttt{(totInDist2)}.
@@ -12581,9 +12622,10 @@ Thus, \emph{$W$-alters' $v$-average} $\breve v_i^W$ is defined by
 \begin{equation}
   \breve v_i^W = \left\{\begin{array}{ll} \displaystyle
          \frac{\sum_j w_{ij}v_j}{w_{i+}}  &  \text{ if } w_{i+} > 0     \\
-         0                                &  \text{ if } w_{i+} = 0  .
+         \bar v                                &  \text{ if } w_{i+} = 0  ,
   \end{array}   \right.            \label{alt_av_w}
 \end{equation}
+where $\bar v$ is the overall mean of variable $V$.
 
 \begin{enumerate}
 \setcounter{enumi}{\value{savenumi}}
@@ -12607,7 +12649,7 @@ Thus, \emph{$W$-alters' $v$-average} $\breve v_i^W$ is defined by
 \begin{equation}
   \breve v_j^{W(-i)} = \left\{\begin{array}{ll} \displaystyle
          \frac{\sum_{h \neq j} w_{jh}v_h}{w_{j+} - w_{ji}}  &  \text{ if } w_{j+} - w_{ji} > 0     \\
-         0                                &  \text{ if } w_{j+}- w_{ji} = 0  .
+         \bar v                               &  \text{ if } w_{j+}- w_{ji} = 0  .
   \end{array}   \right.
 \end{equation}
 
@@ -13297,7 +13339,7 @@ The list of these effects is the following.
  $s^{\rm beh}_{i\vit}(x, z) =
         z_i\,  \big( \sum_j x_{ij}\, x_{+j} \,z_j \big) $;
 
-\item only in RSienaTest:  \emph{average Simmelian alter effect}, \texttt{(avSimmelianAlt)}, the effect of
+\item only in \textsf{RSienaTest}:  \emph{average Simmelian alter effect}, \texttt{(avSimmelianAlt)}, the effect of
       the average behavior for the Simmelian alters. The Simmelian transformation of the network is
       the network composed of all ties embedded in at least one complete triad:
 \[
@@ -13315,7 +13357,7 @@ The list of these effects is the following.
                                 / \big (\sum_j x^{\rm{simm}}_{ij}\big)  $\\
  (and the mean behavior, i.e. $0$, if the ratio is 0/0) ;
 
-\item only in RSienaTest: \emph{total Simmelian alter effect}, \texttt{(totSimmelianAlt)}, the effect of
+\item only in \textsf{RSienaTest}: \emph{total Simmelian alter effect}, \texttt{(totSimmelianAlt)}, the effect of
       the sum of behavior for the Simmelian alters, defined by\\
  $s^{\rm beh}_{i\vit}(x, z) =  z_i \big( \sum_j x^{\rm{simm}}_{ij}\, z_j \big)  $;
 
@@ -15653,12 +15695,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.3.20.tar.gz|\\
+\verb|R CMD check RSiena_1.3.22.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.3.20.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.3.22.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16703,6 +16745,28 @@ Changes in RSiena:
 
 \fi
 
+\item 2023-05-11 GitHub, package version 1.3.22.
+
+Changes in RSiena:
+\begin{itemize}
+\item New functionality:
+   \begin{itemize}
+  \item For one-mode networks, new options 7, 8, 9, 10
+     for \texttt{modelType} set in \sfn{sienaAlgorithmCreate};
+     see Section~\ref{S_modeltype_dir}.
+    \end{itemize}
+\item  Bug corrections:
+   \begin{itemize}
+  \item Coding of some `generic effects' was cleaned up and corrected.
+   This led to changes in coding of several distance-2 covariate-related network
+	 effects such as \texttt{altDist2}, \texttt{totDist2} and \texttt{altInDist2};
+   some of these \underline{may} have been incorrect in earlier versions.
+  \item In \sfn{sienaAlgorithmCreate}, changed default \texttt{prML=2} back to \texttt{prML=1};
+    stop if Maximum Likelihood estimation is attempted for a data set
+    containing more than one dependent variable
+    with \texttt{prML=2}.
+    \end{itemize}
+\end{itemize}
 
 \item 2023-04-22 GitHub, package version 1.3.20.
 
@@ -16801,7 +16865,7 @@ Changes in RSiena:
 
 \item 2023-01-06 GitHub, package version 1.3.17
 
-Changes in\textsf{RSiena}(including those for version 1.3.16):
+Changes in \textsf{RSiena} (including those for version 1.3.16):
 \begin{itemize}
 \item Effects:
     \begin{itemize}
@@ -17101,7 +17165,7 @@ Changes in RSiena:
 
 \item 2021-07-13  R-Forge, \sfn{RSienaTest} version 1.2-30.
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
 \item \textsf{sienaBayes}: adaptation of \texttt{nwarm} and \texttt{nmain}
      at the end of \texttt{initializeBayes} dropped.
@@ -17150,7 +17214,7 @@ Changes in RSiena:
 
 \item 2021-04-14  R-Forge, \sfn{RSienaTest} version 1.2-29.
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
 \item The pre-warming phase of \textsf{sienaBayes} is interrupted
     (and followed by the warming phase) if no proposals were accepted
@@ -17169,7 +17233,7 @@ Changes in RSiena:
 
 \item 2021-03-18  R-Forge, \sfn{RSienaTest} version 1.2-28.
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
 \item \sfn{glueBayes} corrected.
 \end{itemize}
@@ -17238,7 +17302,7 @@ Changes in RSiena:
 
 \item 2020-09-16 R-Forge Revision 350, package version 1.2-27.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item \texttt{tcltk} no longer a requirement; if not available,
         batch mode is followed for \textsf{siena07} (with help
@@ -17268,7 +17332,7 @@ Changes in RSiena:
      thanks to James Hollway.
 \end{itemize}
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
    \item Improved initialisation in \textsf{sienaBayes}: initial scale factors (squared)
      and initial parameter estimate (`Kelley').
@@ -17284,7 +17348,7 @@ Changes in RSienaTest:
 
 \item 2020-04-08 R-Forge Revision 348, package version 1.2-25.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
  \item Correction of \textsf{sienaDataCreate} for actor covariates (gave a warning).
  \item Auxiliary function \sfn{dyadicCov} for \textsf{sienaGOF} now can handle missings,
@@ -17300,7 +17364,7 @@ Changes in \textsf{RSiena} and RSienaTest:
  \item Some extra information in help page for \textsf{siena07}.
 \end{itemize}
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
  \item Error corrected that occurred in \textsf{sienaBayes}, \sfn{extract.sienaBayes},
  and \sfn{extract.posteriorMeans} for data with multiple periods.
@@ -17309,7 +17373,7 @@ Changes in RSienaTest:
 
 \item 2020-02-16 R-Forge Revision 347, package version 1.2-24.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
 \item New auxiliary function \sfn{dyadicCov} for \textsf{sienaGOF}.
 \item Correction of error in \texttt{modelType} when one-mode as well as two-mode
@@ -17317,7 +17381,7 @@ Changes in \textsf{RSiena} and RSienaTest:
 \item Added \texttt{startingDate} in \textsf{siena08} to the object produced.
 \end{itemize}
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
    \item Corrected \textsf{siena.table} for \sfn{sienaBayesFit} objects;
      added \texttt{startingDate} in \textsf{sienaBayes} to the object produced.
@@ -17326,7 +17390,7 @@ Changes in RSienaTest:
 
 \item 2020-01-12 CRAN Siena version 1.2-23.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
 \item Changed extension names of output files from \texttt{.out} to
     \texttt{.txt}.
@@ -17339,7 +17403,7 @@ Changes in \textsf{RSiena} and RSienaTest:
 
 \item 2020-01-16 R-Forge Revision 345, package version 1.2-22.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
 \item Tested effects reported in print of \sfn{Multipar.RSiena} and
         \sfn{score.Test}.
@@ -17350,7 +17414,7 @@ Changes in \textsf{RSiena} and RSienaTest:
 
 \item 2019-12-15 R-Forge Revision 344, package version 1.2-19.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
  \item New effects \texttt{avGroupEgoX}, \texttt{outIso}.
  \item Starting date of estimation reported in
@@ -17360,7 +17424,7 @@ Changes in \textsf{RSiena} and RSienaTest:
 
 Changes in RSiena:
 \begin{itemize}
- \item Changes of RSienaTest version 1.2-18 (see below)
+ \item Changes of \textsf{RSienaTest} version 1.2-18 (see below)
       ported to RSiena.
       The main changes are the introduction of the option of
       continuous dependent behavior variables
@@ -17368,7 +17432,7 @@ Changes in RSiena:
       (both by Nynke Niezink).
 \end{itemize}
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
 \item In \textsf{sienaBayes}: more precise check that
      \texttt{prevAns} has same specification as \texttt{effects}.
@@ -17392,9 +17456,9 @@ Changes in RSienaTest:
  \item Use parameter \texttt{pmonly} also in \sfn{plotPostMeansMDS}.
 \end{itemize}
 
-\item 2019-10-16 R-Forge Revision 341, RSienaTest version 1.2-18.
+\item 2019-10-16 R-Forge Revision 341, \textsf{RSienaTest} version 1.2-18.
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
    \item Continuous dependent behavior variables implemented (Nynke Niezink).
      This implies new effect types \texttt{continuousFeedback},
@@ -17424,7 +17488,7 @@ Changes in RSienaTest:
 
 \item 2019-05-20 R-Forge Revision 340, package version 1.2-17.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item New effects \texttt{outAct.c}, \texttt{inAct.c}, \texttt{outPop.c}, \texttt{inPop.c}, \texttt{degPlus.c}.
        These are centered versions, which might have better convergence properties
@@ -17445,7 +17509,7 @@ Changes in \textsf{RSiena} and RSienaTest:
    or \texttt{suppressWarnings}.
 \end{itemize}
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
    \item In \textsf{sienaBayes}: \\
      \texttt{prevAns} now is allowed to have a different specification of
@@ -17457,7 +17521,7 @@ Changes in RSienaTest:
 
 \item 2019-02-26 R-Forge Revision 339, package version 1.2-16.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item New effects \texttt{maxAAlt, minXAlt} (thanks to Per Block, Marion Hoffman,
      Isabel Raabe, and Kieran Mepham), \texttt{outIsolate}.
@@ -17477,7 +17541,7 @@ Changes in \textsf{RSiena} and RSienaTest:
 
 \end{itemize}
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
    \item Allow arbitrary number of interactions in \textsf{sienaBayes}
         (via \textsf{getEffects}).
@@ -17502,7 +17566,7 @@ Changes in RSienaTest:
 
 \item 2019-01-15 R-Forge Revision 338, package version 1.2-15.
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
     \item New effects \texttt{sameXReciAct} and \texttt{diffXReciAct}.
     \item Increased burn-in for ML simulations in \textsf{siena07}.
@@ -17516,7 +17580,7 @@ Changes in RSienaTest:
 
 \item 2018-12-05 R-Forge Revision 337, packages version 1.2-14.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item In the help page of \textsf{sienaAlgorithmCreate}, the possibility is
    mentioned that the multiplication factor (parameter \texttt{mult}) can
@@ -17525,7 +17589,7 @@ Changes in \textsf{RSiena} and RSienaTest:
    multiplication factor separately for periods $\times$ waves.
 \end{itemize}
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
    \item \textsf{sienaBayes}:\\
      the possibility now exists to specify prior variances for non-varying
@@ -17544,7 +17608,7 @@ Changes in RSienaTest:
 
 \item 2018-10-30 R-Forge Revision 336, packages version 1.2-13.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item Correct error in \textsf{sienaGroupCreate} for non-centered actor covariates.
    \item Correct error in \textsf{print01Report} that occurred for changing dyadic covariates
@@ -17560,7 +17624,7 @@ Changes in \textsf{RSiena} and RSienaTest:
    \item More explanation of sparse matrix input in the help page for \textsf{sienaDependent}.
 \end{itemize}
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
    \item \textsf{sienaBayes}: new parameters \texttt{proposalFromPrev}, which allows
      taking proposal distributions from \texttt{prevBayes} object;\\
@@ -17581,11 +17645,11 @@ Changes in RSienaTest:
      reported timing changed to elapsed system time.
 \end{itemize}
 
-\item 2018-05-13 CRAN,\textsf{RSiena}version 1.2-12.
+\item 2018-05-13 CRAN, \textsf{RSiena} version 1.2-12.
 
 \item 2018-05-06 R-Forge Revision 335, packages version 1.2-11.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item New effects \texttt{gwdspFF} and \texttt{gwdspFB}.
    \item Effects \texttt{simEgoInDist2} and \texttt{simEgoInDist2W}
@@ -17615,7 +17679,7 @@ Changes in \textsf{RSiena} and RSienaTest:
    mentioning functions for accessing simulated networks for ML.
 \end{itemize}
 
-Change in RSienaTest:
+Change in \textsf{RSienaTest}:
 \begin{itemize}
    \item \textsf{extract.sienaBayes}:
    error corrected that occurred if called with
@@ -17625,7 +17689,7 @@ Change in RSienaTest:
 
 \item 2018-03-24 R-Forge Revision 334, packages version 1.2-10.
 
-Change in \textsf{RSiena} and RSienaTest:
+Change in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item Example in help file \textsf{siena07} for accessing generated networks
    in case of ML estimation/simulation.
@@ -17633,7 +17697,7 @@ Change in \textsf{RSiena} and RSienaTest:
 
 \item 2018-03-21 R-Forge Revision 332, packages version 1.2-9.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item Added effects \texttt{avExposure, totExposure, infectDeg,
      susceptAvCovar, infectCovar} for symmetric networks, in
@@ -17673,7 +17737,7 @@ Changes in \textsf{RSiena} and RSienaTest:
    or \texttt{atLeastOne} are \texttt{TRUE} at the end of \\
      \textsf{sienaDataCreate}.
    \end{itemize}
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
    \item new function \sfn{extract.posteriorMeans} for \textsf{sienaBayes} results.
    \item Restrict check in \textsf{sienaBayes} of maximum
@@ -17700,21 +17764,21 @@ Changes in RSienaTest:
 \end{itemize}
 
 \item 2017-09-09 R-Forge Revision 318, packages version 1.2-4.
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item Longer Description field in \texttt{DESCRIPTION}, as per CRAN suggestions.
    \item Correction of \sfn{print.sienaFit}, repairing the option
         \texttt{include = FALSE}  in \textsf{setEffect} and \\
         \sfn{includeEffects}.
 \end{itemize}
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
    \item Extra line in example for \texttt{sienaBayes.Rd}.
 \end{itemize}
 
 \item 2017-09-08 R-Forge Revision 316, CRAN package version 1.2-3.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
  \item totAlt also for non-directed networks.
  \item Further corrections to make\textsf{RSiena}acceptable for CRAN.
@@ -17722,7 +17786,7 @@ Changes in \textsf{RSiena} and RSienaTest:
 
 \item 2017-09-04 R-Forge Revision 312.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
  \item Score test and \textsf{sienaGOF} corrected for the case that some parameters
       are fixed and not tested.
@@ -17767,7 +17831,7 @@ Changes in RSiena:
  \item New parameter \texttt{OffSet} in \textsf{sienaAlgorithmCreate}.
  \item Registration of native routines (requirement for CRAN).
 \end{itemize}
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
  \item Parameter \texttt{UniversalOffset} of \textsf{sienaAlgorithmCreate}
        renamed to \texttt{Offset}.
@@ -17783,7 +17847,7 @@ Changes in RSienaTest:
 
 \item 2017-05-08 Revision 306.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item New function \sfn{updateSpecification} to includes in an
    effects object a set of effects that are included in another effects object.
@@ -17822,7 +17886,7 @@ Changes in \textsf{RSiena} and RSienaTest:
    \item Some parts dropped from the object produced by \textsf{siena07}
      to reduce memory use.
 \end{itemize}
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
 \item sienaBayes:
         various changes to save memory (thanks to Ruth Ripley);
@@ -17839,14 +17903,14 @@ Changes in RSienaTest:
 
 \item 2016-10-13, 14 Revision 303, 304.
 
-Changes in \textsf{RSiena} and RSienaTest (George Vega Yon):
+Changes in \textsf{RSiena} and \textsf{RSienaTest} (George Vega Yon):
 \begin{itemize}
    \item New parallellization option -cl- for \textsf{siena07}.
 \end{itemize}
 
 \item 2016-10-09 Revision 301.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item New effects: \texttt{sameXCycle4, homCovNetNet, contrastCovNetNet,
      covNetNetIn, \\
@@ -17873,7 +17937,7 @@ Changes in \textsf{RSiena} and RSienaTest:
 
 \item 2016-08-17 Revision 296.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item Warning if \sfn{includeInteraction} is used for more interactions
      than available given parameters \texttt{nintn} and \texttt{behNintn}.
@@ -17886,11 +17950,11 @@ Changes in \textsf{RSiena} and RSienaTest:
 
 \item 2016-05-28 Revision 294.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item The manual was taken out of the installation;
    it still is in the source code distribution as
-   RSienatest{$\backslash$}doc{$\backslash$}RSiena\_Manual.tex. It still is publicly
+   \textsf{RSienaTest}{$\backslash$}doc{$\backslash$}RSiena\_Manual.tex. It still is publicly
    it can be downloaded from \\
 %\href{http://www.stats.ox.ac.uk/~snijders/siena/RSiena_Manual.pdf}
 {\texttt{http://www.stats.ox.ac.uk/$\tilde{\ }$snijders/siena/RSiena\_Manual.pdf}}.
@@ -17908,7 +17972,7 @@ Changes in RSiena:
 \begin{itemize}
    \item \sfn{(siena01Gui)} and \sfn{sienaDataCreateFromSession} dropped.
 \end{itemize}
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
  \item Change in endowment effect estimation for \texttt{avAlt} effect.
    \item New effects
@@ -17922,7 +17986,7 @@ Identical to 290, but now there is a Mac version.
 
 \item 2016-02-01 Revision 290.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item New effects \texttt{FBDeg}, \texttt{FRDeg}, \texttt{BRDeg}
      (\texttt{RFDeg} was mentioned earlier
@@ -17941,7 +18005,7 @@ Changes in \textsf{RSiena} and RSienaTest:
    \item \texttt{fromBayes} bug corrected.
 \end{itemize}
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
    \item \sfn{sienacpp} added (programmed by Felix Sch\"{o}nenberger); this includes
      gmm estimation (Amati - Snijders).
@@ -17953,7 +18017,7 @@ Changes in RSienaTest:
 
 \item 2015-09-10 Revision 289.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item New defaults for \sfn{siena07} in \sfn{sienaAlgorithmCreate}:
      doubleAveraging = 0, diagonalize = 0.2 (for MoM).
@@ -17976,14 +18040,14 @@ Changes in \textsf{RSiena} and RSienaTest:
 Changes in RSiena:
 \begin{itemize}
    \item New effects \texttt{homXOutAct, FFDeg, BBDeg, RFDeg, diffXTransTrip}
-     (ported from RSienaTest).
+     (ported from \textsf{RSienaTest}).
    \item \texttt{sameXInPop} and \texttt{diffXInPop} also added for two-mode networks;
      but they are not dyadic!
    \item In names of behavior effects and statistics dropped the
      (redundant) parts "behavior" and "beh.".
 \end{itemize}
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
    \item New function \sfn{extract.sienaBayes}.
    \item \sfn{sienaBayes}: options diagonalize = 0.2, doubleAveraging = 0 for estimation
@@ -17994,7 +18058,7 @@ Changes in RSienaTest:
 
 \item 2015-07-18 Revision 288.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item \sfn{plot.sienaRI}: new parameter \texttt{actors}; proportions with
      piechart improved (hopefully); effect of parameter \texttt{radius} changed.
@@ -18006,7 +18070,7 @@ Changes in RSiena:
 \item Correction of error for two-mode networks in \sfn{sienaGOF}.
 \end{itemize}
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
 \item New effects \texttt{homXOutAct}, \texttt{FFDeg}, \texttt{BBDeg},
    \texttt{RFDeg}, \texttt{diffXTransTrip}.
@@ -18022,20 +18086,20 @@ Changes in RSienaTest:
 
 \item 2015-05-21 and 2015-06-02 Revision 286.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
 \item \sfn{SienaRIDynamics} dropped from \rs, it still has an error
       (retained in \rst).
 \end{itemize}
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
 \item Correction of error for two-mode networks in \sfn{sienaGOF}.
 \end{itemize}
 
 \item 2015-05-20 Revision 285.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item \texttt{tmax} added to \sfn{sienaFit} objects and
      \texttt{tconv.max} mentioned in \sfn{print.sienaFit}.
@@ -18065,7 +18129,7 @@ Changes in \textsf{RSiena} and RSienaTest:
 
 \item 2015-04-02 Revision 284.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item New effects: \texttt{simEgoDist2, simEgoInDist2, simEgoDist2W, simEgoInDist2W,\\
          sameXOutAct, diffXInPop, diffXOutAct}. The centering for the similarity
@@ -18091,7 +18155,7 @@ Changes in \textsf{RSiena} and RSienaTest:
      argument (so using \texttt{main} and \texttt{ylab} as arguments now should work).
      (Thanks to David Kavaler.)
 \end{itemize}
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
    \item \textsf{sienaBayes}: correction in initialization of truncation rate parameters
      based on prior; error corrected for sampling constant parameters.
@@ -18099,13 +18163,13 @@ Changes in RSienaTest:
 Changes in RSiena:
 \begin{itemize}
    \item Parameter \texttt{reduceg} added in \textsf{sienaAlgorithmCreate}
-   for use in \textsf{siena07}, like in RSienaTest.
+   for use in \textsf{siena07}, like in \textsf{RSienaTest}.
 \end{itemize}
 
 
 \item 2014-12-11 R-Forge Revision 282.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item Effects \texttt{cl.XWX} and \texttt{cl2.XWX} corrected (thanks to Christoph Stadtfeld).
    \item \texttt{interactionType} of \texttt{gwesp..} effects was made \texttt{dyadic}.
@@ -18123,7 +18187,7 @@ Changes in \textsf{RSiena} and RSienaTest:
      for \sfn{sienaGroup} objects.
    \item Manual introduces the term \emph{elementary effects}.
 \end{itemize}
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
    \item \textsf{sienaBayes}: the stop caused by singularity of the precision
      matrix after the multi-group estimation now is circumvented;
@@ -18136,7 +18200,7 @@ Changes in RSienaTest:
 \end{itemize}
 
 \item 2014-11-19   R-Forge Revision 280.
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
 \item Small changes in help pages for \sfn{sienaGOF} and for \sfn{sienaCompositionChange}.
 \item New parameters \texttt{nSampVarying} and \texttt{nSampConst} in \sfn{sienaBayes}.
@@ -18144,7 +18208,7 @@ Changes in RSienaTest:
 
 \item 2014-11-13  R-Forge Revision 279.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item Effect \texttt{AltsAvAlt} renamed to \texttt{avXAlt}.
    \item Effects object no longer used as argument for \textsf{print01Report}.
@@ -18183,7 +18247,7 @@ Changes in \textsf{RSiena} and RSienaTest:
    \item File \sfn{effects.pdf} dropped from \texttt{{$\backslash$}inst{$\backslash$}doc}
           (it can be created by \sfn{effectsDocumentation}).
 \end{itemize}
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
    \item \sfn{sienaBayes}: new parameters \texttt{nImproveMH} and \texttt{priorRatesFromData};
       these give the possibility to truncate initial rate parameters depending on prior.
@@ -18195,7 +18259,7 @@ Changes in RSienaTest:
 
 \item 2014-07-08  Revision 278.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item Added \texttt{s50s} to data set.
    \item Corrected \texttt{se} component of \sfn{sienaFit} objects
@@ -18210,7 +18274,7 @@ Changes in \textsf{RSiena} and RSienaTest:
     and for upOnly / downOnly cases.
 \end{itemize}
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
 \item  \sfn{sienaBayes}:
     Internally multiplied the data-dependent choice of
@@ -18227,16 +18291,16 @@ Changes in RSienaTest:
 \end{itemize}
 
 
-\item 2014-06-22 R-Forge Revision 277. 
+\item 2014-06-22 R-Forge Revision 277.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
 \item Higher write-to-screen frequency for batch operation of \sfn{siena07}.
 \item Function \sfn{includeEffects} now includes parameters \texttt{fix} and \texttt{test}.
 \item Various small bug corrections (see the \sfn{ChangeLog}, 1.1-275).
 \end{itemize}
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
 \item Changes in \sfn{sienaBayes} and its print and summary methods.
 \item Corrected starting printing \sfn{sienaBayesFit} at \texttt{nfirst}.
@@ -18246,7 +18310,7 @@ Changes in RSienaTest:
 
 \item 2014-04-26 R-Forge Revision 274.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
 \item Correction of effect \texttt{homWXClosure}.
 \item Small change in \textsf{print01Report} to improve reporting
@@ -18257,14 +18321,14 @@ Changes in \textsf{RSiena} and RSienaTest:
 
 \item 2014-04-13 R-Forge Revisions 267-271.
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
  \item Updates to let \sfn{sienaBayes} accept
      a wider range of data and models (e.g., user-defined interactions);
      and various corrections to \sfn{sienaBayes}.
 \end{itemize}
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
 \item Added function \sfn{sienaRI} for assessment of relative importance of effects,
       with print and plot methods.
@@ -18289,7 +18353,7 @@ It should be noted that two changes were made that potentially
 have an influence on some results obtained.
 
 First, the effects \texttt{gwespFF, gwespBB, gwespFB, gwespBF, gwespRR}
-were modified in RSienaTest to bring them in accordance with the literature.
+were modified in \textsf{RSienaTest} to bring them in accordance with the literature.
 This means that the `old' parameter $\alpha'$ was effectively replaced by
 $\alpha = -\log\big(1-\exp(\alpha')\big)$; here $\alpha$ is the internal
 effect parameter divided by 100. For the default $\alpha = \log(2)$
@@ -18299,7 +18363,7 @@ Second, in the help page for \sfn{sienaGOF-auxiliary}, geodesic distances
 were changed to non-directed. This makes more sense usually and was done to
 avoid runtime errors that occurred very rarely.
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
 \item New effects \texttt{cl.XWX}, \texttt{homXTransTrip},
     \texttt{homWXClosure}, and \texttt{sharedPop}.
@@ -18325,19 +18389,19 @@ Changes in \textsf{RSiena} and RSienaTest:
      to avoid long violins in cases where all simulations have the same outcome.
 \end{itemize}
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
 \item Further work on \sfn{SienaBayes}.
 \end{itemize}
 
 Changes in RSiena:
 \begin{itemize}
-  \item Ported effects \texttt{outRateLog} and \texttt{outTrunc2} from RSienaTest.
+  \item Ported effects \texttt{outRateLog} and \texttt{outTrunc2} from \textsf{RSienaTest}.
 \end{itemize}
 
 \item 2013-12-04 R-Forge Revision 250
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
 \item New option \texttt{centered} in \sfn{coCovar} and \sfn{varCovar}.
 \item \sfn{setEffect}, \sfn{updateTheta}, and \sfn{prevAns} in \sfn{siena07}
@@ -18348,7 +18412,7 @@ Changes in \textsf{RSiena} and RSienaTest:
 \item Divergent parameters in \sfn{siena07} get \texttt{NA} for their rows and columns
      in the resulting covariance matrix.
 \end{itemize}
-The following changes in revision 244 were ported from RSienaTest to RSiena:
+The following changes in revision 244 were ported from \textsf{RSienaTest} to RSiena:
 \begin{itemize}
 \item In \sfn{siena08}, also report Bonferroni combination
      of the two Fisher combinations.
@@ -18364,7 +18428,7 @@ The following changes in revision 244 were ported from RSienaTest to RSiena:
 
 \item 2013-10-31 R-Forge Revision 246
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
 \begin{itemize}
    \item New behavior objective function effects \sfn{avSimAltX}, \sfn{totSimAltX} and
     \sfn{avAltAltX} to differentiate sources of peer influence in directed networks.
@@ -18374,7 +18438,7 @@ Changes in \textsf{RSiena} and RSienaTest:
 
 \item 2013-16-09 R-Forge Revision 245
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 \begin{itemize}
    \item New structural rate effect \sfn{outRateLog}.
    \item Duplication of \sfn{outTrunc} effect: \sfn{outTrunc2}, allowing use
@@ -18398,7 +18462,7 @@ Changes in RSienaTest:
 
 \item 2013-10-09 R-Forge Revision 244
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
 
 \begin{itemize}
 \item Repair bug that prevented compilation for Mac.
@@ -18406,7 +18470,7 @@ Changes in RSienaTest:
 
 \item 2013-09-17 R-forge revision 243
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
   \begin{itemize}
    \item Correct bug in \sfn{EffectFactory} for \texttt{isolatePop} effect.
    \item Improved plotting of \textsf{sienaGOF} objects so that observed values
@@ -18421,7 +18485,7 @@ Changes in RSiena:
 
 \item 2013-08-27 R-forge revision 242
 
-Changes in \textsf{RSiena} as well as RSienaTest:
+Changes in \textsf{RSiena} as well as \textsf{RSienaTest}:
   \begin{itemize}
   \item Correction to Dolby option for the case of more than 2 waves:
      in \sfn{phase1.r} and \sfn{phase3.r}, scores are added
@@ -18443,7 +18507,7 @@ Changes in \textsf{RSiena} as well as RSienaTest:
 
 \item 2013-08-23 R-forge revision 241
 
-Changes in \textsf{RSiena} as well as RSienaTest:
+Changes in \textsf{RSiena} as well as \textsf{RSienaTest}:
   \begin{itemize}
   \item Corrected bug (leading to error message)
      that occurred if there was only one option
@@ -18461,12 +18525,12 @@ Changes in \textsf{RSiena} as well as RSienaTest:
 
 \item 2013-08-08 R-forge revision 240
 
-Changes in RSienaTest:
+Changes in \textsf{RSienaTest}:
   \begin{itemize}
   \item Added the parameter reduceg to \textsf{siena07}.
   \end{itemize}
 
-Changes in \textsf{RSiena} and RSienaTest:
+Changes in \textsf{RSiena} and \textsf{RSienaTest}:
   \begin{itemize}
   \item Added effects crprod and inPopIntn for two-mode networks.
   \end{itemize}
@@ -18483,7 +18547,7 @@ Changes in RSiena:
 
 \item 2013-06-15 R-forge revision 231
 
-Changes in \textsf{RSiena} as well as RSienaTest:
+Changes in \textsf{RSiena} as well as \textsf{RSienaTest}:
   \begin{itemize}
   \item
    Make the `cumulative' option operational in \sfn{BehaviorDistribution}
@@ -18505,7 +18569,7 @@ Changes in \textsf{RSiena} as well as RSienaTest:
   \end{itemize}
 \item 2013-05-10 R-forge revision 230
 
-Changes in \textsf{RSiena} as well as RSienaTest:
+Changes in \textsf{RSiena} as well as \textsf{RSienaTest}:
   \begin{itemize}
    \item Check whether the maximum observed degree is not higher than
      \sfn{maxDegree}.
@@ -18515,10 +18579,10 @@ Changes in \textsf{RSiena} as well as RSienaTest:
   \end{itemize}
 \item 2013-04-19 R-forge revision 227
 
-  Changes in \textsf{RSiena} as well as RSienaTest;
+  Changes in \textsf{RSiena} as well as \textsf{RSienaTest};
   both now are very similar; \textsf{sienaBayes}, \sfn{algorithms}, and
   \sfn{profileLikelihoods}
-  are the only functions in RSienaTest not in RSiena.
+  are the only functions in \textsf{RSienaTest} not in RSiena.
   Available effects now are the same in both packages.
 
   Main changes visible to users:
@@ -18526,22 +18590,22 @@ Changes in \textsf{RSiena} as well as RSienaTest:
 For Siena only:
   \begin{itemize}
 	\item function \sfn{bayes} was removed (still under development in
-        RSienaTest).
+        \textsf{RSienaTest}).
 	\item Attributes \sfn{allowOnly} and \sfn{simOnly} ported from
-        RSienaTest.
+        \textsf{RSienaTest}.
 	\item Improved error messages in  \sfn{includeEffects} ported from
-        RSienaTest.
-	\item \sfn{sienaGOF} ported from RSienaTest.
-	\item \sfn{siena.table} ported from RSienaTest.
+        \textsf{RSienaTest}.
+	\item \sfn{sienaGOF} ported from \textsf{RSienaTest}.
+	\item \sfn{siena.table} ported from \textsf{RSienaTest}.
   \end{itemize}
 
-For RSienaTest only:
+For \textsf{RSienaTest} only:
   \begin{itemize}
 	\item \sfn{bayes} renamed to \sfn{sienaBayes} and considerably changed,
          with print option.
   \end{itemize}
 
-For\textsf{RSiena}and RSienaTest:
+For\textsf{RSiena}and \textsf{RSienaTest}:
   \begin{itemize}
 	\item Changes to \textsf{sienaGOF}: new use structure with extraction functions
 		\sfn{sparseMatrixExtraction}, \sfn{networkExtraction},
@@ -18668,10 +18732,10 @@ For\textsf{RSiena}and RSienaTest:
 \item \sfn{profileLikelihood} (RSienaTest only) returns its object invisibly
   (i.e.\  it does not print when not assigned but can be assigned).
 \end{itemize}
-\item 2012-12-23 R-forge revision 221,\textsf{RSiena}and RSienaTest:
+\item 2012-12-23 R-forge revision 221,\textsf{RSiena}and \textsf{RSienaTest}:
 
   changed version check to cope with R version 3.0.0.
-\item 2012-07-05 R-forge revision 219, for RSienaTest only:
+\item 2012-07-05 R-forge revision 219, for \textsf{RSienaTest} only:
 \begin{itemize}
   \item Further changes to bayes.
   \item Additional effects connected with triadic closure interacting with
@@ -18679,13 +18743,13 @@ For\textsf{RSiena}and RSienaTest:
   \item Some networks from Chris Baerveldt's data set added
         as data objects (N34* and HN34*).
 \end{itemize}
-\item 2012-06-11 R-forge revision 217, for RSienaTest only:
+\item 2012-06-11 R-forge revision 217, for \textsf{RSienaTest} only:
 \begin{itemize}
   \item Preliminary updates to sienaGOF to put more power in the hands of the
   user.
   A user may now extract more than one dependent variable from the dataset.
 \end{itemize}
-\item 2012-06-07 R-forge revision 216, for RSienaTest only:
+\item 2012-06-07 R-forge revision 216, for \textsf{RSienaTest} only:
 \begin{itemize}
   \item New effects connected with isolates; and with mixed WWX triadic closure
       (in various patterns) for dyadic covariates as well as multiple
@@ -18694,7 +18758,7 @@ For\textsf{RSiena}and RSienaTest:
       groups option does not work for dyadic covariates;
       still not documented for general use).
 \end{itemize}
-\item 2012-05-18 R-forge revision 213, for RSienaTest only:
+\item 2012-05-18 R-forge revision 213, for \textsf{RSienaTest} only:
     \begin{itemize}
      \item Allow observed networks to have density 0 or 1
      (not that it is generally advisable to use such data sets).
@@ -18799,7 +18863,7 @@ Fixed bug in Bayes left over from R 189.
  Fixed minor bugs in reports and error messages.
 \item 2011-12-04 R-forge revision 186
 Fixed some bugs in ML estimation procedure which will alter the results
-slightly. Added algorithm functions to RSienaTest package.
+slightly. Added algorithm functions to \textsf{RSienaTest} package.
 \item 2011-11-27 R-forge revision 185
 \begin{itemize}
 \item Bayes and algorithm code now uses parallel package
@@ -18853,20 +18917,20 @@ linux with no X11 available. (RSienaTest only)
 \item Fix bug where print from \textsf{siena08} was not produced if a previous display to
   the screen had occurred.
 \item New parameter in \textsf{siena08} to control number of iterations.
-\item RSienaTest only: added validation to updateTheta
+\item \textsf{RSienaTest} only: added validation to updateTheta
 \end{itemize}
-\item 2011-08-08 RSienaTest only R-forge revision 168/9
+\item 2011-08-08 \textsf{RSienaTest} only R-forge revision 168/9
 \begin{itemize}
 \item More work on maximum likelihood.
 \item When using finite difference derivative estimation or maxmimum likelihood
   estimation, return of derivatives by wave is optional, controlled by parameter
-  byWave to\textsf{siena07}.
+  byWave to \textsf{siena07}.
 \item Format of derivatives by wave has altered: \textsf{sienaTimeTest} will be
   incompatible with older objects which used finite differences or maximum
   likelihood.
 \item New function \sfn{updateTheta} to copy theta values from a fit to an
   effects object.
-\item Time dummies in\textsf{siena07} are created before the initial values are updated
+\item Time dummies in \textsf{siena07} are created before the initial values are updated
   from any prevAns, so values may be copied to time dummies also.
 \item Amended headings in print and summary for siena fit objects.
 \item New function \sfn{bayes} is now fully available with a help page and no
@@ -18905,7 +18969,7 @@ and function now runs on non-Windows too.
   interactions. Minor bug fixes to correct effects object and inclusion of
   non-requested underlying effects. Replace influence interaction effects by the
   three options. Time dummies for behavior effects.
-\item 2011-06-18 R-forge revision 157: Fixed minor bug in\textsf{siena07}: code
+\item 2011-06-18 R-forge revision 157: Fixed minor bug in \textsf{siena07}: code
   controlling maximum size of move was incorrect if using prevAns for an exactly
   equivalent fit.
 \item 2011-06-13 R-forge revision 156: fixed bug removing density effect for
@@ -18959,7 +19023,7 @@ Additional work on the goodness of fit functionality (see ?sienaGOF)
 \item 2011-02-05 R-forge revision 134:
 \begin{itemize}
 \item Enhanced features (and minor bug fixes) in \textsf{siena08} report. (in revision
-  133 in RSienaTest)
+  133 in \textsf{RSienaTest})
 \item Bug fix in iwlsm
 \item sienaDataCreateFromSession, \textsf{sienaTimeTest}: improved error messages.
 \item ML support for bipartite networks (still work in progress,
@@ -18998,7 +19062,7 @@ New goodness of fit functions: work in progress.
 \item 2010-11-25 R-forge revision 126:
 \begin{itemize}
 \item Changed version of\textsf{RSiena}to be 1.0.12 and copied all new features which
-  were only in RSienaTest to RSiena.\textsf{RSiena}and RSienaTest are
+  were only in \textsf{RSienaTest} to RSiena.\textsf{RSiena}and \textsf{RSienaTest} are
   functionally the same at this time.
 \item New version of \textsf{sienaTimeTest} and \textsf{sienaTimeFix}.
 \item Bayesian routine (experimental) can be used with multiple dependent
@@ -19009,8 +19073,8 @@ New goodness of fit functions: work in progress.
 \item Corrected bug in report from\textsf{siena07} about detailing network types.
 \item Networks appear in data object before behavior variables regardless of
 order of submission to sienaDataCreate
-\item RSienaTest only: new effect: in structural equivalence
-\item RSienaTest only: new models for symmetric networks
+\item \textsf{RSienaTest} only: new effect: in structural equivalence
+\item \textsf{RSienaTest} only: new models for symmetric networks
 \item bug fixed to sienaTimeTest: non included underlying effects for user
   defined interactions, multiple dependent networks and multiple groups.
 \end{itemize}
@@ -19033,7 +19097,7 @@ order of submission to sienaDataCreate
 \item Bug in calculation of starting values for behavior variables.
 (RSienaTest only)
 \end{itemize}
-\item 2010-08-20 R-forge revision 117: RSienaTest only. Documentation updates,
+\item 2010-08-20 R-forge revision 117: \textsf{RSienaTest} only. Documentation updates,
 algorithms may work again!
 \item 2010-08-20 R-forge revision 116: forgotten
 part of change for print of sienaFit (RSiena only)
@@ -19074,16 +19138,16 @@ and minor corrections to layout of print of sienaFit.
 \item Fixed bug where \textsf{sienaTimeTest} dummies with RateX would not work with
   changing covariates.
 \end{itemize}
-\item 2010-06-21 R-forge revision 107: RsienaTest only: reinstated
+\item 2010-06-21 R-forge revision 107: \textsf{RSienaTest} only: reinstated
 includeTimeDummy.
 \item 2010-06-18 R-forge revision 106: new version numbers:
-  1.0.11.105 and 1.0.12.105 for\textsf{RSiena}and RSienaTest respectively.
+  1.0.11.105 and 1.0.12.105 for\textsf{RSiena}and \textsf{RSienaTest} respectively.
 \item 2010-06-18 R-forge revision 105: Fixed siena01Gui bug when trying to edit
   the effects. Problem was introduced in revision 81.
 \item 2010-06-10 Updated time heterogeneity script for Tom
-\item 2010-06-08 R-forge revision 102: RSienaTest only. Removed
+\item 2010-06-08 R-forge revision 102: \textsf{RSienaTest} only. Removed
 includeTimeDummy.
-\item 2010-06-08 R-forge revision 101: RSienaTest only. Fixed RateX so that it
+\item 2010-06-08 R-forge revision 101: \textsf{RSienaTest} only. Fixed RateX so that it
   works with changing actor covariates as well.
 \item 2010-06-08 R-forge revision 100: corrected revision numbers in \sfn{ChangeLog}.
 \item 2010-06-08 R-forge revision 99
@@ -19152,7 +19216,7 @@ New print, summary and edit methods for Siena effects objects
 \item 2010-04-12 R-forge revision 78 fix minor bugs in reports, allow character
   input to effect utility functions, include effect1-3 etc on display of
   included effects in \textsf{siena01Gui}.
-\item 2010-04-12 R-forge revision 77 (RSiena only) As for RSienaTest revision 76
+\item 2010-04-12 R-forge revision 77 (RSiena only) As for \textsf{RSienaTest} revision 76
 \begin{itemize}
 \item Report of 0 missings corrected
 \item display of effect1-effect3 in siena01Gui
@@ -19181,7 +19245,7 @@ conditional estimation
 \end{itemize}
 \item 2010-03-24 R-forge revision 69 (RSiena only)
 \begin{itemize}
-\item New features and bug fixes as for revision 63 in RSienaTest.
+\item New features and bug fixes as for revision 63 in \textsf{RSienaTest}.
 \item 4-cycles effect has new shortName: cycle4.
 \item some percentages on reports were proportions not percentages
 \item Sped up treatment of missing values in sparse format networks.
@@ -19278,7 +19342,7 @@ Fix to bug in sorting effects for multiple dependent variables.
 
 \item 2010-01-01 R-forge revision 33
 
-Updated change log and manual in \textsf{RSiena} and \sfn{ChangeLog} in RSienaTest.
+Updated change log and manual in \textsf{RSiena} and \sfn{ChangeLog} in \textsf{RSienaTest}.
 
 \item 2010-01-01 R-forge revision 32
     print07report.r: corrected standard errors for rate estimate for
@@ -19288,18 +19352,18 @@ Updated change log and manual in \textsf{RSiena} and \sfn{ChangeLog} in RSienaTe
 \begin{itemize}
 \item
     print07report.r: corrected standard errors for rate estimate for
-    conditional estimation: needed square roots. RSienaTest only
+    conditional estimation: needed square roots. \textsf{RSienaTest} only
 
-\item more behavior effects in RSienaTest.
+\item more behavior effects in \textsf{RSienaTest}.
 \end{itemize}
 
 \item 2009-12-17 R-forge revision 30
 
-Fixed bug in dyadic interactions in RSienaTest
+Fixed bug in dyadic interactions in \textsf{RSienaTest}
 
 \item 2009-12-17 R-forge revision 29
 
-Fixed bug in 3-way interactions in RSienaTest
+Fixed bug in 3-way interactions in \textsf{RSienaTest}
 
 \item 2009-12-14 R-forge revision 28
 
@@ -19308,11 +19372,11 @@ Fixed bug in 3-way interactions in RSienaTest
 \item 2009-12-14 R-forge revision 27
 
 Fixed bug in use of multiple processes for
-  RSienaTest.
+  \textsf{RSienaTest}.
 
 \item 2009-12-01 R-forge revision 26
 
-Created RSienaTest which includes user
+Created \textsf{RSienaTest} which includes user
   specified interactions.
 
 \item 2009-11-20 R-forge revision 25

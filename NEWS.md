@@ -1,3 +1,27 @@
+# RSiena 1.3.22
+
+## 
+   
+2023-05-11
+
+## Changes in RSiena: 
+### Coding:
+  * Corrected and cleaned up virtual definitions in `AlterFunction` and its
+    descendants, in particular `CovariateNetworkAlterFunction`.
+  * Added `const` to virtual specification of `value` in `AlterFunction.h`
+    and all of its descendants.
+  * Replaced ambiguous call to `std::abs` in `AbsDiffFunction.cpp`. 
+### New functionality:
+  * For one-mode networks, new model options `DOUBLESTEP25`, `DOUBLESTEP50`,
+    `DOUBLESTEP75`, `DOUBLESTEP100`. 
+### Corrections:
+  * The first item in "Coding" implies correction of several distance-2 network 
+	 effects such as `altDist2`, `totDist2` and `altInDist2`.
+  * In `sienaAlgorithmCreate`, changed default `prML=2` back to `prML=1`; 
+    stop if Maximum Likelihood estimation is attempted for a data set
+    containing more than one dependent variable 
+    with `prML=2` (implemented in `initializeFRAN.r`). 
+
 # RSiena 1.3.20
 
 ## 

@@ -33,7 +33,7 @@ EgoInDegreeFunction::EgoInDegreeFunction(string networkName) :
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double EgoInDegreeFunction::value(int alter)
+double EgoInDegreeFunction::value(int alter) const
 {
 	return this->pNetwork()->inDegree(this->ego());
 }

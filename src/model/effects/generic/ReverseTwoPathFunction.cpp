@@ -52,7 +52,7 @@ void ReverseTwoPathFunction::initialize(const Data * pData,
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double ReverseTwoPathFunction::value(int alter)
+double ReverseTwoPathFunction::value(int alter) const
 {
 	return this->lpTable->get(alter);
 }

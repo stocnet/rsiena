@@ -1,6 +1,6 @@
 
-R version 4.2.2 (2022-10-31 ucrt) -- "Innocent and Trusting"
-Copyright (C) 2022 The R Foundation for Statistical Computing
+R version 4.2.3 (2023-03-15 ucrt) -- "Shortstop Beagle"
+Copyright (C) 2023 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -880,4 +880,4 @@ Total of 285 iteration steps.
 > 
 > proc.time()
    user  system elapsed 
-  11.17    0.07   21.76 
+  18.68    0.12   21.81 

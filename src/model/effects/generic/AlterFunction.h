@@ -33,11 +33,13 @@ public:
 	inline int ego() const;
 
 	/**
-	 * Returns the value of this function for the given alter. It is assumed
+	 * Will return the value of this function for the given alter. It is assumed
 	 * that the function has been initialized before and pre-processed with
 	 * respect to a certain ego.
 	 */
-	virtual double value(int alter) = 0;
+// the "virtual ... = 0" means that overriding this method is required
+// a method constructed in this way is called a pure method.
+	virtual double value(int alter) const = 0; 
 
 private:
 	int lego;
@@ -55,6 +57,7 @@ int AlterFunction::ego() const
 {
 	return this->lego;
 }
+
 
 }
 

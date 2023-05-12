@@ -55,7 +55,7 @@ siena.table(x, type="tex", file=paste(deparse(substitute(x)), ".", type,sep=""),
     See documentation for \code{\link[xtable]{xtable}}.}
   \item{display}{
     See documentation for \code{\link[xtable]{xtable}}}
-  \item{nfirst}{Only relevant for the \code{RSienaTest} package.}
+  \item{nfirst}{Only relevant for the \code{multiSiena} package.}
   \item{\dots}{
     Add extra parameters for  \code{\link[xtable]{print.xtable}}
     here. e.g.

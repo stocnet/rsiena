@@ -31,9 +31,9 @@ namespace siena
 
 /**
  * Constructor.
- * @param[in] firstNetworkName the name of the first network variable 
+ * @param[in] firstNetworkName the name of the first network variable
  * this function is associated with
- * @param[in] secondNetworkName the name of the second network variable 
+ * @param[in] secondNetworkName the name of the second network variable
  * this function is associated with
  * @param[in] covariateName the name of the covariate this function is
  * associated with
@@ -83,7 +83,7 @@ void CovariateMixedNetworkAlterFunction::initialize(const Data * pData,
 /**
  * Returns the covariate value for the given actor.
  */
-double CovariateMixedNetworkAlterFunction::value(int alter) const
+double CovariateMixedNetworkAlterFunction::covvalue(int alter)  const
 {
 	if (this->lpConstantCovariate)
 	{
@@ -136,8 +136,8 @@ double CovariateMixedNetworkAlterFunction::actor_similarity(int i, int j) const
 	else if (this->lpChangingCovariate)
 	{
 		similarity =
-			this->lpChangingCovariate->similarity(this->value(i),
-				this->value(j));
+			this->lpChangingCovariate->similarity(this->lpChangingCovariate->value(i, this->lperiod),
+				this->lpChangingCovariate->value(j, this->lperiod));
 	}
 	else
 	{

@@ -728,7 +728,7 @@ print.sienaAlgorithm <- function(x, ...)
 		}
 		for (i in 1:length(x$modelType))
 		{
-			cat(sprintf(" %s: %d %s\n", names(x$modelType)[i], (x$modelType)[i],
+			cat(sprintf(" %s: %d %s \n", names(x$modelType)[i], (x$modelType)[i],
 					ModelTypeStrings(x$modelType[i])))
 		}
 	}
@@ -968,7 +968,7 @@ sienaFitThetaTable <- function(x, fromBayes=FALSE, tstat=FALSE, groupOnly=0, nfi
 	  pp <- pp + nrates
 	}
 	else
-	{ 
+	{
 	  pp <- sum(x$requestedEffects$include==TRUE)
 	  xp <- pp - sum(x$requestedEffects$type=="gmm")
 	  pp <- xp + nrates
@@ -1092,10 +1092,10 @@ sienaFitThetaTable <- function(x, fromBayes=FALSE, tstat=FALSE, groupOnly=0, nfi
 	    ses <- sqrt(diag(x$covtheta))
 	    ses[x$fixed] <- NA
 	  }
-	  else 
+	  else
 	  {
 	    ses <- sqrt(diag(x$covtheta))
-	    ses[x$fixed[-which(x$requestedEffects$type=="gmm")]] <- NA  
+	    ses[x$fixed[-which(x$requestedEffects$type=="gmm")]] <- NA
 	  }
 	}
 	if (fromBayes)

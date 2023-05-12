@@ -85,7 +85,7 @@ void MixedThreeCyclesFunction::initialize(const Data * pData,
  * To generalize this allowing other directions and network choices:
  * see OutActDistance2Function.cpp for an example.
  */
-double MixedThreeCyclesFunction::value(int alter)
+double MixedThreeCyclesFunction::value(int alter) const
 {
 	double statistic = 0;
 	const Network * pSecondNetwork = this->pSecondNetwork();

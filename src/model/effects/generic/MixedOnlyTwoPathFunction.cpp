@@ -53,7 +53,7 @@ void MixedOnlyTwoPathFunction::initialize(const Data * pData,
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double MixedOnlyTwoPathFunction::value(int alter)
+double MixedOnlyTwoPathFunction::value(int alter) const
 {
 		double rvalue = this->intValue(alter);
 		return rvalue;

@@ -33,7 +33,7 @@ InTieFunction::InTieFunction(string networkName) :
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double InTieFunction::value(int alter)
+double InTieFunction::value(int alter) const
 {
 	return this->pNetworkCache()->inTieValue(alter);
 }

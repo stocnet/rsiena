@@ -30,8 +30,10 @@ public:
 	/**
 	 * Returns the value of this function for the given alter.
 	 */
+	 	 
 	virtual int intValue(int alter) = 0;
 };
+
 
 }
 

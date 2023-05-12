@@ -282,6 +282,17 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 
 		## split and rejoin both versions before continuing
 		depvarnames <- names(data[[1]]$depvars)
+		
+		if (x$maxlike & (length(depvarnames) > 1))
+		{
+			if(x$pridg + x$prcdg + x$prper + x$pripr + x$prdpr + x$prirms +
+				x$prdrms < 1)
+			{
+				cat("Maximum likelihood estimation with more than one dependent variable\n")
+				cat("is impossible with prML=2. Try prML=1.\n")
+				stop("Impossible algorithm-data combination.")
+			}
+		}
 
 		effects1 <- split(requestedEffects, requestedEffects$name)
 		effects1order <- match(c(depvarnames, "sde"), names(effects1))

@@ -72,7 +72,7 @@ void SameCovariateInTiesFunction::preprocessEgo(int ego)
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double SameCovariateInTiesFunction::value(int alter)
+double SameCovariateInTiesFunction::value(int alter) const
 {
 	int statistic = 0;
 	if  (!(this->lexcludeMissing && this->missing(this->ego())))
@@ -90,8 +90,8 @@ double SameCovariateInTiesFunction::value(int alter)
 				// ego needs to have the same covariate value as h:
 				if (!(this->lexcludeMissing && this->missing(h)))
 				{
-					if ((fabs(this->CovariateNetworkAlterFunction::value(h)
-									- this->CovariateNetworkAlterFunction::value(this->ego()))
+					if ((fabs(this->CovariateNetworkAlterFunction::covvalue(h)
+									- this->CovariateNetworkAlterFunction::covvalue(this->ego()))
 								< EPSILON))
 					{
 						statistic++ ;
@@ -116,8 +116,8 @@ double SameCovariateInTiesFunction::value(int alter)
 				// ego needs to have a different covariate value than h:
 				if (!(this->lexcludeMissing && this->missing(h)))
 				{
-					if ((fabs(this->CovariateNetworkAlterFunction::value(h)
-									- this->CovariateNetworkAlterFunction::value(this->ego()))
+					if ((fabs(this->CovariateNetworkAlterFunction::covvalue(h)
+									- this->CovariateNetworkAlterFunction::covvalue(this->ego()))
 								>= EPSILON))
 					{
 						statistic++ ;

@@ -23,7 +23,12 @@ class CovariateDistance2InAlterNetworkFunction: public
 public:
 	CovariateDistance2InAlterNetworkFunction(std::string networkName,
 		std::string covariateName, bool excludeMissing, bool total);
-	virtual double value(int alter);
+	virtual void initialize(const Data * pData,
+		State * pState,
+		int period,
+		Cache * pCache);
+	virtual void preprocessEgo(int ego);
+	virtual double value(int alter) const;
 
 private:
 	bool lexcludeMissing;

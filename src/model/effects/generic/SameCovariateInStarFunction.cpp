@@ -58,7 +58,7 @@ void SameCovariateInStarFunction::initialize(const Data * pData,
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double SameCovariateInStarFunction::value(int alter)
+double SameCovariateInStarFunction::value(int alter) const
 {
 	int statistic = 0;
 	if  (!(this->lexcludeMissing && this->missing(alter)))
@@ -74,8 +74,8 @@ double SameCovariateInStarFunction::value(int alter)
 			// in-2-stars:
 			if (!(this->lexcludeMissing && this->missing(h)))
 			{
-				if ((fabs(this->CovariateNetworkAlterFunction::value(h)
-								- this->CovariateNetworkAlterFunction::value(this->ego()))
+				if ((fabs(this->CovariateNetworkAlterFunction::covvalue(h)
+								- this->CovariateNetworkAlterFunction::covvalue(this->ego()))
 							< EPSILON) &&
 						(pNetwork->tieValue(alter, h) >= 1))
 				{

@@ -48,7 +48,7 @@ DataReport <- function(z, x, f)
 			{
 				Report(sprintf("Network %d %s :", i, oneModeNames[i]), outf)
 			}
-			Report(sprintf(" %s\n",ModelTypeStrings(z$modelType[i])), outf)
+			Report(sprintf(" %s \n",ModelTypeStrings(z$modelType[i])), outf)
 		}
 		if (any(z$modelType != x$modelType))
 		{
