@@ -377,9 +377,7 @@ void EpochSimulation::runEpoch(int period) {
 void EpochSimulation::runStep() {
 	this->calculateRates();
 	this->drawTimeIncrement();
-
 	double nextTime = this->ltime + this->ltau;
-
 	DependentVariable * pSelectedVariable = 0;
 	int selectedActor = 0;
 
@@ -395,7 +393,6 @@ void EpochSimulation::runStep() {
 			}
 		} else {
 			this->ltime = nextTime;
-
 			// SDE step 
 			if (this->lcontinuousVariables.size() > 0) {
 				this->lpSdeSimulation->setBergstromCoefficients(this->ltau);

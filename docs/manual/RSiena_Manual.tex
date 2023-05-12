@@ -10637,12 +10637,12 @@ to whom $j$ is tied, and defined mathematically by
 \begin{equation}
   \breve v_j = \left\{\begin{array}{ll} \displaystyle
          \frac{\sum_h x_{jh}v_h}{x_{j+}}  &  \text{ if } x_{j+} > 0     \\
-         0                                &  \text{ if } x_{j+} = 0  .
+         \bar v                                &  \text{ if } x_{j+} = 0  ,
   \end{array}   \right.            \label{alt_av}
 \end{equation}
-(If $v$ is centered ---the default---, the value of 0 in case $x_{j+} = 0$
-is also the mean value of the original variable.)\\
-(It may be noted that this constructed variable $\breve v_j$
+where $\bar v$ is the overall observed mean of $V$ (for changing
+actor covariates and behavioral variables, the mean over all waves).\\
+(It may be noted that, for centered $V$, this constructed variable $\breve v_j$
 will not itself have exactly a zero mean generally.)
 
 Note that this value is being updated during the simulations.
@@ -10677,7 +10677,7 @@ of $\breve v_j$ would be the same as the alter effect of $v_j$.
   \breve v_j^{(-i)} = \left\{\begin{array}{ll} \displaystyle
          \frac{\sum_{h \neq i} x_{jh}v_h}{x_{j+} - x_{ji}}  &
                                        \text{ if } x_{j+} - x_{ji} > 0     \\
-         0                                &  \text{ if } x_{j+}- x_{ji} = 0  .
+         \bar v                               &  \text{ if } x_{j+}- x_{ji} = 0  .
   \end{array}   \right.            \label{alt_av2}
 \end{equation}
       To compute the contribution for this effect, note that
@@ -10776,9 +10776,10 @@ of $\breve v_j$ would be the same as the alter effect of $v_j$.
   \check v_j^{(-i)} = \left\{\begin{array}{ll} \displaystyle
          \frac{\sum_{h \neq i} x_{hj}\,v_h}{x_{+j} - x_{ij}}  &
                                        \text{ if } x_{+j} - x_{ij} > 0     \\
-         \bar v                                &  \text{ if } x_{+j}- x_{ij} = 0  .
+         \bar v                                &  \text{ if } x_{+j}- x_{ij} = 0  ,
   \end{array}   \right.            \label{alt_inav2}
 \end{equation}
+where $\bar v$ is (again) the global mean of $V$.
 
 
 \item \emph{total covariate - in - alter at distance 2} \texttt{(totInDist2)}.
@@ -12621,9 +12622,10 @@ Thus, \emph{$W$-alters' $v$-average} $\breve v_i^W$ is defined by
 \begin{equation}
   \breve v_i^W = \left\{\begin{array}{ll} \displaystyle
          \frac{\sum_j w_{ij}v_j}{w_{i+}}  &  \text{ if } w_{i+} > 0     \\
-         0                                &  \text{ if } w_{i+} = 0  .
+         \bar v                                &  \text{ if } w_{i+} = 0  ,
   \end{array}   \right.            \label{alt_av_w}
 \end{equation}
+where $\bar v$ is the overall mean of variable $V$.
 
 \begin{enumerate}
 \setcounter{enumi}{\value{savenumi}}
@@ -12647,7 +12649,7 @@ Thus, \emph{$W$-alters' $v$-average} $\breve v_i^W$ is defined by
 \begin{equation}
   \breve v_j^{W(-i)} = \left\{\begin{array}{ll} \displaystyle
          \frac{\sum_{h \neq j} w_{jh}v_h}{w_{j+} - w_{ji}}  &  \text{ if } w_{j+} - w_{ji} > 0     \\
-         0                                &  \text{ if } w_{j+}- w_{ji} = 0  .
+         \bar v                               &  \text{ if } w_{j+}- w_{ji} = 0  .
   \end{array}   \right.
 \end{equation}
 

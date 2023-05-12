@@ -13,7 +13,7 @@
 ### Checks of later effects are appended at the end.
 ################################################################################
 
-library(RSiena)
+# library(RSiena)
 
 ################################################################################
 ### check from.w.ind
@@ -495,7 +495,6 @@ sum(rowSums(s502 * s501) * (colSums(s501) - ctr)) # -3.53 OK
 ### check rateX
 ################################################################################
 
-library(RSiena)
 
 mynet <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
 mybeh <- sienaDependent(s50a[,2:3], type="behavior")
@@ -524,7 +523,6 @@ sum((mybeh[,,1])*abs(mybeh[,,1]-mybeh[,,2])) # OK RateX non-centered
 ### check totExposure and other diffusion effects
 ################################################################################
 
-library(RSiena)
 
 mynet <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
 sm1 <- 1*(s50s[,2] >= 2)
@@ -621,7 +619,7 @@ sum((sm2-sm1r)*eff34.r) # OK totExposure p=-2
 ans6$targets
 ind <- colSums(s501)
 eff3 <- apply(s501,1,function(x){sum(x*sm1)})
-eff7 <- sapply(1:50, function(i){sum(s501[i,]*ind*sm1)})
+eff7 <- vapply(1:50, function(i){sum(s501[i,]*ind*sm1)}, FUN.VALUE=1)
 sum((sm2-sm1)*eff7) #  OK infectIn
 
 (myeff7 <- setEffect(myeff,infectIn,type='rate', parameter=2,
@@ -638,7 +636,7 @@ sum((sm2-sm1)*eff72) #  OK infectIn p=2
 ans8$targets
 outd <- rowSums(s501)
 eff3 <- apply(s501,1,function(x){sum(x*sm1)})
-eff8 <- sapply(1:50, function(i){sum(s501[i,]*outd*sm1)})
+eff8 <- vapply(1:50, function(i){sum(s501[i,]*outd*sm1)}, FUN.VALUE=1)
 eff82 <- eff8
 eff82[eff3<2] <- 0
 sum((sm2-sm1)*eff82) #  OK infectOut p=2
@@ -649,7 +647,7 @@ sum((sm2-sm1)*eff82) #  OK infectOut p=2
 (ans9 <- siena07(mymodel4, data=mydata, effects=myeff9))
 ans9$targets
 (mcm <- mean(mycov))
-eff9 <- sapply(1:50, function(i){sum(s501[i,]*(mycov-mcm)*sm1)})
+eff9 <- vapply(1:50, function(i){sum(s501[i,]*(mycov-mcm)*sm1)}, FUN.VALUE=1)
 sum((sm2-sm1)*eff9) #   infectCovar OK
 
 (myeffA <- setEffect(myeff.r,infectCovar,type='rate', parameter=2,
@@ -659,7 +657,7 @@ sum((sm2-sm1)*eff9) #   infectCovar OK
 ansA$targets #
 eff3 <- apply(s501,1,function(x){sum(x*sm1r)})
 (mcm <- mean(mycov))
-effA <- sapply(1:50, function(i){sum(s501[i,]*(mycov-mcm)*sm1r)})
+effA <- vapply(1:50, function(i){sum(s501[i,]*(mycov-mcm)*sm1r)}, FUN.VALUE=1)
 effA2 <- effA
 effA2[eff3==1] <- 0
 sum((sm2-sm1r)*effA2) # OK infectCovar p=2
@@ -1254,8 +1252,8 @@ ind <- colSums(mynet2[,,2])
 cova <- central - mean(central)
 divi <- function(x,y){ifelse(y==0, 0, x/y)}
 vv <- matrix(NA, length(central),length(central))
-for (i in 1:length(central)) {
-  for(j in 1:length(central)){vv[i,j] <-
+for (i in seq_along(central)) {
+  for(j in seq_along(central)){vv[i,j] <-
       divi((sum(mynet2[,j,2]*cova) - mynet2[i,j,2]*cova[i]),(ind[j] - mynet2[i,j,2]))}}
 
 sum(mynet2[,,2]*vv) # OK
@@ -1267,8 +1265,8 @@ myeff <- includeEffects(myeff,totInDist2,name='mynet2',
 ans <- siena07(mymodel, data=mydata, effects=myeff)
 ans$targets
 # [1] 115.0 116.0  70.0 106.0 116.0  70.0  35.6
-for (i in 1:length(central)) {
-  for(j in 1:length(central)){vv[i,j] <-
+for (i in seq_along(central)) {
+  for(j in seq_along(central)){vv[i,j] <-
       (sum(mynet2[,j,2]*cova) - mynet2[i,j,2]*cova[i])}}
 
 sum(mynet2[,,2]*vv) # OK
@@ -1289,9 +1287,9 @@ for (i in 1:120){
 }
 
 # Create fake ego and alter covariate data
-covego1 <- sample(c(0:8),12, replace=T)
-covego2 <- sample(c(0:8),12, replace=T)
-covalt <- sample(c(0:8),10, replace=T)
+covego1 <- sample(0:8, 12, replace=T)
+covego2 <- sample(0:8, 12, replace=T)
+covalt <- sample(0:8, 10, replace=T)
 covego3 <- c(1,1,1,1,2,2,2,2,3,3,3,3)
 
 # Identify nodesets
@@ -1332,7 +1330,6 @@ sum(wave2*vv) # OK
 ### check altDist2, totDist2
 ################################################################################
 
-library(RSiena)
 
 mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
 myvar <- coCovar(s50a[,2])
