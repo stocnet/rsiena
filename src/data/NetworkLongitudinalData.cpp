@@ -161,7 +161,7 @@ void NetworkLongitudinalData::calculateProperties()
 		if (this->loneMode)
 		{
 			const OneModeNetwork * pONetwork =
-					dynamic_cast<const OneModeNetwork *>(pNetwork);	
+					dynamic_cast<const OneModeNetwork *>(pNetwork);
 			if (!pONetwork)
 			{
 				throw logic_error("One-mode network expected in NetworkLongitudinalData.");
@@ -446,7 +446,6 @@ int NetworkLongitudinalData::modelType() const
 	return this->lmodelType;
 }
 
-
 /**
  * Stores the average in-degree over all receivers and observations.
  */
@@ -513,7 +512,7 @@ double NetworkLongitudinalData::averageReciprocalDegree() const
 {
 	return this->laverageReciprocalDegree;
 }
-	
+
 /**
  * Returns the relative frequency of the given value among the
  * observed value at the given observation.

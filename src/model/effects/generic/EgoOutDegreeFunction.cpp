@@ -33,7 +33,7 @@ EgoOutDegreeFunction::EgoOutDegreeFunction(string networkName) :
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double EgoOutDegreeFunction::value(int alter)
+double EgoOutDegreeFunction::value(int alter)  const
 {
 	return this->pNetwork()->outDegree(this->ego());
 }
@@ -42,7 +42,7 @@ double EgoOutDegreeFunction::value(int alter)
 /**
  * Returns the value of this function as an integer.
  */
-int EgoOutDegreeFunction::intValue(int alter)
+int EgoOutDegreeFunction::intValue(int alter) 
 {
 	return this->pNetwork()->outDegree(this->ego());
 }

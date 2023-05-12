@@ -13,8 +13,7 @@ Networks here are understood as entire (complete) networks, not as personal (ego
 it is assumed that a set of nodes (social actors) is given, and all ties (links) between these nodes are known - 
 except perhaps for a moderate amount of missing data.
 The name SIENA stands for Simulation Investigation for Empirical Network Analysis.
-The R package is called RSiena; there also is the development package RSienaTest,
-available from R-Forge.
+The R package is called RSiena.
 
 ## Installation
 
@@ -105,7 +104,7 @@ The development version of RSiena can be similarly installed as:
 
 To cite the RSiena package in publications use:
 
-> Ruth M. Ripley, Tom A. B. Snijders, Zsofia Boda, Andras Voros, and Paulina Preciado(2023). Manual
+> Ruth M. Ripley, Tom A. B. Snijders, Zsofia Boda, Andras Voros, and Paulina Preciado (2023). Manual
 > for Siena version 4.0. R package version 1.3.19.
 > https://www.cran.r-project.org/web/packages/RSiena/.
 
@@ -117,7 +116,7 @@ A BibTeX entry for LaTeX users is
   author = {Ruth M. Ripley and Tom A. B. Snijders and Zsofia B'{o}da and Andr'{a}s V"{o}r"{o}s and Paulina Preciado},
   year = {2023},
   institution = {Oxford: University of Oxford, Department of Statistics; Nuffield College},
-  note = {R package version 1.3.19. https://www.cran.r-project.org/web/packages/RSiena/},
+  note = {R package version 1.3.22. https://www.cran.r-project.org/web/packages/RSiena/},
 }
 ```
 

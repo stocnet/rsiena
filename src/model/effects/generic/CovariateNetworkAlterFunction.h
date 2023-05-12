@@ -47,7 +47,8 @@ protected:
 	// for which it is 0.
 	double covmean() const;
 
-	double value(int alter) const;
+// value of the covariate:
+	double covvalue(int alter) const;
 	bool missing(int i) const;
 	double actor_similarity(int i, int j) const;
 	ConstantCovariate * pConstantCovariate() const;

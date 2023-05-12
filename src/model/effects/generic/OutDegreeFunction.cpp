@@ -33,7 +33,7 @@ OutDegreeFunction::OutDegreeFunction(string networkName) :
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double OutDegreeFunction::value(int alter)
+double OutDegreeFunction::value(int alter) const
 {
 	return this->pNetwork()->outDegree(alter);
 }

@@ -33,7 +33,7 @@ InDegreeFunction::InDegreeFunction(string networkName) :
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double InDegreeFunction::value(int alter)
+double InDegreeFunction::value(int alter) const
 {
 	return this->pNetwork()->inDegree(alter);
 }

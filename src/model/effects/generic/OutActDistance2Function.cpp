@@ -82,7 +82,7 @@ void OutActDistance2Function::initialize(const Data * pData,
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double OutActDistance2Function::value(int alter)
+double OutActDistance2Function::value(int alter) const
 {
 	double statistic = 0;
 	const Network * pFirstNetwork = this->pFirstNetwork();

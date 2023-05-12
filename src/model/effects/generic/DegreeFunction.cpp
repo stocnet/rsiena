@@ -34,7 +34,7 @@ DegreeFunction::DegreeFunction(string networkName, double par) :
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double DegreeFunction::value(int alter)
+double DegreeFunction::value(int alter) const
 {
 	double statistic = 0;
 	for (int j = 0; j < this->pNetwork()->n(); j++)

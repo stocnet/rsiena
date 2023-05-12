@@ -326,7 +326,7 @@ void DependentVariable::initializeRateFunction()
 				this->llogInDegreeScores[pVariable] = 0;
 				this->llogInDegreeSumTerm[pVariable] = 0;
 				this->llogInDegreeModelBSumTerm[pVariable] = 0;
-			}			
+			}
 			else if (effectName == "recipRateInv")
 			{
 				if (!pVariable->oneModeNetwork())
@@ -343,9 +343,9 @@ void DependentVariable::initializeRateFunction()
 				this->lstructuralRateEffects.push_back(
 						new StructuralRateEffect(pVariable, INVERSE_RECIPROCAL_DEGREE_RATE,
 							parameter));
-	 			this->linversereciprocalDegreeScores[pVariable] = 0;		
+	 			this->linversereciprocalDegreeScores[pVariable] = 0;
 				this->linversereciprocalDegreeSumTerm[pVariable] = 0;
-			}	
+			}
 			else if (effectName == "recipRateLog")
 			{
 				if (!pVariable->oneModeNetwork())
@@ -362,7 +362,7 @@ void DependentVariable::initializeRateFunction()
 				this->lstructuralRateEffects.push_back(
 						new StructuralRateEffect(pVariable, LOG_RECIPROCAL_DEGREE_RATE,
 							parameter));
-	 			this->llogreciprocalDegreeScores[pVariable] = 0;		
+	 			this->llogreciprocalDegreeScores[pVariable] = 0;
 				this->llogreciprocalDegreeSumTerm[pVariable] = 0;
 			}
 			else
@@ -1320,6 +1320,10 @@ void DependentVariable::accumulateRateScores(double tau,
 		case NOTUSED:
 		case NORMAL:
 		case AFORCE:
+		case DOUBLESTEP25:
+		case DOUBLESTEP50:
+		case DOUBLESTEP75:
+		case DOUBLESTEP100:
 		case AAGREE:
 			break;
 		case BFORCE:
@@ -2433,6 +2437,26 @@ bool DependentVariable::networkModelTypeB() const
 {
 	// This method is overridden in NetworkVariable. Here we return false.
 	return false;
+}
+
+
+/**
+ * Returns whether the model type is one of the DOUBLESTEP models.
+ */
+bool DependentVariable::networkModelTypeDoubleStep() const
+{
+	// This method is overridden in NetworkVariable. Here we return false.
+	return false;
+}
+
+
+/**
+ * Returns the probability for the DOUBLESTEP model.
+ */
+double DependentVariable::networkDoubleStepProb() const
+{
+	// This method is overridden in NetworkVariable. Here we return 0.
+	return 0;
 }
 
 /**

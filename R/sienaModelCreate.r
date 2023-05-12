@@ -17,7 +17,7 @@ sienaModelCreate <- function(fn,
 	maxlike=FALSE, gmm=FALSE, diagonalize=0.2*!maxlike,
 	condvarno=0, condname='',
 	firstg=0.2, reduceg=0.5, cond=NA, findiff=FALSE,  seed=NULL,
-	prML=2,
+	prML=1,
 #	pridg=0.05, prcdg=0.05, prper=0.2, pripr=0.3, prdpr=0.3,
 #	prirms=0.05, prdrms=0.05,
 	maximumPermutationLength=40,
@@ -31,7 +31,7 @@ sienaModelCreate <- function(fn,
 	if (maxlike && (!is.null(MaxDegree)))
 	{
 		warning("maxlike and MaxDegree are incompatible")
-	}	
+	}
 	if (is.null(projname) | checking)
 	{
 		model$projname <- tempfile("Siena")
@@ -122,10 +122,13 @@ sienaModelCreate <- function(fn,
 
 	if (!is.null(modelType))
 	{
-		if (any(!(modelType %in% 1:6)))
+		if (any(!(modelType %in% 1:10)))
 		{
-			warning('modelType can only have values from 1 to 6; other values changed to 1\n')
-			model$modelType[!(modelType %in% 1:6)] <- 1
+			stop('modelType can only have integer values from 1 to 10\n')
+		}
+		if ((maxlike) & (any(modelType %in% 7:10)))
+		{
+			stop('Double step model type incompatible with maximum likelihood estimation')
 		}
 		if (any(is.null(names(modelType))))
 		{
@@ -171,7 +174,7 @@ sienaModelCreate <- function(fn,
 			model$prdrms <- 0.05   # delete random missing
 			# prob(move) = 0
 		}
-		else  # prML == 2 new default
+		else  # prML == 2 
 		{
 			model$pridg <-  0.05   # insert diagonal
 			model$prcdg <-  0.05   # cancel diagonal
@@ -232,14 +235,18 @@ sienaAlgorithmCreate <- sienaModelCreate
 
 ##@ModelTypeStrings DataCreate
 ModelTypeStrings <- function(i){
-	ifelse(((i %in% 1:6) && (!is.null(i))),
+	ifelse(((i >= 1) && (i <= 8) && (!is.null(i))),
 		switch(i,
 			"Standard actor-oriented model",
 			"Forcing model",
 			"Initiative model",
 			"Pairwise forcing model",
 			"Pairwise mutual model",
-			"Pairwise joint model"), "")
+			"Pairwise joint model",
+			"Double Step Model 0.25",
+			"Double Step Model 0.50",
+			"Double Step Model 0.75",
+			"Double Step Model 1.00"), "")
 }
 
 ##@BehaviorModelTypeStrings DataCreate

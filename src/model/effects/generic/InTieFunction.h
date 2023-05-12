@@ -26,7 +26,7 @@ class InTieFunction: public OneModeNetworkAlterFunction
 public:
 	InTieFunction(std::string networkName);
 
-	virtual double value(int alter);
+	virtual double value(int alter) const;
 };
 
 }

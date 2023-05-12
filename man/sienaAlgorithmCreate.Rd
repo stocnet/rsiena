@@ -20,7 +20,7 @@ sienaAlgorithmCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
      dolby=TRUE, maxlike = FALSE, gmm = FALSE, diagonalize=0.2*!maxlike,
      condvarno = 0, condname = "", firstg = 0.2, reduceg = 0.5,
      cond = NA, findiff = FALSE, seed = NULL,
-     prML=2,
+     prML=1,
      maximumPermutationLength=40,
      minimumPermutationLength=2, initialPermutationLength=20,
      modelType=NULL, behModelType=NULL, mult=5, simOnly=FALSE, localML=FALSE,
@@ -32,7 +32,7 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
      dolby=TRUE, maxlike = FALSE, gmm = FALSE, diagonalize=0.2*!maxlike,
      condvarno = 0, condname = "", firstg = 0.2, reduceg = 0.5,
      cond = NA, findiff = FALSE, seed = NULL,
-     prML=2,
+     prML=1,
      maximumPermutationLength=40,
      minimumPermutationLength=2, initialPermutationLength=20,
      modelType=NULL, behModelType=NULL, mult=5, simOnly=FALSE, localML=FALSE,
@@ -121,17 +121,30 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
   \item{initialPermutationLength}{Initial length of permutation in steps in ML
     estimation.}
   \item{modelType}{Named vector indicating the type of model to be fitted for
-    dependent network variables. Possible values are:\cr
-    1=directed, 2:6 for symmetric networks only: 2=dictatorial forcing (D.1),
+    dependent network variables.
+    (See the examples below for how to specify a named vector.)\cr
+    Possible values are:\cr
+    1=directed standard,
+    \cr
+    2:6 for symmetric networks only: 2=dictatorial forcing (D.1),
     3=Initiative model with reciprocal confirmation (M.1),
     4=Pairwise dictatorial forcing model (D.2),
-    5=Pairwise mutual model (M.2), 6=Pairwise joint model (C.2).\cr
+    5=Pairwise mutual model (M.2), 6=Pairwise joint model (C.2),\cr
+    7:10 for directed one-mode only:
+    7=Double Step model with double step probability 0.25,
+    8=Double Step model with double step probability 0.50,
+    9=Double Step model with double step probability 0.75,
+    10=Double Step model with double step probability 1.00.
+    \cr
     Names should be the names of all dependent network variables,
     in the same order as in the Siena data set.\cr
-    See Snijders and Pickup (2016) for the meanings of these models.\cr
+    See Snijders and Pickup (2016) for the meanings of the various models
+    for symmetric networks.\cr
     Default \code{NULL} implies 1 for directed or two-mode, 2 for symmetric.}
   \item{behModelType}{Named vector indicating the type of model to be fitted for
-    behavioral dependent variables. Possible values are:\cr
+    behavioral dependent variables.
+    (See the examples below for how to specify a named vector.)\cr
+    Possible values are:\cr
     1=standard (restricted), 2=absorbing.\cr
     Names should be the names of all dependent behavioral variables,
     in the same order as in the Siena data set.\cr
@@ -173,7 +186,8 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
   Robbins-Monro algorithm. Those not
   available as arguments can be changed manually when desired.\cr
   The value \code{prML=1} defines the defaults valid in RSiena up to version
-  1.3.16. \code{prML=2} is the new default.\cr
+  1.3.16. For ML estimation with only one dependent variable,
+  \code{prML=2} may be more efficient.\cr
   If \code{prML} is given as a vector of 7 probabilities, these are,
   consecutively: the probabilities of inserting a diagonal step, deleting a
   diagonal step, permuting, inserting a CCP, deleting a CCP, inserting random

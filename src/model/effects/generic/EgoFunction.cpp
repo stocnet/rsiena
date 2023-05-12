@@ -67,7 +67,7 @@ void EgoFunction::preprocessEgo(int ego)
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double EgoFunction::value(int alter)
+double EgoFunction::value(int alter) const
 {
 	return this->lpFirstFunction->value(this->ego());
 }

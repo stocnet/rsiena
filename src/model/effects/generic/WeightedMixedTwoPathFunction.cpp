@@ -58,7 +58,7 @@ void WeightedMixedTwoPathFunction::initialize(const Data * pData,
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double WeightedMixedTwoPathFunction::value(int alter)
+double WeightedMixedTwoPathFunction::value(int alter) const
 {
 	double statistic = 0;
 	const Network * pFirstNetwork = this->pFirstNetwork();

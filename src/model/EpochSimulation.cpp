@@ -407,7 +407,21 @@ void EpochSimulation::runStep() {
 
 			this->lpCache->initialize(selectedActor);
 
-			pSelectedVariable->makeChange(selectedActor);
+			pSelectedVariable->makeChange(selectedActor);			
+						
+			if (pSelectedVariable->networkModelTypeDoubleStep())  // perhaps make a double step
+			{ 
+				double value = nextDouble();
+				if (value < pSelectedVariable->networkDoubleStepProb())
+				{
+					int chosenAlter = pSelectedVariable->alter();
+					if (chosenAlter != selectedActor) // type DOUBLESTEP implies one-mode
+					{
+						this->lpCache->initialize(chosenAlter);
+						pSelectedVariable->makeChange(chosenAlter); // here the double step is taken
+					}
+				}
+			}
 
 			if (pSelectedVariable->successfulChange()) {
 				if (this->pModel()->needChain()) {

@@ -37,7 +37,7 @@ public:
 	virtual void initialize(const Data * pData,
 		State * pState, int period, Cache * pCache);
 
-	virtual double value(int alter);
+	virtual double value(int alter) const;
 
 private:
 	bool lroot; // should the square root be taken?
