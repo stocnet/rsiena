@@ -1,7 +1,7 @@
 #/******************************************************************************
 # * SIENA: Simulation Investigation for Empirical Network Analysis
 # *
-# * Web: http://www.stats.ox.ac.uk/~snijders/siena
+# * Web: https://www.stats.ox.ac.uk/~snijders/siena
 # *
 # * File: sienaDataCreate.r
 # *
@@ -235,7 +235,22 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 	dots <- as.list(substitute(list(...)))[-1] ##first entry is the word 'list'
 	if (length(dots) == 0)
 	{
-		stop('need some networks')
+		stop('need some objects')
+	}
+	if (length(dots) == 1)
+	{
+		ldots <- list(...)
+		dotsIsList <- (is.list(ldots[[1]]))
+# If dotsIsList, it needs to be a list of variables
+		if (dotsIsList) 
+		{
+			dots <- as.list(substitute(...))[-1]
+			narg <- length(ldots)
+		}
+	}
+	else
+	{
+		dotsIsList <- FALSE
 	}
 	nm <- names(dots)
 	if (is.null(nm))
@@ -255,7 +270,14 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 	{
 		nm[fixup] <- dep
 	}
-	dots <- list(...)
+	if (!dotsIsList)
+	{
+		dots <- list(...)
+	}
+	else
+	{
+		dots <- (...)
+	}
 	names(dots) <- nm
 	if (any(duplicated(nm)))
 	{
@@ -1079,8 +1101,12 @@ checkConstraints <- function(z)
 					{
 						var2 <- depvar2[,, obs]
 					}
-					var1[var1 %in% c(10, 11)] <- var1[var1 %in% c(10, 11)] - 10
-					var2[var2 %in% c(10, 11)] <- var2[var2 %in% c(10, 11)] - 10
+#					var1[var1 %in% c(10, 11)] <- var1[var1 %in% c(10, 11)] - 10
+#					var2[var2 %in% c(10, 11)] <- var2[var2 %in% c(10, 11)] - 10
+					var1[var1==10] <- 0
+					var1[var1==11] <- 1
+					var2[var2==10] <- 0
+					var2[var2==11] <- 1
 					## higher
 					if (any(var1 - var2 < 0, na.rm=TRUE))
 					{
@@ -1500,7 +1526,7 @@ namedVector <- function(vectorValue, vectorNames, listType=FALSE)
 
 ##@createSettings DataCreate
 # create a settings structure for sienaData object x
-createSettings <- function(x, varName=1)
+createSettings <- function(x, varName=1, model=TRUE)
 ##
 {
 	if (!inherits(x, 'siena'))
@@ -1515,9 +1541,11 @@ createSettings <- function(x, varName=1)
 	{
 		stop('varName should refer to a dependent network variable in x')
 	}
+	universalOnly <- ifelse(model, "up", "none")
 	attr(x$depvars[[varName]], 'settingsinfo') <- list(
-		list(id="universal", type="universal", only="up", covariate=""),
+		list(id="universal", type="universal", only=universalOnly, covariate=""),
 		list(id="primary", type="primary", only="both", covariate=""))
+# universal MUST be mentioned first here, and primary second.
 	x
 }
 
@@ -1553,7 +1581,7 @@ hasSettings <- function(x, varName=NULL)
 			}
 		}
 	}
-	hasSettingsi <- rep('',FALSE)
+	hasSettingsi <- rep(FALSE, length(varNames))
 	for (i in seq(along = varNames))
 	{
 		hasSettingsi[i] <- (!is.null(attr(x$depvars[[varNames[i]]], 'settingsinfo')))
@@ -1590,7 +1618,7 @@ describeTheSetting <- function(depvar)
 		dtsonly  <- sapply(dtsonly, function(x){ifelse(is.na(x),'both',x)})
 		dts <- cbind(dtsn, dtsid, dtstype, dtscovar, dtsonly)
 		colnames(dts) <- c('dependent variable', 'setting', 'type', 'covariate', 'direction')
-		rownames(dts) <- 1:dim(dts)[1]
+		rownames(dts) <- 1:seq_len(dtsn)
 	}
 	dts
 }

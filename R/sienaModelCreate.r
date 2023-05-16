@@ -1,7 +1,7 @@
 #/******************************************************************************
 # * SIENA: Simulation Investigation for Empirical Network Analysis
 # *
-# * Web: http://www.stats.ox.ac.uk/~snijders/siena
+# * Web: https://www.stats.ox.ac.uk/~snijders/siena
 # *
 # * File: sienaModelCreate.r
 # *
@@ -17,23 +17,28 @@ sienaModelCreate <- function(fn,
 	maxlike=FALSE, gmm=FALSE, diagonalize=0.2*!maxlike,
 	condvarno=0, condname='',
 	firstg=0.2, reduceg=0.5, cond=NA, findiff=FALSE,  seed=NULL,
-	pridg=0.05, prcdg=0.05, prper=0.2, pripr=0.3, prdpr=0.3,
-	prirms=0.05, prdrms=0.05, maximumPermutationLength=40,
+	prML=1,
+#	pridg=0.05, prcdg=0.05, prper=0.2, pripr=0.3, prdpr=0.3,
+#	prirms=0.05, prdrms=0.05,
+	maximumPermutationLength=40,
 	minimumPermutationLength=2, initialPermutationLength=20,
 	modelType=NULL, behModelType=NULL, mult=5, simOnly=FALSE, localML=FALSE,
 	truncation=5, doubleAveraging=0, standardizeVar=(diagonalize<1),
 	lessMem=FALSE)
 {
 	model <- NULL
-	checking <- any(grepl("_R_CHECK", names(Sys.getenv()))) 
+	checking <- any(grepl("_R_CHECK", names(Sys.getenv())))
+	if (maxlike && (!is.null(MaxDegree)))
+	{
+		warning("maxlike and MaxDegree are incompatible")
+	}
 	if (is.null(projname) | checking)
 	{
 		model$projname <- tempfile("Siena")
 		if (checking)
-		{		
-	cat('If you use this algorithm object, siena07 will create/use an output file', 
+		{
+	cat('If you use this algorithm object, siena07 will create/use an output file',
 				paste('Siena','.txt',sep=''),'.\n')
-		
 		}
 		else
 		{
@@ -47,7 +52,7 @@ sienaModelCreate <- function(fn,
 		if (is.character(projname))
 		{
 			model$projname <- projname
-			cat('If you use this algorithm object, siena07 will create/use an output file', 
+			cat('If you use this algorithm object, siena07 will create/use an output file',
 				paste(model$projname,'.txt',sep=''),'.\n')
 		}
 		else
@@ -117,10 +122,13 @@ sienaModelCreate <- function(fn,
 
 	if (!is.null(modelType))
 	{
-		if (any(!(modelType %in% 1:6)))
+		if (any(!(modelType %in% 1:10)))
 		{
-			warning('modelType can only have values from 1 to 6; other values changed to 1\n')
-			model$modelType[!(modelType %in% 1:6)] <- 1
+			stop('modelType can only have integer values from 1 to 10\n')
+		}
+		if ((maxlike) & (any(modelType %in% 7:10)))
+		{
+			stop('Double step model type incompatible with maximum likelihood estimation')
 		}
 		if (any(is.null(names(modelType))))
 		{
@@ -151,13 +159,51 @@ sienaModelCreate <- function(fn,
 		model$UniversalOffset <- Offset
 	}
 	model$randomSeed <- seed
-	model$pridg <- pridg
-	model$prcdg <- prcdg
-	model$prper <- prper
-	model$pripr <- pripr
-	model$prdpr <- prdpr
-	model$prirms <- prirms
-	model$prdrms <- prdrms
+	if (length (prML) == 1)
+	{
+		if (prML <= 1) # old default
+#	pridg=0.05, prcdg=0.05, prper=0.2, pripr=0.3, prdpr=0.3,
+#	prirms=0.05, prdrms=0.05,
+		{
+			model$pridg <-  0.05   # insert diagonal
+			model$prcdg <-  0.05   # cancel diagonal
+			model$prper <-  0.2    # permute
+			model$pripr <-  0.3    # insert permute (CCP)
+			model$prdpr <-  0.3    # delete permute (CCP)
+			model$prirms <- 0.05   # insert random missing
+			model$prdrms <- 0.05   # delete random missing
+			# prob(move) = 0
+		}
+		else  # prML == 2 
+		{
+			model$pridg <-  0.05   # insert diagonal
+			model$prcdg <-  0.05   # cancel diagonal
+			model$prper <-  0      # permute
+			model$pripr <-  0.3    # insert permute (CCP)
+			model$prdpr <-  0.3    # delete permute (CCP)
+			model$prirms <- 0.05   # insert random missing
+			model$prdrms <- 0.05   # delete random missing
+			# prob(move) = 0.2
+		}
+	}
+	else
+	{
+		if (length(prML) != 7)
+		{
+			stop("prML should have length 1 or 7")
+		}
+		if ((sum(prML)> 1) | (min(prML) < 0))
+		{
+			stop("prML should have nonnegative numbers with a sum <= 1")
+		}
+		model$pridg <- prML[1]    # insert diagonal
+		model$prcdg <- prML[2]    # cancel diagonal
+		model$prper <- prML[3]    # permute
+		model$pripr <- prML[4]    # insert permute (CCP)
+		model$prdpr <- prML[5]    # delete permute (CCP)
+		model$prirms <- prML[6]   # insert random missing
+		model$prdrms <- prML[7]   # delete random missing
+	}
 	model$maximumPermutationLength <- maximumPermutationLength
 	model$minimumPermutationLength <- minimumPermutationLength
 	model$initialPermutationLength <- initialPermutationLength
@@ -189,14 +235,18 @@ sienaAlgorithmCreate <- sienaModelCreate
 
 ##@ModelTypeStrings DataCreate
 ModelTypeStrings <- function(i){
-	ifelse(((i %in% 1:6) && (!is.null(i))),
+	ifelse(((i >= 1) && (i <= 8) && (!is.null(i))),
 		switch(i,
 			"Standard actor-oriented model",
 			"Forcing model",
 			"Initiative model",
 			"Pairwise forcing model",
 			"Pairwise mutual model",
-			"Pairwise joint model"), "")
+			"Pairwise joint model",
+			"Double Step Model 0.25",
+			"Double Step Model 0.50",
+			"Double Step Model 0.75",
+			"Double Step Model 1.00"), "")
 }
 
 ##@BehaviorModelTypeStrings DataCreate

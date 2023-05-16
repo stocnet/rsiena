@@ -50,7 +50,7 @@ includeOnly=TRUE, expandDummies = FALSE, ...)
  \code{filename}.
 }
 \references{
-  See \url{http://www.stats.ox.ac.uk/~snijders/siena/}
+  See \url{https://www.stats.ox.ac.uk/~snijders/siena/}
 }
 \author{Ruth Ripley, modifications by Tom Snijders and Viviana Amati.
 }

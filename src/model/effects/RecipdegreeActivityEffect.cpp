@@ -30,7 +30,7 @@ namespace siena
 RecipdegreeActivityEffect::RecipdegreeActivityEffect(
 	const EffectInfo * pEffectInfo) : NetworkEffect(pEffectInfo)
 {
-	this->lroot = (pEffectInfo->internalEffectParameter() == 2);
+	this->lroot = (std::abs(pEffectInfo->internalEffectParameter()-2) < 0.001);
 	this->lsqrtTable = SqrtTable::instance();
 }
 
@@ -47,7 +47,7 @@ double RecipdegreeActivityEffect::calculateContribution(int alter) const
 		throw runtime_error(
 			"One-mode network expected in ReciprocalDegreeBehaviorEffect");
 	}
-	
+
 
 	double change = 0;
 	double rdegree = pONetwork->reciprocalDegree(this->ego());
@@ -60,8 +60,8 @@ double RecipdegreeActivityEffect::calculateContribution(int alter) const
 		}
 		double difrd = 0;
 		double rrdegree = this->lsqrtTable->sqrt(rdegree);
-	if (this->inTieExists(alter))
-	{
+		if (this->inTieExists(alter))
+		{
 			int outd = this->pNetwork()->outDegree(this->ego());
 			if (!(this->outTieExists(alter)))
 			{
@@ -77,17 +77,17 @@ double RecipdegreeActivityEffect::calculateContribution(int alter) const
 		{
 			rdegree += this->pNetwork()->outDegree(this->ego());
 		if (this->outTieExists(alter))
-		{
+			{
 				rdegree --;
-		}
-		else
-		{
+			}
+			else
+			{
 				rdegree ++;
-		}
+			}
 	}
 		change = rdegree;
 	}
-	
+
 	return change;
 }
 
@@ -113,7 +113,7 @@ double RecipdegreeActivityEffect::tieStatistic(int alter)
 	}
 	else
 	{
-	return pONetwork->reciprocalDegree(this->ego());
+		return pONetwork->reciprocalDegree(this->ego());
 	}
 }
 

@@ -1,7 +1,7 @@
 #/******************************************************************************
 # * SIENA: Simulation Investigation for Empirical Network Analysis
 # *
-# * Web: http://www.stats.ox.ac.uk/~snijders/siena
+# * Web: https://www.stats.ox.ac.uk/~snijders/siena
 # *
 # * File: initializeFRAN.r
 # *
@@ -137,7 +137,9 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 				print(userlist[bad])
 				cat("invalid effect requested: see above; \n")
 				cat("there seems to be a mismatch between data set and effects object.\n")
-				stop("Perhaps the effects object must be created from scratch.")
+				cat("This may have been caused by the use of different versions of RSiena")
+				cat("for creating the effects object and now running siena07.\n")
+				stop("Try creating the effects object with the current version of RSiena.")
 			}
 		}
 		if (!inherits(effects, "data.frame"))
@@ -280,6 +282,17 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 
 		## split and rejoin both versions before continuing
 		depvarnames <- names(data[[1]]$depvars)
+		
+		if (x$maxlike & (length(depvarnames) > 1))
+		{
+			if(x$pridg + x$prcdg + x$prper + x$pripr + x$prdpr + x$prirms +
+				x$prdrms < 1)
+			{
+				cat("Maximum likelihood estimation with more than one dependent variable\n")
+				cat("is impossible with prML=2. Try prML=1.\n")
+				stop("Impossible algorithm-data combination.")
+			}
+		}
 
 		effects1 <- split(requestedEffects, requestedEffects$name)
 		effects1order <- match(c(depvarnames, "sde"), names(effects1))
@@ -679,7 +692,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 	##store address of model
 	f$pModel <- pModel
 	ans <- reg.finalizer(f$pModel, clearModel, onexit = FALSE)
-	if (x$MaxDegree == 0 || is.null(x$MaxDegree))
+	if (all(x$MaxDegree == 0) || is.null(x$MaxDegree))
 	{
 		MAXDEGREE <- NULL
 	}
@@ -688,7 +701,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		MAXDEGREE <- x$MaxDegree
 		storage.mode(MAXDEGREE) <- "integer"
 	}
-	if (x$UniversalOffset == 0 || is.null(x$UniversalOffset))
+	if (all(x$UniversalOffset == 0) || is.null(x$UniversalOffset))
 	{
 		UNIVERSALOFFSET <- NULL
 	}
@@ -697,7 +710,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		UNIVERSALOFFSET <- x$UniversalOffset
 		storage.mode(UNIVERSALOFFSET) <- "double"
 	}
-	if ((length(x$modelType) == 0)||all(x$modelType == 0) || is.null(x$modelType))
+	if ((length(x$modelType) == 0)|| (all(x$modelType == 0)) || is.null(x$modelType))
 	{
 		MODELTYPE <-  NULL
 	}
@@ -706,7 +719,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		MODELTYPE <- x$modelType
 		storage.mode(MODELTYPE) <- "integer"
 	}
-	if ((length(x$behModelType) == 0)||(x$behModelType == 0) || is.null(x$behModelType))
+	if ((length(x$behModelType) == 0)|| (all(x$behModelType == 0)) || is.null(x$behModelType))
 	{
 		BEHMODELTYPE <-  NULL
 	}

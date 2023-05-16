@@ -10,7 +10,8 @@ Fits statistical models to longitudinal sets of networks, and to
 longitudinal sets of networks and behavioral variables.
 Not only one-mode networks but also two-mode networks
 and multivariate networks are allowed.
-The models are stochastic actor-oriented models.
+The models are stochastic actor-oriented models,
+described in Snijders (2017).
 
 Recent versions of the package are distributed through GitHub,
 see \url{https://github.com/snlab-nl/rsiena/ }.
@@ -43,8 +44,8 @@ see \url{https://github.com/snlab-nl/rsiena/ }.
   \tabular{ll}{
     Package: \tab RSiena\cr
     Type: \tab Package\cr
-    Version: \tab 1.3.11\cr
-    Date: \tab 2022-05-30\cr
+    Version: \tab 1.3.22\cr
+    Date: \tab 2023-05-11\cr
     Depends: \tab R (>= 3.5.0)\cr
     Imports: \tab Matrix, lattice, parallel, MASS, methods, xtable\cr
     Suggests: \tab network, tools, codetools, tcltk\cr
@@ -93,8 +94,8 @@ see \url{https://github.com/snlab-nl/rsiena/ }.
       Pearson, Michael A. (2010). Dynamic networks and behavior:
       Separating selection from influence. \emph{Sociological Methodology}
       \bold{40}, 329--393.
-    \item The manual: \url{http://www.stats.ox.ac.uk/~snijders/siena/RSiena_Manual.pdf}
-    \item The website: \url{http://www.stats.ox.ac.uk/~snijders/siena/}.
+    \item The manual: \url{https://www.stats.ox.ac.uk/~snijders/siena/RSiena_Manual.pdf}
+    \item The website: \url{https://www.stats.ox.ac.uk/~snijders/siena/}.
   }
 }
 \seealso{\code{\link{siena07}}}

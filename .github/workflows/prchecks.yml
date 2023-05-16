@@ -14,24 +14,24 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: macOS-latest, r: 'release', artifact_name: '*.tar.gz', asset_name: macOS}
+          - {os: macOS-latest,   r: 'release', artifact_name: '*.tar.gz', asset_name: macOS}
           - {os: windows-latest, r: 'release', artifact_name: '*.zip', asset_name: winOS}
           - {os: ubuntu-20.04, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", artifact_name: '*.tar.gz', asset_name: linuxOS}
-         # - {os: ubuntu-20.04, r: 'devel', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"}
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
       RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      
+
     steps:
       - uses: actions/checkout@v2
-        
-      - uses: r-lib/actions/setup-r@master
+
+      - uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.config.r }}
-      - uses: r-lib/actions/setup-pandoc@master
-        
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
       - name: Install Mac dependencies
         if: runner.os == 'macOS'
         run: |
@@ -39,64 +39,18 @@ jobs:
           brew install autoconf
           brew install automake
 
-      - name: Query dependencies
-        run: |
-          install.packages('remotes')
-          saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
-          writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
-        shell: Rscript {0}
-
-      - name: Cache R packages
-        if: runner.os != 'Windows'
-        uses: actions/cache@v1
+      - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          path: ${{ env.R_LIBS_USER }}
-          key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
-          restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
+          cache-version: 2
+          extra-packages: |
+            any::rcmdcheck
+            any::lintr
+            any::spelling
+            any::covr
+          needs: check
 
-      - name: Install system dependencies
-        if: runner.os == 'Linux'
-        run: |
-          while read -r cmd
-          do
-            eval sudo $cmd
-          done < <(Rscript -e 'cat(remotes::system_requirements("ubuntu", "20.04"), sep = "\n")')
-
-      - name: Install dependencies
-        run: |
-          remotes::install_deps(dependencies = TRUE)
-          remotes::install_cran("rcmdcheck")
-        shell: Rscript {0}
-
-#      - name: Document
-#        run: Rscript -e 'roxygen2::roxygenise()'
-
-      - name: Check
+      - uses: r-lib/actions/check-r-package@v2
         env:
-          _R_CHECK_CRAN_INCOMING_REMOTE_: false
-        run: rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran", "--no-build-vignettes", "--no-vignettes"), error_on = "warning", check_dir = "check")
-        shell: Rscript {0}
-
-      - name: Upload check results
-        if: failure()
-        uses: actions/upload-artifact@main
+          _R_CHECK_FORCE_SUGGESTS_: false
         with:
-          name: ${{ runner.os }}-r${{ matrix.config.r }}-results
-          path: check
-
-#      - name: Binary
-#        run: |
-#          pkgbuild::clean_dll()
-#          binary <- pkgbuild::build(binary = TRUE, needs_compilation = TRUE, compile_attributes = TRUE)
-#          dir.create("build")
-#          file.copy(binary, "build")
-#        shell: Rscript {0}
-    
-#- name: Save binary artifact
-#        uses: actions/upload-artifact@v1
-#        with:
-#          name: ${{ matrix.config.asset_name }}
-#          path: build/
-          
-#      - name: Calculate code coverage
-#        run: Rscript -e "covr::codecov()"
+          upload-snapshots: true

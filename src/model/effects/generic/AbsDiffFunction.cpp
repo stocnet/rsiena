@@ -9,7 +9,7 @@
  * AbsDiffFunction.
  *****************************************************************************/
 
-#include <cstdlib>
+#include <cmath>
 
 #include "AbsDiffFunction.h"
 
@@ -74,11 +74,14 @@ void AbsDiffFunction::preprocessEgo(int ego)
  * Returns the value of this function for the given alter. It is assumed
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
+ * The detour through diff is included to avoid errors of ambuguous calls to std::abs.
  */
-double AbsDiffFunction::value(int alter)
+double AbsDiffFunction::value(int alter) const
 {
-	return std::abs(this->lpFirstFunction->value(alter) -
-		this->lpSecondFunction->value(alter));
+//	double diff = this->lpFirstFunction->value(alter) -
+//		this->lpSecondFunction->value(alter);
+	return fabs(double(this->lpFirstFunction->value(alter) -
+				this->lpSecondFunction->value(alter))); 
 }
 
 }

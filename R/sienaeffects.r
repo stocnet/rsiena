@@ -2,7 +2,7 @@
 #/******************************************************************************
 # * SIENA: Simulation Investigation for Empirical Network Analysis
 # *
-# * Web: http://www.stats.ox.ac.uk/~snijders/siena
+# * Web: https://www.stats.ox.ac.uk/~snijders/siena
 # *
 # * File: sienaeffects.r
 # *
@@ -93,7 +93,7 @@ includeEffects <- function(myeff, ..., include=TRUE, name=myeff$name[1],
 includeInteraction <- function(myeff, ...,
 				include=TRUE, name=myeff$name[1],
 				type="eval", interaction1=rep("", 3), interaction2=rep("", 3),
-				parameter=NULL, fix=FALSE, test=FALSE, random=FALSE,
+				fix=FALSE, test=FALSE, random=FALSE,
 				initialValue=0,
 				character=FALSE, verbose=TRUE)
 {
@@ -228,7 +228,6 @@ includeInteraction <- function(myeff, ...,
 			c(effect1, effect2, effect3)
 		myeff[intn, "fix"] <- fix
 		myeff[intn, "test"] <- test
-		if (!is.null(parameter)) {myeff[intn, "parm"] <- parameter}
 		myeff[intn, "randomEffects"] <- random
 		myeff[intn, "initialValue"] <- initialValue
 	}

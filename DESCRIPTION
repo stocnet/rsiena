@@ -2,8 +2,8 @@ Encoding: UTF-8
 Package: RSiena
 Type: Package
 Title: Siena - Simulation Investigation for Empirical Network Analysis
-Version: 1.3.11
-Date: 2022-05-30
+Version: 1.3.22
+Date: 2023-05-11
 Authors@R: c(person("Tom A.B.", "Snijders", role = c("cre", "aut"), email = "tom.snijders@nuffield.ox.ac.uk", comment = c(ORCID = "0000-0003-3157-4157")),
               person("Ruth", "Ripley", role = "aut"),
               person("Krists", "Boitmanis", role = c( "aut","ctb")),
@@ -27,18 +27,8 @@ Authors@R: c(person("Tom A.B.", "Snijders", role = c("cre", "aut"), email = "tom
               person("Steffen", "Triebel", role = "ctb"))
 Maintainer: Tom A.B. Snijders <tom.snijders@nuffield.ox.ac.uk>
 Depends: R (>= 3.5.0)
-Imports:
-    Matrix,
-    lattice,
-    parallel,
-    MASS,
-    methods,
-    xtable
-Suggests: 
-    network,
-    tools,
-    codetools,
-    tcltk
+Imports: Matrix, lattice, parallel, MASS, methods, xtable
+Suggests: network, tools, codetools, tcltk
 SystemRequirements: GNU make
 Description: The main purpose of this package is to perform simulation-based
    estimation of stochastic actor-oriented models for longitudinal network
@@ -46,15 +36,33 @@ Description: The main purpose of this package is to perform simulation-based
    multivariate networks, which can be directed, non-directed, or two-mode;
    and associated actor variables.
    There are also functions for testing parameters and checking goodness of fit.
-   An overview of these models is given in Tom A.B. Snijders (2017), Stochastic
-   Actor-Oriented Models for Network Dynamics, Annual Review of Statistics and
-   Its Application, 4, 343-363 <doi: 10.1146/annurev-statistics-060116-054035>.
-   An extensive manual, scripts, and much further information is at the Siena
-   website <http://www.stats.ox.ac.uk/~snijders/siena/>.
+   An overview of these models is given in Snijders (2017),
+   <doi:10.1146/annurev-statistics-060116-054035>.
 License: GPL-2 | GPL-3 | file LICENSE
 LazyData: yes
 Biarch: yes
 NeedsCompilation: yes
 BuildResaveData: no
-URL: http://www.stats.ox.ac.uk/~snijders/siena/
-Config/testthat/edition: 3
+URL: <https://www.stats.ox.ac.uk/~snijders/siena/>
+Author: Tom A.B. Snijders [cre, aut] (<https://orcid.org/0000-0003-3157-4157>),
+  Ruth Ripley [aut],
+  Krists Boitmanis [aut, ctb],
+  Christian Steglich [aut, ctb] (<https://orcid.org/0000-0002-9097-0873>),
+  Johan Koskinen [aut, ctb] (<https://orcid.org/0000-0002-6860-325X>),
+  Nynke Niezink [aut, ctb] (<https://orcid.org/0000-0003-4199-4841>),
+  Viviana Amati [aut, ctb] (<https://orcid.org/0000-0003-1190-1237>),
+  Christoph Stadtfeld [ctb] (<https://orcid.org/0000-0002-2704-2134>),
+  James Hollway [ctb] (IHEID, <https://orcid.org/0000-0002-8361-9647>),
+  Per Block [ctb] (<https://orcid.org/0000-0002-7583-2392>),
+  Robert Krause [ctb],
+  Charlotte Greenan [ctb],
+  Josh Lospinoso [ctb],
+  Michael Schweinberger [ctb] (<https://orcid.org/0000-0003-3649-5386>),
+  Mark Huisman [ctb],
+  Felix Schoenenberger [ctb],
+  Mark Ortmann [ctb],
+  Marion Hoffman [ctb],
+  Robert Hellpap [ctb],
+  Alvaro Uzaheta [ctb],
+  Steffen Triebel [ctb]
+Repository: CRAN

@@ -31,7 +31,7 @@ EqualCovariatePredicate::EqualCovariatePredicate(string covariateName) :
  * that the predicate has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-bool EqualCovariatePredicate::value(int alter)
+bool EqualCovariatePredicate::value(int alter) 
 {
 	return fabs(this->covariateValue(this->ego()) -
 		this->covariateValue(alter)) < EPSILON;

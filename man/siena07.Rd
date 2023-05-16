@@ -39,7 +39,8 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
     number of estimated parameters in the effects object (if conditional
     estimation is used, without the rate parameters for the conditioning
     dependent variable). Can only be used if \code{x$simOnly=TRUE}.}
-  \item{returnThetas}{Boolean: whether to return theta values of Phase 2 runs.}
+  \item{returnThetas}{Boolean: whether to return theta values
+   and generated estimation statistics of Phase 2 runs.}
   \item{initC}{Boolean: set to \code{TRUE} if the simulation will use C
    routines (currently always needed). Only for use if using
    multiple processors, to ensure all copies are initialised
@@ -163,7 +164,10 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
   \item{theta}{Estimated value of theta, if \code{x$simOnly=FALSE}.}
   \item{thetas}{Matrix, returned if \code{returnThetas} and \code{x$nsub >= 1}.
     First column is subphase; further columns are values of theta as generated
-    during this subphase of Phase 2}
+    during this subphase of Phase 2.}
+  \item{sfs}{Matrix, returned if \code{returnThetas} and \code{x$nsub >= 1}.
+    First column is subphase; further columns are deviations from targets
+    generated during this subphase of Phase 2.}
   \item{covtheta}{Estimated covariance matrix of theta; this is not available
     if \code{x$simOnly=TRUE}.}
   \item{se}{Vector of standard errors of estimated theta,
@@ -171,17 +175,18 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
   \item{dfra}{Matrix of estimated derivatives.}
   \item{sf}{Matrix of simulated deviations from targets in phase 3.}
   \item{sf2}{Array of periodwise deviations from simulations in phase 3.
-    Not included if \code{x$lessMem=FALSE}.}
+    Not included if \code{x$lessMem=TRUE}.}
   \item{tconv}{t-statistics for convergence.}
   \item{tmax}{maximum absolute t-statistic for convergence for
     non-fixed parameters.}
   \item{tconv.max}{overall maximum convergence ratio.}
+  \item{ac3}{If \code{x$maxlike=TRUE}: autocorrelations of statistics in Phase 3.}
   \item{targets}{Observed statistics; for ML, zero vector.}
   \item{targets2}{Observed statistics by wave,
     starting with second wave; for ML, zero matrix.}
   \item{ssc}{Score function contributions for each wave for each
     simulation in phase 3. Not included if finite difference method is used
-    or if \code{x$lessMem=FALSE}.}
+    or if \code{x$lessMem=TRUE}.}
   \item{scores}{Score functions, added over waves, for each
     simulation in phase 3. Only included
     if \code{x$lessMem=FALSE}.}
@@ -218,9 +223,13 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
    \item Amati, Viviana, Schoenenberger, Felix, and Snijders, Tom A. B. (2019).
     Contemporaneous statistics for estimation in stochastic actor-oriented
     co-evolution models. \emph{Psychometrika} \bold{84}, 1068-1096.
-   \item Schweinberger, Michael, and Snijders,
-    Tom A.B. (2007). Markov models for digraph panel data:
-    Monte Carlo-based derivative estimation.
+   \item Greenan, Charlotte (2015).
+    \emph{Evolving Social Network Analysis: developments in statistical
+    methodology for dynamic stochastic actor-oriented models}.
+    DPhil dissertation, University of Oxford.
+   \item Schweinberger, Michael, and Snijders, Tom A.B. (2007).
+    Markov models for digraph panel data:
+    Monte Carlo based derivative estimation.
     \emph{Computational Statistics and Data Analysis} \bold{51}, 4465--4483.
     \item Snijders, Tom A.B. (2001).
     The statistical evaluation of social network dynamics.
@@ -228,7 +237,8 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
    \item Snijders, Tom A.B. (2017). Stochastic Actor-Oriented Models for Network
    Dynamics. \emph{Annual Review of Statistics and Its Application}
     \bold{4}, 343--363.
-   \item Snijders, Tom A. B., Koskinen, Johan, and Schweinberger, Michael (2010).
+   \item Snijders, Tom A. B., Koskinen, Johan, and Schweinberger,
+    Michael (2010).
     Maximum likelihood estimation for social network dynamics.
     \emph{Annals of Applied Statistics} \bold{4}, 567--588.
    \item Snijders, Tom A.B., Steglich, Christian E.G., and Schweinberger,
@@ -241,8 +251,8 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
     Separating selection from influence.
     \emph{Sociological Methodology} \bold{40}, 329--393.
    \item Information about the implementation of the algorithm is in
-     \url{http://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf}.
-   \item Further see \url{http://www.stats.ox.ac.uk/~snijders/siena/} .
+     \url{https://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf}.
+   \item Further see \url{https://www.stats.ox.ac.uk/~snijders/siena/} .
     }
 }
 \author{Ruth Ripley, Tom Snijders, Viviana Amati, Felix Schoenenberger}

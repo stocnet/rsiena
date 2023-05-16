@@ -108,7 +108,7 @@ dummy. Alternatively, use \code{\link{includeTimeDummy}}.
   input effects object, with one row updated.
   Details of the row altered will be printed, unless \code{verbose=FALSE}.
 }
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley }
 \seealso{
   \code{\link{getEffects}}, \code{\link{includeEffects}},

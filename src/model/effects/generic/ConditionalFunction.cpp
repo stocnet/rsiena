@@ -97,7 +97,7 @@ void ConditionalFunction::preprocessEgo(int ego)
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double ConditionalFunction::value(int alter)
+double ConditionalFunction::value(int alter) const 
 {
 	double value = 0;
 

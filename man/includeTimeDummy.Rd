@@ -73,7 +73,7 @@ includeTimeDummy(myeff, ..., timeDummy="all", name=myeff$name[1], type="eval",
     Details of the rows altered will be printed.
 }
 
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}
   for general information on RSiena.
 
 }

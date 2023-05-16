@@ -84,8 +84,8 @@ void CovariateDistance2NetworkFunction::initialize(const Data * pData,
 	{
 		delete[] this->laverageInAlterMissing;
 	}
+	
 	// The () at the end in the following lines initializes the array at 0
-
 	this->laverageAlterValues = new double[this->pNetwork()->n()];
 	this->ltotalAlterValues = new double[this->pNetwork()->n()];
 	this->laverageAlterMissing = new bool[this->pNetwork()->n()];
@@ -155,7 +155,7 @@ bool CovariateDistance2NetworkFunction::missingInDummy(int alter) const
 /**
  * Does the necessary preprocessing work for calculating the
  * predicate for a specific ego. This method must be invoked before
- * calling AlterPredicate::value(...).
+ * calling CovariateDistance2NetworkFunction::value(...).
  */
 void CovariateDistance2NetworkFunction::preprocessEgo(int ego)
 {
@@ -167,7 +167,7 @@ void CovariateDistance2NetworkFunction::preprocessEgo(int ego)
 	{
 	for (int i = 0; i < pNetwork->n(); i++)
 	{
-			int numberUsed = 0;
+		int numberUsed = 0;
 		this->laverageAlterMissing[i] = true;
 		this->ltotalAlterValues[i] = 0;
 		if (pNetwork->outDegree(i) > 0)
@@ -177,14 +177,14 @@ void CovariateDistance2NetworkFunction::preprocessEgo(int ego)
 				 iter.next())
 			{
 				int j = iter.actor();
-					if (!((this->lexcludeMissing) && (this->missing(j))))
-					{
-				this->ltotalAlterValues[i] += this->value(j);
-						numberUsed++;
+				if (!((this->lexcludeMissing) && (this->missing(j))))
+				{
+					this->ltotalAlterValues[i] += CovariateNetworkAlterFunction::covvalue(j);
+					numberUsed++;
 				}
 			}
 
-				if (numberUsed > 0)
+			if (numberUsed > 0)
 			{
 				this->laverageAlterValues[i] =
 						(this->ltotalAlterValues[i] / numberUsed);
@@ -207,7 +207,7 @@ void CovariateDistance2NetworkFunction::preprocessEgo(int ego)
 	{
 	for (int i = 0; i < pNetwork->m(); i++)
 	{
-			int numberUsed = 0;
+		int numberUsed = 0;
 		this->laverageInAlterMissing[i] = true;
 		this->ltotalInAlterValues[i] = 0;
 		if (pNetwork->inDegree(i) > 0)
@@ -217,16 +217,16 @@ void CovariateDistance2NetworkFunction::preprocessEgo(int ego)
 				 iter.next())
 			{
 				int j = iter.actor();
-					if (!((this->lexcludeMissing) && (this->missing(j))))
-					{
-				this->ltotalInAlterValues[i] += this->value(j);
-						numberUsed++;
+				if (!((this->lexcludeMissing) && (this->missing(j))))
+				{
+					this->ltotalInAlterValues[i] += CovariateNetworkAlterFunction::covvalue(j);
+					numberUsed++;
 				}
 			}
-				if (numberUsed > 0)
+			if (numberUsed > 0)
 			{
-					this->laverageInAlterValues[i] =
-						(this->ltotalInAlterValues[i] / numberUsed);
+				this->laverageInAlterValues[i] =
+					(this->ltotalInAlterValues[i] / numberUsed);
 				this->laverageInAlterMissing[i] = false;
 			}
 			else
@@ -248,7 +248,7 @@ void CovariateDistance2NetworkFunction::preprocessEgo(int ego)
  * Returns the centered similarity of the average alter values of the given
  * actors wrt to the network with which this function is associated.
  */
-double CovariateDistance2NetworkFunction::similarityAvAlt(int i, int j)
+double CovariateDistance2NetworkFunction::similarityAvAlt(int i, int j) const
 {
 	double similarity = 0;
 
@@ -281,15 +281,14 @@ double CovariateDistance2NetworkFunction::similarityAvAlt(int i, int j)
  * of the given actors wrt to the network with which this function is
  * associated.
  */
-double CovariateDistance2NetworkFunction::varOutAvSimilarity(int i, int j)
+double CovariateDistance2NetworkFunction::varOutAvSimilarity(int i, int j) const
 {
 	double similarity = 0;
 	double outAlter = this->totalAlterValue(j);
-	int tieValue = this->pNetwork()->tieValue(j, i);
 	int degree = this->pNetwork()->outDegree(j);
-	if (tieValue >= 1)
+	if (this->pNetwork()->tieValue(j, i) >= 1)
 	{
-		outAlter = outAlter - this->value(i);
+		outAlter = outAlter - CovariateNetworkAlterFunction::covvalue(i);
 		degree--;
 	}
 
@@ -305,17 +304,17 @@ double CovariateDistance2NetworkFunction::varOutAvSimilarity(int i, int j)
 	if (this->pConstantCovariate())
 	{
 		similarity =
-			this->pConstantCovariate()->similarity(this->value(i), outAlter);
+			this->pConstantCovariate()->similarity(CovariateNetworkAlterFunction::covvalue(i), outAlter);
 	}
 	else if (this->pChangingCovariate())
 	{
 		similarity =
-			this->pChangingCovariate()->similarity(this->value(i), outAlter);
+			this->pChangingCovariate()->similarity(CovariateNetworkAlterFunction::covvalue(i), outAlter);
 	}
 	else
 	{
 		similarity =
-			this->pBehaviorData()->similarity(this->value(i), outAlter);
+			this->pBehaviorData()->similarity(CovariateNetworkAlterFunction::covvalue(i), outAlter);
 	}
 
 	return similarity;
@@ -326,15 +325,14 @@ double CovariateDistance2NetworkFunction::varOutAvSimilarity(int i, int j)
  * value of the given actors wrt to the network with which this function is
  * associated.
  */
-double CovariateDistance2NetworkFunction::varInAvSimilarity(int i, int j)
+double CovariateDistance2NetworkFunction::varInAvSimilarity(int i, int j) const
 {
 	double similarity = 0;
 	double inAlter = this->totalInAlterValue(j);
-	int tieValue = this->pNetwork()->tieValue(i, j);
 	int degree = this->pNetwork()->inDegree(j);
-	if (tieValue >= 1)
+	if (this->pNetwork()->tieValue(i, j) >= 1)
 	{
-		inAlter = inAlter - this->value(i);
+		inAlter = inAlter - CovariateNetworkAlterFunction::covvalue(i);
 		degree--;
 	}
 
@@ -350,17 +348,17 @@ double CovariateDistance2NetworkFunction::varInAvSimilarity(int i, int j)
 	if (this->pConstantCovariate())
 	{
 		similarity =
-			this->pConstantCovariate()->similarity(this->value(i), inAlter);
+			this->pConstantCovariate()->similarity(CovariateNetworkAlterFunction::covvalue(i), inAlter);
 	}
 	else if (this->pChangingCovariate())
 	{
 		similarity =
-			this->pChangingCovariate()->similarity(this->value(i), inAlter);
+			this->pChangingCovariate()->similarity(CovariateNetworkAlterFunction::covvalue(i), inAlter);
 	}
 	else
 	{
 		similarity =
-			this->pBehaviorData()->similarity(this->value(i), inAlter);
+			this->pBehaviorData()->similarity(CovariateNetworkAlterFunction::covvalue(i), inAlter);
 	}
 
 	return similarity;

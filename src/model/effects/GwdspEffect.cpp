@@ -129,7 +129,7 @@ double GwdspEffect::egoStatistic(int ego,
 {
 	double statistic = 0;
 
-	for (int h = 0; h < this->pNetwork()->m(); h++)
+	for (int h = 0; h < this->pNetwork()->n(); h++) // was m() until and including 1.3.11.
 	{
 		if (h != ego)
 		{

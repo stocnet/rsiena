@@ -47,7 +47,7 @@ TwoNetworkCache::TwoNetworkCache(const Network * pFirstNetwork,
 	// Not sure how many are relevant to W (first) a one mode, X (second)
 	// a one or twomode.
 
-	if (this->loneModeFirstNetwork)
+	if (this->loneModeFirstNetwork) // why is this necessary?
 	{
 		this->lpTwoPathTable =
 			new MixedTwoPathTable(this, FORWARD, FORWARD);
@@ -60,7 +60,7 @@ TwoNetworkCache::TwoNetworkCache(const Network * pFirstNetwork,
 	this->lpInStarTable =
 		new MixedTwoPathTable(this, FORWARD, BACKWARD);
 
-	this->lpOutStarTable =
+	this->lpOutStarTable =  // shouldn't this require a one-mode first network?
 		new MixedTwoPathTable(this, BACKWARD, FORWARD);
 
 

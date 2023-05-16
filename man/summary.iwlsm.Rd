@@ -73,7 +73,7 @@ class of the object.
 \references{
   Venables, W. N. and Ripley, B. D. (2002)
   \emph{Modern Applied Statistics with S.} Fourth edition.  Springer.
-  See also  \url{http://www.stats.ox.ac.uk/~snijders/siena/}
+  See also  \url{https://www.stats.ox.ac.uk/~snijders/siena/}
 }
 \author{Adapted by Ruth Ripley}
 \seealso{

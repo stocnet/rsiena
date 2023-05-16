@@ -36,7 +36,7 @@ public:
 		int period,
 		Cache * pCache);
 
-	virtual double value(int alter);
+	virtual double value(int alter) const;
 	virtual int intValue(int alter);
 
 private:

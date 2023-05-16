@@ -1,7 +1,7 @@
 #/******************************************************************************
 # * SIENA: Simulation Investigation for Empirical Network Analysis
 # *
-# * Web: http://www.stats.ox.ac.uk/~snijders/siena
+# * Web: https://www.stats.ox.ac.uk/~snijders/siena
 # *
 # * File: siena08.r
 # *
@@ -74,8 +74,7 @@ siena08 <- function(..., projname="sienaMeta", bound=5, alpha=0.05, maxit=20)
                                       scoretests[x$test] <-
                                           x$testresulto[!is.na(x$testresulto)]
                                   }
-                                  data.frame(objname=rep(names(y)[i], n),
-                                             projname=rep(projnames[i], n),
+                                  data.frame(projname=rep(projnames[i], n),
                                              theta=x$theta,
                                              effects=
                                              paste(format(x$requestedEffects$type,
@@ -84,7 +83,6 @@ siena08 <- function(..., projname="sienaMeta", bound=5, alpha=0.05, maxit=20)
                                                    sep=": "),
                                              tconv=x$tconv,
                                              version=rep(x$version, n),
-                                             revision=rep(x$revision, n),
                                              scoretests=scoretests,
                                              ## add anything more needed
                                              ## for the report
@@ -141,7 +139,7 @@ siena08 <- function(..., projname="sienaMeta", bound=5, alpha=0.05, maxit=20)
                          cor.pval=check.correl$p.value,
                          cor.meth=check.correl$method,
                          regfit=regfit, regsummary=regsummary,
-                         Tsq=Tsq, pTsq=1 - pchisq(Tsq, nrow(x1) - 1),
+                         Tsq=Tsq, pTsq=1 - pchisq(Tsq, nrow(x1)),
                          tratio=tratio,
                          ptratio=2 * pnorm(abs(tratio), lower.tail=FALSE),
                          Qstat=Qstat,
@@ -522,21 +520,8 @@ print.summary.sienaMeta <- function(x, file=FALSE, extra=TRUE, ...)
 					"%d/%m/%Y %X"), "\n\n"), outf)
 		packageValues <- packageDescription(pkgname,
 			fields=c("Version", "Date"))
-		rforgeRevision <-  packageDescription(pkgname,
-			fields=
-				"Repository/R-Forge/Revision")
-		if (is.na(rforgeRevision))
-		{
-			revision <- ""
-		}
-		else
-		{
-			revision <- paste(" R-forge revision: ", rforgeRevision,
-				" ", sep="")
-		}
 		Report(c(paste(pkgname, "version "), packageValues[[1]], " (",
-				format(as.Date(packageValues[[2]]), "%d %m %Y"), ")",
-				revision, "\n\n"), sep="", outf)
+				format(as.Date(packageValues[[2]]), "%d %m %Y"), ")\n\n"), sep="", outf)
 	}
 	Report(c("================================= SIENA08 ",
 			"================================================\n",
@@ -585,7 +570,7 @@ print.summary.sienaMeta <- function(x, file=FALSE, extra=TRUE, ...)
 		sep="", outf)
 	Report(c("\nThe projects contain the parameters as follows",
 			"(1=present, 0=absent):\n\n"), outf)
-	row1 <- c(1:nEffects)
+	row1 <- (1:nEffects)
 	rows <- do.call(rbind, tapply(x$thetadf$effects,
 			x$thetadf$projname, function(x)
 			{
@@ -899,7 +884,7 @@ meta.table <- function(x, d=3, option=2,
                                deparse(substitute(x))))
 	cat("\n",line, "\n", file=filename, append = TRUE)
 	cat("% combined sienaFit objects", file=filename, append = TRUE)
-	line <- as.character(unique(x$thetadf$objname))
+	line <- as.character(unique(x$thetadf$projname))
 	cat("\n%",line, "\n", file=filename, append = TRUE)
 	line <- c(paste("Estimation date",startdate))
 	cat("\n%",line, "\n", file=filename, append = TRUE)
@@ -932,17 +917,17 @@ meta.table <- function(x, d=3, option=2,
 	if (x[[i]]$n1 >= 2)
 	{
 		line <- paste(line, formatC(x[[i]]$Tsq, digits=1, format="f", decimal.mark=sepsign), sep="")
-		line <- paste(line, " & \\hspace{-0.8em} (", formatC(x[[i]]$pTsq, digits=3, format="f",
+		line <- paste(line, " &  (", formatC(x[[i]]$pTsq, digits=3, format="f",
 					decimal.mark=sepsign), ")", sep="")
 		line <- paste(line, " & ", formatC(x[[i]]$regsummary$coefficients[1, 1], digits=d, format="f",
 				decimal.mark=sepsign), sep="")
-		line <- paste(line, " & \\hspace{-0.5em} (",
+		line <- paste(line, " & \ (",
 				formatC(x[[i]]$regsummary$coefficients[1, 2], digits=d, format="f",
 				decimal.mark=sepsign), ")", sep="")
 		line <- paste(line, " & ", formatC(x[[i]]$regsummary$stddev, digits=d, format="f",
 				decimal.mark=sepsign), sep="")
 		line <- paste(line, " & ", formatC(x[[i]]$Qstat, digits=d, format="f", decimal.mark=sepsign), sep="")
-		line <- paste(line, " & \\hspace{-0.5em} (",
+		line <- paste(line, " &  (",
 				formatC(x[[i]]$pttilde, digits=3, format="f", decimal.mark=sepsign), ")", sep="")
 	}
 	cat(line,"\\\\\n", file=filename, append = TRUE)
@@ -985,17 +970,17 @@ meta.table <- function(x, d=3, option=2,
 	if (x[[i]]$n1 >= 2)
 	{
 		line <- paste(line, formatC(x[[i]]$Tsq, digits=1, format="f", decimal.mark=sepsign), sep="")
-		line <- paste(line, " & \\hspace{-0.8em} (", formatC(x[[i]]$pTsq, digits=3, format="f",
+		line <- paste(line, " & (", formatC(x[[i]]$pTsq, digits=3, format="f",
 				decimal.mark=sepsign), ")", sep="")
 		line <- paste(line, " & ", formatC(x[[i]]$mu.ml, digits=d, format="f", decimal.mark=sepsign), sep="")
-		line <- paste(line, " & \\hspace{-0.5em} (", formatC(x[[i]]$mu.confint[1], digits=d, format="f",
+		line <- paste(line, " & (", formatC(x[[i]]$mu.confint[1], digits=d, format="f",
 				decimal.mark=sepsign),
-					", & \\hspace{-1.1em} ", formatC(x[[i]]$mu.confint[2], digits=d, format="f",
+					", &  ", formatC(x[[i]]$mu.confint[2], digits=d, format="f",
 					decimal.mark=sepsign),")", sep="")
 		line <- paste(line, " & ", formatC(x[[i]]$sigma.ml, digits=d, format="f", decimal.mark=sepsign), sep="")
-		line <- paste(line, " & \\hspace{-0.5em} (", formatC(x[[i]]$sigma.confint[1],
+		line <- paste(line, " & (", formatC(x[[i]]$sigma.confint[1],
 					digits=d, format="f", decimal.mark=sepsign),
-						", & \\hspace{-1.1em} ", formatC(x[[i]]$sigma.confint[2],
+						", & ", formatC(x[[i]]$sigma.confint[2],
 						digits=d, format="f", decimal.mark=sepsign),")", sep="")
 	}
 	cat(line,"\\\\\n", file=filename, append = TRUE)
@@ -1037,14 +1022,14 @@ meta.table <- function(x, d=3, option=2,
 	if (x[[i]]$n1 >= 2)
 	{
 		line <- paste(line, formatC(x[[i]]$Tsq, digits=1, format="f", decimal.mark=sepsign), sep="")
-		line <- paste(line, " & \\hspace{-0.8em} (", formatC(x[[i]]$pTsq, digits=3, format="f",
+		line <- paste(line, " & (", formatC(x[[i]]$pTsq, digits=3, format="f",
 					decimal.mark=sepsign), ")", sep="")
 		line <- paste(line, " & ", formatC(x[[i]]$mu.ml, digits=d, format="f", decimal.mark=sepsign), sep="")
-		line <- paste(line, " & \\hspace{-0.5em} (",
+		line <- paste(line, " & (",
 				formatC(x[[i]]$mu.ml.se, digits=d, format="f", decimal.mark=sepsign), ")", sep="")
 		line <- paste(line, " & ", formatC(x[[i]]$sigma.ml, digits=d, format="f", decimal.mark=sepsign), sep="")
 		line <- paste(line, " & ", formatC(x[[i]]$Qstat, digits=d, format="f", decimal.mark=sepsign), sep="")
-		line <- paste(line, " & \\hspace{-0.5em} (",
+		line <- paste(line, " &  (",
 				formatC(x[[i]]$pttilde, digits=3, format="f", decimal.mark=sepsign), ")", sep="")
 	}
 	cat(line,"\\\\\n", file=filename, append = TRUE)

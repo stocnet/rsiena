@@ -96,6 +96,14 @@ void NetworkEffect::initialize(const Data * pData, State * pState,
 	initialize(pData, pState, period, pCache);
 }
 
+/**
+ * Returns the number of actors of the network variable 
+ * associated with this effect.
+ */
+int NetworkEffect::n() const
+{
+	return this->lpNetworkData->n();
+}
 
 /**
  * Does the necessary preprocessing work for calculating the tie flip

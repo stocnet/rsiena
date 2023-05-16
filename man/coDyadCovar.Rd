@@ -6,10 +6,11 @@
 }
 \usage{
 coDyadCovar(val, centered=TRUE, nodeSets=c("Actors", "Actors"),
-     warn=TRUE, sparse=is(val,"dgTMatrix"), type=c("oneMode", "bipartite"))
+     warn=TRUE, sparse=inherits(val,"TsparseMatrix"), type=c("oneMode", "bipartite"))
 }
 \arguments{
-  \item{val}{Matrix of covariate values. May be sparse, of type "dgTMatrix". }
+  \item{val}{Matrix of covariate values. May be sparse, of type
+     \code{"TsparseMatrix"}. }
   \item{centered}{Boolean: if TRUE, then the mean value is subtracted.}
   \item{nodeSets}{The name of the node sets with which this
     covariate is associated. If the entire data set contains more than
@@ -30,13 +31,11 @@ coDyadCovar(val, centered=TRUE, nodeSets=c("Actors", "Actors"),
    Returns the covariate as an object of class "coDyadCovar", in which
   form it can be used as an argument to \code{\link{sienaDataCreate}}.
 }
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley}
 \seealso{\code{\link{sienaDataCreate}}, \code{\link{varDyadCovar}},
  \code{\link{coCovar}}, \code{\link{varCovar}}}
 \examples{
-
 mydyadvar <- coDyadCovar(s503)
-
 }
 \keyword{classes}

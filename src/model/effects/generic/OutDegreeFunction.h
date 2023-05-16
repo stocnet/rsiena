@@ -27,7 +27,7 @@ class OutDegreeFunction: public NetworkAlterFunction, IntAlterFunction
 public:
 	OutDegreeFunction(std::string networkName);
 
-	virtual double value(int alter);
+	virtual double value(int alter) const;
 	virtual int intValue(int alter);
 };
 

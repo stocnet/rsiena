@@ -72,7 +72,7 @@ void DifferenceFunction::preprocessEgo(int ego)
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double DifferenceFunction::value(int alter)
+double DifferenceFunction::value(int alter) const
 {
 	return this->lpFirstFunction->value(alter) -
 		this->lpSecondFunction->value(alter);

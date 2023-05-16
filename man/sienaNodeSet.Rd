@@ -23,7 +23,7 @@ sienaNodeSet(n, nodeSetName="Actors", names=NULL)
   attributes, class equal to "sienaNodeSet", and nodeSetName equal to
   the argument nodeSetName.
 }
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/ }}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/ }}
 \author{Ruth Ripley }
 \seealso{\code{\link{sienaDependent}}, \code{\link{sienaDataCreate}}}
 \examples{

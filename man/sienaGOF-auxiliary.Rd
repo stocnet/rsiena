@@ -85,7 +85,7 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
  they will be supplemented in due time by statistics depending on networks and
  behavior jointly.
  The examples below give a number of other statistics, using the packages
- sna and igraph.
+ \code{sna} and \code{igraph}.
 
  The \code{levls} parameter must be adapted to the range of values that is
  considered important. For indegrees and outdegrees, the whole range should
@@ -129,7 +129,8 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
   observed or simulated behavioral variable for the values in \code{levls}.
 
  \code{TriadCensus} returns a named vector, the distribution of the
-  Holland-Leinhardt triad census according to the algorithm by Batagelj and Mrvar.
+  Holland-Leinhardt triad census according to the algorithm by
+  Batagelj and Mrvar.
 
  \code{mixedTriadCensus} returns a named vector, the distribution of the
   mixed triad census of Hollway, Lomi, Pallotti, and Stadtfeld (2017).
@@ -146,12 +147,12 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
   non-zero values dc(ego,alter) of the observed or simulated (ego,alter) ties.
 
  \code{sparseMatrixExtraction} returns the simulated network as a
-  \code{dgCMatrix};
-  this is the "standard" class for sparse numeric matrices in the
-  \code{Matrix} package. See the help file for \code{\link{dgCMatrix-class}}.\cr
+  \code{"TsparseMatrix"};
+  this is the virtual class for sparse numeric matrices
+  represented by triplets in the \code{Matrix} package.\cr
   Tie variables for ordered pairs with a missing value for wave=period or
-  period+1 are zeroed;
-  note that this also is done in RSiena for calculation of target statistics.
+  period+1 are zeroed; note that this also is done
+  in \code{RSiena} for calculation of target statistics.
   Tie variables that are structurally determined at the beginning of a period
   are used to replace observed values at the end of the period;
   tie variables that are structurally determined at the end, but not
@@ -161,15 +162,16 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
   To treat the objects returned by this function as regular matrices,
   it is necessary to attach the \code{Matrix} package in your session.
 
-\code{networkExtraction} returns the network as an edge list of class "network"
-  according to the network package (used for package sna).
+\code{networkExtraction} returns the network as an edge list of class
+  \code{network} according to the \code{network} package
+  (used for package \code{sna}).
   Missing values and structural values are treated as in
   \code{sparseMatrixExtraction}, see above.
 
 \code{behaviorExtraction} returns the dependent behavior
   variable as an integer vector.
   Values for actors with a missing value for wave=period or period+1 are
-  transformed to NA.
+  transformed to \code{NA}.
 }
 
 \references{
@@ -177,7 +179,7 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
 \item Batagelj, V., and Mrvar, A. (2001).
   A subquadratic triad census algorithm for large sparse networks with small
   maximum degree. \emph{Social Networks}, 23, 237-243.
-\item See \url{http://www.stats.ox.ac.uk/~snijders/siena/}
+\item See \url{https://www.stats.ox.ac.uk/~snijders/siena/}
   for general information on RSiena.
 \item Holland, P.W., and Leinhardt, S. (1976).
   Local structure in social networks. \emph{Sociological Methodology}, 6, 1-45.
@@ -188,9 +190,9 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
   Goodness of fit for stochastic actor-orientedmodels.
   \emph{Methodological Innovations}, 12:2059799119884282.
 \item Parimalarangan S., Slota, G.M., and Madduri, K. (2017).
- Fast parallel graph triad census and triangle counting on shared-memory platforms,
- 2017 IEEE International Parallel and Distributed Processing Symposium Workshops
- (IPDPSW), Lake Buena Vista, FL, pp. 1500-1509.
+ Fast parallel graph triad census and triangle counting on shared-memory
+  platforms, 2017 IEEE International Parallel and Distributed Processing
+  Symposium Workshops (IPDPSW), Lake Buena Vista, FL, pp. 1500-1509.
 }
 }
 \author{Josh Lospinoso, Tom Snijders}
@@ -247,7 +249,7 @@ diag(mycov.egoalter) <- 0
 dim(mycov.egoalter) # 50 * 50 matrix
 # This is a dyadic variable indicating ego-alter combinations of mycov.
 # This construction works since mycov has integer values
-# not outside the interval from 1 to 9.
+# not outside the interval from 1 to 9 (actually, only 1 to 3).
 # All cells of this matrix contain a two-digit number,
 # left digit is row (ego) value, right digit is column (alter) value.
 # See the top left part of the matrix:
@@ -270,7 +272,6 @@ plot(goftc, center=TRUE, scale=TRUE)
 # it is advisable in the plot to center and scale.
 # note the keys at the x-axis (widen the plot if they are not clear).
 descriptives.sienaGOF(goftc)
-round(descriptives.sienaGOF(goftc, center=TRUE, scale=TRUE), 0)
 
 \dontrun{
 ### The mixed triad census for co-evolution of one-mode and two-mode networks:
@@ -294,7 +295,7 @@ twoeff <- includeEffects(twoeff, to, name="twomodenet",
                             interaction1="onemodenet")
 twoeff
 # Shorter phases 2 and 3, just for example:
-twoalgorithm <- sienaAlgorithmCreate(projname="twomode", nsub=1, n3=100,
+twoalgorithm <- sienaAlgorithmCreate(projname=NULL, nsub=1, n3=100,
                                      seed=5634)
 (ans <- siena07(twoalgorithm, data=twodata, effects=twoeff, returnDeps=TRUE,
    batch=TRUE))

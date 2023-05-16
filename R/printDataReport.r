@@ -1,6 +1,6 @@
 # * SIENA: Simulation Investigation for Empirical Network Analysis
 # *
-# * Web: http://www.stats.ox.ac.uk/~snijders/siena
+# * Web: https://www.stats.ox.ac.uk/~snijders/siena
 # *
 # * File: printDatareport.r
 # *
@@ -48,7 +48,7 @@ DataReport <- function(z, x, f)
 			{
 				Report(sprintf("Network %d %s :", i, oneModeNames[i]), outf)
 			}
-			Report(sprintf(" %s\n",ModelTypeStrings(z$modelType[i])), outf)
+			Report(sprintf(" %s \n",ModelTypeStrings(z$modelType[i])), outf)
 		}
 		if (any(z$modelType != x$modelType))
 		{

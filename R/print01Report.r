@@ -1,7 +1,7 @@
 #/******************************************************************************
 # * SIENA: Simulation Investigation for Empirical Network Analysis
 # *
-# * Web: http://www.stats.ox.ac.uk/~snijders/siena
+# * Web: https://www.stats.ox.ac.uk/~snijders/siena
 # *
 # * File: print01Report.r
 # *
@@ -44,12 +44,12 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 					   outf)
 				Report("-------------------	  ----		 -----------------\n",
 					   outf)
-				for (i in 1:length(x$depvars))
+				for (i in seq_along((x$depvars)))
 				{
 					atts <- attributes(x$depvars[[i]])
 					Report(c(format(atts$name, width=20),
 							 format(atts$type, width=12)), outf)
-					for (j in 1:length(atts$nodeSet))
+					for (j in seq_along((atts$nodeSet)))
 					{
 						if (j > 1)
 						{
@@ -106,7 +106,7 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 		{
 			Heading(2, outf, "Reading network variables.")
 			anymissings <- FALSE
-			for (i in 1:length(x$depvars))
+			for (i in seq_along((x$depvars)))
 			{
 				depvar <- x$depvars[[i]]
 				atts <- attributes(depvar)
@@ -346,7 +346,7 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 		{
 			Heading(2, outf, "Reading dependent actor variables.")
 			iBehav <- 0
-			for (i in 1:length(x$depvars))
+			for (i in seq_along((x$depvars)))
 			{
 				if (types[i] %in% c("behavior", "continuous"))
 				{
@@ -419,7 +419,7 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 			Report(c(" observation", format(1:x$observations+periodFromStart,
 											width=10),
 					 "		overall\n"), sep="", outf)
-			for (i in 1:length(x$depvars))
+			for (i in seq_along((x$depvars)))
 			{
 				if (types[i] %in% c("behavior", "continuous"))
 				{
@@ -439,7 +439,7 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 			Report(c(" observation", format(1:x$observations+periodFromStart,
 											width=10),
 					 "		overall\n"), sep="", outf)
-			for (i in 1:length(x$depvars))
+			for (i in seq_along((x$depvars)))
 			{
 				if (types[i] %in% c("behavior", "continuous"))
 				{
@@ -580,7 +580,7 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 						any.noncent <- any.noncent+1
 					}
 					Report(c(format(covars[i], width=39), cent, '\n'), outf) # name
-					for (j in 1:(ncol(x$vCovars[[i]])))
+					for (j in seq_len(ncol(x$vCovars[[i]])))
 					{
 						Report(c("	period", format(j + periodFromStart,
 												   width=3),
@@ -814,7 +814,7 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 				Report(c("\nComposition changes for nodeSet ", nodeSet, '.\n\n'),
 					   sep="", outf)
 				events <- attr(comps[[i]], "events")
-				for (j in 1:nrow(events))
+				for (j in seq_len(nrow(events)))
 				{
 					x <- events[j, ]
 					Report(c("Actor ", format(x$actor, width=2),
@@ -902,19 +902,9 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 		modelname, ">>.\n\n"), sep="", outf)
 	Report(c("Date and time:", format(Sys.time(), "%d/%m/%Y %X"), "\n\n"), outf)
 	packageValues <- packageDescription(pkgname, fields=c("Version", "Date"))
-	rforgeRevision <-  packageDescription(pkgname,
-		fields="Repository/R-Forge/Revision")
-	if (is.na(rforgeRevision))
-	{
-		revision <- ""
-	}
-	else
-	{
-		revision <- paste(" R-forge revision: ", rforgeRevision, " ", sep="")
-	}
 	Report(c(paste(pkgname, "version "), packageValues[[1]],
 			" (", format(as.Date(packageValues[[2]]), "%d %m %Y"), ")",
-			revision, "\n\n"), sep="", outf)
+			"\n\n"), sep="", outf)
 
 	if (!inherits(data, 'sienaGroup'))
 	{
@@ -928,7 +918,7 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 	if (nData > 1)
 	{
 		Report("Multi-group input detected\n\n", outf)
-		for (i in 1:nData)
+		for (i in seq_len(nData))
 		{
 			Report(c("Subproject ", i, ": <", names(data)[i], ">\n"), sep="",
 				   outf)
@@ -937,7 +927,7 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 		Report(c("Multi-group project", modelname, "contains", nData,
 				 "subprojects.\n\n"), outf)
 		periodFromStart <- 0
-		for (i in 1:nData)
+		for (i in seq_len(nData))
 		{
 			Heading(1, outf,
 					paste("Subproject ", i, ": <", names(data)[i], ">",
@@ -1011,7 +1001,7 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 						attr(x$depvars[[match(netnames[i], names(x$depvars))]],
 							"uponly")
 					}))
-				periods <- periodNos[c(1:length(periodsUp))[periodsUp]]
+				periods <- periodNos[(seq_along(periodsUp))[periodsUp]]
 				Report(paste(periods, " => ", periods + 1, ";",
 							 sep=""), fill=80, outf)
 				Report("This will be respected in the simulations.\n\n", outf)
@@ -1046,7 +1036,7 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 					   }))
 				Report(c("All network changes are downward for the",
 						 "following periods:\n"), outf)
-				periods <- periodNos[c(1:length(periodsDown))[periodsDown]]
+				periods <- periodNos[(seq_along(periodsDown))[periodsDown]]
 				Report(paste(periods, " => ", periods + 1, ";",
 							 sep=""), fill=80, outf)
 				Report("This will be respected in the simulations.\n\n", outf)
@@ -1080,7 +1070,7 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 												 names(x$depvars))]],
 								"uponly")
 					   })
-				periods <- periodNos[c(1:length(periodsUp))[periodsUp]]
+				periods <- periodNos[(seq_along(periodsUp))[periodsUp]]
 				Report(paste(periods, " => ", periods + 1, ";",
 							 sep=""), fill=80, outf)
 				Report("This will be respected in the simulations.\n\n", outf)
@@ -1113,7 +1103,7 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 					   })
 				Report(c("All behavior changes are downward for the",
 						 "following periods:\n"), outf)
-				periods <- periodNos[c(1:length(periodsDown))[periodsDown]]
+				periods <- periodNos[(seq_along(periodsDown))[periodsDown]]
 				Report(paste(periods, " => ", periods + 1, ";",
 							 sep=""), fill=80, outf)
 				Report("This will be respected in the simulations.\n\n", outf)

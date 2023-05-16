@@ -26,7 +26,7 @@ namespace siena
  * This enumeration defines the possible constants, which may or may not be
  * specific to a dependent variable.
  */
-enum ConstantType {VALUE, AVERAGE_IN_DEGREE, AVERAGE_OUT_DEGREE};
+enum ConstantType {VALUE, AVERAGE_IN_DEGREE, AVERAGE_OUT_DEGREE, AVERAGE_RECIP_DEGREE};
 
 
 // ----------------------------------------------------------------------------
@@ -44,7 +44,7 @@ public:
 		int period,
 		Cache * pCache);
 
-	virtual double value(int alter);
+	virtual double value(int alter) const;
 	void pFunction(double (* pFunction)(double));
 
 private:

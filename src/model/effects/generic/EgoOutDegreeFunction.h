@@ -27,7 +27,7 @@ class EgoOutDegreeFunction: public NetworkAlterFunction, IntAlterFunction
 public:
 	EgoOutDegreeFunction(std::string networkName);
 
-	virtual double value(int alter);
+	virtual double value(int alter) const;
 	virtual int intValue(int alter);
 };
 

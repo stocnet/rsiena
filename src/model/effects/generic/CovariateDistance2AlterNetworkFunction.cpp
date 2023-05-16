@@ -50,7 +50,7 @@ CovariateDistance2AlterNetworkFunction(string networkName, string
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double CovariateDistance2AlterNetworkFunction::value(int alter)
+double CovariateDistance2AlterNetworkFunction::value(int alter) const
 {
 //	Rprintf("cccc %d %d\n", this->ego(), alter);
 	double value = 0;
@@ -77,12 +77,12 @@ double CovariateDistance2AlterNetworkFunction::value(int alter)
 					if (ltotal)
 					{
 						value = (value -
-							CovariateNetworkAlterFunction::value(this->ego()));
+							CovariateNetworkAlterFunction::covvalue(this->ego()));
 					}
 					else
 					{
 						value = (degree * value -
-				CovariateNetworkAlterFunction::value(this->ego()))/(degree - 1);
+				CovariateNetworkAlterFunction::covvalue(this->ego()))/(degree - 1);
 					}
 				}
 				else

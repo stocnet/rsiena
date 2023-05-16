@@ -1,7 +1,7 @@
 ##/*****************************************************************************
 ## * SIENA: Simulation Investigation for Empirical Network Analysis
 ## *
-## * Web: http://www.stats.ox.ac.uk/~snijders/siena
+## * Web: https://www.stats.ox.ac.uk/~snijders/siena
 ## *
 ## * File: siena07.r
 ## *
@@ -45,14 +45,12 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	## x is designed to be readonly. Only z is returned.
 	z$x <- x
 	z$returnThetas <- returnThetas
-
 	if (useCluster)
 	{
 		if (parallelTesting)
 		{
 			stop("cannot parallel test with multiple processes")
 		}
-
 		if (!length(cl))
 		{
 			clusterType <- match.arg(clusterType)
@@ -210,6 +208,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	time1 <-  proc.time()['elapsed']
 	Report(c("Total computation time", round(time1 - time0, digits=2),
 			"seconds.\n"), outf)
+z$compTime <- round(time1 - time0, digits=2)
 
 	if (useCluster)
 	{
@@ -235,20 +234,10 @@ InitReports <- function(z, seed, newseed)
 	Report(c("Date and time:", format(Sys.time(),"%d/%m/%Y %H:%M:%S")), outf)
 	Report("\nNew results follow.\n", outf)
 	Report("-----------------------------------\n", outf)
-	rforgeRevision <-  packageDescription(pkgname,
-		fields="Repository/R-Forge/Revision")
-	if (is.na(rforgeRevision))
-	{
-		revision <- ""
-	}
-	else
-	{
-		revision <- paste(" R-forge revision: ", rforgeRevision, " ", sep="")
-	}
 	version <- packageDescription(pkgname, fields = "Version")
 	Report(c(paste("\n", pkgname, " version ", sep = ""), version, " (",
 		format(as.Date(packageDescription(pkgname, fields = "Date")), "%d %b %y"),
-		")", revision, "\n\n"), sep = "", outf)
+		")", "\n\n"), sep = "", outf)
 	if (z$x$simOnly)
 	{
 		Heading(1, outf, "Simulations.")
@@ -269,7 +258,6 @@ InitReports <- function(z, seed, newseed)
 	{
 		Report(sprintf("Current random number seed is %d.\n", seed), outf)
 	}
-	z$revision <- revision
 	z$version <- version
 	z$startingDate <- date()
 	z

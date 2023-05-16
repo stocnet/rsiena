@@ -6,7 +6,7 @@
 \title{Versions of FRAN}
 \description{
  The functions to be called as "FRAN" by \code{\link{siena07}}.
- They call compiled C++.
+ They call compiled C++. Not for general users' use.
 }
 \usage{
 simstats0c(z, x, data=NULL, effects=NULL, fromFiniteDiff=FALSE,
@@ -65,7 +65,7 @@ terminateFRAN(z, x)
 \details{
   Not for general users' use.\cr
   The name of \code{simstats0c} or \code{maxlikec}
-  should be used for the element FRAN of the model object, the former  when using
+  should be used for the element FRAN of the model object, the former when using
   estimation by forward simulation, the latter for maximum likelihood estimation.
   The arguments with no defaults must be passed in on the call to
   \code{\link{siena07}}.
@@ -112,7 +112,7 @@ terminateFRAN(z, x)
   \code{initializeFRAN} and \code{terminateFRAN} return the control
     object \code{z}.
 }
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley }
 \seealso{\code{\link{siena07}} }
 \examples{

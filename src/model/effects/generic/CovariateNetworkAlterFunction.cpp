@@ -81,7 +81,7 @@ void CovariateNetworkAlterFunction::initialize(const Data * pData,
 }
 
 /**
- * Returns the overall mean of value
+ * Returns the overall mean of covvalue
  */
 double CovariateNetworkAlterFunction::covmean() const
 {
@@ -96,7 +96,7 @@ double CovariateNetworkAlterFunction::covmean() const
 		themean = this->lpChangingCovariate->mean();
 	}
 	// else lpBehaviorData: values are already centered,
-	 // see CovariateNetworkAlterFunction::value
+	 // see CovariateNetworkAlterFunction::covvalue
 	 // themean is already 0
 
 	return themean;
@@ -105,7 +105,7 @@ double CovariateNetworkAlterFunction::covmean() const
 /**
  * Returns the covariate value for the given actor.
  */
-double CovariateNetworkAlterFunction::value(int alter) const
+double CovariateNetworkAlterFunction::covvalue(int alter) const
 {
 	if (this->lpConstantCovariate)
 	{
@@ -159,8 +159,8 @@ double CovariateNetworkAlterFunction::actor_similarity(int i, int j) const
 	else if (this->lpChangingCovariate)
 	{
 		similarity =
-			this->lpChangingCovariate->similarity(this->value(i),
-				this->value(j));
+			this->lpChangingCovariate->similarity(this->lpChangingCovariate->value(i, this->lperiod),
+				this->lpChangingCovariate->value(j, this->lperiod));
 	}
 	else
 	{

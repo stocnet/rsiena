@@ -1,7 +1,7 @@
 #/******************************************************************************
 # * SIENA: Simulation Investigation for Empirical Network Analysis
 # *
-# * Web: http://www.stats.ox.ac.uk/~snijders/siena
+# * Web: https://www.stats.ox.ac.uk/~snijders/siena
 # *
 # * File: effects.r
 # *
@@ -418,20 +418,32 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 				objEffects$type == 'eval', 'include'] <- TRUE
 		}
 		rateEffects$basicRate[1:observations] <- TRUE
+		
+		useSettingsModel <- (!is.null(attr(depvar,"settingsinfo")))
+		if (useSettingsModel)
+		{			
+			objEffects <- rbind(objEffects, createEffects(
+				"settingsObjective", varname, name=varname,
+				groupName=groupName, group=group, netType=netType))
+				# append effects with an interaction on the primary settings network of `varname`
+			objEffects <- rbind(objEffects, createEffects(
+				"nonSymmetricSymmetricSObjective", paste0("primary(", varname, ")") , name=varname,
+				groupName=groupName, group=group, netType=netType))
+			settingOnlys <- vapply(attr(depvar,"settingsinfo"), function(s){s$only},
+								FUN.VALUE="a")
+			if (settingOnlys[1] == 'none') 
+			{
+				useSettingsModel  <- FALSE
+			}
+		}
 
-		if (!is.null(attr(depvar,"settingsinfo")))
+		if (useSettingsModel)
 		{
 			settingIds <- sapply(attr(depvar,"settingsinfo"), function(s) s$id)
 			nbrSettings <- length(settingIds)
 
 			if ("primary" %in% settingIds) {
-				objEffects <- rbind(objEffects, createEffects(
-					"settingsObjective", varname, name=varname,
-					groupName=groupName, group=group, netType=netType))
-				# append effects with an interaction on the primary settings network of `varname`
-				objEffects <- rbind(objEffects, createEffects(
-					"nonSymmetricSymmetricSObjective", paste0("primary(", varname, ")") , name=varname,
-					groupName=groupName, group=group, netType=netType))
+			# see above, already done if useSettingsModel before this was reduced.
 			}
 
 			# duplicate rate effects, split by periods
@@ -1775,6 +1787,7 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 	rownames(effects) <- myrownames
 	effects
 }
+
 ##@getBehaviorStartingVals DataCreate
 getBehaviorStartingVals <- function(depvar)
 {

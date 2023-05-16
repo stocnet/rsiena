@@ -68,7 +68,7 @@ DependentVariable::DependentVariable(string name,
 	this->lpCreationFunction = new Function();
 	this->lacceptances.resize(NBRTYPES, 0);
 	this->lrejections.resize(NBRTYPES, 0);
-	this->laborts.resize(NBRTYPES, 0);
+//	this->laborts.resize(NBRTYPES, 0);
 
 	NetworkLongitudinalData * pNetworkData =
 		dynamic_cast<NetworkLongitudinalData *>(
@@ -326,7 +326,7 @@ void DependentVariable::initializeRateFunction()
 				this->llogInDegreeScores[pVariable] = 0;
 				this->llogInDegreeSumTerm[pVariable] = 0;
 				this->llogInDegreeModelBSumTerm[pVariable] = 0;
-			}			
+			}
 			else if (effectName == "recipRateInv")
 			{
 				if (!pVariable->oneModeNetwork())
@@ -343,9 +343,9 @@ void DependentVariable::initializeRateFunction()
 				this->lstructuralRateEffects.push_back(
 						new StructuralRateEffect(pVariable, INVERSE_RECIPROCAL_DEGREE_RATE,
 							parameter));
-	 			this->linversereciprocalDegreeScores[pVariable] = 0;		
+	 			this->linversereciprocalDegreeScores[pVariable] = 0;
 				this->linversereciprocalDegreeSumTerm[pVariable] = 0;
-			}	
+			}
 			else if (effectName == "recipRateLog")
 			{
 				if (!pVariable->oneModeNetwork())
@@ -362,7 +362,7 @@ void DependentVariable::initializeRateFunction()
 				this->lstructuralRateEffects.push_back(
 						new StructuralRateEffect(pVariable, LOG_RECIPROCAL_DEGREE_RATE,
 							parameter));
-	 			this->llogreciprocalDegreeScores[pVariable] = 0;		
+	 			this->llogreciprocalDegreeScores[pVariable] = 0;
 				this->llogreciprocalDegreeSumTerm[pVariable] = 0;
 			}
 			else
@@ -1320,6 +1320,10 @@ void DependentVariable::accumulateRateScores(double tau,
 		case NOTUSED:
 		case NORMAL:
 		case AFORCE:
+		case DOUBLESTEP25:
+		case DOUBLESTEP50:
+		case DOUBLESTEP75:
+		case DOUBLESTEP100:
 		case AAGREE:
 			break;
 		case BFORCE:
@@ -1846,7 +1850,7 @@ double DependentVariable::settingRateScore(string setting) const
 		this->lsettingRateScores.find(setting);
 	if (iter == this->lsettingRateScores.end())
 	{
-		throw invalid_argument("Unknown setting.");
+		throw invalid_argument("Unknown setting in settingRateScore.");
 	}
 	return iter->second;
 }
@@ -2094,7 +2098,7 @@ double DependentVariable::calculateDiffusionRateEffect(
 			{
 				alterValue *= pNetwork->inDegree(i);
 			}
-			else if ((effectName == "infectOut") | (effectName == "infectDeg"))
+			else if ((effectName == "infectOut") || (effectName == "infectDeg"))
 			{
 				alterValue *= pNetwork->outDegree(i);
 			}
@@ -2435,6 +2439,26 @@ bool DependentVariable::networkModelTypeB() const
 	return false;
 }
 
+
+/**
+ * Returns whether the model type is one of the DOUBLESTEP models.
+ */
+bool DependentVariable::networkModelTypeDoubleStep() const
+{
+	// This method is overridden in NetworkVariable. Here we return false.
+	return false;
+}
+
+
+/**
+ * Returns the probability for the DOUBLESTEP model.
+ */
+double DependentVariable::networkDoubleStepProb() const
+{
+	// This method is overridden in NetworkVariable. Here we return 0.
+	return 0;
+}
+
 /**
  * Returns if there are any constraints on the permitted changes of this
  * variable.
@@ -2493,10 +2517,10 @@ void DependentVariable::incrementRejections(int stepType)
  * increments the number of aborted steps
  * for the given steptype for this variable
  */
-void DependentVariable::incrementAborts(int stepType)
-{
-	this->laborts[stepType]++;
-}
+//void DependentVariable::incrementAborts(int stepType)
+//{
+//	this->laborts[stepType]++;
+//}
 
 /**
  * returns the number of accepted steps
@@ -2518,9 +2542,9 @@ int DependentVariable::rejections(int stepType) const
  * returns the number of aborted steps
  * for the given steptype for this variable
  */
-int DependentVariable::aborts(int stepType) const
-{
-	return this->laborts[stepType];
-}
+//int DependentVariable::aborts(int stepType) const
+//{
+//	return this->laborts[stepType];
+//}
 
 }

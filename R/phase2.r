@@ -1,7 +1,7 @@
 ##/*****************************************************************************
 ## * SIENA: Simulation Investigation for Empirical Network Analysis
 ## *
-## * Web: http://www.stats.ox.ac.uk/~snijders/siena
+## * Web: https://www.stats.ox.ac.uk/~snijders/siena
 ## *
 ## * File: phase2.r
 ## *
@@ -21,7 +21,16 @@ storeinFRANstore <- function(...)
 ##@phase2.1 siena07 Start phase 2
 phase2.1<- function(z, x, ...)
 {
-	## require(tcltk)
+		if (ifelse(is.null(x$phase2imp),FALSE,x$phase2imp))
+		{
+			z$addChainToStore <- TRUE
+			z$nbrNodes <- 1
+			z$storedChains <- TRUE
+			z$nGroup <- 1
+			z$thetaList <- list()
+			z$nCount <- 1
+		}
+	
     #initialise phase2
     if (x$maxlike)
     {
@@ -41,17 +50,17 @@ phase2.1<- function(z, x, ...)
 #	z$sd <- sqrt(diag(msf))
 # Instead of the preceding line,
 # the following is used for equality with earlier versions.
-    z$sd <- sqrt(apply(z$sf, 2, function(x) sum(x^2) / nrow(z$sf) - mean(x)^2))
+	z$sd <- sqrt(pmax(apply(z$sf, 2, function(x) sum(x^2) / nrow(z$sf) - mean(x)^2),0))
 	if (!z$gmm) 
 	{
    	z$sd[z$fixed] <- 0
 	  z$standardization <-
-						1/sqrt(diag(as.matrix(z$dinvv %*% msf %*% t(z$dinvv))))
+						1/sqrt(pmax(diag(as.matrix(z$dinvv %*% msf %*% t(z$dinvv))),0))
 	}
 	else
 	{
 	  z$sd[which(z$fixed & !z$gmmEffects)] <- 0
-	  z$standardization <- 1/sqrt(diag(as.matrix(z$dinvv %*% msf %*% t(z$dinvv))))
+	  z$standardization <- 1/sqrt(pmax(diag(as.matrix(z$dinvv %*% msf %*% t(z$dinvv))),0))
 	}
     Report(paste("standardization = ", round(z$standardization,4)), cf)
 	if (sum(z$fixed) < z$pp)
@@ -106,6 +115,7 @@ proc2subphase <- function(z, x, subphase, ...)
 		## cat(z$thav, z$theta, '\n')
 		z$prod0 <- rep(0, z$pp)
 		z$prod1 <- rep(0, z$pp)
+		functionAv <- 0
 		## ###############################################
 		## do the iterations for this repeat of this subphase
 		## ##############################################
@@ -227,6 +237,7 @@ doIterations<- function(z, x, subphase,...)
 	if (z$returnThetas)
 	{
 		thetas <- NULL
+		sfs <- NULL
 	}
 	repeat
 	{
@@ -258,14 +269,37 @@ doIterations<- function(z, x, subphase,...)
 		}
 		zsmall$nit <- z$nit
 		if (x$dolby) {zsmall$Deriv <- TRUE} ## include scores in FRAN
+		
+
+#Report(paste("z$theta: ", "\n"), cf)
+#PrtOutMat(as.matrix(z$targets), cf)
+#PrtOutMat(as.matrix(z$theta), cf)
+#PrtOutMat(as.matrix(zsmall$theta), cf)
+
+
 		if (z$int == 1) ## then no parallel runs at this level
 		{
-			zz <- x$FRAN(zsmall, xsmall)
+			if (ifelse(is.null(x$phase2imp),FALSE,x$phase2imp))
+			{
+				zz <- x$FRAN(zsmall, xsmall,  returnLoglik=TRUE, returnChains=TRUE)
+				z$myloglik2 <- c(z$myloglik2, sum(zz$loglik))
+			} else {
+				zz <- x$FRAN(zsmall, xsmall)
+			}
 			fra <- colSums(zz$fra) - z$targets
+			
+			
+#Report(paste("fra (1): ", "\n"), cf)
+#PrtOutMat(as.matrix(fra), cf)
+
 			if (!zz$OK)
 			{
 				z$OK <- zz$OK
 				break
+			}
+			if (z$returnThetas)
+			{
+				sfs <- rbind(sfs, c(subphase, fra))
 			}
 			if (x$dolby)
 				## subtract regression on scores;
@@ -398,6 +432,10 @@ doIterations<- function(z, x, subphase,...)
 			sumfra <- sumfra + fra
 			fra <- sumfra
 		}
+
+#Report(paste("fra: ", "\n"), cf)
+#PrtOutMat(as.matrix(fra), cf)
+
 		if (x$standardizeVar)
 		{
 			if (x$diagg)
@@ -460,35 +498,35 @@ doIterations<- function(z, x, subphase,...)
 		z$positivized[fchange > z$theta] <- z$positivized[fchange > z$theta] +1
 		z$positivized[!z$posj] <- 0
 		fchange <- ifelse(z$posj & (fchange > z$theta), z$theta * 0.5, fchange)
-		# make step
+		# make update step
 		if (subphase > x$doubleAveraging)
 		{
 			zsmall$theta <- (z$thav/z$thavn) - fchange
 		}
 		else
 		{
-			zsmall$theta <- zsmall$theta - fchange
+				zsmall$theta <- zsmall$theta - fchange
 		}
 		z$theta <- zsmall$theta
-		if (!is.null(z$thetaStore))
-		{
-			if (z$nit <= dim(z$thetaStore)[1])
-			{
-				z$thetaStore[z$nit,] <- z$theta
-			}
-			else
-			{
-				message('thetaStore?')
-				browser()
-			}
-		}
 		z$thav <- z$thav + zsmall$theta
 		z$thavn <- z$thavn + 1
+ 
+#Report(paste("thavs: ", round(z$thavn), "\n"), cf)
+#PrtOutMat(as.matrix(z$thav), cf)
+
+
 		if (x$maxlike && !is.null(x$moreUpdates) && x$moreUpdates > 0)
 		{
 			z <- doMoreUpdates(z, x, x$moreUpdates * subphase)
 			zsmall$theta <- z$theta
 		}
+	
+		if (ifelse(is.null(x$phase2imp),FALSE,x$phase2imp))
+		{
+			z$thetaList[[z$nCount]] <- z$theta
+			z$nCount <- z$nCount + 1
+		}
+		
 		##check for user interrupt
 		CheckBreaks()
 		if (UserInterruptFlag() || UserRestartFlag() || EarlyEndPhase2Flag())
@@ -507,9 +545,20 @@ doIterations<- function(z, x, subphase,...)
 			}
 		}
 	}
+	if (ifelse(is.null(x$phase2imp),FALSE,x$phase2imp))
+	{
+		cat(z$nit)
+		z$nAll <- c(z$nAll, z$nit)
+		if (subphase==x$nsub)
+		{
+			z <- stdError(z,x,subphase=4, ...)
+		}
+	}
+	
 	if (z$returnThetas)
 	{
 		z$thetas <- rbind(z$thetas, thetas)
+		z$sfs <- rbind(z$sfs, sfs)
 	}
 	z
 }

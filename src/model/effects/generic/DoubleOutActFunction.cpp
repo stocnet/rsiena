@@ -60,7 +60,7 @@ void DoubleOutActFunction::initialize(const Data * pData,
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double DoubleOutActFunction::value(int alter)
+double DoubleOutActFunction::value(int alter) const
 {
 	double statistic = 0;
 

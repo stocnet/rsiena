@@ -59,7 +59,7 @@ void DifferentCovariateOutStarFunction::initialize(const Data * pData,
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double DifferentCovariateOutStarFunction::value(int alter)
+double DifferentCovariateOutStarFunction::value(int alter) const
 {
 	int statistic = 0;
 	if  (!(this->lexcludeMissing && this->missing(alter)))
@@ -76,11 +76,11 @@ double DifferentCovariateOutStarFunction::value(int alter)
 				// in-2-stars:
 				if (!(this->lexcludeMissing && this->missing(h)))
 					{
-					if ((fabs(this->CovariateNetworkAlterFunction::value(h)
-				- this->CovariateNetworkAlterFunction::value(this->ego()))
+					if ((fabs(this->CovariateNetworkAlterFunction::covvalue(h)
+				- this->CovariateNetworkAlterFunction::covvalue(this->ego()))
 									> EPSILON) &&
-						((lnotBothDifferent) || (fabs(this->CovariateNetworkAlterFunction::value(h)
-				- this->CovariateNetworkAlterFunction::value(alter))
+						((lnotBothDifferent) || (fabs(this->CovariateNetworkAlterFunction::covvalue(h)
+				- this->CovariateNetworkAlterFunction::covvalue(alter))
 									> EPSILON)) &&
 					(pNetwork->tieValue(alter, h) >= 1))
 						{

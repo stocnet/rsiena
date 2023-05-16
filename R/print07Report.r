@@ -1,7 +1,7 @@
 #/******************************************************************************
 # * SIENA: Simulation Investigation for Empirical Network Analysis
 # *
-# * Web: http://www.stats.ox.ac.uk/~snijders/siena
+# * Web: https://www.stats.ox.ac.uk/~snijders/siena
 # *
 # * File: print07report.r
 # *
@@ -263,12 +263,6 @@ PrintReport <- function(z, x)
 			}
 			else
 			{
-				if (any(z$fixed))
-				{
-					Report(c('(Values of the covariance matrix of estimates\n',
-							' are meaningless for the fixed parameters.)\n\n'),
-						outf)
-				}
 				Report(c("Covariance matrix of estimates",
 						"(correlations below diagonal):\n"), outf)
 				covcor <- z$covtheta

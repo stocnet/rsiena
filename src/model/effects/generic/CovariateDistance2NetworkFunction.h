@@ -37,9 +37,9 @@ protected:
 	bool missingInDummy(int i) const;
 	double averageInAlterValue(int i) const;
 	double totalInAlterValue(int i) const;
-	double similarityAvAlt(int i, int j);
-	double varOutAvSimilarity(int i, int j);
-	double varInAvSimilarity(int i, int j);
+	double similarityAvAlt(int i, int j) const;
+	double varOutAvSimilarity(int i, int j) const;
+	double varInAvSimilarity(int i, int j) const;
 
 private:
 	bool lexcludeMissing;

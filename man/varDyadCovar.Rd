@@ -11,7 +11,7 @@ varDyadCovar(val, centered=TRUE, nodeSets=c("Actors", "Actors"),
 %- maybe also "usage" for other objects documented here.
 \arguments{
   \item{val}{Array of covariate values, third dimension is the
-    time. Alternatively, a list of sparse matrices of type "dgTMatrix".}
+    time. Alternatively, a list of sparse matrices of type \code{"TsparseMatrix"}.}
   \item{centered}{Boolean: if TRUE, then the overall mean value is subtracted.}
   \item{nodeSets}{Names (character string) of the associated node sets.
    If the entire data set contains more than one node set,
@@ -41,7 +41,7 @@ varDyadCovar(val, centered=TRUE, nodeSets=c("Actors", "Actors"),
   Returns the covariate as an object of class "varDyadCovar", in which
   form it can be used as an argument to \code{SienaDataCreate}.
 }
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley}
 \seealso{\code{\link{sienaDataCreate}}, \code{\link{coDyadCovar}},
 \code{\link{coCovar}}, \code{\link{varCovar}},

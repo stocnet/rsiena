@@ -58,7 +58,7 @@ void SameCovariateTwoPathFunction::initialize(const Data * pData,
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double SameCovariateTwoPathFunction::value(int alter)
+double SameCovariateTwoPathFunction::value(int alter) const
 {
 	int statistic = 0;
 	if  (!(this->lexcludeMissing && this->missing(alter)))
@@ -75,8 +75,8 @@ double SameCovariateTwoPathFunction::value(int alter)
 				// 2-paths:
 				if (!(this->lexcludeMissing && this->missing(h)))
 					{
-					if ((fabs(this->CovariateNetworkAlterFunction::value(h)
-				- this->CovariateNetworkAlterFunction::value(this->ego()))
+					if ((fabs(this->CovariateNetworkAlterFunction::covvalue(h)
+				- this->CovariateNetworkAlterFunction::covvalue(this->ego()))
 									< EPSILON) &&
 					(pNetwork->tieValue(h, alter) >= 1))
 						{

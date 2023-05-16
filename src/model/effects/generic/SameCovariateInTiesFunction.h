@@ -29,7 +29,7 @@ public:
 		State * pState, int period, Cache * pCache);
 
 	virtual void preprocessEgo(int ego);
-	virtual double value(int alter);
+	virtual double value(int alter) const;
 
 private:
 	bool lexcludeMissing;

@@ -30,9 +30,10 @@ namespace siena
  * undirected networks;
  * and the possible types of model for behavioral variables.
  */
-	enum NetworkModelType { NOTUSED, NORMAL, AFORCE, AAGREE, BFORCE, BAGREE, BJOINT };
+	enum NetworkModelType { NOTUSED, NORMAL, AFORCE, AAGREE, BFORCE, BAGREE, BJOINT,
+		DOUBLESTEP25, DOUBLESTEP50, DOUBLESTEP75, DOUBLESTEP100 };
 	enum BehaviorModelType { OUTOFUSE, RESTRICT, ABSORB };
-	
+
 // ----------------------------------------------------------------------------
 // Section: Forward declarations
 // ----------------------------------------------------------------------------
@@ -91,6 +92,8 @@ public:
 	virtual NetworkModelType networkModelType() const;
 	virtual BehaviorModelType behaviorModelType() const;
 	virtual bool networkModelTypeB() const;
+	virtual bool networkModelTypeDoubleStep() const;
+	virtual double networkDoubleStepProb() const;
 	virtual int alter() const;
 
 	inline const Function * pEvaluationFunction() const;
@@ -372,7 +375,7 @@ private:
 	std::map<const NetworkVariable *, double> linverseInDegreeSumTerm;
 
 	// Sum term for scores for rate effects depending on log degree
-	std::map<const NetworkVariable *, double> llogInDegreeSumTerm;	
+	std::map<const NetworkVariable *, double> llogInDegreeSumTerm;
 
 	// Sum term for scores for rate effects depending on inverse reciprocal degree
 	std::map<const NetworkVariable *, double> linversereciprocalDegreeSumTerm;

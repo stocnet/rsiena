@@ -58,6 +58,8 @@ public:
 	void networkModelType(int type);
 	virtual NetworkModelType networkModelType() const;
 	virtual bool networkModelTypeB() const;
+	virtual bool networkModelTypeDoubleStep() const;
+	virtual double networkDoubleStepProb() const;
 
 	virtual void initialize(int period);
 	virtual bool canMakeChange(int actor) const;
@@ -163,12 +165,22 @@ private:
 
     double lsymmetricProbabilities[2];
 
-	// The current alter for models with cooperation between actor and alter
+	// The current alter for two-mode models 
+	// with cooperation between actor and alter;
+	// and the previous alter for one-mode twostep models:
 
 	int lalter;
+	
+	// the probability for taking the double step in option DOUBLESTEP:
+	
+	double lnetworkDoubleStepProb;
+	
+	// being one of the option DOUBLESTEP options:
+	
+	bool lnetworkModelTypeDoubleStep;
 
 	// The probability of selecting the current alter for models with
-	// cooperation between actor and alter
+	// cooperation between actor and alter:
 
 	double lalterProbability;
 

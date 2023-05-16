@@ -1,7 +1,7 @@
 #/******************************************************************************
 # * SIENA: Simulation Investigation for Empirical Network Analysis
 # *
-# * Web: http://www.stats.ox.ac.uk/~snijders/siena
+# * Web: https://www.stats.ox.ac.uk/~snijders/siena
 # *
 # * File: phase3.r
 # *
@@ -14,6 +14,17 @@
 ##@phase3 siena07 Does phase 3
 phase3 <- function(z, x, ...)
 {
+	if (is.null(x$lrt))
+	{
+		x$lrt <- FALSE
+	}
+	if (x$lrt)
+	{
+		z$myloglik <- NULL
+		z$myfra <- NULL
+		z$addChainToStore <- TRUE
+	}
+	
     ## initialize phase 3
     f <- FRANstore()
     DisplayTheta(z)
@@ -98,7 +109,7 @@ phase3.2 <- function(z, x, ...)
         Report('There was a problem in obtaining convergence.\n', outf)
         Report(c('Therefore, the program decided tentatively to fix',
 				 'parameter(s)',
-               c(1:z$pp)[z$newfixed], '.\n'), outf)
+					(1:z$pp)[z$newfixed], '.\n'), outf)
         Report(c('It may be better to start all over again,',
                  'with better initial values or a reduced model.\n',
                  '(Check that you entered the data properly!)\n'), outf)
@@ -292,6 +303,7 @@ phase3.2 <- function(z, x, ...)
                      format(sfl, width=8, digits=4),
                      '\n', collapse="", sep=""), cf)
         Report ('\n', cf)
+		z$ac3 <- sfl
     }
     for (j in 1:z$pp)
 	{
@@ -367,7 +379,7 @@ phase3.2 <- function(z, x, ...)
 				message('The following is approximately a linear combination ')
 				message('for which the data carries no information:\n', thetext)
 				message('It is advisable to drop one or more of these effects.')
-				if (any(z$fixed || any(z$newfixed)))
+				if (any(z$fixed) || any(z$newfixed))
 				{
 					Report(c('(This may be unimportant, and related to the fact\n',
 							'that some parameters are fixed.)\n'), outf)
@@ -399,6 +411,27 @@ phase3.2 <- function(z, x, ...)
 	z$errorMessage.cov <- errorMessage.cov
 	z$sf.invcov <- NULL
 	## ans<-InstabilityAnalysis(z)
+	
+	if (x$lrt)
+	{
+		z$nGroup <- 1
+		
+		if (ifelse(is.null(x$thermo), FALSE, x$thermo))
+		{
+			z <- thermo(z,x,subphase=4, ...) 
+		}
+		
+		if (ifelse(is.null(x$bridge1), FALSE, x$bridge1))
+		{
+			z <- bridge1(z,x,subphase=4, ...)
+		}
+		
+		z$nbrNodes <- 1
+		f <- FRANstore()
+		.Call("clearStoredChains", PACKAGE=pkgname,
+		f$pModel, keep = 0,1)
+	}
+	
 	z
 }
 
@@ -688,8 +721,20 @@ doPhase1or3Iterations <- function(phase, z, x, zsmall, xsmall, nits, nits6=0,
 		}
 		if (z$int == 1)
 		{
-
-			zz <- x$FRAN(zsmall, xsmall)
+			if (is.null(x$lrt))
+			{
+				x$lrt <- FALSE
+			}
+			if (!x$lrt)
+			{
+				zz <- x$FRAN(zsmall, xsmall)
+			} else {
+				zz <- x$FRAN(zsmall, xsmall, returnLoglik=TRUE, returnChains=TRUE)
+				z$myloglik <- c(z$myloglik, sum(zz$loglik))
+				fra <- colSums(zz$fra) - z$targets
+				z$myfra <- rbind(z$myfra, fra)
+			}
+			
 			if (!zz$OK)
 			{
 				z$OK <- zz$OK

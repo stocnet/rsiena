@@ -51,7 +51,7 @@ void BetweennessFunction::initialize(const Data * pData,
  * Returns the value of this function for the given alter. It is assumed
  * that the function has been initialized before.
  */
-double BetweennessFunction::value(int alter)
+double BetweennessFunction::value(int alter) const
 {
 	return this->lpTable->get(alter);
 }

@@ -32,6 +32,7 @@ public:
 		bool difference,
 		bool logar,
 		bool root,
+		bool inv,
 		bool creation,
 		bool evalDifference);
 
@@ -43,6 +44,7 @@ private:
 	bool ldifference;
 	bool llogar;
 	bool lroot;
+	bool linv;
 	bool lcreation;
 	bool levalDifference;
 	bool levalLog;

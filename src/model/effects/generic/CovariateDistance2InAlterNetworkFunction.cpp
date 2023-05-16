@@ -38,17 +38,36 @@ CovariateDistance2InAlterNetworkFunction(string networkName, string
 }
 
 
+
+void CovariateDistance2InAlterNetworkFunction::initialize(const Data * pData,
+	State * pState,
+	int period,
+	Cache * pCache)
+{
+	CovariateDistance2NetworkFunction::initialize(pData, pState, period, pCache);
+}
+
+/**
+ * Does the necessary preprocessing work for calculating the
+ * predicate for a specific ego. This method must be invoked before
+ * calling CovariateDistance2InAlterNetworkFunction::value(...).
+ */
+void CovariateDistance2InAlterNetworkFunction::preprocessEgo(int ego)
+{
+	CovariateDistance2NetworkFunction::preprocessEgo(ego);
+}
+
 /**
  * Returns the value of this function for the given alter. It is assumed
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double CovariateDistance2InAlterNetworkFunction::value(int alter)
+double CovariateDistance2InAlterNetworkFunction::value(int alter) const
 {
 	double value = 0;
 	if (!(this->lexcludeMissing && this->missingInDummy(alter)))
 	{
-		if (ltotal)
+		if (this->ltotal)
 		{
 			value = this->totalInAlterValue(alter);
 		}
@@ -56,13 +75,13 @@ double CovariateDistance2InAlterNetworkFunction::value(int alter)
 		{
 			value = this->averageInAlterValue(alter);
 		}
-		int tieValue =  this->pNetwork()->tieValue(this->ego(), alter);
-		if (tieValue == 1)
+		
+		if (this->pNetwork()->tieValue(this->ego(), alter) == 1)
 		{
-			if (ltotal)
+			if (this->ltotal)
 			{
 				value = (value -
-					CovariateNetworkAlterFunction::value(this->ego()));
+					CovariateNetworkAlterFunction::covvalue(this->ego()));
 			}
 			else
 			{
@@ -70,7 +89,7 @@ double CovariateDistance2InAlterNetworkFunction::value(int alter)
 				if (degree > 1)
 				{
 					value = (degree * value -
-				CovariateNetworkAlterFunction::value(this->ego()))/(degree - 1);
+				CovariateNetworkAlterFunction::covvalue(this->ego()))/(degree - 1);
 				}
 				else
 				{

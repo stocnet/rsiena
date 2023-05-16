@@ -61,7 +61,7 @@ void CovariateDegreeFunction::initialize(const Data * pData,
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double CovariateDegreeFunction::value(int alter)
+double CovariateDegreeFunction::value(int alter) const
 {
 	double statistic = 0;
 	if  (!(this->lexcludeMissing && this->missing(alter)))
@@ -97,7 +97,7 @@ double CovariateDegreeFunction::value(int alter)
 				int h = iter.actor();
 				if (!(this->lexcludeMissing && this->missing(h)))
 					{
-		statistic = statistic + this->CovariateNetworkAlterFunction::value(h);
+		statistic = statistic + this->CovariateNetworkAlterFunction::covvalue(h);
 					}
 			iter.next();
 			}

@@ -55,7 +55,7 @@ siena.table(x, type="tex", file=paste(deparse(substitute(x)), ".", type,sep=""),
     See documentation for \code{\link[xtable]{xtable}}.}
   \item{display}{
     See documentation for \code{\link[xtable]{xtable}}}
-  \item{nfirst}{Only relevant for the \code{RSienaTest} package.}
+  \item{nfirst}{Only relevant for the \code{multiSiena} package.}
   \item{\dots}{
     Add extra parameters for  \code{\link[xtable]{print.xtable}}
     here. e.g.
@@ -89,7 +89,7 @@ siena.table(x, type="tex", file=paste(deparse(substitute(x)), ".", type,sep=""),
 
   See the manual for how to import the html tables easily into MS-Word.
 }
-\references{See \url{http://www.stats.ox.ac.uk/~snijders/siena/}
+\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}
 }
 \author{Ruth Ripley, Charlotte Greenan, Tom Snijders}
 

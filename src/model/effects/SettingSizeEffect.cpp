@@ -24,12 +24,13 @@ namespace siena
  * Constructor.
  */
 SettingSizeEffect::SettingSizeEffect(const EffectInfo * pEffectInfo, bool difference,
-		bool logar, bool root, bool creation, bool evalDifference): SettingsNetworkEffect(pEffectInfo)
+		bool logar, bool root, bool inv, bool creation, bool evalDifference): SettingsNetworkEffect(pEffectInfo)
 {
 	this->lparameter = pEffectInfo->internalEffectParameter();
 	this->ldifference = difference;
 	this->llogar = logar;
-	this->lroot= root;
+	this->lroot = root;
+	this->linv = inv;
 	this->lcreation = creation;
 	this->levalDifference = evalDifference;
 	this->levalLog = (fabs(this->lparameter) < 1e-4);
@@ -45,43 +46,47 @@ double SettingSizeEffect::calculateContribution(int alter) const
 	double contribution = 0;
 	if (this->lcreation)
 	{
-		if ((!this->outTieExists(alter))& (this->stepType() == 1)) // primary setting
+		if ((!this->outTieExists(alter)) && (this->stepType() == 1)) // primary setting
 		{
 			contribution = this->settingDegree() - this->outDegree();
 			if (contribution >= 1)
 			{
 				if (this->llogar)
 				{
-					contribution = log(contribution);
+					contribution = log(contribution+1);
 				}
 				else if (this->lroot)
 				{
 					contribution = sqrt(contribution);
+				}
+				else if (this->linv)
+				{
+					contribution = 1/(contribution + 1);
 				}
 			}
 		}
 	}
 	else
 	{
-		int size = this->settingDegree();
+		contribution = this->settingDegree();
 		if (this->ldifference)
 		{
-			contribution = size - this->outDegree();
-			if (contribution >= 1)
-			{
-				if (this->llogar)
-				{
-					contribution = log(contribution);
-				}
-				else if (this->lroot)
-				{
-					contribution = sqrt(contribution);
-				}
-			}
-		}
-		else
+			contribution -= this->outDegree();
+		}			
+		if (contribution >= 1)
 		{
-			contribution = size;
+			if (this->llogar)
+			{
+				contribution = log(contribution+1);
+			}
+			else if (this->lroot)
+			{
+				contribution = sqrt(contribution);
+			}
+			else if (this->linv)
+			{
+				contribution = 1/(contribution + 1);
+			}
 		}
 	}
 	return contribution;
@@ -108,6 +113,10 @@ double SettingSizeEffect::egoStatistic(int ego, const Network * pNetwork)
 		else if (this->levalSqrt)
 		{
 			statistic = sqrt(size);
+		}
+		else if (this->linv)
+		{
+			statistic = 1/(size+1);
 		}
 		else
 		{

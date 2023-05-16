@@ -26,7 +26,7 @@ public:
 		std::string covariateName, double parameter, bool excludeMissing, bool total);
 	virtual ~CovariateDistance2AlterNetworkFunction();
 
-	virtual double value(int alter);
+	virtual double value(int alter) const;
 
 private:
 	double lparameter;
