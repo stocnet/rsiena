@@ -1,3 +1,14 @@
+# RSiena 1.3.23
+
+##
+
+2023-05-16
+
+## Changes in RSiena:
+### Coding:
+  * Improved Phase 1 derivative matrix computation for basic SDE parameters
+  * Added continuous behavior to returned simulated data
+
 # RSiena 1.3.22
 
 ## 
