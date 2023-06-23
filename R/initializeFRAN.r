@@ -150,6 +150,10 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		{
 			if (any(effects$effectName != defaultEffects$effectName))
 			{
+				cat("There seems to be a mismatch between data set and effects object.\n")
+				cat("This may have been caused by the use of different versions of RSiena")
+				cat("for creating the effects object and now running siena07.\n")
+				cat("Try creating the effects object with the current version of RSiena.")
 				stop("Cannot use standard initialisation with a ",
 					"different effect list")
 			}

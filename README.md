@@ -105,7 +105,7 @@ The development version of RSiena can be similarly installed as:
 To cite the RSiena package in publications use:
 
 > Ruth M. Ripley, Tom A. B. Snijders, Zsofia Boda, Andras Voros, and Paulina Preciado (2023). Manual
-> for Siena version 4.0. R package version 1.3.19.
+> for Siena version 4.0. R package version 1.3.22.
 > https://www.cran.r-project.org/web/packages/RSiena/.
 
 A BibTeX entry for LaTeX users is
