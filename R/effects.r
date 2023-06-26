@@ -294,6 +294,7 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 							otherName, name=varname,
 							groupName=groupName, group=group,
 							netType=netType))
+# The name "nonSymmetricBipartiteObjective"
 			}
 			if ((!(types[j] %in% c('behavior', 'continuous'))) && (varname != otherName))
 			{
@@ -1765,8 +1766,10 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 		}
 	}
 	effects <- do.call(rbind, effects)
+	attr(effects, "version") <- packageDescription(pkgname, fields = "Version")
 	attr(effects, "starts") <- NULL
 	effects <- cbind(effects, effectNumber=1:nrow(effects))
+	attr(effects, "onePeriodSde") <- onePeriodSde
 	attr(effects, "settings") <- settingsList
 	cl <- class(effects)
 	if (groupx)
