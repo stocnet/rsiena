@@ -11,10 +11,13 @@
 
 #include <cmath>
 #include "SameCovariateActivityEffect.h"
+#include "utils/SqrtTable.h"
 #include "utils/Utils.h"
 #include "network/Network.h"
 #include "model/variables/NetworkVariable.h"
 #include "network/IncidentTieIterator.h"
+#include "model/EffectInfo.h"
+
 
 namespace siena
 {
@@ -30,6 +33,8 @@ SameCovariateActivityEffect::SameCovariateActivityEffect(
 {
 	this->lsame = same;
 	this->lrecip = recip;
+	this->lsqrt = (pEffectInfo->internalEffectParameter() == 2);
+	this->lsqrtTable = SqrtTable::instance();
 }
 
 
@@ -48,6 +53,18 @@ bool SameCovariateActivityEffect::lcondition2(int theAlter, double theOwnValue) 
 {
 	return ((fabs(this->value(theAlter) - theOwnValue) >= EPSILON) &&
 			(!lrecip | (this->inTieExists(theAlter))));
+}
+
+double SameCovariateActivityEffect::changeStat(double d) const
+{
+	if (this->lsqrt)
+	{
+		return(((d+1)*this->lsqrtTable->sqrt(d+1)) - (d * this->lsqrtTable->sqrt(d)));
+	}
+	else
+	{
+		return((2*d) + 1);
+	}	
 }
 
 /**
@@ -78,8 +95,6 @@ double SameCovariateActivityEffect::calculateContribution(int alter) const
 		{
 			contribution--;
 		}
-		contribution *= 2;
-		contribution++;
 	}
 
 	if ((!lsame) && (lrecip | (fabs(this->value(alter) - myvalue) >= EPSILON)))  //  fabs(this->value(alter) - myvalue) >= EPSILON))
@@ -99,10 +114,8 @@ double SameCovariateActivityEffect::calculateContribution(int alter) const
 		{
 			contribution--;
 		}
-		contribution *= 2;
-		contribution++;
 	}
-	return contribution;
+	return changeStat(contribution);
 }
 
 
@@ -158,7 +171,14 @@ double SameCovariateActivityEffect::tieStatistic(int alter)
 			}
 		}
 	}
-	return contribution;
+	if (this->lsqrt)
+	{
+		return this->lsqrtTable->sqrt(contribution);
+	}
+	else
+	{
+		return contribution;
+	}
 }
 
 }

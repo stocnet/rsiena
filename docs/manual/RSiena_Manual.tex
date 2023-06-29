@@ -191,7 +191,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.3.22.
+This version was renewed for \RS version 1.3.23.
 \end{abstract}
 
 
@@ -231,11 +231,11 @@ A review article is \citet{Snijders2017}.
 Books are in preparation \citep{AMAND,SNDE}.
 
 A website for \SI is maintained at
-{\small\url{http://www.stats.ox.ac.uk/~snijders/siena/}~}.
+{\small\url{https://www.stats.ox.ac.uk/~snijders/siena/}~}.
 At this website (`publications' tab)
 you shall also find references to introductions in various other languages,
 as well as the file
-\href{http://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf}{\texttt{Siena\_algorithms.pdf}}
+\href{https://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf}{\texttt{Siena\_algorithms.pdf}}
  which
 gives a sketch of the main algorithms used in \rs.
 The website further contains references to many published examples,
@@ -1129,7 +1129,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.3.22).
+  identified by a version number (e.g.\ 1.3.23).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -2596,7 +2596,7 @@ something called the objective function $u_i(x^0, x)$ which will be defined
 in a moment.
 Let $x \in \mathcal C$ be some network that could be obtained as a result
 of the ministep; then $x$ will be the same as $x^0$, except perhaps for
-the tie $i \rightarrow j$ for some $j$; this tie might exist in $x$ but not in 
+the tie $i \rightarrow j$ for some $j$; this tie might exist in $x$ but not in
 $x^0$, or vice versa.
 The probability that the next network is $x$ is given by
 \begin{equation}
@@ -3583,7 +3583,11 @@ Value \texttt{modelType = 1} is for directed networks, values
       a pair of actors is chosen and reconsider
       whether a tie will exist between them;
       this is based on the sum of their objective functions
-      for the existence of this tie.
+      for the existence of this tie.\\
+      If the evaluation function is symmetric in ego and alter,
+      and there are no creation and/or maintenance functions,
+      this is the Longitudinal Exponential Random Graph Model
+      (`LERGM') of \citet{KoskinenSnijders2013}.
 \end{enumerate}
 In the first two of these models, where the initiative is one-sided,
 the rate function is comparable to the rate function in directed models.
@@ -3608,9 +3612,9 @@ The value \texttt{modelType = 1} is the default for directed networks, values
 \texttt{modelType = 7, 8, 9, 10} are options included for the purpose
 of investigating the consequences of details of the specification of the ministep.
 
-These values implement the so-called \emph{double step}.  
+These values implement the so-called \emph{double step}.
 The ministeps are explained above in Section~\ref{S_logic} and more in detail
-in Section~\ref{S_mathmod}. 
+in Section~\ref{S_mathmod}.
 A double step is defined by a ministep taken by some focal actor $i$;
 suppose this means the creation or termination of the tie
 $i \rightarrow j$ for some $j$; then a following ministep is taken by actor $j$.
@@ -10198,7 +10202,7 @@ the following effects are available:
  defined by the number of actors to whom $i$ has a tie
  and whose covariate value
  is smaller than (to the left of)  or equal to a threshold $p$,\\
- $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, I\{v_j \geq p\} $;\\
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, I\{v_j \leq p\} $;\\
  note that behavioral dependent variables always are centered;
  i.e., the overall mean is subtracted!
 
@@ -10313,8 +10317,8 @@ the following effects are available:
  reciprocal dyads in which $i$ is situated,\\
  $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}x_{ji} ({\rm sim}^v_{ij} - \widehat{{\rm sim}^v}) $;
 
- \item \emph{same covariate}, which can also be called {\em covariate-related identity} \texttt{(sameX)},
- defined by the
+ \item \emph{same covariate}, which can also be called {\em covariate-related identity} 
+ \texttt{(sameX)},  defined by the
  number of ties of $i$ to all other actors $j$ who have
  exactly the same value on the covariate,\\
  $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, I\{v_i = v_j \} $,\\
@@ -10325,7 +10329,16 @@ the following effects are available:
 \texttt{(sameXRecip)} defined by the
  number of reciprocated ties between $i$ and all other actors $j$ who have
  exactly the same value on the covariate,\\
- $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} x_{ji}\, I\{v_i = v_j \} $;
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} x_{ji}\, I\{v_i = v_j \} $; 
+
+ \item \emph{different covariate}  \texttt{(unequalX)},  defined by the
+ number of ties of $i$ to all other actors $j$ who have
+ a different value on the covariate,\\
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, I\{v_i \neq v_j \} $,\\
+ where the indicator function $I\{v_i \neq v_j \} $ is 1 if the condition $\{v_i \neq v_j \} $
+ is satisfied, and 0 if it is not;\\
+ this is the converse of the  \texttt{sameX} effect,
+ and can be useful in interactions;
 
  \item {\em in-degree popularity weighted by sender's V }
   \texttt{(inPopX)}\\
@@ -10400,7 +10413,9 @@ the following effects are available:
 \texttt{(sameXOutAct)} defined by the
  squared number of ties to those
  others who have the same covariate value as $i$,\\
- $s^{\rm net}_{i\vit}(x) = \big(\sum_j x_{ij} \,I\{v_i = v_j \}\big)^2 $;
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \sum_h x_{ih}\, I\{v_i = v_h \} $;\\
+ for internal effect parameter $p=2$, it is defined by\\
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \sqrt{\sum_h x_{ih}\, I\{v_i = v_h \}} $;\\
 
  \item {\em outdegree activity to different covariate}
 \texttt{(diffXOutAct)} defined by the
@@ -12091,6 +12106,86 @@ covariate $V$.
 \end{minipage}
 \smallskip
 
+
+\item
+\begin{minipage}[t]{.7\textwidth}
+ {\em mixed WW $\Rightarrow$ X closure, same-V path}
+($X$: mixed $WW$ closure same $V$),
+  \texttt{(sameWWClosure)}   \\
+  (specified with \texttt{interaction1} = $W$, \texttt{interaction2} = $V$)\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+            w_{ih}\, w_{hj}\,I\{v_i = v_h \}$;\\[0.2em]
+ this refers to the closure by $X$ of $W-W$ two-paths, restricted to
+ two-paths  $i \stackrel{W}{\rightarrow} h \stackrel{W}{\rightarrow} j $
+ in which the focal actor and the mediating actor have the same value of $V$.
+      \end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\linethickness{0.3pt}
+\vfill
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
+\setplotarea x from 2 to 4, y from 0 to 3
+\put{\large$\bullet$} at  2 1
+\put{\large$\circ$} at  4 1
+\put{\large$\bullet$} at  3 2.732
+\put{$i$} at 2 0.4
+\put{$j$} at 4 0.4
+\put{$h$} at 3 3.4
+\put{{\small $W$}} at 2.1 1.9
+\put{{\small $W$}} at 3.9 1.9
+\put{{\small $X$}} at 3   0.6
+\arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
+\arrow <2mm> [.2,.6]  from 2.1 1.1732 to 2.9 2.559
+\arrow <2mm> [.2,.6]  from 3.1 2.559 to 3.9 1.1732
+\endpicture
+\end{center}
+\vfill
+\end{minipage}
+\smallskip
+
+
+\item
+\begin{minipage}[t]{.7\textwidth}
+ {\em mixed WW $\Rightarrow$ X closure, different-V path}
+($X$: mixed $WW$ closure diff.\ $V$),
+  \texttt{(diffWWClosure)}   \\
+  (specified with \texttt{interaction1} = $W$, \texttt{interaction2} = $V$)\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+            w_{ih}\, w_{hj}\,I\{v_i \neq v_h \}$;\\[0.2em]
+ this refers to the closure by $X$ of $W-W$ two-paths, restricted to
+ two-paths  $i \stackrel{W}{\rightarrow} h \stackrel{W}{\rightarrow} j $
+ in which the focal actor and the mediating actor have a different value of $V$.
+     \end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\linethickness{0.3pt}
+\vfill
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
+\setplotarea x from 2 to 4, y from 0 to 3
+\put{\large$\bullet$} at  2 1
+\put{\large$\circ$} at  4 1
+\put{\large$\diamond$} at  3 2.732
+\put{$i$} at 2 0.4
+\put{$j$} at 4 0.4
+\put{$h$} at 3 3.4
+\put{{\small $W$}} at 2.1 1.9
+\put{{\small $W$}} at 3.9 1.9
+\put{{\small $X$}} at 3   0.6
+\arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
+\arrow <2mm> [.2,.6]  from 2.1 1.1732 to 2.9 2.559
+\arrow <2mm> [.2,.6]  from 3.1 2.559 to 3.9 1.1732
+\endpicture
+\end{center}
+\vfill
+\end{minipage}
+\smallskip
+
+
+
 \item
 \begin{minipage}[t]{.7\textwidth}
  {\em mixed WW $\Rightarrow$ X closure, same-V path jumping to different V}
@@ -12243,7 +12338,7 @@ covariate $V$.
 \item
 \begin{minipage}[t]{.7\textwidth}
  {\em mixed WX $\Rightarrow$ X closure, same-V path}
-($X$: mixed $W$ closure same $V$),
+($X$: mixed $WX$ closure same $V$),
   \texttt{(sameWXClosure)}   \\
   (specified with \texttt{interaction1} = $W$, \texttt{interaction2} = $V$)\\[0.2em]
  $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
@@ -12281,10 +12376,49 @@ covariate $V$.
 \end{minipage}
 \smallskip
 
+
+\item
+\begin{minipage}[t]{.7\textwidth}
+ {\em mixed WX $\Rightarrow$ X closure, different-V path}
+($X$: mixed $WX$ closure diff.\ $V$),
+  \texttt{(diffWXClosure)}   \\
+  (specified with \texttt{interaction1} = $W$, \texttt{interaction2} = $V$)\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+            w_{ih}\, x_{hj}\,I\{v_i \neq v_h \}$;\\[0.2em]
+ this refers to the closure of $W-X$ two-paths, restricted to
+ two-paths  $i \stackrel{W}{\rightarrow} h \stackrel{X}{\rightarrow} j $
+ in which the focal actor and the mediating actor have a different value of $V$.
+     \end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\linethickness{0.3pt}
+\vfill
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
+\setplotarea x from 2 to 4, y from 0 to 3
+\put{\large$\bullet$} at  2 1
+\put{\large$\circ$} at  4 1
+\put{\large$\diamond$} at  3 2.732
+\put{$i$} at 2 0.4
+\put{$j$} at 4 0.4
+\put{$h$} at 3 3.4
+\put{{\small $W$}} at 2.1 1.9
+\put{{\small $X$}} at 3.9 1.9
+\put{{\small $X$}} at 3   0.6
+\arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
+\arrow <2mm> [.2,.6]  from 2.1 1.1732 to 2.9 2.559
+\arrow <2mm> [.2,.6]  from 3.1 2.559 to 3.9 1.1732
+\endpicture
+\end{center}
+\vfill
+\end{minipage}
+\smallskip
+
 \item
 \begin{minipage}[t]{.7\textwidth}
  {\em mixed WX $\Rightarrow$ X closure, same-V path jumping to different V}
-($X$: mixed $W$ closure jumping $V$),
+($X$: mixed $WX$ closure jumping $V$),
   \texttt{(jumpWXClosure)}   \\
   (specified with \texttt{interaction1} = $W$, \texttt{interaction2} = $V$)\\[0.2em]
  $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
@@ -12310,6 +12444,84 @@ covariate $V$.
 \put{$h$} at 3 3.4
 \put{{\small $W$}} at 2.1 1.9
 \put{{\small $X$}} at 3.9 1.9
+\put{{\small $X$}} at 3   0.6
+\arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
+\arrow <2mm> [.2,.6]  from 2.1 1.1732 to 2.9 2.559
+\arrow <2mm> [.2,.6]  from 3.1 2.559 to 3.9 1.1732
+\endpicture
+\end{center}
+\vfill
+\end{minipage}
+\smallskip
+
+
+\item
+\begin{minipage}[t]{.7\textwidth}
+ {\em mixed XW $\Rightarrow$ X closure, same-V path}
+($X$: mixed $XW$ closure same $V$),
+  \texttt{(sameXWClosure)}   \\
+  (specified with \texttt{interaction1} = $W$, \texttt{interaction2} = $V$)\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+            x_{ih}\, w_{hj}\,I\{v_i = v_h \}$;\\[0.2em]
+ this refers to the closure of $X-W$ two-paths, restricted to
+ two-paths  $i \stackrel{X}{\rightarrow} h \stackrel{W}{\rightarrow} j $
+ in which the focal actor and the mediating actor have the same value of $V$.
+      \end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\linethickness{0.3pt}
+\vfill
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
+\setplotarea x from 2 to 4, y from 0 to 3
+\put{\large$\bullet$} at  2 1
+\put{\large$\circ$} at  4 1
+\put{\large$\bullet$} at  3 2.732
+\put{$i$} at 2 0.4
+\put{$j$} at 4 0.4
+\put{$h$} at 3 3.4
+\put{{\small $X$}} at 2.1 1.9
+\put{{\small $W$}} at 3.9 1.9
+\put{{\small $X$}} at 3   0.6
+\arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
+\arrow <2mm> [.2,.6]  from 2.1 1.1732 to 2.9 2.559
+\arrow <2mm> [.2,.6]  from 3.1 2.559 to 3.9 1.1732
+\endpicture
+\end{center}
+\vfill
+\end{minipage}
+\smallskip
+
+
+\item
+\begin{minipage}[t]{.7\textwidth}
+ {\em mixed XW $\Rightarrow$ X closure, different-V path}
+($X$: mixed $XW$ closure diff.\ $V$),
+  \texttt{(diffXWClosure)}   \\
+  (specified with \texttt{interaction1} = $W$, \texttt{interaction2} = $V$)\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+            x_{ih}\, w_{hj}\,I\{v_i \neq v_h \}$;\\[0.2em]
+ this refers to the closure of $X-W$ two-paths, restricted to
+ two-paths  $i \stackrel{X}{\rightarrow} h \stackrel{W}{\rightarrow} j $
+ in which the focal actor and the mediating actor have a different value of $V$.
+     \end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\linethickness{0.3pt}
+\vfill
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
+\setplotarea x from 2 to 4, y from 0 to 3
+\put{\large$\bullet$} at  2 1
+\put{\large$\circ$} at  4 1
+\put{\large$\diamond$} at  3 2.732
+\put{$i$} at 2 0.4
+\put{$j$} at 4 0.4
+\put{$h$} at 3 3.4
+\put{{\small $X$}} at 2.1 1.9
+\put{{\small $W$}} at 3.9 1.9
 \put{{\small $X$}} at 3   0.6
 \arrow <2mm> [.2,.6]  from 2.2 1 to 3.8 1
 \arrow <2mm> [.2,.6]  from 2.1 1.1732 to 2.9 2.559
@@ -15695,12 +15907,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.3.22.tar.gz|\\
+\verb|R CMD check RSiena_1.3.23.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.3.22.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.3.23.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16745,6 +16957,42 @@ Changes in RSiena:
 
 \fi
 
+
+\item 2023-06-29 GitHub, package version 1.3.23.
+
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects:
+   \begin{itemize}
+  \item New effects \texttt{diffWXClosure}, \texttt{sameWWClosure},  \texttt{diffWWClosure},
+    \texttt{diffXWClosure}, \texttt{sameXWClosure}, \texttt{unequalX}.
+  \item \texttt{JoutMix} made available for bipartite dependent networks.
+  \item For continuous behavior variables depending on a bipartite dependent
+    network, the effect group \sfn{continuousBipartiteObjective} was created,
+    with effects \texttt{outdeg}, \texttt{outdegSqrt}, and \texttt{isolateOut}.
+  \item \texttt{sameXOutAct} and \texttt{diffXOutAct} now have a 
+  parameter 2 for $\sqrt{}$\ .
+    \end{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+  \item The model for continuous behavior variables seems to work now.
+   \item \sfn{sienaGOF} now also accepts a list of \sfn{sienaFit} objects.
+  \item In \sfn{sienaDataCreate}, the warning message that there is at least one
+    "upOnly" period now is made for each dependent 
+    variable instead of only the last.
+  \item A warning is given if the used version of the effects object
+    is not current and it contains interaction effects
+    (then it is possible that the interacting effects are chosen incorrectly,
+    even though the \texttt{effectName} of the interaction seems OK).
+   \item Various coding improvements and better texts of
+   warnings and error messages.
+  \item In the violin plot for \sfn{sienaGOF}, the default bandwidth selection
+     method is used  (the use of "nrd" sometimes led to absent plots 
+     because of negative bandwidth).
+    \end{itemize}
+\end{itemize}
+
 \item 2023-05-11 GitHub, package version 1.3.22.
 
 Changes in RSiena:
@@ -16757,7 +17005,7 @@ Changes in RSiena:
     \end{itemize}
 \item  Bug corrections:
    \begin{itemize}
-  \item Coding of some `generic effects' was cleaned up and corrected.
+  \item Coding of some ``generic effects'' was cleaned up and corrected.
    This led to changes in coding of several distance-2 covariate-related network
 	 effects such as \texttt{altDist2}, \texttt{totDist2} and \texttt{altInDist2};
    some of these \underline{may} have been incorrect in earlier versions.

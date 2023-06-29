@@ -1330,7 +1330,6 @@ sum(wave2*vv) # OK
 ### check altDist2, totDist2
 ################################################################################
 
-
 mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
 myvar <- coCovar(s50a[,2])
 mydata <- sienaDataCreate(mynet, myvar)
@@ -1351,7 +1350,231 @@ diag(mat) <- 0
 table(mat, useNA='always')
 cova <- as.double( myvar - mean(myvar))
 #mat
-totv <- mat %*% cova 
+totv <- mat %*% cova
 avv <- divi(totv,rowSums(mat))
 ef <- mat %*% (avv) # effect
 sum(ef) # 12.35 OK
+
+################################################################################
+### check unequalX, sameWXClosure, diffWXClosure, sameXWClosure, diffCWClosure,
+###       sameWWClosure, diffWWClosure
+################################################################################
+
+mynet1 <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- sienaNet(array(c(s503, s502), dim=c(50, 50, 2)))
+# construct actor covariate
+in1 <- colSums(s501)
+out1 <- rowSums(s501)
+center <- in1 + out1
+table(center)
+center <- round(center/5)
+table(center)
+eq <- 1*outer(center, center, "==")# matrix I{center[i] = center[j]}
+diag(eq) <- 0
+table(eq)
+sum(center) # 46
+
+central <- coCovar(center)
+mydata <- sienaDataCreate(mynet1, mynet2, central)
+myalgorithm <- sienaAlgorithmCreate(projname=NULL, nsub=2, n3=100, seed=12345)
+myalgorithm <- sienaAlgorithmCreate(projname=NULL, seed=12345)
+
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,unequalX,name='mynet1', interaction1='central')
+(ans <- siena07(myalgorithm, data=mydata, effects=myeff))
+ans$targets
+sum((1-eq)*s502) # 49 OK
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,sameWXClosure,name='mynet2',
+                interaction1='mynet1', interaction2='central')
+(ans <- siena07(myalgorithm, data=mydata, effects=myeff))
+ans$targets
+# sameWXClosure
+mtwop <- (s501*eq) %*% s502
+diag(mtwop) <- 0
+sum(mtwop * s502)
+# 36 OK
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,diffWXClosure,name='mynet2',
+                interaction1='mynet1', interaction2='central')
+(ans <- siena07(myalgorithm, data=mydata, effects=myeff))
+ans$targets
+# diffWXClosure
+mtwop <- (s501*(1-eq)) %*% s502
+diag(mtwop) <- 0
+sum(mtwop * s502)
+# 24 OK
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,sameXWClosure,name='mynet1',
+                interaction1='mynet2', interaction2='central')
+(ans <- siena07(myalgorithm, data=mydata, effects=myeff))
+ans$targets
+# sameXWClosure
+mtwop <- (s502*eq) %*% s503
+diag(mtwop) <- 0
+sum(mtwop * s502)
+# 54 OK
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,diffXWClosure,name='mynet1',
+                interaction1='mynet2', interaction2='central')
+(ans <- siena07(myalgorithm, data=mydata, effects=myeff))
+ans$targets
+# diffXWClosure
+mtwop <- (s502*(1-eq)) %*% s503
+diag(mtwop) <- 0
+sum(mtwop * s502)
+# 38 OK
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,sameWWClosure,name='mynet2',
+                interaction1='mynet1', interaction2='central')
+(ans <- siena07(myalgorithm, data=mydata, effects=myeff))
+ans$targets
+# sameWWClosure
+mtwop <- (s501*eq) %*% s501
+diag(mtwop) <- 0
+sum(mtwop * s502)
+# 36 OK
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,diffWWClosure,name='mynet2',
+                interaction1='mynet1', interaction2='central')
+(ans <- siena07(myalgorithm, data=mydata, effects=myeff))
+ans$targets
+# diffWWClosure
+mtwop <- (s501*(1-eq)) %*% s501
+diag(mtwop) <- 0
+sum(mtwop * s502)
+# 20 OK
+
+
+################################################################################
+### check outdeg for continuous behavior and two-mode network
+################################################################################
+
+# Create fake network data
+set.seed(12321)
+wave1 <- matrix(0,30,10)
+for(i in 1:300){
+  wave1[i] <- sample(c(0,1),1, prob=c(0.7,0.3))
+}
+wave2 <- wave1
+for (i in 1:300){
+  wave2[i] <- abs(wave1[i] - 0.5 + sample(c(-0.5,0.5),1, prob=c(0.3,0.7)))
+}
+
+# Identify nodesets
+senders <- sienaNodeSet(30, nodeSetName="senders")
+recipients <- sienaNodeSet(10, nodeSetName="recipients")
+
+# Make dependent network
+network <- sienaDependent(array(c(wave1, wave2), dim=c(30,10,2)),
+                          type="bipartite", nodeSet=c("senders","recipients"),
+						  allowOnly=FALSE)
+# Make behavior
+w1 <- 1:30
+w12 <- 1:30 + runif(30, 0, 0.5) - 0.25
+beh <- sienaDependent(cbind(w1,w12), type="continuous", nodeSet="senders")
+
+# Make data set
+(nbdata <- sienaDataCreate(network, beh, nodeSets=list(senders,recipients)))
+
+myalgorithm <- sienaAlgorithmCreate(projname=NULL, seed=12345)
+nbEffects <- getEffects(nbdata, onePeriodSde=TRUE)
+nbEffects <- includeEffects(nbEffects, outdeg, name="beh", interaction1="network")
+(ans <- siena07(myalgorithm, data=nbdata, effects=nbEffects))
+ans$targets
+sum((beh[,1,2] - mean(beh)) * rowSums(wave1))  # This would be it for non-continuous behavior
+sum((beh[,1,2] ) * rowSums(wave1)) # 1625.097, OK
+
+# Note: for continuous behavior effects, behavior is not centered.
+
+
+################################################################################
+### check sameXInPop, diffXInPop, sameXOutAct, diffXOutAct parameter 1 and 2
+################################################################################
+
+
+mynet <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+sets <- 1*((1:50) < 22)
+binary <- coCovar(sets)
+(mydata <- sienaDataCreate(mynet, binary))
+mymodel <- sienaModelCreate(projname=NULL, seed=844)
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, sameXInPop, interaction1="binary")
+myeff <- includeEffects(myeff, inPop)
+myeff
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# check target statistics: indegree popularity
+sum((colSums(s502))^2) # 386 OK
+# check target statistics: sameXInPop
+mat <- outer(1:50,1:50,function(i,j){sets[i]==sets[j]})
+mat1 <- t(s502) %*% mat %*% s502
+sum(diag((mat1))) # 276 OK
+sum((rowSums(s502*mat))^2)
+
+
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff, sameXInPop, interaction1="binary", parameter=2))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# check target statistics: sameXInPop parameter=2
+mat <- outer(1:50,1:50,function(i,j){sets[i]==sets[j]})
+mat1 <- sqrt(mat %*% s502)
+sum(s502*mat1) # 174.3673 OK
+
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff, diffXInPop, interaction1="binary", parameter=2))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# check target statistics: diffXInPop parameter=2
+mat <- outer(1:50,1:50,function(i,j){sets[i]!=sets[j]})
+mat1 <- sqrt(mat %*% s502)
+sum(s502*mat1) # 82.72646   OK
+
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, sameXOutAct, interaction1="binary")
+(myeff <- includeEffects(myeff, outAct))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# check target statistics: outdegree activity
+sum(rowSums(s502)) # 116 OK
+sum((rowSums(s502))^2) # 350 OK
+# check target statistics: sameXOutAct
+mat <- outer(1:50,1:50,function(i,j){sets[i]==sets[j]})
+diag(mat) <- 0
+sum((rowSums(s502 * mat))^2) # 194 OK
+
+
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff, sameXOutAct, interaction1="binary", parameter=2))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# check target statistics: sameXOutAct parameter=2
+mat <- outer(1:50,1:50,function(i,j){sets[i]==sets[j]})
+diag(mat) <- 0
+sum((rowSums(s502 * mat))*sqrt(rowSums(s502 * mat))) # 121.9956  OK
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, diffXOutAct, interaction1="binary")
+(myeff <- includeEffects(myeff, outAct))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# check target statistics: diffXOutAct
+dmat <- outer(1:50,1:50,function(i,j){sets[i]!=sets[j]})
+sum((rowSums(s502 * dmat))^2) # 64 OK
+
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff, diffXOutAct, interaction1="binary", parameter=2))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# check target statistics: diffXOutAct parameter=2
+sum((rowSums(s502 * dmat))*sqrt(rowSums(s502 * dmat))) # 46.73059   OK

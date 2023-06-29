@@ -1,7 +1,7 @@
 /******************************************************************************
  * SIENA: Simulation Investigation for Empirical Network Analysis
  *
- * Web: http://www.stats.ox.ac.uk/~snijders/siena/
+ * Web: https://www.stats.ox.ac.uk/~snijders/siena/
  *
  * File: SameCovariateActivityEffect.h
  *
@@ -16,6 +16,17 @@
 
 namespace siena
 {
+
+// ----------------------------------------------------------------------------
+// Section: Forward declarations
+// ----------------------------------------------------------------------------
+
+class SqrtTable;
+
+// ----------------------------------------------------------------------------
+// Section: Class definition
+// ----------------------------------------------------------------------------
+
 
 /**
  * Same and different covariate activity effects (see manual).
@@ -34,8 +45,12 @@ protected:
 private:
 	bool lsame;
 	bool lrecip;
+	bool lsqrt;
 	bool lcondition1(int theAlter, double theOwnValue) const;
 	bool lcondition2(int theAlter, double theOwnValue) const;
+	double changeStat(double d) const;
+	// Lookup table for fast square root calculations
+	SqrtTable * lsqrtTable;
 };
 
 }

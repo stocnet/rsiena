@@ -778,7 +778,6 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 			## no starting value for quadratic effect
 		}
 
-
 		rateEffects[1:observations, 'include'] <- TRUE
 		rateEffects[1:noPeriods, 'initialValue'] <- starts$startRate
 		rateEffects$basicRate[1:observations] <- TRUE
@@ -842,14 +841,12 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
                     attr(xx$depvars[[k]], "nodeSet") == nodeSet)
                 {
                     depvarname <- names(xx$depvars)[k]
-
                     tmpObjEffects <-
                             createEffects("continuousOneModeObjective",
                                           varnames[j], depvarname, name=varnames[j],
                                           groupName=groupName, group=group,
                                           netType=netType)
-                    }
-                    if ((nOneModes) > 1) # add the network name, TODO: same for nBipartites
+                    if ((nOneModes) > 1) # add the network name, 
                     {
                         tmpObjEffects$functionName <-
                             paste(tmpObjEffects$functionName,
@@ -858,8 +855,30 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
                             paste(tmpObjEffects$effectName,
                                   " (", depvarname, ")", sep = "")
                     }
+					objEffects <- rbind(objEffects, tmpObjEffects)	
+				}			
+				
+                if (types[k] == "bipartite" &&
+                    attr(xx$depvars[[k]], "nodeSet")[1] == nodeSet)
+                {
+                    depvarname <- names(xx$depvars)[k]
 
-                objEffects <- rbind(objEffects, tmpObjEffects)
+                    tmpObjEffects <-
+                            createEffects("continuousBipartiteObjective",
+                                          varnames[j], depvarname, name=varnames[j],
+                                          groupName=groupName, group=group,
+                                          netType=netType)
+                    if ((nBipartites) > 1) # add the network name, 
+                    {
+                        tmpObjEffects$functionName <-
+                            paste(tmpObjEffects$functionName,
+                                  " (", depvarname, ")", sep="")
+                        tmpObjEffects$effectName <-
+                            paste(tmpObjEffects$effectName,
+                                  " (", depvarname, ")", sep = "")
+                    }
+					objEffects <- rbind(objEffects, tmpObjEffects)
+				}
             }
             for (k in seq(along = xx$cCovars))
             {

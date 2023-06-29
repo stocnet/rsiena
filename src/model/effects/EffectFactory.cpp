@@ -47,6 +47,7 @@
 #include "model/effects/generic/MixedTwoStepFunction.h"
 #include "model/effects/generic/WeightedMixedTwoPathFunction.h"
 #include "model/effects/generic/ConditionalFunction.h"
+#include "model/effects/generic/DifferentCovariatePredicate.h"
 #include "model/effects/generic/EqualCovariatePredicate.h"
 #include "model/effects/generic/MissingCovariatePredicate.h"
 #include "model/effects/generic/DoubleOutActFunction.h"
@@ -604,7 +605,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "sameX")
 	{
-		pEffect = new SameCovariateEffect(pEffectInfo, false);
+		pEffect = new SameCovariateEffect(pEffectInfo, true, false);
+	}
+	else if (effectName == "unequalX")
+	{
+		pEffect = new SameCovariateEffect(pEffectInfo, false, false);
 	}
 	else if (effectName == "higher")
 	{
@@ -612,7 +617,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "sameXRecip")
 	{
-		pEffect = new SameCovariateEffect(pEffectInfo, true);
+		pEffect = new SameCovariateEffect(pEffectInfo, true, true);
 	}
 	else if (effectName == "sameXTransTrip")
 	{
@@ -1413,6 +1418,31 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 					new SameCovariateInStarFunction(networkName,
 												covariateName, true), 0)));
 	}
+	else if (effectName == "sameWWClosure")
+	{
+		string networkName = pEffectInfo->interactionName1();
+		string covariateName = pEffectInfo->interactionName2();
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new SameCovariateTwoPathFunction(
+							networkName, covariateName, true, false),
+			new ConditionalFunction(
+				new MissingCovariatePredicate(covariateName),
+				0,
+				new SameCovariateTwoPathFunction(
+							networkName, covariateName, true, true)));
+	}
+	else if (effectName == "diffWWClosure")
+	{
+		string networkName = pEffectInfo->interactionName1();
+		string covariateName = pEffectInfo->interactionName2();
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new SameCovariateTwoPathFunction(networkName, covariateName, false, false),
+			new ConditionalFunction(
+				new MissingCovariatePredicate(covariateName),
+				0,
+				new SameCovariateTwoPathFunction(
+							networkName, covariateName, false, true)));
+	}
 	else if (effectName == "jumpWWClosure")
 	{
 		string networkName = pEffectInfo->interactionName1();
@@ -1421,7 +1451,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			new ConditionalFunction(new EqualCovariatePredicate(covariateName),
 				0,
 				new SameCovariateTwoPathFunction(networkName,
-										covariateName, false)),
+										covariateName, true, false)),
 			new ConditionalFunction(
 				new MissingCovariatePredicate(covariateName),
 				0,
@@ -1429,7 +1459,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 					new EqualCovariatePredicate(covariateName),
 					0,
 					new SameCovariateTwoPathFunction(networkName,
-										covariateName, true))));
+										covariateName, true, true))));
 	}
 	else if (effectName == "jumpFrom")
 	{
@@ -1578,13 +1608,28 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new SameCovariateMixedTwoPathFunction(
 							pEffectInfo->variableName(),
-							networkName, covariateName, false),
+							networkName, covariateName, true, false),
 			new ConditionalFunction(
 				new MissingCovariatePredicate(covariateName),
 				0,
 				new SameCovariateMixedTwoPathFunction(
 							pEffectInfo->variableName(),
-							networkName, covariateName, true)));
+							networkName, covariateName, true, true)));
+	}
+	else if (effectName == "diffWXClosure")
+	{
+		string networkName = pEffectInfo->interactionName1();
+		string covariateName = pEffectInfo->interactionName2();
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new SameCovariateMixedTwoPathFunction(
+							pEffectInfo->variableName(),
+							networkName, covariateName, false, false),
+			new ConditionalFunction(
+				new MissingCovariatePredicate(covariateName),
+				0,
+				new SameCovariateMixedTwoPathFunction(
+							pEffectInfo->variableName(),
+							networkName, covariateName, false, true)));
 	}
 	else if (effectName == "homWXClosure")
 	{
@@ -1594,7 +1639,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			new ConditionalFunction(new EqualCovariatePredicate(covariateName),
 				new SameCovariateMixedTwoPathFunction(
 								pEffectInfo->variableName(),
-								networkName, covariateName, false), 0),
+								networkName, covariateName, true, false), 0),
 			new ConditionalFunction(
 				new MissingCovariatePredicate(covariateName),
 				0,
@@ -1602,7 +1647,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 					new EqualCovariatePredicate(covariateName),
 					new SameCovariateMixedTwoPathFunction(
 							pEffectInfo->variableName(),
-							networkName, covariateName, true), 0)));
+							networkName, covariateName, true, true), 0)));
 	}
 	else if (effectName == "jumpWXClosure")
 	{
@@ -1613,7 +1658,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 				0,
 				new SameCovariateMixedTwoPathFunction(
 								pEffectInfo->variableName(),
-								networkName, covariateName, false)),
+								networkName, covariateName, true, false)),
 			new ConditionalFunction(
 				new MissingCovariatePredicate(covariateName),
 				0,
@@ -1622,7 +1667,37 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 					0,
 					new SameCovariateMixedTwoPathFunction(
 							pEffectInfo->variableName(),
-							networkName, covariateName, true))));
+							networkName, covariateName, true, true))));
+	}
+	else if (effectName == "sameXWClosure")
+	{
+		string networkName = pEffectInfo->interactionName1();
+		string covariateName = pEffectInfo->interactionName2();
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new SameCovariateMixedTwoPathFunction(networkName, 
+							pEffectInfo->variableName(),
+							covariateName, true, false),
+			new ConditionalFunction(
+				new MissingCovariatePredicate(covariateName),
+				0,
+				new SameCovariateMixedTwoPathFunction(networkName, 
+							pEffectInfo->variableName(),
+							covariateName, true, true)));
+	}
+	else if (effectName == "diffXWClosure")
+	{
+		string networkName = pEffectInfo->interactionName1();
+		string covariateName = pEffectInfo->interactionName2();
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new SameCovariateMixedTwoPathFunction(networkName, 
+							pEffectInfo->variableName(),
+							covariateName, false, false),
+			new ConditionalFunction(
+				new MissingCovariatePredicate(covariateName),
+				0,
+				new SameCovariateMixedTwoPathFunction(networkName, 
+							pEffectInfo->variableName(),
+							covariateName, false, true)));
 	}
 	else if (effectName == "closure")
 	{
