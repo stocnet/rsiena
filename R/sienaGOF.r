@@ -23,23 +23,50 @@ sienaGOF <- function(
 	## require(MASS)
 	## require(Matrix)
 	##	Check input
-	if (sienaFitObject$maxlike)
+	# fitList indicates whether the sienaFitObject is a list of
+	# sienaFit objects, or a single such object.
+	fitList <- FALSE
+	if (inherits(sienaFitObject, "sienaFit"))
+	{
+		sFO <- sienaFitObject
+	}
+	else
+	{
+		if (all(vapply(sienaFitObject, function(x){inherits(x, "sienaFit")}, FUN.VALUE="TRUE")))		
+		{
+			sFO <- sienaFitObject[[1]]
+# If fitList, it is assumed that all elements of this list
+# have the same specification, and the first one is used
+# to deduce this information.
+			fitList <- TRUE
+			if (!inherits(sFO, "sienaFit"))
+			{
+				stop("The first parameter of sienaGOF must be a sienaFit object or a list of such objects")
+			}	
+			if (length(period) > 1)
+			{
+				stop("For operating on a list of sienaFit objects, only a single period can be used.")
+			}
+		}
+	}
+	
+	if (sFO$maxlike)
 	{
 		stop(
 	"sienaGOF can only operate on results from Method of Moments estimation.")
 	}
-	if (! sienaFitObject$returnDeps)
+	if (! sFO$returnDeps)
 	{
 		stop("You must instruct siena07 to return the simulated networks")
 	}
-	if (!is.null(sienaFitObject$sf2.byIteration))
+	if (!is.null(sFO$sf2.byIteration))
 	{
-		if (!sienaFitObject$sf2.byIteration)
+		if (!sFO$sf2.byIteration)
     	{
         	stop("sienaGOF needs sf2 by iterations (use lessMem=FALSE)")
     	}
 	}
-	iterations <- length(sienaFitObject$sims)
+	iterations <- length(sFO$sims)
 	if (iterations < 1)
 	{
 		stop("You need at least one iteration.")
@@ -52,10 +79,19 @@ sienaGOF <- function(
 	{
 		stop("You need to supply the parameter <<auxiliaryFunction>>.")
 	}
-	groups <- length(sienaFitObject$f$groupNames)
-	if (is.null(tested))
+	if (is.null(sFO$f[[groupName]]$depvars[[varName]]))
 	{
-		tested <- sienaFitObject$test
+		stop("There is a mismatch between the sienaFitObject and the groupName or varName.")
+	}
+	
+	groups <- length(sFO$f$groupNames)
+	if (fitList)
+	{
+		tested <- FALSE
+	}
+	else if (is.null(tested))
+	{
+		tested <- sFO$test
 	}
 	else
 	{
@@ -63,13 +99,13 @@ sienaGOF <- function(
 		{
 			stop('tested should be a logical vector')
 		}
-		if ((length(tested) != length(sienaFitObject$test)) | (all(tested == FALSE)))
+		if ((length(tested) != length(sFO$test)) | (all(tested == FALSE)))
 		{
-			tested <- rep(FALSE, length(sienaFitObject$test))
+			tested <- rep(FALSE, length(sFO$test))
 		}
 		else
 		{
-			tested <- (tested & sienaFitObject$test)
+			tested <- (tested & sFO$test)
 		}
 	}
 	if (verbose)
@@ -82,19 +118,41 @@ sienaGOF <- function(
 		{
 			message("Detected ", iterations, " iterations and ", groups, " groups.")
 		}
+		if (fitList)
+		{
+			message("The data for analysis is a list of ", length(sienaFitObject),
+						"sienaFit objects.")
+		}
 	}
 
-	if (is.null(period) )
+	if (fitList)
 	{
-		period <- 1:(attr(sienaFitObject$f[[1]]$depvars[[1]], "netdims")[3] - 1)
+		if (is.null(period) )
+		{
+			period <- 1
+		}
+		auxFunction <- function(i, sienaFitObject, j, groupName, varName, ...){
+			auxiliaryFunction(i, sienaFitObject[[j]]$f,
+						sienaFitObject[[j]]$sims, period, groupName, varName, ...)}
+		period <- seq_along(sienaFitObject) 
+		# from now on, period will denote the rank number of the sienaFit object.
+	}	
+	else
+	{
+		if (is.null(period) )
+		{
+			period <- 1:(attr(sienaFitObject$f[[1]]$depvars[[1]], "netdims")[3] - 1)
+		}
+		auxFunction <- function(i, sienaFitObject, j, groupName, varName, ...){
+			auxiliaryFunction(i, sienaFitObject$f,
+						sienaFitObject$sims, j, groupName, varName, ...)}
 	}
 
 	obsStatsByPeriod <- lapply(period, function (j) {
 						matrix(
-						auxiliaryFunction(NULL,
-								sienaFitObject$f,
-				sienaFitObject$sims, j, groupName, varName, ...)
-						, nrow=1)
+						auxFunction(NULL,
+								sienaFitObject, j, groupName, varName, ...)
+								, nrow=1)
 				})
 	if (join)
 	{
@@ -106,8 +164,8 @@ sienaGOF <- function(
 		obsStats <- obsStatsByPeriod
 		names(obsStats) <- paste("Period", period)
 	}
-	plotKey <- names(auxiliaryFunction(NULL, sienaFitObject$f,
-				sienaFitObject$sims, 1, groupName, varName, ...))
+	plotKey <- names(auxiliaryFunction(NULL, sFO$f,
+				sFO$sims, 1, groupName, varName, ...))
 	class(obsStats) <- "observedAuxiliaryStatistics"
 	attr(obsStats,"auxiliaryStatisticName") <-
 			deparse(substitute(auxiliaryFunction))
@@ -130,8 +188,8 @@ sienaGOF <- function(
 		ttcSimulation <- system.time(simStatsByPeriod <-
 			lapply(period, function (j) {
 				simStatsByPeriod <- parSapply(cluster, 1:iterations,
-					function (i){auxiliaryFunction(i, sienaFitObject$f,
-						sienaFitObject$sims, j, groupName, varName, ...)})
+					function (i){auxFunction(i, sienaFitObject,
+										j, groupName, varName, ...)})
 				simStatsByPeriod <- matrix(simStatsByPeriod, ncol=iterations)
 				dimnames(simStatsByPeriod)[[1]] <-	plotKey
 				dimnames(simStatsByPeriod)[[2]] <-	1:iterations
@@ -155,9 +213,8 @@ sienaGOF <- function(
 										" calculations\r")
 								flush.console()
 								}
-								auxiliaryFunction(i,
-										sienaFitObject$f,
-										sienaFitObject$sims, j, groupName, varName, ...)
+								auxFunction(i, sienaFitObject,
+										j, groupName, varName, ...)
 						})
 					if (verbose)
 					{
@@ -203,6 +260,7 @@ sienaGOF <- function(
 	attr(simStats,"time") <- ttcSimulation
 
 	applyTest <-  function (observed, simulated)
+# Test using Mahalanobis distances
 	{
 		if (!inherits(simulated,"matrix"))
 		{
@@ -239,7 +297,7 @@ sienaGOF <- function(
 		{
 			centeredSimulations <- t(centeredSimulations)
 		}
-		mhd <- function(x)
+		mhd <- function(x) # Mahalanobis distance
 		{
 			x %*% ainv %*% x
 		}
@@ -794,8 +852,7 @@ plot.sienaGOF <- function (x, center=FALSE, scale=FALSE, violin=TRUE,
 		yperc.upper <- sapply(1:ncol(sims), function(i)
 					sort(sims[,i])[ind.upper]  )
 		if (violin) {
-			panel.violin(x, y, box.ratio=box.ratio, col = "transparent",
-					bw="nrd", ...)
+			panel.violin(x, y, box.ratio=box.ratio, col = "transparent", ...)
 		}
 		panel.bwplot(x, y, box.ratio=.1, fill = "gray", ...)
 		panel.xyplot(xAxis, yperc.lower, lty=3, col = "gray", lwd=3, type="l",

@@ -114,7 +114,15 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 			stop("not valid siena data object")
 		}
 		## check the effects object
-		defaultEffects <- getEffects(data)
+		if (!is.null(attr(effects, "onePeriodSde")))
+		{
+			oPS <- attr(effects, "onePeriodSde")
+		}
+		else
+		{
+			oPS <- FALSE
+		}
+		defaultEffects <- getEffects(data, onePeriodSde=oPS)
 		if (is.null(effects))
 		{
 			cat("You specified no effects. The default effects are used.\n")
@@ -146,14 +154,39 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		{
 			stop("effects is not a data.frame")
 		}
+		effectsVersion <- attr(effects, "version")
+		if (is.null(effectsVersion))
+		{
+			differentVersions <- TRUE
+		}
+		else
+		{
+			differentVersions <- (effectsVersion != attr(defaultEffects, "version"))
+		}
+		if ((differentVersions) & 
+			(any((effects$shortName %in% c("unspInt","behUnspInt"))&effects$include)))
+		{
+			warning("Your effects object contains interaction effects and was made
+			  using a different RSiena version. 
+			  Make sure the interaction effects are the same.")
+		}
 		if (x$useStdInits)
 		{
-			if (any(effects$effectName != defaultEffects$effectName))
+		# The restriction to effects with shortname not unspInt or behUnspInt
+		# is because of the possibility to call getEffects with
+		# non-default values of nintn and behNintn.
+			effectsr <- (!(effects$shortName %in% c("unspInt","behUnspInt")))
+			defEffectsr <- (!(defaultEffects$shortName %in% c("unspInt","behUnspInt")))
+			if (any(effects$shortName[effectsr] != defaultEffects$shortName[defEffectsr]))
 			{
+				cat("There seems to be a mismatch between data set and effects object.\n")
+				cat("This may have been caused by the use of different versions of RSiena")
+				cat("for creating the effects object and now running siena07.\n")
+				cat("Try creating the effects object with the current version of RSiena.")
 				stop("Cannot use standard initialisation with a ",
 					"different effect list")
 			}
-			effects$initialValue <- defaultEffects$initialValue
+			effects$initialValue[effectsr] <- defaultEffects$initialValue[defEffectsr]
 		}
 		if ((sum(!effects$fix[effects$include]) == 0) & (!x$simOnly))
 		{
@@ -282,7 +315,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 
 		## split and rejoin both versions before continuing
 		depvarnames <- names(data[[1]]$depvars)
-		
+
 		if (x$maxlike & (length(depvarnames) > 1))
 		{
 			if(x$pridg + x$prcdg + x$prper + x$pripr + x$prdpr + x$prirms +
@@ -808,9 +841,6 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 			z$thetaMat <- matrix(z$theta, nrow=nGroup, ncol=z$pp, byrow=TRUE)
 		}
 	}
-	# Here came an error
-	# Error: INTEGER() can only be applied to a 'integer', not a 'double'
-	# This was because storage.mode had not been set properly for some variable
 	if (x$maxlike)
 	{
 		if (!initC)
@@ -2024,6 +2054,7 @@ unpackCompositionChange <- function(compositionChange)
     attr(exog, "nodeSet") <- attr(compositionChange, "nodeSet")
     exog
 }
+
 ##@fixUpEffectNames siena07 Replace # and construct interaction names
 fixUpEffectNames <- function(effects)
 {

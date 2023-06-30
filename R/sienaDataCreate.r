@@ -994,13 +994,15 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 				attr(depvars[[i]], "noMissing") <- noMissing
 		   }
 		}
+			
+		if (someOnly)
+		{
+		message("For dependent variable ", names(depvars)[i], ", in some periods,")
+		message("there are only increases, or only decreases.")
+		message("This will be respected in the simulations. ")
+		message("If this is not desired, use allowOnly=FALSE when creating the dependent variable.")
+		}
 		attr(depvars[[i]], 'name') <- names(depvars)[i]
-	}
-	if (someOnly)
-	{
-message('For some variables, in some periods, there are only increases, or only decreases.')
-message('This will be respected in the simulations. ')
-message('If this is not desired, use allowOnly=FALSE when creating the dependent variables.')
 	}
 	## create the object
 	z <- NULL

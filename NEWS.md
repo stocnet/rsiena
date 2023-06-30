@@ -1,3 +1,46 @@
+# RSiena 1.3.23
+
+## 
+   
+2023-06-29
+
+## Changes in RSiena:
+### New effects: 
+  * New effects `diffWXClosure`, `sameWWClosure`,  `diffWWClosure`, 
+    `diffXWClosure`, `sameXWClosure`, `unequalX`.
+  * `JoutMix` made available for bipartite dependent networks.
+  * For continuous behavior variables depending on a bipartite dependent 
+    network, the effect group `continuousBipartiteObjective` was created,
+    with effects `outdeg`, `outdegSqrt`, and `isolateOut`. 
+  * `sameXOutAct` and `diffXOutAct` now have a parameter 2 for `sqrt`.
+### Corrections:
+  * In `initializeFRAN`, the call of `getEffects` now is dependent on 
+    the value of attribute "onePeriodSde".
+  * In `sienaDataCreate`, the warning message that there is at least one
+    "upOnly" period now is made for each dependent variable instead of only the last.
+  * In `getEffects`, the effects object was given an attribute "onePeriodSde"
+    and an attribute "version". 
+  * In `initializeFRAN`, the comparison between `effects` and 
+    `defaultEffects` now is based on `shortName` instead of `effectName` 
+    (`effectName` was changed if there are interaction effects),
+    excluding the lines in the effects object for "unspInt" and "behUnspInt" 
+    to allow effects objects created 
+    with non-default values of "nintn" and "behNintn".
+### New functionality:
+  * The model for continuous behavior variables seems to work now,
+    because of the first correction mentioned above.
+  * `sienaGOF` now also accepts a list of `sienaFit` objects.
+### Improved coding:
+  * Better text for stop in `initializeFRAN` when there is a mismatch
+    between effects objects disabling the creation of interaction effects.
+  * Warning in `initializeFRAN` if the version of the effects object 
+    is not current and the effects object contains interaction effects
+    (then it is possible that the interacting effects are chosen incorrectly,
+    even though the `effectName` of the interaction seems OK).
+  * Better error message in `sienaGOF` if `groupName` or `varName` is incorrect.
+  * Use default bandwidth selection in violin plot for `sienaGOF`
+    (the use of "nrd" sometimes led to absent plots because of negative bw). 
+
 # RSiena 1.3.22
 
 ## 
@@ -29,8 +72,6 @@
 2023-04-22
 
 ## Changes in RSiena:  
-### Coding:
-### New effects:
 ### Corrections:
   * `updateSpecification` (in `effectsMethods`) now also updates 
     internal parameter values.

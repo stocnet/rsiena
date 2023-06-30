@@ -31,9 +31,11 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
         period=1, showAll=FALSE)
 }
 \arguments{
-  \item{sienaFitObject}{Results of class \code{\link{sienaFit}}, produced by a
+  \item{sienaFitObject}{An object of class \code{\link{sienaFit}}, produced by a
     call to \code{\link{siena07}} with \code{returnDeps = TRUE} and
-    \code{maxlike=FALSE} (the latter is the default, the former is not).}
+    \code{maxlike=FALSE} (the latter is the default, the former is not);
+	or a list of such objects; if a list, then the first period 
+	of each \code{\link{sienaFit}} object will be used.}
   \item{auxiliaryFunction}{Function to be used to calculate
     the auxiliary statistics;
     this can be a user-defined function, e.g. depending on the \code{sna}
