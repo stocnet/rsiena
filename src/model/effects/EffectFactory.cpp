@@ -47,7 +47,6 @@
 #include "model/effects/generic/MixedTwoStepFunction.h"
 #include "model/effects/generic/WeightedMixedTwoPathFunction.h"
 #include "model/effects/generic/ConditionalFunction.h"
-#include "model/effects/generic/DifferentCovariatePredicate.h"
 #include "model/effects/generic/EqualCovariatePredicate.h"
 #include "model/effects/generic/MissingCovariatePredicate.h"
 #include "model/effects/generic/DoubleOutActFunction.h"

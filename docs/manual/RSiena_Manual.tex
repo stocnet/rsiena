@@ -10413,15 +10413,19 @@ the following effects are available:
 \texttt{(sameXOutAct)} defined by the
  squared number of ties to those
  others who have the same covariate value as $i$,\\
- $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \sum_h x_{ih}\, I\{v_i = v_h \} $;\\
+ $s^{\rm net}_{i\vit}(x) =  \sum_j \big(x_{ij} \, I\{v_i = v_j \}\big)^2 $;\\
  for internal effect parameter $p=2$, it is defined by\\
- $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \sqrt{\sum_h x_{ih}\, I\{v_i = v_h \}} $;\\
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \, I\{v_i = v_j \} 
+            \sqrt{\sum_h x_{ih}\, I\{v_i = v_h \}} $;\\
 
  \item {\em outdegree activity to different covariate}
 \texttt{(diffXOutAct)} defined by the
  squared number of ties to those
  others who have a different covariate value than $i$,\\
- $s^{\rm net}_{i\vit}(x) = \big(\sum_j x_{ij} \,I\{v_i \neq v_j \}\big)^2 $;
+ $s^{\rm net}_{i\vit}(x) = \big(\sum_j x_{ij} \,I\{v_i \neq v_j \}\big)^2 $;\\
+ for internal effect parameter $p=2$, it is defined by\\
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \, I\{v_i \neq v_j \}
+             \sqrt{\sum_h x_{ih}\, I\{v_i \neq v_h \}} $;\\
 
 
  \item {\em outdegree activity to homogeneous covariate}
