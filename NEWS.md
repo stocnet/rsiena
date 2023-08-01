@@ -1,10 +1,28 @@
-# RSiena 1.3.23
+# RSiena 1.3.24
 
 ## 
+   
+2023-08-01
+
+## Changes in RSiena:
+
+### Corrections:
+  * In `getEffects`, the effects object was given an attribute `version`,
+    which was not done correctly in version 1.3.23.
+    (This led to always giving a warning if any interaction effects were 
+    specified.)
+  * Corrections of implementation of acceptance by `sienaGOF` of a list of 
+    `sienaFit` objects (was not correct in version 1.3.23). 
+### Additional testing:
+  * function `includeInteraction` used in "parallel.R". 
+
+
+# RSiena 1.3.23
    
 2023-06-29
 
 ## Changes in RSiena:
+
 ### New effects: 
   * New effects `diffWXClosure`, `sameWWClosure`,  `diffWWClosure`, 
     `diffXWClosure`, `sameXWClosure`, `unequalX`.
@@ -16,16 +34,20 @@
 ### Corrections:
   * In `initializeFRAN`, the call of `getEffects` now is dependent on 
     the value of attribute "onePeriodSde".
+  * The error was corrected that occurred if `useStdInits = TRUE` 
+    in `sienaAlgorithmCreate` and the effects object includes 
+    interaction effects. 
   * In `sienaDataCreate`, the warning message that there is at least one
-    "upOnly" period now is made for each dependent variable instead of only the last.
-  * In `getEffects`, the effects object was given an attribute "onePeriodSde"
-    and an attribute "version". 
+    `upOnly` period now is made for each dependent variable instead of 
+    only the last.
+  * In `getEffects`, the effects object was given an attribute `onePeriodSde`
+    and an attribute `version`. 
   * In `initializeFRAN`, the comparison between `effects` and 
     `defaultEffects` now is based on `shortName` instead of `effectName` 
     (`effectName` was changed if there are interaction effects),
-    excluding the lines in the effects object for "unspInt" and "behUnspInt" 
+    excluding the lines in the effects object for `unspInt` and `behUnspInt`
     to allow effects objects created 
-    with non-default values of "nintn" and "behNintn".
+    with non-default values of `nintn` and `behNintn`.
 ### New functionality:
   * The model for continuous behavior variables seems to work now,
     because of the first correction mentioned above.
@@ -77,8 +99,8 @@
     internal parameter values.
   * In `TriadCensus`, the empty network will not lead to an error
     but be reported with the correct triad census.
-  * For `reciAct`, check whether internal parameter ==2 replaced by check whether
-    absolute difference from 2 is less than 0.001.
+  * For `reciAct`, check whether internal parameter ==2 replaced by check 
+    whether absolute difference from 2 is less than 0.001.
   * In `phase2.r`, `z$sd` is calculated using `sqrt(pmax(..., 0))` to avoid the
     extremely rare case of a negative calculated variance.
   * In `sienaDataCreate`, handling of structurally determined values 
@@ -135,7 +157,7 @@
    for probabilities of MH steps, now summarized in `prML`; with a new default.
   * List elements `accepts`, `rejects`, `aborts` for `sienaFit` objects
     produced by ML estimation improved/corrected by reorganizing them in C++.
-  * List element ac3 added to `sienaFit` object if `maxlike`.
+  * List element `ac3` added to `sienaFit` object if `maxlike`.
 
 # RSiena 1.3.17
 
@@ -167,7 +189,7 @@
     (these had got lost in some way...).
 ### Updates:
   * All occurrences of `http` in `R` and `Rd` files changed to `https`.
-  * `seq_len` used and superfluous c() omitted in various R files.
+  * `seq_len` used and superfluous `c()` omitted in various R files.
 
 # RSiena 1.3.15
 
@@ -181,7 +203,7 @@
   * `siena08`: correct p-value `pTsq` for overall test statistic `Tsq`
   * `print.summary.sienaMeta`, `siena07`, `print01Report`: drop RForge revision.
   * Correct "objname" to "projname" in `meta.table` (`siena08.r`).
-  * Simplify LaTeX output of `meta.table`. 
+  * Simplify `LaTeX` output of `meta.table`. 
   * `seq_along` and `seq_len` used in `print01Report`. 
 
 # RSiena 1.3.14
@@ -230,8 +252,8 @@
   * `sigmas` and `meansigmas` added to `sienaRI` object.
   * Print of standard deviations in the `sienaRI` object for `printSigma=TRUE` 
     changed to using averages at the variance level.
-  * If `returnThetas` in the call of `siena07`, also simulated estimation statistics
-    during Phase 2 (deviations from targets) are returned.
+  * If `returnThetas` in the call of `siena07`, also simulated estimation 
+    statistics during Phase 2 (deviations from targets) are returned.
 ### Effects:
   * Several new effects related to primary setting:
     `nonPCompress`, `primCompress`, `primary`, `primDegAct`,
@@ -406,9 +428,9 @@
      are missing, and also if all non-missing values are the same.
 
 ### Bug corrections  
-   * if a `sienaGroup` object is given to `sienaBayes` and some of the covariates
-     are constant in one or more of the groups, the ``simX` effect will 
-     not run into an error any more; this is achieved by the first change
+   * if a `sienaGroup` object is given to `sienaBayes` and some of the 
+     covariates are constant in one or more of the groups, the ``simX` effect 
+     will not run into an error any more; this is achieved by the first change
      mentioned above for `sienaGroupCreate`.
    * `sienaFitThetaTable` in `sienaprint.r` was corrected for `from sienaBayes`.
    * `siena.table` was corrected for `sienaBayes` objects, and this possibility
@@ -557,44 +579,45 @@
 2021-03-16
 
 ### Effects:
-   * New effects: homXTransRecTrip, toU.
-   * This implied creation of a new effect class dyadANetNetObjective.
-   * sqrt versions for parameter 2 for the effects to, toBack, toRecip,
-     from, fromMutual.
-   * Effects to, toU, toBack, toRecip, MixedInXW are dyadic.
-   * Reinstated effect MixedInXW, also with sqrt version for parameter 2.
-   * Dropped effect to.2 (identical to `to`) 
-     and MixedInWX (identical to `toBack`).
+   * New effects: `homXTransRecTrip`, `toU`.
+   * This implied creation of a new effect class `dyadANetNetObjective`.
+   * sqrt versions for parameter 2 for the effects `to`, `toBack`, `toRecip`,
+     `from`, `fromMutual`.
+   * Effects `to`, `toU`, `toBack`, `toRecip`, `MixedInXW` are dyadic.
+   * Reinstated effect `MixedInXW`, also with sqrt version for parameter 2.
+   * Dropped effect `to.2` (identical to `to`) 
+     and `MixedInWX` (identical to `toBack`).
 
 ### Improvements of functionality:
-   * effectsDocumentation now also includes gmm effects (at the bottom).
-   * Improved fromObjectToLaTeX in meta.table and siena.table.
+   * `effectsDocumentation` now also includes `gmm` effects (at the bottom).
+   * Improved `fromObjectToLaTeX` in `meta.table` and `siena.table`.
    * Display of deviations from targets changed to after subtraction of targets.
-   * Stop if no parameters are estimated and simOnly is FALSE (initializeFRAN).
+   * Stop if no parameters are estimated and `simOnly` is FALSE (initializeFRAN).
 
 ### Reduction of functionality:
-   * Vignette basicRSiena.Rmd dropped (available at website).
+   * Vignette `basicRSiena.Rmd` dropped (available at website).
 
 ### Documentation:
    * Extended description of GMoM in the manual.
-   * Description of toBack and toRecip in manual.
+   * Description of `toBack` and `toRecip` in manual.
    * Changed keyword for some help pages.
 
 ### Corrections / safeguards
    * Correction in phase3.2 of a bug that sometimes led to an error message 
-     if simOnly.
-   * oneModeNet in effects.r: some further cases where the comparison of
+     if `simOnly`.
+   * `oneModeNet` in `effects.r`: some further cases where the comparison of
      types with `behavior` is replaced by 
      comparison with c(`behavior`, `continuous`).
-   * Extra check in phase1.2.
-   * Temporarily drop the final part of test16,
+   * Extra check in `phase1.2`.
+   * Temporarily drop the final part of `test16`,
      in view of an irreproducible error.
 
 ### More neat code:
-   * Dropped MixedOutStarFunction, MixedInStarFunction, MixedTwoPathFunction,
-     (their functionality replaced by MixedTwoStepFunction).
-   * Dropped MixedTwoStepFunction from effects 
-     (its place is in effects\generic, and that's were it is).
+   * Dropped `MixedOutStarFunction`, `MixedInStarFunction`, 
+     `MixedTwoPathFunction`, 
+     (their functionality replaced by `MixedTwoStepFunction`).
+   * Dropped `MixedTwoStepFunction` from effects 
+     (its place is in `effects\generic`, and that's were it is).
 
 
 # RSiena 1.2-31
@@ -605,12 +628,12 @@
 
    * Generalized method of Moments implemented (Viviana Amati):
      see docs\manual\Changes\_RSiena\_GMoM.tex;
-     new function includeGMoMStatistics, extended functionality of siena07.
+     new function `includeGMoMStatistics`, extended functionality of `siena07`.
    * Require R >= 3.5.0.
-   * xtable added to `Imports` (used to be in `Suggests`).
-   * dyadicCov made to accept also changing dyadic covariates.
-   * Used `verbose` condition in sienaGOF also for last console output.
-   * new arguments plotAboveThreshold and verbose for funnelPlot.
+   * `xtable` added to `Imports` (used to be in `Suggests`).
+   * `dyadicCov` made to accept also changing dyadic covariates.
+   * Used `verbose` condition in `sienaGOF` also for last console output.
+   * new arguments `plotAboveThreshold` and `verbose` for `funnelPlot`.
 
 # RSiena 1.2.30
 
@@ -628,26 +651,26 @@
 2020-12-10
 
    * New effects (due to Christoph Stadtfeld):
-     transtrip.FR, transtrip.FE, transtrip.EE, WWX.EE, WWX.FR, WXX.FE,
-     WXX.ER, XWX.ER, XWX.FE, to.2, toBack, toRecip.
-   * New effect transtripX.
-   * New functions meta.table and funnelPlot.
-   * For effect from.w.ind, option parameter=-1 added.
-   * The to effect is an ego effect.
+     `transtrip.FR`, `transtrip.FE`, `transtrip.EE`, `WWX.EE`, `WWX.FR`, 
+     `WXX.FE`, `WXX.ER`, `XWX.ER`, `XWX.FE`, `to.2`, `toBack`, `toRecip`.
+   * New effect `transtripX`.
+   * New functions `meta.table` and `funnelPlot`.
+   * For effect `from.w.ind`, option parameter=-1 added.
+   * The `to` effect is an ego effect.
    * New parameter `tested` in sienaGOF.
-   * For siena.table, some of the effectNames changed to nice strings,
-     so that LaTeX can run without errors if type=`tex`.
-   * The object produced by siena08 now has IWLS estimates more easily 
-     accessible, as object$muhat and object$se.muhat.
-   * Error message in sienaTimeTest for sienaFit objects produced with
-     lessMem=TRUE.
+   * For `siena.table`, some of the effectNames changed to nice strings,
+     so that `LaTeX` can run without errors if `type=tex`.
+   * The object produced by `siena08` now has IWLS estimates more easily 
+     accessible, as `object$muhat` and `object$se.muhat`.
+   * Error message in `sienaTimeTest` for `sienaFit` objects produced with
+     `lessMem=TRUE`.
    * More extensive error message for error in named vectors in algorithm object
-     (checkNames in initializeFRAN).
-   * For sienaDataCreate: more extensive error message, and class(...) replaced
-     by class(...)[1]. 
-   * multiplication factor added to print.sienaAlgorithm if maxlike.
-   * In sienaAlgorithmCreate: requirements for mult corrected in help page.
-   * In sienaAlgorithmCreate, use the definitions for projname=NULL
+     (`checkNames` in `initializeFRAN`).
+   * For `sienaDataCreate`: more extensive error message, and `class(...)` 
+     replaced by `class(...)[1]`. 
+   * multiplication factor added to `print.sienaAlgorithm` if `maxlike`.
+   * In `sienaAlgorithmCreate`: requirements for `mult` corrected in help page.
+   * In `sienaAlgorithmCreate`, use the definitions for projname=NULL
      also if any environment variable _R_CHECK* is set. 
 
 
@@ -673,18 +696,18 @@
      is symmetric, the higher network is also symmetric.
    * In `sienaDataConstraint`, if type is `disjoint` or `atLeastOne`,
      the constraint is also implemented for the pair (net2, net1).
-   * Vignette basicRSiena added (was earlier available as a script);
+   * Vignette `basicRSiena` added (was earlier available as a script);
      thanks to James Hollway.
 
 # RSiena 1.2-26
 
 2020-09-17 
 
-   * Changed requirement for tcltk to `Suggests`, 
+   * Changed requirement for `tcltk` to `Suggests`, 
      and further modified / cleaned up DESCRIPTION.
    * In siena07: if `(!requireNamespace(tcltk))` set batch to TRUE.
-   * In NAMESPACE drop tcltk
-   * In sienaAlgorithmCreate, use the definitions for projname=NULL
+   * In NAMESPACE drop `tcltk`.
+   * In `sienaAlgorithmCreate`, use the definitions for projname=NULL
      also if any environment variable _R_CHECK* is set.
 
 

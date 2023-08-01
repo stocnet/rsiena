@@ -1785,11 +1785,7 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 		}
 	}
 	effects <- do.call(rbind, effects)
-	attr(effects, "version") <- packageDescription(pkgname, fields = "Version")
-	attr(effects, "starts") <- NULL
 	effects <- cbind(effects, effectNumber=1:nrow(effects))
-	attr(effects, "onePeriodSde") <- onePeriodSde
-	attr(effects, "settings") <- settingsList
 	cl <- class(effects)
 	if (groupx)
 		class(effects) <- c('sienaGroupEffects','sienaEffects', cl)
@@ -1807,6 +1803,10 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 	myrownames <- sub("Effects", "", myrownames)
 	myrownames <- sub("rate.rate", "rate", myrownames)
 	rownames(effects) <- myrownames
+	attr(effects, "version") <- packageDescription(pkgname, fields = "Version")
+	attr(effects, "starts") <- NULL
+	attr(effects, "onePeriodSde") <- onePeriodSde
+	attr(effects, "settings") <- settingsList
 	effects
 }
 
