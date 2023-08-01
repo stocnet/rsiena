@@ -34,8 +34,11 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
   \item{sienaFitObject}{An object of class \code{\link{sienaFit}}, produced by a
     call to \code{\link{siena07}} with \code{returnDeps = TRUE} and
     \code{maxlike=FALSE} (the latter is the default, the former is not);
-	or a list of such objects; if a list, then the first period 
-	of each \code{\link{sienaFit}} object will be used.}
+    or a list of such objects; if a list, then the first period
+    of each \code{\link{sienaFit}} object will be used.\cr
+    If this is a list of \code{\link{sienaFit}} objects,
+    where \code{sienaFitObject} is mentioned below, it refers to the first
+    element of this list.}
   \item{auxiliaryFunction}{Function to be used to calculate
     the auxiliary statistics;
     this can be a user-defined function, e.g. depending on the \code{sna}
@@ -53,7 +56,9 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
     and \dots are further arguments (like \code{levls} in the examples below
     and in \code{\link{sienaGOF-auxiliary}}).}
   \item{period}{Vector of period(s) to be used (may run from 1 to
-    number of waves - 1). Has an effect only if \code{join=FALSE}.}
+    number of waves - 1). Has an effect only if \code{join=FALSE}.\cr
+    May be only a single number if \code{sienaFitObject} is a list of
+    \code{\link{sienaFit}} objects.}
   \item{verbose}{Whether to print intermediate results. This may give some
        peace of mind to the user because calculations can take some time.}
   \item{join}{Boolean: should sienaGOF do tests on all of the periods
@@ -68,8 +73,8 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
   \item{varName}{ Name of dependent variable.}
   \item{tested}{ A logical vector of length \code{sienaFitObject$pp}
           (number of parameters), indicating a subset of tested parameters;
-          or \code{NULL}, indicating all tested parameters; or \code{FALSE},
-          indicating nothing is to be tested.}
+          or \code{NULL}, indicating all tested parameters (see below);
+          or \code{FALSE}, indicating nothing is to be tested.}
   \item{giveNAWarning}{If \code{TRUE}, a warning is given if any simulated
         values are missing.}
   \item{x}{ Result from a call to sienaGOF. }

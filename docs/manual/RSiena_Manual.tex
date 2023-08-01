@@ -191,7 +191,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.3.23.
+This version was renewed for \RS version 1.3.24.
 \end{abstract}
 
 
@@ -1129,7 +1129,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.3.23).
+  identified by a version number (e.g.\ 1.3.24).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -10317,7 +10317,7 @@ the following effects are available:
  reciprocal dyads in which $i$ is situated,\\
  $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}x_{ji} ({\rm sim}^v_{ij} - \widehat{{\rm sim}^v}) $;
 
- \item \emph{same covariate}, which can also be called {\em covariate-related identity} 
+ \item \emph{same covariate}, which can also be called {\em covariate-related identity}
  \texttt{(sameX)},  defined by the
  number of ties of $i$ to all other actors $j$ who have
  exactly the same value on the covariate,\\
@@ -10329,7 +10329,7 @@ the following effects are available:
 \texttt{(sameXRecip)} defined by the
  number of reciprocated ties between $i$ and all other actors $j$ who have
  exactly the same value on the covariate,\\
- $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} x_{ji}\, I\{v_i = v_j \} $; 
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} x_{ji}\, I\{v_i = v_j \} $;
 
  \item \emph{different covariate}  \texttt{(unequalX)},  defined by the
  number of ties of $i$ to all other actors $j$ who have
@@ -10415,7 +10415,7 @@ the following effects are available:
  others who have the same covariate value as $i$,\\
  $s^{\rm net}_{i\vit}(x) =  \sum_j \big(x_{ij} \, I\{v_i = v_j \}\big)^2 $;\\
  for internal effect parameter $p=2$, it is defined by\\
- $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \, I\{v_i = v_j \} 
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \, I\{v_i = v_j \}
             \sqrt{\sum_h x_{ih}\, I\{v_i = v_h \}} $;\\
 
  \item {\em outdegree activity to different covariate}
@@ -15911,12 +15911,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.3.23.tar.gz|\\
+\verb|R CMD check RSiena_1.3.24.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.3.23.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.3.24.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16933,6 +16933,9 @@ For more complete information about changes,
 consult the \texttt{NEWS.md} file (in earlier versions
 this was the \texttt{CHANGELOG} file) in the source code,
 and the \texttt{ONWS} (`old news') file, which contain more complete listings.
+The \texttt{NEWS.md} file can also be consulted during an \R session in which you
+have loaded the package \rs, provided you have also attached the
+packages \texttt{commonmark} and \texttt{xml2} to render the Markdown format.
 
 \begin{small}
 \begin{itemize} % Also update version number in earlier places.
@@ -16962,6 +16965,21 @@ Changes in RSiena:
 \fi
 
 
+\item 2023-07-21 GitHub, package version 1.3.24
+
+Changes in RSiena:
+\begin{itemize}
+\item Corrections:
+   \begin{itemize}
+   \item In `getEffects`, the effects object was given an attribute `version`
+     (was not correct in version 1.3.23).\\
+    (This led to always giving a warning if any interaction effects were
+    specified.)
+  \item Corrections of implementation of acceptance by `sienaGOF` of a list of
+    `sienaFit` objects (was not correct in version 1.3.23).
+    \end{itemize}
+\end{itemize}
+
 \item 2023-06-29 GitHub, package version 1.3.23.
 
 
@@ -16975,7 +16993,7 @@ Changes in RSiena:
   \item For continuous behavior variables depending on a bipartite dependent
     network, the effect group \sfn{continuousBipartiteObjective} was created,
     with effects \texttt{outdeg}, \texttt{outdegSqrt}, and \texttt{isolateOut}.
-  \item \texttt{sameXOutAct} and \texttt{diffXOutAct} now have a 
+  \item \texttt{sameXOutAct} and \texttt{diffXOutAct} now have a
   parameter 2 for $\sqrt{}$\ .
     \end{itemize}
 \item Improvements of functionality:
@@ -16983,7 +17001,7 @@ Changes in RSiena:
   \item The model for continuous behavior variables seems to work now.
    \item \sfn{sienaGOF} now also accepts a list of \sfn{sienaFit} objects.
   \item In \sfn{sienaDataCreate}, the warning message that there is at least one
-    "upOnly" period now is made for each dependent 
+    "upOnly" period now is made for each dependent
     variable instead of only the last.
   \item A warning is given if the used version of the effects object
     is not current and it contains interaction effects
@@ -16992,8 +17010,13 @@ Changes in RSiena:
    \item Various coding improvements and better texts of
    warnings and error messages.
   \item In the violin plot for \sfn{sienaGOF}, the default bandwidth selection
-     method is used  (the use of "nrd" sometimes led to absent plots 
+     method is used  (the use of "nrd" sometimes led to absent plots
      because of negative bandwidth).
+    \end{itemize}
+\item  Bug corrections:
+   \begin{itemize}
+  \item The error was corrected that occurred if \texttt{useStdInits = TRUE} in
+   \sfn{sienaAlgorithmCreate} and the effects object includes interaction effects.
     \end{itemize}
 \end{itemize}
 

@@ -32,7 +32,7 @@ sienaGOF <- function(
 	}
 	else
 	{
-		if (all(vapply(sienaFitObject, function(x){inherits(x, "sienaFit")}, FUN.VALUE="TRUE")))		
+		if (all(vapply(sienaFitObject, function(x){inherits(x, "sienaFit")}, FUN.VALUE=TRUE)))		
 		{
 			sFO <- sienaFitObject[[1]]
 # If fitList, it is assumed that all elements of this list
@@ -131,9 +131,10 @@ sienaGOF <- function(
 		{
 			period <- 1
 		}
+		per <- period # can only be a single number
 		auxFunction <- function(i, sienaFitObject, j, groupName, varName, ...){
 			auxiliaryFunction(i, sienaFitObject[[j]]$f,
-						sienaFitObject[[j]]$sims, period, groupName, varName, ...)}
+						sienaFitObject[[j]]$sims, per, groupName, varName, ...)}
 		period <- seq_along(sienaFitObject) 
 		# from now on, period will denote the rank number of the sienaFit object.
 	}	
@@ -147,7 +148,6 @@ sienaGOF <- function(
 			auxiliaryFunction(i, sienaFitObject$f,
 						sienaFitObject$sims, j, groupName, varName, ...)}
 	}
-
 	obsStatsByPeriod <- lapply(period, function (j) {
 						matrix(
 						auxFunction(NULL,
