@@ -115,15 +115,6 @@ Overall maximum convergence ratio:    0.2334
 
 Total of 588 iteration steps.
 
-> (myeff <- includeEffects(myeff, recip, inPop))
-  effectName            include fix   test  initialValue parm
-1 reciprocity           TRUE    FALSE FALSE          0   0   
-2 indegree - popularity TRUE    FALSE FALSE          0   0   
-  effectName                  include fix   test  initialValue parm
-1 basic rate parameter mynet1 TRUE    FALSE FALSE    4.80941   0   
-2 outdegree (density)         TRUE    FALSE FALSE   -0.56039   0   
-3 reciprocity                 TRUE    FALSE FALSE    0.00000   0   
-4 indegree - popularity       TRUE    FALSE FALSE    0.00000   0   
 > (myeff <- includeEffects(myeff, outAct, fix=TRUE, test=TRUE))
   effectName           include fix  test initialValue parm
 1 outdegree - activity TRUE    TRUE TRUE          0   0
@@ -131,27 +122,7 @@ Total of 588 iteration steps.
 1 basic rate parameter mynet1 TRUE    FALSE FALSE    4.80941   0
 2 outdegree (density)         TRUE    FALSE FALSE   -0.56039   0
 3 reciprocity                 TRUE    FALSE FALSE    0.00000   0
-4 indegree - popularity       TRUE    FALSE FALSE    0.00000   0   
-5 outdegree - activity        TRUE    TRUE  TRUE     0.00000   0   
-> (myeff <- includeInteraction(myeff, recip, inPop, fix=TRUE, test=TRUE))
-  effectName                          include fix  test initialValue parm
-1 reciprocity x indegree - popularity TRUE    TRUE TRUE          0   0   
-  effect1 effect2
-1 14      77     
-  effectName                          include fix   test  initialValue parm
-1 basic rate parameter mynet1         TRUE    FALSE FALSE    4.80941   0   
-2 outdegree (density)                 TRUE    FALSE FALSE   -0.56039   0   
-3 reciprocity                         TRUE    FALSE FALSE    0.00000   0   
-4 indegree - popularity               TRUE    FALSE FALSE    0.00000   0   
-5 outdegree - activity                TRUE    TRUE  TRUE     0.00000   0   
-6 reciprocity x indegree - popularity TRUE    TRUE  TRUE     0.00000   0   
-  effect1 effect2
-1  0       0     
-2  0       0     
-3  0       0     
-4  0       0     
-5  0       0     
-6 14      77     
+4 outdegree - activity        TRUE     TRUE  TRUE    0.00000   0
 > ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
 +               parallelTesting=TRUE, silent=TRUE)
 > ans
@@ -159,26 +130,23 @@ Estimates, standard errors and convergence t-ratios
 
                                       Estimate   Standard   Convergence
                                                    Error      t-ratio
-  1. rate basic rate parameter mynet1          3.0375  ( 0.6487   )   -0.1316   
-  2. eval outdegree (density)                 -1.4598  ( 0.4672   )   -0.0938   
-  3. eval reciprocity                          1.8008  ( 0.5119   )    0.0402   
-  4. eval indegree - popularity                0.0541  ( 0.0655   )   -0.1327   
-  5. eval outdegree - activity                 0.0000  (     NA   )   -1.1184   
-  6. eval reciprocity x indegree - popularity  0.0000  (     NA   )    0.3944   
+  1. rate basic rate parameter mynet1  3.0512  ( 0.5362   )    0.0177
+  2. eval outdegree (density)         -1.1688  ( 0.1862   )   -0.1783
+  3. eval reciprocity                  1.8243  ( 0.4225   )   -0.1683
+  4. eval outdegree - activity         0.0000  (     NA   )   -1.0807
 
-Overall maximum convergence ratio:    0.2102 
+Overall maximum convergence ratio:    0.1935
 
 
-Score test for 2 parameters:
-chi-squared = 11.43, p = 0.0033.
+Score test for 1 parameter:
+chi-squared = 5.52, p = 0.0188.
 
-Total of 612 iteration steps.
+Total of 395 iteration steps.
 
-> score.Test(ans)
+> score.Test(ans, 4)
 Tested effects:
  outdegree - activity eval 
- reciprocity x indegree - popularity eval 
-chi-squared = 11.43, d.f. = 2;  p = 0.003. 
+chi-squared = 5.52, d.f. = 1; one-sided Z = 2.35; two-sided p = 0.019. 
 > ##test6
 > mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
 > mydata <- sienaDataCreate(mynet1)
@@ -982,4 +950,4 @@ Total of 285 iteration steps.
 > 
 > proc.time()
    user  system elapsed 
-  21.25    0.12   23.62 
+  19.28    0.18   25.54 

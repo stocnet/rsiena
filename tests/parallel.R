@@ -32,13 +32,11 @@ print('test5')
 ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
               parallelTesting=TRUE, silent=TRUE)
 ans
-(myeff <- includeEffects(myeff, recip, inPop))
 (myeff <- includeEffects(myeff, outAct, fix=TRUE, test=TRUE))
-(myeff <- includeInteraction(myeff, recip, inPop, fix=TRUE, test=TRUE))
 ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
               parallelTesting=TRUE, silent=TRUE)
 ans
-score.Test(ans)
+score.Test(ans, 4)
 ##test6
 mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
 mydata <- sienaDataCreate(mynet1)

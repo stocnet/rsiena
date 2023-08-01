@@ -159,7 +159,6 @@ sienaModelCreate <- function(fn,
 		model$UniversalOffset <- Offset
 	}
 	model$randomSeed <- seed
-	model$prML <- prML
 	if (length (prML) == 1)
 	{
 		if (prML <= 1) # old default
