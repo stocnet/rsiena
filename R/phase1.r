@@ -391,9 +391,13 @@ CalculateDerivative <- function(z, x)
 	{
 		##note that warnings is never set as this piece of code is not executed
 		##if force_fin_diff_phase_1 is true so warning is zero on entry
-		##browser()
 		dfra <- derivativeFromScoresAndDeviations(z$ssc, z$sf2,
 			z$dfras, z$sscs, z$sf2s, z$sf2.byIteration, z$Phase1nits)
+		if (sum(z$f$types == "continuous") > 1) {
+		  stop("Analytic sde derivate in phase 1 not implemented for >1 continuous behavior")
+		} else if (sum(z$f$types == "continuous") == 1) {
+		  dfra <- updateDerivativeSde(z, dfra)
+		}
 		fromBayes <- 'fromBayes' %in% names(x)
 		z$jacobianwarn1 <- rep(FALSE, z$pp)
 		if ((any(diag(dfra)[!z$fixed] <= 0)) && (!fromBayes))
@@ -573,6 +577,71 @@ derivativeFromScoresAndDeviations <- function(scores, deviations, sumdfra,
 		dfra <- t(dfra) / nIter
 	}
 	dfra - matrix(rowSums(tmp), nrow=nParameters)
+}
+
+##@updateDerivativeSde siena07 replace dfra estimates for sde parameters by analytic approx.
+updateDerivativeSde <- function(z, dfra)
+{
+  wienerId <- which(sapply(z$effects$effectName, function(x) grepl("wiener", x, fixed = TRUE)))
+  feedbackId <- which(sapply(z$effects$effectName, function(x) grepl("feedback from", x, fixed = TRUE)))
+  interceptId <- which(sapply(z$effects$effectName, function(x) grepl("intercept", x, fixed = TRUE)))
+  scaleId <- which(z$effects$name == "sde")
+  onePeriodSde <- (length(wienerId) > 0) # option set by the user
+  nPeriods <- z$observations - 1
+  n <- length(z$f$Data1$nodeSets$Actors)
+    
+  g <- ifelse(onePeriodSde, z$effects$initialValue[wienerId], 1)
+  a <- z$effects$initialValue[feedbackId]
+  b <- z$effects$initialValue[interceptId]
+  tau <- z$effects$initialValue[scaleId]
+  y <- z$f$Data1$contbehavs[[1]][[1]]
+
+  if (onePeriodSde) {
+    dfra[c(wienerId, feedbackId, interceptId), c(wienerId, feedbackId, interceptId)] <- 0
+  } else {
+    dfra[c(feedbackId, interceptId, scaleId), c(feedbackId, interceptId, scaleId)] <- 0
+  } 
+  
+  for (i in 1:nPeriods) 
+  {
+    dSa_da <- sum(y[,i+1] * (tau[i] * exp(a*tau[i]) * y[,i] + 
+                  (1 + a*tau[i]*exp(a*tau[i]) - exp(a*tau[i])) * b / (a^2)))
+    dSa_db <- sum((exp(a*tau[i])-1)/a * y[,i+1])
+    dSa_dg <- 0
+    dSa_dt <- sum(exp(a*tau[i]) * (b + a * y[,i]) * y[,i+1])
+    
+    dSb_da <- sum(tau[i] * exp(a*tau[i]) * y[,i] + 
+                  (1 + a*tau[i]*exp(a*tau[i]) - exp(a*tau[i])) * b / (a^2))
+    dSb_db <- n * (exp(a*tau[i])-1)/a 
+    dSb_dg <- 0
+    dSb_dt <- sum(exp(a*tau[i]) * (b + a * y[,i]))
+    
+    dSgt_da <- sum(1/(2*a^3) * (-4*b^2 + a*g^2 - 4*a*b*y[,i] - 4*exp(a*tau[i])*(b+a*y[,i]) *
+                   (b * (-2+a*tau[i]) + a^2*tau[i]*y[,i]) + exp(2*a*tau[i]) *
+                   (-4*b^2 + 4*a^3*tau[i]*y[,i]^2 + 2*a^2*tau[i]*(g^2 + 4*b*y[,i]) - 
+                   a * (g^2 + 4*b*(-b*tau[i] + y[,i])))))
+    dSgt_db <- sum(1/(a^2) * (2*(-1+exp(a*tau[i]))^2 * (b+a*y[,i])))
+    dSgt_dg <- n * (exp(2*a*tau[i])-1) * g / a
+    dSgt_dt <- sum((-2*exp(a*tau[i])*(b + a*y[,i])^2 + 
+                    exp(2*a*tau[i])*(2*b^2 + a*(g^2 + 2*y[,i]*(2*b + a*y[,i])))) / a)
+
+    if (onePeriodSde) 
+    {
+      dfra[wienerId, c(wienerId, feedbackId, interceptId)] <- c(dSgt_dg, dSgt_da, dSgt_db)
+      dfra[feedbackId, c(wienerId, feedbackId, interceptId)] <- c(dSa_dg, dSa_da, dSa_db)
+      dfra[interceptId, c(wienerId, feedbackId, interceptId)] <- c(dSb_dg, dSb_da, dSb_db)
+    }
+    else
+    {
+      dfra[feedbackId, c(feedbackId, interceptId, scaleId[i])] <- 
+        dfra[feedbackId, c(feedbackId, interceptId, scaleId[i])] + c(dSa_da, dSa_db, dSa_dt)
+      dfra[interceptId, c(feedbackId, interceptId, scaleId[i])] <- 
+        dfra[interceptId, c(feedbackId, interceptId, scaleId[i])] + c(dSb_da, dSb_db, dSb_dt)
+      dfra[scaleId[i], c(feedbackId, interceptId, scaleId[i])] <- 
+        dfra[scaleId[i], c(feedbackId, interceptId, scaleId[i])] + c(dSgt_da, dSgt_db, dSgt_dt)
+    }
+  }
+  dfra
 }
 
 ##@makeZsmall siena07 create a minimal version of z to pass between processors.

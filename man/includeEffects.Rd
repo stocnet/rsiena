@@ -71,6 +71,11 @@ short names to identify the effects which should be included or excluded.}
   effect names, short names,
   and values of \code{interaction1} and \code{interaction2} (if any),
   is obtained by executing \code{\link{effectsDocumentation}(myeff)}.
+
+  The input names \code{interaction1} and \code{interaction2} do not themselves
+  refer to created interactions, but to dependence of the base effects on
+  other variables in the data set.
+  They are used to completely identify the effects.
 }
 \value{
     An updated version of the input effects object, with the

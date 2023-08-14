@@ -938,7 +938,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		z$periodNos <- attr(data, "periodNos")
 		z$f$myeffects <- NULL
 		z$f$myCompleteEffects <- NULL
-		if (!returnDeps)
+		if (!returnDeps && !any(z$f$types == "continuous"))
 		{
 			z$f[1:nGroup] <- NULL
 		}

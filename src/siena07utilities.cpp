@@ -54,6 +54,7 @@
 #include "model/variables/DependentVariable.h"
 #include "model/variables/BehaviorVariable.h"
 #include "model/variables/NetworkVariable.h"
+#include "model/variables/ContinuousVariable.h"
 #include "model/ml/Chain.h"
 #include "model/ml/MLSimulation.h"
 #include "model/ml/MiniStep.h"
@@ -338,6 +339,24 @@ SEXP getBehaviorValues(const BehaviorVariable & behavior)
 	}
 	UNPROTECT(1);
     return ans  ;
+}
+
+/** Create an R vector from a continuous behavior variable for a single period
+ *
+ */
+SEXP getContinuousValues(const ContinuousVariable & behavior)
+{
+    SEXP ans;
+    int n = behavior.n();
+    PROTECT(ans = allocVector(REALSXP, n));
+    double *rans = REAL(ans);
+    const double *pValues = behavior.values();
+    for (int i = 0; i < n; i++)
+    {
+        rans[i] = pValues[i];
+    }
+    UNPROTECT(1);
+    return ans;
 }
 
 /**

@@ -145,7 +145,7 @@ myeff <- includeTimeDummy(myeff, density, timeDummy="all")
 myeff <- includeTimeDummy(myeff, recip, timeDummy="2,3,5")
 myeff <- includeTimeDummy(myeff, balance, timeDummy="4")
 \dontrun{
-(ansp <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE))
+(ansp <- siena07(myalgorithm, data=mydata, effects=myeff))
 ttp <- sienaTimeTest(ansp, effects=1:4)
 
 ## Pairwise plots show
@@ -181,12 +181,11 @@ myeff <- includeInteraction(myeff, egoX, recip, interaction1=c('time5', ''))
 ## corresponding to myeff <- includeTimeDummy(myeff, balance, timeDummy="4"):
 myeff <- includeInteraction(myeff, egoX, balance, interaction1=c('time4', ''))
 \dontrun{
-(anspp <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE))
+(anspp <- siena07(myalgorithm, data=mydata, effects=myeff))
 ## anspp contains identical results as ansp above.
 }
 
-## A demonstration of RateX heterogeneity. Note that rate interactions are not
-## implemented in general, just RateX which is the interaction Rate x cCovar.
+## A demonstration of RateX heterogeneity.
 \dontrun{
 mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
 myccov <- coCovar(s50a[,1])
@@ -194,7 +193,7 @@ mydata <- sienaDataCreate(mynet1, myccov)
 myeff <- getEffects(mydata)
 myeff <- includeEffects(myeff, transTrip, balance)
 myeff <- includeTimeDummy(myeff, RateX, type="rate", interaction1="myccov")
-ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE)
+(ans <- siena07(myalgorithm, data=mydata, effects=myeff))
 }
 }
 \keyword{tests}

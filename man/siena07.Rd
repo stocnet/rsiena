@@ -82,12 +82,15 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
  with (if \code{x$findiff=FALSE})
  derivative estimation as in Schweinberger and Snijders (2007).
  The default is estimation according to the Method of Moments
- as in Snijders, Steglich and Schweinberger (2007).
+ as in Snijders, Steglich and Schweinberger (2007).\cr
  If  \code{x$gmm=TRUE} and \code{myeff} contains one or more
  \code{gmm} statistics as included by function
  \code{\link{includeGMoMStatistics}}, the algorithm employs the
  Generalized Method of Moments as defined in Amati, Schoenenberger, and Snijders
- (2015, 2019).
+ (2015, 2019).\cr
+ For continuous behavior variables defined with \code{type="continuous"} in
+ \code{\link{sienaDependent}}, estimation is done as 
+ described in Niezink and Snijders (2017).\cr
  If  \code{x$maxlike=TRUE}, estimation is done by Maximum Likelihood
  implemented as in Snijders, Koskinen and Schweinberger (2010).\cr
  Phase 1 does a few iterations to
@@ -227,6 +230,9 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
     \emph{Evolving Social Network Analysis: developments in statistical
     methodology for dynamic stochastic actor-oriented models}.
     DPhil dissertation, University of Oxford.
+   \item Niezink, Nynke M.D., and Snijders, Tom A.B. (2017).
+    Co-evolution of Social Networks and Continuous Actor Attributes.
+    \emph{The Annals of Applied Statistics} \bold{11}, 1948--1973.
    \item Schweinberger, Michael, and Snijders, Tom A.B. (2007).
     Markov models for digraph panel data:
     Monte Carlo based derivative estimation.
@@ -255,7 +261,8 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
    \item Further see \url{https://www.stats.ox.ac.uk/~snijders/siena/} .
     }
 }
-\author{Ruth Ripley, Tom Snijders, Viviana Amati, Felix Schoenenberger}
+\author{Ruth Ripley, Tom Snijders, Viviana Amati, Felix Schoenenberger, 
+        Nynke Niezink}
 
 \seealso{\code{\link{siena}}, \code{\link{sienaAlgorithmCreate}},
   \code{\link{sienaEffects}},
@@ -289,8 +296,8 @@ ans1 <- siena07(myalgorithm, data=mydata, effects=myeff, prevAns=ans)
 # Find out how many processors there are
 library(parallel)
 (n.clus <- detectCores() - 1)
-# number of cores; 1 is subtracted to keep time for other processes
-ans2 <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE,
+n.clus <- min(n.clus, 4)  # keep time for other processes
+ans2 <- siena07(myalgorithm, data=mydata, effects=myeff,
                 useCluster=TRUE, nbrNodes=n.clus, initC=TRUE)
 
 # Suppose 8 processors are going to be used.
@@ -308,13 +315,26 @@ ans3 <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE, cl = cl)
 # You can create even more complex clusters using several computers. In this
 # example we are creating a cluster with 3*8 = 24 processors on three
 # different machines.
-cl <- makePSOCKcluster(
-    rep(c('localhost', 'machine2.website.com' , 'machine3.website.com'), 8),
-    user='myusername', rshcmd='ssh -p PORTNUMBER')
+#cl <- makePSOCKcluster(
+#    rep(c('localhost', 'machine2.website.com' , 'machine3.website.com'), 8),
+#    user='myusername', rshcmd='ssh -p PORTNUMBER')
 
-ans4 <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE, cl = cl)
-stopCluster(cl)
+#ans4 <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE, cl = cl)
+#stopCluster(cl)
 }
+
+# for a continuous behavior variable -------------------------------------------
+# simulate behavior data according to dZ(t) = [-0.1 Z + 1] dt + 1 dW(t)
+set.seed(123) 
+y1 <- rnorm(50, 0,3)
+y2 <- exp(-0.1) * y1 + (1-exp(-0.1)) * 1/ -0.1 + rnorm(50, 0, (exp(-0.2)- 1) / -0.2 * 1^2)
+friend <- sienaDependent(array(c(s501, s502), dim = c(50,50,2)))
+behavior <- sienaDependent(matrix(c(y1,y2), 50,2), type = "continuous")
+(mydata <- sienaDataCreate(friend, behavior))
+(myeff <- getEffects(mydata, onePeriodSde = TRUE))
+algorithmMoM <- sienaAlgorithmCreate(nsub=1, n3=20, seed=321)
+(ans <- siena07(myalgorithm, data = mydata, effects = myeff, batch=TRUE))
+
 # Accessing simulated networks for ML ------------------------------------------
 # The following is an example for accessing the simulated networks for ML,
 # which makes sense only if there are some missing tie variables;

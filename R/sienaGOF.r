@@ -79,7 +79,8 @@ sienaGOF <- function(
 	{
 		stop("You need to supply the parameter <<auxiliaryFunction>>.")
 	}
-	if (is.null(sFO$f[[groupName]]$depvars[[varName]]))
+# There might be more than one varName:
+	if (is.null(sFO$f[[groupName]]$depvars[[varName[1]]]))
 	{
 		stop("There is a mismatch between the sienaFitObject and the groupName or varName.")
 	}

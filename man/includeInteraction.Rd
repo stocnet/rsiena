@@ -65,6 +65,14 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   including an interaction effect in a model, also to include the
   corresponding main effects. This is however not enforced
   by \code{includeInteraction()}.\cr
+  
+  As from version 1.3.24, effects object have a "version" attribute.
+  Effects objects including interaction effects are not necessarily compatible
+  between versions of \code{RSiena}. Therefore it is recommended to create
+  such effects objects again when changing to a new version of \code{RSiena}.
+  If an effects object including any interaction effects is used from an
+  old version of \code{RSiena}, this will lead to a warning when running
+  \code{\link{siena07}}. \cr
 
   An interaction effect does not have its own internal effect parameter.
   The internal effect parameters of the interacting main effects are used,
