@@ -561,9 +561,10 @@ derivativeFromScoresAndDeviations <- function(scores, deviations, sumdfra,
 				dfra <- dfra + outer(scores[i, j, ], deviations[i, j, ])
 			}
 		}
-		tmp <- matrix(sapply(1 : nWaves, function(i)
+		tmp <- matrix(vapply(1 : nWaves, function(i){
 				outer(colMeans(deviations)[i,],
-					colMeans(scores)[i,])), ncol=nWaves)
+					colMeans(scores)[i,])}, 
+					FUN.VALUE=matrix(0,nParameters,nParameters)), ncol=nWaves)
 		dfra <- t(dfra) / nIterations
 	}
 	else
@@ -571,9 +572,10 @@ derivativeFromScoresAndDeviations <- function(scores, deviations, sumdfra,
 		nWaves <- dim(sumscores)[1]
 		nParameters <- dim(sumscores)[2]
 		dfra <- sumdfra
-		tmp <- matrix(sapply(1 : nWaves,
-				function(i){outer(sumdeviations[i,], sumscores[i,])}),
-			ncol=nWaves) / (nIter^2)
+		tmp <- matrix(vapply(1 : nWaves,
+				function(i){outer(sumdeviations[i,], sumscores[i,])},
+				FUN.VALUE=matrix(0,nParameters,nParameters)),
+						ncol=nWaves) / (nIter^2)
 		dfra <- t(dfra) / nIter
 	}
 	dfra - matrix(rowSums(tmp), nrow=nParameters)
@@ -582,9 +584,12 @@ derivativeFromScoresAndDeviations <- function(scores, deviations, sumdfra,
 ##@updateDerivativeSde siena07 replace dfra estimates for sde parameters by analytic approx.
 updateDerivativeSde <- function(z, dfra)
 {
-  wienerId <- which(sapply(z$effects$effectName, function(x) grepl("wiener", x, fixed = TRUE)))
-  feedbackId <- which(sapply(z$effects$effectName, function(x) grepl("feedback from", x, fixed = TRUE)))
-  interceptId <- which(sapply(z$effects$effectName, function(x) grepl("intercept", x, fixed = TRUE)))
+  wienerId <- which(vapply(z$effects$effectName, 
+			function(x){grepl("wiener", x, fixed = TRUE)}, FUN.VALUE=TRUE))
+  feedbackId <- which(vapply(z$effects$effectName, 
+			function(x){grepl("feedback from", x, fixed = TRUE)}, FUN.VALUE=TRUE))
+  interceptId <- which(vapply(z$effects$effectName, 
+			function(x){grepl("intercept", x, fixed = TRUE)}, FUN.VALUE=TRUE))
   scaleId <- which(z$effects$name == "sde")
   onePeriodSde <- (length(wienerId) > 0) # option set by the user
   nPeriods <- z$observations - 1
