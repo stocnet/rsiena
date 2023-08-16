@@ -101,7 +101,12 @@ dummy. Alternatively, use \code{\link{includeTimeDummy}}.
    \code{fix}, \code{test}, \code{randomEffects}, \code{initialValue},
     \code{timeDummy}, and \code{include} to the values requested.\cr
     The \code{shortName} must not be set between quotes,
-    unless you use \code{character=TRUE}.}
+    unless you use \code{character=TRUE}.   
+
+   The input names \code{interaction1} and \code{interaction2} do not themselves
+   refer to created interactions, but to dependence of the base effects on
+   other variables in the data set.
+   They are used to completely identify the effects.}
 \value{
   An object of class \code{\link{sienaEffects}} or
   \code{\link{sienaGroupEffects}}. This will be an updated version of the

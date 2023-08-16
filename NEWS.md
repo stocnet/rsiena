@@ -1,3 +1,23 @@
+# RSiena 1.3.26
+
+## 
+   
+2023-08-15
+
+## Changes in RSiena:
+
+### Coding:
+  * Improved Phase 1 derivative matrix computation for basic SDE parameters.
+  * Added continuous behavior to returned simulated data.
+### Corrections:
+  * Period/groupwise tests in `sienaTimeTest` corrected for the case of 
+    non-saturated sets of dummy variables.
+  * `plot.sienaTimeTest` for \code{pairwise=TRUE} changed so that the warning
+    is avoided. 
+  * `sienaGOF` corrected so that again it can handle auxiliary functions
+    referring to more than one `varName` (such as in `mixedTriadCensus`).
+
+
 # RSiena 1.3.24
 
 ## 

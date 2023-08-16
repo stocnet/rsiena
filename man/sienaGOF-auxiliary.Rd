@@ -273,12 +273,12 @@ plot(goftc, center=TRUE, scale=TRUE)
 # note the keys at the x-axis (widen the plot if they are not clear).
 descriptives.sienaGOF(goftc)
 
-\dontrun{
 ### The mixed triad census for co-evolution of one-mode and two-mode networks:
 actors <- sienaNodeSet(50, nodeSetName="actors")
 activities <- sienaNodeSet(20, nodeSetName="activities")
 onemodenet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)),
                             nodeSet="actors")
+# Not meaningful, just for example:
 twomodenet <- sienaDependent(array(c(s502[1:50, 1:20], s503[1:50, 1:20]),
                                                         dim=c(50, 20, 2)),
                             type= "bipartite", nodeSet=c("actors", "activities"))
@@ -302,7 +302,6 @@ twoalgorithm <- sienaAlgorithmCreate(projname=NULL, nsub=1, n3=100,
 (gof.two <- sienaGOF(ans, mixedTriadCensus,
                         varName=c("onemodenet", "twomodenet"), verbose=TRUE))
 plot(gof.two, center=TRUE, scale=TRUE)
-}
 
 \dontrun{
 ### Here come some useful functions for building your own auxiliary statistics:

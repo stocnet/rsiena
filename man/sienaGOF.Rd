@@ -307,14 +307,15 @@ plot(gofo)
 ## A demonstration of using multiple processes
 \dontrun{
 library(parallel)
-(n.clus <- detectCores() - 1) # subtract 1 to keep time for other processes
+(n.clus <- detectCores() - 1) 
+n.clus <- min(n.clus, 4)  # keep time for other processes
 myalgorithm.c <- sienaAlgorithmCreate(nsub=4, n3=1000, seed=1265)
 (ans.c <- siena07(myalgorithm.c, data=mydata, effects=myeff, batch=TRUE,
     returnDeps=TRUE, useCluster=TRUE, nbrNodes=n.clus))
 gofi.1 <- sienaGOF(ans.c, TriadCensus, verbose=TRUE, varName="mynet1")
 cl <- makeCluster(n.clus)
 gofi.cl <- sienaGOF(ans.c, TriadCensus, varName="mynet1", cluster=cl)
-cl <- makeCluster(2)
+cl2 <- makeCluster(2)
 gofi.cl2 <- sienaGOF(ans.c, TriadCensus, varName="mynet1", cluster=cl2)
 # compare simulation times
 attr(gofi.1,"simTime")

@@ -20,6 +20,7 @@
 namespace siena
 {
 	class Data;
+    class ContinuousVariable;
 	class BehaviorVariable;
 	class Network;
 	class MiniStep;
@@ -56,6 +57,7 @@ void Rterminate();
 void printOutData(Data *pData);
 
 SEXP getBehaviorValues(const BehaviorVariable & behavior);
+SEXP getContinuousValues(const ContinuousVariable & behavior);
 SEXP getAdjacency(const Network& net);
 SEXP getEdgeList(const Network& net);
 

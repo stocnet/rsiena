@@ -44,8 +44,8 @@ see \url{https://github.com/snlab-nl/rsiena/ }.
   \tabular{ll}{
     Package: \tab RSiena\cr
     Type: \tab Package\cr
-    Version: \tab 1.3.24\cr
-    Date: \tab 2023-08-01\cr
+    Version: \tab 1.3.26\cr
+    Date: \tab 2023-08-15\cr
     Depends: \tab R (>= 3.5.0)\cr
     Imports: \tab Matrix, lattice, parallel, MASS, methods, xtable\cr
     Suggests: \tab network, tools, codetools, tcltk\cr
@@ -71,6 +71,9 @@ see \url{https://github.com/snlab-nl/rsiena/ }.
     \item Amati, Viviana, Schoenenberger, Felix, and Snijders, Tom A.B. (2019).
       Contemporaneous statistics for estimation in stochastic actor-oriented
       co-evolution models. \emph{Psychometrika} \bold{84}, 1068--1096.
+    \item Niezink, Nynke M.D., and Snijders, Tom A.B. (2017).
+      Co-evolution of Social Networks and Continuous Actor Attributes.
+      \emph{The Annals of Applied Statistics} \bold{11}, 1948--1973.
     \item Schweinberger, Michael, and Snijders, Tom A.B. (2007).
       Markov models for digraph panel data:
       Monte Carlo-based derivative estimation.

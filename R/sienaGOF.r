@@ -79,7 +79,8 @@ sienaGOF <- function(
 	{
 		stop("You need to supply the parameter <<auxiliaryFunction>>.")
 	}
-	if (is.null(sFO$f[[groupName]]$depvars[[varName]]))
+# There might be more than one varName:
+	if (is.null(sFO$f[[groupName]]$depvars[[varName[1]]]))
 	{
 		stop("There is a mismatch between the sienaFitObject and the groupName or varName.")
 	}
@@ -121,7 +122,7 @@ sienaGOF <- function(
 		if (fitList)
 		{
 			message("The data for analysis is a list of ", length(sienaFitObject),
-						"sienaFit objects.")
+						" sienaFit objects.")
 		}
 	}
 
@@ -155,6 +156,7 @@ sienaGOF <- function(
 								sienaFitObject, j, groupName, varName, ...)
 								, nrow=1)
 				})
+
 	if (join)
 	{
 		obsStats <- Reduce("+", obsStatsByPeriod)
@@ -171,6 +173,7 @@ sienaGOF <- function(
 	attr(obsStats,"auxiliaryStatisticName") <-
 			deparse(substitute(auxiliaryFunction))
 	attr(obsStats,"joint") <- join
+	
 
 	##	Calculate the simulated auxiliary statistics
 	if (verbose)
@@ -246,7 +249,7 @@ sienaGOF <- function(
 	## Aggregate by period if necessary to produce simStats
 	if (join)
 	{
-		simStats <- Reduce("+", simStatsByPeriod)
+			simStats <- Reduce("+", simStatsByPeriod)
 		simStats <- list(Joint=simStats)
 	}
 	else

@@ -99,13 +99,23 @@ for data set \code{x}.\cr
   A list of all effects in a given effects object (e.g., \code{myeff}),
   including their names of dependent variables, effect names, short names,
   and values of interaction1 and interaction2 (if any),
-  is obtained by executing \code{\link{effectsDocumentation}(myeff)}.
+  is obtained by executing \code{\link{effectsDocumentation}(myeff)}.  
+  
+  As from version 1.3.24, effects object have a "version" attribute.
+  Effects objects including interaction effects created by 
+  \code{\link{includeInteraction}} are not necessarily compatible
+  between versions of \code{RSiena}. Therefore it is recommended,
+  for effects objects including any interaction effects,
+  to create them again when changing to a new version of \code{RSiena}.
+  If an effects object including any interaction effects is used from an
+  old version of \code{RSiena}, this will lead to a warning when running
+  \code{\link{siena07}}. \cr
 }
 \references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley}
 \seealso{\code{\link{sienaDataCreate}}, \code{\link{sienaGroupCreate}},
         \code{\link{includeEffects}}, \code{\link{setEffect}},
-		\code{\link{includeGMoMStatistics}},
+        \code{\link{includeGMoMStatistics}},
         \code{\link{updateSpecification}},
         \code{\link{print.sienaEffects}},\code{\link{effectsDocumentation}}}
 \examples{
