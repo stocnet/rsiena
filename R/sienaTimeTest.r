@@ -749,7 +749,7 @@ plot.sienaTimeTest <- function(x, pairwise=FALSE, effects,
 		}
 		panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...)
 		{
-			usr <- par("usr"); # on.exit(par("usr" = usr))
+#			usr <- par("usr"); # on.exit(par("usr" = usr))
 			par(usr = c(0, 1, 0, 1))
 			r <- abs(cor(x, y))
 			txt <- format(c(r, 0.123456789), digits=digits)[1]
