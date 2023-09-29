@@ -102,6 +102,7 @@ proc2subphase <- function(z, x, subphase, ...)
 		z$n2min <- z$n2minimum[subphase]
 		z$n2max <- z$n2maximum[subphase]
 	}
+	Report(paste("Number of iterations minimum ", z$n2min, ", maximum", z$n2max, ".\n", sep=""), cf)
 	z$repeatsubphase <- 0
 	repeat
 	{

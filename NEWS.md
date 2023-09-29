@@ -1,3 +1,24 @@
+# RSiena 1.3.27
+
+## 
+   
+2023-09-29
+
+## Changes in RSiena:
+
+### Coding:
+  * Corrected one line in `siena07models.cpp`, which led to slowness of 
+    `siena07` since version 1.3.18.
+### New effects:
+  * `avInSimDist2`, `totInSimDist2`, `sameEgoDist2`,`sameEgoInDist2`,
+    `outMore2`, `divOutEgoIntn`, `divInEgoIntn`, `divOutAltIntn`, 
+    `divInAltIntn`.
+  * `avTAltDist2` and `totTAltDist2` also implemented for behavior co-evolving
+    with symmetric networks.
+### Documentation:
+  * Some explanation is given in the manual about internal effect parameters
+    for interactions created by `includeInteraction`.
+
 # RSiena 1.3.26
 
 ## 
@@ -12,7 +33,7 @@
 ### Corrections:
   * Period/groupwise tests in `sienaTimeTest` corrected for the case of 
     non-saturated sets of dummy variables.
-  * `plot.sienaTimeTest` for \code{pairwise=TRUE} changed so that the warning
+  * `plot.sienaTimeTest` for "pairwise=TRUE" changed so that the warning
     is avoided. 
   * `sienaGOF` corrected so that again it can handle auxiliary functions
     referring to more than one `varName` (such as in `mixedTriadCensus`).
