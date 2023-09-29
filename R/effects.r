@@ -1262,8 +1262,8 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 				covObjEffects[covObjEffects$shortName %in%
 				c("egoX", "egoSqX", "egoLThresholdX", "egoRThresholdX",
 					"degAbsDiffX", "degPosDiffX", "degNegDiffX",
-					"altInDist2", "totInDist2",
-					"simEgoInDist2", "sameXInPop", "diffXInPop",
+					"altInDist2", "totInDist2", "simEgoInDist2", 
+					"sameEgoInDist2", "sameXInPop", "diffXInPop",
 					"sameXCycle4", "inPopX", "inActX", "avGroupEgoX"), ]
 			covRateEffects <- createEffects("covarBipartiteRate", covarname,
 				name=varname,

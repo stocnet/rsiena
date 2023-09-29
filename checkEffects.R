@@ -1578,3 +1578,247 @@ myeff <- getEffects(mydata)
 ans$targets
 # check target statistics: diffXOutAct parameter=2
 sum((rowSums(s502 * dmat))*sqrt(rowSums(s502 * dmat))) # 46.73059   OK
+
+################################################################################
+### check simEgoInDist2 and avInSimDist2
+################################################################################
+
+library(RSiena)
+
+mynet <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,1:2], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+
+mymodel <- sienaModelCreate(projname=NULL, seed=842)
+
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff,simEgoInDist2, interaction1='mybeh'))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# [1] 115.00000 116.00000  70.00000  11.58412  27.00000   5.50000  71.10500
+
+sum(s502) # OK
+sum(s502*t(s502)) # OK
+sum(mybeh[,,2]-mean(mybeh)) # 5.5 OK
+sum((mybeh[,,2]-mean(mybeh))^2) # 71.105  OK
+
+divi <- function(x,y){ifelse(y==0, 0, x/y)}
+
+cova <- mybeh[,1,1] - mean(mybeh)
+ind <- colSums(mynet[,,2])
+vv <- matrix(NA, length(cova),length(cova))
+for (i in 1:length(cova)) {
+  for(j in 1:length(cova)){vv[j,i] <-
+      divi((sum(mynet[,j,2]*cova) - mynet[i,j,2]*cova[i]),(ind[j] - mynet[i,j,2]))}}
+(range.c <- max(mybeh) - min(mybeh))
+
+simi0 <- matrix(NA, length(cova),length(cova))
+for (i in 1:length(cova)) {
+  for(j in 1:length(cova)){simi0[i,j] <- 1 - abs(cova[i] - vv[j,i])/range.c}}
+simi <- simi0 - attr(mydata$depvars$mybeh, 'simMean')
+sum(mynet[,,2]*simi) #  OK simEgoInDist2
+
+# Note: if ind[j] - mynet[i,j,2] = 0, vv[j,i] will be 0,
+# and since cova is centered, this is the mean, as stated in the definition of the effect.
+
+(myeff <- setEffect(myeff,avInSimDist2, name='mybeh', interaction1='mynet'))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# 115.000000 116.000000  70.000000  11.584116  27.000000   5.500000  71.105000   3.675713
+
+depva <- mybeh[,1,2] - mean(mybeh)
+ind <- colSums(mynet[,,1])
+outd <- rowSums(mynet[,,1])
+vv <- matrix(NA, length(depva),length(depva))
+for (i in 1:length(depva)) {
+  for(j in 1:length(depva)){vv[j,i] <-
+      divi((sum(mynet[,j,1]*depva) - mynet[i,j,1]*depva[i]),(ind[j] - mynet[i,j,1]))}}
+(range.c <- max(mybeh) - min(mybeh))
+
+(sme <- attr(mydata$depvars$mybeh, 'simMean'))
+simi0 <- matrix(NA, length(depva),length(depva))
+for (i in 1:length(depva)) {
+  for(j in 1:length(depva)){simi0[i,j] <-
+		ifelse((ind[j] - mynet[i,j,1])>0, 1 - (abs(depva[i] - vv[j,i])/range.c) - sme, 0)}}
+sum(divi(rowSums(mynet[,,1]*simi0), outd)) # OK avInSimDist2
+
+# The treatment of cases with ind[j] - mynet[i,j,2] = 0 is a bit different:
+# for simEgoInDist2 vv[j,i] is the mean, i.e., in this case, 0;
+# for avInSimDist2 simi0[i,j] is 0, i.e., the mean similarity.
+
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff,totInSimDist2, name='mybeh', interaction1='mynet'))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# [1] 115.000000 116.000000  70.000000  27.000000   5.500000  71.105000   9.769558
+
+depva <- mybeh[,1,2] - mean(mybeh)
+ind <- colSums(mynet[,,1])
+outd <- rowSums(mynet[,,1])
+vv <- matrix(NA, length(depva),length(depva))
+for (i in 1:length(depva)) {
+  for(j in 1:length(depva)){vv[j,i] <-
+      divi((sum(mynet[,j,1]*depva) - mynet[i,j,1]*depva[i]),(ind[j] - mynet[i,j,1]))}}
+(range.c <- max(mybeh) - min(mybeh))
+
+(sme <- attr(mydata$depvars$mybeh, 'simMean'))
+simi0 <- matrix(NA, length(depva),length(depva))
+for (i in 1:length(depva)) {
+  for(j in 1:length(depva)){simi0[i,j] <-
+		ifelse((ind[j] - mynet[i,j,1])>0, 1 - (abs(depva[i] - vv[j,i])/range.c) - sme, 0)}}
+sum(mynet[,,1]*simi0) # OK totInSimDist2
+
+
+################################################################################
+### check divOutEgoIntn and interaction outActIntnX * divOutEgoIntn
+### also divInEgoIntn, divOutAltIntn, divInAltIntn.
+################################################################################
+
+library(RSiena)
+
+mynet1 <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
+alc <- coCovar(s50a[,2])
+mydata <- sienaDataCreate(mynet1, mynet2, alc)
+
+mymodel <- sienaModelCreate(projname=NULL, seed=842)
+
+divi <- function(x,y){ifelse(y==0, 0, x/y)}
+
+# divOutEgoIntn:
+
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff,divOutEgoIntn, name='mynet2', interaction1='mynet1', parameter=1))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# 115.00000 116.00000  70.00000 106.00000 122.00000  90.00000  54.53333
+sum(divi(rowSums(s503), rowSums(s501))) # divOutEgoIntn OK
+
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff,divOutEgoIntn, name='mynet2', interaction1='mynet1', parameter=2))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# 115.00000 116.00000  70.00000 106.00000 122.00000  90.00000  78.98977
+sum(divi(rowSums(s503), sqrt(rowSums(s501)))) # divOutEgoIntn OK
+
+# and now the interaction:
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff,outActIntnX, name='mynet2', interaction1='mynet1',
+					interaction2='alc', parameter=1, include=FALSE)
+myeff <- setEffect(myeff,divOutEgoIntn, name='mynet2', interaction1='mynet1', parameter=1, include=FALSE)
+(myeff <- includeInteraction(myeff,outActIntnX,divOutEgoIntn, name='mynet2',
+					interaction1=c('mynet1', 'mynet1'), interaction2=c('alc', '')))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+#  115.0 116.0  70.0 106.0 122.0  90.0  30.5
+
+alc.c <- as.vector(alc) - mean(alc)
+sumalc.c <- apply(s501, 1, function(x){sum(x*alc.c)})
+sum(rowSums(s503) * divi(sumalc.c, rowSums(s501))) # outActIntnX * divOutEgoIntn parameter 1 OK
+
+mynet1 <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
+alc <- coCovar(s50a[,2]-1, centered=FALSE)
+mydata <- sienaDataCreate(mynet1, mynet2, alc)
+myeff <- setEffect(myeff,outActIntnX, name='mynet2', interaction1='mynet1',
+					interaction2='alc', parameter=2, include=FALSE)
+myeff <- setEffect(myeff,divOutEgoIntn, name='mynet2', interaction1='mynet1', parameter=2, include=FALSE)
+(myeff <- includeInteraction(myeff,outActIntnX,divOutEgoIntn, name='mynet2',
+					interaction1=c('mynet1', 'mynet1'), interaction2=c('alc', '')))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targetss
+#  115.0000 116.0000  70.0000 106.0000 122.0000  90.0000 179.2528
+
+alc.v <- as.vector(alc)
+sumalc.v <- apply(s501, 1, function(x){sum(x*alc.v)})
+sum(rowSums(s503) * sqrt(divi(sumalc.v, rowSums(s501)))) # outActIntnX * divOutEgoIntn parameter 2 OK
+
+# divInEgoIntn:
+
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff,divInEgoIntn, name='mynet2', interaction1='mynet1', parameter=1))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# 115.00000 116.00000  70.00000 106.00000 122.00000  90.00000  59.625
+sum(divi(rowSums(s503), colSums(s501))) # divInEgoIntn OK
+
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff,divInEgoIntn, name='mynet2', interaction1='mynet1', parameter=2))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# 115.00000 116.00000  70.00000 106.00000 122.00000  81.40552
+sum(divi(rowSums(s503), sqrt(colSums(s501)))) # divInEgoIntn OK
+
+# divOutAltIntn:
+
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff,divOutAltIntn, name='mynet2', interaction1='mynet1', parameter=1))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# 115.00000 116.00000  70.00000 106.00000 122.00000  90.00000  52.76667
+sum(divi(colSums(s503), rowSums(s501))) # divOutAltIntn OK
+
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff,divOutAltIntn, name='mynet2', interaction1='mynet1', parameter=2))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# 115.00000 116.00000  70.00000 106.00000  76.49343
+sum(divi(colSums(s503), sqrt(rowSums(s501)))) # divOutAltIntn OK
+
+# divInAltIntn:
+
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff,divInAltIntn, name='mynet2', interaction1='mynet1', parameter=1))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# 115.00000 116.00000  70.00000 106.00000 122.00000  90.00000  59.13333
+sum(divi(colSums(s503), colSums(s501))) # divInAltIntn OK
+
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff,divInAltIntn, name='mynet2', interaction1='mynet1', parameter=2))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# 115.00000 116.00000  70.00000 106.00000  80.37862
+sum(divi(colSums(s503), sqrt(colSums(s501)))) # divInAltIntn OK
+
+
+
+################################################################################
+### check sameEgoDist2 and sameEgoInDist2
+################################################################################
+
+library(RSiena)
+
+mynet <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
+mycova <- coCovar(s50a[,1])
+mydata <- sienaDataCreate(mynet, mycova)
+
+mymodel <- sienaModelCreate(projname=NULL, seed=842)
+
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff,sameEgoInDist2, interaction1='mycova'))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# 116.0  70.0  36.6
+
+sum(s502) # OK
+sum(s502*t(s502)) # OK
+eqalc <- outer(mycova, mycova, "==")
+sum(diag(s502)) # 0
+divi <- function(x,y){ifelse(y==0, 0, x/y)}
+
+a <- divi((eqalc %*% s502 - s502), (matrix(colSums(s502), 50, 50, byrow=TRUE) - s502))
+sum(a * s502) # OK sameEgoInDist2
+
+
+myeff <- getEffects(mydata)
+(myeff <- setEffect(myeff,sameEgoInDist2, interaction1='mycova', parameter=0))
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+#  116  70  64
+
+eqalc <- outer(mycova, mycova, "==")
+a <- (eqalc %*% s502) - s502
+sum(s502*pmin(a,1)) # OK
+
