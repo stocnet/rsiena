@@ -1583,7 +1583,6 @@ sum((rowSums(s502 * dmat))*sqrt(rowSums(s502 * dmat))) # 46.73059   OK
 ### check simEgoInDist2 and avInSimDist2
 ################################################################################
 
-library(RSiena)
 
 mynet <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
 mybeh <- sienaDependent(s50a[,1:2], type="behavior")
@@ -1607,14 +1606,14 @@ divi <- function(x,y){ifelse(y==0, 0, x/y)}
 cova <- mybeh[,1,1] - mean(mybeh)
 ind <- colSums(mynet[,,2])
 vv <- matrix(NA, length(cova),length(cova))
-for (i in 1:length(cova)) {
-  for(j in 1:length(cova)){vv[j,i] <-
+for (i in seq_along(cova)) {
+  for(j in seq_along(cova)){vv[j,i] <-
       divi((sum(mynet[,j,2]*cova) - mynet[i,j,2]*cova[i]),(ind[j] - mynet[i,j,2]))}}
 (range.c <- max(mybeh) - min(mybeh))
 
 simi0 <- matrix(NA, length(cova),length(cova))
-for (i in 1:length(cova)) {
-  for(j in 1:length(cova)){simi0[i,j] <- 1 - abs(cova[i] - vv[j,i])/range.c}}
+for (i in seq_along(cova)) {
+  for(j in seq_along(cova)){simi0[i,j] <- 1 - abs(cova[i] - vv[j,i])/range.c}}
 simi <- simi0 - attr(mydata$depvars$mybeh, 'simMean')
 sum(mynet[,,2]*simi) #  OK simEgoInDist2
 
@@ -1630,15 +1629,15 @@ depva <- mybeh[,1,2] - mean(mybeh)
 ind <- colSums(mynet[,,1])
 outd <- rowSums(mynet[,,1])
 vv <- matrix(NA, length(depva),length(depva))
-for (i in 1:length(depva)) {
-  for(j in 1:length(depva)){vv[j,i] <-
+for (i in seq_along(depva)) {
+  for(j in seq_along(depva)){vv[j,i] <-
       divi((sum(mynet[,j,1]*depva) - mynet[i,j,1]*depva[i]),(ind[j] - mynet[i,j,1]))}}
 (range.c <- max(mybeh) - min(mybeh))
 
 (sme <- attr(mydata$depvars$mybeh, 'simMean'))
 simi0 <- matrix(NA, length(depva),length(depva))
-for (i in 1:length(depva)) {
-  for(j in 1:length(depva)){simi0[i,j] <-
+for (i in seq_along(depva)) {
+  for(j in seq_along(depva)){simi0[i,j] <-
 		ifelse((ind[j] - mynet[i,j,1])>0, 1 - (abs(depva[i] - vv[j,i])/range.c) - sme, 0)}}
 sum(divi(rowSums(mynet[,,1]*simi0), outd)) # OK avInSimDist2
 
@@ -1656,15 +1655,15 @@ depva <- mybeh[,1,2] - mean(mybeh)
 ind <- colSums(mynet[,,1])
 outd <- rowSums(mynet[,,1])
 vv <- matrix(NA, length(depva),length(depva))
-for (i in 1:length(depva)) {
-  for(j in 1:length(depva)){vv[j,i] <-
+for (i in seq_along(depva)) {
+  for(j in seq_along(depva)){vv[j,i] <-
       divi((sum(mynet[,j,1]*depva) - mynet[i,j,1]*depva[i]),(ind[j] - mynet[i,j,1]))}}
 (range.c <- max(mybeh) - min(mybeh))
 
 (sme <- attr(mydata$depvars$mybeh, 'simMean'))
 simi0 <- matrix(NA, length(depva),length(depva))
-for (i in 1:length(depva)) {
-  for(j in 1:length(depva)){simi0[i,j] <-
+for (i in seq_along(depva)) {
+  for(j in seq_along(depva)){simi0[i,j] <-
 		ifelse((ind[j] - mynet[i,j,1])>0, 1 - (abs(depva[i] - vv[j,i])/range.c) - sme, 0)}}
 sum(mynet[,,1]*simi0) # OK totInSimDist2
 
@@ -1673,8 +1672,6 @@ sum(mynet[,,1]*simi0) # OK totInSimDist2
 ### check divOutEgoIntn and interaction outActIntnX * divOutEgoIntn
 ### also divInEgoIntn, divOutAltIntn, divInAltIntn.
 ################################################################################
-
-library(RSiena)
 
 mynet1 <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
 mynet2 <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
@@ -1788,7 +1785,6 @@ sum(divi(colSums(s503), sqrt(colSums(s501)))) # divInAltIntn OK
 ### check sameEgoDist2 and sameEgoInDist2
 ################################################################################
 
-library(RSiena)
 
 mynet <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
 mycova <- coCovar(s50a[,1])

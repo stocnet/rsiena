@@ -95,8 +95,7 @@ double CovariateDistance2EgoAltSameNetworkFunction::value(int alter) const
 			{
 				value/=numberUsed;			
 			}
-		}
-		
+		}		
 	}
 	return value;
 }
