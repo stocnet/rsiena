@@ -94,7 +94,8 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 
 	/* set the deriv flag on the model */
 	pModel->needScores(deriv);
-	pModel->needDerivatives(deriv); // ABC
+	pModel->needDerivatives(false);
+//	pModel->needDerivatives(deriv); // ABC
 
 	/* set the chain flag on the model */
 	pModel->needChain(returnChains == 1 || addChainToStore == 1

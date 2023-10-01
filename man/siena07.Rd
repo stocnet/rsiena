@@ -89,7 +89,7 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
  Generalized Method of Moments as defined in Amati, Schoenenberger, and Snijders
  (2015, 2019).\cr
  For continuous behavior variables defined with \code{type="continuous"} in
- \code{\link{sienaDependent}}, estimation is done as 
+ \code{\link{sienaDependent}}, estimation is done as
  described in Niezink and Snijders (2017).\cr
  If  \code{x$maxlike=TRUE}, estimation is done by Maximum Likelihood
  implemented as in Snijders, Koskinen and Schweinberger (2010).\cr
@@ -137,6 +137,15 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
  (see below), the last row of \code{thetaValues} will continue to be used.
  The parameter values actually used will be stored in the
  output matrix \code{thetaUsed}.
+
+ Multiple processors are used for estimation by MoM to distribute each iteration
+ in each subphase over the cluster of nodes. The number of iterations accordingly
+ will be divided (approximately) by the number of nodes;
+ for phase 2, unless \code{n2start} is specified.
+ This implies that if multiple processors are used, think of dividing
+ \code{n2start} by \code{nbrNodes}.\cr
+ For estimation by ML, multiple processing is done per period. Therefore,
+ for one period (two waves) and one group, this will have no effect.
 
  In the case of using multiple processors, there are two options for telling
  \code{siena07} to use them. By specifying the options \code{useCluster},
@@ -261,7 +270,7 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
    \item Further see \url{https://www.stats.ox.ac.uk/~snijders/siena/} .
     }
 }
-\author{Ruth Ripley, Tom Snijders, Viviana Amati, Felix Schoenenberger, 
+\author{Ruth Ripley, Tom Snijders, Viviana Amati, Felix Schoenenberger,
         Nynke Niezink}
 
 \seealso{\code{\link{siena}}, \code{\link{sienaAlgorithmCreate}},
@@ -325,7 +334,7 @@ ans3 <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE, cl = cl)
 
 # for a continuous behavior variable -------------------------------------------
 # simulate behavior data according to dZ(t) = [-0.1 Z + 1] dt + 1 dW(t)
-set.seed(123) 
+set.seed(123)
 y1 <- rnorm(50, 0,3)
 y2 <- exp(-0.1) * y1 + (1-exp(-0.1)) * 1/ -0.1 + rnorm(50, 0, (exp(-0.2)- 1) / -0.2 * 1^2)
 friend <- sienaDependent(array(c(s501, s502), dim = c(50,50,2)))

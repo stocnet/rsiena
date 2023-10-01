@@ -34,6 +34,7 @@
 #include "model/effects/generic/EgoOutDegreeFunction.h"
 #include "model/effects/generic/EgoRecipDegreeFunction.h"
 #include "model/effects/generic/DegreeFunction.h"
+#include "model/effects/generic/ReciprocalFunction.h"
 #include "model/effects/generic/BetweennessFunction.h"
 #include "model/effects/generic/GwespFunction.h"
 #include "model/effects/generic/InStarFunction.h"
@@ -53,6 +54,7 @@
 #include "model/effects/generic/CovariateDistance2AlterNetworkFunction.h"
 #include "model/effects/generic/CovariateDistance2InAlterNetworkFunction.h"
 #include "model/effects/generic/CovariateDistance2SimilarityNetworkFunction.h"
+#include "model/effects/generic/CovariateDistance2EgoAltSameNetworkFunction.h"
 #include "model/effects/generic/CovariateDistance2EgoAltSimNetworkFunction.h"
 #include "model/effects/generic/CovariateMixedNetworkAlterFunction.h"
 #include "model/effects/generic/CovariateDegreeFunction.h"
@@ -371,6 +373,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, true, false);
 	}
 	else if (effectName == "outMore")
+	{
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "outMore2")
 	{
 		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false);
 	}
@@ -958,6 +964,58 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new DifferenceFunction(pFirstFunction, pSecondFunction));
+	}
+	else if (effectName == "divOutEgoIntn")
+	{
+		AlterFunction * pFunction =
+			new EgoOutDegreeFunction(pEffectInfo->interactionName1());
+
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pFunction = new IntSqrtFunction(pFunction);
+		}
+
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new ReciprocalFunction(pFunction));
+	}
+	else if (effectName == "divInEgoIntn")
+	{
+		AlterFunction * pFunction =
+			new EgoInDegreeFunction(pEffectInfo->interactionName1());
+
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pFunction = new IntSqrtFunction(pFunction);
+		}
+
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new ReciprocalFunction(pFunction));
+	}
+	else if (effectName == "divOutAltIntn")
+	{
+		AlterFunction * pFunction =
+			new OutDegreeFunction(pEffectInfo->interactionName1());
+
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pFunction = new IntSqrtFunction(pFunction);
+		}
+
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new ReciprocalFunction(pFunction));
+	}
+	else if (effectName == "divInAltIntn")
+	{
+		AlterFunction * pFunction =
+			new InDegreeFunction(pEffectInfo->interactionName1());
+
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pFunction = new IntSqrtFunction(pFunction);
+		}
+
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new ReciprocalFunction(pFunction));
 	}
 	else if (effectName == "absOutDiffIntn")
 	{
@@ -1673,13 +1731,13 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		string networkName = pEffectInfo->interactionName1();
 		string covariateName = pEffectInfo->interactionName2();
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new SameCovariateMixedTwoPathFunction(networkName, 
+			new SameCovariateMixedTwoPathFunction(networkName,
 							pEffectInfo->variableName(),
 							covariateName, true, false),
 			new ConditionalFunction(
 				new MissingCovariatePredicate(covariateName),
 				0,
-				new SameCovariateMixedTwoPathFunction(networkName, 
+				new SameCovariateMixedTwoPathFunction(networkName,
 							pEffectInfo->variableName(),
 							covariateName, true, true)));
 	}
@@ -1688,13 +1746,13 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		string networkName = pEffectInfo->interactionName1();
 		string covariateName = pEffectInfo->interactionName2();
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new SameCovariateMixedTwoPathFunction(networkName, 
+			new SameCovariateMixedTwoPathFunction(networkName,
 							pEffectInfo->variableName(),
 							covariateName, false, false),
 			new ConditionalFunction(
 				new MissingCovariatePredicate(covariateName),
 				0,
-				new SameCovariateMixedTwoPathFunction(networkName, 
+				new SameCovariateMixedTwoPathFunction(networkName,
 							pEffectInfo->variableName(),
 							covariateName, false, true)));
 	}
@@ -1980,6 +2038,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "totSimRecPop")
 	{
 		pEffect = new ReciprocatedSimilarityEffect(pEffectInfo, false, true);
+	}
+	else if (effectName == "avInSimDist2")
+	{
+		pEffect = new AverageSimilarityInDist2Effect(pEffectInfo, true);
+	}
+	else if (effectName == "totInSimDist2")
+	{
+		pEffect = new AverageSimilarityInDist2Effect(pEffectInfo, false);
 	}
 	else if (effectName == "avAlt")
 	{
@@ -2368,6 +2434,34 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		AlterFunction * pStatisticFunction =
 			new CovariateDistance2EgoAltSimNetworkFunction(networkName,
 				covariateName, true, false);
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			pChangeFunction, pStatisticFunction);
+	}
+	else if (effectName == "sameEgoDist2")
+	{
+		string networkName = pEffectInfo->variableName();
+		string covariateName = pEffectInfo->interactionName1();
+		double parameter = pEffectInfo->internalEffectParameter();
+		AlterFunction * pChangeFunction =
+			new CovariateDistance2EgoAltSameNetworkFunction(networkName,
+				covariateName, false, true, parameter);
+		AlterFunction * pStatisticFunction =
+			new CovariateDistance2EgoAltSameNetworkFunction(networkName,
+				covariateName, true, true, parameter);
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			pChangeFunction, pStatisticFunction);
+	}
+	else if (effectName == "sameEgoInDist2")
+	{
+		string networkName = pEffectInfo->variableName();
+		string covariateName = pEffectInfo->interactionName1();
+		double parameter = pEffectInfo->internalEffectParameter();
+		AlterFunction * pChangeFunction =
+			new CovariateDistance2EgoAltSameNetworkFunction(networkName,
+				covariateName, false, false, parameter);
+		AlterFunction * pStatisticFunction =
+			new CovariateDistance2EgoAltSameNetworkFunction(networkName,
+				covariateName, true, false, parameter);
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}

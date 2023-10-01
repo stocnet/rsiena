@@ -67,9 +67,11 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
     at least n3=3000 is advised. Sometimes much higher values are required
     for stable estimation of standard errors.}
   \item{nsub}{Number of subphases in phase 2.}
-  \item{n2start}{Minimum number of interations in subphase 1 of phase 2;
-    default is \code{2.52*(p+7)},
-    where \code{p} = number of estimated parameters.}
+  \item{n2start}{Minimum number of iterations in subphase 1 of phase 2;
+    default is \code{2.52*(p+7)}, where \code{p} = number of estimated
+    parameters; if \code{useCluster=TRUE} in the call of
+    \code{\link{siena07}}, this is divided by \code{nbrNodes}.
+    }
   \item{dolby}{Boolean. Should there be noise reduction by regression
     on augmented data score. In most cases dolby=TRUE yields better
     convergence, but takes some extra computing time;

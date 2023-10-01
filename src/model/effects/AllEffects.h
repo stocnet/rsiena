@@ -32,6 +32,7 @@
 #include "AverageGroupEgoEffect.h"
 #include "AverageInAlterEffect.h"
 #include "AverageReciprocatedAlterEffect.h"
+#include "AverageSimilarityInDist2Effect.h"
 #include "BalanceEffect.h"
 #include "BehaviorInteractionEffect.h"
 #include "BetweennessEffect.h"
