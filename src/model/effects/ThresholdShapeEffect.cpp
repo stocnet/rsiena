@@ -12,6 +12,7 @@
 #include "ThresholdShapeEffect.h"
 #include "model/variables/BehaviorVariable.h"
 #include "model/EffectInfo.h"
+#include <cmath>
 
 namespace siena
 {
@@ -22,7 +23,7 @@ namespace siena
 ThresholdShapeEffect::ThresholdShapeEffect(const EffectInfo * pEffectInfo) :
 	BehaviorEffect(pEffectInfo)
 {
-	this->lpar = pEffectInfo->internalEffectParameter();
+	this->lpar = std::round(pEffectInfo->internalEffectParameter());
 }
 
 /**
@@ -54,7 +55,7 @@ double ThresholdShapeEffect::calculateChangeContribution(int actor,
 double ThresholdShapeEffect::egoStatistic(int ego, double * currentValues)
 {
 	double statistic = 0;
-	if (currentValues[ego] + this->overallCenterMean() >= this->lpar)
+	if (std::round(currentValues[ego] + this->overallCenterMean()) >= this->lpar)
 	{
 		statistic = 1;
 	}
@@ -71,8 +72,9 @@ double ThresholdShapeEffect::egoEndowmentStatistic(int ego,
 	const int * difference, double * currentValues)
 {
 	double statistic = 0;
-	if ((currentValues[ego] + this->overallCenterMean() >= this-> lpar) && (difference[ego] > 0))
-	{
+	if ((std::round(currentValues[ego] + this->overallCenterMean()) >= this-> lpar) 
+						&& (difference[ego] > 0))
+	{		
 		statistic = 1;
 	}
 	return statistic;
