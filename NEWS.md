@@ -1,3 +1,15 @@
+# RSiena 1.3.28
+
+## 
+   
+2023-10-11
+
+## Changes in RSiena:
+
+### Changed effect:
+  * `threshold`, `threshold2`, `threshold3`, `threshold4' changed to 
+    work with non-centered parameters (not backward-compatible).
+
 # RSiena 1.3.27
 
 ## 
