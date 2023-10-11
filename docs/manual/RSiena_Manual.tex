@@ -13242,6 +13242,57 @@ where $\bar v$ is the overall mean of variable $V$.
  $\Delta=\max_{ij}\vert v_i - v_j \vert$ is the observed range of the
  \emph{original} covariate $v$, and\\
   $\widehat{{\rm sim}^v}$ is as above.
+  
+
+
+\item \emph{covariate - in-alter at W-distance 2} \texttt{(altInDist2W)} \\ % \texttt{(altXDist2W)}.
+      This effect is associated with an effect parameter
+      which can have values 1 or 2.
+      For parameter 1, it is
+      defined as the sum of $W$-in-alters' covariate-average over all actors
+      to whom $i$ has a tie,
+\[
+ s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, \check v_j^W \hfill (\text{parameter 1}), \hfill
+\]
+      where
+\begin{equation}
+  \check v_j^W  = \left\{\begin{array}{ll} \displaystyle
+         \frac{\sum_{h \neq i} w_{hj}\,v_h}{x_{+j} - x_{ij}}  &
+                                       \text{ if } x_{+j} > 0     \\
+         \bar v                                &  \text{ if } x_{+j} = 0  ,
+  \end{array}   \right.            \label{alt_inav2}
+\end{equation}
+where $\bar v$ is (again) the global mean of $V$.
+
+      For parameter 2, it is defined similarly,
+      but for an alters' covariate-average excluding
+      ego:
+\[
+ s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, \check v_j^{W(-i)} \hfill (\text{parameter 2}) \hfill
+\]
+      where
+\begin{equation}
+  \check v_j^{W(-i)} = \left\{\begin{array}{ll} \displaystyle
+         \frac{\sum_{h \neq j} w_{hj}\, v_h}{w_{j+} - w_{ji}}  &  \text{ if } w_{+j} - w_{ij} > 0     \\
+         \bar v                               &  \text{ if } w_{+j}- w_{ij} = 0  .
+  \end{array}   \right.
+\end{equation}
+
+\item \emph{total covariate - in-alter at W-distance 2} \texttt{(totInDist2W)} \\
+      This effect is like the previous effect, but now defined
+      defined as the sum of $W$-in-alters' covariate-total over all actors
+      to whom $i$ has a tie. For parameter 1 it is
+\[
+ s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, x_{j+} \, \check v_j^W \hfill (\text{parameter 1}). \hfill
+\]
+      For parameter 2, it is defined similarly,
+      but for an alters' covariate-total excluding
+      ego:
+\[
+ s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \, (x_{j+}  - x_{ji}) \,
+               \check v_j^{W(-i)} \hfill (\text{parameter 2}) \hfill
+\]
+      where $ \check v_j$ and $ \check v_j^{W(-i)}$ are as above.
 
 \item \emph{ego-(in-alter-W-distance-2) covariate - similarity} \texttt{(simEgoInDist2W)},
       defined as the sum of centered similarity  between $i$
