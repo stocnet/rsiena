@@ -9,6 +9,10 @@
 ### Changed effect:
   * `threshold`, `threshold2`, `threshold3`, `threshold4' changed to 
     work with non-centered parameters (not backward-compatible).
+### Improved documentation:
+  * Descriptions of effects `altInDist2W` and `totInDist2W` added
+    to the manual (the effects had been there since a long time, 
+    but not documented). 
 
 # RSiena 1.3.27
 

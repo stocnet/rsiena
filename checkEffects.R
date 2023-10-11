@@ -420,7 +420,7 @@ mynet <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
 mybeh <- sienaDependent(s50a[,2:3], type="behavior")
 mydata <- sienaDataCreate(mynet, mybeh)
 myeff <- getEffects(mydata)
-
+mymodel <- sienaModelCreate(projname=NULL)
 # for avAttHigher effect:
 myeff <- getEffects(mydata)
 myeff <- includeEffects(myeff,avAttHigher,name='mybeh',interaction1='mynet')
