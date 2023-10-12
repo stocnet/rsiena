@@ -195,7 +195,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.3.27.
+This version was renewed for \RS version 1.3.28.
 \end{abstract}
 
 
@@ -1132,7 +1132,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.3.27).
+  identified by a version number (e.g.\ 1.3.28).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -3879,50 +3879,50 @@ Function \sfn{setEffect} has a keyword \texttt{parameter} to set the
 internal effect parameter, but the function  \sfn{includeInteraction} does not
 have this keyword. The reason is that the internal effect parameters for the
 interaction are borrowed from the main effects; even if these are
-not included in the model. 
+not included in the model.
 Setting the internal effect parameters for main effects, without including them
 in the model, can be done by \\[0.2em]
 \texttt{setEffect(..., parameter=..., include=FALSE)}\\[0.2em]
  as is done in the following example:
 \begin{verbatim}
-myeff <- setEffect(myeff,outActIntnX, 
-   name='mynet2', 
+myeff <- setEffect(myeff,outActIntnX,
+   name='mynet2',
    interaction1='mynet1', interaction2='alc', parameter=1, include=FALSE)
-myeff <- setEffect(myeff,divOutEgoIntn, 
-   name='mynet2', 
+myeff <- setEffect(myeff,divOutEgoIntn,
+   name='mynet2',
    interaction1='mynet1', parameter=1, include=FALSE)
-(myeff <- includeInteraction(myeff,outActIntnX,divOutEgoIntn, 
-   name='mynet2', 
+(myeff <- includeInteraction(myeff,outActIntnX,divOutEgoIntn,
+   name='mynet2',
    interaction1=c('mynet1', 'mynet1'), interaction2=c('alc', '')))
 \end{verbatim}
 The main effects are defined by
 \[
-\sum_j x_{ij}\, \sum_h w_{ih}\,v_h 
+\sum_j x_{ij}\, \sum_h w_{ih}\,v_h
 \] and
 \[
-  \sum_j x_{ij}\, \text{divi}(1, w_{i+}) 
-\] 
+  \sum_j x_{ij}\, \text{divi}(1, w_{i+})
+\]
 where $\text{divi}(a,b)$ is defined as $a/b$ if $b \neq 0$ and 0 if $b=0$;
 so the interaction effect included in this way is
 \[
-\sum_j x_{ij}\,  \Big( \sum_h w_{ih}\,v_h \Big) \times\ \text{divi}(1, w_{i+}) 
+\sum_j x_{ij}\,  \Big( \sum_h w_{ih}\,v_h \Big) \times\ \text{divi}(1, w_{i+})
  \,=\,   \sum_j x_{ij}\, \frac{\sum_h w_{ih}\,v_h}{ w_{i+}}
 \]
 (where the ratio 0/0 is defined as 0), i.e., the ego effect of the
 average value of covariate $V$
-for those to whom actor $i$ has a $W$-outgoing tie. 
+for those to whom actor $i$ has a $W$-outgoing tie.
 \medskip
- 
+
 
 For a \sfn{sienaFit} object \texttt{ans} created from any effect object,
 the effect specification is given by\\[0.3em]
 \texttt{ans\$requestedEffects}\\[0.3em]
 while the effects object also including the main effect is given by\\[0.3em]
 \texttt{ans\$effects}\\[0.3em]
-The latter will show, for any included interaction effects, 
+The latter will show, for any included interaction effects,
 the internal effect parameters used for main effects
 even if they are not included themselves; this gives
-a possibility for checking the internal effect parameters 
+a possibility for checking the internal effect parameters
 used for the interactions.
 
 
@@ -11048,7 +11048,7 @@ where $\bar v$ is (again) the global mean of $V$.
   Note that for ego ($i$) the own value is used and for alter ($j$) the alters' covariate-average
   (these are alter's in-alters!), so that this effect is about a comparison between $i$
    and the in-neighbourhoods of the $j$'s.
-   
+
 \item \emph{ego-(in-alter-distance-2) same covariate} \texttt{(sameEgoInDist2)},
       defined as the sum, for all actors $j$ to whom $i$ has a tie,
       of the proportion of values $v_h$ equal to $v_i$
@@ -11062,7 +11062,24 @@ where 0/0 is defined as 0; for internal effect parameter $p=0$ it is defined
 as the number of out-ties $j$ who have any incoming tie from an actor $h$
 with $v_h = v_i\,$:
 \[
- s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, 
+ s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\,
+                I\Big\{  \Big( \sum_{h \neq i} x_{hj}\, I\{v_h = v_i\} \Big) > 0 \Big\} \ .
+\]
+
+\item \emph{ego-(in-alter-distance-2) same covariate} \texttt{(sameEgoInDist2)},
+      defined as the sum, for all actors $j$ to whom $i$ has a tie,
+      of the proportion of values $v_h$ equal to $v_i$
+      in their in-neighbourhoods (i.e., for all actors $h$, other than $i$,
+       who send ties to $j$; configurations $i \rightarrow j \leftarrow h$):
+\[
+ s^{\rm net}_{i\vit}(x) = \sum_{j;\, j \neq i, \, x_{+j} > x_{ij} } \frac{x_{ij}}{x_{+j} - x_{ij}}
+                        \, \sum_{h \neq i} x_{hj}\, I\{v_h = v_i\} \ ,
+\]
+where 0/0 is defined as 0; for internal effect parameter $p=0$ it is defined
+as the number of out-ties $j$ who have any incoming tie from an actor $h$
+with $v_h = v_i\,$:
+\[
+ s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\,
                 I\Big\{  \Big( \sum_{h \neq i} x_{hj}\, I\{v_h = v_i\} \Big) > 0 \Big\} \ .
 \]
 
@@ -11276,18 +11293,18 @@ for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{i+}} - \sqrt{\
 \smallskip
 
 The following four effects are meant mainly for interactions.
-Recall from Section~\ref{S_int_eff} that interactions are defined by 
+Recall from Section~\ref{S_int_eff} that interactions are defined by
 the product of the change statistics.
-In many cases, the change statistics are defined by omitting 
+In many cases, the change statistics are defined by omitting
 $ \sum_j x_{ij}$ from the formula for the effect.
 In Section~\ref{intint} we saw an example in which the ego effect of the
 average value of covariate $V$ for those to whom actor $i$ has a $W$-outgoing tie
-can be defined as the interaction between  \texttt{outActIntnX}, 
+can be defined as the interaction between  \texttt{outActIntnX},
 the effect of out-degree in $W$, weighted by receiver's $V$, on $X$-activity,
 with  \texttt{divOutEgoIntn}. For a given ego, \texttt{outActIntnX} gives the
 sum of the $V$-values of ego's $W$-ties, and \texttt{divOutEgoIntn} divides
-this by the number of  ego's $W$-ties; this yields the average 
-of the $V$-values of ego's $W$-ties. 
+this by the number of  ego's $W$-ties; this yields the average
+of the $V$-values of ego's $W$-ties.
 
 For such interaction effects, the internal effect parameters
 should match; see Section~\ref{intint}.
@@ -11295,9 +11312,9 @@ should match; see Section~\ref{intint}.
 \begin{enumerate}
 \setcounter{enumi}{\value{savenumi}}
 
- \item {\em 1 divided by ego's out-degree  in W } ($X$: 1/outdeg.$^{1/p}$ $W$ ego) 
+ \item {\em 1 divided by ego's out-degree  in W } ($X$: 1/outdeg.$^{1/p}$ $W$ ego)
  \texttt{(divOutEgoIntn)}\\
- defined by  $i$'s $X$-out-degree divided by the $W$-out-degree of $i$ 
+ defined by  $i$'s $X$-out-degree divided by the $W$-out-degree of $i$
  (for $p = 2$ its square root),  or 0 if the $W$-out-degree is 0:\\[0.2em]
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \text{divi}(1, w_{i+}) $ or\\[0.2em]
 for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\,\text{divi}(1, \sqrt{w_{i+}})$;\\[0.2em]
@@ -12217,7 +12234,7 @@ and the covariate $V$ as \texttt{interaction2}.
 
 These weighted effects are defined by \underline{sums} over all outgoing
 or incoming $W$-ties. To obtain \underline{averages}, they can be interacted
-by the appropriate one of  \texttt{divOutEgoIntn}, \texttt{divInEgoIntn}, 
+by the appropriate one of  \texttt{divOutEgoIntn}, \texttt{divInEgoIntn},
 \texttt{divOutAltIntn}, or \texttt{divInAltIntn}. The internal effect parameters
 should match; see Section~\ref{intint}.
 
@@ -13226,6 +13243,57 @@ where $\bar v$ is the overall mean of variable $V$.
  \emph{original} covariate $v$, and\\
   $\widehat{{\rm sim}^v}$ is as above.
 
+
+
+\item \emph{covariate - in-alter at W-distance 2} \texttt{(altInDist2W)} \\ % \texttt{(altXDist2W)}.
+      This effect is associated with an effect parameter
+      which can have values 1 or 2.
+      For parameter 1, it is
+      defined as the sum of $W$-in-alters' covariate-average over all actors
+      to whom $i$ has a tie,
+\[
+ s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, \check v_j^W \hfill (\text{parameter 1}), \hfill
+\]
+      where
+\begin{equation}
+  \check v_j^W  = \left\{\begin{array}{ll} \displaystyle
+         \frac{\sum_{h \neq i} w_{hj}\,v_h}{x_{+j} - x_{ij}}  &
+                                       \text{ if } x_{+j} > 0     \\
+         \bar v                                &  \text{ if } x_{+j} = 0  ,
+  \end{array}   \right.            \label{alt_inav2}
+\end{equation}
+where $\bar v$ is (again) the global mean of $V$.
+
+      For parameter 2, it is defined similarly,
+      but for an alters' covariate-average excluding
+      ego:
+\[
+ s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, \check v_j^{W(-i)} \hfill (\text{parameter 2}) \hfill
+\]
+      where
+\begin{equation}
+  \check v_j^{W(-i)} = \left\{\begin{array}{ll} \displaystyle
+         \frac{\sum_{h \neq j} w_{hj}\, v_h}{w_{j+} - w_{ji}}  &  \text{ if } w_{+j} - w_{ij} > 0     \\
+         \bar v                               &  \text{ if } w_{+j}- w_{ij} = 0  .
+  \end{array}   \right.
+\end{equation}
+
+\item \emph{total covariate - in-alter at W-distance 2} \texttt{(totInDist2W)} \\
+      This effect is like the previous effect, but now defined
+      defined as the sum of $W$-in-alters' covariate-total over all actors
+      to whom $i$ has a tie. For parameter 1 it is
+\[
+ s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, x_{j+} \, \check v_j^W \hfill (\text{parameter 1}). \hfill
+\]
+      For parameter 2, it is defined similarly,
+      but for an alters' covariate-total excluding
+      ego:
+\[
+ s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \, (x_{j+}  - x_{ji}) \,
+               \check v_j^{W(-i)} \hfill (\text{parameter 2}) \hfill
+\]
+      where $ \check v_j$ and $ \check v_j^{W(-i)}$ are as above.
+
 \item \emph{ego-(in-alter-W-distance-2) covariate - similarity} \texttt{(simEgoInDist2W)},
       defined as the sum of centered similarity  between $i$
       and alters' covariate-in-average, for all actors
@@ -13542,7 +13610,7 @@ with the behavioral variable itself.
 
 \begin{startenum}
  \item {\em behavioral shape effect} \texttt{(linear)},\\
- $s^{\rm beh}_{i\vit}(x, z) = z_i \,$,\\
+ $s^{\rm beh}_{i\vit}(x, z) = z_i \,$ ,\\
  where $z_{i}$ denotes the value of the dependent behavior variable
  of actor $i$;
 
@@ -13550,18 +13618,19 @@ with the behavioral variable itself.
                                                              \texttt{(quad)},
  where the attractiveness of further steps up the behavior `ladder'
  depends on where the actor is on the ladder:\\
- $s^{\rm beh}_{i\vit}(x, z) =  z_i^2$.
+ $s^{\rm beh}_{i\vit}(x, z) =  z_i^2 \,$ ;\\
+ note that here $z_i$ is the
+ \underline{centered} dependent behavioral variable;
 
  \item {\em threshold shape effect}    \texttt{(threshold)},
   \texttt{(threshold2)},  \texttt{(threshold3)},  \texttt{(threshold4)},
  where the attractiveness of the behavior depends on
  whether it is larger than the internal effect parameter $p$:\\
- $s^{\rm beh}_{i\vit}(x, z) =  I\{ z_i \geq p\}  $ ;\\
- note that $z_i$ is the
- \underline{centered} dependent behavioral variable!\\
+ $s^{\rm beh}_{i\vit}(x, z) =  I\{ z_i \geq p\}$ ;\\
+ note that by exception $z_i$ here is the
+ \underline{uncentered} dependent behavioral variable!
  Multiple versions of this effect are available to allow the use
  of more than one threshold.
-
 
  \item {\em $p$-near similarity effect} \texttt{(simAllNear)},\\
   $  s_{i\vit}(z) \,=\, \sum_{j\neq i}  \big(  \max\{ p \,-\, | z_j - z_i |, \,0  \} \big)
@@ -13957,7 +14026,25 @@ The list of these effects is the following.
  behavior multiplied by the total of the incoming alter-averages $ z_j^{(-i)}$ of his alters,
  excluding the contribution from a tie $i \rightarrow j$ (if any), \\[0.3ex]
  $s^{\rm beh}_{i\vit}(x, z) =  z_i \big( \sum_j x_{ij}\, \check z_j^{(-i)} \big) $;
- 
+
+
+ \item {\em average in-similarity effect at distance 2} \texttt{(avInSimDist2)},
+ defined by  $i$'s average similarity to the incoming alter
+ averages $\check z_j^{(-i)}$ of his out-alters,
+ excluding the contribution from a tie $i \rightarrow j$ (if any), \\[0.3ex]
+ $s^{\rm beh}_{i\vit}(x, z) = \Big(\sum_j x_{ij}\,I\{x_{+j} - x_{ij} > 0  \}\,
+        \big({\rm sim}^z(z_i, \check z_j^{(-i)}) - \widehat{{\rm sim}^z}\big) \Big)/ \sum_j x_{ij} $,\\
+ where the similarity scores ${\rm sim}^z$ are defined as usual;\\
+ this is the behavior/influence effect parallel to \texttt{simEgoInDist2};
+
+ \item {\em total in-similarity effect at distance 2} \texttt{(totInSimDist2)},
+ defined by the sum of $i$'s similarity to the incoming alter
+ averages $\check z_j^{(-i)}$ of his out-alters,
+ excluding the contribution from a tie $i \rightarrow j$ (if any), \\[0.3ex]
+ $s^{\rm beh}_{i\vit}(x, z) = \sum_j x_{ij}\,I\{x_{+j} - x_{ij} > 0  \}\,
+        \big({\rm sim}^z(z_i, \check z_j^{(-i)}) - \widehat{{\rm sim}^z}\big)  $,\\
+ where again the similarity scores ${\rm sim}^z$ are defined as usual;
+
 
  \item {\em average in-similarity effect at distance 2} \texttt{(avInSimDist2)},
  defined by  $i$'s average similarity to the incoming alter
@@ -16229,12 +16316,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.3.27.tar.gz|\\
+\verb|R CMD check RSiena_1.3.28.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.3.27.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.3.28.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -17283,6 +17370,21 @@ Changes in RSiena:
 \fi
 
 
+\item 2023-10-11 GitHub, package version 1.3.28
+\begin{itemize}
+\item Changed effect:
+   \begin{itemize}
+  \item \texttt{threshold}, \texttt{threshold2}, \texttt{threshold3} and \texttt{threshold4} 
+    changed to work with non-centered parameter (not backward-compatible).
+    \end{itemize}
+\item Improved documentation:
+   \begin{itemize}
+  \item Descriptions of effects \texttt{altInDist2W} and \texttt{totInDist2W} added
+  to the manual (the effects had been there since a long time, but not documented). 
+    \end{itemize}
+\end{itemize}
+
+
 \item 2023-09-29 GitHub, package version 1.3.27
 
 
@@ -17300,7 +17402,7 @@ Changes in RSiena:
 \item Improvements of functionality:
    \begin{itemize}
   \item The slowness of \sfn{siena07} that occurred since version 1.3.18
-    was ended (by correcting one line in \sfn{siena07models.cpp}).    
+    was ended (by correcting one line in \sfn{siena07models.cpp}).
     \end{itemize}
 \item Improved documentation:
    \begin{itemize}

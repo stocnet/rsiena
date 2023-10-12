@@ -38,7 +38,7 @@ CovariateDistance2EgoAltSameNetworkFunction(string networkName, string
 {
 	this->lexcludeMissing = excludeMissing;
 	this->loutgoing = outgoing;
-	this->ltrunc = (std::trunc(parameter) == 0);
+	this->ltrunc = (std::round(parameter) == 0);
 }
 
 
