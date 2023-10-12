@@ -1838,6 +1838,6 @@ mycontrols <- sienaModelCreate(projname=NULL, seed=842)
 ans$targets
 # 47 31 19 8 
 
-sapply(2:5, function(t){return(table(s50a[, 2 ]>= t))})[2, ]
+vapply(2:5, function(t){return(table(s50a[, 2] >= t))}, 1:2)[2, ]
 # gives same values; OK
 
