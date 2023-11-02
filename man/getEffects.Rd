@@ -4,7 +4,7 @@
 \alias{sienaGroupEffects}
 \title{Function to create a Siena effects object}
 \description{
-  Creates a basic list of effects for all dependent
+  Creates a basic list of effects for all dependent  
   variables in the input siena object.
 }
 \usage{

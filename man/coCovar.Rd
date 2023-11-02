@@ -2,7 +2,7 @@
 \alias{coCovar}
 \title{Function to create a constant covariate object}
 \description{
-  This function creates a constant covariate object from a vector.
+  This function creates a constant covariate object from a vector.  
   }
 \usage{
 coCovar(val, centered=TRUE, nodeSet="Actors", warn=TRUE, imputationValues=NULL)

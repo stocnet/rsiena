@@ -5,8 +5,8 @@
 \title{
 Functions to create a Siena composition change object
 }
-\description{Used to create a list of events describing the changes over
-  time of a Siena actor set
+\description{Used to create a list of events describing the changes    
+  over time of a Siena actor set.
 }
 \usage{
 sienaCompositionChange(changelist, nodeSet = "Actors", option = 1)
@@ -83,13 +83,15 @@ sienaCompositionChangeFromFile(filename, nodeSet = "Actors",
   \item{NodeSet}{Name of node set}
   \item{Option}{Option}
 }
-\references{\itemize{
-   \item Huisman, M. E. and Snijders, T. A. B. (2003).
+\references{
+    Huisman, M.E. and Snijders, T.A.B. (2003),
    Statistical analysis of longitudinal network data with changing composition.
-   \emph{Sociological Methods & Research}, 32, 253-287.
-   \item The manual: \url{https://www.stats.ox.ac.uk/~snijders/siena/RSiena_Manual.pdf}
-   \item Further see \url{https://www.stats.ox.ac.uk/~snijders/siena/}
-   }}
+   \emph{Sociological Methods & Research}, \bold{32}, 253--287.
+   
+   See also \url{https://www.stats.ox.ac.uk/~snijders/siena/RSiena_Manual.pdf}
+    
+    Further see \url{https://www.stats.ox.ac.uk/~snijders/siena/}
+   }
 \author{Ruth Ripley }
 \seealso{
  \code{\link{sienaNodeSet}},

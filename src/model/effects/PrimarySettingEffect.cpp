@@ -11,6 +11,7 @@
 
 #include <stdexcept>
 #include <cmath>
+#include <string>
 #include <R_ext/Print.h>
 #include "NetworkEffect.h"
 #include "PrimarySettingEffect.h"
@@ -84,8 +85,8 @@ double PrimarySettingEffect::transform(int value) const
 {
 	if (value < 0)
 	{
-		throw logic_error("negative value in PrimarySettingEffect::transform: value=" +
-			value);
+		throw logic_error("negative value in PrimarySettingEffect::transform: value= " +
+			to_string(value));
 	}
 	double contribution = value;
 	if (this->llogar)

@@ -73,10 +73,6 @@ private:
 	double lAdt;
 	double lQdt;
 	
-	// The distance of this variable from the observed data at the beginning
-	// of the current period
-	double lsimulatedDistance;
-
 	// The score for the basic scale parameter for this variable for this period
 	double lbasicScaleScore;
 

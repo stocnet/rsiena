@@ -3,7 +3,7 @@
 \title{
 Function to create user-specified interactions for a Siena model.
 }
-\description{This function allows the user to include or exclude
+\description{This function allows the user to include or exclude   
   an interaction effect in a Siena effects object.
 }
 \usage{
