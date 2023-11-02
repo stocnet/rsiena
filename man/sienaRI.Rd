@@ -7,25 +7,28 @@
 \title{Functions to assess the relative importance of effects at observation
        moments}
 \description{
- The function \code{sienaRI} computes various effect sizes for
- Stochastic Actor-oriented Models.
- As its value it returns the relative importance of effects
- of a SAOM according to the measure of relative importance described in
- Section 3.1 of Indlekofer and Brandes (2013).
- This is based on the influence of effects on potential tie change or
- behavior change decisions of individual actors at the given observation
- moments (waves).
- It takes the data as well as the complete model specification into account.
- Therefore, necessary arguments are the analysed data given as a \code{siena}
- data object as well as the complete model specification represented either
- by an estimated \code{sienaFit} object or by the triple consisting of a
- suitable parameter vector \code{theta} and the corresponding
- \code{sienaAlgorithm} and \code{sienaEffects} objects.\cr
- Other measures useful for effect sizes are entropy-based
- effect sizes as in Snijders (2004) and the within-ego
- standard deviations of change statistics.
- If \code{getChangeStats=TRUE}, the arrays of change statistics are stored
- in the \code{sienaRI} object.}
+ The function \code{sienaRI} computes various effect sizes for   
+ Stochastic Actor-oriented Models.    
+ As its value it returns the relative importance of effects   
+ of a SAOM according to the measure of relative importance described in   
+ Section 3.1 of Indlekofer and Brandes (2013).   
+ This is based on the influence of effects on potential tie change or   
+ behavior change decisions of individual actors at the given observation  
+ moments (waves).  
+
+ It takes the data as well as the complete model specification into account.   
+ Therefore, necessary arguments are the analysed data given as a  
+ \code{\link{siena}} data object as well as the complete model  
+ specification represented either by an estimated \code{sienaFit}  
+ object or by the triple consisting of a  
+ suitable parameter vector \code{theta} and the corresponding   
+ \code{\link{sienaAlgorithm}} and \code{\link{sienaEffects}} objects.\cr  
+ Other measures useful for effect sizes are entropy-based  
+ effect sizes as in Snijders (2004) and the within-ego  
+ standard deviations of change statistics.  
+ If \code{getChangeStats=TRUE}, the arrays of change statistics are   
+ stored in the \code{sienaRI} object.
+}
 \usage{
 sienaRI(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL,
         getChangeStats=FALSE)
@@ -202,14 +205,13 @@ corresponding to the observation moments.
 }
 
 \references{
-\itemize{
-\item Indlekofer, Natalie and Brandes, Ulrik (2013).
+ Indlekofer, N. and Brandes, U. (2013),
  Relative Importance of Effects in Stochastic Actor-oriented Models.
- \emph{Network Science}, 1 (3), 278-304.
-\item Snijders, Tom A.B. (2004).
+ \emph{Network Science}, \bold{1}, 278--304.
+ 
+ Snijders, T.A.B. (2004),
   Explained Variation in Dynamic Network Models.
-  \emph{Mathematics and Social Sciences}, 168 (4), 31-41.
-}
+  \emph{Mathematics and Social Sciences}, \bold{168}, 31--41.
 }
 \author{Natalie Indlekofer, additions by Tom Snijders}
 \examples{

@@ -2,12 +2,13 @@
 \alias{sienaTimeTest}
 \title{Functions to assess and account for time heterogeneity of parameters}
 \description{
- Takes a \code{sienaFit} object estimated by Method of Moments,
- and tests for time heterogeneity by the addition of interactions with
- time dummy variables at waves \code{m=2...(M-1)}.
+ Takes a \code{sienaFit} object estimated by Method of Moments,  
+ and tests for time heterogeneity by the addition of interactions with  
+ time dummy variables at waves \code{m=2...(M-1)}.  
  The test used is the score-type test of Schweinberger (2012).
- Tests for joint significance, parameter-wise significance,
- period-wise significance, individual significance, and one-step
+
+ Tests for joint significance, parameter-wise significance,  
+ period-wise significance, individual significance, and one-step   
  estimates of the unrestricted model parameters are returned in a list.
  }
 \usage{
@@ -92,17 +93,16 @@ sienaTimeTest(sienaFit, effects=NULL, excludedEffects=NULL, condition=FALSE)
     estimates, and \eqn{p}-values for the individual interactions.}
 }
 
-\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}
-  for general information on RSiena.
-
+\references{
 J.A. Lospinoso, M. Schweinberger, T.A.B. Snijders, and R.M. Ripley
-(2011). Assessing and Accounting for Time Heterogeneity in Stochastic
+(2011), Assessing and Accounting for Time Heterogeneity in Stochastic
 Actor Oriented Models. \emph{Advances in Data Analysis and Computation},
-5:147-176.
+\bold{5}, 147--176.
 
-M. Schweinberger (2012). Statistical modeling of network panel data:
+M. Schweinberger (2012), Statistical modeling of network panel data:
 Goodness-of-fit. \emph{British Journal of Statistical
-and Mathematical Psychology} \bold{65}, 263--281.}
+and Mathematical Psychology} \bold{65}, 263--281.
+}
 
 \author{Josh Lospinoso, Tom Snijders}
 \seealso{\code{\link{siena07}}, \code{\link{plot.sienaTimeTest}},

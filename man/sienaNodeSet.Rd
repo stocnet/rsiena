@@ -1,8 +1,8 @@
 \name{sienaNodeSet}
 \alias{sienaNodeSet}
 \title{Function to create a node set }
-\description{Creates a Siena node set which can be used as the nodes in a
-  siena network.
+\description{Creates a Siena node set which can be used as the nodes in a  
+  Siena network.
 }
 \usage{
 sienaNodeSet(n, nodeSetName="Actors", names=NULL)

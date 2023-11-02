@@ -4,19 +4,21 @@
 \alias{descriptives.sienaGOF}
 \title{Functions to assess goodness of fit for SAOMs}
 \description{
- The function \code{sienaGOF} assesses goodness of fit
- for a model specification as represented by an estimated
- \code{sienaFit} object created by \code{\link{siena07}}.
- This is done by simulations of auxiliary
- statistics, that differ from the statistics used for estimating
- the parameters. The auxiliary statistics must be given explicitly.
- The fit is good if the average values
- of the auxiliary statistics over many simulation runs are close
- to the values observed in the data.
- A Monte Carlo test based on the Mahalanobis
- distance is used to calculate frequentist \eqn{p}-values.
- Plotting functions can be used to diagnose bad fit. There are basic
- functions for calculating auxiliary statistics available out of the
+ The function \code{sienaGOF} assesses goodness of fit  
+ for a model specification as represented by an estimated  
+ \code{sienaFit} object created by \code{\link{siena07}}.  
+ This is done by simulations of auxiliary  
+ statistics, that differ from the statistics used for estimating  
+ the parameters. The auxiliary statistics must be given explicitly. 
+ 
+ The fit is good if the average values  
+ of the auxiliary statistics over many simulation runs are close  
+ to the values observed in the data.  
+ A Monte Carlo test based on the Mahalanobis  
+ distance is used to calculate frequentist \eqn{p}-values.  
+
+ Plotting functions can be used to diagnose bad fit. There are basic  
+ functions for calculating auxiliary statistics available out of the  
  box, and the user is invited to create additional ones.
  }
 
@@ -34,7 +36,7 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
   \item{sienaFitObject}{An object of class \code{\link{sienaFit}}, produced by a
     call to \code{\link{siena07}} with \code{returnDeps = TRUE} and
     \code{maxlike=FALSE} (the latter is the default, the former is not);
-	or a list of such objects; if a list, then the first period 
+    or a list of such objects; if a list, then the first period 
     of each \code{\link{sienaFit}} object will be used.\cr
     If this is a list of \code{\link{sienaFit}} objects,
     where \code{sienaFitObject} is mentioned below, it refers to the first
@@ -242,13 +244,11 @@ We recommend the following heuristic approach to model checking:
 }
 
 \references{
-\itemize{
-\item See \url{https://www.stats.ox.ac.uk/~snijders/siena/}
-  for general information on RSiena.
-\item Lospinoso, J.A. and Snijders, T.A.B. (2019).
-  Goodness of fit for stochastic actor-orientedmodels.
-  \emph{Methodological Innovations}, 12:2059799119884282.
-}
+ Lospinoso, J.A. and Snijders, T.A.B. (2019,
+  Goodness of fit for stochastic actor-oriented models.
+  \emph{Methodological Innovations}, \bold{12}:2059799119884282.
+  
+  Also see \url{https://www.stats.ox.ac.uk/~snijders/siena/}
 }
 \author{Josh Lospinoso, modifications by Ruth Ripley and Tom Snijders}
 \seealso{\code{\link{siena07}}, \code{\link{sienaGOF-auxiliary}},

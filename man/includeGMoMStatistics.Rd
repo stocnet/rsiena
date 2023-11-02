@@ -4,7 +4,7 @@
   Function to include GMoM statistics in a Siena model
 }
 \description{
-  This function can be used for including one or more GMoM statistics
+  This function can be used for including one or more GMoM statistics   
   by modifying a Siena effects object.
 }
 \usage{

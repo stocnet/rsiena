@@ -3,9 +3,9 @@
 \title{
 Function to change the values of the constraints between networks.
 }
-\description{This function allows the user to change the constraints of
-  "higher", "disjoint" and "atLeastOne" for a specified pair of networks
-  in a Siena data object.
+\description{This function allows the user to change the constraints   
+  of "higher", "disjoint" and "atLeastOne" for a specified pair of  
+  networks in a Siena data object.
 }
 \usage{
 sienaDataConstraint(x, net1, net2,

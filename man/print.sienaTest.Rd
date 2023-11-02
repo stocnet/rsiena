@@ -5,8 +5,8 @@
   Print method for Wald and score tests for RSiena results
 }
 \description{
-  This method prints Wald-type and score-type tests for results
-  estimated by siena07.
+  This method prints Wald-type and score-type tests for results   
+  estimated by \code{\link{siena07}}.
 }
 \usage{
 \method{print}{sienaTest}(x, \dots)

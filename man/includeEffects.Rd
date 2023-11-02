@@ -4,7 +4,7 @@
   Function to include effects in a Siena model
 }
 \description{
-  This function can be used for model specification
+  This function can be used for model specification  
   by modifying a Siena effects object.
 }
 \usage{

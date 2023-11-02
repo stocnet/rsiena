@@ -4,8 +4,8 @@
   Function to set various columns in an effects object in a Siena model.
 }
 \description{
-  This function provides an interface to change various columns of a
-  selected row of a Siena effects object.
+  This function provides an interface to change various columns of   
+  a selected row of a Siena effects object.
 }
 \usage{
 setEffect(myeff, shortName, parameter = NULL, fix = FALSE,

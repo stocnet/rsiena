@@ -2,8 +2,8 @@
 \alias{includeTimeDummy}
 \title{Function to include time dummy effects in a Siena model}
 \description{
-  This function specifies time heterogeneity for selected effects
-  in a Siena model, by interacting them with time dummies,
+  This function specifies time heterogeneity for selected effects   
+  in a Siena model, by interacting them with time dummies,   
   without explicitly using time-dependent covariates.
  }
 

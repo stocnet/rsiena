@@ -4,7 +4,7 @@
 Function to create a table of documentation of effect names, short names etc.
 }
 \description{
-  Produces a table of the shortnames and other information for effects,
+  Produces a table of the shortnames and other information for effects,  
   either in html or latex.
 }
 \usage{
