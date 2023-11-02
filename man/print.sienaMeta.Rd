@@ -18,7 +18,7 @@ meta.table(x, d=3, option=2,
     filename=paste(deparse(substitute(x)),'_global.tex',sep=""), align=TRUE)
 }
 \description{
-  \code{print}, \code{summary}, and \code{plot} methods for
+  \code{print}, \code{summary}, and \code{plot} methods for   
    \code{sienaMeta} objects; and a function to write a LaTeX table.
 }
 \arguments{
@@ -68,16 +68,16 @@ meta.table(x, d=3, option=2,
  The function \code{plot.sienaMeta} plots estimates against standard
  errors for each effect, with reference lines added at the two-sided
  significance threshold 0.05. It returns an object of class \code{trellis},
- of the \code{\link{lattice}} package. Effects for which a score test
+ of the \pkg{lattice} package. Effects for which a score test
  was requested are not plotted.\cr
  Another funnel plot, not using \code{\link{siena08}},
  is available as \code{\link{funnelPlot}}.
 }
-\references{
-  T. A. B. Snijders and Chris Baerveldt.
-  "Multilevel network study of the effects
-  of delinquent behavior on friendship
-  evolution". \emph{Journal of Mathematical Sociology}, 27: 123--151, 2003.
+\references{ 
+Snijders, T.A.B, and Baerveldt, C. (2003),
+A Multilevel Network Study of the Effects of Delinquent Behavior
+on Friendship Evolution.
+\emph{Journal of Mathematical Sociology} \bold{27}, 123--151.
 
   See also the Siena manual and
   \url{https://www.stats.ox.ac.uk/~snijders/siena/}

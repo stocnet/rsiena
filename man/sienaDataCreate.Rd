@@ -3,9 +3,10 @@
 \alias{siena}
 \title{Function to create a Siena data object}
 \description{
-Creates a Siena data object from input dependent variables
-    (networks and possibly behavioural variables), covariates, and
-    composition change objects.}
+    Creates a Siena data object from input dependent variables   
+    (networks and possibly behavioural variables), covariates,
+     and composition change objects.
+}
 \usage{
 sienaDataCreate(..., nodeSets=NULL, getDocumentation=FALSE)
 }

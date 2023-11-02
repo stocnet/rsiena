@@ -2,7 +2,7 @@
 \alias{sienaGroupCreate}
 \alias{sienaGroup}
 \title{Function to group together several Siena data objects }
-\description{Creates an object of class "sienaGroup" from a list of
+\description{Creates an object of class "sienaGroup" from a list of  
   Siena data objects.
 }
 \usage{

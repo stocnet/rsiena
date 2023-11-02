@@ -7,8 +7,8 @@
 \alias{testSame.RSiena}
 \title{  Wald and score tests for RSiena results }
 \description{
-  These functions compute Wald-type and score-type tests for results
-  estimated by siena07.
+  These functions compute Wald-type and score-type tests for results   
+  estimated by \code{\link{siena07}}.
 }
 \usage{
 Wald.RSiena(A, ans)
@@ -38,11 +38,11 @@ testSame.RSiena(ans, e1, e2)
 }
 
 \details{The hypothesis tested by \code{Wald.RSiena}
-   is \eqn{A\theta = 0}, where \eqn{\theta} is
+   is \eqn{A\theta = 0}{A theta = 0}, where \eqn{\theta}{theta} is
    the parameter estimated in the process leading to \code{ans}.
 
    The hypothesis tested by \code{Multipar.RSiena} is that all
-   parameters given in \eqn{\ldots} are 0. This is a special case of
+   parameters given in \eqn{\ldots}{...} are 0. This is a special case of
    \code{Wald.RSiena}.
 
    The hypothesis tested by \code{testSame.RSiena} is that all
@@ -62,7 +62,6 @@ testSame.RSiena(ans, e1, e2)
    These functions have their own print method, see \code{\link{print.sienaTest}}.
 }
 \value{An object of class \code{sienaTest}, which is a list with elements:
-\itemize{
   \item{chisquare: }{ The test statistic, assumed to have a chi-squared null
     distribution.}
   \item{df: }{ The degrees of freedom.}
@@ -70,7 +69,6 @@ testSame.RSiena(ans, e1, e2)
   \item{onesided: }{For \code{df}=1, the onesided test statistic.}
   \item{efnames: }{For \code{Multipar.RSiena} and \code{score.Test}, the names
               of the tested effects.}
-}
 }
 \references{See the manual and \url{https://www.stats.ox.ac.uk/~snijders/siena/}
 

@@ -7,11 +7,12 @@
 \title{Function to create an object containing the algorithm
   specifications for parameter estimation in RSiena}
 \description{
-  Creates an object with specifications for the algorithm for parameter
-  estimation in RSiena.\cr
-  \code{sienaAlgorithmCreate()} and \code{sienaModelCreate()}
-  are identical functions; the second name was
-  used from the start of the \code{RSiena} package, but the first name
+  Creates an object with specifications for the algorithm for  
+  parameter estimation in RSiena.   
+
+  \code{sienaAlgorithmCreate()} and \code{sienaModelCreate()}   
+  are identical functions; the second name was   
+  used from the start of the \code{RSiena} package, but the first name   
   indicates more precisely the purpose of this function.
 }
 \usage{
@@ -202,14 +203,15 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
 }
 \value{Returns an object of class \code{sienaAlgorithm} containing
   values implied by the parameters.}
-\references{ \itemize{
-\item For the model types: \cr
-   Tom A. B. Snijders and Mark Pickup,
+\references{
+    For \code{modelType}:\cr
+   Snijders, T.A.B., and Pickup, M. (2016),
    Stochastic Actor-Oriented Models for Network Dynamics.
-   In: Jennifer N. Victor, Mark Lubell and Alexander H. Montgomery,
-   Oxford Handbook of Political Networks. Oxford University Press, 2016.
-\item Also see \url{https://www.stats.ox.ac.uk/~snijders/siena/}
-}}
+   In: Victor, J.N., Lubell, M., and Montgomery, A.H.,
+   \emph{Oxford Handbook of Political Networks}. Oxford University Press.
+   
+    Also see \url{https://www.stats.ox.ac.uk/~snijders/siena/}
+}
 \author{Ruth Ripley and Tom A.B. Snijders}
 \seealso{\code{\link{siena07}}, \code{\link{simstats0c}}.}
 \examples{

@@ -2,8 +2,8 @@
 \alias{maxlikefn}
 \title{A ML version of FRAN}
 \description{
- A function to be called as "FRAN". All in R. very slow. work in
- progress.
+ A function to be called as "FRAN". All in R. very slow.   
+ work in progress.
 }
 \usage{
 maxlikefn(z, x, INIT = FALSE, TERM = FALSE, data,

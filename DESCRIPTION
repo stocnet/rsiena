@@ -2,15 +2,15 @@ Encoding: UTF-8
 Package: RSiena
 Type: Package
 Title: Siena - Simulation Investigation for Empirical Network Analysis
-Version: 1.3.28
-Date: 2023-10-11
+Version: 1.4.1
+Date: 2023-11-01
 Authors@R: c(person("Tom A.B.", "Snijders", role = c("cre", "aut"), email = "tom.snijders@nuffield.ox.ac.uk", 
                 comment = c(ORCID = "0000-0003-3157-4157")),
-              person("Ruth", "Ripley", role = "aut"),
+              person("Ruth M.", "Ripley", role = "aut"),
               person("Krists", "Boitmanis", role = c( "aut","ctb")),
               person("Christian", "Steglich", role = c("aut","ctb"), comment = c(ORCID = "0000-0002-9097-0873")),
-              person("Johan", "Koskinen", role = c("aut","ctb"), comment = c(ORCID = "0000-0002-6860-325X")),
-              person("Nynke", "Niezink", role = c("aut","ctb"), comment = c(ORCID = "0000-0003-4199-4841")),
+              person("Johan", "Koskinen", role = c("ctb"), comment = c(ORCID = "0000-0002-6860-325X")),
+              person("Nynke M.D.", "Niezink", role = c("aut","ctb"), comment = c(ORCID = "0000-0003-4199-4841")),
               person("Viviana", "Amati", role = c("aut","ctb"), comment = c(ORCID = "0000-0003-1190-1237")),
               person("Christoph", "Stadtfeld", role = "ctb", comment = c(ORCID = "0000-0002-2704-2134")),
               person("James", "Hollway", role = "ctb", comment = c("IHEID", ORCID = "0000-0002-8361-9647")),
@@ -20,7 +20,7 @@ Authors@R: c(person("Tom A.B.", "Snijders", role = c("cre", "aut"), email = "tom
               person("Josh", "Lospinoso", role = "ctb"),
               person("Michael", "Schweinberger", role = "ctb", comment = c(ORCID = "0000-0003-3649-5386")),
               person("Mark", "Huisman", role = "ctb",comment = c(ORCID = "0000-0002-9009-7859")),
-              person("Felix", "Schoenenberger", role = "ctb"),
+              person("Felix", "Schoenenberger", role = c("aut","ctb")),
               person("Mark", "Ortmann", role = "ctb"),
               person("Marion", "Hoffman", role = "ctb", comment=c(ORCID = "0000-0002-0741-7760")),
               person("Robert", "Hellpap", role = "ctb"),
@@ -44,26 +44,4 @@ LazyData: yes
 Biarch: yes
 NeedsCompilation: yes
 BuildResaveData: no
-URL: <https://www.stats.ox.ac.uk/~snijders/siena/>
-Author: Tom A.B. Snijders [cre, aut] (<https://orcid.org/0000-0003-3157-4157>),
-  Ruth Ripley [aut],
-  Krists Boitmanis [aut, ctb],
-  Christian Steglich [aut, ctb] (<https://orcid.org/0000-0002-9097-0873>),
-  Johan Koskinen [aut, ctb] (<https://orcid.org/0000-0002-6860-325X>),
-  Nynke Niezink [aut, ctb] (<https://orcid.org/0000-0003-4199-4841>),
-  Viviana Amati [aut, ctb] (<https://orcid.org/0000-0003-1190-1237>),
-  Christoph Stadtfeld [ctb] (<https://orcid.org/0000-0002-2704-2134>),
-  James Hollway [ctb] (IHEID, <https://orcid.org/0000-0002-8361-9647>),
-  Per Block [ctb] (<https://orcid.org/0000-0002-7583-2392>),
-  Robert Krause [ctb],
-  Charlotte Greenan [ctb],
-  Josh Lospinoso [ctb],
-  Michael Schweinberger [ctb] (<https://orcid.org/0000-0003-3649-5386>),
-  Mark Huisman [ctb],
-  Felix Schoenenberger [ctb],
-  Mark Ortmann [ctb],
-  Marion Hoffman [ctb],
-  Robert Hellpap [ctb],
-  Alvaro Uzaheta [ctb],
-  Steffen Triebel [ctb]
-Repository: CRAN
+URL: https://www.stats.ox.ac.uk/~snijders/siena/

@@ -1,3 +1,26 @@
+# RSiena 1.4.1
+
+2023-10-31
+
+## New CRAN version.
+
+### Changes in help files:
+  * Changes in accordance with "Guidelines for Rd files". 
+
+# RSiena 1.4.0
+
+2023-10-31
+
+### Changes in meta-data:
+  * `Author` field omitted in `DESCRIPTION`, because `Author@R` is sufficient.
+### Changes in `inst` directory:
+  * Superfluous files in `inst` directory omitted.
+  * New `CITATION`.
+### Small changes in coding:
+  * Superfluous "lsimulatedDistance" in `SdeSimulation.h` deleted.
+  * In `PrimarySettingEffect.cpp`, used `to_string` for converting a number
+    to string in an error message.
+
 # RSiena 1.3.28
 
 ## 

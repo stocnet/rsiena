@@ -1,5 +1,5 @@
 
-R version 4.2.3 (2023-03-15 ucrt) -- "Shortstop Beagle"
+R version 4.3.1 (2023-06-16 ucrt) -- "Beagle Scouts"
 Copyright (C) 2023 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
@@ -953,6 +953,9 @@ Phase 2 Subphase 1 Iteration 9 Progress: 48%
 Phase 2 Subphase 1 Iteration 10 Progress: 48%
 theta -1.1462  2.0525 -0.0622 
 ac 0.467 0.678 0.461 
+Phase 2 Subphase 1 Iteration 200 Progress: 94%
+theta -1.1846  1.8371 -0.0175 
+ac  0.0184 -0.0096  0.0546 
 theta -1.14850  1.81475  0.00267 
 ac  0.00745 -0.00359  0.01501 
 theta: -1.14850  1.81475  0.00267 
@@ -982,4 +985,4 @@ Total of 285 iteration steps.
 > 
 > proc.time()
    user  system elapsed 
-  20.17    0.10   22.56 
+  14.07    0.15   17.75 
