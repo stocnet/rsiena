@@ -4,21 +4,21 @@
 \alias{descriptives.sienaGOF}
 \title{Functions to assess goodness of fit for SAOMs}
 \description{
- The function \code{sienaGOF} assesses goodness of fit  
- for a model specification as represented by an estimated  
- \code{sienaFit} object created by \code{\link{siena07}}.  
- This is done by simulations of auxiliary  
- statistics, that differ from the statistics used for estimating  
- the parameters. The auxiliary statistics must be given explicitly. 
- 
- The fit is good if the average values  
- of the auxiliary statistics over many simulation runs are close  
- to the values observed in the data.  
- A Monte Carlo test based on the Mahalanobis  
- distance is used to calculate frequentist \eqn{p}-values.  
+ The function \code{sienaGOF} assesses goodness of fit
+ for a model specification as represented by an estimated
+ \code{sienaFit} object created by \code{\link{siena07}}.
+ This is done by simulations of auxiliary
+ statistics, that differ from the statistics used for estimating
+ the parameters. The auxiliary statistics must be given explicitly.
 
- Plotting functions can be used to diagnose bad fit. There are basic  
- functions for calculating auxiliary statistics available out of the  
+ The fit is good if the average values
+ of the auxiliary statistics over many simulation runs are close
+ to the values observed in the data.
+ A Monte Carlo test based on the Mahalanobis
+ distance is used to calculate frequentist \eqn{p}-values.
+
+ Plotting functions can be used to diagnose bad fit. There are basic
+ functions for calculating auxiliary statistics available out of the
  box, and the user is invited to create additional ones.
  }
 
@@ -26,7 +26,7 @@
 sienaGOF(sienaFitObject, auxiliaryFunction,
         period=NULL, verbose=FALSE, join=TRUE, twoTailed=FALSE,
         cluster=NULL, robust=FALSE, groupName="Data1",
-        varName, tested=NULL, giveNAWarning=TRUE, \dots)
+        varName, tested=NULL, iterations=NULL, giveNAWarning=TRUE, \dots)
 \method{plot}{sienaGOF}(x, center=FALSE, scale=FALSE, violin=TRUE, key=NULL,
         perc=.05, period=1, position=4, fontsize=12, \dots)
 descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
@@ -36,7 +36,7 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
   \item{sienaFitObject}{An object of class \code{\link{sienaFit}}, produced by a
     call to \code{\link{siena07}} with \code{returnDeps = TRUE} and
     \code{maxlike=FALSE} (the latter is the default, the former is not);
-    or a list of such objects; if a list, then the first period 
+    or a list of such objects; if a list, then the first period
     of each \code{\link{sienaFit}} object will be used.\cr
     If this is a list of \code{\link{sienaFit}} objects,
     where \code{sienaFitObject} is mentioned below, it refers to the first
@@ -77,6 +77,9 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
           (number of parameters), indicating a subset of tested parameters;
           or \code{NULL}, indicating all tested parameters (see below);
           or \code{FALSE}, indicating nothing is to be tested.}
+  \item{iterations}{ Number of iterations for the goodness of fit calculations.
+        If \code{NULL}, the number of simulated data sets in
+        \code{sienaFitObject}.  }
   \item{giveNAWarning}{If \code{TRUE}, a warning is given if any simulated
         values are missing.}
   \item{x}{ Result from a call to sienaGOF. }
@@ -115,6 +118,10 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
  by the command \code{"names(dataObject)"} (where \code{dataObject} is
  the data used to produce the \code{sienaFitObject}).
  Mostly they are \code{"Data1", "Data2"}, etc.
+
+ To save computation time, \code{iterations} can be set to a lower number
+ than what is available in \code{sienaFitObject}; this will yield
+ a less precise result.
 
  The function does not work properly for data sets that include a
  \code{\link{sienaCompositionChange}} object. If you wish to test the
@@ -247,7 +254,7 @@ We recommend the following heuristic approach to model checking:
  Lospinoso, J.A. and Snijders, T.A.B. (2019,
   Goodness of fit for stochastic actor-oriented models.
   \emph{Methodological Innovations}, \bold{12}:2059799119884282.
-  
+
   Also see \url{https://www.stats.ox.ac.uk/~snijders/siena/}
 }
 \author{Josh Lospinoso, modifications by Ruth Ripley and Tom Snijders}
@@ -307,7 +314,7 @@ plot(gofo)
 ## A demonstration of using multiple processes
 \dontrun{
 library(parallel)
-(n.clus <- detectCores() - 1) 
+(n.clus <- detectCores() - 1)
 n.clus <- min(n.clus, 4)  # keep time for other processes
 myalgorithm.c <- sienaAlgorithmCreate(nsub=4, n3=1000, seed=1265)
 (ans.c <- siena07(myalgorithm.c, data=mydata, effects=myeff, batch=TRUE,

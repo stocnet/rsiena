@@ -17,7 +17,7 @@ sienaGOF <- function(
 		sienaFitObject,	auxiliaryFunction,
 		period=NULL, verbose=FALSE, join=TRUE, twoTailed=FALSE,
 		cluster=NULL, robust=FALSE,
-		groupName="Data1", varName, tested=NULL,
+		groupName="Data1", varName, tested=NULL, iterations=NULL,
 		giveNAWarning=TRUE, ...)
 	{
 	## require(MASS)
@@ -66,7 +66,14 @@ sienaGOF <- function(
         	stop("sienaGOF needs sf2 by iterations (use lessMem=FALSE)")
     	}
 	}
-	iterations <- length(sFO$sims)
+	if (is.null(iterations))
+	{
+		iterations <- length(sFO$sims)
+	}
+	else
+	{
+		iterations <- min(iterations, length(sFO$sims))
+	}
 	if (iterations < 1)
 	{
 		stop("You need at least one iteration.")
@@ -1355,10 +1362,12 @@ mixedTriadCensus <- function (i, obsData, sims, period, groupName, varName) {
 											varName = varName2))
 
   # check if the first network is one-mode, the second (potentially) bipartite
-  if ((dim(m1)[1] != dim(m1)[2]) | (dim(m1)[1] != dim(m2)[1])) {
-  stop("Error: The first element in varName must be one-mode, the second two-mode")
+  if (dim(m1)[1] != dim(m1)[2]) {
+	stop("Error: The first element in varName must be one-mode")
   }
-
+  if (dim(m1)[1] != dim(m2)[1]) {
+	stop("Error: Both elements in varName must have the same node sets")
+  }
   # complement of a binary matrix
   cp <- function(m) (-m + 1)
 
@@ -1414,7 +1423,7 @@ mixedTriadCensus <- function (i, obsData, sims, period, groupName, varName) {
   res
 }
 
-##@TriadCensus sienaGOF Calculates mixed triad census
+##@TriadCensus sienaGOF Calculates triad census
 # Contributed by Christoph Stadtfeld.
 #
 # Implementation of the Batagelj-Mrvar (Social Networks, 2001) algorithm
