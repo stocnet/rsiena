@@ -1,6 +1,29 @@
+# RSiena 1.4.2
+
+2023-12-14
+
+## Changes in RSiena:
+
+### Effects:
+  * New effect `outXMore`, `outMore3`. 
+  * `Interactiontype` of `altLThresholdX` and `altRThresholdX` is dyadic.
+  * `Interactiontype` of `degAbsDiffX`, `degPosDiffX`, and `degNegDiffX` 
+    is "" (blank). 
+  * Corrected effect `outMore`. 
+### Improved coding:
+  * `bxeffects` initialized to 0 in `ContinuousVariable::accumulateScores`.
+  * All private variable declarations in the C++ `*.h` files
+    were initialized using braces. 
+  * In `mixedTriadCensus`, the check of the condition about the matrix 
+    dimensions was split into its two parts.
+  * `TruncatedOutdegreeEffect2` dropped from `src/model/effects` 
+    (was superfluous).
+### New functionality:
+  * New parameter `iterations` in `sienaGOF` to allow shorter computations.
+
 # RSiena 1.4.1
 
-2023-10-31
+2023-11-01
 
 ## New CRAN version.
 
@@ -10,6 +33,8 @@
 # RSiena 1.4.0
 
 2023-10-31
+
+## Changes in RSiena:
 
 ### Changes in meta-data:
   * `Author` field omitted in `DESCRIPTION`, because `Author@R` is sufficient.
@@ -30,7 +55,7 @@
 ## Changes in RSiena:
 
 ### Changed effect:
-  * `threshold`, `threshold2`, `threshold3`, `threshold4' changed to 
+  * `threshold`, `threshold2`, `threshold3`, `threshold4` changed to 
     work with non-centered parameters (not backward-compatible).
 ### Improved documentation:
   * Descriptions of effects `altInDist2W` and `totInDist2W` added
@@ -94,7 +119,7 @@
   * Corrections of implementation of acceptance by `sienaGOF` of a list of 
     `sienaFit` objects (was not correct in version 1.3.23). 
 ### Additional testing:
-  * function `includeInteraction` used in "parallel.R". 
+  * function `includeInteraction` used in "parallel.R" (for testing). 
 
 
 # RSiena 1.3.23
