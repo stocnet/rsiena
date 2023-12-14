@@ -65,7 +65,7 @@ private:
 
 	// flag to control exclusion of missing values
 	
-	bool lexcludeMissings;
+	bool lexcludeMissings {};
 };
 
 }

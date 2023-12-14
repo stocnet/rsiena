@@ -46,7 +46,7 @@ private:
 	std::map<const Network *, NetworkCache *> lnetworkCaches;
 	std::map<const Network *, std::map<const Network *, TwoNetworkCache *> >
 		ltwoNetworkCaches;
-	int lego;
+	int lego {};
 };
 
 }

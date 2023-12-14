@@ -42,7 +42,7 @@ public:
 	
 private:
 	// Indicates if the square root of indegrees must be used
-	bool lroot;
+	bool lroot {};
 
 	// Lookup table for fast square root calculations
 	SqrtTable * lsqrtTable;	

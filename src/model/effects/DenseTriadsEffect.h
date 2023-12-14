@@ -35,17 +35,17 @@ protected:
 	virtual void cleanupStatisticCalculation();
 
 private:
-	int ldensity;
+	int ldensity {};
 
 	// A helper array of marks for statistic calculations
-	int * lmark;
+	int * lmark {};
 
 	// Given an ego i
 	// mark[h] = baseMark + 2 if there are mutual ties between i and h,
 	// mark[h] = baseMark + 1 if only one of the mutual ties is present,
 	// mark[h] <= baseMark otherwise.
 
-	int lbaseMark;
+	int lbaseMark {};
 };
 
 }

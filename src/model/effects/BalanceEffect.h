@@ -43,15 +43,15 @@ private:
 		int & validActorCount);
 
 	// The centering constant b_0.
-	double lbalanceMean;
+	double lbalanceMean {};
 
 	// An indicator array for invalid actors (used in statistic calculations)
 	// Invariants:
 	// A: lflag[i] <= lround for all actors
 	// B: lflag[i] == lround for invalid actors
 
-	int * lflag;
-	int lround;
+	int * lflag {};
+	int lround {};
 };
 
 }

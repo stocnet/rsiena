@@ -57,7 +57,7 @@ private:
 	BehaviorLongitudinalData * lpData;
 
 	// The amount of change
-	int ldifference;
+	int ldifference{};
 
 };
 

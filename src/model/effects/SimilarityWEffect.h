@@ -41,11 +41,11 @@ public:
 	virtual double egoStatistic(int ego, double * currentValues);
 
 private:
-	bool laverage;
-	bool lalterPopularity;
-	bool legoPopularity;
+	bool laverage {};
+	bool lalterPopularity {};
+	bool legoPopularity {};
 	// lpar2 specifies that the internal effect parameter is 2
-	bool lpar2;
+	bool lpar2 {};
 };
 
 }

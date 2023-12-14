@@ -80,35 +80,35 @@ private:
 	const SimulationActorSet * lpActorSet;
 
 	// The current period (in [0, observations - 2])
-	int lperiod;
+	int lperiod {};
 
 	// The observed data for this continuous behavioral variable
 	ContinuousLongitudinalData * lpData;
 
 	// The current value of the variable per each actor
-	double * lvalues;
+	double * lvalues {};
 
 	// The distance of this variable from the observed data at the beginning
 	// of the current period
-	double lsimulatedDistance;
+	double lsimulatedDistance {};
 
 	// A storage box for all the effect in the model for this variable
 	Function * lpFunction;
 	
 	// The basic scale parameter for the current period
-	double lbasicScale;
+	double lbasicScale {};
 
 	// The score for the basic scale parameter for this variable for this period
-	double lbasicScaleScore;
+	double lbasicScaleScore {};
 
 	// The derivative for the basic rate parameter for this variable for
 	// this period
-	double lbasicScaleDerivative;
+	double lbasicScaleDerivative {};
 	
 	// A two-dimensional array of contributions of effects, where rows correspond 
 	// to actors and columns to effects in the SDE (needed for determining the
 	// score function)
-	double ** leffectContribution;
+	double ** leffectContribution {};
 
 };
 

@@ -34,10 +34,10 @@ public:
 
 private:
 	// The values of this covariate
-	double * lvalues;
+	double * lvalues {};
 
 	// Missingness indicators
-	bool * lmissing;
+	bool * lmissing {};
 };
 
 }

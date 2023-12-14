@@ -43,9 +43,9 @@ protected:
 	virtual double tieStatistic(int alter);
 
 private:
-	bool lsame;
-	bool lrecip;
-	bool lsqrt;
+	bool lsame {};
+	bool lrecip {};
+	bool lsqrt {};
 	bool lcondition1(int theAlter, double theOwnValue) const;
 	bool lcondition2(int theAlter, double theOwnValue) const;
 	double changeStat(double d) const;

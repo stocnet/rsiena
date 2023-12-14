@@ -55,9 +55,9 @@ protected:
 
 private:	
 	// vector of indicators of primary setting:
-	bool * lprimary;
+	bool * lprimary {};
 	// egos primary setting degree:
-	int lprimDegree;
+	int lprimDegree {};
 };
 }
 

@@ -36,8 +36,8 @@ TruncatedOutdegreeEffect::TruncatedOutdegreeEffect(
 		this->lc = 1;
 	}
 	else
-{
-	this->lc = int(pEffectInfo->internalEffectParameter() + 0.01);
+	{
+		this->lc = int(pEffectInfo->internalEffectParameter() + 0.01);
 	}
 	// C++ always rounds downward
 
@@ -61,29 +61,29 @@ double TruncatedOutdegreeEffect::calculateContribution(int alter) const
 
 	if (lright) // outTrunc or outIso
 	{
-	if (this->outTieExists(alter))
-	{
+		if (this->outTieExists(alter))
+		{
 		// After a tie withdrawal, the new out-degree would be d-1, and
 		// the new effect value would have decreased by 1 if d <= this->lc
 
-		if (d <= this->lc)
-		{
+			if (d <= this->lc)
+			{
 				if (this->lOutIso)
 				{
 					change = -1;
 				}
 				else
 				{
-			change = 1;
+					change = 1;
+				}
+			}
 		}
-	}
-		}
-	else
-	{
+		else
+		{
 		// When introducing a new tie, the new out-degree would be d+1, and
 		// the new effect value would have increased by 1 if d < this->lc
-		if (d < this->lc)
-		{
+			if (d < this->lc)
+			{
 				if (this->lOutIso)
 				{
 					change = -1;
@@ -100,8 +100,8 @@ double TruncatedOutdegreeEffect::calculateContribution(int alter) const
 		if (this->outTieExists(alter))
 		{
 		// After a tie withdrawal, the new out-degree would be d-1, and
-		// the new effect value would have decreased by 1 if d >= this->lc
-			if (d >= this->lc)
+		// the new effect value would have decreased by 1 if d > this->lc
+			if (d > this->lc)
 			{
 				change = 1;
 			}
@@ -109,12 +109,12 @@ double TruncatedOutdegreeEffect::calculateContribution(int alter) const
 		else
 		{
 		// When introducing a new tie, the new out-degree would be d+1, and
-		// the new effect value would have increased by 1 if d > this->lc
-			if (d > this->lc)
+		// the new effect value would have increased by 1 if d >= this->lc
+			if (d >= this->lc)
 			{
-			change = 1;
+				change = 1;
+			}
 		}
-	}
 	}
 
 	return change;
@@ -154,11 +154,11 @@ double TruncatedOutdegreeEffect::egoStatistic(int ego,
 		else
 		{
 			if (statistic > this->lc)
-	{
+			{
 				statistic = statistic - this->lc;
-	}
-	else
-	{
+			}
+			else
+			{
 				statistic = 0;
 			}
 		}

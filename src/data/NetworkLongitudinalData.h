@@ -113,31 +113,31 @@ Network ** lnetworksLessMissings;
 Network ** lnetworksLessMissingStarts;
 
 // The maximum permitted out-degree of an actor. Infinity by default.
-int lmaxDegree;
+int lmaxDegree {};
 
 // The model type.
-int lmodelType;
+int lmodelType {};
 
 // The offset for the non-primary settings. 0 by default.
-double luniversalOffset;
+double luniversalOffset {};
 
 // The average in-degree over all receivers and observations
-double laverageInDegree;
-double laverageSquaredInDegree;
+double laverageInDegree {};
+double laverageSquaredInDegree {};
 
 // The average out-degree (and squared out-degree) over all senders and observations
-double laverageOutDegree;
-double laverageSquaredOutDegree;
+double laverageOutDegree {};
+double laverageSquaredOutDegree {};
 
 // The average reciprocal degree over all receivers and observations
-double laverageReciprocalDegree;
+double laverageReciprocalDegree {};
 
 // The density of the network at each observation with the missing
 // values excluded from the calculation.
-double * ldensity;
+double * ldensity {};
 
 // Flag: is this data object bipartite or oneMode.
-bool loneMode;
+bool loneMode {};
 
 // vector of setting names for this network
 std::vector<SettingInfo> lsettingNames;

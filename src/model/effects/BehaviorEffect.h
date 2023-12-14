@@ -81,9 +81,9 @@ protected:
 
 private:
 	BehaviorLongitudinalData * lpBehaviorData;
-	const int * lvalues;
-	const int * linitialValues;
-	int lego;
+	const int * lvalues {};
+	const int * linitialValues {};
+	int lego {};
 };
 
 }

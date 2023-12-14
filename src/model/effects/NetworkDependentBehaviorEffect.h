@@ -60,21 +60,21 @@ private:
 	//! If `1` value(), missing() and similarity() returns the simulated value
 	//! (if the covariate is a behavior) or the observed value at the end of the
 	//! period.
-	const int lSimulatedOffset;
+	const int lSimulatedOffset {};
 
 	// The network this effect is interacting with
 	const Network * lpNetwork;
 	// total out- and in-alter values
-	double * ltotalAlterValues;
-	double * ltotalInAlterValues;
+	double * ltotalAlterValues {};
+	double * ltotalInAlterValues {};
 	// number of higher, lower, and equal alter values
-	int * lnumberAlterHigher;
-	int * lnumberAlterLower;
-	int * lnumberAlterEqual;
+	int * lnumberAlterHigher {};
+	int * lnumberAlterLower {};
+	int * lnumberAlterEqual {};
 	// and weighted by alter indegrees
-	int * lnumberAlterHigherPop;
-	int * lnumberAlterLowerPop;
-	int * lnumberAlterEqualPop;
+	int * lnumberAlterHigherPop {};
+	int * lnumberAlterLowerPop {};
+	int * lnumberAlterEqualPop {};
 };
 
 

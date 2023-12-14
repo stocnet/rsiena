@@ -32,7 +32,7 @@ public:
 private:
 	int calculateDoubleRecDegree(int actor) const;
 	// secondDirection indicates the direction of the second tie
-	int lsecondDirection;
+	int lsecondDirection {};
 };
 
 }

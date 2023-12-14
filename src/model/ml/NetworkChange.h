@@ -55,7 +55,7 @@ private:
 	NetworkLongitudinalData * lpData;
 
 	// The alter whose incoming tie is changed
-	int lalter;
+	int lalter {};
 
 };
 

@@ -35,10 +35,10 @@ public:
 
 private:
 	// The values of the covariate per each actor and observation
-	double ** lvalues;
+	double ** lvalues {};
 	
 	// Missingness indicators
-	bool ** lmissing;
+	bool ** lmissing {};
 };
 
 }

@@ -3,16 +3,16 @@
 \concept{estimation}
 \title{Function to estimate parameters in a Siena model}
 \description{
- Estimates parameters in a Siena model using Method of Moments,   
- based on direct simulation, conditional or otherwise;    
- or using Generalized Method of Moments;   
- or using Maximum Likelihood by MCMC simulation.  
- Estimation is done using a Robbins-Monro algorithm.  
- Note that the data and particular model to be used  
- must be passed in using named arguments as the \code{...},  
- and the specification for the algorithm must be passed on  
- as \code{x},  
- which is a \code{\link{sienaAlgorithm}} object as produced by  
+ Estimates parameters in a Siena model using Method of Moments,
+ based on direct simulation, conditional or otherwise;
+ or using Generalized Method of Moments;
+ or using Maximum Likelihood by MCMC simulation.
+ Estimation is done using a Robbins-Monro algorithm.
+ Note that the data and particular model to be used
+ must be passed in using named arguments as the \code{...},
+ and the specification for the algorithm must be passed on
+ as \code{x},
+ which is a \code{\link{sienaAlgorithm}} object as produced by
  \code{\link{sienaAlgorithmCreate}} (see examples).
 }
 \usage{
@@ -195,7 +195,7 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
   \item{tmax}{maximum absolute t-statistic for convergence for
     non-fixed parameters.}
   \item{tconv.max}{overall maximum convergence ratio.}
-  \item{ac3}{If \code{x$maxlike=TRUE}: 
+  \item{ac3}{If \code{x$maxlike=TRUE}:
                     autocorrelations of statistics in Phase 3.}
   \item{targets}{Observed statistics; for ML, zero vector.}
   \item{targets2}{Observed statistics by wave,
@@ -228,51 +228,51 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
    \item{Phase3nits}{Number of iterations actually performed in phase 3.}
    \item{thetaUsed}{If \code{thetaValues} is not \code{NULL}, the matrix
    of parameter values actually used in the simulations of Phase 3.}
-  Writes text output to the file named "projname.txt", where projname 
+  Writes text output to the file named "projname.txt", where projname
   is defined in the \code{\link{sienaAlgorithm}} object \code{x}.
 }
 \references{
     Amati, V., Schoenenberger, F., and Snijders, T.A.B. (2015),
-    Estimation of stochastic actor-oriented models for the evolution of 
+    Estimation of stochastic actor-oriented models for the evolution of
     networks by generalized method of moments.
     \emph{Journal de la Societe Francaise de Statistique} \bold{156}, 140--165.
-    
+
     Amati, V., Schoenenberger, F., and Snijders, T.A.B. (2019),
     Contemporaneous statistics for estimation in stochastic actor-oriented
     co-evolution models. \emph{Psychometrika} \bold{84}, 1068--1096.
-    
+
     Greenan, C. (2015),
     \emph{Evolving Social Network Analysis: developments in statistical
     methodology for dynamic stochastic actor-oriented models}.
     DPhil dissertation, University of Oxford.
-    
+
     Niezink, N.M.D., and Snijders, T.A.B. (2017),
     Co-evolution of Social Networks and Continuous Actor Attributes.
     \emph{The Annals of Applied Statistics} \bold{11}, 1948--1973.
-    
+
     Schweinberger, M., and Snijders, T.A.B. (2007),
     Markov models for digraph panel data:
     Monte Carlo based derivative estimation.
     \emph{Computational Statistics and Data Analysis} \bold{51}, 4465--4483.
-    
+
      Snijders, T.A.B. (2001),
     The statistical evaluation of social network dynamics.
     \emph{Sociological Methodology} \bold{31}, 361--395.
-    
+
     Snijders, T.A.B. (2017), Stochastic Actor-Oriented Models for Network
    Dynamics. \emph{Annual Review of Statistics and Its Application}
     \bold{4}, 343--363.
-    
+
     Snijders, T.A.B., Koskinen, J., and Schweinberger, M. (2010).
     Maximum likelihood estimation for social network dynamics.
     \emph{Annals of Applied Statistics} \bold{4}, 567--588.
-    
-    Snijders, T.A.B., Steglich, C.E.G., and Schweinberger, Michael (2007), 
+
+    Snijders, T.A.B., Steglich, C.E.G., and Schweinberger, Michael (2007),
     Modeling the co-evolution of networks and behavior.
     Pp. 41--71 in \emph{Longitudinal models in the behavioral
     and related sciences},
     edited by van Montfort, K., Oud, H., and Satorra, A.; Lawrence Erlbaum.
-    
+
     Steglich, C.E.G., Snijders, T.A.B., and Pearson, M.A. (2010),
     Dynamic networks and behavior:     Separating selection from influence.
     \emph{Sociological Methodology} \bold{40}, 329--393.

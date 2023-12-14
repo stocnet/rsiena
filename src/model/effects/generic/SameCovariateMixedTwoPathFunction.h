@@ -30,8 +30,8 @@ public:
 	virtual double value(int alter) const;
 
 private:
-	bool lsame;
-	bool lexcludeMissing;
+	bool lsame {};
+	bool lexcludeMissing {};
 };
 
 }

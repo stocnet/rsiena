@@ -103,7 +103,7 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
 
  \code{TriadCensus} returns the distribution of the Holland-Leinhardt triad
  census according to the algorithm by Batagelj and Mrvar
- (implementation by Parimalarangan Slota, and Madduri). An alternative is the
+ (implementation by Parimalarangan, Slota, and Madduri). An alternative is the
  \code{TriadCensus.sna} function mentioned below, from package \code{sna}, which
  gives the same results. Here the \code{levls} parameter can be used to exclude
  some triads, e.g., for non-directed networks.\cr

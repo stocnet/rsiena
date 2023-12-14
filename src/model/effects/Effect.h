@@ -59,10 +59,10 @@ private:
 	const EffectInfo * lpEffectInfo;
 
 	// The coefficient of this effect in the owner function
-	double lparameter;
+	double lparameter {};
 
 	// The period of interest
-	int lperiod;
+	int lperiod {};
 
 	Cache * lpCache;
 };

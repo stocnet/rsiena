@@ -58,13 +58,13 @@ private:
 	const ActorSet * lpActorSet;
 	
 	// The actor joining or leaving
-	int lactor;
+	int lactor {};
 	
 	// The time of composition change (in [0,1])
-	double ltime;
+	double ltime {};
 	
 	// The type of the change
-	EventType ltype;
+	EventType ltype {};
 };
 
 }

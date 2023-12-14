@@ -42,8 +42,8 @@ public:
 	virtual double value(int alter) const;
 
 private:
-	bool lroot; // should the square root be taken?
-	bool linv; // should the inverse be taken?
+	bool lroot {}; // should the square root be taken?
+	bool linv {}; // should the inverse be taken?
 //	std::string lvariableName; // name of second network
 	// Lookup table for fast square root calculations:
 	SqrtTable * lsqrtTable;

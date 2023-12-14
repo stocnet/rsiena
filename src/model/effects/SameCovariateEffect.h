@@ -35,8 +35,8 @@ private:
 	// Indicates if the reciprocal version of the same covariate effect is
 	// required
 
-	bool lsame;
-	bool lreciprocal;
+	bool lsame {};
+	bool lreciprocal {};
 };
 
 }

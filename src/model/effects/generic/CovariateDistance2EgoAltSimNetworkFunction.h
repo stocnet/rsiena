@@ -26,8 +26,8 @@ public:
 	virtual double value(int alter) const;
 
 private:
-	bool lexcludeMissing;
-	bool loutgoing;
+	bool lexcludeMissing {};
+	bool loutgoing {};
 };
 
 }

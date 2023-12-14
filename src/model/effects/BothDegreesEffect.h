@@ -48,12 +48,12 @@ protected:
 
 private:
 	// Indicates if the square root of degrees must be used
-	bool lroot;
+	bool lroot {};
 	// Lookup table for fast square root calculations
 	SqrtTable * lsqrtTable;
-	bool lcentered;
-	double lcentering;
-	std::string lvariableName;
+	bool lcentered {};
+	double lcentering {};
+	std::string lvariableName {};
 };
 
 }

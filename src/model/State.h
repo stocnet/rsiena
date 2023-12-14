@@ -38,7 +38,7 @@ private:
 	std::map<std::string, const Network *> lnetworks;
 	std::map<std::string, const int *> lbehaviors;
 	std::map<std::string, const double *> lcontinuous;
-	bool lownedValues;
+	bool lownedValues {};
 };
 
 }

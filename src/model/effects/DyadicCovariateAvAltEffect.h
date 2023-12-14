@@ -40,14 +40,14 @@ protected:
 
 private:
 	// divide indicates whether there will be division by the outdegree
-	bool ldivide;
+	bool ldivide {};
 	// asWeight indicates that the dyadic covariate is used as a weight;
 	// if not, used as the variable.
-	bool lasWeight;
+	bool lasWeight {};
 	// lpar2 specifies that the internal effect parameter is 2
-	bool lpar2;
+	bool lpar2 {};
 	// indicates if out-ties or in-ties are to be used
-	bool loutgoing;
+	bool loutgoing {};
 };
 
 }

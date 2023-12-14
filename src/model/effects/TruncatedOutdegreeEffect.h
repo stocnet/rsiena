@@ -37,9 +37,9 @@ protected:
 		const Network * pSummationTieNetwork);
 
 private:
-	int lc;
-	bool lright;
-	bool lOutIso;
+	int lc {};
+	bool lright {};
+	bool lOutIso {};
 };
 
 }

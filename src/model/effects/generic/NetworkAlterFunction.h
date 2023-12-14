@@ -40,7 +40,7 @@ protected:
 
 private:
 	const Network * lpNetwork;
-	std::string lnetworkName;
+	std::string lnetworkName {};
 	NetworkCache * lpNetworkCache;
 };
 

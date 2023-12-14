@@ -33,7 +33,7 @@ protected:
 
 private:
 	// Indicates if the reciprocal version of the effect is required
-	bool lreciprocal;
+	bool lreciprocal {};
 };
 
 }

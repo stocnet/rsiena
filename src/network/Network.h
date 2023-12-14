@@ -110,10 +110,10 @@ private:
 	void fireWithdrawalEvent(int ego, int alter) const;
 
 	// The number of senders
-	int ln;
+	int ln {};
 
 	// The number of receivers
-	int lm;
+	int lm {};
 
 	// An array of maps storing outgoing ties of each sender. A tie (i,j)
 	// with a non-zero value v is stored as a pair (j,v) in lpOutTies[i].
@@ -126,12 +126,12 @@ private:
 	std::map<int, int> * lpInTies;
 
 	// The number of ties of this network
-	int ltieCount;
+	int ltieCount {};
 
 	// This variable is initially 0 and incremented each time the network
 	// is changed.
 
-	int lmodificationCount;
+	int lmodificationCount {};
 
 };
 

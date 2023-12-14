@@ -36,9 +36,9 @@ protected:
 private:
 	// Helper array of marks for statistic calculations
 
-	int * lmark;
-	int lcurrentMark;
-	int lbaseMark;
+	int * lmark {};
+	int lcurrentMark {};
+	int lbaseMark {};
 };
 
 }

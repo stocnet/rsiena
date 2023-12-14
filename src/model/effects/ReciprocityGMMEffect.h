@@ -55,7 +55,7 @@ protected:
 	}
 
 private:
-	int startEdgeSum;
+	int startEdgeSum {};
 
 };
 

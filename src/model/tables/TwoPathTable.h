@@ -41,10 +41,10 @@ private:
 	template<class Iterator> void performSecondStep(Iterator iter);
 
 	// The direction of the first step
-	Direction lfirstStepDirection;
+	Direction lfirstStepDirection {};
 
 	// The direction of the second step
-	Direction lsecondStepDirection;
+	Direction lsecondStepDirection {};
 };
 
 }

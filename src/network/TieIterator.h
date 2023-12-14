@@ -58,7 +58,7 @@ private:
 	IncidentTieIterator literator;
 	
 	// Indicates if the iterator still points to an existing tie
-	int lvalid;
+	int lvalid {};
 };
 
 }

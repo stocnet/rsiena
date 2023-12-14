@@ -42,9 +42,9 @@ protected:
 	virtual double tieStatistic(int alter);
 
 private:
-	double lparameter;
-	bool linside;
-	bool luseSize;
+	double lparameter {};
+	bool linside {};
+	bool luseSize {};
 	
 	// log((n-1-lprimDegree)/lparameter):
 	double llogNonPrimary;

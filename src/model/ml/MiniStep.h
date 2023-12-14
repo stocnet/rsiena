@@ -113,7 +113,7 @@ private:
 	void pChain(Chain * pChain);
 
 	// The actor making the change
-	int lego;
+	int lego {};
 
 	// The longitudinal data object for the corresponding dependent variable
 	LongitudinalData * lpData;
@@ -127,24 +127,24 @@ private:
 	// Log probability of choosing the option set of this ministep,
 	// given the state just before this ministep.
 
-	double llogOptionSetProbability;
+	double llogOptionSetProbability {};
 
 	// Log probability of making this ministep, given that a ministep
 	// of the same option set will be made.
 
-	double llogChoiceProbability;
+	double llogChoiceProbability {};
 
 	// Reciprocal of aggregate (summed) rate function immediately
 	// before this ministep.
 
-	double lreciprocalRate;
+	double lreciprocalRate {};
 
 	// Does this step result in a change of the dependent variables. Called
 	// diagonal because originally diagonal entries in the adjacency matrices
 	// were used to indicate such steps. Can occur with any actor and alter in
 	// symmetric networks. In bipartite networks indicated by alter=number
 	// of alters.
-	bool ldiagonal;
+	bool ldiagonal {};
 
 	// Points to the previous ministep in the same chain
 	MiniStep * lpPrevious;
@@ -159,24 +159,24 @@ private:
 	MiniStep * lpNextWithSameOption;
 
 	// The index in the vector of ministeps of the owner chain.
-	int lindex;
+	int lindex {};
 
 	// The index in the vector of diagonal ministeps of the owner chain.
-	int ldiagonalIndex;
+	int ldiagonalIndex {};
 
 	// The index in the vector of CCPs of the owner chain.
-	int lconsecutiveCancelingPairIndex;
+	int lconsecutiveCancelingPairIndex {};
 
 	// The index in the vector of network of behavior ministeps with
 	// missing observed data at either end of the period
 
-	int lmissingIndex;
+	int lmissingIndex {};
 
 	// An arbitrary double value that corresponds with the chain order,
 	// i.e. x.lorderingKey < y.lorderingKey whenever x and y is part
 	// of the same chain and x precedes y in the chain.
 
-	double lorderingKey;
+	double lorderingKey {};
 
 	// Stores for each effect its contributions to the tie flip probabilities or behavior change probabilities
 	std::map<const EffectInfo *, std::vector<double> > * lpChangeContributions;

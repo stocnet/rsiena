@@ -49,23 +49,23 @@ protected:
 
 private:
 	// Indicates if the effect is used for a two-mode or one-mode network
-	bool lTwoMode;
+	bool lTwoMode {};
 
 	void countThreePaths(int i, const Network * pNetwork, long int * counters)
 		const;
 	// For a fixed i, this variable stores the number of three-paths
 	// i -> h <- k -> j per each j.
 
-	long int * lcounters;
+	long int * lcounters {};
 	// Indicates if the square root of the number of four-cycles has to
 	// be taken.
 
-	bool lroot;
+	bool lroot {};
 	// Lookup table for fast square root calculations:
 	SqrtTable * lpSqrtTable;
 
 	// The number of 4-cycles the ego is currently involved in.
-	int lcurrentCycleCount;
+	int lcurrentCycleCount {};
 };
 
 }

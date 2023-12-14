@@ -44,8 +44,8 @@ see \url{https://github.com/snlab-nl/rsiena/ }.
   \tabular{ll}{
     Package: \tab RSiena\cr
     Type: \tab Package\cr
-    Version: \tab 1.4.1\cr
-    Date: \tab 2023-11-01\cr
+    Version: \tab 1.4.2\cr
+    Date: \tab 2023-12-14\cr
     Depends: \tab R (>= 3.5.0)\cr
     Imports: \tab Matrix, lattice, parallel, MASS, methods, xtable\cr
     Suggests: \tab network, tools, codetools, tcltk\cr

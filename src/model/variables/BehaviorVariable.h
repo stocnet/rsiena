@@ -88,40 +88,40 @@ private:
 	BehaviorLongitudinalData * lpData;
 
 	// The current value of the variable per each actor
-	int * lvalues;
+	int * lvalues {};
 
 	// A two-dimensional array of change contributions to effects, where
 	// rows correspond to differences and columns correspond to effects in the
 	// evaluation function.
-	double ** levaluationEffectContribution;
+	double ** levaluationEffectContribution {};
 
 	// A two-dimensional array of change contributions to effects, where
 	// rows correspond to differences and columns correspond to effects in the
 	// endowment function.
-	double ** lendowmentEffectContribution;
+	double ** lendowmentEffectContribution {};
 
 	// A two-dimensional array of change contributions to effects, where
 	// rows correspond to differences and columns correspond to effects in the
 	// tie creation function.
-	double ** lcreationEffectContribution;
+	double ** lcreationEffectContribution {};
 
 	// Selection probability per each difference:
 	// lprobabilities[0] - probability for a downward change
 	// lprobabilities[1] - probability of no change
 	// lprobabilities[2] - probability of an upward change
-	double * lprobabilities;
+	double * lprobabilities {};
 
 	// Indicates if upward change is possible in the current situation
-	bool lupPossible;
+	bool lupPossible {};
 
 	// Indicates if downward change is possible in the current situation
-	bool ldownPossible;
+	bool ldownPossible {};
 
 	// the actor under consideration
-	int lego;
+	int lego {};
 
 	// the model type
-	BehaviorModelType lbehaviorModelType;
+	BehaviorModelType lbehaviorModelType {};
 };
 
 }

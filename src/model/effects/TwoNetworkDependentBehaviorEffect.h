@@ -54,8 +54,8 @@ private:
 	const Network * lpFirstNetwork;
 	const Network * lpSecondNetwork;
 	// total out- and in-alter values
-	double * lfirstTotalAlterValues;
-	double * lfirstTotalInAlterValues;
+	double * lfirstTotalAlterValues {};
+	double * lfirstTotalInAlterValues {};
 };
 
 // ----------------------------------------------------------------------------

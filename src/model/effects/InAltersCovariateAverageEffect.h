@@ -42,7 +42,7 @@ protected:
 
 private:
 	// divide indicates whether there will be division by the outdegree
-	bool ldivide;
+	bool ldivide {};
 };
 
 }

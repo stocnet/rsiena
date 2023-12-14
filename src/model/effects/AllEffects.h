@@ -127,7 +127,7 @@
 #include "TransitiveTriadsEffect.h"
 #include "TransitiveTripletsEffect.h"
 #include "TruncatedOutdegreeEffect.h"
-#include "TruncatedOutdegreeEffect2.h"
+#include "TruncatedOutXEffect.h"
 #include "WienerEffect.h"
 #include "WWXClosureEffect.h"
 #include "WXXClosureEffect.h"

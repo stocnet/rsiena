@@ -43,12 +43,12 @@ protected:
 private:	
 	NetworkCache * lpNetworkCache;
 	EgocentricConfigurationTable * (NetworkCache::*lpTable)() const;
-	double lparameter;
+	double lparameter {};
 	std::vector<double> lcumulativeWeight;
-	double lforward;
-	double lweight;
-	double lexpmweight;
-	double lexpfactor;
+	double lforward {};
+	double lweight {};
+	double lexpmweight {};
+	double lexpfactor {};
 	EgocentricConfigurationTable *lpInitialisedTable;
 };
 

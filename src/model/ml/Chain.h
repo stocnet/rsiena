@@ -125,7 +125,7 @@ private:
 	Data * lpData;
 
 	// The period of changes represented by this chain
-	int lperiod;
+	int lperiod {};
 
 	// The initial state of the variables (denoted y_init in the specification)
 	State * lpInitialState;
@@ -156,13 +156,13 @@ private:
 	std::vector<MiniStep *> lmissingBehaviorMiniSteps;
 
 	// Sum of reciprocal rates over all non-dummy ministeps.
-	double lmu;
+	double lmu {};
 
 	// Sum of squared reciprocal rates over all non-dummy ministeps.
-	double lsigma2;
+	double lsigma2 {};
 
 	// Final reciprocal rate when updating part or all of the probabilities.
-	double lfinalReciprocalRate;
+	double lfinalReciprocalRate {};
 
 	// Maps each option to its first ministep in the chain (if any)
 	std::map<const Option, MiniStep *> lfirstMiniStepPerOption;

@@ -72,17 +72,17 @@ private:
 	// The second network this cache object is associated with
 	const Network * lpSecondNetwork;
 
-	bool loneModeFirstNetwork;
-	bool loneModeSecondNetwork;
+	bool loneModeFirstNetwork {};
+	bool loneModeSecondNetwork {};
 
 	// Stores the values of ties from ego in first network
 	// to each of the alters who are senders in the second network.
-	int * lfirstOutTieValues;
+	int * lfirstOutTieValues {};
 
 	// Stores the values of ties from ego in first network
 	// to each of the alters who are senders in the second network.
-	int * lsecondOutTieValues;
-	int lsecondOutDegree;
+	int * lsecondOutTieValues {};
+	int lsecondOutDegree {};
 
 	// The number of two-paths from the ego to each of the alters
 	MixedEgocentricConfigurationTable * lpTwoPathTable;

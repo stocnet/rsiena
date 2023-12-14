@@ -32,9 +32,9 @@ protected:
 
 private:
 
-	int literOneID;
+	int literOneID{};
 
-	int literTwoID;
+	int literTwoID{};
 
 	std::vector<bool> rCommon;
 

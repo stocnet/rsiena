@@ -41,8 +41,8 @@ public:
 	virtual double value(int alter) const;
 
 private:
-	bool lroot; // should the square root be taken?
-	bool lchange; // should the change statistic be calculated?
+	bool lroot {}; // should the square root be taken?
+	bool lchange {}; // should the change statistic be calculated?
 	// Lookup table for fast square root calculations:
 	SqrtTable * lsqrtTable;
 };

@@ -195,7 +195,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.4.1.
+This version was renewed for \RS version 1.4.2.
 \end{abstract}
 
 
@@ -336,7 +336,7 @@ which all contributed to the work on \si.
 When using \si, it is appreciated that you refer to the package as such
 or this manual; and to one or
 more relevant references of the methods implemented in the program.  The
-reference to this manual can be obtained in \R from
+reference to this manual and to the package can be obtained in \R from
 \begin{verbatim}
 citation("RSiena")
 \end{verbatim}
@@ -1129,7 +1129,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.4.1).
+  identified by a version number (e.g.\ 1.4.2).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -6081,16 +6081,20 @@ criterion is reached that is calculated from the observed data.
 Conditioning is possible for each of the dependent variables
 (network, or behavior), where `conditional' means `conditional on
 the observed number of changes on this dependent variable'.
+However, if there is more than one dependent variable
+(network and/or behavior), estimation can be conditional only
+on one of them.
 
-Conditioning on the network variable means running simulations
-until the number of different entries between the initially
-observed network of this period and the simulated network
+Conditioning on the network variable means, for each period,
+running simulations until the number of entries that differ
+between the adjacency matrix of the
+initially observed network of this period and the simulated network
 \hypertarget{T_distance_stop}{is equal to the number} of entries
 in the adjacency matrix that differ between the initially and the
 finally observed networks of this period.
 
-Conditioning on a behavioral variable means running simulations
-until the sum of absolute score differences on the behavioral
+Conditioning on a behavioral variable means, for each period, running
+simulations until the sum of absolute score differences on the behavioral
 variable between the initially observed behavior of this period
 and the simulated behavior is equal to the sum of absolute score
 differences between the initially and the finally observed
@@ -6194,11 +6198,13 @@ unconditional estimation, there is one kind of problem that
 sometimes occurs with conditional estimation and which is not
 encountered by unconditional estimation.
 
-It is possible (but luckily rare) that the initial parameter
-values were chosen in an unfortunate way such that the conditional
+It is possible (but luckily rare) that the current parameter
+values are such that the conditional
 simulation does not succeed in ever attaining the condition required
 by \hyperlink{T_distance_stop}{its stopping rule} (see
 Section~\ref{S_cond}).
+This will depend on the initial parameter values
+and the changes that occurred during the Robbins-Monro process.
 The solution is either to use different
 (perhaps standard) initial values or to go over to
 unconditional estimation.
@@ -9806,8 +9812,9 @@ and
  \item {\em out-degree more than $p$} where $p$ is some constant
  (internal effect parameter, see above),
   there are two implementations here:
- \texttt{outMore} and \texttt{outMore2}, to allow the simultaneous use of this
- effect with 2 different internal effect parameters;
+ \texttt{outMore}, \texttt{outMore2}, and \texttt{outMore3}, 
+ to allow the simultaneous use of this
+ effect with three different internal effect parameters;
  they are defined by \\
  $s^{\rm net}_{i\vit}(x) = \text{max}(x_{i+}\,-\, p, \, 0)$;\\
  this can be regarded as the mirror image of \texttt{outTrunc};
@@ -10399,6 +10406,13 @@ the following effects are available:
  $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, I\{v_j \leq p\} $;\\
  note that behavioral dependent variables always are centered;
  i.e., the overall mean is subtracted!
+
+ \item {\em outdegree to actors with positive covariate more than $p$},
+  \texttt{outXMore},
+  where $p$ is some constant (internal effect parameter, see above),
+defined by \\
+ $s^{\rm net}_{i\vit}(x) = \text{max}\big( (\sum_j x_{ij}\, I\{v_j > 0\}) \,-\, p,\, 0 \big)$;\\
+ this is meant primarily for non-centered dummy variables $v_j$;
 
  \item {\em covariate-ego} or {\em covariate-related activity}
  \texttt{(egoX)},
@@ -16313,12 +16327,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.4.1.tar.gz|\\
+\verb|R CMD check RSiena_1.4.2.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.4.1.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.4.2.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -17367,6 +17381,30 @@ Changes in RSiena:
 \fi
 
 
+\item 2023-12-14 GitHub, package version 1.4.2.
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects:
+   \begin{itemize}
+   \item New effects \texttt{outXMore}, \texttt{outMore3}.
+   \item Corrected effect \texttt{outMore}.
+   \item \texttt{Interactiontype} of \texttt{altLThresholdX} and 
+        \texttt{altRThresholdX} is dyadic.\\
+        \texttt{Interactiontype} of \texttt{degAbsDiffX}, \texttt{degPosDiffX}, 
+       and \texttt{degNegDiffX} is "" (blank).
+    \end{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+   \item New parameter \texttt{iterations} in \sfn{sienaGOF} to allow shorter computations.
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+    \item  \texttt{bxeffects} initialized to 0 in \texttt{ContinuousVariable::accumulateScores}.
+    \item Improved initialization, may have corrected some unknown bugs.
+    \end{itemize}
+\end{itemize}
+
 \item 2023-11-01 CRAN and GitHub, package version 1.4.1.
 
 
@@ -17391,13 +17429,13 @@ Changes in RSiena:
 \begin{itemize}
 \item Changed effect:
    \begin{itemize}
-  \item \texttt{threshold}, \texttt{threshold2}, \texttt{threshold3} and \texttt{threshold4} 
+  \item \texttt{threshold}, \texttt{threshold2}, \texttt{threshold3} and \texttt{threshold4}
     changed to work with non-centered parameter (not backward-compatible).
     \end{itemize}
 \item Improved documentation:
    \begin{itemize}
   \item Descriptions of effects \texttt{altInDist2W} and \texttt{totInDist2W} added
-  to the manual (the effects had been there since a long time, but not documented). 
+  to the manual (the effects had been there since a long time, but not documented).
     \end{itemize}
 \end{itemize}
 
