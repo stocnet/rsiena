@@ -1823,8 +1823,7 @@ sum(s502*pmin(a,1)) # OK
 ################################################################################
 
 (mydata <- sienaDataCreate(
-	mybeh = sienaDependent(s50a[,1:2], type="behavior")
-))
+	mybeh = sienaDependent(s50a[,1:2], type="behavior")))
 
 mymodel <- getEffects(mydata)
 mymodel <- includeEffects(mymodel, linear, quad, include=FALSE)
@@ -1836,8 +1835,124 @@ mymodel <- setEffect(mymodel, threshold3, parameter=4)
 mycontrols <- sienaModelCreate(projname=NULL, seed=842)
 (ans <- siena07(mycontrols, data=mydata, effects=mymodel))
 ans$targets
-# 47 31 19 8 
+# 47 31 19 8
 
 vapply(2:5, function(t){return(table(s50a[, 2] >= t))}, 1:2)[2, ]
 # gives same values; OK
 
+################################################################################
+### check WWX, OutWWX
+################################################################################
+
+mynet <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
+firstnet <- coDyadCovar(s501) # + t(s501)) # to get not just a 0-1 covariate
+mydata <- sienaDataCreate(mynet, firstnet)
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,WWX,interaction1='firstnet')
+myeff <- includeEffects(myeff,OutWWX,interaction1='firstnet')
+myeff <- includeEffects(myeff,X,interaction1='firstnet')
+myeff
+mymodel <- sienaModelCreate(projname=NULL, seed=842)
+ans <- siena07(mymodel, data=mydata, effects=myeff)
+ans
+ans$targets
+
+m1 <- sum(firstnet/(50*49))
+sum(s503*(s501-m1)) # X OK
+
+# Note: for WWX etc., no centering is applied internally.
+
+tp <- s501 %*% s501
+diag(tp) <- 0
+sum(tp*s503) # WWX OK
+
+tp <- s501 %*% t(s501)
+diag(tp) <- 0
+sum(tp*s503) # OutWWX OK
+
+# Now with a dyadic covariate that has values outside {0,1}
+
+firstnet <- coDyadCovar(s501 + t(s501))
+mydata <- sienaDataCreate(mynet, firstnet)
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff,WWX,interaction1='firstnet')
+myeff <- includeEffects(myeff,X,interaction1='firstnet')
+myeff
+ans <- siena07(mymodel, data=mydata, effects=myeff)
+ans
+ans$targets
+
+m1 <- sum(firstnet/(50*49))
+sum(s503*(firstnet-m1)) # X OK
+sum(diag(firstnet))
+tp <- firstnet %*% firstnet
+diag(tp) <- 0
+sum(tp*s503) # WWX OK
+
+################################################################################
+### check outXMore
+################################################################################
+
+mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+mycova <- coCovar(s50a[,1])
+mydata <- sienaDataCreate(mynet, mycova)
+poscov <- (mydata$cCovars$mycova > 0)
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=138)
+
+mymodel <- getEffects(mydata)
+(mymodel <- setEffect(mymodel,outXMore, interaction1='mycova', parameter=2))
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+poscovdeg <- apply(s502, 1, function(x){sum(x[poscov]) })
+sum(pmax(poscovdeg-2,0)) # 15 OK
+
+
+################################################################################
+### check outMore
+################################################################################
+
+mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+mydata <- sienaDataCreate(mynet)
+poscov <- (mydata$cCovars$mycova > 0)
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=138)
+
+rowSums(s502)
+
+mymodel <- getEffects(mydata)
+(mymodel <- setEffect(mymodel,outMore, parameter=3))
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+sum(pmax(rowSums(s502)-3,0)) # 11 OK
+
+
+mymodel <- getEffects(mydata)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel, returnDeps=TRUE))
+ans$targets
+gofo <- sienaGOF(ans, verbose=TRUE, 
+                         varName="mynet", 
+                         levls = 0:8, cumulative=FALSE,
+                         OutdegreeDistribution)
+plot(gofo)
+descriptives.sienaGOF(gofo, showAll=TRUE)
+(mymodel1 <- setEffect(mymodel,outMore, parameter=7, fix=TRUE, initialValue=-30))
+(ans1 <- siena07(mycontrols, data=mydata, effects=mymodel1, returnDeps=TRUE))
+gofo1 <- sienaGOF(ans1, verbose=TRUE, 
+                         varName="mynet", 
+                         levls = 0:8, cumulative=FALSE,
+                         OutdegreeDistribution)
+plot(gofo1)
+descriptives.sienaGOF(gofo1, showAll=TRUE)
+ans1$targets
+
+
+(mymodel2 <- setEffect(mymodel,outMore, parameter=6, fix=TRUE, initialValue=-30))
+(ans2 <- siena07(mycontrols, data=mydata, effects=mymodel2, returnDeps=TRUE))
+gofo2 <- sienaGOF(ans2, verbose=TRUE, 
+                         varName="mynet", 
+                         levls = 0:8, cumulative=FALSE,
+                         OutdegreeDistribution)
+plot(gofo2)
+descriptives.sienaGOF(gofo2, showAll=TRUE)
+ans2$targets
