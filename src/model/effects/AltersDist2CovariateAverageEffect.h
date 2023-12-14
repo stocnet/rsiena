@@ -38,9 +38,9 @@ public:
 protected:
 
 private:
-	bool ldivide1;
+	bool ldivide1{};
 	// Indicates whether there will be division by the outdegree of ego
-	bool ldivide2;
+	bool ldivide2{};
 	// Indicates whether there will be division by the outdegree of alter
 };
 

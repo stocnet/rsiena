@@ -34,8 +34,8 @@ public:
 		double * currentValues);
 
 private:
-	bool lplus;
-	bool lminus;
+	bool lplus {};
+	bool lminus {};
 };
 
 }

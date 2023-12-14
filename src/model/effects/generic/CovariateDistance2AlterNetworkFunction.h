@@ -29,9 +29,9 @@ public:
 	virtual double value(int alter) const;
 
 private:
-	double lparameter;
-	bool lexcludeMissing;
-	bool ltotal;
+	double lparameter {};
+	bool lexcludeMissing {};
+	bool ltotal {};
 };
 
 }

@@ -58,11 +58,11 @@ public:
 
 private:
 
-	std::string lid;
+	std::string lid {};
 
-	std::string lsettingType;
+	std::string lsettingType {};
 
-	std::string lcovarName;
+	std::string lcovarName {};
 
 	Permission_Type lpermType;
 

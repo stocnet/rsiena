@@ -31,7 +31,7 @@ public:
 private:
 	// recip indicates whether the effect addresses reciprocated or 
 	// non-reciprocated ties
-	bool lrecip;
+	bool lrecip {};
 };
 
 }

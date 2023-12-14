@@ -44,15 +44,15 @@ private:
 
 	// For a fixed i, this variable stores the value of sum_h x_{ih} w_{hj} for
 	// each j.
-	double * ltwoPathSums;
+	double * ltwoPathSums {};
 
 	// For a fixed i, this variable stores the value of sum_h x_{ih} w_{jh} for
 	// each j.
-	double * linStarSums;
+	double * linStarSums {};
 
 	// divide indicates whether there will be division by the indegree
-	bool ltp; // contribution from twopaths
-	bool linst; // contribution from instars
+	bool ltp {}; // contribution from twopaths
+	bool linst {}; // contribution from instars
 };
 
 }

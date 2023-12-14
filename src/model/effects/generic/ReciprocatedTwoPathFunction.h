@@ -51,7 +51,7 @@ public:
 
 private:
 	ConfigurationTable * lpTable;
-	bool lroot; // should the square root be taken?
+	bool lroot {}; // should the square root be taken?
 	// Lookup table for fast square root calculations:
 	SqrtTable * lsqrtTable;
 };

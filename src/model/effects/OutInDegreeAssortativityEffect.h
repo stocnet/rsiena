@@ -44,24 +44,24 @@ protected:
 
 private:
 	// Indicates if the square root of degrees must be used
-	bool lroot;
+	bool lroot {};
 
 	// The sum of in-degrees (or their square roots) over all
 	// out-neighbors of the ego
 
-	double lneighborDegreeSum;
+	double lneighborDegreeSum {};
 
 	// The current out-degree of the ego
-	int ldegree;
+	int ldegree {};
 
 	// The square root of the current out-degree of the ego
-	double lsqrtDegree;
+	double lsqrtDegree {};
 
 	// sqrt(current out-degree of ego + 1)
-	double lsqrtDegreePlus;
+	double lsqrtDegreePlus {};
 
 	// sqrt(current out-degree of ego - 1)
-	double lsqrtDegreeMinus;
+	double lsqrtDegreeMinus {};
 
 	// Lookup table for fast square root calculations
 	SqrtTable * lsqrtTable;

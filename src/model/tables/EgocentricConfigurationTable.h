@@ -34,9 +34,9 @@ protected:
 
 private:
 	// Indicates the ego this table has been calculated for
-	int lego;
+	int lego {};
 
-	bool lupdated;
+	bool lupdated {};
 };
 
 }

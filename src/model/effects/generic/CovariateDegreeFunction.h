@@ -32,10 +32,10 @@ public:
 		virtual double value(int alter) const;
 
 private:
-	bool lexcludeMissing;
-	bool lincoming;
-	bool lforEgo;
-	bool lsqrtVersion;
+	bool lexcludeMissing {};
+	bool lincoming {};
+	bool lforEgo {};
+	bool lsqrtVersion {};
 };
 
 }

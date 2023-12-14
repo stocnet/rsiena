@@ -184,14 +184,14 @@ public:
 
 private:
 	// Indicates if conditional simulation has to be carried out
-	bool lconditional;
+	bool lconditional {};
 
 	//! True if any dependent variable has effects in the gmm objective
 	//! function.
-	bool lGMMModel;
+	bool lGMMModel {};
 
 	// name of conditional dependent variable
-	std::string lconditionalDependentVariable;
+	std::string lconditionalDependentVariable {};
 
 	// Targets for conditional dependent variable per each data object
 	// and period.
@@ -211,7 +211,7 @@ private:
 
 	// An array of doubles storing the scale parameters for all periods
 	// (part of the SDE model for continuous variables)
-	double * lbasicScaleParameters;
+	double * lbasicScaleParameters {};
 
 	// A vector of effects other than the basic rate effects.
 	std::vector<EffectInfo *> leffects;
@@ -237,54 +237,54 @@ private:
 	const std::vector<EffectInfo *> lemptyEffectVector;
 
 	// indicates whether we need to keep a chain of ministeps
-	bool lneedChain;
+	bool lneedChain {};
 
 	// indicates whether we need to accumulate scores in this iteration
-	bool lneedScores;
+	bool lneedScores {};
 
 	// indicates whether we need to accumulate derivatives for ML in
 	// this iteration
-	bool lneedDerivatives;
+	bool lneedDerivatives {};
 
 	// indicates whether we need to store the change contributions on
 	// the ministeps
-	bool lneedChangeContributions;
+	bool lneedChangeContributions {};
 
 	// indicates whether we need to match Siena3 in use of random variables
 	// and score calculations
-	bool lparallelRun;
+	bool lparallelRun {};
 
 	//indicates whether change contributions are needed
-	bool lneedChangeContributions2;
+	bool lneedChangeContributions2 {};
 
 	// number of steps in a run for ML
-	int lnumberMLSteps;
+	int lnumberMLSteps {};
 
 	// maximum length of permuted interval
-	double lmaximumPermutationLength;
+	double lmaximumPermutationLength {};
 
 	// minimum length of permuted interval
-	double lminimumPermutationLength;
+	double lminimumPermutationLength {};
 
 	// initial length of permuted interval
-	double linitialPermutationLength;
+	double linitialPermutationLength {};
 
 	// current length of permuted interval: varies by period
 	std::vector <double> lcurrentPermutationLength;
 
 	// probabilities of the different ML steps
-	double linsertDiagonalProbability;
-	double lcancelDiagonalProbability;
-	double lpermuteProbability;
-	double linsertPermuteProbability;
-	double ldeletePermuteProbability;
-	double linsertRandomMissingProbability;
-	double ldeleteRandomMissingProbability;
+	double linsertDiagonalProbability {};
+	double lcancelDiagonalProbability {};
+	double lpermuteProbability {};
+	double linsertPermuteProbability {};
+	double ldeletePermuteProbability {};
+	double linsertRandomMissingProbability {};
+	double ldeleteRandomMissingProbability {};
 
 	// localML
-	bool llocalML;
+	bool llocalML {};
 
-	bool lsimpleRates;
+	bool lsimpleRates {};
 
 	std::vector <double> lmissingNetworkProbability;
 	std::vector <double> lmissingBehaviorProbability;
@@ -294,8 +294,8 @@ private:
 	// which incorporates both the group and period.
 	std::vector <std::vector <Chain *> > lchainStore;
 
-	int lnumberOfPeriods;
-	bool lnormalizeSettingsRates;
+	int lnumberOfPeriods {};
+	bool lnormalizeSettingsRates {};
 };
 
 }

@@ -43,8 +43,8 @@ protected:
 	inline NetworkCache * pFirstNetworkCache() const;
 
 private:
-	std::string lfirstNetworkName;
-	std::string lsecondNetworkName;
+	std::string lfirstNetworkName {};
+	std::string lsecondNetworkName {};
 	const Network * lpFirstNetwork;
 	const Network * lpSecondNetwork;
 	TwoNetworkCache * lpTwoNetworkCache;

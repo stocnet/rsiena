@@ -50,18 +50,18 @@ public:
 private:
 	bool networkConstant() const;
 
-	double lconstant;
+	double lconstant {};
 
 	// The type of the constant that is to be read from the observed
 	// data of a dependent variable, or VALUE if a plain constant
 	// is to be returned.
 
-	ConstantType lconstantType;
+	ConstantType lconstantType {};
 
 	// The name of the variable if the constant is to be read from the
 	// observed data of a dependent variable.
 
-	std::string lvariableName;
+	std::string lvariableName {};
 
 	// The function to be applied on the constant
 	double (* lpFunction)(double);

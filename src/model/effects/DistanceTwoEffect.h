@@ -40,9 +40,8 @@ protected:
 
 private:
 	// A helper array of marks for statistic calculation
-	int * lmark;
-
-	int lrequiredTwoPathCount;
+	int * lmark {};
+	int lrequiredTwoPathCount {};
 };
 
 }

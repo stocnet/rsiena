@@ -234,38 +234,38 @@ private:
 	const SimulationActorSet * lpActorSet;
 
 	// The current period (in [0, observations - 2])
-	int lperiod;
+	int lperiod {};
 
 	// The total rate of change summed over all actors
-	double ltotalRate;
+	double ltotalRate {};
 
 	// The rate of change factor excepting settingsrate
-	double lnonSettingsRate;
+	double lnonSettingsRate {};
 
 	// The rate of change for each actor
-	double * lrate;
+	double * lrate {};
 
 	// The basic rate parameter for the current period
-	double lbasicRate;
+	double lbasicRate {};
 
 	// The setting rate parameters for the current period. Order matches the
 	// data object. Only for network variables.
-	// double * lsettingRates;
+	// double * lsettingRates {};
 
 	// The scaled setting rate parameters for the current period.
 	// Order matches the data object. Only for network variables.
-	double * lsettingProbs;
+	double * lsettingProbs {};
 
 	// The number of settings for this variable.
 	// Only non zero for network variables.
-	int lnumberSettings;
+	int lnumberSettings {};
 
 	// The type of step in the setting context. -1 if using basic rate or
 	// universal setting;
-	int lstepType;
+	int lstepType {};
 
 	// The covariate-based component of the rate function per each actor
-	double * lcovariateRates;
+	double * lcovariateRates {};
 
 	// Parameters for rate effects depending on constant covariates
 	std::map<const ConstantCovariate *, double> lconstantCovariateParameters;
@@ -298,14 +298,14 @@ private:
 	// The distance of this variable from the observed data at the beginning
 	// of the current period
 
-	int lsimulatedDistance;
+	int lsimulatedDistance {};
 
 	// The score for the basic rate parameter for this variable for this period
-	double lbasicRateScore;
+	double lbasicRateScore {};
 
 	// The derivative for the basic rate parameter for this variable for
 	// this period
-	double lbasicRateDerivative;
+	double lbasicRateDerivative {};
 
 	// The scores for the setting basic rate parameters for this variable
 	// for this period. Only for network variables.
@@ -413,14 +413,14 @@ private:
 	// Indicates if the rates are valid and shouldn't be recalculated
 	// provided that the rates are constant during the period.
 
-	int lvalidRates;
+	int lvalidRates {};
 
 	// flag to indicate we gave up on a step due to uponly and other filters
-	bool lsuccessfulChange;
+	bool lsuccessfulChange {};
 
-	std::vector <int> lacceptances;
-	std::vector <int> lrejections;
-	std::vector <int> laborts;
+	std::vector <int> lacceptances {};
+	std::vector <int> lrejections {};
+	std::vector <int> laborts {};
 
 };
 

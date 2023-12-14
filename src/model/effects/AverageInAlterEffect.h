@@ -34,7 +34,7 @@ public:
 
 private:
 	// divide indicates whether there will be division by the indegree
-	bool ldivide;
+	bool ldivide {};
 };
 
 }

@@ -34,7 +34,7 @@ protected:
 		const Network * pSummationTieNetwork);
 
 private:
-	double lc;
+	double lc {};
 };
 
 }

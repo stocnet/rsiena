@@ -31,7 +31,7 @@ public:
 	virtual bool validMiniStep(const NetworkChange * pMiniStep);
 	
 private:
-	bool lsymm;
+	bool lsymm {};
 };
 
 }

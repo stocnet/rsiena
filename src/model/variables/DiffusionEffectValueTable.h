@@ -37,21 +37,21 @@ public:
 
 private:
 	// The look-up table for effect values
-	double * lvalues;
+	double * lvalues {};
 
 	// Here we remember the parameter value whenever we store a value
 	// in the table.
 
-	double * lparameterValues;
+	double * lparameterValues {};
 
 	// The actual value of the effect parameter
-	double lparameter;
+	double lparameter {};
 
 	// The range of the denominator;
-	int ldenominatorRange;
+	int ldenominatorRange {};
 
 	// The range of the numerator;
-	int lnumeratorRange;
+	int lnumeratorRange {};
 
 };
 

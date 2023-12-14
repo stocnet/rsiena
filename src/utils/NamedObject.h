@@ -29,7 +29,7 @@ public:
 
 private:
 	// The name of this object
-	std::string lname;
+	std::string lname {};
 };
 
 }

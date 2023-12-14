@@ -61,7 +61,7 @@ private:
 	//! If `1` value(), missing() and actor_similarity() returns the simulated value
 	//! (if the covariate is a behavior) or the observed value at the end of the
 	//! period.
-	const int lSimulatedOffset;
+	const int lSimulatedOffset {};
 
 	ConstantCovariate * lpConstantCovariate;
 	ChangingCovariate * lpChangingCovariate;
@@ -72,8 +72,8 @@ private:
     // variable per each actor.
 	// This array is 0 for covariate-based effects.
 
-	const int * lvalues;
-    const double * lcontinuousValues;
+	const int * lvalues {};
+   const double * lcontinuousValues {};
 };
 
 }

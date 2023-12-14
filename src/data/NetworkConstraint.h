@@ -48,13 +48,13 @@ public:
 
 private:
 	// The name of the first network involved in this constraint
-	std::string lnetworkName1;
+	std::string lnetworkName1 {};
 
 	// The name of the second network involved in this constraint
-	std::string lnetworkName2;
+	std::string lnetworkName2 {};
 
 	// The type of the constraint
-	NetworkConstraintType ltype;
+	NetworkConstraintType ltype {};
 };
 
 

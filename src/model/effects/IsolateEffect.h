@@ -31,7 +31,7 @@ public:
 
 private:
 	// Indicates if in- or out-isolate
-	bool lin;
+	bool lin {};
 
 };
 

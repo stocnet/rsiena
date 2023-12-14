@@ -42,7 +42,7 @@ public:
 	virtual double value(int alter) const = 0; 
 
 private:
-	int lego;
+	int lego{};
 };
 
 

@@ -40,12 +40,12 @@ public:
 	virtual double value(int alter) const;
 
 private:
-	bool lroot; // should the square root be taken?
-	bool lfirstin; // first tie in- or outgoing?
-	bool lsecondin; // second tie in- or outgoing?
-	bool laverage; // should the average be used?
-	double lavdegree; // average degree, all observations, secondNetworkName
-	std::string lvariableName; // local secondNetworkName
+	bool lroot {}; // should the square root be taken?
+	bool lfirstin {}; // first tie in- or outgoing?
+	bool lsecondin {}; // second tie in- or outgoing?
+	bool laverage {}; // should the average be used?
+	double lavdegree {}; // average degree, all observations, secondNetworkName
+	std::string lvariableName {}; // local secondNetworkName
 	// Lookup table for fast square root calculations:
 	SqrtTable * lsqrtTable;
 };

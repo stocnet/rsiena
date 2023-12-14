@@ -60,14 +60,14 @@ protected:
 private:
 	// The network this effect is interacting with
 	const Network * lpNetwork;
-	double * laverageAlterValues;
-	double * lminimumAlterValues;
-	double * lmaximumAlterValues;
-	double * ltotalAlterValues;
-	double * laverageInAlterValues;
-	double * ltotalInAlterValues;
-	bool * laverageAlterMissing;
-	bool * laverageInAlterMissing;
+	double * laverageAlterValues {};
+	double * lminimumAlterValues {};
+	double * lmaximumAlterValues {};
+	double * ltotalAlterValues {};
+	double * laverageInAlterValues {};
+	double * ltotalInAlterValues {};
+	bool * laverageAlterMissing {};
+	bool * laverageInAlterMissing {};
 };
 
 // ----------------------------------------------------------------------------

@@ -35,8 +35,8 @@ protected:
 private:
 	// twoPath indicates whether twopaths will be closed,
 	// twoInStar indicates whether two-instars will be closed.
-	bool ltwoPath;
-	bool ltwoInStar;
+	bool ltwoPath {};
+	bool ltwoInStar {};
 };
 
 }

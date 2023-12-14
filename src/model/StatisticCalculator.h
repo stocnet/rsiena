@@ -113,13 +113,13 @@ private:
 	State * lpState;
 
 	// The period of the evolution we are interested in
-	int lperiod;
+	int lperiod {};
 
 	// indicates whether actor statistics are needed
-	bool lneedActorStatistics;
+	bool lneedActorStatistics {};
 	
 	// indicates whether change contributions are needed
-	bool lcountStaticChangeContributions;
+	bool lcountStaticChangeContributions {};
 
 	// The resulting map of statistic values
 	std::map<EffectInfo *, double> lstatistics;

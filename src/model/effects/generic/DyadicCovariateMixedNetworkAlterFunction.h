@@ -49,7 +49,7 @@ protected:
 
 private:
 	std::string lDyadicCovariateName;
-	int lperiod;
+	int lperiod {};
 	// The constant covariate this effect depends on or 0, if the
 	// effect depends on a changing covariate:
 	ConstantDyadicCovariate * lpConstantCovariate;
@@ -59,7 +59,7 @@ private:
 	ChangingDyadicCovariate * lpChangingCovariate;
 
 	// flag to control exclusion of missing values:	
-	bool lexcludeMissings;
+	bool lexcludeMissings {};
 
 	/* -Wunused-private-field
 	const Network * lpFirstNetwork;

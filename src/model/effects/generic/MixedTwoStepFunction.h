@@ -52,10 +52,10 @@ public:
 
 private:
 	MixedConfigurationTable * lpTable;
-	Direction ldirection1;
-	Direction ldirection2;
-	bool ltrunc; // should the value be truncated?
-	bool lroot; // should the square root be taken?
+	Direction ldirection1 {};
+	Direction ldirection2 {};
+	bool ltrunc {}; // should the value be truncated?
+	bool lroot {}; // should the square root be taken?
 	// Lookup table for fast square root calculations:
 	SqrtTable * lsqrtTable;
 };

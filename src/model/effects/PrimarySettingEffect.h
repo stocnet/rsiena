@@ -42,12 +42,12 @@ protected:
 	virtual double tieStatistic(int alter);
 
 private:
-	double lparameter;
-	bool ldifference;
-	bool llogar;
-	bool lroot;
-	bool linv;
-	bool levalBoth;
+	double lparameter {};
+	bool ldifference {};
+	bool llogar {};
+	bool lroot {};
+	bool linv {};
+	bool levalBoth {};
 };
 
 }

@@ -32,7 +32,7 @@ public:
 	virtual double egoStatistic(int ego, double * currentValues);
 
 private:
-	bool ldivide;
+	bool ldivide {};
 	// Indicates whether there will be division by the outdegree of ego
 	double changesim(double zalt, double zego) const;
 };

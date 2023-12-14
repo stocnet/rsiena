@@ -46,7 +46,7 @@ private:
 	// is taken into account.
 	// outgoing=false was used for the shortlived inIsolatePop effect
 	// may be dropped now
-	bool loutgoing;
+	bool loutgoing {};
 };
 
 }

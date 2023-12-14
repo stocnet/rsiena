@@ -42,14 +42,14 @@ protected:
 	double varInAvSimilarity(int i, int j) const;
 
 private:
-	bool lexcludeMissing;
-	bool loutgoing;
-	double * laverageAlterValues;
-	double * ltotalAlterValues;
-	bool * laverageAlterMissing;
-	double * laverageInAlterValues;
-	double * ltotalInAlterValues;
-	bool * laverageInAlterMissing;
+	bool lexcludeMissing {};
+	bool loutgoing {};
+	double * laverageAlterValues {};
+	double * ltotalAlterValues {};
+	bool * laverageAlterMissing {};
+	double * laverageInAlterValues {};
+	double * ltotalInAlterValues {};
+	bool * laverageInAlterMissing {};
 
 };
 

@@ -46,8 +46,9 @@ private:
 	// out1 = out2 = FALSE: sum_h w_{hi} w_{jh}
 	// out1 = FALSE, out2 = TRUE: sum_h w_{hi} w_{hj}
 
-	double * lsums;
-	bool lout1, lout2;
+	double * lsums {};
+	bool lout1 {};
+	bool lout2 {};
 
 };
 

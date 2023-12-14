@@ -89,9 +89,9 @@ protected:
 
 private:
 	/* settings rate **/
-	double lrate;
+	double lrate {};
 
-	int lego;
+	int lego {};
 
 };
 } /* namespace siena */

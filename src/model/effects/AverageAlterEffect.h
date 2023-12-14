@@ -37,9 +37,9 @@ public:
 
 private:
 	// divide indicates whether there will be division by the outdegree
-	bool ldivide;
+	bool ldivide {};
 	// alterPopularity indicates weighting by alters' indegrees
-	bool lalterPopularity;
+	bool lalterPopularity {};
 };
 
 }

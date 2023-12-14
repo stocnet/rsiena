@@ -43,8 +43,8 @@ public:
 private:
 	ConfigurationTable * lpTable;
 
-	Direction ldirection1;
-	Direction ldirection2;
+	Direction ldirection1 {};
+	Direction ldirection2 {};
 
 };
 

@@ -31,9 +31,9 @@ protected:
 	virtual double tieStatistic(int alter);
 
 private:
-	bool ldiff;
-	bool lsquared;
-	bool labs;
+	bool ldiff {};
+	bool lsquared {};
+	bool labs {};
 };
 
 }

@@ -108,10 +108,10 @@ private:
 	const NetworkLongitudinalData * lpNetworkData;
 
 	NetworkCache * lpNetworkCache;
-	int lego;
+	int lego {};
 
 	// Stores the values of the stepType (settings model)
-	int lstepTypeVal;
+	int lstepTypeVal {};
 
 	// The number of two-paths from the ego to each of the alters
 	ConfigurationTable * lpTwoPathTable;

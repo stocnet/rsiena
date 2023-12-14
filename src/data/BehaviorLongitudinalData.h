@@ -57,37 +57,37 @@ public:
 
 private:
 	// An array of values per each observation
-	int ** lvalues;
+	int ** lvalues {};
 
 	// Missingness indicators
-	bool ** lmissing;
+	bool ** lmissing {};
 
 	// Structural value indicators
-	bool ** lstructural;
+	bool ** lstructural {};
 
 	// An array of values per each observation
-	int ** lvaluesLessMissings;
+	int ** lvaluesLessMissings {};
 
 	// An array of values per each observation
-	int ** lvaluesLessMissingStarts;
+	int ** lvaluesLessMissingStarts {};
 
 	// The behavioral model type.
-	int lbehModelType;
+	int lbehModelType {};
 
 	// The smallest non-missing value
-	int lmin;
+	int lmin {};
 
 	// The largest non-missing value
-	int lmax;
+	int lmax {};
 
 	// The overall mean value over all observations (zamean in Pascal)
-	double loverallMean;
+	double loverallMean {};
 
 	// The range of observed values
-	int lrange;
+	int lrange {};
 
 	// The similarity mean
-	double lsimilarityMean;
+	double lsimilarityMean {};
 
 	// The alter similarity means for each network (to be passed from outside)
 	std::map<std::string, double> lsimilarityMeans;

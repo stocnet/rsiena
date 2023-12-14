@@ -42,8 +42,8 @@ public:
 	virtual double egoStatistic(int ego, double * currentValues);
 
 private:
-	bool laverage;
-	bool lalterPopularity;
+	bool laverage {};
+	bool lalterPopularity {};
 };
 
 }

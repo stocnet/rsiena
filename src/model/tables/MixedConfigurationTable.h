@@ -78,15 +78,15 @@ private:
 	// The modification count of the first network on the last time this table
 	// was calculated.
 
-	int llastFirstModificationCount;
+	int llastFirstModificationCount {};
 
 	// The modification count of the second network on the last time this table
 	// was calculated.
 
-	int llastSecondModificationCount;
+	int llastSecondModificationCount {};
 
 	// The number of elements in ltable
-	int ltableSize;
+	int ltableSize {};
 };
 
 }

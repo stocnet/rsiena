@@ -37,9 +37,9 @@ protected:
 
 
 private:
-	bool lleftThresholded;
-	bool lrightThresholded;
-	double lthreshold;
+	bool lleftThresholded {};
+	bool lrightThresholded {};
+	double lthreshold {};
 };
 
 }

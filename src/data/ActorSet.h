@@ -31,7 +31,7 @@ public:
 
 private:
 	// The number of actors in this set
-	int ln;
+	int ln{};
 };
 
 

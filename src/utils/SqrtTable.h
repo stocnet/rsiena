@@ -32,7 +32,7 @@ private:
 	// A table storing the square roots that have been calculated before
 	// (ltable[i] = -1 if the root has not been calculated for the number i)
 
-	double * ltable;
+	double * ltable {};
 };
 
 }

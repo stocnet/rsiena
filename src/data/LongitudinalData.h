@@ -61,18 +61,18 @@ private:
 	const ActorSet * lpActorSet;
 
 	// The number of observations
-	int lobservationCount;
+	int lobservationCount {};
 
 	// Stores a flag per each period if only upward changes were observed
-	bool * lupOnly;
+	bool * lupOnly {};
 
 	// Stores a flag per each period if only downward changes were observed
-	bool * ldownOnly;
+	bool * ldownOnly {};
 
 	// The id of this data object, which is unique among all longitudinal
 	// data objects  of the parent (which is an instance of the Data class).
 
-	int lid;
+	int lid {};
 };
 
 

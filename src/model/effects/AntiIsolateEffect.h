@@ -42,9 +42,9 @@ protected:
 
 private:
 	// Indicates the minimum degree threshold
-	int lminDegree;
+	int lminDegree {};
 	// Indicates that also out-tie-isolation of alter is considered
-	bool loutAlso;
+	bool loutAlso {};
 };
 
 }

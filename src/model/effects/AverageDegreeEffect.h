@@ -45,7 +45,7 @@ public:
 protected:
 	virtual double egoStatistic(int ego, const Network * pNetwork);
 private:
-	double lcentering;
+	double lcentering {};
 };
 
 }

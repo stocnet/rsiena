@@ -33,10 +33,10 @@ private:
 	int calculateDoubleDegree(int actor) const;
 	// secondDirection can be 0, 1, 2,
 	// indicating the direction of the second tie
-	bool lfirstDirection;
-	int lsecondDirection;
+	bool lfirstDirection {};
+	int lsecondDirection {};
 	// Must the degree be subtracted?
-	bool lsubtract;
+	bool lsubtract {};
 };
 
 }

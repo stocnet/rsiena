@@ -43,10 +43,10 @@ public:
 	virtual double value(int alter) const;
 
 private:
-	bool lroot; // should the square root be taken?
-	bool lcenter; // should there be centering?
-	double lavInTwoStar; // average observed number of in-two-stars in first network
-	std::string lvariableName; // name of first network
+	bool lroot {}; // should the square root be taken?
+	bool lcenter {}; // should there be centering?
+	double lavInTwoStar {}; // average observed number of in-two-stars in first network
+	std::string lvariableName {}; // name of first network
 	ConfigurationTable * lpFirstInStarTable;
 	// Lookup table for fast square root calculations:
 	SqrtTable * lsqrtTable;
