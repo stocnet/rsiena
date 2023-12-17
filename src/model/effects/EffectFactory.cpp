@@ -1847,6 +1847,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new SimilarityIndegreeEffect(pEffectInfo, false, false);
 	}
+	else if (effectName == "indegWeightAverage")
+	{
+		pEffect = new IndegWeightAverageEffect(pEffectInfo);
+	}
 	else if (effectName == "indeg")
 	{
 		if (pContinuousData)
