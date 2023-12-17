@@ -11,6 +11,10 @@
 
 //#include <R_ext/Print.h>
 
+/**
+ * Not all includes might be necessary.
+*/
+
 #include <cstdlib>
 #include <cmath>
 #include <stdexcept>
@@ -45,7 +49,6 @@ IndegWeightAverageEffect::IndegWeightAverageEffect(const EffectInfo * pEffectInf
 }
 
 /**
- * Might not be correct to do
  * Initializes this effect.
  * @param[in] pData the observed data
  * @param[in] pState the current state of the dependent variables
@@ -79,9 +82,6 @@ double IndegWeightAverageEffect::calculateChangeContribution(int actor,
 	statistic += this->centeredValue(actor) * this->pNetwork()->inDegree(actor) + difference;
     weightedN += this->pNetwork()->inDegree(actor);
     statistic /= weightedN;
-/**
- * the centering might not work as intended anymore; use only for p = 0 for now
-*/
 	if (!this->lcenterMean)
 	{
 		statistic += (this->overallCenterMean() - this->lcenteringValue);
@@ -103,11 +103,7 @@ double IndegWeightAverageEffect::egoStatistic(int ego, double * currentValues)
 		thesum += currentValues[i] * this->pNetwork()->inDegree(i);
         weightsum += this->pNetwork()->inDegree(i);
 	}
-	/* thesum /= this->n(); */
     thesum /= weightsum;    
-   /*
-    * the centering might not work as intended anymore; use only for p = 0 for now
-    */
 	if (!this->lcenterMean)
 	{
 		thesum += (this->overallCenterMean() - this->lcenteringValue);
