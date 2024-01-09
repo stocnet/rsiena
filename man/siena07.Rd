@@ -20,6 +20,7 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
         useCluster=FALSE, nbrNodes=2,
         thetaValues = NULL,
         returnThetas = FALSE,
+        targets = NULL,
         initC=TRUE,
         clusterString=rep("localhost", nbrNodes), tt=NULL,
         parallelTesting=FALSE, clusterIter=!x$maxlike,
@@ -44,6 +45,9 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
     dependent variable). Can only be used if \code{x$simOnly=TRUE}.}
   \item{returnThetas}{Boolean: whether to return theta values
    and generated estimation statistics of Phase 2 runs.}
+  \item{targets}{Numeric vector of length equal to the number of estimated
+    parameters, meant to supersede the targets calculated from the data set;
+    see "Details". Not for regular use.}
   \item{initC}{Boolean: set to \code{TRUE} if the simulation will use C
    routines (currently always needed). Only for use if using
    multiple processors, to ensure all copies are initialised
@@ -51,7 +55,7 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
   \item{clusterString}{Definitions of clusters. Default set up to use
    the local machine only.}
   \item{tt}{A \code{tcltk} toplevel window. Used if called from the
-   model options screen.}
+   model options screen, if \code{tcltk} is available.}
   \item{parallelTesting}{Boolean. If \code{TRUE}, sets up random numbers to
    parallel those in Siena 3.}
   \item{clusterIter}{Boolean. If \code{TRUE}, multiple processes execute
@@ -104,6 +108,14 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
  and also once to initialise the model fitting and once to complete it.
  Unless in batch mode, a tcl/tk screen is displayed to allow interruption
  and to show progress.
+
+ If \code{targets} is specified (which should be done only in special cases),
+ and provided that estimation is by the Method of Moments, the data
+ is not a multi-group data set and has exactly 2 waves,
+ and if the length of the vector \code{targets} is equal to the number
+ of estimated parameters (not counting the rate parameters estimated
+ by conditional estimation), then the vector \code{targets} supersedes the
+ targets calculated from the data set.
 
  It is necessary to check that convergence has been achieved.
  The rule of thumb is that the all t-ratios for convergence should be
