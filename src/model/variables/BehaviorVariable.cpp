@@ -987,11 +987,11 @@ void BehaviorVariable::accumulateDerivatives() const
 
 			if (R_IsNaN(product[effect1]))
 			{
-				Rprintf("effect 1 %d %x \n", effect1, pEffect1);
+				Rprintf("effect 1 %d \n", effect1);
 			}
 			if (R_IsNaN(product[effect2]))
 			{
-				Rprintf("effect2 %d %x \n", effect2, pEffect2);
+				Rprintf("effect2 %d \n", effect2);
 			}
 			this->pSimulation()->derivative(pEffect1->pEffectInfo(),
 				pEffect2->pEffectInfo(),
@@ -1001,7 +1001,6 @@ void BehaviorVariable::accumulateDerivatives() const
 		}
 	}
 	delete[] product;
-
 }
 
 /**
