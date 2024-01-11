@@ -14,7 +14,7 @@ The models are stochastic actor-oriented models,
 described in Snijders (2017).
 
 Recent versions of the package are distributed through GitHub,   
-see \url{https://github.com/snlab-nl/rsiena/ }.
+see \url{https://github.com/snlab-nl/rsiena/}.
 }
 \details{
   The main flow of operations of this package is as follows.
@@ -44,8 +44,8 @@ see \url{https://github.com/snlab-nl/rsiena/ }.
   \tabular{ll}{
     Package: \tab RSiena\cr
     Type: \tab Package\cr
-    Version: \tab 1.4.2\cr
-    Date: \tab 2023-12-14\cr
+    Version: \tab 1.4.3\cr
+    Date: \tab 2024-01-09\cr
     Depends: \tab R (>= 3.5.0)\cr
     Imports: \tab Matrix, lattice, parallel, MASS, methods, xtable\cr
     Suggests: \tab network, tools, codetools, tcltk\cr

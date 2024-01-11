@@ -310,7 +310,7 @@ void updateParameters(SEXP EFFECTSLIST, SEXP THETA, vector<Data *> *
 				}
 			}
 			else if (strcmp(effectType, "rate") == 0 &&
-					 strcmp(effectName, "scale") == 0)		
+					 strcmp(effectName, "scale") == 0)
 			{
 				int period = INTEGER(VECTOR_ELT(EFFECTS, periodCol))[eff] - 1;
 				if (strcmp(setting, "") == 0)
@@ -319,7 +319,7 @@ void updateParameters(SEXP EFFECTSLIST, SEXP THETA, vector<Data *> *
 				}
 			else
 			{
-					error("setting found for behavior variable %s", 
+					error("setting found for behavior variable %s",
 						networkName);
 				}
 			}
@@ -415,9 +415,7 @@ void setupOneModeObservations(const std::string& name, SEXP ONEMODES,
 	int observations = Rf_length(ONEMODES);
 	if (observations != pOneModeNetworkLongitudinalData->observationCount())
 	{
-		error(("wrong number of observations in: " + name + ": expected "
-				+ toString(pOneModeNetworkLongitudinalData->observationCount()) + " got "
-				+ toString(observations)).c_str());
+		error("wrong number of observations for one-mode network");
 	}
 	SEXP uo;
 	PROTECT(uo = install("uponly"));
@@ -787,7 +785,7 @@ void setupBehaviorGroup(SEXP BEHGROUP, Data *pData)
  * Create all observations for a continuous dependent variable
  *
  */
-void setupContinuous(SEXP CONTINUOUS, ContinuousLongitudinalData * 
+void setupContinuous(SEXP CONTINUOUS, ContinuousLongitudinalData *
 	pContinuousData)
 {
     int observations = ncols(VECTOR_ELT(CONTINUOUS, 0));
@@ -1100,7 +1098,7 @@ void setupChangingCovariateGroup(SEXP VARCOVARGROUP, Data *pData)
 	for (int changingCovariate = 0;
 			changingCovariate < nChangingCovariate;
 			changingCovariate++)
-	{		
+	{
 		SEXP as;
 		PROTECT(as = install("nodeSet"));
 		SEXP actorSet = getAttrib(VECTOR_ELT(VARCOVARGROUP, changingCovariate),
@@ -1159,7 +1157,7 @@ void setupChangingCovariateGroup(SEXP VARCOVARGROUP, Data *pData)
 		SEXP Range = getAttrib(VECTOR_ELT(VARCOVARGROUP, changingCovariate),
 				range);
 		pChangingCovariate->range(REAL(Range)[0]);
-		UNPROTECT(8);		
+		UNPROTECT(8);
 	}
 }
 
@@ -1500,7 +1498,7 @@ SEXP createEffects(SEXP EFFECTS, Model *pModel, vector<Data *> * pGroupData,
 			}
 		}
 		else if (strcmp(effectType, "rate") == 0 &&
-				 strcmp(effectName, "scale") == 0)		
+				 strcmp(effectName, "scale") == 0)
 		{
 			int period = INTEGER(VECTOR_ELT(EFFECTS, periodCol))[i] - 1;
 			if (strcmp(setting, "") == 0)
@@ -1631,7 +1629,7 @@ void getChangeContributionStatistics(SEXP EFFECTSLIST,
 		{
 			const char * effectType = CHAR(STRING_ELT(VECTOR_ELT(EFFECTS, typeCol), i));
 			const char * netType = CHAR(STRING_ELT(VECTOR_ELT(EFFECTS, netTypeCol), i));
-			if(strcmp(netType, "oneMode") == 0 || strcmp(netType, "bipartite") == 0 || 
+			if(strcmp(netType, "oneMode") == 0 || strcmp(netType, "bipartite") == 0 ||
 									strcmp(netType, "behavior") == 0)
 			{
 				// todo At the moment, change contributions cannot be calculated for endowment or creation effects
@@ -1746,7 +1744,7 @@ void getStatistics(SEXP EFFECTSLIST,
 	int intptr2Col;
 	int intptr3Col;
 	int settingCol;
-	
+
 // Get the column numbers:
 	getColNos(Names, &netTypeCol, &nameCol, &effectCol,
 			&parmCol, &int1Col, &int2Col, &initValCol,
@@ -1954,7 +1952,7 @@ void getStatistics(SEXP EFFECTSLIST,
 						{
 							score =
 								pVariable->logreciprocalDegreeScore(pNetworkVariable);
-						}						
+						}
 						else
 						{
 

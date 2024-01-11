@@ -76,7 +76,7 @@ DataReport <- function(z, x, f)
 	Report("Estimation method: ", outf)
 	if (z$cconditional)
 	{
-		Report("conditional moment estimation\n", outf)
+		Report("conditional moment estimation", outf)
 		if (gmm(x))
 		{
 			Report(' by the Generalized Method of Moments.\n', outf)
@@ -136,7 +136,7 @@ DataReport <- function(z, x, f)
 		{
 			Report('.\n', outf)
 		}
-		
+
 		#if (exogenous)
 		#{
 		#    Report("Changing composition: no conditional moment estimation.\n",
@@ -307,7 +307,7 @@ DataReport <- function(z, x, f)
 	{
 	  fixed <- ifelse(z$fixed, '  (fixed) ', '')
 	}
-	else 
+	else
 	{
 	  if (!z$cconditional)
 	  {
@@ -337,7 +337,7 @@ DataReport <- function(z, x, f)
 	}
 	Report(tmp, outf)
 	## targets:
-	Report("\n\nObserved values of target statistics are\n", outf)
+	Report("\n\nValues of target statistics are\n", outf)
 	if (z$maxlike)
 	{
 		targets <- z$maxlikeTargets
@@ -353,6 +353,14 @@ DataReport <- function(z, x, f)
 				targets)),
 		'\n', sep = '', collapse = '')
 	Report(tmp, outf)
+	if (attr(z$targets, "fromData"))
+	{
+		Report("These were calculated from the data.\n", outf)
+	}
+	else
+	{
+		Report("These were given by the user in the call of siena07.\n", outf)
+	}
 	Report(c('\n', nrow(z$requestedEffects)-sum(z$requestedEffects$type=="gmm"), 'parameters,',
 			nrow(z$requestedEffects),
 			'statistics\n'),outf)
