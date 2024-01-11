@@ -516,6 +516,8 @@ Overall maximum convergence ratio:    4.7198
 
 Total of 266 iteration steps.
 
+> #algo <- sienaAlgorithmCreate(nsub=1, n3=20, maxlike=TRUE, seed=15, mult=1, prML=2)
+> #(ans <- siena07(algo, data=dataset, effects=myeff, batch=TRUE, silent=TRUE))
 > ##test 15
 > print('test15')
 [1] "test15"
