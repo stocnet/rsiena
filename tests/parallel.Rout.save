@@ -516,25 +516,6 @@ Overall maximum convergence ratio:    4.7198
 
 Total of 266 iteration steps.
 
-> algo <- sienaAlgorithmCreate(nsub=1, n3=20, maxlike=TRUE, seed=15, mult=1, prML=2)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> (ans <- siena07(algo, data=dataset, effects=myeff, batch=TRUE, silent=TRUE))
-Estimated by Maximum Likelihood
-
-Estimates, standard errors and convergence t-ratios
-
-                                   Estimate   Standard   Convergence 
-                                                Error      t-ratio   
-  1. rate basic rate parameter net  3.9141  ( 0.4096   )   -0.5145   
-  2. eval outdegree (density)      -1.5350  ( 0.3908   )    0.1883   
-  3. eval reciprocity               1.8075  ( 0.3141   )    0.3479   
-  4. eval indegree - popularity     0.0878  ( 0.0445   )    0.1091   
-
-Overall maximum convergence ratio:    0.8862 
-
-
-Total of 266 iteration steps.
-
 > ##test 15
 > print('test15')
 [1] "test15"
