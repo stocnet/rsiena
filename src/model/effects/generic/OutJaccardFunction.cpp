@@ -32,7 +32,7 @@ OutJaccardFunction::OutJaccardFunction(string networkName) :
 
 
 /**
- * Outitializes this function.
+ * Initializes this function.
  * @param[in] pData the observed data
  * @param[in] pState the current state of the dependent variables
  * @param[in] period the period of interest

@@ -1849,7 +1849,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "indegWeightAverage")
 	{
-		pEffect = new IndegWeightAverageEffect(pEffectInfo);
+		pEffect = new IndegreeWeightedAverageEffect(pEffectInfo);
 	}
 	else if (effectName == "indeg")
 	{
@@ -2058,6 +2058,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "totInSimDist2")
 	{
 		pEffect = new AverageSimilarityInDist2Effect(pEffectInfo, false);
+	}
+	else if (effectName == "totTwoInStarAlt")
+	{
+		pEffect = new AverageTwoInStarAlterEffect(pEffectInfo, false, false);
 	}
 	else if (effectName == "avAlt")
 	{

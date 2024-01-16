@@ -3,10 +3,10 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: IndegWeightAverageEffect.cpp
+ * File: IndegreeWeightedAverageEffect.cpp
  *
  * Description: This file contains the implementation of the
- * IndegWeightAverageEffect class.
+ * IndegreeWeightedAverageEffect class.
  *****************************************************************************/
 
 //#include <R_ext/Print.h>
@@ -18,7 +18,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <stdexcept>
-#include "IndegWeightAverageEffect.h"
+#include "IndegreeWeightedAverageEffect.h"
 #include "network/Network.h"
 #include "network/IncidentTieIterator.h"
 #include "model/variables/NetworkVariable.h"
@@ -34,7 +34,7 @@ namespace siena
 /**
  * Constructor.
  */
-IndegWeightAverageEffect::IndegWeightAverageEffect(const EffectInfo * pEffectInfo) :
+IndegreeWeightedAverageEffect::IndegreeWeightedAverageEffect(const EffectInfo * pEffectInfo) :
 	NetworkDependentBehaviorEffect(pEffectInfo)
 {
 	this->lcenterMean = (pEffectInfo->internalEffectParameter() <= 0.5);
@@ -55,7 +55,7 @@ IndegWeightAverageEffect::IndegWeightAverageEffect(const EffectInfo * pEffectInf
  * @param[in] period the period of interest
  * @param[in] pCache the cache object to be used to speed up calculations
  */
-void IndegWeightAverageEffect::initialize(const Data * pData,
+void IndegreeWeightedAverageEffect::initialize(const Data * pData,
 	State * pState,
 	int period,
 	Cache * pCache)
@@ -68,7 +68,7 @@ void IndegWeightAverageEffect::initialize(const Data * pData,
  * Calculates the change in the statistic corresponding to this effect if
  * the given actor would change his behavior by the given amount.
  */
-double IndegWeightAverageEffect::calculateChangeContribution(int actor,
+double IndegreeWeightedAverageEffect::calculateChangeContribution(int actor,
 	int difference)
 {
 	double statistic = 0;
@@ -94,7 +94,7 @@ double IndegWeightAverageEffect::calculateChangeContribution(int actor,
  * Returns the statistic corresponding to the given ego with respect to the
  * given values of the behavior variable.
  */
-double IndegWeightAverageEffect::egoStatistic(int ego, double * currentValues)
+double IndegreeWeightedAverageEffect::egoStatistic(int ego, double * currentValues)
 {
 	double thesum = 0;
     int weightsum = 0;
@@ -117,7 +117,7 @@ double IndegWeightAverageEffect::egoStatistic(int ego, double * currentValues)
  * the endowment function with respect to the initial values of a
  * behavior variable and the current values.
  */
-double IndegWeightAverageEffect::egoEndowmentStatistic(int ego,
+double IndegreeWeightedAverageEffect::egoEndowmentStatistic(int ego,
  	const int * difference,
 	double * currentValues)
 {
