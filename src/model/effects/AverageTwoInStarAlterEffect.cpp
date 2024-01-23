@@ -73,23 +73,24 @@ double AverageTwoInStarAlterEffect::calculateChangeContribution(int actor,
 		{
 			if (j != actor)
 			{
-				double instars = 0;
-				for (IncidentTieIterator iterH = pNetwork->outTies(j);
-							iterH.valid();
-							iterH.next())
-					{
-						int h = iterH.actor();
-						for (IncidentTieIterator iterI = pNetwork->inTies(h);
-									iterI.valid();
-									iterI.next())
-							{
-								int i = iterI.actor();
-								if (i == actor) // should stop after this - use while?
-								{
-									instars ++;
-								}
-							}
-					}
+				double instars = pNetwork->inTwoStarCount(actor, j);
+				// double instarCount = 0;
+				// for (IncidentTieIterator iterH = pNetwork->outTies(j);
+				// 			iterH.valid();
+				// 			iterH.next())
+				// 	{
+				// 		int h = iterH.actor();
+				// 		for (IncidentTieIterator iterI = pNetwork->inTies(h);
+				// 					iterI.valid();
+				// 					iterI.next())
+				// 			{
+				// 				int i = iterI.actor();
+				// 				if (i == actor) // should stop after this - use while?
+				// 				{
+				// 					instars ++;
+				// 				}
+				// 			}
+				// 	}
 				if (instars > 0)
 				{
 					denom += this->value(j);
@@ -120,23 +121,24 @@ double AverageTwoInStarAlterEffect::egoStatistic(int ego, double * currentValues
 	{
 		if (j != ego)
 		{
-			double instarCount = 0;
-			for (IncidentTieIterator iterH = pNetwork->outTies(j);
-						iterH.valid();
-						iterH.next())
-				{
-					int h = iterH.actor();
-					for (IncidentTieIterator iterI = pNetwork->inTies(h);
-								iterI.valid();
-								iterI.next())
-						{
-							int i = iterI.actor();
-							if (i == ego) // should stop after this - use while?
-							{
-								instarCount ++;
-							}
-						}
-				}
+			double instarCount = pNetwork->inTwoStarCount(ego, j);
+			// double instarCount = 0;
+			// for (IncidentTieIterator iterH = pNetwork->outTies(j);
+			// 			iterH.valid();
+			// 			iterH.next())
+			// 	{
+			// 		int h = iterH.actor();
+			// 		for (IncidentTieIterator iterI = pNetwork->inTies(h);
+			// 					iterI.valid();
+			// 					iterI.next())
+			// 			{
+			// 				int i = iterI.actor();
+			// 				if (i == ego) // should stop after this - use while?
+			// 				{
+			// 					instarCount ++;
+			// 				}
+			// 			}
+			// 	}
 			if (instarCount > 0)
 			{
 				denom += currentValues[j] + this->overallCenterMean();
