@@ -46,7 +46,7 @@ DiffusionRateEffect::DiffusionRateEffect(const NetworkVariable * pVariable,
 		* max(this->lpVariable->n(), this->lpVariable->m());
 	double possibleDegreeDenom = 1;
 
-	if (effectName == "avExposure")
+	if (effectName == "avExposure" || effectName == "avTinExposureDist2")
 	{
 		possibleDegreeDenom = max(this->lpVariable->n(), this->lpVariable->m());
 	}
@@ -136,24 +136,48 @@ double DiffusionRateEffect::proximityValue(Network * pNetwork, int i,
 			 iter.valid();
 			 iter.next())
 		{
-			double alterValue = this->lpBehaviorVariable->value(iter.actor());
-
-			if (alterValue >= 0.5)
+			if (this->leffectName == "totInExposureDist2" || this->leffectName == "avTinExposureDist2" || this->leffectName == "totAInExposureDist2")
 			{
-				numInfectedAlter++;
+				int j = iter.actor();
+				double totalAlterInDist2Value = 0; // count values of j's in-alters
+				for (IncidentTieIterator iterH = pNetwork->inTies(j);
+					iterH.valid();
+					iterH.next())
+				{
+					double alterInDist2Value = this->lpBehaviorVariable->value(iterH.actor());
+					if ((i != iterH.actor()) && (alterInDist2Value >= 0.5))
+						{
+							numInfectedAlter++;
+						}
+				totalAlterInDist2Value += alterInDist2Value;
+				}
+				if((this->leffectName == "totAInExposureDist2") && ((pNetwork->inDegree(j)-1) > 0))
+				{
+					totalAlterInDist2Value /= (pNetwork->inDegree(j) - 1);
+				}
+				totalAlterValue += totalAlterInDist2Value;
 			}
-
-			if (this->leffectName == "infectIn")
+			else
 			{
-				alterValue *= pNetwork->inDegree(iter.actor());
-			}
-			else if ((this->leffectName == "infectDeg") ||
-						(this->leffectName == "infectOut"))
-			{
-				alterValue *= pNetwork->outDegree(iter.actor());
-			}
+				double alterValue = this->lpBehaviorVariable->value(iter.actor());
 
-			totalAlterValue += alterValue;
+				if (alterValue >= 0.5)
+				{
+					numInfectedAlter++;
+				}
+
+				if (this->leffectName == "infectIn")
+				{
+					alterValue *= pNetwork->inDegree(iter.actor());
+				}
+				else if ((this->leffectName == "infectDeg") ||
+							(this->leffectName == "infectOut"))
+				{
+					alterValue *= pNetwork->outDegree(iter.actor());
+				}
+
+				totalAlterValue += alterValue;
+			}
 		}
 	}
 
@@ -192,7 +216,7 @@ double DiffusionRateEffect::value(int i, int period) const
 {
 	Network * pNetwork = this->lpVariable->pNetwork();
 
-	if (this->leffectName == "avExposure")
+	if (this->leffectName == "avExposure" || this->leffectName == "avTinExposureDist2")
 	{
 		return this->proximityValue(pNetwork, i, 1, max(1,
 				pNetwork->outDegree(i)));
@@ -205,7 +229,9 @@ double DiffusionRateEffect::value(int i, int period) const
 	else if (this->leffectName == "totExposure" ||
 		this->leffectName == "infectDeg" ||
 		this->leffectName == "infectIn" ||
-		this->leffectName == "infectOut")
+		this->leffectName == "infectOut" ||
+		this ->leffectName == "totInExposureDist2" ||
+		this->leffectName == "totAInExposureDist2") // not divided by number of i's alters!
 	{
 		return this->proximityValue(pNetwork, i, 1, 1);
 	}

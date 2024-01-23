@@ -1586,7 +1586,10 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 						effectName == "totExposure" ||
 						effectName == "infectDeg" ||
 						effectName == "infectIn" ||
-						effectName == "infectOut")
+						effectName == "infectOut" ||
+						effectName == "totInExposureDist2" ||
+						effectName == "avTinExposureDist2" ||
+						effectName == "totAInExposureDist2")
 					{
 						statistic +=
 							this->calculateDiffusionRateEffect(pBehaviorData,
@@ -1712,7 +1715,7 @@ double StatisticCalculator::calculateDiffusionRateEffect(
 	double response = 1;
 	if (pStructural->outDegree(i) > 0)
 	{
-		if (effectName == "avExposure")
+		if (effectName == "avExposure" || effectName == "avTinExposureDist2")
 		{
 			response /= double(pStructural->outDegree(i));
 		}
@@ -1721,29 +1724,55 @@ double StatisticCalculator::calculateDiffusionRateEffect(
 			response = double(pStructural->inDegree(i)) /
 				double(pStructural->outDegree(i));
 		}
-
 		for (IncidentTieIterator iter = pStructural->outTies(i);
 			 iter.valid();
 			 iter.next())
 		{
-			double alterValue = pBehaviorData->
-				value(this->lperiod,iter.actor());  // this is the value at the start of the period
-
-			if (alterValue >= 0.5)
+			if (effectName == "totInExposureDist2" || effectName == "avTinExposureDist2" || effectName == "totAInExposureDist2")
 			{
-				numInfectedAlter++;
+				int j = iter.actor();
+				double totalAlterInDist2Value = 0; // count values of j's in-alters
+				for (IncidentTieIterator iterH = pStructural->inTies(j);
+					iterH.valid();
+					iterH.next())
+				{	
+					if (i != iterH.actor())
+					{
+						double alterInDist2Value = pBehaviorData->
+						value(this->lperiod,iterH.actor());  // this is the value at the start of the period
+						if(alterInDist2Value >= 0.5)
+						{
+							numInfectedAlter++;
+						}
+						totalAlterInDist2Value += alterInDist2Value;
+					}
+				}
+				if((effectName == "totAInExposureDist2") && ((pStructural->inDegree(j)-1) > 0))
+				{
+					totalAlterInDist2Value /= (pStructural->inDegree(j) - 1);
+				}
+				totalAlterValue += totalAlterInDist2Value;
 			}
-
-			if (effectName == "infectIn")
+			else 
 			{
-				alterValue *= pStructural->inDegree(iter.actor());
-			}
-			else if ((effectName == "infectOut") || (effectName == "infectDeg"))
-			{
-				alterValue *= pStructural->outDegree(iter.actor());
-			}
+				double alterValue = pBehaviorData->
+					value(this->lperiod,iter.actor());  // this is the value at the start of the period
 
+				if (alterValue >= 0.5)
+				{
+					numInfectedAlter++;
+				}
+
+				if (effectName == "infectIn")
+				{
+					alterValue *= pStructural->inDegree(iter.actor());
+				}
+				else if ((effectName == "infectOut") || (effectName == "infectDeg"))
+				{
+					alterValue *= pStructural->outDegree(iter.actor());
+				}
 			totalAlterValue += alterValue;
+			}
 		}
 
 		if (internalEffectParameter != 0)

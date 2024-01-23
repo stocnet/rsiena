@@ -395,7 +395,10 @@ void DependentVariable::initializeRateFunction()
 					effectName == "susceptAvIn" ||
 					effectName == "infectIn" ||
 					effectName == "infectDeg" ||
-					effectName == "infectOut")
+					effectName == "infectOut" ||
+					effectName == "totInExposureDist2"  ||
+					effectName == "avTinExposureDist2" ||
+					effectName == "totAInExposureDist2")
 				{
 					if (this->lpActorSet != pVariable->pSenders())
 					{
@@ -1250,7 +1253,10 @@ void DependentVariable::accumulateRateScores(double tau,
 						effectName == "susceptAvIn" ||
 						effectName == "infectIn" ||
 						effectName == "infectDeg" ||
-						effectName == "infectOut")
+						effectName == "infectOut" ||
+						effectName == "totInExposureDist2"  ||
+						effectName == "avTinExposureDist2" ||
+						effectName == "totAInExposureDist2")
 					{
 						this->ldiffusionscores[pInfo] +=
 							calculateDiffusionRateEffect(pBehaviorVariable,
@@ -2073,7 +2079,7 @@ double DependentVariable::calculateDiffusionRateEffect(
 	int numInfectedAlter = 0;
 	if (pNetwork->outDegree(i) > 0)
 	{
-		if (effectName == "avExposure")
+		if (effectName == "avExposure" || effectName == "avTinExposureDist2")
 		{
 			response /= double(pNetwork->outDegree(i));
 		}
@@ -2085,25 +2091,50 @@ double DependentVariable::calculateDiffusionRateEffect(
 		for (IncidentTieIterator iter = pNetwork->outTies(i);
 			 iter.valid();
 			 iter.next())
-		{
-			double alterValue = pBehaviorVariable->
+		{	
+			if (effectName == "totInExposureDist2"  || effectName == "avTinExposureDist2" || effectName == "totAInExposureDist2")
+			{
+				int j = iter.actor();
+				double totalAlterInDist2Value = 0; // count values of j's in-alters
+				for (IncidentTieIterator iterH = pNetwork->inTies(j);
+					iterH.valid();
+					iterH.next())
+				{
+					double alterInDist2Value = pBehaviorVariable ->
+					value(iterH.actor());
+					if ((i != iterH.actor()) && (alterInDist2Value >= 0.5))
+						{
+							numInfectedAlter++;
+						}
+					totalAlterInDist2Value += alterInDist2Value;
+				}
+				if((effectName == "totAInExposureDist2") && ((pNetwork->inDegree(j)-1) > 0))
+				{
+					totalAlterInDist2Value /= (pNetwork->inDegree(j) - 1);
+				}
+				totalAlterValue += totalAlterInDist2Value;
+			}
+			else
+			{
+				double alterValue = pBehaviorVariable->
 				value(iter.actor());
 
-			if (alterValue >= 0.5)
-			{
-				numInfectedAlter++;
-			}
+				if (alterValue >= 0.5)
+				{
+					numInfectedAlter++;
+				}
 
-			if (effectName == "infectIn")
-			{
-				alterValue *= pNetwork->inDegree(i);
-			}
-			else if ((effectName == "infectOut") || (effectName == "infectDeg"))
-			{
-				alterValue *= pNetwork->outDegree(i);
-			}
+				if (effectName == "infectIn")
+				{
+					alterValue *= pNetwork->inDegree(i);
+				}
+				else if ((effectName == "infectOut") || (effectName == "infectDeg"))
+				{
+					alterValue *= pNetwork->outDegree(i);
+				}
 
-			totalAlterValue += alterValue;
+				totalAlterValue += alterValue;
+			}
 		}
 
 		if (internalEffectParameter != 0)
