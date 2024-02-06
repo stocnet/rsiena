@@ -2603,7 +2603,6 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "intercept")
 	{
 		pEffect = new InterceptEffect(pEffectInfo);
-
 	}
 	else if (effectName == "feedback")
 	{

@@ -115,7 +115,9 @@ void Rterminate()
 	}
 	catch(exception& e)
 	{
-		error(e.what());
+		const char* errorText = e.what();
+		Rprintf("%s\n", errorText);
+		error("; exception in C++");
 	}
 }
 

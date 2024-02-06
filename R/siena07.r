@@ -15,6 +15,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	useCluster = FALSE, nbrNodes = 2,
 	thetaValues = NULL,
     returnThetas = FALSE,
+	targets = NULL,
 	initC=TRUE,
 	clusterString=rep("localhost", nbrNodes), tt=NULL,
 	parallelTesting=FALSE, clusterIter=!x$maxlike,
@@ -32,7 +33,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	}
 	on.exit(exitfn())
 
-	# If the user is passing clusters through -cl- then change the 
+	# If the user is passing clusters through -cl- then change the
 	# useCluster to TRUE, and assign the -nbrNodes- to number of nodes
 	if (!useCluster & length(cl))
 	{
@@ -133,6 +134,8 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	}
 	z$randomseed2 <- randomseed2
 
+	x$targets <- targets
+
 	## set the global is.batch
 	batchUse <- batch
 	if (!batch)
@@ -140,7 +143,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 		if (!requireNamespace("tcltk", quietly = TRUE))
 		{
 				batchUse <- TRUE
-				message("Package tcltk not available, forcing use of batch mode")		
+				message("Package tcltk not available, forcing use of batch mode")
 		}
 		else
 		{

@@ -1,3 +1,21 @@
+# RSiena 1.4.3
+
+2024-01-09
+
+## Changes in RSiena:
+
+### Bug correction:
+  * Correction of error message in `BehaviorVariable::accumulateDerivatives`
+    and in `siena07utilities::Rterminate`. 
+  * Allow `sienaDataCreate` with only one variable defined as 
+    a dependent network given as a list of sparse matrices.
+  * Add some "drop=FALSE" in `initializeFRAN.r` to guard against dimension loss
+    in the construction of sparse matrices. 
+### New functionality:
+  * New parameter `targets` in `siena07`, used to supersede the targets 
+    calculated from the data 
+    (not for regular use, see the help file for `siena07`). 
+
 # RSiena 1.4.2
 
 2023-12-14
@@ -5,7 +23,7 @@
 ## Changes in RSiena:
 
 ### Effects:
-  * New effect `outXMore`, `outMore3`. 
+  * New effects `outXMore`, `outMore3`. 
   * `Interactiontype` of `altLThresholdX` and `altRThresholdX` is dyadic.
   * `Interactiontype` of `degAbsDiffX`, `degPosDiffX`, and `degNegDiffX` 
     is "" (blank). 

@@ -240,8 +240,11 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 	if (length(dots) == 1)
 	{
 		ldots <- list(...)
-		dotsIsList <- (is.list(ldots[[1]]))
+		dotsIsList <- ((is.list(ldots[[1]])) & 
+						(! inherits((ldots[[1]]), "sienaDependent")))
 # If dotsIsList, it needs to be a list of variables
+# The second condition is to rule out the case of a single dependent network
+# given as a list of sparse matrices.
 		if (dotsIsList) 
 		{
 			dots <- as.list(substitute(...))[-1]
@@ -2396,8 +2399,9 @@ getGroupNetRanges <- function(data)
 					varmax <- max(varmax, sapply(depvar, function(x)
 											 {
 												 tmp <- x@x
+												 ifelse(length(tmp)==0,0,
 												 max(tmp[!(is.na(tmp) |
-														   tmp %in% c(10, 11))])
+														   tmp %in% c(10, 11))]))
 											 }), na.rm=TRUE)
 				}
 				else
