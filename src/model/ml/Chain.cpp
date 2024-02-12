@@ -7,11 +7,12 @@
  *
  * Description: This file contains the implementation of the class Chain.
  *****************************************************************************/
-#include <Rinternals.h>
 
 #include <vector>
 #include <stdexcept>
 #include <string>
+
+#include <Rinternals.h>
 
 #include "Chain.h"
 #include "utils/Utils.h"

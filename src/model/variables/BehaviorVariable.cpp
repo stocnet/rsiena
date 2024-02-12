@@ -12,11 +12,11 @@
 #include <cmath>
 #include <string>
 #include <stdexcept>
-#include <R_ext/Print.h>
-#include <R_ext/Arith.h>
-#include <Rinternals.h>
 #include "data/ActorSet.h"
 #include "utils/Random.h"
+#include <Rinternals.h>
+#include <R_ext/Print.h>
+#include <R_ext/Arith.h>
 #include "BehaviorVariable.h"
 #include "data/BehaviorLongitudinalData.h"
 #include "model/EpochSimulation.h"
