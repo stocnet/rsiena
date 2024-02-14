@@ -11,8 +11,9 @@
 #include <stdexcept>
 #include <string>
 #include <cmath>
-#include <Rinternals.h>
 #include "MLSimulation.h"
+
+#include <Rinternals.h>
 #include "utils/Random.h"
 #include "utils/Utils.h"
 #include "network/Network.h"

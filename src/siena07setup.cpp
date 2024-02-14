@@ -14,7 +14,6 @@
  * Sets up the Data object with data from R
  */
 
-#include "siena07setup.h"
 
 #include <vector>
 #include <cstring>
@@ -23,6 +22,8 @@
 #include <R_ext/Print.h>
 #include <R_ext/Error.h>
 #include <Rinternals.h>
+
+#include "siena07setup.h"
 #include "siena07internals.h"
 #include "siena07utilities.h"
 #include "data/Data.h"

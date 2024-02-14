@@ -10,12 +10,12 @@
  *****************************************************************************/
 
 #include <cmath> 
-#include <R_ext/Error.h>
-#include <R_ext/Print.h>
-#include <Rinternals.h>
 //#include <Eigen/Dense>
 
 #include "EpochSimulation.h"
+#include <R_ext/Error.h>
+#include <R_ext/Print.h>
+#include <Rinternals.h>
 #include "EffectInfo.h"
 #include "SdeSimulation.h"
 #include "model/Model.h"
