@@ -250,9 +250,9 @@ course announcements, etc.
 and can be installed in the usual way from \sfn{CRAN};
 see \url{http://cran.r-project.org}.
 Development versions of \RS are at
-\url{https://github.com/snlab-nl/rsiena/}.
+\url{https://github.com/stocnet/rsiena/}.
 Here also the most recent version is available
-at \url{https://github.com/snlab-nl/rsiena/releases};
+at \url{https://github.com/stocnet/rsiena/releases};
 it is recommended to use this version.
 
 This is a manual for \rs;
@@ -911,7 +911,7 @@ of the software appear).
             However, it is advisable to have the latest version of \RS
             from GitHub or the \SI website.
             You can go to\\
-            \url{https://github.com/snlab-nl/rsiena/releases}\\
+            \url{https://github.com/stocnet/rsiena/releases}\\
             or to\\
               \url{http://www.stats.ox.ac.uk/~snijders/siena/siena_downloads.htm}\\
             and there download the appropriate version of the package
@@ -927,7 +927,7 @@ of the software appear).
 
             Installation from GitHub can be done as follows.
         Download  the latest release from
-        \url{https://github.com/snlab-nl/rsiena/releases/}.
+        \url{https://github.com/stocnet/rsiena/releases/}.
 Once the file has been downloaded, unzip it, and install the binary
 as appropriate for your Operating System.
 This can be done in Windows using the dropdown menu under \texttt{Packages},
@@ -9773,7 +9773,7 @@ and
  since this is an elementary effect, it can be used in interactions
  and in endowment and creation functions;
 
- \item {\em out-degree up to $p$} (\emph{truncated out-degree}),
+ \item {\em out-degree up to $p$} (\emph{truncated out-degree}) \texttt{(outTrunc)},
  where $p$ is some constant
  (internal effect parameter, see above),  there are two implementations here:
  \texttt{outTrunc} and \texttt{outTrunc2}, to allow the simultaneous use of this
@@ -9812,7 +9812,7 @@ and
  \item {\em out-degree more than $p$} where $p$ is some constant
  (internal effect parameter, see above),
   there are two implementations here:
- \texttt{outMore}, \texttt{outMore2}, and \texttt{outMore3}, 
+ \texttt{outMore}, \texttt{outMore2}, and \texttt{outMore3},
  to allow the simultaneous use of this
  effect with three different internal effect parameters;
  they are defined by \\
@@ -16253,7 +16253,7 @@ To get insight into a package, and certainly to modify
 or personalize it, it is necessary, however,
 to get the source code of the whole package.
 This is available from GitHub at
-\url{https://github.com/snlab-nl/rsiena/}.
+\url{https://github.com/stocnet/rsiena/}.
 
 \iffalse
 
@@ -16488,7 +16488,7 @@ and then go to R to see if it is available to you.
 It is a good idea to check the target statistics computed for a simple
 two-wave data set such as \sfn{s50}.
 Examples are in the script
-\url{https://github.com/snlab-nl/rsiena/blob/main/checkEffects.R}.
+\url{https://github.com/stocnet/rsiena/blob/main/checkEffects.R}.
 \end{enumerate}
 
 As examples, start with simple effects.
@@ -16849,7 +16849,7 @@ mention it in \sfn{effectsDocumentation.r}.
 
 \appendix
 \newpage
-\section{List of Functions in Order of Execution}
+\section{Appendix: List of Functions in Order of Execution}
 
     This appendix
     provides a description of the functions that constitute the
@@ -17340,7 +17340,7 @@ The argument is a sienaFit object `x'. \\
 
 
 
-\section{Changes compared to earlier versions}
+\section{Appendix: Changes compared to earlier versions}
 
 This presents the main changes, especially those directly visible to the user,
 in reverse time order from the current version until
@@ -17389,9 +17389,9 @@ Changes in RSiena:
    \begin{itemize}
    \item New effects \texttt{outXMore}, \texttt{outMore3}.
    \item Corrected effect \texttt{outMore}.
-   \item \texttt{Interactiontype} of \texttt{altLThresholdX} and 
+   \item \texttt{Interactiontype} of \texttt{altLThresholdX} and
         \texttt{altRThresholdX} is dyadic.\\
-        \texttt{Interactiontype} of \texttt{degAbsDiffX}, \texttt{degPosDiffX}, 
+        \texttt{Interactiontype} of \texttt{degAbsDiffX}, \texttt{degPosDiffX},
        and \texttt{degNegDiffX} is "" (blank).
     \end{itemize}
 \item Improvements of functionality:
@@ -18042,7 +18042,7 @@ Changes in RSiena:
 \begin{itemize}
    \item Generalized Method of Moments implemented (Viviana Amati):
      see\\
-     \url{https://github.com/snlab-nl/rsiena/blob/main/docs/manual/Changes_RSiena_GMoM.pdf};
+     \url{https://github.com/stocnet/rsiena/blob/main/docs/manual/Changes_RSiena_GMoM.pdf};
      new function \sfn{includeGMoMStatistics}, extended functionality of \textsf{siena07}.
    \item \sfn{effectsDocumentation} now also includes \texttt{gmm} effects (at the bottom).
    \item \sfn{dyadicCov} made to accept also changing dyadic covariates.
