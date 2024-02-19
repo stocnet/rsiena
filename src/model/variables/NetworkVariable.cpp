@@ -11,6 +11,9 @@
 #include <algorithm>
 #include <vector>
 #include <cmath>
+#include <R_ext/Print.h>
+#include <R_ext/Arith.h>
+#include <Rinternals.h>
 #include "NetworkVariable.h"
 #include "network/NetworkUtils.h"
 #include "utils/Utils.h"

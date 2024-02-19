@@ -15,6 +15,8 @@
 #include <cmath>
 #include <R_ext/Error.h>
 #include "MLSimulation.h"
+
+#include <Rinternals.h>
 #include "utils/Random.h"
 #include "utils/Utils.h"
 #include "network/Network.h"

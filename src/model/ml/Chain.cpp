@@ -12,6 +12,8 @@
 #include <stdexcept>
 #include <string>
 
+#include <Rinternals.h>
+
 #include "Chain.h"
 #include "utils/Utils.h"
 #include "utils/Random.h"

@@ -14,13 +14,14 @@
  * Sets up the Data object with data from R
  */
 
-#include "siena07setup.h"
 
 #include <vector>
 #include <cstring>
 #include <exception>
 #include <R_ext/Random.h>
 #include <R_ext/Print.h>
+
+#include "siena07setup.h"
 #include "siena07internals.h"
 #include "siena07utilities.h"
 #include "data/Data.h"
@@ -35,8 +36,8 @@
 #include "data/ActorSet.h"
 #include "model/ml/MLSimulation.h"
 #include "model/variables/DependentVariable.h"
-#include <Rinternals.h>
 #include <R_ext/Error.h>
+#include <Rinternals.h>
 
 using namespace std;
 using namespace siena;
