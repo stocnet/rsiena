@@ -4,8 +4,10 @@
 ^docs$
 ^pkgdown$
 ^\.github$
+^\.git$
 ^checkEffects.R$
 ^ONEWS$
+^ONEWS_gh$
 ^README.md$
 ^.*\.code-workspace$
 NEWSnew.md
