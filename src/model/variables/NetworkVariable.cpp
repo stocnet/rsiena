@@ -8,9 +8,6 @@
  * Description: This file contains the implementation of the
  * NetworkVariable class.
  *****************************************************************************/
-#include <R_ext/Print.h>
-#include <R_ext/Arith.h>
-#include <Rinternals.h>
 #include <algorithm>
 #include <vector>
 #include <cmath>
@@ -38,14 +35,16 @@
 #include "model/filters/PermittedChangeFilter.h"
 #include "model/ml/Chain.h"
 #include "model/settings/Setting.h"
+#include <Rinternals.h>
 
 #include <algorithm>
 #include <vector>
 #include <cmath>
 
-#include <Rinternals.h>
+#include <R_ext/Error.h>
 #include <R_ext/Print.h>
 #include <R_ext/Arith.h>
+#include <Rinternals.h>
 
 using namespace std;
 
@@ -837,7 +836,7 @@ void NetworkVariable::calculatePermissibleChanges()
 		int i = ii;
 		if (this->stepType() > -1) {
 			if (!iter->valid()) {
-				error( "size of iterator != size setting");
+				Rf_error( "size of iterator != size setting");
 			}
 			i = iter->actor();
 			iter->next();
@@ -935,7 +934,7 @@ void NetworkVariable::calculateTieFlipContributions()
 		if (this->stepType() != -1)
 		{
 			if (!permIter->valid()) {
-				error("permitted iter length != settings permitted size");
+				Rf_error("permitted iter length != settings permitted size");
 			}
 			alter = permIter->actor();
 			permIter->next();
@@ -1117,7 +1116,7 @@ void NetworkVariable::calculateTieFlipProbabilities()
 //		}
 //		else
 //		{
-//			error("setting not found");
+//			Rf_error("setting not found");
 //		}
 //		bool needEgo = true;
 //		if (row.size() == 0)
@@ -1252,7 +1251,7 @@ void NetworkVariable::calculateTieFlipProbabilities()
 			egoOutDegree = this->lpNetwork->outDegree(this->lego);
 			if (egoOutDegree > m)
 			{
-					error("outdegree > primary setting size");
+					Rf_error("outdegree > primary setting size");
 			}
 //			else if (egoOutDegree < m)
 //			{
@@ -1271,7 +1270,7 @@ void NetworkVariable::calculateTieFlipProbabilities()
 		{
 			if (!permIter->valid())
 			{
-				error( "permIter size differs from setting size");
+				Rf_error( "permIter size differs from setting size");
 			}
 			alter = permIter->actor();
 			permIter->next();
@@ -1357,7 +1356,7 @@ void NetworkVariable::calculateTieFlipProbabilities()
 		{
 			if (!permIter->valid())
 			{
-				error( "permitted iter length != settings permitted size");
+				Rf_error( "permitted iter length != settings permitted size");
 			}
 			alter = permIter->actor();
 			permIter->next();
@@ -1440,7 +1439,7 @@ void NetworkVariable::calculateTieFlipProbabilities()
 		Rprintf("this actor = %d\n", (this->lego + 1) );
 		Rprintf("this period = %d\n", (this->period() + 1) );
 		// counting starts at 0
-		error("total probability non-positive");
+		Rf_error("total probability non-positive");
 	}
 
 	// delete iter
@@ -1474,7 +1473,7 @@ void NetworkVariable::accumulateScores(int alter) const
 		if (alter >= m) {
 			Rprintf("this->n = %d this->m = %d m = %d alter = %d \n", this->n(),
 					this->m(), m, alter);
-		error("alter too large");
+		Rf_error("alter too large");
 	}
 	for (int h = 0; h < m; h++)
 	{
@@ -1483,7 +1482,7 @@ void NetworkVariable::accumulateScores(int alter) const
 	}
 	if (sumPermitted <= 0)
 	{
-		error("nothing was permitted");
+		Rf_error("nothing was permitted");
 	}
 	else if (sumPermitted >= 2)
 		// if sumPermitted == 1, no contribution to scores
@@ -1498,7 +1497,7 @@ void NetworkVariable::accumulateScores(int alter) const
 			{
 				Rprintf("R_IsNaN error: i = %d ego = %d alter = %d m = %d\n",
 					i, this->lego, alter, m);
-				error("nan score 41");
+				Rf_error("nan score 41");
 			}
 			if (curSetting) {
 				permIter->reset();
@@ -1512,7 +1511,7 @@ void NetworkVariable::accumulateScores(int alter) const
 				{
 					if (!permIter->valid())
 					{
-						error("iterator not valid");
+						Rf_error("iterator not valid");
 					}
 					j = permIter->actor();
 					permIter->next();
@@ -1542,16 +1541,16 @@ void NetworkVariable::accumulateScores(int alter) const
 					//						}
 					Rprintf("R_IsNaN error: this->levaluationEffectContribution[j][i] = %f\n",
 							this->levaluationEffectContribution[j][i]);
-					Rprintf("R_IsNaN error: this->lprobabilities[j] = %f\n",
+					Rprintf("R_IsNaN Rf_error: this->lprobabilities[j] = %f\n",
 							this->lprobabilities[j]);
-					error("nan score 1");
+					Rf_error("nan score 1");
 				}
 			}
 			if (R_IsNaN(this->pSimulation()->score(pEffect->pEffectInfo())))
 			{
 				Rprintf("R_IsNaN error: i = %d ego = %d alter = %d m = %d\n",
 					i, this->lego, alter, m);
-					error("nan score 0");
+					Rf_error("nan score 0");
 			}
 			this->pSimulation()->score(pEffect->pEffectInfo(),
 				this->pSimulation()->score(pEffect->pEffectInfo()) + score);
@@ -1582,7 +1581,7 @@ void NetworkVariable::accumulateScores(int alter) const
 				{
 					if (!permIter->valid())
 					{
-						error("iterator not valid");
+						Rf_error("iterator not valid");
 					}
 					j = permIter->actor();
 					permIter->next();
@@ -1622,7 +1621,7 @@ void NetworkVariable::accumulateScores(int alter) const
 				{
 					if (!permIter->valid())
 					{
-						error("iterator not valid");
+						Rf_error("iterator not valid");
 					}
 					j = permIter->actor();
 					permIter->next();

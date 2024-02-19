@@ -196,7 +196,7 @@ void DependentVariable::initializeRateFunction()
 				this->lbehaviorVariableModelBSumTerm[pBehaviorVariable] = 0;
 			} else
 				throw logic_error(
-					"No individual covariate named '" + interactionName + "'.");
+					"(2) No individual covariate named '" + interactionName + "'.");
 			//}
 		}
 		else if (rateType == "structural")
@@ -2346,7 +2346,7 @@ void DependentVariable::updateEffectParameters()
 			else
 			{
 				throw logic_error(
-					"No individual covariate named '" +
+					"(3) No individual covariate named '" +
 					interactionName +
 					"'.");
 			}

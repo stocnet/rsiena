@@ -19,6 +19,7 @@
 #include "model/variables/DependentVariable.h"
 #include "model/effects/AllEffects.h"
 #include "model/ml/Chain.h"
+#include <Rinternals.h>
 
 using namespace std;
 
@@ -376,7 +377,7 @@ double Model::basicRateParameter(LongitudinalData * pDependentVariableData,
 void Model::basicScaleParameter(int period, double value)
 {
 	if (period >= this->lnumberOfPeriods)
-		error("Array basicScaleParameter out of bounds\n");
+		Rf_error("Array basicScaleParameter out of bounds\n");
 		
 	if (!this->lbasicScaleParameters)
 	{
@@ -400,7 +401,7 @@ void Model::basicScaleParameter(int period, double value)
 double Model::basicScaleParameter(int period) const
 {
 	if (period >= this->lnumberOfPeriods)
-		error("Array basicScaleParameter out of bounds\n");
+		Rf_error("Array basicScaleParameter out of bounds\n");
 
 	return this->lbasicScaleParameters[period];
 }

@@ -21,6 +21,7 @@
 #include "../IncidentTieIterator.h"
 #include "../iterators/UnionTieIterator.h"
 #include "../iterators/AdvUnionTieIterator.h"
+#include <Rinternals.h>
 
 
 namespace siena {
@@ -83,7 +84,7 @@ void PrimaryLayer::initialize(const Network& rNetwork) {
 			lpCounts = new OneModeNetwork(rNetwork.n());
 			lpLayer = new OneModeNetwork(rNetwork.n());
 		} else {
-			error("not implemented");
+			Rf_error("not implemented");
 		}
 	}
 
@@ -141,7 +142,7 @@ void PrimaryLayer::initializeOneMode(const Network& rNetwork) {
  * network.
  */
 void PrimaryLayer::initializeTwoMode(const Network& rNetwork) {
-	error("primary layer not implemented for two-mode");
+	Rf_error("primary layer not implemented for two-mode");
 }
 
 void PrimaryLayer::modify2PathCountOneMode(const Network& rNetwork, int ego, int alter, int val) {
@@ -191,7 +192,7 @@ void PrimaryLayer::modify2PathCountOneMode(const Network& rNetwork, int ego, int
  * @param[in[ val The magnitude of modification
  */
 void PrimaryLayer::modify2PathCountTwoMode(const Network& rNetwork, int ego, int alter, int val) {
-	error("not implemented");
+	Rf_error("not implemented");
 }
 
 void PrimaryLayer::onNetworkDisposeEvent(const Network& /*rNetwork*/) {
