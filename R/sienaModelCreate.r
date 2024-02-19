@@ -162,7 +162,7 @@ sienaModelCreate <- function(fn,
 	model$prML <- prML
 	if (length (prML) == 1)
 	{
-		if (prML <= 1) # old default
+#		if (prML <= 1) # old default
 #	pridg=0.05, prcdg=0.05, prper=0.2, pripr=0.3, prdpr=0.3,
 #	prirms=0.05, prdrms=0.05,
 		{
@@ -175,17 +175,17 @@ sienaModelCreate <- function(fn,
 			model$prdrms <- 0.05   # delete random missing
 			# prob(move) = 0
 		}
-		else  # prML == 2 
-		{
-			model$pridg <-  0.05   # insert diagonal
-			model$prcdg <-  0.05   # cancel diagonal
-			model$prper <-  0      # permute
-			model$pripr <-  0.3    # insert permute (CCP)
-			model$prdpr <-  0.3    # delete permute (CCP)
-			model$prirms <- 0.05   # insert random missing
-			model$prdrms <- 0.05   # delete random missing
+#		else  # prML == 2 
+#		{
+#			model$pridg <-  0.05   # insert diagonal
+#			model$prcdg <-  0.05   # cancel diagonal
+#			model$prper <-  0      # permute
+#			model$pripr <-  0.3    # insert permute (CCP)
+#			model$prdpr <-  0.3    # delete permute (CCP)
+#			model$prirms <- 0.05   # insert random missing
+#			model$prdrms <- 0.05   # delete random missing
 			# prob(move) = 0.2
-		}
+#		}
 	}
 	else
 	{
@@ -195,7 +195,7 @@ sienaModelCreate <- function(fn,
 		}
 		if ((sum(prML)> 1) | (min(prML) < 0))
 		{
-			stop("prML should have nonnegative numbers with a sum <= 1")
+			stop("prML, if given as a 7-vector, should have nonnegative numbers with sum <= 1")
 		}
 		model$pridg <- prML[1]    # insert diagonal
 		model$prcdg <- prML[2]    # cancel diagonal
