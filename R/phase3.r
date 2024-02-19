@@ -812,6 +812,8 @@ doPhase1or3Iterations <- function(phase, z, x, zsmall, xsmall, nits, nits6=0,
 		}
 		if (x$maxlike)
 		{
+# length of zz$accepts, zz$rejects, zz$aborts determined in siena07models.cpp 
+# in lines 621-627 function mlPeriod
 			z$sdf[[z$nit]] <- zz$dff
 			z$sdf2[[z$nit]] <- zz$dff2
 			z$accepts[z$nit, , ] <- zz$accepts
