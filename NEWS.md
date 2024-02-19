@@ -22,8 +22,6 @@
     `siena07utilities.cpp`, `siena07setup.cpp` and `siena07internals.cpp`)
     and various other places
     (in accordance with "Writing R Extensions").
-  * Put `#include <Rinternals.h>` as the last of the include commands
-    in various `.cpp` files.
   * Corrected wrong length of `lprobabilityArray` in `MLSimulation.h`,
     and cleaned up a bit.
   * In `MLSimulation.cpp`, various sets of "delete" commands reordered so as
@@ -36,6 +34,7 @@
     on continuous behavior dependent variables.
   * Added some "drop=FALSE" in `initializeFRAN.r` to guard against
     dimension loss in the construction of sparse matrices.
+  * Change check for constant dyadic covariates for sparse matrices (issue #88).
   * Some of the recently added effect groups were missing from
     `effectsDocumentation`. This led to an incomplete listing of the effects.
     They are now included.
@@ -48,6 +47,16 @@
     These were not used anywhere.
 ### Other changes:
   * List of changes in the code before 2022 moved from `NEWS.md` to `ONEWS_gh`.
+
+# RSiena 1.4.5
+
+2024-02-14
+
+## Changes in RSiena:
+
+### Bug corrections:
+  * Put `#include <Rinternals.h>` as the last of the include commands
+    in various `.cpp` files (Tomas Kalibera). 
 
 # RSiena 1.4.2
 
