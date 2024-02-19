@@ -60,8 +60,8 @@ ContinuousVariable::~ContinuousVariable()
 		delete[] this->leffectContribution[i];
 	}
 	delete[] this->leffectContribution;
-	delete[] this->lvalues;
 	delete this->lpFunction;
+	delete[] this->lvalues;
 
 	this->lpActorSet = 0;
 	this->lpSimulation = 0;

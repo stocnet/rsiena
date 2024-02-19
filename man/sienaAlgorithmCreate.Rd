@@ -189,8 +189,7 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
   Robbins-Monro algorithm. Those not
   available as arguments can be changed manually when desired.\cr
   The value \code{prML=1} defines the defaults valid in RSiena up to version
-  1.3.16. For ML estimation with only one dependent variable,
-  \code{prML=2} may be more efficient.\cr
+  1.3.16. \cr
   If \code{prML} is given as a vector of 7 probabilities, these are,
   consecutively: the probabilities of inserting a diagonal step, deleting a
   diagonal step, permuting, inserting a CCP, deleting a CCP, inserting random

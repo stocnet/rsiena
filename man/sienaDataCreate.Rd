@@ -36,7 +36,7 @@ object and is a check useful, e.g., for diagnosing problems.
 }
 \value{
 An object of class "siena" which is designed to be used in a siena
-model fit by \code{link{siena07}}. The components of the object are:
+model fit by \code{\link{siena07}}. The components of the object are:
 \item{nodeSets}{List of node sets involved}
 \item{observations}{Integer indicating number of waves of data}
 \item{depvars}{List of networks and behavior variables}

@@ -138,8 +138,6 @@ myeff <- getEffects(dataset)
 myeff <- includeEffects(myeff, inPop)
 algo <- sienaAlgorithmCreate(nsub=1, n3=20, maxlike=TRUE, seed=15, mult=1, prML=1)
 (ans <- siena07(algo, data=dataset, effects=myeff, batch=TRUE, silent=TRUE))
-algo <- sienaAlgorithmCreate(nsub=1, n3=20, maxlike=TRUE, seed=15, mult=1, prML=2)
-(ans <- siena07(algo, data=dataset, effects=myeff, batch=TRUE, silent=TRUE))
 ##test 15
 print('test15')
 mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
@@ -163,7 +161,8 @@ behavior <- sienaDependent(matrix(c(y1,y2), 50,2), type = "continuous")
 (mydata <- sienaDataCreate(friend, behavior))
 (myeff <- getEffects(mydata, onePeriodSde = TRUE))
 algorithmMoM <- sienaAlgorithmCreate(nsub=1, n3=20, seed=321)
-(ans <- siena07(algorithmMoM, data = mydata, effects = myeff, batch=TRUE))
+(ans <- siena07(algorithmMoM, data = mydata, effects = myeff, batch=TRUE,
+                                                silent=TRUE))
 ##test17
 print('test17')
 mynet <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
@@ -176,8 +175,8 @@ mybeh <- sienaDependent(cbind(sm1,sm2), type="behavior")
 mymodel <- sienaModelCreate(projname=NULL, seed=1234, firstg=0.001, nsub=1, n3=10)
 myeff <- getEffects(mydata)
 (myeff <- setEffect(myeff,avExposure,type='rate',parameter=2,
-							name='mybeh',interaction1='mynet'))
-(ans <- siena07(mymodel, data=mydata, effects=myeff, batch=TRUE))
+                            name='mybeh',interaction1='mynet'))
+(ans <- siena07(mymodel, data=mydata, effects=myeff, batch=TRUE, silent=TRUE))
 ##test18
 print('test18')
 myalgorithm <- sienaAlgorithmCreate(nsub=1, n3=10, seed=1293)
@@ -189,6 +188,7 @@ mydata2 <- sienaDataCreate(mynet1, cova=cova2)
 mygroup <- sienaGroupCreate(list(mydata,mydata2))
 myeff <- getEffects(mygroup)
 myeff <- setEffect(myeff, simX, interaction1='cova')
-(ans <- siena07(myalgorithm, data=mygroup, effects=myeff, batch=TRUE))
+(ans <- siena07(myalgorithm, data=mygroup, effects=myeff, batch=TRUE,
+                              silent=TRUE))
 ## delete output file
 if (file.exists('Siena.txt')){unlink('Siena.txt')}

@@ -71,7 +71,12 @@ effectsDocumentation <- function(effects= NULL, type="html",
 				"nonSymmetricSymmetricSObjective",
 				"nonSymmetricBipartiteObjective",
 				"covarNetNetObjective",
+				"covarANetNetObjective",
+				"covarABNetNetObjective",
+				"covarBNetNetObjective",
 				"tripleNetworkObjective",
+				"dyadANetNetObjective",
+				"covarABipNetObjective",
 				"dyadANetNetObjective",
 				"settingsObjective",
 
@@ -107,6 +112,7 @@ effectsDocumentation <- function(effects= NULL, type="html",
 				"continuousWiener",
 				"continuousIntercept",
 				"continuousOneModeObjective",
+				"continuousBipartiteObjective",
 				"unspecifiedContinuousInteraction")
 
 	mytab <- table(RSiena::allEffects[,1])
@@ -164,7 +170,8 @@ effectsDocumentation <- function(effects= NULL, type="html",
 			"\\begin{document}\n",
 			"\\include{", includepart, "}\n",
 			"\\end{document}\n", sep=""
-			)
+			)		
+		cat("Effects documentation written to file", filename2, ".\n")
 	}
 	else
 	{
@@ -178,6 +185,7 @@ effectsDocumentation <- function(effects= NULL, type="html",
 		if (display) {
 			browseURL(paste("file://", getwd(), "/", filename, collapse = "",
 				sep = ""))
-		}
+			}
+		cat("Effects documentation written to file", filename, ".\n")
 	}
 }

@@ -196,9 +196,9 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		# and change NULL to default values for x$modelType and x$behModelType
 		# For symmetric networks, default is changed below from 1 to 2.
 		checkNames(x$MaxDegree, c('oneMode','bipartite'))
-		checkNames(x$UniversalOffset, c('oneMode','bipartite'))
 		x$modelType <- checkNames(x$modelType, c('oneMode','bipartite'))
 		x$behModelType <- checkNames(x$behModelType, 'behavior')
+		checkNames(x$UniversalOffset, c('oneMode','bipartite'))
 		# The following error will occur if ML estimation is requested
 		# and there are any impossible changes from structural values
 		# to different observed values.
@@ -624,6 +624,10 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 
 		if (any(attr(f,"types") == "continuous"))
 		{
+			if (z$cconditional)
+			{
+				stop("For models with continuous behavior variables, conditional estimation is impossible")
+			}
 			splitFactor <- factor(effects$name, levels=c(attr(f, "netnames"), "sde"))
 		}
 		else

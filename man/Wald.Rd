@@ -7,8 +7,10 @@
 \alias{testSame.RSiena}
 \title{  Wald and score tests for RSiena results }
 \description{
-  These functions compute Wald-type and score-type tests for results   
+  These functions test parameters in RSiena results
   estimated by \code{\link{siena07}}.
+  Tests can be Wald-type (if the parameters were estimated)
+  or score-type tests (if the parameters were fixed and tested).
 }
 \usage{
 Wald.RSiena(A, ans)
@@ -37,18 +39,20 @@ testSame.RSiena(ans, e1, e2)
     with number/s \code{e1} are equal to those in \code{e2}.}
 }
 
-\details{The hypothesis tested by \code{Wald.RSiena}
+\details{\code{Wald.RSiena} produces a Wald-type test,
+   applicable to estimated parameters. \code{Multipar.RSiena} and
+   \code{testSame.RSiena} are special cases of \code{Wald.RSiena}.
+   The hypothesis tested by \code{Wald.RSiena}
    is \eqn{A\theta = 0}{A theta = 0}, where \eqn{\theta}{theta} is
    the parameter estimated in the process leading to \code{ans}.
 
    The hypothesis tested by \code{Multipar.RSiena} is that all
-   parameters given in \eqn{\ldots}{...} are 0. This is a special case of
-   \code{Wald.RSiena}.
+   parameters given in \eqn{\ldots}{...} are 0.
 
    The hypothesis tested by \code{testSame.RSiena} is that all
    parameters given in \code{e1} are equal to those in \code{e2}.
-   This also is a special case of \code{Wald.RSiena}.
 
+   \code{score.Test} produces a score-type test.
    The tested effects for \code{score.Test} should have been specified
    in \code{\link{includeEffects}} or \code{\link{setEffect}} with
    \code{fix=TRUE, test=TRUE}, i.e., they should not have been estimated.

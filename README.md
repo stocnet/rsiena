@@ -1,10 +1,10 @@
-# rsiena  <img src="https://raw.githubusercontent.com/snlab-nl/rsiena/main/inst/rsienalogo.png" align="right" width="150"/>
+# rsiena  <img src="https://raw.githubusercontent.com/stocnet/rsiena/main/inst/rsienalogo.png" align="right" width="150"/>
 
 ![CRAN/METACRAN](https://img.shields.io/cran/l/RSiena)
 ![CRAN/METACRAN](https://img.shields.io/cran/v/RSiena)
-![GitHub R package version](https://img.shields.io/github/r-package/v/snlab-nl/rsiena)
-![GitHub issues](https://img.shields.io/github/issues-raw/snlab-nl/rsiena)
-![GitHub All Releases](https://img.shields.io/github/downloads/snlab-nl/rsiena/total)
+![GitHub R package version](https://img.shields.io/github/r-package/v/stocnet/rsiena)
+![GitHub issues](https://img.shields.io/github/issues-raw/stocnet/rsiena)
+![GitHub All Releases](https://img.shields.io/github/downloads/stocnet/rsiena/total)
 ![](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)
 
 
@@ -27,23 +27,23 @@ The latest binary release on GitHub will have newer features:
 
 ```r
 # On Windows:
-install.packages("https://github.com/snlab-nl/rsiena/releases/latest/download/RSiena.zip", repos = NULL)
+install.packages("https://github.com/stocnet/rsiena/releases/latest/download/RSiena.zip", repos = NULL)
 
 # On Linux
-install.packages("https://github.com/snlab-nl/rsiena/releases/latest/download/RSiena.tar.gz", repos = NULL)
+install.packages("https://github.com/stocnet/rsiena/releases/latest/download/RSiena.tar.gz", repos = NULL)
 
 # On Mac
-install.packages("https://github.com/snlab-nl/rsiena/releases/latest/download/RSiena.tgz", repos = NULL)
+install.packages("https://github.com/stocnet/rsiena/releases/latest/download/RSiena.tgz", repos = NULL)
 ```
 
 To install the source version from GitHub install the `{remotes}` package and then run the following. NB: this requires compilation of `C++` source files so it may take some time.
 
 ```r
 # latest version
-remotes::install_github("snlab-nl/rsiena@main")
+remotes::install_github("stocnet/rsiena@main")
 
 # development version
-remotes::install_github("snlab-nl/rsiena@develop")
+remotes::install_github("stocnet/rsiena@develop")
 ```
 
 ## Data types
@@ -70,8 +70,8 @@ There is an extensive [manual](https://www.stats.ox.ac.uk/~snijders/siena/RSiena
 We are migrating RSiena development and releases to this repository.
 
 The main website is still [here](http://www.stats.ox.ac.uk/~snijders/siena/) for the time being,
-however we are currently migrating many resources to [this website](http://snlab-nl.github.io/rsiena/),
-and you can find [a wiki here](https://github.com/snlab-nl/rsiena/wiki) that holds much of the information on the original website,
+however we are currently migrating many resources to [this website](http://stocnet.github.io/rsiena/),
+and you can find [a wiki here](https://github.com/stocnet/rsiena/wiki) that holds much of the information on the original website,
 including background on SAOMs and RSiena, and links to teaching materials, literature, and contributing people and projects.
 
 ## Installation
@@ -80,7 +80,7 @@ including background on SAOMs and RSiena, and links to teaching materials, liter
 
 Perhaps the easiest way to install RSiena is by installing a compiled binary.
 Binaries for all major OSes -- Windows, Mac, and Linux -- 
-can be found by clicking on the latest release for your OS [here](https://github.com/snlab-nl/rsiena/releases/latest).
+can be found by clicking on the latest release for your OS [here](https://github.com/stocnet/rsiena/releases/latest).
 For Windows you should use the `RSiena.zip`, for macOS it should be `RSiena.tgz`, and for Linux `RSiena.tar.gz`.
 
 Once the file has been downloaded, install the binary appropriate for your Operating System like so:
@@ -94,11 +94,11 @@ amending the file suffix as necessary.
 To install from source the latest main version of RSiena from Github, 
 please install the `{remotes}` package from CRAN and then enter into the console:
 
-`remotes::install_github("snlab-nl/rsiena", ref = "main")`
+`remotes::install_github("stocnet/rsiena", ref = "main")`
 
 The development version of RSiena can be similarly installed as:
 
-`remotes::install_github("snlab-nl/rsiena@develop")`
+`remotes::install_github("stocnet/rsiena@develop")`
 
 ## Citation
 

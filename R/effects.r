@@ -835,7 +835,7 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 							xName = varnames[j], name = varnames[j],
 							groupName=groupName, group=group, netType=netType))
 
-            for (k in seq(along=depvars))
+            for (k in seq(along=xx$depvars))  # corrected version 1.4.5.
             {
                 if (types[k] == "oneMode" &&
                     attr(xx$depvars[[k]], "nodeSet") == nodeSet)

@@ -195,7 +195,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.4.2.
+This version was renewed for \RS version 1.4.6.
 \end{abstract}
 
 
@@ -250,9 +250,9 @@ course announcements, etc.
 and can be installed in the usual way from \sfn{CRAN};
 see \url{http://cran.r-project.org}.
 Development versions of \RS are at
-\url{https://github.com/snlab-nl/rsiena/}.
+\url{https://github.com/stocnet/rsiena/}.
 Here also the most recent version is available
-at \url{https://github.com/snlab-nl/rsiena/releases};
+at \url{https://github.com/stocnet/rsiena/releases};
 it is recommended to use this version.
 
 This is a manual for \rs;
@@ -911,7 +911,7 @@ of the software appear).
             However, it is advisable to have the latest version of \RS
             from GitHub or the \SI website.
             You can go to\\
-            \url{https://github.com/snlab-nl/rsiena/releases}\\
+            \url{https://github.com/stocnet/rsiena/releases}\\
             or to\\
               \url{http://www.stats.ox.ac.uk/~snijders/siena/siena_downloads.htm}\\
             and there download the appropriate version of the package
@@ -927,7 +927,7 @@ of the software appear).
 
             Installation from GitHub can be done as follows.
         Download  the latest release from
-        \url{https://github.com/snlab-nl/rsiena/releases/}.
+        \url{https://github.com/stocnet/rsiena/releases/}.
 Once the file has been downloaded, unzip it, and install the binary
 as appropriate for your Operating System.
 This can be done in Windows using the dropdown menu under \texttt{Packages},
@@ -935,6 +935,12 @@ and for all Operating Systems using function \sfn{install.packages}
 with \texttt{repos = NULL}.\\
 In \sfn{RStudio}, go to \texttt{Tools  $\rightarrow$ Install packages}
 and choose\\ \texttt{Install From: Package archive file (zip; tar.gz)}.
+
+Alternatively, install the \texttt{remotes} package in R, 
+and run
+\begin{verbatim}  
+remotes::install_github("stocnet/rsiena", build=FALSE)
+\end{verbatim}
 \end{enumerate}
 
 
@@ -1129,7 +1135,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.4.2).
+  identified by a version number (e.g.\ 1.4.6).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -9773,7 +9779,7 @@ and
  since this is an elementary effect, it can be used in interactions
  and in endowment and creation functions;
 
- \item {\em out-degree up to $p$} (\emph{truncated out-degree}),
+ \item {\em out-degree up to $p$} (\emph{truncated out-degree}) \texttt{(outTrunc)},
  where $p$ is some constant
  (internal effect parameter, see above),  there are two implementations here:
  \texttt{outTrunc} and \texttt{outTrunc2}, to allow the simultaneous use of this
@@ -9812,7 +9818,7 @@ and
  \item {\em out-degree more than $p$} where $p$ is some constant
  (internal effect parameter, see above),
   there are two implementations here:
- \texttt{outMore}, \texttt{outMore2}, and \texttt{outMore3}, 
+ \texttt{outMore}, \texttt{outMore2}, and \texttt{outMore3},
  to allow the simultaneous use of this
  effect with three different internal effect parameters;
  they are defined by \\
@@ -16253,7 +16259,7 @@ To get insight into a package, and certainly to modify
 or personalize it, it is necessary, however,
 to get the source code of the whole package.
 This is available from GitHub at
-\url{https://github.com/snlab-nl/rsiena/}.
+\url{https://github.com/stocnet/rsiena/}.
 
 \iffalse
 
@@ -16327,12 +16333,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.4.2.tar.gz|\\
+\verb|R CMD check RSiena_1.4.6.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.4.2.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.4.6.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16488,7 +16494,7 @@ and then go to R to see if it is available to you.
 It is a good idea to check the target statistics computed for a simple
 two-wave data set such as \sfn{s50}.
 Examples are in the script
-\url{https://github.com/snlab-nl/rsiena/blob/main/checkEffects.R}.
+\url{https://github.com/stocnet/rsiena/blob/main/checkEffects.R}.
 \end{enumerate}
 
 As examples, start with simple effects.
@@ -16849,7 +16855,7 @@ mention it in \sfn{effectsDocumentation.r}.
 
 \appendix
 \newpage
-\section{List of Functions in Order of Execution}
+\section{Appendix: List of Functions in Order of Execution}
 
     This appendix
     provides a description of the functions that constitute the
@@ -17340,18 +17346,26 @@ The argument is a sienaFit object `x'. \\
 
 
 
-\section{Changes compared to earlier versions}
+\section{Appendix: Changes compared to earlier versions}
 
 This presents the main changes, especially those directly visible to the user,
 in reverse time order from the current version until
 version 1.0.6 of end October 2009.
 For more complete information about changes,
-consult the \texttt{NEWS.md} file (in earlier versions
-this was the \texttt{CHANGELOG} file) in the source code,
-and the \texttt{ONWS} (`old news') file, which contain more complete listings.
+consult the \texttt{NEWS.md} file in the source code,
+and the \texttt{ONWS} (`old news') and \texttt{ONWS\_gh} (`old news in GitHub')  files, 
+which contain more complete listings.
 The \texttt{NEWS.md} file can also be consulted during an \R session in which you
 have loaded the package \rs, provided you have also attached the
 packages \texttt{commonmark} and \texttt{xml2} to render the Markdown format.
+
+It is also possible to get the NEWS about any package that you installed
+(such  as \rs) by giving the command
+\begin{verbatim}
+news(package="packageName") 
+\end{verbatim}
+(where you can fill in the package name). 
+\bigskip
 
 \begin{small}
 \begin{itemize} % Also update version number in earlier places.
@@ -17359,7 +17373,7 @@ packages \texttt{commonmark} and \texttt{xml2} to render the Markdown format.
 \iffalse
 \template
 
-\item 2023-mm-dd GitHub, package version 1.x.x.
+\item 2024-mm-dd GitHub, package version 1.x.x.
 
 
 Changes in RSiena:
@@ -17381,6 +17395,53 @@ Changes in RSiena:
 \fi
 
 
+
+\item 2024-02-19 GitHub, package version 1.4.6
+
+
+Changes in RSiena:
+\begin{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+  \item New parameter \texttt{targets}  in \sfn{siena07} , used to supersede the targets
+    calculated from the data (not for use in estimation for regular data sets,
+    see the help file for \sfn{siena07}).
+  \item \sfn{effectsDocumentation()}  reports to the console
+    the name of the file that was written.
+  \item \sfn{sienaDataCreate}  stops with an error message if there is a bipartite
+    network before a one-mode network.
+  \item If the data contains a continuous dependent behavioral variable and
+    the algorithm specifies conditional estimation, the estimation stops
+    with a clear error message.
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+   \item Various corrections in the \texttt{cpp} code.
+  \item Allow \sfn{sienaDataCreate}  to work with a single variable defined as
+    a dependent network given as a list of sparse matrices.
+  \item Allow \sfn{getEffects}  to construct effects of more than one dependent network
+    on continuous behavior dependent variables.
+  \item Changed the check for constant dyadic covariates for 
+  sparse matrices (GitHub issue \#88).
+  \item Some of the recently added effect groups were missing from
+    \sfn{effectsDocumentation}. This led to an incomplete listing of the effects.
+    They are now included.
+  \end{itemize}
+\item Dropped functionality:
+   \begin{itemize}
+  \item \sfn{sienaRI}  temporarily disabled because of a memory leak.
+  \item The option \texttt{prML=2}  temporarily disabled because of a memory leak in the
+    \texttt{move}  proposal distribution (\sfn{sienaAlgorithmCreate}).
+  \end{itemize}
+\item Other changes:
+   \begin{itemize}
+  \item List of changes in the code before 2022, but since the source
+  code was hosted at GitHub (i.e., since September, 2020) moved from 
+  \texttt{NEWS.md}  to \texttt{ONEWS\_gh} .
+  \end{itemize}
+\end{itemize}
+
+
 \item 2023-12-14 GitHub, package version 1.4.2.
 
 Changes in RSiena:
@@ -17389,9 +17450,9 @@ Changes in RSiena:
    \begin{itemize}
    \item New effects \texttt{outXMore}, \texttt{outMore3}.
    \item Corrected effect \texttt{outMore}.
-   \item \texttt{Interactiontype} of \texttt{altLThresholdX} and 
+   \item \texttt{Interactiontype} of \texttt{altLThresholdX} and
         \texttt{altRThresholdX} is dyadic.\\
-        \texttt{Interactiontype} of \texttt{degAbsDiffX}, \texttt{degPosDiffX}, 
+        \texttt{Interactiontype} of \texttt{degAbsDiffX}, \texttt{degPosDiffX},
        and \texttt{degNegDiffX} is "" (blank).
     \end{itemize}
 \item Improvements of functionality:
@@ -18042,7 +18103,7 @@ Changes in RSiena:
 \begin{itemize}
    \item Generalized Method of Moments implemented (Viviana Amati):
      see\\
-     \url{https://github.com/snlab-nl/rsiena/blob/main/docs/manual/Changes_RSiena_GMoM.pdf};
+     \url{https://github.com/stocnet/rsiena/blob/main/docs/manual/Changes_RSiena_GMoM.pdf};
      new function \sfn{includeGMoMStatistics}, extended functionality of \textsf{siena07}.
    \item \sfn{effectsDocumentation} now also includes \texttt{gmm} effects (at the bottom).
    \item \sfn{dyadicCov} made to accept also changing dyadic covariates.

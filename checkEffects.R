@@ -1925,34 +1925,3 @@ mymodel <- getEffects(mydata)
 ans$targets
 
 sum(pmax(rowSums(s502)-3,0)) # 11 OK
-
-
-mymodel <- getEffects(mydata)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel, returnDeps=TRUE))
-ans$targets
-gofo <- sienaGOF(ans, verbose=TRUE, 
-                         varName="mynet", 
-                         levls = 0:8, cumulative=FALSE,
-                         OutdegreeDistribution)
-plot(gofo)
-descriptives.sienaGOF(gofo, showAll=TRUE)
-(mymodel1 <- setEffect(mymodel,outMore, parameter=7, fix=TRUE, initialValue=-30))
-(ans1 <- siena07(mycontrols, data=mydata, effects=mymodel1, returnDeps=TRUE))
-gofo1 <- sienaGOF(ans1, verbose=TRUE, 
-                         varName="mynet", 
-                         levls = 0:8, cumulative=FALSE,
-                         OutdegreeDistribution)
-plot(gofo1)
-descriptives.sienaGOF(gofo1, showAll=TRUE)
-ans1$targets
-
-
-(mymodel2 <- setEffect(mymodel,outMore, parameter=6, fix=TRUE, initialValue=-30))
-(ans2 <- siena07(mycontrols, data=mydata, effects=mymodel2, returnDeps=TRUE))
-gofo2 <- sienaGOF(ans2, verbose=TRUE, 
-                         varName="mynet", 
-                         levls = 0:8, cumulative=FALSE,
-                         OutdegreeDistribution)
-plot(gofo2)
-descriptives.sienaGOF(gofo2, showAll=TRUE)
-ans2$targets
