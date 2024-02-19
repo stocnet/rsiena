@@ -619,6 +619,14 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 	types <- sapply(depvars, function(x)attr(x, "type"))
 	depvars <- depvars[c(which(!(types %in% c('behavior', 'continuous'))),
 						which(types == 'behavior'), which(types == "continuous"))]
+	onemodes <- which(types == "oneMode")
+	bipartites <- which(types == "bipartite")
+	onemodes.mx <- max(c(onemodes, 0))
+	bipartites.mn <- min(c(bipartites, v1+1))
+	if (bipartites.mn < onemodes.mx)
+	{
+		stop("One-mode networks (if any) should be given before bipartite networks (if any).")
+	}
 
 	for (i in 1:v1) ## dependent variables
 	{
