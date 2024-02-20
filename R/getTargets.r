@@ -1,4 +1,4 @@
-##@getTargets Miscellaneous Written for Krista. Use as RSiena/RSienaTest:::getTargets
+##@getTargets Miscellaneous Written for Krista. Use as RSiena:::getTargets
 getTargets <- function(data, effects)
 {
 	f <- unpackData(data)

@@ -38,7 +38,6 @@
 #include "model/filters/PermittedChangeFilter.h"
 #include "model/ml/Chain.h"
 #include "model/settings/Setting.h"
-#include <Rinternals.h>
 
 #include <algorithm>
 #include <vector>

@@ -195,7 +195,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.4.6.
+This version was renewed for \RS version 1.4.7.
 \end{abstract}
 
 
@@ -903,19 +903,29 @@ of the software appear).
 %            For constructing the vignette in \RS the
 %            packages \sfn{knitr} and \sfn{rmarkdown} are used.
 
+\iffalse
             You can just install \RS and the other packages
             in the regular way from CRAN.
             If you want to have detailed information about
             what is available at CRAN, go to\\
 \url{http://cran.r-project.org/web/packages/RSiena/} .\\
-            However, it is advisable to have the latest version of \RS
+            However, it is advisable to have 
+\fi
+            Currently (mid February 2024), \RS is archived on CRAN,
+            which means that it is not directly available.
+            This hopefully will be restored soon.
+            
+            You can download
+            the latest version of \RS
             from GitHub or the \SI website.
-            You can go to\\
+            To do this, go to\\
             \url{https://github.com/stocnet/rsiena/releases}\\
             or to\\
               \url{http://www.stats.ox.ac.uk/~snijders/siena/siena_downloads.htm}\\
             and there download the appropriate version of the package
-            appropriate for your operation system (Windows, Mac, Unix). \\
+            appropriate for your operation system (Windows, Mac, Unix). 
+            
+\iffalse
             Installation can be done in various ways --- by the function \texttt{install.packages()}
             in \Rn,
             via the drop-down menu in the \R console, or in command mode which for Mac is
@@ -924,6 +934,7 @@ of the software appear).
             \texttt{.tgz} for Mac),
             then using the binary is recommended.
             Installation from binary is much faster than installation from source.
+\fi
 
             Installation from GitHub can be done as follows.
         Download  the latest release from
@@ -1135,7 +1146,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.4.6).
+  identified by a version number (e.g.\ 1.4.7).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -16333,12 +16344,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.4.6.tar.gz|\\
+\verb|R CMD check RSiena_1.4.7.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.4.6.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.4.7.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -17355,12 +17366,13 @@ For more complete information about changes,
 consult the \texttt{NEWS.md} file in the source code,
 and the \texttt{ONWS} (`old news') and \texttt{ONWS\_gh} (`old news in GitHub')  files, 
 which contain more complete listings.
-The \texttt{NEWS.md} file can also be consulted during an \R session in which you
-have loaded the package \rs, provided you have also attached the
+The \texttt{NEWS.md} file can also be consulted during an \R session if you
+installed the package \rs, provided you have also attached the
 packages \texttt{commonmark} and \texttt{xml2} to render the Markdown format.
 
-It is also possible to get the NEWS about any package that you installed
-(such  as \rs) by giving the command
+After installing these two packages,
+to get the NEWS about any package that you installed
+(such  as \rs), give the command
 \begin{verbatim}
 news(package="packageName") 
 \end{verbatim}
@@ -17396,8 +17408,18 @@ Changes in RSiena:
 
 
 
-\item 2024-02-19 GitHub, package version 1.4.6
+\item 2024-02-19 GitHub, package version 1.4.7
 
+Changes in RSiena:
+\begin{itemize}
+\item Bug corrections:
+   \begin{itemize}
+   \item An error in a \texttt{.cpp} file was corrected.
+  \end{itemize}
+\end{itemize}
+
+
+\item 2024-02-19 GitHub, package version 1.4.6
 
 Changes in RSiena:
 \begin{itemize}
@@ -17421,7 +17443,7 @@ Changes in RSiena:
     a dependent network given as a list of sparse matrices.
   \item Allow \sfn{getEffects}  to construct effects of more than one dependent network
     on continuous behavior dependent variables.
-  \item Changed the check for constant dyadic covariates for 
+  \item Changed the check for constant dyadic covariates for
   sparse matrices (GitHub issue \#88).
   \item Some of the recently added effect groups were missing from
     \sfn{effectsDocumentation}. This led to an incomplete listing of the effects.
@@ -17436,7 +17458,7 @@ Changes in RSiena:
 \item Other changes:
    \begin{itemize}
   \item List of changes in the code before 2022, but since the source
-  code was hosted at GitHub (i.e., since September, 2020) moved from 
+  code was hosted at GitHub (i.e., since September, 2020) moved from
   \texttt{NEWS.md}  to \texttt{ONEWS\_gh} .
   \end{itemize}
 \end{itemize}

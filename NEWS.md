@@ -1,3 +1,13 @@
+# RSiena 1.4.7
+
+2024-02-20
+
+
+## Changes in RSiena:
+
+### Bug corrections:
+  * Correction (again) of error message in `siena07utilities::Rterminate`.
+
 # RSiena 1.4.6
 
 2024-02-19

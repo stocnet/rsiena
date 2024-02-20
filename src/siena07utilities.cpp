@@ -59,6 +59,7 @@
 #include "model/ml/NetworkChange.h"
 #include "model/ml/BehaviorChange.h"
 #include "model/State.h"
+#include <R_ext/Print.h>
 #include <R_ext/Error.h>
 #include <Rinternals.h>
 
@@ -104,7 +105,7 @@ int totalPeriods(vector<Data *> & pGroupData)
 }
 
 /**
- * Traps errors so R can stop the function rather than being stoppped itself.
+ * Traps errors so R can stop the function rather than being stopped itself.
  *
  */
 void Rterminate()
@@ -115,7 +116,9 @@ void Rterminate()
 	}
 	catch(exception& e)
 	{
-		Rf_error(e.what());
+		const char* errorText = e.what();
+		Rprintf("%s\n", errorText);
+		Rf_error("; exception in C++");
 	}
 }
 
