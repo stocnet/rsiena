@@ -1058,9 +1058,9 @@ SEXP mlMakeChains(SEXP DATAPTR, SEXP MODELPTR,
 				pMLSimulation->rVariables();
 			int numberVariables = rVariables.size();
 
-			SEXP accepts1 = PROTECT(Rf_allocMatrix(INTSXP, numberVariables, 9));
-			SEXP rejects1 = PROTECT(Rf_allocMatrix(INTSXP, numberVariables, 9));
-			SEXP aborts1 = PROTECT(Rf_allocVector(INTSXP, 9));
+			SEXP accepts1 = PROTECT(Rf_allocMatrix(INTSXP, numberVariables, NBRTYPES));
+			SEXP rejects1 = PROTECT(Rf_allocMatrix(INTSXP, numberVariables, NBRTYPES));
+			SEXP aborts1 = PROTECT(Rf_allocVector(INTSXP, NBRTYPES));
 			int * iaccepts = INTEGER(accepts1);
 			int * irejects = INTEGER(rejects1);
 			int * iaborts = INTEGER(aborts1);
