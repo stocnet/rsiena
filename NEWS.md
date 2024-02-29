@@ -1,3 +1,15 @@
+# RSiena 1.4.8
+
+2024-02-29
+
+
+## Changes in RSiena:
+
+### Bug corrections:
+  * Correction of memory leak in `siena07setup.ccp` for ML estimation.
+### New functionality:
+  * New parameter `silent` in `sienaAlgorithmCreate`. 
+
 # RSiena 1.4.7
 
 2024-02-20
@@ -63,6 +75,10 @@
 2024-02-14
 
 ## Changes in RSiena:
+
+### Package
+
+  * Migrated package repository to "stocnet" organisation.
 
 ### Bug corrections:
   * Put `#include <Rinternals.h>` as the last of the include commands

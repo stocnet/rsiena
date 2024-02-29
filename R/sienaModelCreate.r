@@ -24,7 +24,7 @@ sienaModelCreate <- function(fn,
 	minimumPermutationLength=2, initialPermutationLength=20,
 	modelType=NULL, behModelType=NULL, mult=5, simOnly=FALSE, localML=FALSE,
 	truncation=5, doubleAveraging=0, standardizeVar=(diagonalize<1),
-	lessMem=FALSE)
+	lessMem=FALSE, silent=FALSE)
 {
 	model <- NULL
 	checking <- any(grepl("_R_CHECK", names(Sys.getenv())))

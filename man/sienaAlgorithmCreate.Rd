@@ -26,7 +26,7 @@ sienaAlgorithmCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
      minimumPermutationLength=2, initialPermutationLength=20,
      modelType=NULL, behModelType=NULL, mult=5, simOnly=FALSE, localML=FALSE,
      truncation=5, doubleAveraging=0, standardizeVar=(diagonalize<1),
-     lessMem=FALSE)
+     lessMem=FALSE, silent=FALSE)
 
 sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
      useStdInits = FALSE, n3 = 1000, nsub = 4, n2start = NULL,
@@ -38,7 +38,7 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
      minimumPermutationLength=2, initialPermutationLength=20,
      modelType=NULL, behModelType=NULL, mult=5, simOnly=FALSE, localML=FALSE,
      truncation=5, doubleAveraging=0, standardizeVar=(diagonalize<1),
-     lessMem=FALSE)
+     lessMem=FALSE, silent=FALSE)
 }
 \arguments{
   \item{fn}{Function to do one simulation in the Robbins-Monro
@@ -182,6 +182,7 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
     if \code{lessMem=TRUE}, it will be impossible to run
     \code{\link{sienaTimeTest}} or \code{\link{sienaGOF}} on
     the object produced by \code{\link{siena07}}.}
+  \item{silent}{Logical: whether to give a note about the output file.}
 }
 \details{Model specification is done via this object for
   \code{\link{siena07}}.
