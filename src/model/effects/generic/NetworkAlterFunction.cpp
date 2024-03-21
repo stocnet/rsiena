@@ -47,7 +47,6 @@ void NetworkAlterFunction::initialize(const Data * pData,
 	Cache * pCache)
 {
 	AlterFunction::initialize(pData, pState, period, pCache);
-//	this->lpNetwork = pState->pNetwork(this->name());
 	this->lpNetwork = pState->pNetwork(this->lnetworkName);
 	this->lpNetworkCache = pCache->pNetworkCache(this->lpNetwork);
 }

@@ -31,10 +31,14 @@ public:
 	void value(int i, double value);
 	bool missing(int i) const;
 	void missing(int i, bool missing);
+	double min() const;
+	double max() const;
 
 private:
 	// The values of this covariate
 	double * lvalues {};
+	double lmin {};
+	double lmax {};
 
 	// Missingness indicators
 	bool * lmissing {};

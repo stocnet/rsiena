@@ -9,8 +9,11 @@
  * ChangingCovariate class.
  *****************************************************************************/
 
+#include <limits>
 #include "ChangingCovariate.h"
 #include "data/ActorSet.h"
+
+using namespace std;
 
 namespace siena
 {
@@ -38,6 +41,8 @@ ChangingCovariate::ChangingCovariate(std::string name,
 			this->lmissing[i][j] = false;
 		}
 	}
+	this->lmin = numeric_limits<double>::max();
+	this->lmax = numeric_limits<double>::min();
 }
 
 
@@ -76,6 +81,8 @@ double ChangingCovariate::value(int i, int observation) const
 void ChangingCovariate::value(int i, int observation, double value)
 {
 	this->lvalues[i][observation] = value;
+	this->lmin = std::min(this->lmin, value);
+	this->lmax = std::max(this->lmax, value);
 }
 
 
@@ -100,4 +107,19 @@ void ChangingCovariate::missing(int i,
 	this->lmissing[i][observation] = missing;
 }
 
+/**
+ * Returns the smallest observed value.
+ */
+double ChangingCovariate::min() const
+{
+	return this->lmin;
+}
+
+/**
+ * Returns the largest observed value.
+ */
+double ChangingCovariate::max() const
+{
+	return this->lmax;
+}
 }
