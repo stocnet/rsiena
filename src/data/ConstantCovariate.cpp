@@ -9,8 +9,12 @@
  * ConstantCovariate class.
  *****************************************************************************/
 
+#include <limits>
 #include "ConstantCovariate.h"
 #include "data/ActorSet.h"
+
+using namespace std;
+
 
 namespace siena
 {
@@ -24,6 +28,8 @@ ConstantCovariate::ConstantCovariate(std::string name,
 {
 	this->lvalues = new double[pActorSet->n()];
 	this->lmissing = new bool[pActorSet->n()];
+	this->lmin = numeric_limits<double>::max();
+	this->lmax = numeric_limits<double>::min();
 }
 
 
@@ -54,6 +60,8 @@ double ConstantCovariate::value(int i) const
 void ConstantCovariate::value(int i, double value)
 {
 	this->lvalues[i] = value;
+	this->lmin = std::min(this->lmin, value);
+	this->lmax = std::max(this->lmax, value);
 }
 
 
@@ -73,5 +81,22 @@ void ConstantCovariate::missing(int i, bool missing)
 {
 	this->lmissing[i] = missing;
 }
+
+/**
+ * Returns the smallest observed value.
+ */
+double ConstantCovariate::min() const
+{
+	return this->lmin;
+}
+
+/**
+ * Returns the largest observed value.
+ */
+double ConstantCovariate::max() const
+{
+	return this->lmax;
+}
+
 
 }

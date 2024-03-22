@@ -186,6 +186,33 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 					symmetric, constant=TRUE, name=varname)
 				objEffects <-  rbind(objEffects, tmp$objEff)
 				rateEffects <- rbind(rateEffects, tmp$rateEff)
+				
+# I did not do the following, because it would lead to too many
+# unneeded effects. Keep it as an example of how it could be done.
+#				for (jj in seq(along = xx$cCovars))
+#				{
+#					if (jj != j)
+#					{
+#						tmp <- doubleCovarNetEff(names(xx$cCovars)[j],
+#						names(xx$cCovars)[jj], name=varname)
+#						objEffects <-  rbind(objEffects, tmp$objEff)
+#					}
+#				}
+#				for (jj in seq(along = xx$vCovars))
+#				{
+#					tmp <- doubleCovarNetEff(names(xx$cCovars)[j],
+#									names(xx$vCovars)[jj], name=varname)
+#					objEffects <-  rbind(objEffects, tmp$objEff)
+#				}
+#				for (jj in seq(along = xx$depvars))
+#				{
+#					if (types[jj] =='behavior')
+#					{
+#						tmp <- doubleCovarNetEff(names(xx$cCovars)[j],
+#									names(xx$depvars)[jj], name=varname)
+#						objEffects <-  rbind(objEffects, tmp$objEff)
+#					}
+#				}
 			}
 		}
 		for (j in seq(along=xx$depvars))
@@ -202,7 +229,7 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 			}
 		}
 		for (j in seq(along=xx$vCovars))
-		{
+		{			
 			if (attr(xx$vCovars[[j]], 'nodeSet') == nodeSet)
 			{
 				tmp <- covarOneModeEff(names(xx$vCovars)[j],
@@ -1018,7 +1045,27 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 						'moreThan2'),
 					covNodeset, name=varname)
 				objEffects <- rbind(objEffects, tmp$objEff)
-				rateEffects <- rbind(rateEffects, tmp$rateEff)
+				rateEffects <- rbind(rateEffects, tmp$rateEff)				
+				for (jj in seq(along = xx$cCovars))
+				{
+					if ((jj != j) & (nodeSets[1]==attr(xx$cCovars[[j]], "nodeSet"))
+									& (nodeSets[2]==attr(xx$cCovars[[jj]], "nodeSet")))
+					{
+						tmp <- doubleCovarNetEff(names(xx$cCovars)[j],
+									names(xx$cCovars)[jj], name=varname)
+						objEffects <-  rbind(objEffects, tmp$objEff)
+					}
+				}
+				for (jj in seq(along = xx$vCovars))
+				{
+					if ((nodeSets[1]==attr(xx$cCovars[[j]], "nodeSet"))
+									& (nodeSets[2]==attr(xx$vCovars[[jj]], "nodeSet")))
+					{
+						tmp <- doubleCovarNetEff(names(xx$cCovars)[j],
+									names(xx$vCovars)[jj], name=varname)
+						objEffects <-  rbind(objEffects, tmp$objEff)
+					}
+				}						
 			}
 		}
 		for (j in seq(along=xx$depvars))
@@ -1213,7 +1260,7 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 				groupName=groupName, group=group,
 				netType=netType)
 		}
-
+				
 		if (constant)
 		{
 			covObjEffects <-
@@ -1245,6 +1292,18 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 
 		list(objEff=covObjEffects, rateEff=covRateEffects)
 	}
+	
+	##@doubleCovarNetEff internal getEffects
+	doubleCovarNetEff<- function(covarname1, covarname2, name)
+	{
+		covObjEffects <- createEffects("doubleCovarNetObjective", 
+				covarname1,covarname2,
+				name=name,
+				groupName=groupName, group=group,
+				netType=netType)
+		list(objEff=covObjEffects, rateEff=NULL)
+	}
+	
 	##@covarBipartiteEff internal getEffects
 	covarBipartiteEff<- function(covarname, poszvar, moreThan2, nodesetNbr,
 		name)
@@ -1257,10 +1316,10 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 					name=varname,
 					groupName=groupName, group=group,
 					netType=netType)
-			# restrict to covariates on first node set
+			# restrict to covariates on first node set, but also include sameX
 			covObjEffects <-
 				covObjEffects[covObjEffects$shortName %in%
-				c("egoX", "egoSqX", "egoLThresholdX", "egoRThresholdX",
+				c("egoX", "egoSqX", "sameX", "egoLThresholdX", "egoRThresholdX",
 					"degAbsDiffX", "degPosDiffX", "degNegDiffX",
 					"altInDist2", "totInDist2", "simEgoInDist2", 
 					"sameEgoInDist2", "sameXInPop", "diffXInPop",

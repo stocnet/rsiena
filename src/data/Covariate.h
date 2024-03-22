@@ -51,6 +51,9 @@ public:
 
 	double similarity(double a, double b) const;
 	double similarityNetwork(double a, double b, std::string name) const;
+		
+	virtual double min() const;
+	virtual double max() const;
 
 private:
 	// The underlying set of actors

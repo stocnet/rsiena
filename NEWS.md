@@ -1,3 +1,26 @@
+# RSiena 1.4.9
+
+2024-03-21
+
+
+## Changes in RSiena:
+
+### Effects:
+  * New effects `crossXOutAct`, `outOutDist2ActIntn`, 
+    `outOutDist2AvIntn`, `inPopOutW`.
+  * New effect group `doubleCovarNetObjective`.
+  * New effects `sameXV` and `sameXVInPop` for bipartite networks.
+  * `sameXCycle4` added for one-mode and symmetric networks.
+  * `sharedTo` gets default internal effect parameter `p=3`. 
+### Improved functionality:
+  * Function `updateSpecification` now also updates interaction effects
+    and `initialValues`.
+### Improved coding:
+  * Internal functions `numberIntn`, `numberBehIntn`, `checkVersion` 
+    defined in file `initializeFRAN.r`.
+  * The `Covariate` class and its descendants (all actor covariates)
+    now have functions `min` and `max`. 
+
 # RSiena 1.4.8
 
 2024-02-29
