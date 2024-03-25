@@ -35,25 +35,31 @@ sienaModelCreate <- function(fn,
 	if (is.null(projname) | checking)
 	{
 		model$projname <- tempfile("Siena")
+		if (!silent)
+		{
 		if (checking)
 		{
 	cat('If you use this algorithm object, siena07 will create/use an output file',
 				paste('Siena','.txt',sep=''),'.\n')
 		}
-		else
+			else
 		{
 	cat('If you use this algorithm object, siena07 will create/use an output file',
 				paste(model$projname,'.txt',sep=''),'.\n')
 			cat('This is a temporary file for this R session.\n')
 		}
 	}
+	}
 	else
 	{
 		if (is.character(projname))
 		{
 			model$projname <- projname
+			if (!silent)
+			{
 			cat('If you use this algorithm object, siena07 will create/use an output file',
 				paste(model$projname,'.txt',sep=''),'.\n')
+		}
 		}
 		else
 		{
@@ -175,7 +181,7 @@ sienaModelCreate <- function(fn,
 			model$prdrms <- 0.05   # delete random missing
 			# prob(move) = 0
 		}
-#		else  # prML == 2 
+#		else  # prML == 2
 #		{
 #			model$pridg <-  0.05   # insert diagonal
 #			model$prcdg <-  0.05   # cancel diagonal
