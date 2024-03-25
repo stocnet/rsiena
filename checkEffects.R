@@ -2002,6 +2002,25 @@ nbEffects <- setEffect(nbEffects, sameXV, interaction1="covarego", interaction2=
 ans$targets
 sum(wave2 * outer(covarego, covaralt, "==")) # 23 OK
 
+# Now check for if there are 0 values
+# Make covariates
+covarego <- coCovar(c(rep(1,6), 0, rep(2,5)), nodeSet="senders", centered=FALSE)
+covaralt <- coCovar(c(rep(1,4), 0, 0, rep(2,4)), nodeSet="recipients", centered=FALSE)
+# Put it all together
+(nbdata <- sienaDataCreate(network, covaralt, covarego,
+                nodeSets=list(senders,recipients)))
+# Do the analysis
+nbEffects <- getEffects(nbdata)
+nbEffects <- setEffect(nbEffects, sameXV, interaction1="covarego", interaction2="covaralt")
+(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects))
+ans$targets
+cove <- covarego
+cova <- covaralt
+cove[cove==0] <- NA
+cova[cova==0] <- NA
+otea <- outer(cove,cova, "==")
+otea[is.na(otea)] <- FALSE
+sum(wave2 * otea) # 17 OK
 
 ################################################################################
 ### check inPopOutW
@@ -2154,6 +2173,78 @@ ans$targets
 sum((t(wave2) %*%  outer(covarego, covarego, "==") %*% wave2) * outer(covaralt, covaralt, "==")) # 320 OK
 sum(wave2 * (outer(covarego, covarego, "==") %*% wave2 %*% outer(covaralt, covaralt, "=="))) # 320 OK
 
+# Now check for the case that there are 0 values
+
+# Make covariates
+covarego <- coCovar(c(1,3,3,4,0,1,1,4,2,0,3,3), nodeSet="senders", centered=FALSE)
+covaralt <- coCovar(c(1,3,3,4,1,1,0,3,3,0), nodeSet="recipients", centered=FALSE)
+
+# Put it all together
+(nbdata <- sienaDataCreate(network, covaralt, covarego,
+                nodeSets=list(senders,recipients)))
+# Do the analysis
+nbEffects <- getEffects(nbdata)
+nbEffects <- setEffect(nbEffects, sameXVInPop, interaction1="covarego", interaction2="covaralt",
+                    parameter=1)
+(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects))
+ans$targets
+
+
+cove <- covarego
+cova <- covaralt
+cove[cove==0] <- NA
+cova[cova==0] <- NA
+otee <- outer(cove,cove, "==")
+otee[is.na(otee)] <- FALSE
+otaa <- outer(cova,cova, "==")
+otaa[is.na(otaa)] <- FALSE
+sum((t(wave2) %*%  otee %*% wave2) * otaa) # 180 OK
+sum(wave2 * (otee %*% wave2 %*% otaa)) # 180 OK
+
+
+################################################################################
+### check sameXVInPop for non-directed (symmetric) networks
+################################################################################
+
+
+
+# Create fake network data
+set.seed(12321)
+wave1 <- matrix(0,12,12)
+for(i in 1:144){
+  wave1[i] <- sample(c(0,1),1, prob=c(0.9,0.1))
+}
+wave2 <- wave1
+for (i in 1:144){
+  wave2[i] <- abs(wave1[i] - 0.5 + sample(c(-0.5,0.5),1, prob=c(0.3,0.7)))
+}
+
+wave1s <- pmax(wave1, t(wave1))
+(wave2s <- pmax(wave2, t(wave2)))
+
+diag(wave1s) <- 0
+diag(wave2s) <- 0
+
+# Make dependent networks
+network <- sienaDependent(array(c(wave1s, wave2s), dim=c(12,12,2)),
+                          allowOnly=FALSE)
+# Make covariates
+covarego <- coCovar(c(1,3,3,4,2,1,1,4,2,3,3,3),centered=FALSE)
+covaralt <- coCovar(c(1,3,3,4,1,1,4,3,3,3,1,2), centered=FALSE)
+
+# Put it all together
+(nbdata <- sienaDataCreate(network, covaralt, covarego))
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
+print01Report(nbdata)
+
+# Do the analysis
+nbEffects <- getEffects(nbdata)
+nbEffects <- setEffect(nbEffects, sameXVInPop, interaction1="covarego", interaction2="covaralt",
+                    parameter=1)
+(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects))
+ans$targets # 44 698
+sum((t(wave2s) %*%  outer(covarego, covarego, "==") %*% wave2s) * outer(covaralt, covaralt, "==")) # 698 OK
+sum(wave2s * (outer(covarego, covarego, "==") %*% wave2s %*% outer(covaralt, covaralt, "=="))) # 698 OK
 
 ################################################################################
 ### check crossXOutAct

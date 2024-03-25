@@ -29,7 +29,7 @@ sienaDataCreate(..., nodeSets=NULL, getDocumentation=FALSE)
 }
 \details{
 The function checks that the objects fit, that there is at least one dependent
-variable, and adds various attributes to each dependent variable describing the
+variable, and adds various attributes to each variable describing the
 data. If there is more than one nodeSet they must all be specified.\cr
 Function \code{\link{print01Report}} will give a basic description of the data
 object and is a check useful, e.g., for diagnosing problems.
