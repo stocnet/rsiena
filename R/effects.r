@@ -72,8 +72,18 @@ createEffects <- function(effectGroup, xName=NULL, yName=NULL, zName = NULL,
 	effects
 }
 
+##@DoubleAttributesChecked utility function for getEffects
+DoubleAttributesChecked <- function(cova1, cova2)
+{
+	if (is.null(attr(cova1,"lowIntegers")) | is.null(attr(cova2,"lowIntegers")))
+	{
+		stop("Please use function sienaDataCreate for RSiena version at least 1.4.10")
+	}
+	(attr(cova1,"lowIntegers") && attr(cova2,"lowIntegers"))
+}
+
 ##@getEffects DataCreate create effects object
-getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeriodSde=FALSE)
+getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeriodSde=FALSE)
 {
 	##@duplicateDataFrameRow internal getEffects Put period numbers in
 	duplicateDataFrameRow <- function(x, n)
@@ -186,24 +196,28 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 					symmetric, constant=TRUE, name=varname)
 				objEffects <-  rbind(objEffects, tmp$objEff)
 				rateEffects <- rbind(rateEffects, tmp$rateEff)
-				
+
+				for (jj in seq(along = xx$cCovars))
+				{
+					if ((jj != j) && 
+					(DoubleAttributesChecked(xx$cCovars[[j]], xx$cCovars[[jj]])))
+					{
+						tmp <- doubleCovarNetEff(names(xx$cCovars)[j],
+						names(xx$cCovars)[jj], name=varname)
+						objEffects <-  rbind(objEffects, tmp$objEff)
+					}
+				}
+				for (jj in seq(along = xx$vCovars))
+				{
+					if (DoubleAttributesChecked(xx$cCovars[[j]], xx$vCovars[[jj]]))
+					{
+						tmp <- doubleCovarNetEff(names(xx$cCovars)[j],
+									names(xx$vCovars)[jj], name=varname)
+						objEffects <-  rbind(objEffects, tmp$objEff)
+					}		
+				}
 # I did not do the following, because it would lead to too many
 # unneeded effects. Keep it as an example of how it could be done.
-#				for (jj in seq(along = xx$cCovars))
-#				{
-#					if (jj != j)
-#					{
-#						tmp <- doubleCovarNetEff(names(xx$cCovars)[j],
-#						names(xx$cCovars)[jj], name=varname)
-#						objEffects <-  rbind(objEffects, tmp$objEff)
-#					}
-#				}
-#				for (jj in seq(along = xx$vCovars))
-#				{
-#					tmp <- doubleCovarNetEff(names(xx$cCovars)[j],
-#									names(xx$vCovars)[jj], name=varname)
-#					objEffects <-  rbind(objEffects, tmp$objEff)
-#				}
 #				for (jj in seq(along = xx$depvars))
 #				{
 #					if (types[jj] =='behavior')
@@ -1049,7 +1063,8 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 				for (jj in seq(along = xx$cCovars))
 				{
 					if ((jj != j) & (nodeSets[1]==attr(xx$cCovars[[j]], "nodeSet"))
-									& (nodeSets[2]==attr(xx$cCovars[[jj]], "nodeSet")))
+									& (nodeSets[2]==attr(xx$cCovars[[jj]], "nodeSet"))
+							& (DoubleAttributesChecked(xx$cCovars[[j]], xx$cCovars[[jj]])))
 					{
 						tmp <- doubleCovarNetEff(names(xx$cCovars)[j],
 									names(xx$cCovars)[jj], name=varname)
@@ -1059,7 +1074,8 @@ getEffects<- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeri
 				for (jj in seq(along = xx$vCovars))
 				{
 					if ((nodeSets[1]==attr(xx$cCovars[[j]], "nodeSet"))
-									& (nodeSets[2]==attr(xx$vCovars[[jj]], "nodeSet")))
+									& (nodeSets[2]==attr(xx$vCovars[[jj]], "nodeSet"))									
+							& (DoubleAttributesChecked(xx$cCovars[[j]], xx$vCovars[[jj]])))
 					{
 						tmp <- doubleCovarNetEff(names(xx$cCovars)[j],
 									names(xx$vCovars)[jj], name=varname)
