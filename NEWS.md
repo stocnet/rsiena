@@ -1,3 +1,21 @@
+# RSiena 1.4.10
+
+2024-03-25
+
+
+## Changes in RSiena:
+
+### Effects:
+  * Effects `sameXV` and `sameXVInPop` added for symmetric networks, 
+    and restricted to integer-valued variables in the range from 0 to 20.
+### New functionality:
+  * Parameter `silent` (new in version 1.4.8) 
+    in `sienaAlgorithmCreate` activated. 
+### Improved coding:
+  * Actor covariates in `sienaData` have a new attribute `lowIntegers` 
+    used for in/excluding effects `sameXVInPop` and `sameXV` in
+    `getEffects`. 
+
 # RSiena 1.4.9
 
 2024-03-21

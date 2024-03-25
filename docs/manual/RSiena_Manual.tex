@@ -195,7 +195,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.4.9.
+This version was renewed for \RS version 1.4.10.
 \end{abstract}
 
 
@@ -1146,7 +1146,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.4.9).
+  identified by a version number (e.g.\ 1.4.10).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -10655,7 +10655,7 @@ defined by \\
  for internal effect parameter $p=2$, it is defined by\\
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \, I\{v_i \neq v_j \}
              \sqrt{\sum_h x_{ih}\, I\{v_i \neq v_h \}} $;\\
-             
+
 
  \item {\em outdegree activity different-same covariate}
 \texttt{(crossXOutAct)} defined by the
@@ -10663,13 +10663,13 @@ defined by \\
   and others who have the same covariate value as $i$.
   The internal effect parameter $p$ has three values,
   depending on where the square root is taken.
-  The effect is defined by \\  
+  The effect is defined by \\
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \, I\{v_i = v_j \} \,
              \sum_h x_{ih}\, I\{v_i \neq v_h \} \ , \hfill (p=1) $\\[0.4em]
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \, I\{v_i = v_j \} \,
             \sqrt{ \sum_h x_{ih}\, I\{v_i \neq v_h \} } \ ,  \hfill (p=2)$\\[0.4em]
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \, I\{v_i \neq v_j \} \,
-            \sqrt{ \sum_h x_{ih}\, I\{v_i = v_h \} }  \ ;  \hfill (p=3)$\\             
+            \sqrt{ \sum_h x_{ih}\, I\{v_i = v_h \} }  \ ;  \hfill (p=3)$\\
 
 
  \item {\em outdegree activity to homogeneous covariate}
@@ -11144,43 +11144,55 @@ For pairs of actor-dependent covariates $V$ and $U$ with values  $v_i$ and $u_j$
 the following effects are available.
  Currently, these effects are implemented only for bipartite (two-mode) networks.
  Then $V$ must be a covariate for the first mode, and $U$ for the second mode.
- 
+
 \begin{enumerate}
 \setcounter{enumi}{\value{savenumi}}
 
  \item \emph{same covariate1--covariate2}, which can also be called {\em covariate-related identity}
  \texttt{(sameXV)},  defined by the
  number of ties of $i$ to all other actors $j$ for which the value of $i$
- on covariate $V$ is the same as the value of $j$ on covariate $U$,\\[0.3em]
- $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, I\{v_i = u_j \} $,\\[0.3em]
- where the indicator function $I\{v_i = u_j \} $ is 1 if the condition $\{v_i = u_j \} $
+ on covariate $V$ is the same as the value of $j$ on covariate $U$,
+ and larger than 0,\\[0.3em]
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, I\{v_i = u_j \geq 1\} $,\\[0.3em]
+ where the indicator function $I\{v_i = u_j \} $ is 1 if the condition $\{v_i = u_j \geq 1\} $
  is satisfied, and 0 if it is not.\\
- In practice, this effect is meaningful only if $U$ and $V$ are non-centered variables.\\
- 
+ This effect is implemented only for $U$ and $V$ that are non-centered categorical
+  actor variables with integer values in the range from 0 to 20.\\
+  The exclusion of values 0 is for the treatment of missing values:
+  these can be given \texttt{imputationValues}  equal to 0,
+  see the help page for \sfn{coCovar} and \sfn{varCovar}. 
+
  \item \emph{indegree popularity from same covariate1 to same covariate2},
  \texttt{(sameXVInPop)} and \texttt{(sameXVInPop2)}.
-  This is an elementary effect that is implemented only for non-centered categorical 
-  actor variables with values within the range of numbers from 0 to 20.
+  This is an elementary effect that is implemented only for non-centered categorical
+  actor variables with values within the range of numbers from 0 to 20.\\
+  It represents the frequency, or relative frequency, of ties from actors in the
+  same category of covariate $V$ to nodes in the same category of covariate $U$.\\
  It is defined, for the tie from $i$ to $j$, by the number of
-incoming ties sent by actors $h$ who have the same covariate value $v_h = v_i$ as $i$
- and received by those $k$ who have the same covariate value $u_k = u_j$ as $j$:\\[0.3em]
- $s^{\rm el}_{i\vit}(x) =  x_{ij}\, \sum_{h,k} x_{hk}\, I\{v_h = v_i,\, u_k=u_j \}  \ , \hfill (p=1) $\\[0.3em]
- where the indicator function $ I\{v_h = v_i,\, u_k=u_j \} $ is 1 
- if the condition $\{v_h = v_i,\, u_k=u_j  \} $ is satisfied, and 0 if it is not.
- 
+incoming ties sent by actors $h$ who have the same non-zero covariate value $v_h = v_i$ as $i$
+ and received by those $k$ who have the same non-zero covariate value $u_k = u_j$ as $j$:\\[0.3em]
+ $s^{\rm el}_{i\vit}(x) =  x_{ij}\, \sum_{h,k} x_{hk}\, I\{v_h = v_i \geq 1,\, u_k=u_j \geq 1\}  \ ,
+             \hfill (p=1) $\\[0.3em]
+ where the indicator function $ I\{v_h = v_i\geq 1,\, u_k=u_j \geq 1 \} $ is 1
+ if the condition $\{v_h = v_i \geq 1,\, u_k=u_j \geq 1 \} $ is satisfied, and 0 if it is not.\\
+  The exclusion of values 0 is for the treatment of missing values:
+  these can be given \texttt{imputationValues}  equal to 0,
+  see the help page for \sfn{coCovar} and \sfn{varCovar}. 
+
  The effect parameter $p$ can take the values 1, 2, 3 and 4.
  The formula given above is for $p=1$.\\
  For $p=3$, the effect is defined by the \underline{proportion} of ties from same-$V$ actors
  to same-$V$ nodes, as given by the formula \\[0.5em]
- $\displaystyle s^{\rm el}_{i\vit}(x) =  x_{ij}\, \frac{ \sum_{h,k} x_{hk}\, I\{v_h = v_i,\, u_k=u_j \}}
-            { \sum_{h,k} I\{v_h = v_i,\, u_k=u_j \}} \ . \hfill (p=3) $
+ $\displaystyle s^{\rm el}_{i\vit}(x) =  x_{ij}\, \frac{ \sum_{h,k} x_{hk}\, I\{v_h = v_i \geq 1,\, u_k=u_j \geq 1\}}
+            { \sum_{h,k} I\{v_h = v_i \geq 1,\, u_k=u_j \geq 1\}} \ . \hfill (p=3) $
 
  For $p=2$ and $p=4$, the square root is taken: \\[0.5em]
- $s^{\rm el}_{i\vit}(x) =  x_{ij}\, \sqrt{\sum_{h,k} x_{hk}\, I\{v_h = v_i,\, u_k=u_j \}} \ , \hfill (p=2)$\\[0.3em]
+ $s^{\rm el}_{i\vit}(x) =  x_{ij}\, \sqrt{\sum_{h,k} x_{hk}\, I\{v_h = v_i \geq 1,\, u_k=u_j \geq 1 \}} \ ,
+                 \hfill (p=2)$\\[0.3em]
  and \\[0.3em]
- $\displaystyle s^{\rm el}_{i\vit}(x) =  x_{ij}\, \sqrt{ \frac{ \sum_{h,k} x_{hk}\, I\{v_h = v_i,\, u_k=u_j \}}
-            { \sum_{h,k} I\{v_h = v_i,\, u_k=u_j \}}}  \ . \hfill (p=4)$\\[0.3em]
-            
+ $\displaystyle s^{\rm el}_{i\vit}(x) =  x_{ij}\, \sqrt{ \frac{ \sum_{h,k} x_{hk}\, I\{v_h = v_i \geq 1,\, u_k=u_j \geq 1 \}}
+            { \sum_{h,k} I\{v_h = v_i \geq 1,\, u_k=u_j \geq 1 \}}}  \ . \hfill (p=4)$\\[0.3em]
+
 The default is $p=3$.
 
 This effect is perhaps rather time-consuming because it iterates over all $x_{hk}$.
@@ -11188,7 +11200,20 @@ For this reason, \texttt{sameXVInPop} and \texttt{sameXVInPop2} are different im
 of the same effect.
 The former iterates over all ties, the second over all nodes $h$, and then over their outgoing ties.
 You can choose whichever is more efficient for your data set.
-  
+
+
+Differences between \texttt{sameXInPop}, \texttt{sameXVInPop}, \texttt{sameXCycle4}:\\
+All work with an actor variable $V$, and \texttt{sameXVInPop} works in addition
+with a nodal variable $U$.\\
+All three express (for positive parameters) that actors with the same categories of $V$
+make related choices of other nodes.\\
+For \texttt{sameXInPop}, they tend to choose the same nodes.
+For \texttt{sameXVInPop}, they tend to choose nodes of the same $U$ category.
+For \texttt{sameXCycle4}, if they tend to choose some particular node in common,
+they will also tend to choose some other nodes in common.
+
+
+
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
 
@@ -12339,13 +12364,13 @@ $\\[0.4em]
  The differences between the centered and non-centered versions amount to
  a multiple of the indegree-popularity (without $\sqrt{}$) \texttt{inPop} effect.
  Therefore, when the \texttt{sharedTo} effect is used, it may be advisable
- also to include the \texttt{inPop} and \texttt{inPopOutW} effects, 
+ also to include the \texttt{inPop} and \texttt{inPopOutW} effects,
  so as to avoid misinterpretations.
- 
+
 
  \item
 \begin{minipage}[t]{.6\textwidth}
- {\em indegree-popularity weighted by W-outdegree}, 
+ {\em indegree-popularity weighted by W-outdegree},
  ($X$: ind.\ pop.\ by outd.\ $W$) \texttt{(inPopOutW)} \\[0.2em]
  $s^{\rm net}_{i\vit}(x) = \sum_{j,k; k \neq i} x_{ij}\, x_{kj}\,
                   \big(  w_{k+} - c\big ) \,$;\\[0.2em]
@@ -12385,14 +12410,14 @@ $\\[0.4em]
 \end{minipage}
 
  The effect parameter $p$ can take the values 1, 2, 3 and 4.
-  For $p=1,2$,  there is no centering: $c=0$. 
+  For $p=1,2$,  there is no centering: $c=0$.
   For $p=3,4$, the value $c$, a constant for centering,
-   is the average of the $W$-outdegrees over all waves.   
+   is the average of the $W$-outdegrees over all waves.
 
  For $p=2$ and $p=4$, the square root is taken: \\[0.3em]
  $s^{\rm net}_{i\vit}(x) = \sum_{j,k; k \neq i} x_{ij}\, x_{kj}\,
- \big(  w_{k+}  \,-\, \sqrt{c} \big)\,$.
-   
+ \big(  \sqrt{w_{k+}}  \,-\, \sqrt{c} \big)\,$.
+
  Note that since this is the evaluation function for actor $i$ with
  respect to network $X$, only the $x_{ij}$ tie indicator in the formula,
  corresponding to  the tie $i \stackrel{X}{\rightarrow} j$,
@@ -12404,8 +12429,8 @@ $\\[0.4em]
  The differences between the centered and non-centered versions amount to
  a multiple of the indegree-popularity (without $\sqrt{}$) \texttt{inPop} effect.
  Therefore, when the \texttt{inPopOutW} effect is used, it is advisable
- also to include the \texttt{inPop} effect, so as to avoid misinterpretations. 
- 
+ also to include the \texttt{inPop} effect, so as to avoid misinterpretations.
+
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
 
@@ -16588,12 +16613,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.4.9.tar.gz|\\
+\verb|R CMD check RSiena_1.4.10.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.4.9.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.4.10.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -17651,7 +17676,7 @@ Changes in RSiena:
 \fi
 
 
-\item 2024-03-21 GitHub, package version 1.4.9
+\item 2024-03-25 GitHub, package version 1.4.10
 
 
 Changes in RSiena:
@@ -17661,7 +17686,8 @@ Changes in RSiena:
   \item New effects \texttt{crossXOutAct}, \texttt{outOutDist2ActIntn},
     \texttt{outOutDist2AvIntn}, \texttt{inPopOutW}.
   \item New effect group \texttt{doubleCovarNetObjective}.
-  \item New effects \texttt{sameXV} and \texttt{sameXVInPop} for bipartite networks.
+  \item New effects \texttt{sameXV} and \texttt{sameXVInPop} for bipartite 
+    and symmetric networks.
   \item \texttt{sameXCycle4} added for one-mode and symmetric networks.
   \item \texttt{sharedTo} gets default internal effect parameter \texttt{p=3} .
   \end{itemize}
@@ -17669,6 +17695,8 @@ Changes in RSiena:
    \begin{itemize}
   \item Function \sfn{updateSpecification} now also updates interaction effects
     and \texttt{initialValues}.
+  \item New parameter \texttt{silent} in \sfn{sienaAlgorithmCreate} activated.
+
   \end{itemize}
 \end{itemize}
 

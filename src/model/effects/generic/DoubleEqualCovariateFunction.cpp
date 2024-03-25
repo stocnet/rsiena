@@ -59,8 +59,9 @@ double DoubleEqualCovariateFunction::value(int alter) const
 	if (!(this->lexcludeMissing && 
 				(this->firstMissing(this->ego()) || this->secondMissing(alter))))
 	{
-		if (fabs(this->firstCovariateValue(this->ego()) -
-				this->secondCovariateValue(alter)) < 1e-6)
+		if ((this->firstCovariateIntValue(this->ego()) ==
+					this->secondCovariateValue(alter)) && 
+							(this->secondCovariateIntValue(alter) >= 1))
 		{
 			statistic = 1;
 		}

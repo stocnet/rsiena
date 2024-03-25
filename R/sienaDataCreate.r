@@ -14,6 +14,14 @@ addAttributes <- function(x, name, ...) UseMethod("addAttributes")
 # Note: this is used when creating the data object;
 # the attributes are not part of the variables.
 
+##@lowIntegers utility function DataCreate
+lowIntegers <- function(vals, centr){
+	is.wholenumber <- function(x, tol = 1e-6){abs(x - round(x)) < tol}
+	all(is.wholenumber(vals), na.rm=TRUE) && (min(vals, na.rm=TRUE) >= 0) &&
+					(max(vals, na.rm=TRUE) <= 20)  && (!centr)
+}
+
+
 ##@addAttributes.coCovar DataCreate
 addAttributes.coCovar <- function(x, name, ...)
 {
@@ -50,6 +58,7 @@ addAttributes.coCovar <- function(x, name, ...)
 	attr(x, "name") <- name
 	attr(x, "vartotal") <- vartotal
 	attr(x, "nonMissingCount") <- nonMissingCount
+	attr(x, "lowIntegers") <- lowIntegers(x, attr(x, "centered"))
 	if ((!is.null(attr(x, "imputationValues"))) && (attr(x, "centered")))
 	{
 		attr(x, "imputationValues") <- attr(x, "imputationValues") - varmean
@@ -92,6 +101,7 @@ addAttributes.varCovar <- function(x, name, ...)
 	attr(x, 'name') <- name
 	attr(x, "vartotal") <- vartotal
 	attr(x, "nonMissingCount") <- nonMissingCount
+	attr(x, "lowIntegers") <- lowIntegers(x, attr(x, "centered"))
     if ((!is.null(attr(x, "imputationValues"))) && (attr(x, "centered")))
 	{
 		attr(x, "imputationValues") <- attr(x, "imputationValues") - varmean

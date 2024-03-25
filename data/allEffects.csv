@@ -229,6 +229,7 @@ covarSymmetricObjective,ind. act.^(1/#) weighted xxxxxx,indegree act.^(1/#) weig
 covarSymmetricObjective,outd. act.^(1/#) weighted xxxxxx,indegree act.^(1/#) weighted xxxxxx,outActX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,same xxxxxx,number ties between same xxxxxx,sameX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,unequal xxxxxx,number ties between different xxxxxx,unequalX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarSymmetricObjective,ind. pop. from same xxxxxx,indegree pop. from same values on xxxxxx,sameXInPop,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,ind. pop. from dif. xxxxxx,indegree pop. from dif. values on xxxxxx,diffXInPop,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,outd. act.^(1/#) to same xxxxxx,sum sqr. outd.^(1/#) to same values on xxxxxx,sameXOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 covarSymmetricObjective,outd. act.^(1/#) to dif. xxxxxx,sum sqr. outd.^(1/#) to dif. values on xxxxxx,diffXOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE

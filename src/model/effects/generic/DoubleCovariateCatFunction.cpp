@@ -246,16 +246,21 @@ int DoubleCovariateCatFunction::numberCovariateTies(int b) const
  */
 double DoubleCovariateCatFunction::value(int alter) const
 {
-	double value = numberCovariateTies(this->secondCovariateIntValue(alter));
-	if (this->laverage)
+	double value = 0;
+	if ((this->firstCovariateIntValue(this->ego()) >= 1) &&
+			(this->secondCovariateIntValue(alter) >= 1))
 	{
-		value /= (this->firstCovariateNumbers(this->firstCovariateIntValue(this->ego())) *
+		value = numberCovariateTies(this->secondCovariateIntValue(alter));
+		if (this->laverage)
+		{
+			value /= (this->firstCovariateNumbers(this->firstCovariateIntValue(this->ego())) *
 					this->secondCovariateNumbers(this->secondCovariateIntValue(alter)));
 // the denominator cannot be 0
-	}
-	if (this->lroot)
-	{
-		value = sqrt(value);
+		}
+		if (this->lroot)
+		{
+			value = sqrt(value);
+		}
 	}
 	return value;
 }
