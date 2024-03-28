@@ -2286,3 +2286,140 @@ mymodel <- getEffects(mydata)
 (ans <- siena07(mycontrols, data=mydata, effects=mymodel))
 ans$targets #  116.00000  70.00000 350.00000  33.65613
 sum((rowSums(s502 * matt))*sqrt(rowSums(s502 * mat))) # 33.65613 OK
+
+################################################################################
+### check avGroup
+################################################################################
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+p <- 1
+mymodel <- setEffect(mymodel,avGroup, name='mybeh', parameter=p)
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+(mbh <- mean(mybeh))
+sum(mybeh[,,2] - mbh)# OK linear shape
+sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
+
+# for avGroup effect:
+## The target statistic equals the sum of over s_i^beh = 
+#, substracting c_p from  the mean for p > 0.5
+
+c_p <- ifelse(p <= 0.5, 0, p - mbh)
+sum((mybeh[,,2]-mbh)*(mean((mybeh[,,2]-mbh))-c_p))
+################################################################################
+### check indegWeightAverage
+################################################################################
+
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+p <- 1
+mymodel <- setEffect(mymodel,indegWeightAverage, 
+                      name='mybeh', interaction1='mynet', parameter=p)
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE))
+ans$targets
+(mbh <- mean(mybeh))
+sum(mybeh[,,2] - mbh) # OK linear shape
+sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
+
+# for indegWeightAverage effect:
+## The target statistic equals the sum over s_i^beh, weighted by
+##substracting c_p from the mean for p > 0.5
+
+c_p <- ifelse(p <= 0.5, 0, p - mbh)
+sum( (mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) / sum(colSums(mynet[,,1])) ) - c_p )) # OK
+
+## Test for three networks without shape effects
+
+mynet <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+mybeh <- sienaDependent(s50a[,1:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+p <- 1
+mymodel <- includeEffects (mymodel, linear, quad,  name='mybeh', include=FALSE)
+
+mymodel <- setEffect(mymodel,indegWeightAverage, 
+                     name='mybeh', interaction1='mynet', parameter=p)
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE))
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE, 
+                prevAns = ans, returnDeps=TRUE))
+ans$targets
+
+#IndegWeightedAverage
+
+c_p <- ifelse(p <= 0.5, 0, p - mbh)
+(mbh <- mean(mybeh))
+sum( (mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) / sum(colSums(mynet[,,1])) ) - c_p )) +
+sum( (mybeh[,,3]-mbh) * (( sum((mybeh[,,3]-mbh) * colSums(mynet[,,2])) / sum(colSums(mynet[,,2])) ) - c_p )) # OK
+
+
+################################################################################
+### check totTwoInStarAlt
+################################################################################
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel,totInAltDist2, name='mybeh', interaction1 = "mynet")
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel,totTwoInStarAlt, name='mybeh', interaction1 = "mynet")
+mymodel
+(ans2 <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans2$targets # different from totInAltDist2
+
+(mbh <- mean(mybeh))
+sum(mybeh[,,2] - mbh)# OK linear shape
+sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
+
+# for totTwoinstarAlt effect:
+## The target statistic equals the sum of over s_i^beh =
+## v_i * sum(v_j) over all two-in-star alters j of i,
+## weighted by the number of common two-out-stars
+## divided by the sum of the behavior of all two-in-star alters
+
+instars <- function(mat){
+    # make an empty version of the matrix where we will store instar values
+    matrix_vals <- mat
+    matrix_vals[] <- 0
+    # loop over the actors in the network, comparing pair-wise their values 
+    for(i in 1:nrow(mat)){
+      for(j in 1:nrow(mat)){
+        a_row <- mat[i, c(-i, -j)]
+        b_row <- mat[j, c(-i, -j)]
+        matrix_vals[i,j] <- sum(a_row*b_row) # take sum of instars
+      }
+    }
+    diag(matrix_vals) <- 0
+        # return results
+    return(matrix_vals)
+  }
+
+divi <- function(x,y){ifelse(y==0, 0, x/y)}
+
+instarmat <- instars(mynet[,,1])
+
+weighted <- divi((mybeh[,,2]) %*% instarmat, (mybeh[,,2])  %*%  (instarmat > 0))
+weighted
+sum((mybeh[,,2])*weighted) # totTwoInStarAlt ok

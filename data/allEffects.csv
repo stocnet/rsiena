@@ -8,6 +8,7 @@ behaviorOneModeObjective,xxxxxx total attraction higher,xxxxxx total attraction 
 behaviorOneModeObjective,xxxxxx total attraction lower,xxxxxx total attraction lower,totAttLower,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 behaviorOneModeObjective,xxxxxx average in-similarity,xxxxxx average in-similarity,avInSim,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 behaviorOneModeObjective,xxxxxx total in-similarity,xxxxxx total in-similarity,totInSim,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
+behaviorOneModeObjective,xxxxxx indegree weighted average,xxxxxx indegree weighted average,indegWeightAverage,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 behaviorOneModeObjective,xxxxxx indegree,xxxxxx indegrees,indeg,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx outdegree,xxxxxx outdegrees,outdeg,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx in-isolate,xxxxxx in-isolate,isolate,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
@@ -40,6 +41,7 @@ behaviorOneModeObjective,xxxxxx tot. in-alt. dist. 2,xxxxxx tot. in-alt. dist. 2
 behaviorOneModeObjective,xxxxxx av. in-alt. tot. dist. 2,xxxxxx av. in-alt. tot. dist. 2,avTInAltDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx av. in-sim. dist. 2,xxxxxx av. in-sim. dist. 2,avInSimDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx tot. in-sim. dist. 2,xxxxxx tot. in-sim. dist. 2,totInSimDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorOneModeObjective,xxxxxx total two-in-star alters,xxxxxx Total two-in-star alters,totTwoInStarAlt,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx max. alter,xxxxxx max. alters,maxAlt,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx max. alter,xxxxxx max. alters,maxAlt_gmm,FALSE,yyyyyy,,gmm,FALSE,FALSE,FALSE,TRUE,FALSE,",",0,0,gmm,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx min. alter,xxxxxx min. alters,minAlt,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
@@ -117,6 +119,9 @@ behaviorOneModeRate,susceptibility to av. exp. by indegree effect on rate xxxxxx
 behaviorOneModeRate,total exposure effect on rate xxxxxx,Amount of change on xxxxxx x total exposure,totExposure,NA,yyyyyy,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,diffusion,0,0,0,0,,FALSE
 behaviorOneModeRate,infection by indegree effect on rate xxxxxx,Amount of change on xxxxxx x infection by indegree,infectIn,NA,yyyyyy,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,diffusion,0,0,0,0,,FALSE
 behaviorOneModeRate,infection by outdegree effect on rate xxxxxx,Amount of change on xxxxxx x infection by outdegree,infectOut,NA,yyyyyy,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,diffusion,0,0,0,0,,FALSE
+behaviorOneModeRate,av. in-alt. tot. exposure dist. 2 effect on rate xxxxxx,Amount of change on xxxxxx x av. in-alt. tot. exposure dist. 2,avTinExposureDist2,NA,yyyyyy,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,diffusion,0,0,0,0,,FALSE
+behaviorOneModeRate,tot. in-alt. exposure dist. 2 effect on rate xxxxxx,Amount of change on xxxxxx x tot. in-alt. exposure dist. 2,totInExposureDist2,NA,yyyyyy,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,diffusion,0,0,0,0,,FALSE
+behaviorOneModeRate,tot. in-alt. av. exposure dist. 2 effect on rate xxxxxx,Amount of change on xxxxxx x tot. in-alt. av. exposure dist. 2,totAInExposureDist2,NA,yyyyyy,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,diffusion,0,0,0,0,,FALSE
 behaviorSymmetricRate,degree effect on rate xxxxxx,Amount of change on xxxxxx x degree,outRate,NA,yyyyyy,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,structural,0,0,0,0,,FALSE
 behaviorSymmetricRate,average exposure effect on rate xxxxxx,Amount of change on xxxxxx x average exposure,avExposure,NA,yyyyyy,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,diffusion,0,0,0,0,,FALSE
 behaviorSymmetricRate,total exposure effect on rate xxxxxx,Amount of change on xxxxxx x total exposure,totExposure,NA,yyyyyy,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,diffusion,0,0,0,0,,FALSE
