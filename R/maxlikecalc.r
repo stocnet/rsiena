@@ -149,3 +149,21 @@ kappasigmamu<- function(n, nc, lambda, add1=FALSE)
     kappa1 <- -(1 - mu)^2 / 2 / sigma2 - log(sigma2) / 2
     list(kappa=kappa1, mu=mu, sigma2=sigma2)
 }
+
+doMoreUpdates <- function(z, x, n)
+{
+    f <- FRANstore()
+    for (i in 1:n)
+    {
+        ans <- calcgrad(z$theta, f$Z, f$startmat, varmat=FALSE)
+
+        fchange <- as.vector(z$gain * ans$sc %*% z$dinv)
+        fchange <- ifelse(z$posj & (fchange > z$theta), z$theta * 0.5, fchange)
+
+        z$theta <- z$theta - fchange
+        z$thav <- z$thav + z$theta
+        z$thavn <- z$thavn + 1
+    }
+    z
+}
+

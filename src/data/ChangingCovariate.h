@@ -32,10 +32,14 @@ public:
 	void value(int i, int observation, double value);
 	bool missing(int i, int observation) const;
 	void missing(int i, int observation, bool missing);
+	double min() const;
+	double max() const;
 
 private:
 	// The values of the covariate per each actor and observation
 	double ** lvalues {};
+	double lmin {};
+	double lmax {};
 	
 	// Missingness indicators
 	bool ** lmissing {};

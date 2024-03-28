@@ -114,15 +114,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 			stop("not valid siena data object")
 		}
 		## check the effects object
-		if (!is.null(attr(effects, "onePeriodSde")))
-		{
-			oPS <- attr(effects, "onePeriodSde")
-		}
-		else
-		{
-			oPS <- FALSE
-		}
-		defaultEffects <- getEffects(data, onePeriodSde=oPS)
+		defaultEffects <- checkVersion(data, effects)
 		if (is.null(effects))
 		{
 			cat("You specified no effects. The default effects are used.\n")
@@ -154,22 +146,6 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		{
 			stop("effects is not a data.frame")
 		}
-		effectsVersion <- attr(effects, "version")
-		if (is.null(effectsVersion))
-		{
-			differentVersions <- TRUE
-		}
-		else
-		{
-			differentVersions <- (effectsVersion != attr(defaultEffects, "version"))
-		}
-		if ((differentVersions) &
-			(any((effects$shortName %in% c("unspInt","behUnspInt"))&effects$include)))
-		{
-			warning("Your effects object contains interaction effects and was made
-			  using a different RSiena version.
-			  Make sure the interaction effects are the same.")
-		}
 		if (x$useStdInits)
 		{
 		# The restriction to effects with shortname not unspInt or behUnspInt
@@ -196,9 +172,9 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		# and change NULL to default values for x$modelType and x$behModelType
 		# For symmetric networks, default is changed below from 1 to 2.
 		checkNames(x$MaxDegree, c('oneMode','bipartite'))
-		checkNames(x$UniversalOffset, c('oneMode','bipartite'))
 		x$modelType <- checkNames(x$modelType, c('oneMode','bipartite'))
 		x$behModelType <- checkNames(x$behModelType, 'behavior')
+		checkNames(x$UniversalOffset, c('oneMode','bipartite'))
 		# The following error will occur if ML estimation is requested
 		# and there are any impossible changes from structural values
 		# to different observed values.
@@ -624,6 +600,10 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 
 		if (any(attr(f,"types") == "continuous"))
 		{
+			if (z$cconditional)
+			{
+				stop("For models with continuous behavior variables, conditional estimation is impossible")
+			}
 			splitFactor <- factor(effects$name, levels=c(attr(f, "netnames"), "sde"))
 		}
 		else
@@ -2446,6 +2426,65 @@ updateTheta <- function(effects, prevAns, varName=NULL)
 	effects$initialValue[use] <-
 		prevEffects$initialValue[match(efflist, oldlist)][use]
 	effects
+}
+
+
+##@ numberIntn siena07 sienaBayes, number of network interaction effects used for getEffects
+numberIntn <- function(myeff){
+	if (!is.null(myeff)){	
+		numnet <- length(unique(myeff$name[myeff$shortName=="density"])) # number of dependent networks
+		nintn <- sum(myeff$shortName == 'unspInt')/3 # 3 for eval - creation - endow
+	}
+	else
+	{
+		numnet <- 0
+	}	
+	ifelse((numnet <= 0), 10, nintn/numnet) # 10 is the default in getEffects
+}
+
+##@ numberIntn siena07 sienaBayes, number of behavior interaction effects used for getEffects
+numberBehIntn <- function(myeff){
+	if (!is.null(myeff)){	
+		numbeh <- length(unique(myeff$name[myeff$shortName=="linear"]))# number of dependent behaviors
+		nbehIntn <- sum(myeff$shortName == 'behUnspInt')/3 # 3 for eval - creation - endow
+	}
+	else
+	{
+		numbeh <- 0
+	}		
+	ifelse((numbeh <= 0), 4, nbehIntn/numbeh) # 4 is the default in getEffects
+}
+
+
+##@checkVersion siena07 Create default effects object and check RSiena version.
+checkVersion <- function(dat, effs){
+	if (!is.null(attr(effs, "onePeriodSde")))
+	{
+		oPS <- attr(effs, "onePeriodSde")
+	}
+	else
+	{
+		oPS <- FALSE
+	}
+	defaultEffects <- getEffects(dat, nintn=numberIntn(effs), 
+						behNintn=numberBehIntn(effs),onePeriodSde=oPS)
+	effectsVersion <- attr(effs, "version")
+	if (is.null(effectsVersion))
+	{
+		differentVersions <- TRUE
+	}
+	else
+	{
+		differentVersions <- (effectsVersion != attr(defaultEffects, "version"))
+	}
+	if ((differentVersions) & 
+		(any((effs$shortName %in% c("unspInt","behUnspInt"))&effs$include)))
+		{
+		warning("Your effects object contains interaction effects and was made
+		  using a different RSiena version. 
+		  Make sure the interaction effects are the same.")
+	}
+	defaultEffects 
 }
 
 ##@addSettingseffects siena07 add extra rate effects for settings model

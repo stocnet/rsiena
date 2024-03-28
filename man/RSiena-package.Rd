@@ -14,7 +14,10 @@ The models are stochastic actor-oriented models,
 described in Snijders (2017).
 
 Recent versions of the package are distributed through GitHub,   
-see \url{https://github.com/snlab-nl/rsiena/}.
+see \url{https://github.com/stocnet/rsiena/}.
+
+Bug reports can be submitted at 
+\url{https://github.com/stocnet/rsiena/issues}.
 }
 \details{
   The main flow of operations of this package is as follows.
@@ -44,8 +47,8 @@ see \url{https://github.com/snlab-nl/rsiena/}.
   \tabular{ll}{
     Package: \tab RSiena\cr
     Type: \tab Package\cr
-    Version: \tab 1.4.3\cr
-    Date: \tab 2024-01-09\cr
+    Version: \tab 1.4.10\cr
+    Date: \tab 2024-03-25\cr
     Depends: \tab R (>= 3.5.0)\cr
     Imports: \tab Matrix, lattice, parallel, MASS, methods, xtable\cr
     Suggests: \tab network, tools, codetools, tcltk\cr
@@ -113,7 +116,9 @@ see \url{https://github.com/snlab-nl/rsiena/}.
     \emph{Sociological Methodology} \bold{40}, 329--393.
     Information about the implementation of the algorithm is in
      \url{https://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf}.
-    Further see \url{https://www.stats.ox.ac.uk/~snijders/siena/} .
+	 
+    Further see \url{https://www.stats.ox.ac.uk/~snijders/siena/} and
+	\url{https://github.com/stocnet/rsiena/wiki}.
 }
 \seealso{\code{\link{siena07}}}
 

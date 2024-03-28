@@ -1,4 +1,4 @@
-##@getActorStatistics. Use as RSiena/RSienaTest:::getTheActorStatistics
+##@getActorStatistics. Use as RSiena:::getTheActorStatistics
 getTheActorStatistics <- function(algorithm, data, effects)
 {
 	## The following initializations data, effects, and model

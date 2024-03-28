@@ -46,9 +46,12 @@
 #include "model/effects/generic/TwoStepFunction.h"
 #include "model/effects/generic/ReverseTwoPathFunction.h"
 #include "model/effects/generic/MixedTwoStepFunction.h"
+#include "model/effects/generic/MixedThreePathFunction.h"
 #include "model/effects/generic/WeightedMixedTwoPathFunction.h"
 #include "model/effects/generic/ConditionalFunction.h"
 #include "model/effects/generic/EqualCovariatePredicate.h"
+#include "model/effects/generic/DoubleEqualCovariateFunction.h"
+#include "model/effects/generic/DoubleCovariateCatFunction.h"
 #include "model/effects/generic/MissingCovariatePredicate.h"
 #include "model/effects/generic/DoubleOutActFunction.h"
 #include "model/effects/generic/CovariateDistance2AlterNetworkFunction.h"
@@ -68,6 +71,7 @@
 #include "model/effects/generic/DifferentCovariateOutStarFunction.h"
 #include "model/effects/generic/HomCovariateMixedTwoPathFunction.h"
 #include "model/effects/generic/OutActDistance2Function.h"
+#include "model/effects/generic/OutActDoubleDistance2Function.h"
 #include "model/effects/generic/MixedThreeCyclesFunction.h"
 #include "model/effects/generic/InStarsTimesDegreesFunction.h"
 #include "model/tables/EgocentricConfigurationTable.h"
@@ -620,6 +624,36 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new SameCovariateEffect(pEffectInfo, true, false);
 	}
+	else if (effectName == "sameXV")
+	{
+		string covariateName1 = pEffectInfo->interactionName1();
+		string covariateName2 = pEffectInfo->interactionName2();
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new DoubleEqualCovariateFunction(covariateName1, covariateName2, false),
+			new DoubleEqualCovariateFunction(covariateName1, covariateName2, true));
+	}
+	else if (effectName == "sameXVInPop")
+	{
+		string networkName = pEffectInfo->variableName();
+		string covariateName1 = pEffectInfo->interactionName1();
+		string covariateName2 = pEffectInfo->interactionName2();
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new DoubleCovariateCatFunction(covariateName1, covariateName2,
+				networkName, pEffectInfo->internalEffectParameter(), false, false),
+			new DoubleCovariateCatFunction(covariateName1, covariateName2, 
+				networkName, pEffectInfo->internalEffectParameter(), true, false));
+	}
+	else if (effectName == "sameXVInPop2")
+	{
+		string networkName = pEffectInfo->variableName();
+		string covariateName1 = pEffectInfo->interactionName1();
+		string covariateName2 = pEffectInfo->interactionName2();
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new DoubleCovariateCatFunction(covariateName1, covariateName2,
+				networkName, pEffectInfo->internalEffectParameter(), false, true),
+			new DoubleCovariateCatFunction(covariateName1, covariateName2, 
+				networkName, pEffectInfo->internalEffectParameter(), true, true));
+	}
 	else if (effectName == "unequalX")
 	{
 		pEffect = new SameCovariateEffect(pEffectInfo, false, false);
@@ -731,6 +765,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "diffXOutAct")
 	{
 		pEffect = new SameCovariateActivityEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "crossXOutAct")
+	{
+		pEffect = new CrossCovariateActivityEffect(pEffectInfo, false);
 	}
 	else if (effectName == "homXOutAct")
 	{
@@ -1328,6 +1366,27 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 						new MixedThreeCyclesFunction(pEffectInfo->interactionName1(),
 							pEffectInfo->variableName(),
 							pEffectInfo->internalEffectParameter()));
+	}
+	else if (effectName == "inPopOutW")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new MixedThreePathFunction(pEffectInfo->variableName(),
+							pEffectInfo->interactionName1(),							
+							pEffectInfo->internalEffectParameter(), true, false, false));
+	}
+	else if (effectName == "outOutDist2ActIntn")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new OutActDoubleDistance2Function(pEffectInfo->interactionName1(),
+							pEffectInfo->variableName(),
+							pEffectInfo->internalEffectParameter(), false, false));
+	}
+	else if (effectName == "outOutDist2AvIntn")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new OutActDoubleDistance2Function(pEffectInfo->interactionName1(),
+							pEffectInfo->variableName(),
+							pEffectInfo->internalEffectParameter(), false, true));
 	}
 	else if (effectName == "inPopIntnX")
 	{

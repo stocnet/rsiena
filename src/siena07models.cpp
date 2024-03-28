@@ -18,8 +18,7 @@
 #include <stdexcept>
 #include <vector>
 #include <cstring>
-#include <R_ext/Random.h>
-#include <Rinternals.h>
+#include "siena07models.h"
 #include "siena07internals.h"
 #include "siena07utilities.h"
 #include "data/Data.h"
@@ -37,8 +36,10 @@
 #include "model/ml/MiniStep.h"
 #include "model/ml/NetworkChange.h"
 #include "model/ml/BehaviorChange.h"
+#include <R_ext/Error.h>
+#include <R_ext/Random.h>
+#include <Rinternals.h>
 
-#include "siena07models.h"
 
 
 using namespace std;
@@ -48,9 +49,9 @@ using namespace siena;
  * Convert an inter SEXP to c int. If the R value isNull, return the default value.
  */
 static int sexp_to_int(SEXP value, int def) {
-	if (!isNull(value))
+	if (!Rf_isNull(value))
 	{
-		return asInteger(value);
+		return Rf_asInteger(value);
 	}
 	return def;
 }
@@ -67,7 +68,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 	SEXP USESTREAMS, SEXP ADDCHAINTOSTORE, SEXP RETURNCHAINS, SEXP RETURNLOGLIK,
 	SEXP RETURNACTORSTATISTICS, SEXP RETURNCHANGECONTRIBUTIONS)
 {
-	SEXP NEWRANDOMSEED = PROTECT(duplicate(RANDOMSEED2)); // for parallel testing only
+	SEXP NEWRANDOMSEED = PROTECT(Rf_duplicate(RANDOMSEED2)); // for parallel testing only
 
 	/* create a simulation and return the observed statistics and scores */
 
@@ -81,16 +82,16 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 
 	/* find total number of periods to process */
 	int totObservations = totalPeriods(*pGroupData);
-	int fromFiniteDiff = asInteger(FROMFINITEDIFF);
-	int useStreams = asInteger(USESTREAMS);
+	int fromFiniteDiff = Rf_asInteger(FROMFINITEDIFF);
+	int useStreams = Rf_asInteger(USESTREAMS);
 	int addChainToStore = sexp_to_int(ADDCHAINTOSTORE, 0);
-	int returnDependents = asInteger(RETURNDEPS);
+	int returnDependents = Rf_asInteger(RETURNDEPS);
 	int returnChains = sexp_to_int(RETURNCHAINS, 0);
 	int returnLoglik = sexp_to_int(RETURNLOGLIK, 0);
 	int returnActorStatistics = sexp_to_int(RETURNACTORSTATISTICS, 0);
 	int returnChangeContributions = sexp_to_int(RETURNCHANGECONTRIBUTIONS, 0);
-	int deriv = asInteger(DERIV);
-	int needSeeds = asInteger(NEEDSEEDS);
+	int deriv = Rf_asInteger(DERIV);
+	int needSeeds = Rf_asInteger(NEEDSEEDS);
 
 	/* set the deriv flag on the model */
 	pModel->needScores(deriv);
@@ -108,13 +109,13 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 	updateParameters(EFFECTSLIST, THETA, pGroupData, pModel);
 
 	/* ans will be the return value */
-	SEXP ans = PROTECT(allocVector(VECSXP, 10));
+	SEXP ans = PROTECT(Rf_allocVector(VECSXP, 10));
 
 	/* count up the total number of parameters */
 	int dim = 0;
-	for (int i = 0; i < length(EFFECTSLIST); i++)
+	for (int i = 0; i < Rf_length(EFFECTSLIST); i++)
 	{
-		dim += length(VECTOR_ELT(VECTOR_ELT(EFFECTSLIST, i), 0));
+		dim += Rf_length(VECTOR_ELT(VECTOR_ELT(EFFECTSLIST, i), 0));
 	}
 
 	/* get the random seed from R into memory */
@@ -124,9 +125,9 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 	   to 0. Use rfra to reduce function evaluations. */
 	SEXP fra;
 	double * rfra;
-	PROTECT(fra = allocMatrix(REALSXP, dim, totObservations));
+	PROTECT(fra = Rf_allocMatrix(REALSXP, dim, totObservations));
 	rfra = REAL(fra);
-	for (int i = 0; i < length(fra); i++)
+	for (int i = 0; i < Rf_length(fra); i++)
 	{
 		rfra[i] = 0;
 	}
@@ -134,89 +135,89 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 		 estimation) */
 	SEXP ntim;
 	double * rntim;
-	PROTECT(ntim = allocVector(REALSXP, totObservations));
+	PROTECT(ntim = Rf_allocVector(REALSXP, totObservations));
 	rntim = REAL(ntim);
-	for (int i = 0; i < length(ntim); i++)
+	for (int i = 0; i < Rf_length(ntim); i++)
 		rntim[i] = 0.0;
 
 	/* sims will be the returned simulated dependent variables */
 	SEXP sims;
-	PROTECT(sims = allocVector(VECSXP, nGroups));
+	PROTECT(sims = Rf_allocVector(VECSXP, nGroups));
 	if (returnDependents)
 	{
 		int nVariables = (*pGroupData)[0]->rDependentVariableData().size();
 		for (int group = 0; group < nGroups; group++)
 		{
-			SET_VECTOR_ELT(sims, group, allocVector(VECSXP, nVariables));
+			SET_VECTOR_ELT(sims, group, Rf_allocVector(VECSXP, nVariables));
 			for (int variable = 0; variable < nVariables; variable++)
 			{
 				SET_VECTOR_ELT(VECTOR_ELT(sims, group), variable,
-					allocVector(VECSXP, (*pGroupData)[group]->
+					Rf_allocVector(VECSXP, (*pGroupData)[group]->
 						observationCount() - 1));
 			}
 		}
 	}
 	/* chains will be the returned chains */
-	SEXP chains = PROTECT(allocVector(VECSXP, nGroups));
+	SEXP chains = PROTECT(Rf_allocVector(VECSXP, nGroups));
 	if (returnChains)
 	{
 		for (int group = 0; group < nGroups; group++)
 		{
 			SET_VECTOR_ELT(chains, group,
-				allocVector(VECSXP, (*pGroupData)[group]->
+				Rf_allocVector(VECSXP, (*pGroupData)[group]->
 					observationCount() - 1));
 		}
 	}
 
 	/* changeContributionChain will be the returned change contributions for all chains */
-	SEXP changeContributionChains = PROTECT(allocVector(VECSXP, nGroups));
+	SEXP changeContributionChains = PROTECT(Rf_allocVector(VECSXP, nGroups));
 	if (returnChangeContributions)
 	{
 		for (int group = 0; group < nGroups; group++)
 		{
 			SET_VECTOR_ELT(changeContributionChains, group,
-					allocVector(VECSXP, (*pGroupData)[group]->observationCount() - 1));
+					Rf_allocVector(VECSXP, (*pGroupData)[group]->observationCount() - 1));
 		}
 	}
 
 	/* actorStats will be the returned statistics of individual actors*/
-	SEXP actorStats = PROTECT(allocVector(VECSXP,nGroups));
+	SEXP actorStats = PROTECT(Rf_allocVector(VECSXP,nGroups));
 	if(returnActorStatistics)
 	{
 		SEXP NETWORKTYPES;
 		NETWORKTYPES = createRObjectAttributes(EFFECTSLIST, actorStats);
-		int objEffects = length(NETWORKTYPES);
+		int objEffects = Rf_length(NETWORKTYPES);
 		for (int group = 0; group < nGroups; group++)
 		{
-			SET_VECTOR_ELT(actorStats, group, allocVector(VECSXP, (*pGroupData)[group]->observationCount()-1));
+			SET_VECTOR_ELT(actorStats, group, Rf_allocVector(VECSXP, (*pGroupData)[group]->observationCount()-1));
 			for (int p = 0; p < (*pGroupData)[group]->observationCount()-1; p++)
 			{
-				SET_VECTOR_ELT(VECTOR_ELT(actorStats,group), p, allocVector(VECSXP,objEffects));
+				SET_VECTOR_ELT(VECTOR_ELT(actorStats,group), p, Rf_allocVector(VECSXP,objEffects));
 			}
 		}
 	}
 
 	/* loglik will be the returned log likelihoods */
-	SEXP logliks = PROTECT(allocVector(REALSXP, totObservations));
+	SEXP logliks = PROTECT(Rf_allocVector(REALSXP, totObservations));
 	double * Rlogliks = REAL(logliks);
 
 	/* seed store is a list to save the random states */
-	SEXP seedstore = PROTECT(allocVector(VECSXP, nGroups));
+	SEXP seedstore = PROTECT(Rf_allocVector(VECSXP, nGroups));
 	for (int group = 0; group < nGroups; group++)
 	{
 		SET_VECTOR_ELT(seedstore, group,
-			allocVector(VECSXP, (*pGroupData)[group]->observationCount() - 1));
+			Rf_allocVector(VECSXP, (*pGroupData)[group]->observationCount() - 1));
 	}
 
 	/* rs will allow us to access or set the .Random.seed in R */
-	SEXP rs = PROTECT(install(".Random.seed"));
+	SEXP rs = PROTECT(Rf_install(".Random.seed"));
 
 	/* scores will hold the return values of the scores */
 	SEXP scores;
 	double *rscores;
-	PROTECT(scores = allocMatrix(REALSXP, dim, totObservations));
+	PROTECT(scores = Rf_allocMatrix(REALSXP, dim, totObservations));
 	rscores = REAL(scores);
-	for (int i = 0; i < length(scores); i++)
+	for (int i = 0; i < Rf_length(scores); i++)
 		rscores[i] = 0.0;
 
 	int periodFromStart = 0;
@@ -229,12 +230,12 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 	if (useStreams)
 	{
 		// create an R character string
-		PROTECT(Cgstr = allocVector(STRSXP,1));
-		SET_STRING_ELT(Cgstr, 0, mkChar("Cg"));
+		PROTECT(Cgstr = Rf_allocVector(STRSXP,1));
+		SET_STRING_ELT(Cgstr, 0, Rf_mkChar("Cg"));
 
 		// find out which stream we are using
-		PROTECT(R_fcall1 = lang1(install(".lec.GetStreams")));
-		PROTECT(STREAMS = eval(R_fcall1, R_GlobalEnv));
+		PROTECT(R_fcall1 = Rf_lang1(Rf_install(".lec.GetStreams")));
+		PROTECT(STREAMS = Rf_eval(R_fcall1, R_GlobalEnv));
 	}
 
 	/* group loop here */
@@ -262,10 +263,10 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 
 			periodFromStart++;
 
-			if (!isNull(RANDOMSEED2)) /* parallel testing versus Siena3 */
+			if (!Rf_isNull(RANDOMSEED2)) /* parallel testing versus Siena3 */
 			{
 				// overwrite R's random number seed
-				defineVar(rs, RANDOMSEED2, R_GlobalEnv);
+				Rf_defineVar(rs, RANDOMSEED2, R_GlobalEnv);
 				// get it into memory
 				GetRNGstate();
 				// move on one
@@ -280,21 +281,21 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 					if (useStreams) /* using lecuyer random numbers */
 					{
 						// overwrite the current state in R
-						PROTECT(R_fcall2 = lang4(install("[[<-"),
-								install(".lec.Random.seed.table"), Cgstr,
+						PROTECT(R_fcall2 = Rf_lang4(Rf_install("[[<-"),
+								Rf_install(".lec.Random.seed.table"), Cgstr,
 								VECTOR_ELT(seeds, period)));
-						PROTECT(ans2 = eval(R_fcall2, R_GlobalEnv));
+						PROTECT(ans2 = Rf_eval(R_fcall2, R_GlobalEnv));
 						// get the overwritten state into C table
 						PROTECT(R_fcall3 =
-							lang2(install(".lec.CurrentStream"),
+							Rf_lang2(Rf_install(".lec.CurrentStream"),
 								STREAMS));
-						PROTECT(ans3 = eval(R_fcall3, R_GlobalEnv));
+						PROTECT(ans3 = Rf_eval(R_fcall3, R_GlobalEnv));
 						UNPROTECT(4);
 					}
 					else /* using normal random numbers */
 					{
 						// overwrite R's current state
-						defineVar(rs, VECTOR_ELT(seeds, period),
+						Rf_defineVar(rs, VECTOR_ELT(seeds, period),
 							R_GlobalEnv);
 						// get the value from .Random.seed into memory
 						GetRNGstate();
@@ -307,21 +308,21 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 						if (useStreams)
 						{
 							PROTECT(R_fcall2 =
-								lang2(install(".lec.ResetNextSubstream"),
+								Rf_lang2(Rf_install(".lec.ResetNextSubstream"),
 									STREAMS));
-							PROTECT(ans2 = eval(R_fcall2, R_GlobalEnv));
+							PROTECT(ans2 = Rf_eval(R_fcall2, R_GlobalEnv));
 
 							PROTECT(R_fcall3 =
-								lang2(install(".lec.CurrentStream"),
+								Rf_lang2(Rf_install(".lec.CurrentStream"),
 									STREAMS));
-							PROTECT(ans3 = eval(R_fcall3, R_GlobalEnv));
+							PROTECT(ans3 = Rf_eval(R_fcall3, R_GlobalEnv));
 							// get the relevant current state from R
-							PROTECT(R_fcall4 = lang3(install("[["),
-									install(".lec.Random.seed.table"),
+							PROTECT(R_fcall4 = Rf_lang3(Rf_install("[["),
+									Rf_install(".lec.Random.seed.table"),
 									Cgstr));
-							ans4 = eval(R_fcall4, R_GlobalEnv);
+							ans4 = Rf_eval(R_fcall4, R_GlobalEnv);
 							// value is not kept unless we duplicate it
-							PROTECT(seedvector = duplicate(ans4));
+							PROTECT(seedvector = Rf_duplicate(ans4));
 							// store the Cg values
 							SET_VECTOR_ELT(VECTOR_ELT(seedstore, group),
 								period, seedvector);
@@ -331,7 +332,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 						{
 							PutRNGstate();
 							SET_VECTOR_ELT(VECTOR_ELT(seedstore, group),
-								period, findVar(rs, R_GlobalEnv));
+								period, Rf_findVar(rs, R_GlobalEnv));
 						}
 					}
 				}
@@ -371,7 +372,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 				for(unsigned e = 0; e < actorStatistics.size(); e++)
 				{
 					SEXP actorStatsValues;
-					PROTECT(actorStatsValues = allocVector(REALSXP, actors));
+					PROTECT(actorStatsValues = Rf_allocVector(REALSXP, actors));
 					double * astats = REAL(actorStatsValues);
 					for(int i = 0; i < actors; i++)
 					{
@@ -441,7 +442,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 
 	/* send the .Random.seed back to R */
 	PutRNGstate();
-	NEWRANDOMSEED = findVar(rs, R_GlobalEnv);
+	NEWRANDOMSEED = Rf_findVar(rs, R_GlobalEnv);
 
 	/* set up the return object */
 	if (!fromFiniteDiff)
@@ -462,7 +463,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 	SET_VECTOR_ELT(ans, 0, fra);
 	SET_VECTOR_ELT(ans, 3, ntim);
 
-	if (!isNull(RANDOMSEED2))
+	if (!Rf_isNull(RANDOMSEED2))
 	{
 		SET_VECTOR_ELT(ans, 4, NEWRANDOMSEED);
 	}
@@ -496,8 +497,8 @@ SEXP mlPeriod(SEXP DERIV, SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
 	vector<Data *> * pGroupData = (vector<Data *> *)
 		R_ExternalPtrAddr(DATAPTR);
 
-	int group = asInteger(GROUP) - 1;
-	int period = asInteger(PERIOD) - 1;
+	int group = Rf_asInteger(GROUP) - 1;
+	int period = Rf_asInteger(PERIOD) - 1;
 	int groupPeriod = periodFromStart(*pGroupData, group, period);
 
 	/* get hold of the data object */
@@ -536,9 +537,9 @@ SEXP mlPeriod(SEXP DERIV, SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
 	//	Rprintf(" %d\n", pMLSimulation->pChain()->ministepCount());
 
 	int addChainToStore = 0;
-	if (!isNull(ADDCHAINTOSTORE))
+	if (!Rf_isNull(ADDCHAINTOSTORE))
 	{
-		addChainToStore = asInteger(ADDCHAINTOSTORE);
+		addChainToStore = Rf_asInteger(ADDCHAINTOSTORE);
 	}
 	// prepare to recreate after the simulation
 	if (!addChainToStore)
@@ -547,31 +548,31 @@ SEXP mlPeriod(SEXP DERIV, SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
 	}
 
 	int returnDeps = 0;
-	if (!isNull(RETURNDEPS))
+	if (!Rf_isNull(RETURNDEPS))
 	{
-		returnDeps = asInteger(RETURNDEPS);
+		returnDeps = Rf_asInteger(RETURNDEPS);
 	}
 	int returnChains = 0;
-	if (!isNull(RETURNCHAINS))
+	if (!Rf_isNull(RETURNCHAINS))
 	{
-		returnChains = asInteger(RETURNCHAINS);
+		returnChains = Rf_asInteger(RETURNCHAINS);
 	}
 	int returnDataFrame = 0;
-	if (!isNull(RETURNDATAFRAME))
+	if (!Rf_isNull(RETURNDATAFRAME))
 	{
-		returnDataFrame = asInteger(RETURNDATAFRAME);
+		returnDataFrame = Rf_asInteger(RETURNDATAFRAME);
 	}
 
-	int deriv = asInteger(DERIV);
+	int deriv = Rf_asInteger(DERIV);
 	int returnLoglik = 0;
-	if (!isNull(RETURNLOGLIK))
+	if (!Rf_isNull(RETURNLOGLIK))
 	{
-		returnLoglik = asInteger(RETURNLOGLIK);
+		returnLoglik = Rf_asInteger(RETURNLOGLIK);
 	}
 	int onlyLoglik = 0;
-	if (!isNull(ONLYLOGLIK))
+	if (!Rf_isNull(ONLYLOGLIK))
 	{
-		onlyLoglik = asInteger(ONLYLOGLIK);
+		onlyLoglik = Rf_asInteger(ONLYLOGLIK);
 	}
 
 	// get the value from .Random.seed into memory
@@ -580,7 +581,7 @@ SEXP mlPeriod(SEXP DERIV, SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
 	pModel->needScores(false);
 	pModel->needDerivatives(false);
 
-	int nrunMH = asInteger(NRUNMH);
+	int nrunMH = Rf_asInteger(NRUNMH);
 	pModel->numberMLSteps(nrunMH);
 
 	/* run the epoch simulation for this period */
@@ -618,11 +619,11 @@ SEXP mlPeriod(SEXP DERIV, SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
 	int numberVariables = rVariables.size();
 
 	SEXP accepts;
-	PROTECT(accepts = allocMatrix(INTSXP, numberVariables, NBRTYPES));
+	PROTECT(accepts = Rf_allocMatrix(INTSXP, numberVariables, NBRTYPES));
 	SEXP rejects;
-	PROTECT(rejects = allocMatrix(INTSXP, numberVariables, NBRTYPES));
+	PROTECT(rejects = Rf_allocMatrix(INTSXP, numberVariables, NBRTYPES));
 	SEXP aborts;
-	PROTECT(aborts = allocVector(INTSXP, NBRTYPES));
+	PROTECT(aborts = Rf_allocVector(INTSXP, NBRTYPES));
 	int * iaccepts = INTEGER(accepts);
 	int * irejects = INTEGER(rejects);
 	int * iaborts = INTEGER(aborts);
@@ -637,9 +638,9 @@ SEXP mlPeriod(SEXP DERIV, SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
 	}
 
 	/* sims will be the returned chain */
-	SEXP sims = PROTECT(allocVector(VECSXP, 1));
+	SEXP sims = PROTECT(Rf_allocVector(VECSXP, 1));
 	/* theseDeps will be the returned dependent variables */
-	SEXP theseDeps = PROTECT(allocVector(VECSXP, numberVariables));
+	SEXP theseDeps = PROTECT(Rf_allocVector(VECSXP, numberVariables));
 	int nProtects = 5;
 
 	if (returnDeps)
@@ -660,12 +661,12 @@ SEXP mlPeriod(SEXP DERIV, SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
 		if (returnDataFrame)
 		{
 			PROTECT(theseValues =
-				duplicate(getChainDFPlus(*(pMLSimulation->pChain()), true)));
+				Rf_duplicate(getChainDFPlus(*(pMLSimulation->pChain()), true)));
 		}
 		else
 		{
 			PROTECT(theseValues =
-				duplicate(getChainList(*(pMLSimulation->pChain()))));
+				Rf_duplicate(getChainList(*(pMLSimulation->pChain()))));
 		}
 		nProtects++;
 		SET_VECTOR_ELT(sims, 0, theseValues);
@@ -678,9 +679,9 @@ SEXP mlPeriod(SEXP DERIV, SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
 	{
 		/* count up the total number of parameters */
 		int dim = 0;
-		for (int i = 0; i < length(EFFECTSLIST); i++)
+		for (int i = 0; i < Rf_length(EFFECTSLIST); i++)
 		{
-			dim += length(VECTOR_ELT(VECTOR_ELT(EFFECTSLIST, i), 0));
+			dim += Rf_length(VECTOR_ELT(VECTOR_ELT(EFFECTSLIST, i), 0));
 		}
 
 
@@ -689,10 +690,10 @@ SEXP mlPeriod(SEXP DERIV, SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
 		double *rdff = 0;
 		if (deriv)
 		{
-			PROTECT(dff = allocVector(REALSXP, dim * dim));
+			PROTECT(dff = Rf_allocVector(REALSXP, dim * dim));
 			nProtects++;
 			rdff = REAL(dff);
-			for (int i = 0; i < length(dff); i++)
+			for (int i = 0; i < Rf_length(dff); i++)
 			{
 				rdff[i] = 0.0;
 			}
@@ -708,10 +709,10 @@ SEXP mlPeriod(SEXP DERIV, SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
 		   to 0. Use rfra to reduce function evaluations. */
 		SEXP fra;
 		double * rfra;
-		PROTECT(fra = allocVector(REALSXP, dim));
+		PROTECT(fra = Rf_allocVector(REALSXP, dim));
 		nProtects++;
 		rfra = REAL(fra);
-		for (int i = 0; i < length(fra); i++)
+		for (int i = 0; i < Rf_length(fra); i++)
 		{
 			rfra[i] = 0;
 		}
@@ -728,7 +729,7 @@ SEXP mlPeriod(SEXP DERIV, SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
 				rdff[ii] = derivs[ii];
 			}
 		}
-		PROTECT(ans = allocVector(VECSXP, 12));
+		PROTECT(ans = Rf_allocVector(VECSXP, 12));
 		nProtects++;
 
 		/* set up the return object */
@@ -744,16 +745,16 @@ SEXP mlPeriod(SEXP DERIV, SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
 		SET_VECTOR_ELT(ans, 7, accepts);
 		SET_VECTOR_ELT(ans, 8, rejects);
 		SET_VECTOR_ELT(ans, 9, aborts);
-		SET_VECTOR_ELT(ans, 10, ScalarReal(loglik));
+		SET_VECTOR_ELT(ans, 10, Rf_ScalarReal(loglik));
 		SET_VECTOR_ELT(ans, 11, theseDeps);
 
-//	PrintValue(getChainDF(*pChain, true));
+//	Rf_PrintValue(getChainDF(*pChain, true));
 	}
 	else
 	{
-		PROTECT(ans = allocVector(VECSXP, 5));
+		PROTECT(ans = Rf_allocVector(VECSXP, 5));
 		nProtects++;
-		SET_VECTOR_ELT(ans, 0, ScalarReal(loglik));
+		SET_VECTOR_ELT(ans, 0, Rf_ScalarReal(loglik));
 		SET_VECTOR_ELT(ans, 1, accepts);
 		SET_VECTOR_ELT(ans, 2, rejects);
 		SET_VECTOR_ELT(ans, 3, aborts);
@@ -773,8 +774,8 @@ SEXP mlPeriod(SEXP DERIV, SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
  */
 SEXP clearStoredChains(SEXP MODELPTR, SEXP KEEP, SEXP GROUPPERIOD)
 {
-	int keep = asInteger(KEEP);
-	int groupPeriod = asInteger(GROUPPERIOD) - 1;
+	int keep = Rf_asInteger(KEEP);
+	int groupPeriod = Rf_asInteger(GROUPPERIOD) - 1;
 
 	/* get hold of the model object */
 	Model * pModel = (Model *) R_ExternalPtrAddr(MODELPTR);
@@ -798,8 +799,8 @@ SEXP getChainProbabilities(SEXP DATAPTR, SEXP MODELPTR,
 	vector<Data *> * pGroupData = (vector<Data *> *)
 		R_ExternalPtrAddr(DATAPTR);
 
-	int group = asInteger(GROUP) - 1;
-	int period = asInteger(PERIOD) - 1;
+	int group = Rf_asInteger(GROUP) - 1;
+	int period = Rf_asInteger(PERIOD) - 1;
 	int groupPeriod = periodFromStart(*pGroupData, group, period);
 	Data * pData = (*pGroupData)[group];
 	/* get hold of the model object */
@@ -814,17 +815,17 @@ SEXP getChainProbabilities(SEXP DATAPTR, SEXP MODELPTR,
 	pMLSimulation->simpleRates(pModel->simpleRates());
 
 	// get chain for this period from model
-	int index = pModel->rChainStore(groupPeriod).size() - asInteger(INDEX);
+	int index = pModel->rChainStore(groupPeriod).size() - Rf_asInteger(INDEX);
 	//Rprintf(" %d \n",pModel->rChainStore(groupPeriod).size());
 	if (index < 0)
 	{
-		error("index invalid");
+		Rf_error("index invalid");
 	}
 	Chain * pChain = pModel->rChainStore(groupPeriod)[index];
 	// then copy the chain to the MLSimulation object. (deleting new one first)
 	pMLSimulation->pChain(pChain->copyChain());
 
-	int needScores = asInteger(GETSCORES);
+	int needScores = Rf_asInteger(GETSCORES);
 	int deriv = 0;
 	pModel->needScores(needScores);
 	pModel->needDerivatives(deriv);
@@ -836,27 +837,27 @@ SEXP getChainProbabilities(SEXP DATAPTR, SEXP MODELPTR,
 	pMLSimulation->runEpoch(period);
 
 	SEXP ans;
-	PROTECT(ans = allocVector(VECSXP, 3));
+	PROTECT(ans = Rf_allocVector(VECSXP, 3));
 
 	double loglik = pMLSimulation->calculateLikelihood();
 
-	SET_VECTOR_ELT(ans, 0, ScalarReal(loglik));
+	SET_VECTOR_ELT(ans, 0, Rf_ScalarReal(loglik));
 
 	if (needScores)
 	{
 		int dim = 0;
-		for (int i = 0; i < length(EFFECTSLIST); i++)
+		for (int i = 0; i < Rf_length(EFFECTSLIST); i++)
 		{
-			dim += length(VECTOR_ELT(VECTOR_ELT(EFFECTSLIST, i), 0));
+			dim += Rf_length(VECTOR_ELT(VECTOR_ELT(EFFECTSLIST, i), 0));
 		}
 
 		/* fra will contain the scores and must be initialised
 		   to 0. Use rfra to reduce function evaluations. */
 		SEXP fra;
 		double * rfra;
-		PROTECT(fra = allocVector(REALSXP, dim));
+		PROTECT(fra = Rf_allocVector(REALSXP, dim));
 		rfra = REAL(fra);
-		for (int i = 0; i < length(fra); i++)
+		for (int i = 0; i < Rf_length(fra); i++)
 		{
 			rfra[i] = 0;
 		}
@@ -866,9 +867,9 @@ SEXP getChainProbabilities(SEXP DATAPTR, SEXP MODELPTR,
 		double *rdff;
 		if (deriv)
 		{
-			PROTECT(dff = allocVector(REALSXP, dim * dim));
+			PROTECT(dff = Rf_allocVector(REALSXP, dim * dim));
 			rdff = REAL(dff);
-			for (int i = 0; i < length(dff); i++)
+			for (int i = 0; i < Rf_length(dff); i++)
 			{
 				rdff[i] = 0.0;
 			}

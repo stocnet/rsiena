@@ -1,5 +1,5 @@
 
-R version 4.3.1 (2023-06-16 ucrt) -- "Beagle Scouts"
+R version 4.3.2 (2023-10-31 ucrt) -- "Eye Holes"
 Copyright (C) 2023 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
@@ -516,25 +516,6 @@ Overall maximum convergence ratio:    4.7198
 
 Total of 266 iteration steps.
 
-> algo <- sienaAlgorithmCreate(nsub=1, n3=20, maxlike=TRUE, seed=15, mult=1, prML=2)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> (ans <- siena07(algo, data=dataset, effects=myeff, batch=TRUE, silent=TRUE))
-Estimated by Maximum Likelihood
-
-Estimates, standard errors and convergence t-ratios
-
-                                   Estimate   Standard   Convergence 
-                                                Error      t-ratio   
-  1. rate basic rate parameter net  3.9141  ( 0.4096   )   -0.5145   
-  2. eval outdegree (density)      -1.5350  ( 0.3908   )    0.1883   
-  3. eval reciprocity               1.8075  ( 0.3141   )    0.3479   
-  4. eval indegree - popularity     0.0878  ( 0.0445   )    0.1091   
-
-Overall maximum convergence ratio:    0.8862 
-
-
-Total of 266 iteration steps.
-
 > ##test 15
 > print('test15')
 [1] "test15"
@@ -707,56 +688,10 @@ SDE par stand errors: 0.04669358 0.1223113 0.08791327
 7 behavior intercept                   TRUE    FALSE FALSE   -0.86402   0
 > algorithmMoM <- sienaAlgorithmCreate(nsub=1, n3=20, seed=321)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> (ans <- siena07(algorithmMoM, data = mydata, effects = myeff, batch=TRUE))
+> (ans <- siena07(algorithmMoM, data = mydata, effects = myeff, batch=TRUE,
++                                                 silent=TRUE))
 SDE init parameters:  -0.1117176 -0.864023 0.8576913 
 SDE par stand errors: 0.04669358 0.1223113 0.08791327 
-
-Start phase 0 
-theta:  4.696 -1.489  0.000  0.858 -0.112 -0.864  1.000 
-
-Start phase 1 
-Phase 1 Iteration 1 Progress: 0%
-Phase 1 Iteration 2 Progress: 0%
-Phase 1 Iteration 3 Progress: 0%
-Phase 1 Iteration 4 Progress: 1%
-Phase 1 Iteration 5 Progress: 1%
-Phase 1 Iteration 10 Progress: 2%
-Phase 1 Iteration 15 Progress: 2%
-Phase 1 Iteration 20 Progress: 3%
-Phase 1 Iteration 25 Progress: 4%
-Phase 1 Iteration 30 Progress: 5%
-Phase 1 Iteration 35 Progress: 5%
-Phase 1 Iteration 40 Progress: 6%
-Phase 1 Iteration 45 Progress: 7%
-Phase 1 Iteration 50 Progress: 8%
-theta:  4.3676 -1.6437  0.4509  0.8425 -0.0927 -0.8067  1.0000 
-
-Start phase 2.1
-Phase 2 Subphase 1 Iteration 1 Progress: 61%
-Phase 2 Subphase 1 Iteration 2 Progress: 61%
-theta  4.1769 -1.7793  0.9874  0.8274 -0.0817 -0.7647  1.0000 
-ac -3.418  1.695  1.591  0.707  0.618  0.582  0.654 
-Phase 2 Subphase 1 Iteration 3 Progress: 62%
-Phase 2 Subphase 1 Iteration 4 Progress: 62%
-theta  3.7370 -2.1548  2.1589  0.7755 -0.0723 -0.7364  1.0000 
-ac  0.474 -0.278  1.553  0.376  0.643  1.024  0.334 
-Phase 2 Subphase 1 Iteration 5 Progress: 62%
-Phase 2 Subphase 1 Iteration 6 Progress: 62%
-theta  3.9876 -2.3483  2.8848  0.7490 -0.0845 -0.7825  1.0000 
-ac  0.970 -0.203  1.076  0.608  0.898  1.094  0.564 
-Phase 2 Subphase 1 Iteration 7 Progress: 62%
-Phase 2 Subphase 1 Iteration 8 Progress: 62%
-theta  5.090 -2.120  2.751  0.811 -0.110 -0.849  1.000 
-ac 1.061 0.557 0.841 0.689 0.827 1.097 0.647 
-Phase 2 Subphase 1 Iteration 9 Progress: 62%
-Phase 2 Subphase 1 Iteration 10 Progress: 63%
-theta  5.698 -2.125  2.531  0.823 -0.120 -0.944  1.000 
-ac 1.051 0.865 0.867 0.353 0.752 0.851 0.364 
-theta  5.512 -2.284  2.513  0.846 -0.111 -0.864  1.000 
-ac 0.467 0.766 0.418 0.165 0.336 0.508 0.159 
-theta:  5.512 -2.284  2.513  0.846 -0.111 -0.864  1.000 
-
-Start phase 3 
 Estimates, standard errors and convergence t-ratios
 
                                       Estimate   Standard   Convergence 
@@ -829,54 +764,7 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 3 0   
 4 0   
 5 2   
-> (ans <- siena07(mymodel, data=mydata, effects=myeff, batch=TRUE))
-
-Start phase 0 
-theta:  4.70 -1.49  0.00  0.26  0.00 
-
-Start phase 1 
-Phase 1 Iteration 1 Progress: 0%
-Phase 1 Iteration 2 Progress: 0%
-Phase 1 Iteration 3 Progress: 1%
-Phase 1 Iteration 4 Progress: 1%
-Phase 1 Iteration 5 Progress: 1%
-Phase 1 Iteration 10 Progress: 2%
-Phase 1 Iteration 15 Progress: 3%
-Phase 1 Iteration 20 Progress: 4%
-Phase 1 Iteration 25 Progress: 5%
-Phase 1 Iteration 30 Progress: 6%
-Phase 1 Iteration 35 Progress: 6%
-Phase 1 Iteration 40 Progress: 7%
-Phase 1 Iteration 45 Progress: 8%
-Phase 1 Iteration 50 Progress: 9%
-theta:  4.69767 -1.48890  0.00164  0.26062  0.00473 
-
-Start phase 2.1
-Phase 2 Subphase 1 Iteration 1 Progress: 56%
-Phase 2 Subphase 1 Iteration 2 Progress: 56%
-theta  4.69931 -1.48925  0.00370  0.26134  0.00668 
-ac 1.709 0.869 1.000 1.285 1.531 
-Phase 2 Subphase 1 Iteration 3 Progress: 56%
-Phase 2 Subphase 1 Iteration 4 Progress: 56%
-theta  4.7038 -1.4905  0.0104  0.2634  0.0116 
-ac 1.908 1.314 0.964 1.161 0.808 
-Phase 2 Subphase 1 Iteration 5 Progress: 56%
-Phase 2 Subphase 1 Iteration 6 Progress: 57%
-theta  4.7103 -1.4919  0.0180  0.2654  0.0192 
-ac 1.258 0.644 0.998 1.133 0.782 
-Phase 2 Subphase 1 Iteration 7 Progress: 57%
-Phase 2 Subphase 1 Iteration 8 Progress: 57%
-theta  4.7166 -1.4933  0.0257  0.2676  0.0272 
-ac 1.309 0.694 0.967 1.304 0.848 
-Phase 2 Subphase 1 Iteration 9 Progress: 57%
-Phase 2 Subphase 1 Iteration 10 Progress: 57%
-theta  4.7231 -1.4948  0.0337  0.2695  0.0356 
-ac 1.263 0.768 0.997 0.806 0.864 
-theta  5.031 -1.577  0.464  0.373  0.451 
-ac 0.904 0.940 0.987 0.626 0.676 
-theta:  5.031 -1.577  0.464  0.373  0.451 
-
-Start phase 3 
+> (ans <- siena07(mymodel, data=mydata, effects=myeff, batch=TRUE, silent=TRUE))
 Estimates, standard errors and convergence t-ratios
 
                                                 Estimate   Standard   Convergence 
@@ -910,54 +798,8 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 > myeff <- setEffect(myeff, simX, interaction1='cova')
   effectName      include fix   test  initialValue parm
 1 cova similarity TRUE    FALSE FALSE          0   0   
-> (ans <- siena07(myalgorithm, data=mygroup, effects=myeff, batch=TRUE))
-
-Start phase 0 
-theta: -0.56  0.00  0.00 
-
-Start phase 1 
-Phase 1 Iteration 1 Progress: 0%
-Phase 1 Iteration 2 Progress: 0%
-Phase 1 Iteration 3 Progress: 1%
-Phase 1 Iteration 4 Progress: 1%
-Phase 1 Iteration 5 Progress: 1%
-Phase 1 Iteration 10 Progress: 2%
-Phase 1 Iteration 15 Progress: 3%
-Phase 1 Iteration 20 Progress: 5%
-Phase 1 Iteration 25 Progress: 6%
-Phase 1 Iteration 30 Progress: 7%
-Phase 1 Iteration 35 Progress: 8%
-Phase 1 Iteration 40 Progress: 9%
-Phase 1 Iteration 45 Progress: 10%
-Phase 1 Iteration 50 Progress: 11%
-theta: -0.6269  0.2876 -0.0143 
-
-Start phase 2.1
-Phase 2 Subphase 1 Iteration 1 Progress: 46%
-Phase 2 Subphase 1 Iteration 2 Progress: 46%
-theta -0.7100  0.6120 -0.0334 
-ac -8.587  0.918 -3.708 
-Phase 2 Subphase 1 Iteration 3 Progress: 47%
-Phase 2 Subphase 1 Iteration 4 Progress: 47%
-theta -0.893  1.483 -0.101 
-ac  1.221  0.941 -2.293 
-Phase 2 Subphase 1 Iteration 5 Progress: 47%
-Phase 2 Subphase 1 Iteration 6 Progress: 47%
-theta -1.040  1.938 -0.123 
-ac 1.598 0.682 0.774 
-Phase 2 Subphase 1 Iteration 7 Progress: 48%
-Phase 2 Subphase 1 Iteration 8 Progress: 48%
-theta -1.113  2.036 -0.122 
-ac 0.548 0.681 0.433 
-Phase 2 Subphase 1 Iteration 9 Progress: 48%
-Phase 2 Subphase 1 Iteration 10 Progress: 48%
-theta -1.1462  2.0525 -0.0622 
-ac 0.467 0.678 0.461 
-theta -1.14850  1.81475  0.00267 
-ac  0.00745 -0.00359  0.01501 
-theta: -1.14850  1.81475  0.00267 
-
-Start phase 3 
+> (ans <- siena07(myalgorithm, data=mygroup, effects=myeff, batch=TRUE,
++                               silent=TRUE))
 Estimates, standard errors and convergence t-ratios
 
                                    Estimate   Standard   Convergence 
@@ -982,4 +824,4 @@ Total of 285 iteration steps.
 > 
 > proc.time()
    user  system elapsed 
-  12.35    0.10   18.03 
+  12.93    0.17   15.50 

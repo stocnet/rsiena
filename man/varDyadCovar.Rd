@@ -16,8 +16,8 @@ varDyadCovar(val, centered=TRUE, nodeSets=c("Actors", "Actors"),
   \item{nodeSets}{Names (character string) of the associated node sets.
    If the entire data set contains more than one node set,
    then the node sets must be specified in all data objects.}
-  \item{warn}{Logical: is a warning given if all values are \code{NA},
-  or all non-missing values are the same.}
+  \item{warn}{Logical: is a warning given if, for non-sparse input,
+    all values are \code{NA}, or all non-missing values are the same.}
   \item{sparse}{Boolean: whether sparse matrices or not.}
   \item{type}{oneMode or bipartite: whether the matrix refers to a one-mode
   or a bipartite (two-mode) network.}

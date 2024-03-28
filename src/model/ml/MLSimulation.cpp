@@ -7,12 +7,16 @@
  *
  * Description: This file contains the implementation of the class
  * MLSimulation.
+ * The Metropolis-Hastings steps are extensively documented
+ * in Siena_algorithms.pdf
  *****************************************************************************/
 #include <stdexcept>
 #include <string>
 #include <cmath>
-#include <Rinternals.h>
+#include <R_ext/Error.h>
 #include "MLSimulation.h"
+
+#include <Rinternals.h>
 #include "utils/Random.h"
 #include "utils/Utils.h"
 #include "network/Network.h"
@@ -30,6 +34,7 @@
 #include "model/ml/NetworkChange.h"
 #include "model/ml/BehaviorChange.h"
 #include "model/tables/Cache.h"
+#include <Rinternals.h>
 
 using namespace std;
 
@@ -49,7 +54,6 @@ SEXP getChainDF(const Chain& chain, bool sort=true);
 MLSimulation::MLSimulation(Data * pData, Model * pModel) :
 	EpochSimulation(pData, pModel)
 {
-	this->laspect = NETWORK;
 	for (int i = 0; i < NBRTYPES; i++)
 	{
 //		this->lrejections[i] = 0;
@@ -185,7 +189,7 @@ void MLSimulation::updateProbabilities(Chain * pChain,
 			counts[pMiniStep->variableId()] ++;
 		}
 		//Rprintf("ValidMinistep %d\n", pVariable->validMiniStep(pMiniStep));
-		//PrintValue(getMiniStepDF(*pMiniStep));
+		//Rf_PrintValue(getMiniStepDF(*pMiniStep));
 		pMiniStep->reciprocalRate(reciprocalTotalRate);
 		pMiniStep->logOptionSetProbability(log(rate * reciprocalTotalRate));
 		pMiniStep->logChoiceProbability(log(probability));
@@ -318,7 +322,7 @@ void MLSimulation::MLStep()
 {
 	int stepType = nextIntWithProbabilities(NBRTYPES, this->lprobabilityArray);
 	int c0 = this->lcurrentPermutationLength;
-//	PrintValue(getChainDF(*this->pChain()));
+//	Rf_PrintValue(getChainDF(*this->pChain()));
 	bool accept = false;
 	this->lproposalProbability = R_NaN;
 
@@ -1041,7 +1045,7 @@ bool MLSimulation::move()
 
 	if (accept)
 	{
-	// Move miniStepA, and update the neccesary probabilities
+	// Move miniStepA, and update the necessary probabilities
 		pMiniStepC = pFirst;
 
 	//Otherwise pMiniStepC will be removed below.
@@ -1099,14 +1103,18 @@ bool MLSimulation::move()
 
 	this->recordOutcome(*pMiniStepA, accept, MOVE, false);
 
-	delete[] newReciprocalRate;
-	delete[] newOptionSetProbability;
-	delete[] newChoiceProbability;
 	delete[] pi;
 	delete[] updateProb;
-	delete[] reciprocalRateA;
-	delete[] optionSetProbabilityA;
-	delete[] choiceProbabilityA;
+	if (this->pModel()->localML())
+	{
+		delete[] choiceProbabilityA;
+		delete[] optionSetProbabilityA;
+		delete[] reciprocalRateA;
+	}
+	delete[] newChoiceProbability;
+	delete[] newOptionSetProbability;	
+	delete[] newReciprocalRate;
+	
 	return accept;
 }
 
@@ -1249,10 +1257,9 @@ bool MLSimulation::permute(int c0)
 
 	this->recordOutcome(*interval[0], accept, PERMUTE, false);
 
-	delete[] newReciprocalRate;
-	delete[] newOptionSetProbability;
 	delete[] newChoiceProbability;
-
+	delete[] newOptionSetProbability;
+	delete[] newReciprocalRate;
 
 	return accept;
 }
@@ -1336,7 +1343,6 @@ bool MLSimulation::insertPermute(int c0)
 		delete pLeftMiniStep;
 		return false;
     }
-    this->lmissingData = misdat;
     MiniStep * pMiniStepB = this->pChain()->pLast();
     double choiceLength = 1;
 
@@ -1398,7 +1404,7 @@ bool MLSimulation::insertPermute(int c0)
 
     while (pMiniStep != pMiniStepB)
     {
-		//		PrintValue(getMiniStepDF(*pMiniStep));
+		//		Rf_PrintValue(getMiniStepDF(*pMiniStep));
 		interval.push_back(pMiniStep);
 		pMiniStep = pMiniStep->pNext();
     }
@@ -1647,22 +1653,22 @@ bool MLSimulation::insertPermute(int c0)
 			// 					}
 			// 				}
 			// 			}
-			// 			PrintValue(getChainDF(*(this->pChain())));
+			// 			Rf_PrintValue(getChainDF(*(this->pChain())));
 			// 			this->pChain()->printConsecutiveCancelingPairs();
 			this->pChain()->insertBefore(pLeftMiniStep, pMiniStepA);
 			this->pChain()->insertBefore(pRightMiniStep, pMiniStepB);
-			// 			PrintValue(getChainDF(*(this->pChain())));
+			// 			Rf_PrintValue(getChainDF(*(this->pChain())));
 			// 			this->pChain()->printConsecutiveCancelingPairs();
 			// 			if (newConsecutiveCancelingPairCount !=
 			// 				this->pChain()->consecutiveCancelingPairCount())
 			// 			{
 			// 				Rprintf("ins diff %d %d \n",newConsecutiveCancelingPairCount,
 			// 					this->pChain()->consecutiveCancelingPairCount() );
-			// 			PrintValue(getMiniStepDF(*pMiniStepA));
-			//  				PrintValue(getMiniStepDF(*pMiniStepB));
-			//  				PrintValue(getMiniStepDF(*pLeftMiniStep));
-			//  				PrintValue(getMiniStepDF(*pRightMiniStep));
-			//  				error("time to stop");
+			// 			Rf_PrintValue(getMiniStepDF(*pMiniStepA));
+			//  				Rf_PrintValue(getMiniStepDF(*pMiniStepB));
+			//  				Rf_PrintValue(getMiniStepDF(*pLeftMiniStep));
+			//  				Rf_PrintValue(getMiniStepDF(*pRightMiniStep));
+			//  				Rf_error("time to stop");
 			//  			}
 
 			pr1 =
@@ -1731,7 +1737,7 @@ bool MLSimulation::insertPermute(int c0)
 
 		// 	if(misdat)
 		// 	{
-		// 		PrintValue(getMiniStepDF(*pLeftMiniStep));
+		// 		Rf_PrintValue(getMiniStepDF(*pLeftMiniStep));
 		// 	}
 		accept =  nextDouble() < this->lproposalProbability;
 
@@ -1739,7 +1745,7 @@ bool MLSimulation::insertPermute(int c0)
 		if (misdat)
 		{
 			//	Rprintf("mis %d %f \n", accept, this->lproposalProbability);
-			//PrintValue(getMiniStepDF(*pLeftMiniStep));
+			//Rf_PrintValue(getMiniStepDF(*pLeftMiniStep));
 		}
 
 		if (accept)
@@ -1788,9 +1794,9 @@ bool MLSimulation::insertPermute(int c0)
     {
 		delete pLeftMiniStep;
     }
-    delete[] newReciprocalRate;
-    delete[] newOptionSetProbability;
     delete[] newChoiceProbability;
+    delete[] newOptionSetProbability;
+    delete[] newReciprocalRate;
     if (this->pModel()->localML())
     {
         delete[] N2vector;
@@ -1803,19 +1809,18 @@ bool MLSimulation::insertPermute(int c0)
  */
 bool MLSimulation::deletePermute(int c0)
 {
-    this->lmissingData =
-	    nextDouble() <
+	bool missdat = FALSE;
+    missdat = (nextDouble() <
 		this->lmissingNetworkProbability +
-		this->lmissingBehaviorProbability;
+		this->lmissingBehaviorProbability);
     MiniStep * pMiniStepA = 0;
     MiniStep * pMiniStepB = 0;
-    if (!this->lmissingData)
+    if (!missdat)
     {
 		if (this->pChain()->consecutiveCancelingPairCount() == 0)
 		{
 			return false;
 		}
-
 		pMiniStepA = this->pChain()->randomConsecutiveCancelingPair();
 		pMiniStepB = pMiniStepA->pNextWithSameOption();
     }
@@ -1853,15 +1858,6 @@ bool MLSimulation::deletePermute(int c0)
 
 		pMiniStepB = this->pChain()->pLast();
 
-    }
-
-    if (pMiniStepA->networkMiniStep())
-    {
-		this->laspect = NETWORK;
-    }
-    else
-    {
-		this->laspect = BEHAVIOR;
     }
 
     // Create the permuted interval of ministeps
@@ -1918,7 +1914,7 @@ bool MLSimulation::deletePermute(int c0)
     double * newOptionSetProbability = new double[interval.size()];
     double * newChoiceProbability = new double[interval.size()];
 
-    if (!this->lmissingData)
+    if (!missdat)
     {
 		sumlprob += pMiniStepB->logChoiceProbability() +
 		    pMiniStepB->logOptionSetProbability();
@@ -2062,7 +2058,7 @@ bool MLSimulation::deletePermute(int c0)
     {
 		double pr1 = 0;
 
-		if (!this->lmissingData)
+		if (!missdat)
 		{
 			// Calculate new number of consecutive canceling pairs.
 			// Only need to consider those of the type being deleted as
@@ -2072,7 +2068,7 @@ bool MLSimulation::deletePermute(int c0)
 			// otherwise, 2 unless preceding or succeeding ministeps to A or B
 			// are the same.
 
-			// 			PrintValue(getChainDF(*(this->pChain())));
+			// 			Rf_PrintValue(getChainDF(*(this->pChain())));
 			// 			this->pChain()->printConsecutiveCancelingPairs();
 
 			// 			int newConsecutiveCancelingPairCount =
@@ -2149,11 +2145,11 @@ bool MLSimulation::deletePermute(int c0)
 			// 			this->pChain()->printConsecutiveCancelingPairs();
 			// 				Rprintf("diff %d %d \n",newConsecutiveCancelingPairCount,
 			// 					this->pChain()->consecutiveCancelingPairCount() );
-			// 				PrintValue(getMiniStepDF(*pMiniStepA));
-			// 				PrintValue(getMiniStepDF(*pMiniStepB));
-			// 				PrintValue(getMiniStepDF(*pAfterA));
-			// 				PrintValue(getMiniStepDF(*pAfterB));
-			// 				error("time to stop");
+			// 				Rf_PrintValue(getMiniStepDF(*pMiniStepA));
+			// 				Rf_PrintValue(getMiniStepDF(*pMiniStepB));
+			// 				Rf_PrintValue(getMiniStepDF(*pAfterA));
+			// 				Rf_PrintValue(getMiniStepDF(*pAfterB));
+			// 				Rf_error("time to stop");
 			// 			}
 			this->pChain()->insertBefore(pMiniStepA, pAfterA);
 			this->pChain()->insertBefore(pMiniStepB, pAfterB);
@@ -2183,7 +2179,7 @@ bool MLSimulation::deletePermute(int c0)
 		// Calculate choiceLength
 		double choiceLength = 1;
 		double positionChoice = this->pChain()->ministepCount() - 2;
-		if (!this->lmissingData)
+		if (!missdat)
 		{
 			MiniStep * pMiniStepD = pMiniStepB->pNextWithSameOption();
 
@@ -2204,7 +2200,7 @@ bool MLSimulation::deletePermute(int c0)
 
 		if (this->simpleRates())
 		{
-			if (!this->lmissingData)
+			if (!missdat)
 			{
 				kappaFactor = rr * rr *
 				    (this->pChain()->ministepCount() - 1) *
@@ -2244,18 +2240,18 @@ bool MLSimulation::deletePermute(int c0)
 		accept = nextDouble() < this->lproposalProbability;
 
 		this->recordOutcome(*pMiniStepA,  accept, DELPERM,
-			this->lmissingData);
+			missdat);
 
-		if (this->lmissingData)
+		if (missdat)
 		{
 			//Rprintf("dat %d %f \n", accept, this->lproposalProbability);
-			//PrintValue(getMiniStepDF(*pMiniStepA));
+			//Rf_PrintValue(getMiniStepDF(*pMiniStepA));
 		}
 		if (accept)
 		{
 			// Change the chain permanently
-			//if (this->lmissingData)
-			//	PrintValue(getMiniStepDF(*pMiniStepA));
+			//if (missdat)
+			//	Rf_PrintValue(getMiniStepDF(*pMiniStepA));
 			this->pChain()->remove(pMiniStepA);
 			delete pMiniStepA;
 
@@ -2285,7 +2281,7 @@ bool MLSimulation::deletePermute(int c0)
 				this->pChain()->insertBefore(interval[i], pMiniStepB);
 			}
 
-			if (!this->lmissingData)
+			if (!missdat)
 			{
 				this->pChain()->remove(pMiniStepB);
 				delete pMiniStepB;
@@ -2293,14 +2289,13 @@ bool MLSimulation::deletePermute(int c0)
 		}
     }
 
-    delete[] newReciprocalRate;
-    delete[] newOptionSetProbability;
-    delete[] newChoiceProbability;
-
     if (this->pModel()->localML())
     {
         delete[] N2vector;
     }
+    delete[] newChoiceProbability;
+    delete[] newOptionSetProbability;
+    delete[] newReciprocalRate;
 
     return accept;
 }
@@ -2583,11 +2578,11 @@ bool MLSimulation::insertMissing()
 
 	// 15.
 	//Rprintf("ins %d %f\n", accept, this->lproposalProbability);
-	//PrintValue(getMiniStepDF(*pNewMiniStep));
+	//Rf_PrintValue(getMiniStepDF(*pNewMiniStep));
 
 	if (accept)
 	{
-		// 	PrintValue(getMiniStepDF(*pNewMiniStep));
+		// 	Rf_PrintValue(getMiniStepDF(*pNewMiniStep));
 		this->pChain()->changeInitialState(pDummyMiniStep);
 
 		int i = 0;
@@ -2877,11 +2872,11 @@ bool MLSimulation::deleteMissing()
 	// 13.
 	this->recordOutcome(*pMiniStepA, accept, DELMISS, false);
 	//Rprintf("del %d %f\n", accept, this->lproposalProbability);
-	//PrintValue(getMiniStepDF(*pMiniStepA));
+	//Rf_PrintValue(getMiniStepDF(*pMiniStepA));
 
 	if (accept)
 	{
-		//	PrintValue(getMiniStepDF(*pMiniStepA));
+		//	Rf_PrintValue(getMiniStepDF(*pMiniStepA));
 		this->pChain()->changeInitialState(pMiniStepA);
 
 		int i = 0;
@@ -3110,30 +3105,9 @@ double MLSimulation::proposalProbability() const
 }
 
 
-/**
- * Returns if the last operation has worked with ministeps having missing
- * data at either end of the period.
- */
-bool MLSimulation::missingData() const
-{
-	return this->lmissingData;
-}
-
 
 /**
- * Returns the aspect of the ministeps involved in the last
- * Metropolis-Hastings step.
- */
-Aspect MLSimulation::aspect() const
-{
-	return this->laspect;
-}
-
-
-
-
-/**
- * Stores the missing network probability (prmin in Tom's specification).
+ * Stores the missing network probability (prmin in siena_Algorithms).
  */
 void MLSimulation::missingNetworkProbability(double probability)
 {
@@ -3142,7 +3116,7 @@ void MLSimulation::missingNetworkProbability(double probability)
 
 
 /**
- * Returns the missing network probability (prmin in Tom's specification).
+ * Returns the missing network probability (prmin in siena_Algorithms).
  */
 double MLSimulation::missingNetworkProbability() const
 {
@@ -3151,7 +3125,7 @@ double MLSimulation::missingNetworkProbability() const
 
 
 /**
- * Stores the missing behavior probability (prmib in Tom's specification).
+ * Stores the missing behavior probability (prmib in siena_Algorithms).
  */
 void MLSimulation::missingBehaviorProbability(double probability)
 {
@@ -3160,7 +3134,7 @@ void MLSimulation::missingBehaviorProbability(double probability)
 
 
 /**
- * Returns the missing behavior probability (prmib in Tom's specification).
+ * Returns the missing behavior probability (prmib in siena_Algorithms).
  */
 double MLSimulation::missingBehaviorProbability() const
 {
@@ -3246,7 +3220,7 @@ void MLSimulation::createEndStateDifferences()
 	const Data * pData = this->pData();
 	int period = this->period();
 
-//	PrintValue(getChainDF(*this->pChain()));
+//	Rf_PrintValue(getChainDF(*this->pChain()));
 	// Create the required ministeps
 
 	for (unsigned variableIndex = 0;
@@ -3292,12 +3266,12 @@ void MLSimulation::createEndStateDifferences()
 							//	if (!pNetworkData->missing(i, iter1.actor(),
 							//		period + 1))
 							//{
-							//	PrintValue(getMiniStepDF(*pMiniStep));
+							//	Rf_PrintValue(getMiniStepDF(*pMiniStep));
 								//}
 							this->pChain()->addEndStateDifference(pMiniStep);
 
 							iter1.next();
-							//	PrintValue(getMiniStepDF(
+							//	Rf_PrintValue(getMiniStepDF(
 							//		*this->lendStateDifferences.back()));
 						}
 						else
@@ -3322,7 +3296,7 @@ void MLSimulation::createEndStateDifferences()
 							//	if (!pNetworkData->missing(i, iter2.actor(),
 							//			period + 1))
 							//{
-							//	PrintValue(getMiniStepDF(
+							//	Rf_PrintValue(getMiniStepDF(
 							//			*this->lendStateDifferences.back()));
 								//}
 							iter2.next();
@@ -3370,7 +3344,7 @@ void MLSimulation::createEndStateDifferences()
 								i,
 								singleChange));
 						//			Rprintf(" %d %d in beh\n", i, singleChange);
-						//			PrintValue(getMiniStepDF(
+						//			Rf_PrintValue(getMiniStepDF(
 						//					*this->lendStateDifferences.back()));
 					}
 					else
@@ -3386,28 +3360,26 @@ void MLSimulation::createEndStateDifferences()
 }
 
 
-	/**
-	 * Calculates whether toggling a ministep affects the small neighbourhood of the
-	 * ego of another ministep.
-	 */
-	bool MLSimulation::smallNeighbourhoodChange(MiniStep * pMiniStep1,
+/**
+ * Calculates whether toggling a ministep affects the small neighbourhood of the
+ * ego of another ministep.
+*/
+bool MLSimulation::smallNeighbourhoodChange(MiniStep * pMiniStep1,
 												MiniStep * pMiniStep2,
 												DependentVariable * pVariable,
 												NetworkVariable * pNetworkVariable,
 												int ego1, int alter1)
-	{
-		//// Won't work for behaviour and multiplex networks.
-		bool addToInterval = false;
-
+{
+	//// Won't work for behaviour and multiplex networks.
+	bool addToInterval = false;
 		int ego = pMiniStep2->ego();
-		int alter = dynamic_cast<NetworkChange *>(pMiniStep2)->alter();
-
+	int alter = dynamic_cast<NetworkChange *>(pMiniStep2)->alter();
 		if ((ego==ego1) || (ego==alter1) || (alter==ego1) || (alter==alter1))
-		{
-			addToInterval = true;
-		}
-		return addToInterval;
+	{
+		addToInterval = true;
 	}
+	return addToInterval;
+}
 
 
 /**

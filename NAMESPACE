@@ -9,7 +9,7 @@ export(
 	includeEffects, includeInteraction, includeGMoMStatistics, 
    effectsDocumentation, sienaDataConstraint, print.xtable.sienaFit, 
    siena08, iwlsm, sienaTimeTest,
-	includeTimeDummy, sienaGOF, descriptives.sienaGOF, sienaRI,
+	includeTimeDummy, sienaGOF, descriptives.sienaGOF, 
 	sparseMatrixExtraction, networkExtraction, behaviorExtraction,
 	OutdegreeDistribution, IndegreeDistribution, BehaviorDistribution,
 	TriadCensus, mixedTriadCensus, dyadicCov,
@@ -71,8 +71,5 @@ S3method(edit, sienaEffects)
 S3method(summary, sienaGOF)
 S3method(print, sienaGOF)
 S3method(plot, sienaGOF)
-S3method(summary, sienaRI)
-S3method(print, sienaRI)
-S3method(plot, sienaRI)
 S3method(print, xtable.sienaFit)
 S3method(print, chains.data.frame)

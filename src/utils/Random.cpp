@@ -13,6 +13,8 @@
 #include <sys/time.h>
 #include <Rmath.h>
 #include <vector>
+#undef length
+#include <Rinternals.h>
 
 namespace siena
 {
@@ -144,10 +146,10 @@ int nextIntWithProbabilities(int n, const double * p)
 //    PutRNGstate();
 //    SEXP ans;
 //    PROTECT(ans = findVar(rs, R_GlobalEnv));
-//    this->state = new std::vector<int>(length(ans));
+//    this->state = new std::vector<int>(Rf_length(ans));
 //    /* copy ans to this->state */
 //    int *start = INTEGER(ans);
-//    for (int i = 0; i < length(ans); i++)
+//    for (int i = 0; i < Rf_length(ans); i++)
 //    {
 //        (*(this->state))[i] = *start++;
 //    }
@@ -169,7 +171,7 @@ int nextIntWithProbabilities(int n, const double * p)
 //    PROTECT(ans = allocVector(INTSXP, this->state->size()));
 //    /* copy this->state to ans */
 //    int *start = INTEGER(ans);
-//    for (int i = 0; i < length(ans); i++)
+//    for (int i = 0; i < Rf_length(ans); i++)
 //    {
 //        *start++ = (*(this->state))[i];
 //    }

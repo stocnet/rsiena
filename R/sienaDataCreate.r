@@ -14,6 +14,14 @@ addAttributes <- function(x, name, ...) UseMethod("addAttributes")
 # Note: this is used when creating the data object;
 # the attributes are not part of the variables.
 
+##@lowIntegers utility function DataCreate
+lowIntegers <- function(vals, centr){
+	is.wholenumber <- function(x, tol = 1e-6){abs(x - round(x)) < tol}
+	all(is.wholenumber(vals), na.rm=TRUE) && (min(vals, na.rm=TRUE) >= 0) &&
+					(max(vals, na.rm=TRUE) <= 20)  && (!centr)
+}
+
+
 ##@addAttributes.coCovar DataCreate
 addAttributes.coCovar <- function(x, name, ...)
 {
@@ -50,6 +58,7 @@ addAttributes.coCovar <- function(x, name, ...)
 	attr(x, "name") <- name
 	attr(x, "vartotal") <- vartotal
 	attr(x, "nonMissingCount") <- nonMissingCount
+	attr(x, "lowIntegers") <- lowIntegers(x, attr(x, "centered"))
 	if ((!is.null(attr(x, "imputationValues"))) && (attr(x, "centered")))
 	{
 		attr(x, "imputationValues") <- attr(x, "imputationValues") - varmean
@@ -92,6 +101,7 @@ addAttributes.varCovar <- function(x, name, ...)
 	attr(x, 'name') <- name
 	attr(x, "vartotal") <- vartotal
 	attr(x, "nonMissingCount") <- nonMissingCount
+	attr(x, "lowIntegers") <- lowIntegers(x, attr(x, "centered"))
     if ((!is.null(attr(x, "imputationValues"))) && (attr(x, "centered")))
 	{
 		attr(x, "imputationValues") <- attr(x, "imputationValues") - varmean
@@ -619,6 +629,14 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 	types <- sapply(depvars, function(x)attr(x, "type"))
 	depvars <- depvars[c(which(!(types %in% c('behavior', 'continuous'))),
 						which(types == 'behavior'), which(types == "continuous"))]
+	onemodes <- which(types == "oneMode")
+	bipartites <- which(types == "bipartite")
+	onemodes.mx <- max(c(onemodes, 0))
+	bipartites.mn <- min(c(bipartites, v1+1))
+	if (bipartites.mn < onemodes.mx)
+	{
+		stop("One-mode networks (if any) should be given before bipartite networks (if any).")
+	}
 
 	for (i in 1:v1) ## dependent variables
 	{

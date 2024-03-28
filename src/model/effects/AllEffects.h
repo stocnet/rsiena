@@ -50,6 +50,7 @@
 #include "CovariateIndirectTiesEffect.h"
 #include "CovariateSimilarityEffect.h"
 #include "CovariateTransitiveTripletsEffect.h"
+#include "CrossCovariateActivityEffect.h"
 #include "DenseTriadsBehaviorEffect.h"
 #include "DenseTriadsEffect.h"
 #include "DenseTriadsSimilarityEffect.h"

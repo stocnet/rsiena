@@ -195,7 +195,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.4.2.
+This version was renewed for \RS version 1.4.10.
 \end{abstract}
 
 
@@ -250,9 +250,9 @@ course announcements, etc.
 and can be installed in the usual way from \sfn{CRAN};
 see \url{http://cran.r-project.org}.
 Development versions of \RS are at
-\url{https://github.com/snlab-nl/rsiena/}.
+\url{https://github.com/stocnet/rsiena/}.
 Here also the most recent version is available
-at \url{https://github.com/snlab-nl/rsiena/releases};
+at \url{https://github.com/stocnet/rsiena/releases};
 it is recommended to use this version.
 
 This is a manual for \rs;
@@ -903,19 +903,29 @@ of the software appear).
 %            For constructing the vignette in \RS the
 %            packages \sfn{knitr} and \sfn{rmarkdown} are used.
 
+\iffalse
             You can just install \RS and the other packages
             in the regular way from CRAN.
             If you want to have detailed information about
             what is available at CRAN, go to\\
 \url{http://cran.r-project.org/web/packages/RSiena/} .\\
-            However, it is advisable to have the latest version of \RS
+            However, it is advisable to have
+\fi
+            Currently (mid February 2024), \RS is archived on CRAN,
+            which means that it is not directly available.
+            This hopefully will be restored soon.
+
+            You can download
+            the latest version of \RS
             from GitHub or the \SI website.
-            You can go to\\
-            \url{https://github.com/snlab-nl/rsiena/releases}\\
+            To do this, go to\\
+            \url{https://github.com/stocnet/rsiena/releases}\\
             or to\\
               \url{http://www.stats.ox.ac.uk/~snijders/siena/siena_downloads.htm}\\
             and there download the appropriate version of the package
-            appropriate for your operation system (Windows, Mac, Unix). \\
+            appropriate for your operation system (Windows, Mac, Unix).
+
+\iffalse
             Installation can be done in various ways --- by the function \texttt{install.packages()}
             in \Rn,
             via the drop-down menu in the \R console, or in command mode which for Mac is
@@ -924,10 +934,11 @@ of the software appear).
             \texttt{.tgz} for Mac),
             then using the binary is recommended.
             Installation from binary is much faster than installation from source.
+\fi
 
             Installation from GitHub can be done as follows.
         Download  the latest release from
-        \url{https://github.com/snlab-nl/rsiena/releases/}.
+        \url{https://github.com/stocnet/rsiena/releases/}.
 Once the file has been downloaded, unzip it, and install the binary
 as appropriate for your Operating System.
 This can be done in Windows using the dropdown menu under \texttt{Packages},
@@ -935,6 +946,12 @@ and for all Operating Systems using function \sfn{install.packages}
 with \texttt{repos = NULL}.\\
 In \sfn{RStudio}, go to \texttt{Tools  $\rightarrow$ Install packages}
 and choose\\ \texttt{Install From: Package archive file (zip; tar.gz)}.
+
+Alternatively, install the \texttt{remotes} package in R,
+and run
+\begin{verbatim}
+remotes::install_github("stocnet/rsiena", build=FALSE)
+\end{verbatim}
 \end{enumerate}
 
 
@@ -1129,7 +1146,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.4.2).
+  identified by a version number (e.g.\ 1.4.10).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -9301,7 +9318,9 @@ the {\em number of four-cycles} with shortName \texttt{(cycle4)} \\
    for the two-mode and \texttt{(cycle4ND)} for the  non-directed case,\\[0.3em]
  $s^{\rm net}_{i\vit}(x) =  \frac14 \sum_{j,k,h; \text{all different}}
             x_{ij}\, x_{ik}\, x_{hj}\, x_{hk}\,$;\\[0.3em]
- for parameter $p = 2$ the square root is taken;\\
+ for parameter $p = 2$ the square root is taken; \\[0.3em]
+ $s^{\rm net}_{i\vit}(x) =  \frac12 \sum_{j}  x_{ij} \sqrt{ \sum_{k,h; \text{all different}}
+             x_{ik}\, x_{hj}\, x_{hk} }\,$;\\[0.3em]
  note that this is like the \texttt{sharedPop} effect above, \\
  but for the two-mode  and non-directed cases \\
  the directionality plays no role;
@@ -9773,7 +9792,7 @@ and
  since this is an elementary effect, it can be used in interactions
  and in endowment and creation functions;
 
- \item {\em out-degree up to $p$} (\emph{truncated out-degree}),
+ \item {\em out-degree up to $p$} (\emph{truncated out-degree}) \texttt{(outTrunc)},
  where $p$ is some constant
  (internal effect parameter, see above),  there are two implementations here:
  \texttt{outTrunc} and \texttt{outTrunc2}, to allow the simultaneous use of this
@@ -9812,7 +9831,7 @@ and
  \item {\em out-degree more than $p$} where $p$ is some constant
  (internal effect parameter, see above),
   there are two implementations here:
- \texttt{outMore}, \texttt{outMore2}, and \texttt{outMore3}, 
+ \texttt{outMore}, \texttt{outMore2}, and \texttt{outMore3},
  to allow the simultaneous use of this
  effect with three different internal effect parameters;
  they are defined by \\
@@ -10532,6 +10551,8 @@ defined by \\
  $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, I\{v_i = v_j \} $,\\
  where the indicator function $I\{v_i = v_j \} $ is 1 if the condition $\{v_i = v_j \} $
  is satisfied, and 0 if it is not;\\
+ for equality between different variables for ego and alter,
+ there is the \texttt{sameXV} effect, mentioned below;
 
  \item {\em same covariate $\times$ reciprocity}
 \texttt{(sameXRecip)} defined by the
@@ -10634,6 +10655,21 @@ defined by \\
  for internal effect parameter $p=2$, it is defined by\\
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \, I\{v_i \neq v_j \}
              \sqrt{\sum_h x_{ih}\, I\{v_i \neq v_h \}} $;\\
+
+
+ \item {\em outdegree activity different-same covariate}
+\texttt{(crossXOutAct)} defined by the
+  combination of ties to others who have a different covariate value than $i$
+  and others who have the same covariate value as $i$.
+  The internal effect parameter $p$ has three values,
+  depending on where the square root is taken.
+  The effect is defined by \\
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \, I\{v_i = v_j \} \,
+             \sum_h x_{ih}\, I\{v_i \neq v_h \} \ , \hfill (p=1) $\\[0.4em]
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \, I\{v_i = v_j \} \,
+            \sqrt{ \sum_h x_{ih}\, I\{v_i \neq v_h \} } \ ,  \hfill (p=2)$\\[0.4em]
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \, I\{v_i \neq v_j \} \,
+            \sqrt{ \sum_h x_{ih}\, I\{v_i = v_h \} }  \ ;  \hfill (p=3)$\\
 
 
  \item {\em outdegree activity to homogeneous covariate}
@@ -11098,6 +11134,88 @@ with $v_h = v_i\,$:
 \end{enumerate}
 
 
+\noindent
+\textbf{\emph{Monadic double covariate effects}}
+\medskip
+
+
+\noindent
+For pairs of actor-dependent covariates $V$ and $U$ with values  $v_i$ and $u_j$,
+the following effects are available.
+ Currently, these effects are implemented only for bipartite (two-mode) networks.
+ Then $V$ must be a covariate for the first mode, and $U$ for the second mode.
+
+\begin{enumerate}
+\setcounter{enumi}{\value{savenumi}}
+
+ \item \emph{same covariate1--covariate2}, which can also be called {\em covariate-related identity}
+ \texttt{(sameXV)},  defined by the
+ number of ties of $i$ to all other actors $j$ for which the value of $i$
+ on covariate $V$ is the same as the value of $j$ on covariate $U$,
+ and larger than 0,\\[0.3em]
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, I\{v_i = u_j \geq 1\} $,\\[0.3em]
+ where the indicator function $I\{v_i = u_j \} $ is 1 if the condition $\{v_i = u_j \geq 1\} $
+ is satisfied, and 0 if it is not.\\
+ This effect is implemented only for $U$ and $V$ that are non-centered categorical
+  actor variables with integer values in the range from 0 to 20.\\
+  The exclusion of values 0 is for the treatment of missing values:
+  these can be given \texttt{imputationValues}  equal to 0,
+  see the help page for \sfn{coCovar} and \sfn{varCovar}. 
+
+ \item \emph{indegree popularity from same covariate1 to same covariate2},
+ \texttt{(sameXVInPop)} and \texttt{(sameXVInPop2)}.
+  This is an elementary effect that is implemented only for non-centered categorical
+  actor variables with values within the range of numbers from 0 to 20.\\
+  It represents the frequency, or relative frequency, of ties from actors in the
+  same category of covariate $V$ to nodes in the same category of covariate $U$.\\
+ It is defined, for the tie from $i$ to $j$, by the number of
+incoming ties sent by actors $h$ who have the same non-zero covariate value $v_h = v_i$ as $i$
+ and received by those $k$ who have the same non-zero covariate value $u_k = u_j$ as $j$:\\[0.3em]
+ $s^{\rm el}_{i\vit}(x) =  x_{ij}\, \sum_{h,k} x_{hk}\, I\{v_h = v_i \geq 1,\, u_k=u_j \geq 1\}  \ ,
+             \hfill (p=1) $\\[0.3em]
+ where the indicator function $ I\{v_h = v_i\geq 1,\, u_k=u_j \geq 1 \} $ is 1
+ if the condition $\{v_h = v_i \geq 1,\, u_k=u_j \geq 1 \} $ is satisfied, and 0 if it is not.\\
+  The exclusion of values 0 is for the treatment of missing values:
+  these can be given \texttt{imputationValues}  equal to 0,
+  see the help page for \sfn{coCovar} and \sfn{varCovar}. 
+
+ The effect parameter $p$ can take the values 1, 2, 3 and 4.
+ The formula given above is for $p=1$.\\
+ For $p=3$, the effect is defined by the \underline{proportion} of ties from same-$V$ actors
+ to same-$V$ nodes, as given by the formula \\[0.5em]
+ $\displaystyle s^{\rm el}_{i\vit}(x) =  x_{ij}\, \frac{ \sum_{h,k} x_{hk}\, I\{v_h = v_i \geq 1,\, u_k=u_j \geq 1\}}
+            { \sum_{h,k} I\{v_h = v_i \geq 1,\, u_k=u_j \geq 1\}} \ . \hfill (p=3) $
+
+ For $p=2$ and $p=4$, the square root is taken: \\[0.5em]
+ $s^{\rm el}_{i\vit}(x) =  x_{ij}\, \sqrt{\sum_{h,k} x_{hk}\, I\{v_h = v_i \geq 1,\, u_k=u_j \geq 1 \}} \ ,
+                 \hfill (p=2)$\\[0.3em]
+ and \\[0.3em]
+ $\displaystyle s^{\rm el}_{i\vit}(x) =  x_{ij}\, \sqrt{ \frac{ \sum_{h,k} x_{hk}\, I\{v_h = v_i \geq 1,\, u_k=u_j \geq 1 \}}
+            { \sum_{h,k} I\{v_h = v_i \geq 1,\, u_k=u_j \geq 1 \}}}  \ . \hfill (p=4)$\\[0.3em]
+
+The default is $p=3$.
+
+This effect is perhaps rather time-consuming because it iterates over all $x_{hk}$.
+For this reason, \texttt{sameXVInPop} and \texttt{sameXVInPop2} are different implementations
+of the same effect.
+The former iterates over all ties, the second over all nodes $h$, and then over their outgoing ties.
+You can choose whichever is more efficient for your data set.
+
+
+Differences between \texttt{sameXInPop}, \texttt{sameXVInPop}, \texttt{sameXCycle4}:\\
+All work with an actor variable $V$, and \texttt{sameXVInPop} works in addition
+with a nodal variable $U$.\\
+All three express (for positive parameters) that actors with the same categories of $V$
+make related choices of other nodes.\\
+For \texttt{sameXInPop}, they tend to choose the same nodes.
+For \texttt{sameXVInPop}, they tend to choose nodes of the same $U$ category.
+For \texttt{sameXCycle4}, if they tend to choose some particular node in common,
+they will also tend to choose some other nodes in common.
+
+
+
+\setcounter{savenumi}{\value{enumi}}
+\end{enumerate}
 
 \iffalse
 If there are multiple networks, their roles can be crossed here --
@@ -11476,46 +11594,7 @@ but that are connected through $i$:
 \end{center}
 \vfill
 \end{minipage}
-\item
-  mixed twopath average effect ($X$: twopath$^{1/p}$ $W$ average)  \texttt{(outOutAvIntn)},\\
-   defined by the outdegree of $i$
-   multiplied by the average of the $X$-outdegrees\\
-\begin{minipage}[t]{.60\textwidth}
-    of those to whom $i$ has a $W$-tie:\\
-   for $p=1$, this is\\[0.4em]
- $s^{\rm net}_{i\vit}(x) =   x_{i+}\,
-     \frac{ \sum_h w_{ih} \big(x_{h+} - \bar x\big)}{\sum_h w_{ih}} $\\[0.4em]
- and for $p=2$, there is a square root transformation:\\[0.4em]
- $s^{\rm net}_{i\vit}(x) =  x_{i+} \,
- \frac{\sum_h w_{ih} \big(\sqrt{x_{h+}} - \sqrt{\bar x}\big)}{\sum_h w_{ih}}$\\[0.4em]
- where $\bar x$ is the average outdegree over all waves.
-      \end{minipage}
-\hfill
-\begin{minipage}[t]{.35\textwidth}
-\linethickness{0.3pt}
-%\vspace*{0.4em}
-\begin{center}
-\beginpicture
-\setcoordinatesystem units <1.4cm,1.4cm> point at 4 3
-\setplotarea x from 1 to 4, y from 0.5 to 1.5
-\put{\large$\bullet$} at  1 1
-\put{\large$\bullet$} at  2 1
-\put{\large$\bullet$} at  3 1
-\put{\large$\bullet$} at  4 1
-\put{$i$} at 2 0.7
-\put{$h$} at 3 0.7
-\put{$j$} at 1 0.7
-\put{$\ldots$} at 4 0.7
-\put{{\small $W$}} at 2.5 1.3
-\put{{\small $X$}} at 1.5 1.3
-\put{{\small $X$}} at 3.5 1.3
-\arrow <2mm> [.2,.6]  from 2.2 1 to 2.8 1
-\arrow <2mm> [.2,.6]  from 1.8 1 to 1.2 1
-\arrow <2mm> [.2,.6]  from 3.2 1 to 3.8 1
-\endpicture
-\end{center}
-\vfill
-\end{minipage}
+
 
 
 \end{enumerate}
@@ -12082,6 +12161,144 @@ Then there are effects using mixed configurations on four nodes
 (cf.\ \texttt{sharedPop}).
 \begin{enumerate}
 \setcounter{enumi}{\value{savenumi}}
+\item
+  mixed twopath average effect ($X$: twopath$^{1/p}$ $W$ average)  \texttt{(outOutAvIntn)},\\
+   defined by the outdegree of $i$
+   multiplied by the average of the $X$-outdegrees\\
+\begin{minipage}[t]{.60\textwidth}
+    of those to whom $i$ has a $W$-tie:\\
+   for $p=1$, this is\\[0.4em]
+ $\displaystyle s^{\rm net}_{i\vit}(x) =   x_{i+}\,
+     \frac{ \sum_h w_{ih} \big(x_{h+} - \bar x\big)}{\sum_h w_{ih}} $\\[0.4em]
+ and for $p=2$, there is a square root transformation:\\[0.4em]
+ $\displaystyle s^{\rm net}_{i\vit}(x) =  x_{i+} \,
+ \frac{\sum_h w_{ih} \big(\sqrt{x_{h+}} - \sqrt{\bar x}\big)}{\sum_h w_{ih}}$\\[0.4em]
+ where $\bar x$ is the average outdegree over all waves.
+      \end{minipage}
+\hfill
+\begin{minipage}[t]{.35\textwidth}
+\linethickness{0.3pt}
+%\vspace*{0.4em}
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <1.4cm,1.4cm> point at 4 3
+\setplotarea x from 1 to 4, y from 0.5 to 1.5
+\put{\large$\bullet$} at  1 1
+\put{\large$\bullet$} at  2 1
+\put{\large$\bullet$} at  3 1
+\put{\large$\bullet$} at  4 1
+\put{$i$} at 2 0.7
+\put{$h$} at 3 0.7
+\put{$j$} at 1 0.7
+\put{$\ldots$} at 4 0.7
+\put{{\small $W$}} at 2.5 1.3
+\put{{\small $X$}} at 1.5 1.3
+\put{{\small $X$}} at 3.5 1.3
+\arrow <2mm> [.2,.6]  from 2.2 1 to 2.8 1
+\arrow <2mm> [.2,.6]  from 1.8 1 to 1.2 1
+\arrow <2mm> [.2,.6]  from 3.2 1 to 3.8 1
+\endpicture
+{\scriptsize \ (this is the same configuration as above)}
+\end{center}
+\vfill
+\end{minipage}
+
+\item
+\begin{minipage}[t]{.70\textwidth}
+   shared $W$ outdegree activity effect ($X$: shared $W$ outdegree$^{1/p}$ activity)   \texttt{(outOutDist2ActIntn)}
+   defined by the outdegree of $i$
+   multiplied by sum of $X$-outdegrees of those $h$ to whom $i$ has a
+   distance-2 $W$-tie  $i \rightarrow k \leftarrow h$ (counting multiplicities):\\
+   for $p=1$, this is\\[0.4em]
+$
+s^{\rm net}_{i\vit}(x) =  \,  x_{i+} \sum_h (x_{h+} - \bar x)  \big\{\sum_{k} w_{ik} \, w_{hk}
+                             \big\}
+$\\[0.4em]
+ and for $p=2$, there is a square root transformation:\\[0.4em]
+ $ s^{\rm net}_{i\vit}(x) = \,  x_{i+} \sum_h \big(\sqrt{x_{h+}} - \sqrt{\bar x}\big)
+            \sum_h \big\{ \sum_{k} w_{ik} \, w_{hk} \big\}$\\[0.4em]
+ where $\bar x$ is the average outdegree over all waves.
+\setcounter{savenumi}{\value{enumi}}
+      \end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\linethickness{0.3pt}
+\vfill
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
+\setplotarea x from 2 to 4, y from 0 to 3
+\put{\large$\bullet$} at  2 0.7
+\put{\large$\bullet$} at  4 0.7
+\put{\large$\bullet$} at  3 2.732
+\put{\small$\blacklozenge$} at  2.3 1.85 % k
+\put{$i$} at 2 0
+\put{$j$} at 4 0
+\put{$h$} at 3 3.4
+\put{$k$} at 2.65 1.9
+\put{{\small $W$}} at 2.25 2.55
+\put{{\small $W$}} at 1.8 1.5
+\put{{\small $X$}} at 3.7 2.4
+\put{{\small $X$}} at 3   0.3
+\arrow <2mm> [.2,.6]  from 2.2 0.7 to 3.8 0.7 % i to j
+\arrow <2mm> [.2,.6]  from 2 0.9 to 2.2 1.65 % i to k
+\arrow <2mm> [.2,.6]  from 2.85 2.6 to 2.4 2.1 % h to k
+\arrow <2mm> [.2,.6]  from  3.2 2.8 to 4.5 2.8
+\endpicture
+\end{center}
+\vfill
+\end{minipage}
+
+\item
+ shared $W$ average outdegree activity effect ($X$: shared $W$ average outdegree$^{1/p}$ activity)
+   \texttt{(outOutDist2AvIntn)},\\
+   defined by the outdegree of $i$
+   multiplied by the average of the $X$-outdegrees of those $h$ to whom $i$ has a
+   distance-2 $W$-tie  $i \rightarrow k \leftarrow h$ (counting multiplicities):\\
+\begin{minipage}[t]{.60\textwidth}
+   for $p=1$, this is\\[0.4em]
+$ \displaystyle
+s^{\rm net}_{i\vit}(x) =  \, \frac{ x_{i+} \sum_h (x_{h+} - \bar x)  \big\{\sum_{k} w_{ik} \, w_{hk}
+                             \big\} }{ \sum_{k,h} w_{ik} \, w_{hk} }
+$\\[0.4em]
+ and for $p=2$, there is a square root transformation:\\[0.4em]
+ $  \displaystyle s^{\rm net}_{i\vit}(x) = \,  \frac{ x_{i+} \sum_h \big(\sqrt{x_{h+}} - \sqrt{\bar x}\big)
+            \sum_h \big\{ \sum_{k} w_{ik} \, w_{hk} \big\} }{ \sum_{k,h} w_{ik} \, w_{hk} }
+            $\\[0.4em]
+ where $\bar x$ is the average outdegree over all waves.
+      \end{minipage}
+\hfill
+\begin{minipage}[t]{.35\textwidth}
+\linethickness{0.3pt}
+%\vspace*{0.4em}
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <1.4cm,1.4cm> point at 4 3
+\setplotarea x from 1 to 4, y from 0.5 to 1.5
+\put{\large$\bullet$} at  1 1
+\put{\large$\bullet$} at  2 1
+\put{\small$\blacklozenge$} at  3 1
+\put{\large$\bullet$} at  4 1
+\put{\large$\bullet$} at  5 1
+\put{$i$} at 2 0.7
+\put{$j$} at 1 0.7
+\put{$k$} at 3 0.7
+\put{$h$} at 4 0.7
+\put{$\ldots$} at 5 0.7
+\put{{\small $X$}} at 1.5 1.3
+\put{{\small $W$}} at 2.5 1.3
+\put{{\small $W$}} at 3.5 1.3
+\put{{\small $X$}} at 4.5 1.3
+\arrow <2mm> [.2,.6]  from 2.2 1 to 2.8 1
+\arrow <2mm> [.2,.6]  from 1.8 1 to 1.2 1
+\arrow <2mm> [.2,.6]  from 3.8 1 to 3.2 1
+\arrow <2mm> [.2,.6]  from 4.2 1 to 4.8 1
+\endpicture
+{\scriptsize \ (this is the same configuration as above)}
+\end{center}
+\vfill
+\end{minipage}
+
  \item
 \begin{minipage}[t]{.7\textwidth}
  {\em shared W leading to agreement along X}, ($X$: shared $W$ to agreement) \texttt{(sharedTo)} \\[0.2em]
@@ -12092,6 +12309,8 @@ Then there are effects using mixed configurations on four nodes
  is proportional to
  the number of mixed $W-X$ three-paths
  $i \stackrel{W}{\rightarrow} h  \stackrel{W}{\leftarrow} k  \stackrel{X}{\rightarrow} j$.
+
+ This can be regarded also as a mixed 4-cycle effect.
       \end{minipage}
 \hfill
 \begin{minipage}[t]{.15\textwidth}
@@ -12102,8 +12321,8 @@ Then there are effects using mixed configurations on four nodes
 \setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
 \setplotarea x from 2 to 4, y from 0 to 3
 \put{\large$\bullet$} at  2 1
-\put{\large$\bullet$} at  4 1
-\put{\large$\bullet$} at  2 3
+\put{\small$\blacksquare$} at  4 1
+\put{\small$\blacklozenge$} at  2 3
 \put{\large$\bullet$} at  4 3
 \put{$i$} at 2 0.4
 \put{$j$} at 4 0.4
@@ -12140,11 +12359,78 @@ Then there are effects using mixed configurations on four nodes
  $s^{\rm net}_{i\vit}(x) = \sum_{j,k; k \neq i} x_{ij}\, x_{kj}\,
  \Big( \sqrt{\sum_{h} w_{ih}\, w_{kh} } \,-\, \sqrt{c} \Big)\,$.\\
 
+ This can be regarded as a higher-order effect related to the \texttt{inPopOutW}
+ effect (see below) as well as indegree-popularity.
+ The differences between the centered and non-centered versions amount to
+ a multiple of the indegree-popularity (without $\sqrt{}$) \texttt{inPop} effect.
+ Therefore, when the \texttt{sharedTo} effect is used, it may be advisable
+ also to include the \texttt{inPop} and \texttt{inPopOutW} effects,
+ so as to avoid misinterpretations.
+
+
+ \item
+\begin{minipage}[t]{.6\textwidth}
+ {\em indegree-popularity weighted by W-outdegree},
+ ($X$: ind.\ pop.\ by outd.\ $W$) \texttt{(inPopOutW)} \\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j,k; k \neq i} x_{ij}\, x_{kj}\,
+                  \big(  w_{k+} - c\big ) \,$;\\[0.2em]
+ this refers to  mixed $X-X-W$ three-paths;
+ the contribution of the tie $i \stackrel{X}{\rightarrow} j$
+ is proportional to
+ the number of mixed $X-W$ three-paths
+ $ j  \stackrel{X}{\leftarrow} k  \stackrel{W}{\rightarrow} h$.
+
+ This can be regarded also as a mixed 3-path effect.
+      \end{minipage}
+\hfill
+\begin{minipage}[t]{.25\textwidth}
+\linethickness{0.3pt}
+\vfill
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <1.4cm,1.4cm> point at 4 3
+\setplotarea x from 1 to 4, y from 0.5 to 1.5
+\put{\large$\bullet$} at  1 1
+\put{\small$\blacksquare$} at  2 1
+\put{\large$\bullet$} at  3 1
+\put{\small$\blacklozenge$} at  4 1
+\put{$i$} at 1 0.7
+\put{$k$} at 3 0.7
+\put{$j$} at 2 0.7
+\put{$h$} at 4 0.7
+\put{{\small $W$}} at 3.5 1.3
+\put{{\small $X$}} at 1.5 1.3
+\put{{\small $X$}} at 2.5 1.3
+\arrow <2mm> [.2,.6]  from 2.8 1 to 2.2 1
+\arrow <2mm> [.2,.6]  from 1.2 1 to 1.8 1
+\arrow <2mm> [.2,.6]  from 3.2 1 to 3.8 1
+\endpicture
+\end{center}
+\vfill
+\end{minipage}
+
+ The effect parameter $p$ can take the values 1, 2, 3 and 4.
+  For $p=1,2$,  there is no centering: $c=0$.
+  For $p=3,4$, the value $c$, a constant for centering,
+   is the average of the $W$-outdegrees over all waves.
+
+ For $p=2$ and $p=4$, the square root is taken: \\[0.3em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j,k; k \neq i} x_{ij}\, x_{kj}\,
+ \big(  \sqrt{w_{k+}}  \,-\, \sqrt{c} \big)\,$.
+
+ Note that since this is the evaluation function for actor $i$ with
+ respect to network $X$, only the $x_{ij}$ tie indicator in the formula,
+ corresponding to  the tie $i \stackrel{X}{\rightarrow} j$,
+ is the dependent variable here.\\
+ The interpretation is that actors have the tendency to make more
+ outgoing $X$-choices to those ($j$) who have many outgoing $W$-ties.
+
  This can be regarded as a higher-order effect related to indegree-popularity.
  The differences between the centered and non-centered versions amount to
  a multiple of the indegree-popularity (without $\sqrt{}$) \texttt{inPop} effect.
- Therefore, when the \texttt{sharedTo} effect is used, it is advisable
+ Therefore, when the \texttt{inPopOutW} effect is used, it is advisable
  also to include the \texttt{inPop} effect, so as to avoid misinterpretations.
+
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
 
@@ -16253,7 +16539,7 @@ To get insight into a package, and certainly to modify
 or personalize it, it is necessary, however,
 to get the source code of the whole package.
 This is available from GitHub at
-\url{https://github.com/snlab-nl/rsiena/}.
+\url{https://github.com/stocnet/rsiena/}.
 
 \iffalse
 
@@ -16327,12 +16613,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.4.2.tar.gz|\\
+\verb|R CMD check RSiena_1.4.10.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.4.2.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.4.10.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16488,7 +16774,7 @@ and then go to R to see if it is available to you.
 It is a good idea to check the target statistics computed for a simple
 two-wave data set such as \sfn{s50}.
 Examples are in the script
-\url{https://github.com/snlab-nl/rsiena/blob/main/checkEffects.R}.
+\url{https://github.com/stocnet/rsiena/blob/main/checkEffects.R}.
 \end{enumerate}
 
 As examples, start with simple effects.
@@ -16771,8 +17057,8 @@ and in function \sfn{effects.r}.
 In the function \textsf{getEffects} in file \sfn{effects.r}, some additional
 measures are taken for effects in effectGroup \sfn{covarBipartiteEff}.
 This implies that for adding such effects, it will be necessary to see whether
-this function also must be modified; this will have to be done
-in function \sfn{covarBipartiteEff}.
+this function (i.e., \textsf{getEffects}) also must be modified;
+this will have to be done in function \sfn{covarBipartiteEff}.
 (Note: it would be preferable perhaps to have separate effect classes
 for covariates on the first and on the second mode, as done for the effect
 groups in the following paragraphs.)
@@ -16849,7 +17135,7 @@ mention it in \sfn{effectsDocumentation.r}.
 
 \appendix
 \newpage
-\section{List of Functions in Order of Execution}
+\section{Appendix: List of Functions in Order of Execution}
 
     This appendix
     provides a description of the functions that constitute the
@@ -17340,18 +17626,27 @@ The argument is a sienaFit object `x'. \\
 
 
 
-\section{Changes compared to earlier versions}
+\section{Appendix: Changes compared to earlier versions}
 
 This presents the main changes, especially those directly visible to the user,
 in reverse time order from the current version until
 version 1.0.6 of end October 2009.
 For more complete information about changes,
-consult the \texttt{NEWS.md} file (in earlier versions
-this was the \texttt{CHANGELOG} file) in the source code,
-and the \texttt{ONWS} (`old news') file, which contain more complete listings.
-The \texttt{NEWS.md} file can also be consulted during an \R session in which you
-have loaded the package \rs, provided you have also attached the
+consult the \texttt{NEWS.md} file in the source code,
+and the \texttt{ONWS} (`old news') and \texttt{ONWS\_gh} (`old news in GitHub')  files,
+which contain more complete listings.
+The \texttt{NEWS.md} file can also be consulted during an \R session if you
+installed the package \rs, provided you have also attached the
 packages \texttt{commonmark} and \texttt{xml2} to render the Markdown format.
+
+After installing these two packages,
+to get the NEWS about any package that you installed
+(such  as \rs), give the command
+\begin{verbatim}
+news(package="packageName")
+\end{verbatim}
+(where you can fill in the package name).
+\bigskip
 
 \begin{small}
 \begin{itemize} % Also update version number in earlier places.
@@ -17359,7 +17654,7 @@ packages \texttt{commonmark} and \texttt{xml2} to render the Markdown format.
 \iffalse
 \template
 
-\item 2023-mm-dd GitHub, package version 1.x.x.
+\item 2024-mm-dd GitHub, package version 1.x.x.
 
 
 Changes in RSiena:
@@ -17381,6 +17676,103 @@ Changes in RSiena:
 \fi
 
 
+\item 2024-03-25 GitHub, package version 1.4.10
+
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects:
+   \begin{itemize}
+  \item New effects \texttt{crossXOutAct}, \texttt{outOutDist2ActIntn},
+    \texttt{outOutDist2AvIntn}, \texttt{inPopOutW}.
+  \item New effect group \texttt{doubleCovarNetObjective}.
+  \item New effects \texttt{sameXV} and \texttt{sameXVInPop} for bipartite 
+    and symmetric networks.
+  \item \texttt{sameXCycle4} added for one-mode and symmetric networks.
+  \item \texttt{sharedTo} gets default internal effect parameter \texttt{p=3} .
+  \end{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+  \item Function \sfn{updateSpecification} now also updates interaction effects
+    and \texttt{initialValues}.
+  \item New parameter \texttt{silent} in \sfn{sienaAlgorithmCreate} activated.
+
+  \end{itemize}
+\end{itemize}
+
+
+\item 2024-02-29 GitHub, package version 1.4.8.
+
+
+Changes in RSiena:
+\begin{itemize}
+\item Bug corrections:
+   \begin{itemize}
+   \item Correction of memory leak in \texttt{siena07setup.ccp} for ML estimation.
+    \end{itemize}
+\item New functionality:
+   \begin{itemize}
+   \item New parameter \texttt{silent} in \sfn{sienaAlgorithmCreate}.
+    \end{itemize}
+\end{itemize}
+
+
+\item 2024-02-20 GitHub and CRAN (2024-02-22), package version 1.4.7
+
+Changes in RSiena:
+\begin{itemize}
+\item Bug corrections:
+   \begin{itemize}
+   \item An error in a \texttt{.cpp} file was corrected.
+  \end{itemize}
+\end{itemize}
+
+
+\item 2024-02-19 GitHub, package version 1.4.6
+
+Changes in RSiena:
+\begin{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+  \item New parameter \texttt{targets}  in \sfn{siena07} , used to supersede the targets
+    calculated from the data (not for use in estimation for regular data sets,
+    see the help file for \sfn{siena07}).
+  \item \sfn{effectsDocumentation()}  reports to the console
+    the name of the file that was written.
+  \item \sfn{sienaDataCreate}  stops with an error message if there is a bipartite
+    network before a one-mode network.
+  \item If the data contains a continuous dependent behavioral variable and
+    the algorithm specifies conditional estimation, the estimation stops
+    with a clear error message.
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+   \item Various corrections in the \texttt{cpp} code.
+  \item Allow \sfn{sienaDataCreate}  to work with a single variable defined as
+    a dependent network given as a list of sparse matrices.
+  \item Allow \sfn{getEffects}  to construct effects of more than one dependent network
+    on continuous behavior dependent variables.
+  \item Changed the check for constant dyadic covariates for
+  sparse matrices (GitHub issue \#88).
+  \item Some of the recently added effect groups were missing from
+    \sfn{effectsDocumentation}. This led to an incomplete listing of the effects.
+    They are now included.
+  \end{itemize}
+\item Dropped functionality:
+   \begin{itemize}
+  \item \sfn{sienaRI}  temporarily disabled because of a memory leak.
+  \item The option \texttt{prML=2}  temporarily disabled because of a memory leak in the
+    \texttt{move}  proposal distribution (\sfn{sienaAlgorithmCreate}).
+  \end{itemize}
+\item Other changes:
+   \begin{itemize}
+  \item List of changes in the code before 2022, but since the source
+  code was hosted at GitHub (i.e., since September, 2020) moved from
+  \texttt{NEWS.md}  to \texttt{ONEWS\_gh} .
+  \end{itemize}
+\end{itemize}
+
+
 \item 2023-12-14 GitHub, package version 1.4.2.
 
 Changes in RSiena:
@@ -17389,9 +17781,9 @@ Changes in RSiena:
    \begin{itemize}
    \item New effects \texttt{outXMore}, \texttt{outMore3}.
    \item Corrected effect \texttt{outMore}.
-   \item \texttt{Interactiontype} of \texttt{altLThresholdX} and 
+   \item \texttt{Interactiontype} of \texttt{altLThresholdX} and
         \texttt{altRThresholdX} is dyadic.\\
-        \texttt{Interactiontype} of \texttt{degAbsDiffX}, \texttt{degPosDiffX}, 
+        \texttt{Interactiontype} of \texttt{degAbsDiffX}, \texttt{degPosDiffX},
        and \texttt{degNegDiffX} is "" (blank).
     \end{itemize}
 \item Improvements of functionality:
@@ -18042,7 +18434,7 @@ Changes in RSiena:
 \begin{itemize}
    \item Generalized Method of Moments implemented (Viviana Amati):
      see\\
-     \url{https://github.com/snlab-nl/rsiena/blob/main/docs/manual/Changes_RSiena_GMoM.pdf};
+     \url{https://github.com/stocnet/rsiena/blob/main/docs/manual/Changes_RSiena_GMoM.pdf};
      new function \sfn{includeGMoMStatistics}, extended functionality of \textsf{siena07}.
    \item \sfn{effectsDocumentation} now also includes \texttt{gmm} effects (at the bottom).
    \item \sfn{dyadicCov} made to accept also changing dyadic covariates.

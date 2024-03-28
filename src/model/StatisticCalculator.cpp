@@ -1253,7 +1253,7 @@ void StatisticCalculator::calculateNetworkRateStatistics(
 			else
 			{
 				throw logic_error(
-					"No individual covariate named '" +
+					"(4) No individual covariate named '" +
 					interactionName +
 					"'.");
 			}
@@ -1486,7 +1486,7 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 				else
 				{
 					throw logic_error(
-						"No individual covariate named '" +
+						"(5) No individual covariate named '" +
 						interactionName +
 						"'.");
 				}

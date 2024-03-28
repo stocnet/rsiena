@@ -99,5 +99,10 @@ str(sp501)
 ## so that is supplied additionally by @Dim.
 mymatlist <- list(sp501, sp502, sp503)
 mynet.sp <- sienaDependent(mymatlist)
+# For a bipartite (two-mode) network:
+senders <- sienaNodeSet(50, nodeSetName="senders")
+receivers <- sienaNodeSet(30, nodeSetName="receivers")
+mynet <- sienaDependent(array(c(s501[,1:30], s502[,1:30]), dim=c(50, 30, 2)),
+      nodeSet=c("senders", "receivers"))
 }
 \keyword{classes}
