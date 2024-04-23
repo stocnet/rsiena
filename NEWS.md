@@ -1,3 +1,21 @@
+# RSiena 1.4.11
+
+2024-04-23
+
+
+## Changes in RSiena:
+
+### Effects:
+  * Effect name `outOutDist2AvIntn` changed to `avAlt.2M.tot`.
+  * New effects `avAlt.2M.tie`, `avAlt.2M.tot`, `avAltU.2M.tie`, 
+    `dist2OutInActIntn`, `nDist2ActIntn`, `sharedToU`.
+  * Changed sqrt treatment in `outOutDist2ActIntn` and
+    `outOutDist2AvIntn` / `avAlt.2M.tot`.
+### New functionality:
+  * Method `print.sienaEffects` has an extra parameter `includeShortNames`
+    to do what the name of this parameter suggests.
+  * Improved error message for function `updateSpecification`.
+
 # RSiena 1.4.10
 
 2024-03-25

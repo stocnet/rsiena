@@ -195,7 +195,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.4.10.
+This version was renewed for \RS version 1.4.11.
 \end{abstract}
 
 
@@ -1146,7 +1146,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.4.10).
+  identified by a version number (e.g.\ 1.4.11).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -5102,7 +5102,7 @@ this may have several reasons.
       This will be seen in estimates and standard errors both being large
       and often in divergence of the algorithm.
       Fix this parameter to some large value.
-      (Note: large here means, e.g., more than 5 or less than -5; depending
+      (Note: large here means, e.g., more than 5 or less than --5; depending
       on the effect, of course.)
 \end{itemize}
 
@@ -10845,9 +10845,9 @@ $s^{\rm net}_{i\vit}(x ) = \sum_j  x^{\rm{simm}}_{ij}\,v_j $ .
                       \big( \max_h x_{ih}x_{hj} \big) v_j $;
 
  \item \begin{minipage}[t]{.68\textwidth}
-for two-mode networks and for non-directed networks: \\
-the {\em number of four-cycles from same covariate} \\
-with shortName \texttt{(sameXCycle4)}, \\[0.3em]
+ {\em number of four-cycles from same covariate}  \texttt{(sameXCycle4)},\\
+ defined by the number of four-cycles sent by actors with the
+ same covariate value,  \\[0.3em]
  $s^{\rm net}_{i\vit}(x) =  \frac14 \sum_{j,k,h; \text{all different}}
             x_{ij}\, x_{ik}\, x_{hj}\, x_{hk}\,I\{v_i = v_h\} $;\\[0.3em]
  for parameter $p=2$ the square root is taken.
@@ -11142,7 +11142,7 @@ with $v_h = v_i\,$:
 \noindent
 For pairs of actor-dependent covariates $V$ and $U$ with values  $v_i$ and $u_j$,
 the following effects are available.
- Currently, these effects are implemented only for bipartite (two-mode) networks.
+These are useful, e.g., for bipartite (two-mode) networks.
  Then $V$ must be a covariate for the first mode, and $U$ for the second mode.
 
 \begin{enumerate}
@@ -11160,7 +11160,7 @@ the following effects are available.
   actor variables with integer values in the range from 0 to 20.\\
   The exclusion of values 0 is for the treatment of missing values:
   these can be given \texttt{imputationValues}  equal to 0,
-  see the help page for \sfn{coCovar} and \sfn{varCovar}. 
+  see the help page for \sfn{coCovar} and \sfn{varCovar}.
 
  \item \emph{indegree popularity from same covariate1 to same covariate2},
  \texttt{(sameXVInPop)} and \texttt{(sameXVInPop2)}.
@@ -11177,7 +11177,7 @@ incoming ties sent by actors $h$ who have the same non-zero covariate value $v_h
  if the condition $\{v_h = v_i \geq 1,\, u_k=u_j \geq 1 \} $ is satisfied, and 0 if it is not.\\
   The exclusion of values 0 is for the treatment of missing values:
   these can be given \texttt{imputationValues}  equal to 0,
-  see the help page for \sfn{coCovar} and \sfn{varCovar}. 
+  see the help page for \sfn{coCovar} and \sfn{varCovar}.
 
  The effect parameter $p$ can take the values 1, 2, 3 and 4.
  The formula given above is for $p=1$.\\
@@ -11560,7 +11560,7 @@ but that are connected through $i$:
 
 \item
 \begin{minipage}[t]{.70\textwidth}
-  mixed twopath activity effect ($X$: twopath$^{1/p}$ $W$ activity)  \texttt{(outOutActIntn)}
+  mixed twopath activity effect ($X$: mixed twopath$^{1/p}$ $W$ activity)  \texttt{(outOutActIntn)}
    defined by the outdegree of $i$
    multiplied by sum of $X$-outdegrees of those to whom $i$ has a $W$-tie:\\
    for $p=1$, this is\\[0.4em]
@@ -11568,7 +11568,6 @@ but that are connected through $i$:
  and for $p=2$, there is a square root transformation:\\[0.4em]
  $s^{\rm net}_{i\vit}(x) =  x_{i+}\, \sum_h w_{ih} \big(\sqrt{x_{h+}} - \sqrt{\bar x}\big)$\\[0.4em]
  where $\bar x$ is the average outdegree over all waves.
-\setcounter{savenumi}{\value{enumi}}
       \end{minipage}
 \hfill
 \begin{minipage}[t]{.15\textwidth}
@@ -11596,6 +11595,20 @@ but that are connected through $i$:
 \end{minipage}
 
 
+\item
+  mixed distance-2 out-in activity effect ($X$: nbr out-in dist.2 $W$ activity)  \texttt{(nDist2ActIntn)}
+   defined by the outdegree of $i$
+   multiplied by the number of actors at out-in distance 2 in the $W$ network:\\
+   for $p=1$, this is, for one-mode networks:\\[0.4em]
+ $s^{\rm net}_{i\vit}(x) =   x_{i+}\, \sum_h \big\{ \max_k \big(w_{ik} \, w_{hk}\big) - w_{ih} \big\}  $\\[0.4em]
+ and for two-mode (bipartite) networks\\[0.4em]
+ $s^{\rm net}_{i\vit}(x) =   x_{i+}\, \sum_h \big\{ \max_k \big(w_{ik} \, w_{hk}\big)  \big\} \ ; $\\[0.4em]
+ and for $p=2$, there is a square root transformation:\\[0.4em]
+ $s^{\rm net}_{i\vit}(x) =   x_{i+}\, \sqrt{ \sum_h \big\{ \max_k \big(w_{ik} \, w_{hk}\big) - w_{ih} \big\}}  $\\[0.4em]
+ and \\[0.4em]
+ $s^{\rm net}_{i\vit}(x) =   x_{i+}\,  \sqrt{ \sum_h \big\{ \max_k \big(w_{ik} \, w_{hk}\big)  \big\} }\ , $\\[0.4em]
+ respectively.
+\setcounter{savenumi}{\value{enumi}}
 
 \end{enumerate}
 \smallskip
@@ -12162,7 +12175,7 @@ Then there are effects using mixed configurations on four nodes
 \begin{enumerate}
 \setcounter{enumi}{\value{savenumi}}
 \item
-  mixed twopath average effect ($X$: twopath$^{1/p}$ $W$ average)  \texttt{(outOutAvIntn)},\\
+  mixed twopath average effect ($X$: mixed twopath$^{1/p}$ $W$ average)  \texttt{(outOutAvIntn)},\\
    defined by the outdegree of $i$
    multiplied by the average of the $X$-outdegrees\\
 \begin{minipage}[t]{.60\textwidth}
@@ -12205,18 +12218,62 @@ Then there are effects using mixed configurations on four nodes
 
 \item
 \begin{minipage}[t]{.70\textwidth}
-   shared $W$ outdegree activity effect ($X$: shared $W$ outdegree$^{1/p}$ activity)   \texttt{(outOutDist2ActIntn)}
+   $W$ twopath activity effect ($X$: $W$ twopath$^{1/p}$ activity)   \texttt{(dist2OutInActIntn)}
+   defined by the outdegree of $i$
+   multiplied by sum of $W$-indegrees of those $k$ to whom $i$ has a
+   $W$-tie  $i \rightarrow k$:\\
+   for $p=1$, this is\\[0.4em]
+$ s^{\rm net}_{i\vit}(x) =  \,  x_{i+} \sum_k  w_{ik}\,(w_{+k} - \bar w)     \big\} $\\[0.4em]
+ and for $p=2$, there is a square root transformation:\\[0.4em]
+ $ s^{\rm net}_{i\vit}(x) = \,  x_{i+} \sum_k w_{ik}\, \big(\sqrt{w_{+k}} - \sqrt{\bar w}\big)$\\[0.4em]
+ where $\bar w$ is the average $W$-outdegree over all waves.
+\setcounter{savenumi}{\value{enumi}}
+      \end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\linethickness{0.3pt}
+\vfill
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
+\setplotarea x from 2 to 4, y from 0 to 3
+\put{\large$\bullet$} at  2 0.7
+\put{\large$\bullet$} at  4 0.7
+\put{\large$\bullet$} at  3 2.732
+\put{\small$\blacklozenge$} at  2.3 1.85 % k
+\put{$i$} at 2 0
+\put{$j$} at 4 0
+\put{$h$} at 3 3.4
+\put{$k$} at 2.65 1.9
+\put{{\small $W$}} at 2.25 2.55
+\put{{\small $W$}} at 1.8 1.5
+%\put{{\small $X$}} at 3.7 2.4
+\put{{\small $X$}} at 3   0.3
+\arrow <2mm> [.2,.6]  from 2.2 0.7 to 3.8 0.7 % i to j
+\arrow <2mm> [.2,.6]  from 2 0.9 to 2.2 1.65 % i to k
+\arrow <2mm> [.2,.6]  from 2.85 2.6 to 2.4 2.1 % h to k
+%\arrow <2mm> [.2,.6]  from  3.2 2.8 to 4.5 2.8
+\endpicture
+\end{center}
+\vfill
+\end{minipage}
+
+
+\item
+\begin{minipage}[t]{.70\textwidth}
+   shared $W$ outdegree activity effect ($X$: shared $W$ outdegree$^{1/p}$ activity)  
+    \texttt{(outOutDist2ActIntn)} 
    defined by the outdegree of $i$
    multiplied by sum of $X$-outdegrees of those $h$ to whom $i$ has a
-   distance-2 $W$-tie  $i \rightarrow k \leftarrow h$ (counting multiplicities):\\
-   for $p=1$, this is\\[0.4em]
+   distance-2 $W$-tie  $i \rightarrow k \leftarrow h$ (counting multiplicities).\\
+   This is an elementary effect.  For $p=1$, it is defined by \\[0.4em]
 $
-s^{\rm net}_{i\vit}(x) =  \,  x_{i+} \sum_h (x_{h+} - \bar x)  \big\{\sum_{k} w_{ik} \, w_{hk}
+s^{\rm el}_{ij\vit}(x) =  \,  x_{ij} \sum_h (x_{h+} - \bar x)  \big\{\sum_{k} w_{ik} \, w_{hk}
                              \big\}
 $\\[0.4em]
  and for $p=2$, there is a square root transformation:\\[0.4em]
- $ s^{\rm net}_{i\vit}(x) = \,  x_{i+} \sum_h \big(\sqrt{x_{h+}} - \sqrt{\bar x}\big)
-            \sum_h \big\{ \sum_{k} w_{ik} \, w_{hk} \big\}$\\[0.4em]
+ $ s^{\rm el}_{ij\vit}(x) = \,  x_{ij} \sum_h (x_{h+} - \bar x)
+            \sum_h \sqrt{ \sum_{k} w_{ik} \, w_{hk} }$\\[0.4em]
  where $\bar x$ is the average outdegree over all waves.
 \setcounter{savenumi}{\value{enumi}}
       \end{minipage}
@@ -12250,22 +12307,23 @@ $\\[0.4em]
 \end{minipage}
 
 \item
- shared $W$ average outdegree activity effect ($X$: shared $W$ average outdegree$^{1/p}$ activity)
-   \texttt{(outOutDist2AvIntn)},\\
+   average two-mode $W$ alter by total ($X$: av.\ 2M alter $W$ by tot)
+   \texttt{(avAlt.2M.tot)},\\
    defined by the outdegree of $i$
    multiplied by the average of the $X$-outdegrees of those $h$ to whom $i$ has a
-   distance-2 $W$-tie  $i \rightarrow k \leftarrow h$ (counting multiplicities):\\
+   distance-2 $W$-tie  $i \rightarrow k \leftarrow h$ (counting multiplicities).\\
+   This is an elementary effect.  For $p=1$, it is defined by \\[0.4em]
 \begin{minipage}[t]{.60\textwidth}
    for $p=1$, this is\\[0.4em]
 $ \displaystyle
-s^{\rm net}_{i\vit}(x) =  \, \frac{ x_{i+} \sum_h (x_{h+} - \bar x)  \big\{\sum_{k} w_{ik} \, w_{hk}
+s^{\rm el}_{ij\vit}(x) =  \, \frac{ x_{ij} \sum_h (x_{h+} - \bar x)  \big\{\sum_{k} w_{ik} \, w_{hk}
                              \big\} }{ \sum_{k,h} w_{ik} \, w_{hk} }
 $\\[0.4em]
  and for $p=2$, there is a square root transformation:\\[0.4em]
- $  \displaystyle s^{\rm net}_{i\vit}(x) = \,  \frac{ x_{i+} \sum_h \big(\sqrt{x_{h+}} - \sqrt{\bar x}\big)
-            \sum_h \big\{ \sum_{k} w_{ik} \, w_{hk} \big\} }{ \sum_{k,h} w_{ik} \, w_{hk} }
+ $  \displaystyle s^{\rm el}_{ij\vit}(x) = \,  \frac{ x_{ij} \sum_h (x_{h+} - \bar x)
+            \sum_h \sqrt{ \sum_{k} w_{ik} \, w_{hk} } }{ \sqrt{\sum_{k,h} w_{ik} \, w_{hk} }}
             $\\[0.4em]
- where $\bar x$ is the average outdegree over all waves.
+ where $\bar x$ is the average outdegree over all waves, and $0/0$ is defined as 0.
       \end{minipage}
 \hfill
 \begin{minipage}[t]{.35\textwidth}
@@ -12301,15 +12359,15 @@ $\\[0.4em]
 
  \item
 \begin{minipage}[t]{.7\textwidth}
- {\em shared W leading to agreement along X}, ($X$: shared $W$ to agreement) \texttt{(sharedTo)} \\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j,h,k; k \neq i} x_{ij}\, x_{kj}\,
+ {\em shared W leading to agreement along X}, ($X$: shared $W$ to agreement) \texttt{(sharedTo)}. \\[0.2em]
+ This is an elementary effect.  It is defined by \\[0.4em]
+ $s^{\rm el}_{ij\vit}(x) =  x_{ij}\, \sum_{h,k; k \neq i} x_{kj}\,
                   \big( w_{ih}\, w_{kh} - c\big ) \,$;\\[0.2em]
  this refers to the closure of mixed $W-X$ three-paths;
  the contribution of the tie $i \stackrel{X}{\rightarrow} j$
  is proportional to
  the number of mixed $W-X$ three-paths
- $i \stackrel{W}{\rightarrow} h  \stackrel{W}{\leftarrow} k  \stackrel{X}{\rightarrow} j$.
-
+ $i \stackrel{W}{\rightarrow} h  \stackrel{W}{\leftarrow} k  \stackrel{X}{\rightarrow} j$.\\
  This can be regarded also as a mixed 4-cycle effect.
       \end{minipage}
 \hfill
@@ -12341,7 +12399,6 @@ $\\[0.4em]
 \vfill
 \end{minipage}
 
-
  The effect parameter $p$ can take the values 1, 2, 3 and 4.
   The value $c$, a constant for centering,
    is the average of the observed values $w_{ih}\, w_{kh}$:\\[0.5em]
@@ -12364,9 +12421,108 @@ $\\[0.4em]
  The differences between the centered and non-centered versions amount to
  a multiple of the indegree-popularity (without $\sqrt{}$) \texttt{inPop} effect.
  Therefore, when the \texttt{sharedTo} effect is used, it may be advisable
- also to include the \texttt{inPop} and \texttt{inPopOutW} effects,
- so as to avoid misinterpretations.
+ also to include the \texttt{inPop}, \texttt{outActIntn}, and
+ \texttt{inPopOutW} effects, so as to avoid misinterpretations.
 
+ \item
+ {\em average two-mode W alter by tie}, ($X$: av.\ 2M alter $W$ by tie)
+        \texttt{(avAlt.2M.tie)}. \\[0.2em]
+ This is an elementary effect.  It is defined by \\[0.4em]
+ $s^{\rm el}_{ij\vit}(x) =  \displaystyle x_{ij}\, \frac{\sum_{h,k; k \neq i} x_{kj}\,
+                  ( w_{ih}\, w_{kh} ) } {\sum_{h,k; k \neq i} ( w_{ih}\, w_{kh} ) } \,$;\\[0.2em]
+ this refers to the average closure of mixed $W-X$ three-paths, and is an alternative for \texttt{sharedTo}.
+ This can be also regarded as a mixed 4-cycle effect.
+
+ For internal effect parameter $p=2$, it is defined by\\[0.4em]
+ $s^{\rm el}_{ij\vit}(x) =  \displaystyle x_{ij}\, \frac{\sum_{k; k \neq i}  x_{kj}\, \sqrt{ \sum_h
+                  ( w_{ih}\, w_{kh} ) }}
+                   {\sum_{k; k \neq i} \sqrt{ \sum_h ( w_{ih}\, w_{kh} ) }} \,$.\\[0.2em]
+
+ \item
+\begin{minipage}[t]{.6\textwidth}
+ {\em shared W weighted by U leading to agreement along X},
+ ($X$: shared $W$ wghtd by $U$ $\Rightarrow$  agrmnt along X) \texttt{(sharedToU)}.\\[0.2em]
+ This is an elementary effect.  It is defined by \\[0.4em]
+ $s^{\rm el}_{i\vit}(x) = x_{ij}\, \sum_{k; k \neq i} x_{kj}\,
+                 \Big\{ \sum_{h}   \big( w_{ih}\, w_{kh} [u_{ih}]\, [u_{kh}] \big )\Big\} \,$;\\[0.2em]
+ this refers to the closure of mixed $W-X$ three-paths, where the $W$ ties
+ are weighted by the dyadic covariate $U$;
+ the contribution of the tie $i \stackrel{X}{\rightarrow} j$
+ is proportional to  the weighted sum of mixed $W-X$ three-paths
+ $i \stackrel{WU\,}{\longrightarrow} h  \stackrel{WU\,}{\longleftarrow} k  \stackrel{X}{\rightarrow} j$.\\
+ Usually, it will be good to work with a non-centered dyadic covariate.
+
+ This can be regarded also as a weighted mixed 4-cycle effect.
+      \end{minipage}
+\hfill
+\begin{minipage}[t]{.2\textwidth}
+\linethickness{0.3pt}
+\vfill
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
+\setplotarea x from 2 to 4, y from 0 to 3
+\put{\large$\bullet$} at  2 1
+\put{\small$\blacksquare$} at  4 1
+\put{\small$\blacklozenge$} at  2 3
+\put{\large$\bullet$} at  4 3
+\put{$i$} at 2 0.4
+\put{$j$} at 4 0.4
+\put{$h$} at 2 3.6
+\put{$k$} at 4 3.6
+\put{{\small [$U$]}} at 0.9 2
+\put{{\small $W$}} at 1.6 2
+\put{{\small [$U$]}} at 3 3.9
+\put{{\small $W$}} at 3   3.3
+\put{{\small $X$}} at 4.4 2
+\put{{\small $X$}} at 3 0.6
+\arrow <2mm> [.2,.6]  from 2.25 1 to 3.75 1
+\arrow <2mm> [.2,.6]  from 2 1.25 to 2 2.75
+\arrow <2mm> [.2,.6]  from 3.75 3 to 2.25 3
+\arrow <2mm> [.2,.6]  from 4 2.75 to 4 1.25
+\endpicture
+\end{center}
+\vfill
+\end{minipage}
+
+ The effect parameter $p$ can take the values 1 to 6.
+ For parameters $p=1,3,4,6$, the tie $i \stackrel{WU\,}{\longrightarrow} h $ is weighted by $u_{ih}$;
+ for parameters $p=2,3,5,6$, the tie $k \stackrel{WU\,}{\longrightarrow} h $ is weighted by $u_{kh}$;
+ and for parameters $p = 4,5,6$, the square root is taken of the form between braces $\Big\{ ... \Big\}$.\\
+ This means that for $p=3,6$, both ties are weighted, and for $p=1,2,4,5$, only one of them.
+
+ Note that since this is the evaluation function for actor $i$ with
+ respect to network $X$, only the $x_{ij}$ tie indicator in the formula,
+ corresponding to  the tie $i \stackrel{X}{\rightarrow} j$,
+ is the dependent variable here.\\
+ The interpretation is that actors have the tendency to make the same
+ outgoing $X$-choices as those ($k$) with whom they share many outgoing $W$-ties,
+ weighted by $U$. There is no centering as in \texttt{sharedTo}.
+
+
+ {\em average two-mode W alter by tie}, ($X$: av.\ 2M alter $W$ by tie)
+        \texttt{(avAlt.2M.tie)}. \\[0.2em]
+
+ \item
+ {\em average two-mode W alter weighted by U, by tie}, ($X$: av.\ 2M alter $W$ weight $U$ by tie)
+        \texttt{(avAltU.2M.tie)}. \\[0.2em]
+ This is an elementary effect.  It is defined for internal effect parameter $p=1,2,3$ by \\[0.4em]
+ $s^{\rm el}_{ij\vit}(x) =  \displaystyle x_{ij}\, \frac{\sum_{k; k \neq i} x_{kj}\,
+                   \sum_{h}   \big( w_{ih}\, w_{kh} [u_{ih}]\, [u_{kh}] \big )}
+                  {   \sum_{k; k \neq i}  \sum_{h}  \big( w_{ih}\, w_{kh} [u_{ih}]\, [u_{kh}] \big )}
+                \,$;\\[0.2em]
+ this refers to the average closure of mixed $W-X$ three-paths, where the $W$ ties
+ are weighted by the dyadic covariate $U$; it is an alternative to \texttt{(sharedToU)}.
+ This can be also regarded as a weighted mixed 4-cycle effect.\\
+ The weighting depends on the internal effect parameter $p$ just like it is
+ for \texttt{(sharedToU)}.\\
+ This can be also regarded as a weighted mixed 4-cycle effect.\\
+
+  For internal effect parameter $p = 4,5,6$, it is defined by \\[0.4em]
+ $s^{\rm el}_{ij\vit}(x) =  \displaystyle x_{ij}\, \frac{\sum_{k; k \neq i} x_{kj}\,
+                  \sqrt{ \sum_{h}   \big( w_{ih}\, w_{kh} [u_{ih}]\, [u_{kh}] \big )}}
+                  {   \sum_{k; k \neq i} \sqrt{ \sum_{h}  \big( w_{ih}\, w_{kh} [u_{ih}]\, [u_{kh}] \big )}}
+                \,$.\\[0.2em]
 
  \item
 \begin{minipage}[t]{.6\textwidth}
@@ -16613,12 +16769,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.4.10.tar.gz|\\
+\verb|R CMD check RSiena_1.4.11.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.4.10.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.4.11.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -17116,6 +17272,10 @@ Further some of the complex effectGroups are the following:
     of two networks and a dyadic covariate, where the network in the role
     of dependent network should be one-mode, and the dyadic covariate
     should be on the node set (`squared') of the dependent network;
+\item \sfn{dyadBNetNetObjective} is for combinations
+    of two networks and a dyadic covariate, where the dyadic covariate
+    should have the same first and second node sets
+    as the explanatory network;
 \item \sfn{behaviorOneOneModeObjective} is for dependent behavioral variables and
     two explanatory one-mode directed networks;
 \item \sfn{behaviorSymSymObjective} is for dependent behavioral variables and
@@ -17237,7 +17397,7 @@ execution order} \label{tab:FuncExR}
 \begin{landscape}
 \begin{small}
 %\begin{longtable}{c | p{3cm} | p{5.2cm} | p{4.2cm} | p{8.5cm} }
-\begin{longtable}{c | p{2.4cm} | p{4.5cm} | p{4.0cm} | p{9.0cm} }
+\begin{longtable}{c | p{3.8cm} | p{4.5cm} | p{4.0cm} | p{7.4cm} }
 \caption[List of \RS Functions: Execution] {List of \RS Functions in order of
 Execution}
 \label{tab:ListSienaExec} \\
@@ -17331,7 +17491,8 @@ one less matrices than observations of the network; `nodeSets' are the sets
 of actors to which the varying covariate object is associated\\
 \hline
 
-3 & sienaCompositionChange & \newline
+3 & sienaCompositionChange &
+
 sienaCompositionChange( changelist,\newline
 nodeSet = "Actors", \newline
 option = 1) & & Creates a list of events describing the moments
@@ -17391,9 +17552,9 @@ an object of class `sienaGroup' from a list of Siena data objects:
 `objlist' is a list of objects of class `siena'; `singleOK' is a boolean
 variable to indicate if it is OK to have just one object; `getDocumentation'
 is a flag to  allow documentation of internal functions, not for use by users\\
-\hline
 
-4 & effectsDocumentation & \newline
+4 & effectsDocumentation & 
+
 effectsDocumentation() & & Prints a html or
 \LaTeX\ table with the  effects details\\
 \hline
@@ -17508,7 +17669,8 @@ condvarno = 0, \newline
 condname = "", firstg = 0.2, \newline
 cond = NA, findiff = FALSE, \newline
 seed = NULL) &
-\newline
+
+
 MyAlgorithm $<$-- sienaAlgorithmCreate \newline
 (projname = \newline
 "MyProject") & Creates a siena algorithm
@@ -17676,6 +17838,26 @@ Changes in RSiena:
 \fi
 
 
+\item 2024-04-23 GitHub, package version 1.4.11
+
+Changes in RSiena:
+\begin{itemize}
+\item Effects:
+   \begin{itemize}
+  \item Effect name \texttt{outOutDist2AvIntn} changed to \texttt{avAlt.2M.tot}.
+  \item New effects \texttt{avAlt.2M.tie}, \texttt{avAlt.2M.tot}, \texttt{avAltU.2M.tie},
+    \texttt{dist2OutInActIntn}, \texttt{nDist2ActIntn}, \texttt{sharedToU}.
+  \item Changed sqrt treatment in \texttt{outOutDist2ActIntn} and
+    \texttt{outOutDist2AvIntn} / \texttt{avAlt.2M.tot}.
+  \end{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+  \item Method \sfn{print.sienaEffects} has an extra parameter \texttt{includeShortNames}
+    to do what the name of this parameter suggests.
+    \end{itemize}  
+\end{itemize}
+
+
 \item 2024-03-25 GitHub, package version 1.4.10
 
 
@@ -17686,7 +17868,7 @@ Changes in RSiena:
   \item New effects \texttt{crossXOutAct}, \texttt{outOutDist2ActIntn},
     \texttt{outOutDist2AvIntn}, \texttt{inPopOutW}.
   \item New effect group \texttt{doubleCovarNetObjective}.
-  \item New effects \texttt{sameXV} and \texttt{sameXVInPop} for bipartite 
+  \item New effects \texttt{sameXV} and \texttt{sameXVInPop} for bipartite
     and symmetric networks.
   \item \texttt{sameXCycle4} added for one-mode and symmetric networks.
   \item \texttt{sharedTo} gets default internal effect parameter \texttt{p=3} .
@@ -17696,7 +17878,6 @@ Changes in RSiena:
   \item Function \sfn{updateSpecification} now also updates interaction effects
     and \texttt{initialValues}.
   \item New parameter \texttt{silent} in \sfn{sienaAlgorithmCreate} activated.
-
   \end{itemize}
 \end{itemize}
 
