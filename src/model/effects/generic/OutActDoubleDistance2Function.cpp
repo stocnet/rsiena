@@ -47,6 +47,15 @@ OutActDoubleDistance2Function::OutActDoubleDistance2Function(
 }
 
 /**
+ * Deallocates this function.
+ */
+OutActDoubleDistance2Function::~OutActDoubleDistance2Function()
+{
+	delete[] this->ltimesFound;
+}
+
+
+/**
  * Initializes this function.
  * @param[in] pData the observed data
  * @param[in] pState the current state of the dependent variables
@@ -74,27 +83,50 @@ void OutActDoubleDistance2Function::initialize(const Data * pData,
 	{
 		this->lavdegree = pNetworkData->averageOutDegree();
 	}
-	if (this->lroot)
+	this->ln = this->pFirstNetwork()->n();
+	// A helper array of ltimesFound
+	this->ltimesFound = new int[this->ln] {};
+	for (int h = 0; h < this->ln; h++)
 	{
-		this->lavdegree = sqrt(this->lavdegree);
-		// not with lsqrtTable because not an integer
+		this->ltimesFound[h] = 0;
 	}
 }
 
+
 /**
- * Returns the value of this function for the given alter. It is assumed
- * that the function has been initialized before and pre-processed with
- * respect to a certain ego.
+ * increase is +1 if not lroot, and else sqrt(h+1)-sqrt(h)
+ * used in pre-processing.
  */
-double OutActDoubleDistance2Function::value(int alter) const
+double OutActDoubleDistance2Function::increase(int h) const
 {
+	double delta = 1;
+	if (this->lroot)
+	{
+		delta = this->lsqrtTable->sqrt(h+1) - this->lsqrtTable->sqrt(h);
+	}
+	return delta;
+}
+
+/**
+ * Does the necessary preprocessing work for calculating the
+ * value for a specific ego. This method must be invoked before
+ * calling OutActDoubleDistance2Function::value(...).
+ */
+
+void OutActDoubleDistance2Function::preprocessEgo(int ego)
+{
+	MixedNetworkAlterFunction::preprocessEgo(ego);
 	double statistic = 0;
+	
 	const Network * pFirstNetwork = this->pFirstNetwork();
 	const Network * pSecondNetwork = this->pSecondNetwork();
-	IncidentTieIterator iter;
 	int (Network::*pDegreeFunction)(int) const;
-	int deg = 0;
-
+	IncidentTieIterator iter;
+	double degs = 0;
+	for (int h = 0; h < this->ln; h++)
+	{
+		this->ltimesFound[h] = 0;
+	}
 	if (lsecondin)
 	{
 		pDegreeFunction = &siena::Network::inDegree;
@@ -104,32 +136,43 @@ double OutActDoubleDistance2Function::value(int alter) const
 		pDegreeFunction = &siena::Network::outDegree;
 	}
 
-	for (iter = pFirstNetwork->outTies(this->ego()); iter.valid(); iter.next())
+	// ltimesFound[h] is the number of times
+	// that h was found at out-in distance 2 from ego
+	// Traverse all out-in two-paths from ego
+
+	for (iter = pFirstNetwork->outTies(ego); iter.valid(); iter.next())
 	{
 		for (IncidentTieIterator iter2(pFirstNetwork->inTies(iter.actor()));
 			iter2.valid();
 			iter2.next())
 			{
-				if (this->lroot)
+				int h = iter2.actor();
+				if (h != ego)
 				{
-					statistic +=
-			(this->lsqrtTable->sqrt((pSecondNetwork->*pDegreeFunction)(iter2.actor()))
-										- this->lavdegree);
-					deg++;
-				}
-				else
-				{
-			statistic += ((pSecondNetwork->*pDegreeFunction)(iter2.actor())
-														- this->lavdegree);
-					deg++;
+					statistic += (this->increase(this->ltimesFound[h])) *
+						((pSecondNetwork->*pDegreeFunction)(h) - this->lavdegree);
+					degs += (this->increase(this->ltimesFound[h]));
+					this->ltimesFound[h] ++;
 				}
 			}
 	}
-	if ((deg > 0) && (this->laverage))
+						
+	if ((degs > 0) && (this->laverage))
 	{
-		statistic /= deg;
+		statistic /= degs;
 	}
-	return statistic;
+	this->loutInDist2Degree = statistic;
+}
+
+
+/**
+ * Returns the value of this function for the given alter. It is assumed
+ * that the function has been initialize before and pre-processed with
+ * respect to a certain ego.
+ */
+double OutActDoubleDistance2Function::value(int alter) const
+{
+	return this->loutInDist2Degree;
 }
 
 }
