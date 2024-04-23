@@ -14,6 +14,8 @@
 #include <string>
 
 #include "DyadicCovariateMixedNetworkAlterFunction.h"
+#include "data/ActorSet.h"
+#include "data/DyadicCovariate.h"
 #include "data/ConstantDyadicCovariate.h"
 #include "data/ChangingDyadicCovariate.h"
 #include "network/Network.h"
@@ -67,13 +69,77 @@ void DyadicCovariateMixedNetworkAlterFunction::initialize(const Data * pData,
 	this->lpChangingCovariate =	pData->pChangingDyadicCovariate(this->lDyadicCovariateName);
 	
 	this->lexcludeMissings = false;
-	this->lperiod = period;
+	this->lperiod = period;	
 
-	if (!this->lpConstantCovariate && !this->lpChangingCovariate)
+	if (this->lpConstantCovariate)
+	{
+		ldyadic_n = this->lpConstantCovariate->pFirstActorSet()->n();
+		ldyadic_m = this->lpConstantCovariate->pSecondActorSet()->n();
+	}
+	else if (this->lpChangingCovariate)
+	{
+		ldyadic_n = this->lpChangingCovariate->pFirstActorSet()->n();
+		ldyadic_m = this->lpChangingCovariate->pSecondActorSet()->n();
+	}
+	else
 	{
 		throw logic_error(
 			"Dyadic covariate variable '" + this->lDyadicCovariateName + "' expected.");
 	}
+	
+	lFirstNet_n = this->pFirstNetwork()->n();
+	lFirstNet_m = this->pFirstNetwork()->m();
+	lSecondNet_n = this->pSecondNetwork()->n();
+	lSecondNet_m = this->pSecondNetwork()->m();	
+}
+
+/**
+ * Returns the number of row nodes.
+ */
+int DyadicCovariateMixedNetworkAlterFunction::dyCov_n() const
+{
+	return ldyadic_n;
+}
+
+/**
+ * Returns the number of column nodes.
+ */
+int DyadicCovariateMixedNetworkAlterFunction::dyCov_m() const
+{
+	return ldyadic_m;
+}
+
+/**
+ * Returns the number of actors in the first network.
+ */
+int DyadicCovariateMixedNetworkAlterFunction::firstNet_n() const
+{
+	return lFirstNet_n;
+}
+
+/**
+ * Returns the number of nodes in the second node set of the first network.
+ */
+int DyadicCovariateMixedNetworkAlterFunction::firstNet_m() const
+{
+	return lFirstNet_m;
+}
+
+
+/**
+ * Returns the number of actors in the second network.
+ */
+int DyadicCovariateMixedNetworkAlterFunction::secondNet_n() const
+{
+	return lSecondNet_n;
+}
+
+/**
+ * Returns the number of nodes in the second node set of the second network.
+ */
+int DyadicCovariateMixedNetworkAlterFunction::secondNet_m() const
+{
+	return lSecondNet_m;
 }
 
 /**

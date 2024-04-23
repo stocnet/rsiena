@@ -78,6 +78,7 @@ effectsDocumentation <- function(effects= NULL, type="html",
 				"dyadANetNetObjective",
 				"covarABipNetObjective",
 				"dyadANetNetObjective",
+				"dyadBNetNetObjective",
 				"settingsObjective",
 
 				"symmetricObjective",

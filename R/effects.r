@@ -335,7 +335,6 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 							otherName, name=varname,
 							groupName=groupName, group=group,
 							netType=netType))
-# The name "nonSymmetricBipartiteObjective"
 			}
 			if ((!(types[j] %in% c('behavior', 'continuous'))) && (varname != otherName))
 			{
@@ -388,6 +387,34 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 						othervarname <- names(xx$dyvCovars)[k]
 						objEffects <- rbind(objEffects,
 							createEffects("dyadANetNetObjective",
+								varname, otherName, othervarname,
+								name=varname, groupName=groupName,
+								group=group, netType=netType))
+					}
+				}
+				for (k in seq(along = xx$dycCovars))
+				{
+					nodset_j <- ifelse((attr(xx$depvars[[j]], "type") == "oneMode"), 
+								attr(xx$depvars[[j]], 'nodeSet'), attr(xx$depvars[[j]], 'nodeSet')[2])
+					if (attr(xx$dycCovars[[k]], 'nodeSet')[2] == nodset_j)
+					{
+						othervarname <- names(xx$dycCovars)[k]
+						objEffects <- rbind(objEffects,
+							createEffects("dyadBNetNetObjective",
+								varname, otherName, othervarname,
+								name=varname, groupName=groupName,
+								group=group, netType=netType))
+					}
+				}
+				for (k in seq(along = xx$dyvCovars))
+				{
+					nodset_j <- ifelse((attr(xx$depvars[[j]], "type") == "oneMode"), 
+								attr(xx$depvars[[j]], 'nodeSet'), attr(xx$depvars[[j]], 'nodeSet')[2])
+					if (attr(xx$dyvCovars[[k]], 'nodeSet')[2] == nodset_j)
+					{
+						othervarname <- names(xx$dyvCovars)[k]
+						objEffects <- rbind(objEffects,
+							createEffects("dyadBNetNetObjective",
 								varname, otherName, othervarname,
 								name=varname, groupName=groupName,
 								group=group, netType=netType))
@@ -1192,6 +1219,34 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 									names(xx$vCovars)[k], name=varname,
 									groupName=groupName, group=group,
 									netType=netType))
+					}
+				}
+				for (k in seq(along = xx$dycCovars))
+				{
+					nodset_j <- ifelse((attr(xx$depvars[[j]], "type") == "oneMode"), 
+								attr(xx$depvars[[j]], 'nodeSet'), attr(xx$depvars[[j]], 'nodeSet')[2])
+					if (attr(xx$dycCovars[[k]], 'nodeSet')[2] == nodset_j)
+					{
+						othervarname <- names(xx$dycCovars)[k]
+						objEffects <- rbind(objEffects,
+							createEffects("dyadBNetNetObjective",
+								varname, otherName, othervarname,
+								name=varname, groupName=groupName,
+								group=group, netType=netType))
+					}
+				}
+				for (k in seq(along = xx$dyvCovars))
+				{
+					nodset_j <- ifelse((attr(xx$depvars[[j]], "type") == "oneMode"), 
+								attr(xx$depvars[[j]], 'nodeSet'), attr(xx$depvars[[j]], 'nodeSet')[2])
+					if (attr(xx$dyvCovars[[k]], 'nodeSet')[2] == nodset_j)
+					{
+						othervarname <- names(xx$dyvCovars)[k]
+						objEffects <- rbind(objEffects,
+							createEffects("dyadBNetNetObjective",
+								varname, otherName, othervarname,
+								name=varname, groupName=groupName,
+								group=group, netType=netType))
 					}
 				}
 				for (k in seq(along=xx$depvars))

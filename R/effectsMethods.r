@@ -11,7 +11,7 @@
 ## ****************************************************************************/
 ##@print.sienaEffects Methods
 print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
-    expandDummies=FALSE, includeRandoms=FALSE, dropRates=FALSE, ...)
+    expandDummies=FALSE, includeRandoms=FALSE, dropRates=FALSE, includeShortNames=FALSE, ...)
 {
     if (!inherits(x, "sienaEffects"))
         stop("not a legitimate Siena effects object")
@@ -48,8 +48,16 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
         # includes creations and gmm
         gmm <- any(x$type[x$include] %in% "gmm")
         timeDummies <- !x$timeDummy[x$include] == ","
-        specs <- as.data.frame(x[, c("name", "effectName", "include", "fix",
+		if (includeShortNames)
+		{
+			specs <- as.data.frame(x[, c("name", "effectName", "shortName", "include", "fix",
+                "test", "initialValue", "parm")])		
+		}
+		else
+		{
+			specs <- as.data.frame(x[, c("name", "effectName", "include", "fix",
                 "test", "initialValue", "parm")])
+		}
         if (includeOnly)
         {
             included <- x$include
@@ -321,6 +329,21 @@ updateSpecification <- function(effects.to, effects.from,
 		efn1 <- prevEffects$effect1[inter]
 		efn2 <- prevEffects$effect2[inter]
 		efn3 <- prevEffects$effect3[inter]
+	# prepare a stopmessage; this will possibly be used at various places.
+		if (is.null(effects.extra))
+		{
+			stopMessage <- paste("Effects object ", deparse(substitute(effects.from)),
+					" contains some interactions \n",
+					" but there is no information ",
+					"for the corresponding main effects.", sep="")
+		}
+		else
+		{
+			stopMessage <- paste("Effects object ", deparse(substitute(effects.from)),
+					" contains some interactions \n",
+					"  and neither this nor ", deparse(substitute(effects.extra)),
+					"\n contains information for the corresponding main effects.", sep="")
+		}
 	# Note that some of efn3 may be 0,
 	# and effects.from$effectNumber starts counting from 1.
 	# First try to find the corresponding main effects in effects.from
@@ -364,10 +387,7 @@ updateSpecification <- function(effects.to, effects.from,
 				mefn3 <- ifelse(three, match(efn3, effects.extra$effectNumber), 0)
 				if (any(is.na(c(mefn1,mefn2,mefn3))))
 				{
-					stop("Effects object ", deparse(substitute(effects.from)),
-					" contains some interactions \n",
-					"  and neither this nor ", deparse(substitute(effects.extra)),
-					"\n contains information for the corresponding main effects.")
+					stop(stopMessage)
 				}
 				effects.fr <- effects.extra
 			}
@@ -393,23 +413,33 @@ updateSpecification <- function(effects.to, effects.from,
         for (k in seq_along(inter)){
 			if (three[k])
 			{
-				effects.to <- includeInteraction(effects.to, shn1[k], shn2[k], shn3[k],
-					name=nam[k],
-					interaction1=c(int11[k],int12[k],int13[k]),
-					interaction2=c(int21[k],int22[k],int23[k]),
-					initialValue=initv[k],
-					type=typ[k], fix=fixx[k], test=tests[k], random=rand[k],
-					verbose=FALSE, character=TRUE)
+				if (inherits(try(
+						effects.to <- includeInteraction(effects.to, shn1[k], shn2[k], shn3[k],
+						name=nam[k],
+						interaction1=c(int11[k],int12[k],int13[k]),
+						interaction2=c(int21[k],int22[k],int23[k]),
+						initialValue=initv[k],
+						type=typ[k], fix=fixx[k], test=tests[k], random=rand[k],
+						verbose=FALSE, character=TRUE), 
+					silent=TRUE), "try-error"))
+				{
+					stop(stopMessage)
+				}
 			}
 			else
 			{
-				effects.to <- includeInteraction(effects.to, shn1[k], shn2[k],
-					name=nam[k],
-					interaction1=c(int11[k],int21[k]),
-					interaction2=c(int12[k],int22[k]),
-					initialValue=initv[k],
-					type=typ[k], fix=fixx[k], test=tests[k], random=rand[k],
-					verbose=FALSE, character=TRUE)
+				if (inherits(try(
+					effects.to <- includeInteraction(effects.to, shn1[k], shn2[k],
+						name=nam[k],
+						interaction1=c(int11[k],int21[k]),
+						interaction2=c(int12[k],int22[k]),
+						initialValue=initv[k],
+						type=typ[k], fix=fixx[k], test=tests[k], random=rand[k],
+						verbose=FALSE, character=TRUE), 
+					silent=TRUE), "try-error"))
+				{
+					stop(stopMessage)
+				}
 			}
         }
     }

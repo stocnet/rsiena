@@ -15,6 +15,7 @@
 #include "model/tables/Cache.h"
 #include "model/tables/NetworkCache.h"
 #include "model/tables/TwoNetworkCache.h"
+#include "network/CommonNeighborIterator.h"
 
 using namespace std;
 
@@ -56,6 +57,10 @@ void MixedNetworkAlterFunction::initialize(const Data * pData,
 	this->lpFirstNetworkCache = pCache->pNetworkCache(this->lpFirstNetwork);
 }
 
+// ----------------------------------------------------------------------------
+// Section: Tie variables
+// ----------------------------------------------------------------------------
+
 /**
  * Returns if in the first network
  * there is a tie from the current ego to the given alter.
@@ -73,5 +78,21 @@ bool MixedNetworkAlterFunction::secondOutTieExists(int alter) const
 {
 	return this->lpTwoNetworkCache->secondOutTieExists(alter);
 }
+
+// ----------------------------------------------------------------------------
+// Section: Iterators
+// ----------------------------------------------------------------------------
+
+/**
+ * Returns an iterator over first-network instars of actors i and j.
+ */
+CommonNeighborIterator MixedNetworkAlterFunction::firstNetworkInStars(int i, int j) const 
+{
+//	this->lpFirstNetwork->checkSenderRange(i);
+//	this->lpFirstNetwork->checkSenderRange(j);
+	return CommonNeighborIterator(this->lpFirstNetwork->outTies(i), this->lpFirstNetwork->outTies(j));
+}
+
+
 
 }

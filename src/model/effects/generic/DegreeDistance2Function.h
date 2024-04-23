@@ -3,16 +3,16 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: MixedThreeCyclesFunction.h
+ * File: DegreeDistance2Function.h
  *
  * Description: This file contains the definition of the
- * ThreeCyclesFunction class.
+ * DegreeDistance2Function class.
  *****************************************************************************/
 
-#ifndef MIXEDTHREECYCLESFUNCTION_H_
-#define MIXEDTHREECYCLESFUNCTION_H_
+#ifndef DEGREEDISTANCE2FUNCTION_H_
+#define DEGREEDISTANCE2FUNCTION_H_
 
-#include "MixedNetworkAlterFunction.h"
+#include "NetworkAlterFunction.h"
 
 namespace siena
 {
@@ -22,43 +22,34 @@ namespace siena
 // ----------------------------------------------------------------------------
 
 class SqrtTable;
-class ConfigurationTable;
 
 // ----------------------------------------------------------------------------
-// Section: MixedThreeCyclesFunction class
+// Section: Class definition
 // ----------------------------------------------------------------------------
 
-/**
- * For sharedTo effect (see manual).
- */
-class MixedThreeCyclesFunction : public MixedNetworkAlterFunction
+class DegreeDistance2Function: public NetworkAlterFunction
 {
 public:
-	MixedThreeCyclesFunction(std::string firstNetworkName,
-			std::string secondNetworkName, double parameter, bool average);
-	virtual ~MixedThreeCyclesFunction();
+	DegreeDistance2Function(std::string networkName,
+			double parameter, bool firstIn,
+			bool secondIn, bool average);
 
 	virtual void initialize(const Data * pData,
 		State * pState, int period, Cache * pCache);
-	virtual void preprocessEgo(int ego);
 
 	virtual double value(int alter) const;
 
 private:
 	bool lroot {}; // should the square root be taken?
-	bool lcenter {}; // should there be centering?
-	bool laverage {}; // should there be division by number of in-two-stars in first network?
-	double lavInTwoStar {}; // average observed number of in-two-stars in first network
-	std::string lvariableName {}; // name of first network
-	ConfigurationTable * lpFirstInStarTable;
+	bool lfirstin {}; // first tie in- or outgoing?
+	bool lsecondin {}; // second tie in- or outgoing?
+	bool laverage {}; // should the average be used?
+	double lavdegree {}; // average degree, all observations, secondNetworkName
+	std::string lvariableName {}; // local networkName
 	// Lookup table for fast square root calculations:
 	SqrtTable * lsqrtTable;
-	// for use in preprocessing:
-	int * ltimesFound {};
-	double lsumDegs {};
-	int ln {};
 };
 
 }
 
-#endif /*MIXEDTHREECYCLESFUNCTION_H_*/
+#endif /* DEGREEDISTANCE2FUNCTION_H_ */

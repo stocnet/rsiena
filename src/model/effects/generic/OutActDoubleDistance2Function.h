@@ -33,9 +33,12 @@ public:
 	OutActDoubleDistance2Function(std::string firstNetworkName,
 			std::string secondNetworkName, double parameter,
 			bool secondIn, bool average);
+	virtual ~OutActDoubleDistance2Function();
 
 	virtual void initialize(const Data * pData,
 		State * pState, int period, Cache * pCache);
+	double increase(int h) const;
+	virtual void preprocessEgo(int ego);
 
 	virtual double value(int alter) const;
 
@@ -47,6 +50,10 @@ private:
 	std::string lvariableName {}; // local secondNetworkName
 	// Lookup table for fast square root calculations:
 	SqrtTable * lsqrtTable;
+	// for use in preprocessing:
+	int * ltimesFound {};
+	double loutInDist2Degree {};
+	int ln {};
 };
 
 }
