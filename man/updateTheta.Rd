@@ -47,7 +47,9 @@ updateSpecification(effects.to, effects.from,
   If \code{effects.from} contains interaction effects, the corresponding
   main effects will be looked for in \code{effects.from}; if they are not
   found there, they will be looked for in \code{effects.extra}.
-  See the examples for a typical case.
+  It is not guaranteed that this will be successful.
+  For \code{effects.extra}, it is best to use an effects object constructed for
+  the same data set as \code{effects.from}, and by the same version of RSiena.
 }
 \value{
   Updated effects object.

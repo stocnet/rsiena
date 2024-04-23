@@ -81,7 +81,8 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   or not all of them, then nevertheless the internal effect parameters as
   specified in the effects object are used for the interaction.
   These can be set using function \code{setEffect} with the desired value
-  of \code{parameter} and (in this case) \code{include=FALSE}. \cr
+  of \code{parameter} and (in this case) \code{include=FALSE} or 
+  \code{fix=TRUE, initialValue=0}. \cr
   The values of the internal effect parameters can be checked for a
   \code{\link{sienaFit}} object \code{ans} produced by \code{\link{siena07}}
   by looking at \code{ans$effects}, which is the requested effects object
