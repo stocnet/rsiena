@@ -239,6 +239,7 @@ edit.sienaEffects <- function(name, ...)
     ## re-sort the columns
     tmp <- tmp[, match(originalNames, names(tmp))]
     class(tmp) <- c("sienaEffects", class(tmp))
+	 attr(tmp, "version") <- packageDescription(pkgname, fields = "Version")
     tmp
 }
 

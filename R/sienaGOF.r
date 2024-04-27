@@ -336,6 +336,7 @@ sienaGOF <- function(
 				InvCovSimStats=a,
 				Rank=arank)
 		class(ret) <- "sienaGofTest"
+		attr(ret, "version") <- packageDescription(pkgname, fields = "Version")
 		attr(ret,"sienaFitName") <- deparse(substitute(sienaFitObject))
 		attr(ret,"auxiliaryStatisticName") <-
 				attr(obsStats,"auxiliaryStatisticName")
@@ -513,6 +514,7 @@ sienaGOF <- function(
 
 	names(res) <- names(obsStats)
 	class(res) <- "sienaGOF"
+	attr(res, "version") <- packageDescription(pkgname, fields = "Version")
 	attr(res, "scoreTest") <- (sum(tested) > 0)
 	attr(res, "originalMahalanobisDistances") <- obsMhd
 	attr(res, "oneStepMahalanobisDistances") <- OneStepMHD

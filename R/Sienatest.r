@@ -357,6 +357,7 @@ score.Test <- function(ans, test=ans$test)
 	efnames <- theEfNames(ans)[test]
 	t.ans <- list(chisquare=teststat, df=df, pvalue=pval, onesided=onesided, efnames=efnames)
 	class(t.ans) <- "sienaTest"
+	attr(t.ans, "version") <- packageDescription(pkgname, fields = "Version")
 	t.ans
 }
 
@@ -392,6 +393,7 @@ Wald.RSiena <- function(A, ans)
 	}
 	t.ans <- list(chisquare=chisq, df=df, pvalue=pval, onesided=onesided)
 	class(t.ans) <- "sienaTest"
+	attr(t.ans, "version") <- packageDescription(pkgname, fields = "Version")
 	t.ans
 }
 

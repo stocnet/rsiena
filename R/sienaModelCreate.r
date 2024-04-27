@@ -232,6 +232,7 @@ sienaModelCreate <- function(fn,
 	# The two options model$noAggregation and model$standardizeWithTruncation
 	# are used only in phase2.r.
 	class(model) <- "sienaAlgorithm"
+	attr(model, "version") <- packageDescription(pkgname, fields = "Version")
 	model
 }
 

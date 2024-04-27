@@ -26,6 +26,7 @@ sienaCompositionChange <- function(changelist, nodeSet="Actors", option=1)
 	}
     out <- changelist
     class(out) <- "compositionChange"
+	 attr(out, "version") <- packageDescription(pkgname, fields = "Version")
     if (is.vector(nodeSet) && length(nodeSet) > 1)
 	{
         stop ("only one node set relevant")
@@ -572,6 +573,7 @@ sienaDependent <- function(netarray, type=c("oneMode","bipartite","behavior",
 
     obj <- netarray
     class(obj) <- ("sienaDependent")
+	attr(obj, "version") <- packageDescription(pkgname, fields = "Version")
     attr(obj, "type") <- type
     attr(obj, "sparse") <- sparse
     attr(obj, "nodeSet") <- nodeSet
