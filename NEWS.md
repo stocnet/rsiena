@@ -1,3 +1,18 @@
+
+# RSiena 1.4.12
+
+2024-04-27
+
+
+## Changes in RSiena:
+
+### Improved coding:
+  * All objects created by functions, if not print or summary,
+   now have an attribute "version", which is the package version.
+### Miscellenea:
+  * New RSiena logo inst/rsienalogo-2.png
+
+
 # RSiena 1.4.11
 
 2024-04-23

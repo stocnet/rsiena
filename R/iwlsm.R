@@ -221,6 +221,7 @@ iwlsm.default <-
                 weights = if(!missing(weights)) weights,
                 conv = conv, converged = done, x = xx, call = cl)
     class(fit) <- c("iwlsm", "lm")
+	 attr(fit, "version") <- packageDescription(pkgname, fields = "Version")
     fit
 }
 ##@print.iwlsm Methods
@@ -317,6 +318,7 @@ summary.iwlsm <- function(object, method = c("XtX", "XtWX"),
     object$correlation <- correl
     object$terms <- NA
     class(object) <- "summary.iwlsm"
+	 attr(object, "version") <- packageDescription(pkgname, fields = "Version")
     object
 }
 ##@print.summary.iwlsm Methods

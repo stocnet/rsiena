@@ -373,6 +373,7 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 			}
 			RItmp$toggleProbabilities <- toggleProbabilities
 			class(RItmp) <- "sienaRI"
+			attr(RItmp, "version") <- packageDescription(pkgname, fields = "Version")
 			if(depNumber == 1){
 				RI <- RItmp
 			}else if(depNumber == 2){
@@ -391,6 +392,7 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 				"return value is therefore not of class 'sienaRI'\n",
 				"but a list of objects of class 'sienaRI'."))
 	}
+	attr(RI, "version") <- packageDescription(pkgname, fields = "Version")
 	RI
 }
 

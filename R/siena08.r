@@ -210,6 +210,7 @@ siena08 <- function(..., projname="sienaMeta", bound=5, alpha=0.05, maxit=20)
 # add everything to the meta object created
     meta$thetadf <- mydf
     class(meta) <- "sienaMeta"
+	attr(meta, "version") <- packageDescription(pkgname, fields = "Version")
     meta$projname <- projname
     meta$bound <- bound
     ## count the score tests

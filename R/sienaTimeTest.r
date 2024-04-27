@@ -553,6 +553,7 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 		IndividualTestsOrthogonalized=condition
 		)
 	class(returnObj) <- "sienaTimeTest"
+	attr(returnObj, "version") <- packageDescription(pkgname, fields = "Version")
 	returnObj
 }
 ##@transformed.scoreTest siena07 score test for part of the additional effects
