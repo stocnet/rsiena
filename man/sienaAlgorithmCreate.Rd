@@ -7,11 +7,12 @@
 \title{Function to create an object containing the algorithm
   specifications for parameter estimation in RSiena}
 \description{
-  Creates an object with specifications for the algorithm for parameter
-  estimation in RSiena.\cr
-  \code{sienaAlgorithmCreate()} and \code{sienaModelCreate()}
-  are identical functions; the second name was
-  used from the start of the \code{RSiena} package, but the first name
+  Creates an object with specifications for the algorithm for  
+  parameter estimation in RSiena.   
+
+  \code{sienaAlgorithmCreate()} and \code{sienaModelCreate()}   
+  are identical functions; the second name was   
+  used from the start of the \code{RSiena} package, but the first name   
   indicates more precisely the purpose of this function.
 }
 \usage{
@@ -25,7 +26,7 @@ sienaAlgorithmCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
      minimumPermutationLength=2, initialPermutationLength=20,
      modelType=NULL, behModelType=NULL, mult=5, simOnly=FALSE, localML=FALSE,
      truncation=5, doubleAveraging=0, standardizeVar=(diagonalize<1),
-     lessMem=FALSE)
+     lessMem=FALSE, silent=FALSE)
 
 sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
      useStdInits = FALSE, n3 = 1000, nsub = 4, n2start = NULL,
@@ -37,7 +38,7 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
      minimumPermutationLength=2, initialPermutationLength=20,
      modelType=NULL, behModelType=NULL, mult=5, simOnly=FALSE, localML=FALSE,
      truncation=5, doubleAveraging=0, standardizeVar=(diagonalize<1),
-     lessMem=FALSE)
+     lessMem=FALSE, silent=FALSE)
 }
 \arguments{
   \item{fn}{Function to do one simulation in the Robbins-Monro
@@ -67,9 +68,11 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
     at least n3=3000 is advised. Sometimes much higher values are required
     for stable estimation of standard errors.}
   \item{nsub}{Number of subphases in phase 2.}
-  \item{n2start}{Minimum number of interations in subphase 1 of phase 2;
-    default is \code{2.52*(p+7)},
-    where \code{p} = number of estimated parameters.}
+  \item{n2start}{Minimum number of iterations in subphase 1 of phase 2;
+    default is \code{2.52*(p+7)}, where \code{p} = number of estimated
+    parameters; if \code{useCluster=TRUE} in the call of
+    \code{\link{siena07}}, this is divided by \code{nbrNodes}.
+    }
   \item{dolby}{Boolean. Should there be noise reduction by regression
     on augmented data score. In most cases dolby=TRUE yields better
     convergence, but takes some extra computing time;
@@ -179,6 +182,7 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
     if \code{lessMem=TRUE}, it will be impossible to run
     \code{\link{sienaTimeTest}} or \code{\link{sienaGOF}} on
     the object produced by \code{\link{siena07}}.}
+  \item{silent}{Logical: whether to give a note about the output file.}
 }
 \details{Model specification is done via this object for
   \code{\link{siena07}}.
@@ -186,8 +190,7 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
   Robbins-Monro algorithm. Those not
   available as arguments can be changed manually when desired.\cr
   The value \code{prML=1} defines the defaults valid in RSiena up to version
-  1.3.16. For ML estimation with only one dependent variable,
-  \code{prML=2} may be more efficient.\cr
+  1.3.16. \cr
   If \code{prML} is given as a vector of 7 probabilities, these are,
   consecutively: the probabilities of inserting a diagonal step, deleting a
   diagonal step, permuting, inserting a CCP, deleting a CCP, inserting random
@@ -200,14 +203,15 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
 }
 \value{Returns an object of class \code{sienaAlgorithm} containing
   values implied by the parameters.}
-\references{ \itemize{
-\item For the model types: \cr
-   Tom A. B. Snijders and Mark Pickup,
+\references{
+    For \code{modelType}:\cr
+   Snijders, T.A.B., and Pickup, M. (2016),
    Stochastic Actor-Oriented Models for Network Dynamics.
-   In: Jennifer N. Victor, Mark Lubell and Alexander H. Montgomery,
-   Oxford Handbook of Political Networks. Oxford University Press, 2016.
-\item Also see \url{https://www.stats.ox.ac.uk/~snijders/siena/}
-}}
+   In: Victor, J.N., Lubell, M., and Montgomery, A.H.,
+   \emph{Oxford Handbook of Political Networks}. Oxford University Press.
+   
+    Also see \url{https://www.stats.ox.ac.uk/~snijders/siena/}
+}
 \author{Ruth Ripley and Tom A.B. Snijders}
 \seealso{\code{\link{siena07}}, \code{\link{simstats0c}}.}
 \examples{

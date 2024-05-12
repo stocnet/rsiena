@@ -43,11 +43,11 @@ public:
 
 private:
 	EgocentricConfigurationTable * (NetworkCache::*lpTable)() const;
-	double lparameter;
+	double lparameter {};
 	std::vector<double> lcumulativeWeight;
-	double lweight;
-	double lexpmweight;
-	double lexpfactor;
+	double lweight {};
+	double lexpmweight {};
+	double lexpfactor {};
 	EgocentricConfigurationTable *lpInitialisedTable;
 
 };

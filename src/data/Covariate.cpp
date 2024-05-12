@@ -63,6 +63,19 @@ void Covariate::range(double range)
 	this->lrange = range;
 }
 
+
+double Covariate::min() const
+{
+	double value = 0;
+	return value;
+}
+
+double Covariate::max() const
+{
+	double value = 0;
+	return value;
+}
+
 /**
  * Stores the similarity mean of this covariate, which is calculated in R.
  */
@@ -108,4 +121,5 @@ double Covariate::similarityNetwork(double a, double b, string networkName) cons
 	}
 	return 1.0 - fabs(a - b) / this->lrange - similarityMean;
 }
+
 }

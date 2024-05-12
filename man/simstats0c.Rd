@@ -5,7 +5,7 @@
 \alias{terminateFRAN}
 \title{Versions of FRAN}
 \description{
- The functions to be called as "FRAN" by \code{\link{siena07}}.
+ The functions to be called as "FRAN" by \code{\link{siena07}}.   
  They call compiled C++. Not for general users' use.
 }
 \usage{

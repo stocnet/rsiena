@@ -41,7 +41,7 @@ private:
 	// The current value of a behavior variable per each actor.
 	// This array is 0 for covariate-based effects.
 
-	const int * lvalues;
+	const int * lvalues {};
 };
 
 }

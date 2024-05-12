@@ -35,7 +35,7 @@ public:
 
 private:
 	// minim indicates whether it will be a minimum instead of a maximum
-	bool lminim;
+	bool lminim {};
 };
 
 }

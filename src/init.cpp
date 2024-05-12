@@ -5,7 +5,7 @@
 
 // R stuff last redefine length macro
 #include <R.h>
-#include <Rinternals.h>
+//#include <Rinternals.h> // included by siena07models.h
 #include <R_ext/Rdynload.h>
 
 extern "C"

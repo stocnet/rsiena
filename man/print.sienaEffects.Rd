@@ -6,14 +6,15 @@
   Print methods for Siena effects objects
 }
 \description{
-  Prints the major columns of the effects object. Or all, with any non
-  atomic columns listed separately.
+  Prints the major columns of the effects object.   
+  Or all, with any non-atomic columns listed separately.
 }
 \usage{
 \method{print}{sienaEffects}(x, fileName = NULL, includeOnly=TRUE,
-expandDummies = FALSE, includeRandoms = FALSE, dropRates=FALSE, ...)
+   expandDummies = FALSE, includeRandoms = FALSE, dropRates=FALSE, 
+   includeShortNames=FALSE, ...)
 \method{summary}{sienaEffects}(object, fileName = NULL,
-includeOnly=TRUE, expandDummies = FALSE, ...)
+   includeOnly=TRUE, expandDummies = FALSE, ...)
 \method{print}{summary.sienaEffects}(x, fileName = NULL, ...)
 }
 \arguments{
@@ -28,6 +29,8 @@ includeOnly=TRUE, expandDummies = FALSE, ...)
     any effects which would be added by \code{sienaTimeFix}.}
   \item{includeRandoms}{Boolean. If TRUE, also the
     \code{randomEffects} column will be printed.}
+  \item{includeShortNames}{Boolean. If TRUE, also the
+    \code{shortName} column will be printed.}
   \item{dropRates}{Boolean. If TRUE, do not print the rows for basic rate
     effects.}
   \item{\dots}{For extra arguments (none used at present).}

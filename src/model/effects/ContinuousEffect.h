@@ -73,12 +73,12 @@ protected:
 
 private:
 	ContinuousLongitudinalData * lpContinuousData;
-	const double * lvalues;
-	int lego;
+	const double * lvalues {};
+	int lego {};
 	
 	// coefficient computed in the Bergstrom step by SdeSimulation, derived
 	// from the parameter value
-	double lcoefficient;
+	double lcoefficient {};
 };
 
 

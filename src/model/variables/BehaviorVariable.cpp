@@ -14,9 +14,12 @@
 #include <stdexcept>
 #include <R_ext/Print.h>
 #include <R_ext/Arith.h>
-#include <Rinternals.h>
+#include <R_ext/Error.h>
 #include "data/ActorSet.h"
 #include "utils/Random.h"
+#include <Rinternals.h>
+#include <R_ext/Print.h>
+#include <R_ext/Arith.h>
 #include "BehaviorVariable.h"
 #include "data/BehaviorLongitudinalData.h"
 #include "model/EpochSimulation.h"
@@ -29,6 +32,7 @@
 #include "model/ml/Chain.h"
 #include "model/ml/MiniStep.h"
 #include "model/ml/BehaviorChange.h"
+#include <Rinternals.h>
 
 using namespace std;
 
@@ -630,7 +634,7 @@ void BehaviorVariable::accumulateScores(int difference,
 			this->pSimulation()->score(pEffect->pEffectInfo()) + score);
 		if (R_IsNaN(score))
 		{
-			error("nan in accumulateScores1");
+			Rf_error("nan in accumulateScores1");
 		}
 	}
 
@@ -664,7 +668,7 @@ void BehaviorVariable::accumulateScores(int difference,
 		}
 		if (R_IsNaN(score))
 		{
-			error("nan in accumulateScores2");
+			Rf_error("nan in accumulateScores2");
 		}
 
 		this->pSimulation()->score(pEffect->pEffectInfo(),
@@ -693,7 +697,7 @@ void BehaviorVariable::accumulateScores(int difference,
 
 		if (R_IsNaN(score))
 		{
-			error("nan in accumulateScores3");
+			Rf_error("nan in accumulateScores3");
 		}
 
 		this->pSimulation()->score(pEffect->pEffectInfo(),
@@ -987,11 +991,11 @@ void BehaviorVariable::accumulateDerivatives() const
 
 			if (R_IsNaN(product[effect1]))
 			{
-				Rprintf("effect 1 %d %x \n", effect1, pEffect1);
+				Rprintf("effect 1 %d \n", effect1);
 			}
 			if (R_IsNaN(product[effect2]))
 			{
-				Rprintf("effect2 %d %x \n", effect2, pEffect2);
+				Rprintf("effect2 %d \n", effect2);
 			}
 			this->pSimulation()->derivative(pEffect1->pEffectInfo(),
 				pEffect2->pEffectInfo(),
@@ -1001,7 +1005,6 @@ void BehaviorVariable::accumulateDerivatives() const
 		}
 	}
 	delete[] product;
-
 }
 
 /**

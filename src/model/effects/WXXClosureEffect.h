@@ -40,7 +40,7 @@ private:
 
 	// For a fixed i, this variable stores the value of sum_h w_{ih} x_{hj} for
 	// each j.
-	double * lsums;
+	double * lsums {};
 };
 
 }

@@ -56,31 +56,31 @@ public:
 
 private:
 	// The name of the variable this effect is associated with
-	std::string lvariableName;
+	std::string lvariableName {};
 
 	// A short name of the effect used to identify the semantics
 	// of this effect
-	std::string leffectName;
+	std::string leffectName {};
 
 	// The type of the effect ("rate", "eval", or "endow")
-	std::string leffectType;
+	std::string leffectType {};
 
 	// The multiplicative weight in the respective function
-	double lparameter;
+	double lparameter {};
 
 	// The internal parameter, if applicable
-	double linternalEffectParameter;
+	double linternalEffectParameter {};
 
 	// The name of a variable or covariate this effect is interacting with,
 	// if applicable
-	std::string linteractionName1;
+	std::string linteractionName1 {};
 
 	// The name of the other interaction variable or covariate, if the
 	// effect has two such interactions
-	std::string linteractionName2;
+	std::string linteractionName2 {};
 
 	// Distinguishes between structural rate effects and covariate rate effects
-	std::string lrateType;
+	std::string lrateType {};
 
 	// The interacting effect descriptions.
 	// Undefined for non-interaction effects.

@@ -30,7 +30,7 @@ private:
 	Set_Operation(int val) :
 			value(val) {
 	}
-	int value;
+	int value {};
 };
 
 class Filter_Operation {
@@ -46,7 +46,7 @@ private:
 	Filter_Operation(int val) :
 			value(val) {
 	}
-	int value;
+	int value {};
 };
 
 class GeneralTieIterator: public ITieIterator {

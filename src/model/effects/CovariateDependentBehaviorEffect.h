@@ -60,7 +60,7 @@ private:
 	// per each actor.
 	// This array is 0 for covariate-based effects.
 
-	const int * linteractionValues;
+	const int * linteractionValues {};
 };
 
 }

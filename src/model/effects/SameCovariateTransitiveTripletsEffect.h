@@ -32,7 +32,7 @@ protected:
 private:
 	bool inequalityCondition(int a) const;
 	// lsame indicates if the requirement inthe condition is "same" or "different"
-	bool lsame;
+	bool lsame {};
 };
 
 }

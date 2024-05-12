@@ -30,7 +30,7 @@ public:
 	virtual double egoStatistic(int ego, double * currentValues);
 private:
 	// divide indicates whether there will be division by the outdegree
-	bool ldivide;
+	bool ldivide {};
 };
 
 }

@@ -142,7 +142,7 @@ public:
 
 private:
 	// The number of observations
-	int lobservationCount;
+	int lobservationCount {};
 
 	// A collection of actor sets
 	std::vector<const ActorSet *> lactorSets;

@@ -23,7 +23,8 @@ namespace siena
 class SameCovariateEffect : public CovariateDependentNetworkEffect
 {
 public:
-	SameCovariateEffect(const EffectInfo * pEffectInfo, bool reciprocal);
+	SameCovariateEffect(const EffectInfo * pEffectInfo, 
+					bool same, bool reciprocal);
 
 	virtual double calculateContribution(int alter) const;
 
@@ -34,7 +35,8 @@ private:
 	// Indicates if the reciprocal version of the same covariate effect is
 	// required
 
-	bool lreciprocal;
+	bool lsame {};
+	bool lreciprocal {};
 };
 
 }

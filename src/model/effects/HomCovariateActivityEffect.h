@@ -31,7 +31,7 @@ protected:
 	virtual double tieStatistic(int alter);
 
 private:
-	bool lsame;
+	bool lsame {};
 };
 
 }

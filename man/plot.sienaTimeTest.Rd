@@ -7,7 +7,7 @@
 
 \usage{
 \method{plot}{sienaTimeTest}(x, pairwise=FALSE, effects,
-	 scale=.2, plevels=c(.1, .05, .025), ...)
+     scale=.2, plevels=c(.1, .05, .025), ...)
 }
 \arguments{
   \item{x}{ A sienaTimeTest object returned by \code{sienaTimeTest}. }
@@ -66,16 +66,19 @@
   \code{\link{xyplot}}}
 \examples{
 \dontrun{
-myalgorithm <- sienaAlgorithmCreate(nsub=4, n3=500)
+myalgorithm <- sienaAlgorithmCreate(nsub=2, n3=500)
+# It makes no sense to put together the following data set,
+# but just for demonstration:
 mynet1 <- sienaDependent(array(c(s501, s502, s503, s501, s503, s502), dim=c(50, 50, 6)))
 mydata <- sienaDataCreate(mynet1)
 myeff <- getEffects(mydata)
-myeff <- includeEffects(myeff, transTrip, balance)
-myeff <- includeTimeDummy(myeff, recip, timeDummy="2,3,5")
-myeff <- includeTimeDummy(myeff, balance, timeDummy="4")
+myeff <- includeEffects(myeff, transTrip)
 myeff <- includeTimeDummy(myeff, density, timeDummy="all")
-ansp <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE)
+myeff <- includeTimeDummy(myeff, recip, timeDummy="2,3,5")
+myeff <- includeTimeDummy(myeff, transTrip, timeDummy="2,3")
+(ansp <- siena07(myalgorithm, data=mydata, effects=myeff))
 ttp <- sienaTimeTest(ansp)
+summary(ttp)
 
 ## Pairwise plots show
 plot(ttp, pairwise=TRUE)

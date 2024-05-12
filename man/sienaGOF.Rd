@@ -10,11 +10,13 @@
  This is done by simulations of auxiliary
  statistics, that differ from the statistics used for estimating
  the parameters. The auxiliary statistics must be given explicitly.
+
  The fit is good if the average values
  of the auxiliary statistics over many simulation runs are close
  to the values observed in the data.
  A Monte Carlo test based on the Mahalanobis
  distance is used to calculate frequentist \eqn{p}-values.
+
  Plotting functions can be used to diagnose bad fit. There are basic
  functions for calculating auxiliary statistics available out of the
  box, and the user is invited to create additional ones.
@@ -24,16 +26,21 @@
 sienaGOF(sienaFitObject, auxiliaryFunction,
         period=NULL, verbose=FALSE, join=TRUE, twoTailed=FALSE,
         cluster=NULL, robust=FALSE, groupName="Data1",
-        varName, tested=NULL, giveNAWarning=TRUE, \dots)
+        varName, tested=NULL, iterations=NULL, giveNAWarning=TRUE, \dots)
 \method{plot}{sienaGOF}(x, center=FALSE, scale=FALSE, violin=TRUE, key=NULL,
         perc=.05, period=1, position=4, fontsize=12, \dots)
 descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
         period=1, showAll=FALSE)
 }
 \arguments{
-  \item{sienaFitObject}{Results of class \code{\link{sienaFit}}, produced by a
+  \item{sienaFitObject}{An object of class \code{\link{sienaFit}}, produced by a
     call to \code{\link{siena07}} with \code{returnDeps = TRUE} and
-    \code{maxlike=FALSE} (the latter is the default, the former is not).}
+    \code{maxlike=FALSE} (the latter is the default, the former is not);
+    or a list of such objects; if a list, then the first period
+    of each \code{\link{sienaFit}} object will be used.\cr
+    If this is a list of \code{\link{sienaFit}} objects,
+    where \code{sienaFitObject} is mentioned below, it refers to the first
+    element of this list.}
   \item{auxiliaryFunction}{Function to be used to calculate
     the auxiliary statistics;
     this can be a user-defined function, e.g. depending on the \code{sna}
@@ -51,7 +58,9 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
     and \dots are further arguments (like \code{levls} in the examples below
     and in \code{\link{sienaGOF-auxiliary}}).}
   \item{period}{Vector of period(s) to be used (may run from 1 to
-    number of waves - 1). Has an effect only if \code{join=FALSE}.}
+    number of waves - 1). Has an effect only if \code{join=FALSE}.\cr
+    May be only a single number if \code{sienaFitObject} is a list of
+    \code{\link{sienaFit}} objects.}
   \item{verbose}{Whether to print intermediate results. This may give some
        peace of mind to the user because calculations can take some time.}
   \item{join}{Boolean: should sienaGOF do tests on all of the periods
@@ -66,8 +75,11 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
   \item{varName}{ Name of dependent variable.}
   \item{tested}{ A logical vector of length \code{sienaFitObject$pp}
           (number of parameters), indicating a subset of tested parameters;
-          or \code{NULL}, indicating all tested parameters; or \code{FALSE},
-          indicating nothing is to be tested.}
+          or \code{NULL}, indicating all tested parameters (see below);
+          or \code{FALSE}, indicating nothing is to be tested.}
+  \item{iterations}{ Number of iterations for the goodness of fit calculations.
+        If \code{NULL}, the number of simulated data sets in
+        \code{sienaFitObject}.  }
   \item{giveNAWarning}{If \code{TRUE}, a warning is given if any simulated
         values are missing.}
   \item{x}{ Result from a call to sienaGOF. }
@@ -106,6 +118,10 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
  by the command \code{"names(dataObject)"} (where \code{dataObject} is
  the data used to produce the \code{sienaFitObject}).
  Mostly they are \code{"Data1", "Data2"}, etc.
+
+ To save computation time, \code{iterations} can be set to a lower number
+ than what is available in \code{sienaFitObject}; this will yield
+ a less precise result.
 
  The function does not work properly for data sets that include a
  \code{\link{sienaCompositionChange}} object. If you wish to test the
@@ -235,13 +251,11 @@ We recommend the following heuristic approach to model checking:
 }
 
 \references{
-\itemize{
-\item See \url{https://www.stats.ox.ac.uk/~snijders/siena/}
-  for general information on RSiena.
-\item Lospinoso, J.A. and Snijders, T.A.B. (2019).
-  Goodness of fit for stochastic actor-orientedmodels.
-  \emph{Methodological Innovations}, 12:2059799119884282.
-}
+ Lospinoso, J.A. and Snijders, T.A.B. (2019,
+  Goodness of fit for stochastic actor-oriented models.
+  \emph{Methodological Innovations}, \bold{12}:2059799119884282.
+
+  Also see \url{https://www.stats.ox.ac.uk/~snijders/siena/}
 }
 \author{Josh Lospinoso, modifications by Ruth Ripley and Tom Snijders}
 \seealso{\code{\link{siena07}}, \code{\link{sienaGOF-auxiliary}},
@@ -300,14 +314,15 @@ plot(gofo)
 ## A demonstration of using multiple processes
 \dontrun{
 library(parallel)
-(n.clus <- detectCores() - 1) # subtract 1 to keep time for other processes
+(n.clus <- detectCores() - 1)
+n.clus <- min(n.clus, 4)  # keep time for other processes
 myalgorithm.c <- sienaAlgorithmCreate(nsub=4, n3=1000, seed=1265)
 (ans.c <- siena07(myalgorithm.c, data=mydata, effects=myeff, batch=TRUE,
     returnDeps=TRUE, useCluster=TRUE, nbrNodes=n.clus))
 gofi.1 <- sienaGOF(ans.c, TriadCensus, verbose=TRUE, varName="mynet1")
 cl <- makeCluster(n.clus)
 gofi.cl <- sienaGOF(ans.c, TriadCensus, varName="mynet1", cluster=cl)
-cl <- makeCluster(2)
+cl2 <- makeCluster(2)
 gofi.cl2 <- sienaGOF(ans.c, TriadCensus, varName="mynet1", cluster=cl2)
 # compare simulation times
 attr(gofi.1,"simTime")

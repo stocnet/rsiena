@@ -40,13 +40,13 @@ private:
 	// Indicates is the networks are supposed to be symmetric at all
 	// observations.
 
-	bool lsymmetric;
+	bool lsymmetric {};
 
 	// The centering constant for the balance effect.
-	double lbalanceMean;
+	double lbalanceMean {};
 
 	// The centering constant for the in-structural equivalence effect.
-	double lstructuralMean;
+	double lstructuralMean {};
 };
 
 }

@@ -60,8 +60,8 @@ ContinuousVariable::~ContinuousVariable()
 		delete[] this->leffectContribution[i];
 	}
 	delete[] this->leffectContribution;
-	delete[] this->lvalues;
 	delete this->lpFunction;
+	delete[] this->lvalues;
 
 	this->lpActorSet = 0;
 	this->lpSimulation = 0;
@@ -244,6 +244,10 @@ void ContinuousVariable::accumulateScores(const vector<double> &actorMeans,
 	}
 
 	vector<double> bxeffects(this->n()); // inner product
+	for (int actor = 0; actor < this->n(); actor++) 
+	{
+		bxeffects[actor]= 0;
+	}
 	for (unsigned i = 0; i < this->pFunction()->rEffects().size(); i++)
 	{
 		Effect * pEffect = this->pFunction()->rEffects()[i];

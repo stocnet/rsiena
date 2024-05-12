@@ -114,7 +114,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 			stop("not valid siena data object")
 		}
 		## check the effects object
-		defaultEffects <- getEffects(data)
+		defaultEffects <- checkVersion(data, effects)
 		if (is.null(effects))
 		{
 			cat("You specified no effects. The default effects are used.\n")
@@ -148,12 +148,21 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		}
 		if (x$useStdInits)
 		{
-			if (any(effects$effectName != defaultEffects$effectName))
+		# The restriction to effects with shortname not unspInt or behUnspInt
+		# is because of the possibility to call getEffects with
+		# non-default values of nintn and behNintn.
+			effectsr <- (!(effects$shortName %in% c("unspInt","behUnspInt")))
+			defEffectsr <- (!(defaultEffects$shortName %in% c("unspInt","behUnspInt")))
+			if (any(effects$shortName[effectsr] != defaultEffects$shortName[defEffectsr]))
 			{
+				cat("There seems to be a mismatch between data set and effects object.\n")
+				cat("This may have been caused by the use of different versions of RSiena")
+				cat("for creating the effects object and now running siena07.\n")
+				cat("Try creating the effects object with the current version of RSiena.")
 				stop("Cannot use standard initialisation with a ",
 					"different effect list")
 			}
-			effects$initialValue <- defaultEffects$initialValue
+			effects$initialValue[effectsr] <- defaultEffects$initialValue[defEffectsr]
 		}
 		if ((sum(!effects$fix[effects$include]) == 0) & (!x$simOnly))
 		{
@@ -163,9 +172,9 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		# and change NULL to default values for x$modelType and x$behModelType
 		# For symmetric networks, default is changed below from 1 to 2.
 		checkNames(x$MaxDegree, c('oneMode','bipartite'))
-		checkNames(x$UniversalOffset, c('oneMode','bipartite'))
 		x$modelType <- checkNames(x$modelType, c('oneMode','bipartite'))
 		x$behModelType <- checkNames(x$behModelType, 'behavior')
+		checkNames(x$UniversalOffset, c('oneMode','bipartite'))
 		# The following error will occur if ML estimation is requested
 		# and there are any impossible changes from structural values
 		# to different observed values.
@@ -282,13 +291,13 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 
 		## split and rejoin both versions before continuing
 		depvarnames <- names(data[[1]]$depvars)
-		
+
 		if (x$maxlike & (length(depvarnames) > 1))
 		{
 			if(x$pridg + x$prcdg + x$prper + x$pripr + x$prdpr + x$prirms +
 				x$prdrms < 1)
 			{
-				cat("Maximum likelihood estimation with more than one dependent variable\n")
+				cat("Likelihood estimation with more than one dependent variable\n")
 				cat("is impossible with prML=2. Try prML=1.\n")
 				stop("Impossible algorithm-data combination.")
 			}
@@ -591,6 +600,10 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 
 		if (any(attr(f,"types") == "continuous"))
 		{
+			if (z$cconditional)
+			{
+				stop("For models with continuous behavior variables, conditional estimation is impossible")
+			}
 			splitFactor <- factor(effects$name, levels=c(attr(f, "netnames"), "sde"))
 		}
 		else
@@ -765,9 +778,10 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		if (!x$maxlike)
 		{
 			z$targets <- rowSums(ans)
+			attr(z$targets, "fromData") <- TRUE
 			z$targets2 <- ans
-# For the moment, the following is an undocumented and hidden option.
-# This replaces the targets calculated from the data
+# If targets is given in the call of siena07,
+# this replaces the targets calculated from the data
 # by user-defined targets.
 			if ((!is.null(x$targets[1])) & (nGroup == 1) & (groupPeriods[1] == 2))
 			{
@@ -775,16 +789,24 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 				{
 					z$targets <- x$targets
 					z$targets2 <- matrix(x$targets, length(x$targets), 1)
-					message('Note: targets taken from algorithm object.')
+					attr(z$targets, "fromData") <- FALSE
+					message('Note: targets used as given in call of siena07.')
 					cat('\n')
 					print(z$targets)
 					cat('\n')
+				}
+				else
+				{
+					message("length of given targets = ", x$targets, ",")
+					message("but there are ", length(z$targets), " parameters to be estimated.")
+					warning("targets as given in the call of siena07 have incorrect length")
 				}
 			}
 		}
 		else
 		{
-			z$targets <- rep(0, z$pp)
+			z$targets <- rep(0, z$pp)			
+			attr(z$targets, "fromData") <- TRUE
 			z$targets2 <- ans
 			z$targets2[] <- 0
 			z$maxlikeTargets <- rowSums(ans)
@@ -808,9 +830,6 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 			z$thetaMat <- matrix(z$theta, nrow=nGroup, ncol=z$pp, byrow=TRUE)
 		}
 	}
-	# Here came an error
-	# Error: INTEGER() can only be applied to a 'integer', not a 'double'
-	# This was because storage.mode had not been set properly for some variable
 	if (x$maxlike)
 	{
 		if (!initC)
@@ -1070,7 +1089,7 @@ unpackOneMode <- function(depvar, observations, compositionChange)
 			## carry forward missing values if any
 			if (i == 1)
 			{
-				netmat <- netmat[!is.na(netmat[,3]), ]
+				netmat <- netmat[!is.na(netmat[,3]), , drop = FALSE]
 				networks[[i]] <- spMatrix(nActors, nActors, netmat[, 1],
 					netmat[, 2], netmat[,3])
 			}
@@ -1099,7 +1118,7 @@ unpackOneMode <- function(depvar, observations, compositionChange)
 			mat3 <- mat1[struct, , drop = FALSE]
 			mat3[, 3] <- 1
 			## now remove the zeros from reset data
-			mat1 <- mat1[!mat1[, 3] == 0, ]
+			mat1 <- mat1[!mat1[, 3] == 0, , drop=FALSE]
 			## do comp change
 			if (compChange)
 			{
@@ -1272,12 +1291,12 @@ unpackOneMode <- function(depvar, observations, compositionChange)
 				}
 			}
 			edgeLists[[i]] <- list(mat1 = t(mat1), mat2 = t(mat2),
-				mat3 = t(mat3))
+				mat3 = t(mat3))				
 		}
 	}
 	else
 	{
-		for (i in 1:observations) ## carry missings forward  if exist
+		for (i in 1:observations) ## carry missings forward if exist
 		{
 			networks[[i]] <- depvar[, , i]
 			if (i == 1)
@@ -2024,6 +2043,7 @@ unpackCompositionChange <- function(compositionChange)
     attr(exog, "nodeSet") <- attr(compositionChange, "nodeSet")
     exog
 }
+
 ##@fixUpEffectNames siena07 Replace # and construct interaction names
 fixUpEffectNames <- function(effects)
 {
@@ -2406,6 +2426,65 @@ updateTheta <- function(effects, prevAns, varName=NULL)
 	effects$initialValue[use] <-
 		prevEffects$initialValue[match(efflist, oldlist)][use]
 	effects
+}
+
+
+##@ numberIntn siena07 sienaBayes, number of network interaction effects used for getEffects
+numberIntn <- function(myeff){
+	if (!is.null(myeff)){	
+		numnet <- length(unique(myeff$name[myeff$shortName=="density"])) # number of dependent networks
+		nintn <- sum(myeff$shortName == 'unspInt')/3 # 3 for eval - creation - endow
+	}
+	else
+	{
+		numnet <- 0
+	}	
+	ifelse((numnet <= 0), 10, nintn/numnet) # 10 is the default in getEffects
+}
+
+##@ numberIntn siena07 sienaBayes, number of behavior interaction effects used for getEffects
+numberBehIntn <- function(myeff){
+	if (!is.null(myeff)){	
+		numbeh <- length(unique(myeff$name[myeff$shortName=="linear"]))# number of dependent behaviors
+		nbehIntn <- sum(myeff$shortName == 'behUnspInt')/3 # 3 for eval - creation - endow
+	}
+	else
+	{
+		numbeh <- 0
+	}		
+	ifelse((numbeh <= 0), 4, nbehIntn/numbeh) # 4 is the default in getEffects
+}
+
+
+##@checkVersion siena07 Create default effects object and check RSiena version.
+checkVersion <- function(dat, effs){
+	if (!is.null(attr(effs, "onePeriodSde")))
+	{
+		oPS <- attr(effs, "onePeriodSde")
+	}
+	else
+	{
+		oPS <- FALSE
+	}
+	defaultEffects <- getEffects(dat, nintn=numberIntn(effs), 
+						behNintn=numberBehIntn(effs),onePeriodSde=oPS)
+	effectsVersion <- attr(effs, "version")
+	if (is.null(effectsVersion))
+	{
+		differentVersions <- TRUE
+	}
+	else
+	{
+		differentVersions <- (effectsVersion != attr(defaultEffects, "version"))
+	}
+	if ((differentVersions) & 
+		(any((effs$shortName %in% c("unspInt","behUnspInt"))&effs$include)))
+		{
+		warning("Your effects object contains interaction effects and was made
+		  using a different RSiena version. 
+		  Make sure the interaction effects are the same.")
+	}
+	defaultEffects 
 }
 
 ##@addSettingseffects siena07 add extra rate effects for settings model

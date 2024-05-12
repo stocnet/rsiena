@@ -115,34 +115,34 @@ private:
 	const SimulationActorSet * lpReceivers;
 
 	// The number of structural tie variables to active alters per each actor.
-	int * lactiveStructuralTieCount;
+	int * lactiveStructuralTieCount {};
 
 	// The current ego in the method makeChange
-	int lego;
+	int lego {};
 
 	// Indicates if a tie flip to a certain actor is permitted.
-	bool * lpermitted;
+	bool * lpermitted {};
 
 	// A two-dimensional array of tie flip contributions to effects, where
 	// rows correspond to alters and columns correspond to effects in the
 	// evaluation function.
 
-	double ** levaluationEffectContribution;
+	double ** levaluationEffectContribution {};
 
 	// A two-dimensional array of tie flip contributions to effects, where
 	// rows correspond to alters and columns correspond to effects in the
 	// endowment function.
 
-	double ** lendowmentEffectContribution;
+	double ** lendowmentEffectContribution {};
 
 	// A two-dimensional array of tie flip contributions to effects, where
 	// rows correspond to alters and columns correspond to effects in the
 	// tie creation function.
 
-	double ** lcreationEffectContribution;
+	double ** lcreationEffectContribution {};
 
 	// Selection probability per each alter
-	double * lprobabilities;
+	double * lprobabilities {};
 
 	// The cache object for repeated access of various structural properties
 	// of this network during the simulation.
@@ -163,37 +163,37 @@ private:
 
 	// Probabilities for models with cooperation between actor and alter
 
-    double lsymmetricProbabilities[2];
+    double lsymmetricProbabilities[2] {};
 
 	// The current alter for two-mode models 
 	// with cooperation between actor and alter;
 	// and the previous alter for one-mode twostep models:
 
-	int lalter;
+	int lalter {};
 	
 	// the probability for taking the double step in option DOUBLESTEP:
 	
-	double lnetworkDoubleStepProb;
+	double lnetworkDoubleStepProb {};
 	
 	// being one of the option DOUBLESTEP options:
 	
-	bool lnetworkModelTypeDoubleStep;
+	bool lnetworkModelTypeDoubleStep {};
 
 	// The probability of selecting the current alter for models with
 	// cooperation between actor and alter:
 
-	double lalterProbability;
+	double lalterProbability {};
 
 	// The probability of making the proposed change for models with
 	// cooperation between actor and alter
 
-	double lsymmetricProbability;
+	double lsymmetricProbability {};
 
 	ITieIterator* lsettingFlips;
 
 	// whether this is a one mode network or not
 
-	bool loneMode;
+	bool loneMode {};
 
 	// the model type
 	NetworkModelType lnetworkModelType;

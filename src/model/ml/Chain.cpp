@@ -7,11 +7,12 @@
  *
  * Description: This file contains the implementation of the class Chain.
  *****************************************************************************/
-#include <Rinternals.h>
 
 #include <vector>
 #include <stdexcept>
 #include <string>
+
+#include <Rinternals.h>
 
 #include "Chain.h"
 #include "utils/Utils.h"
@@ -27,6 +28,8 @@
 #include "data/BehaviorLongitudinalData.h"
 #include "data/NetworkLongitudinalData.h"
 #include "model/variables/DependentVariable.h"
+#include <R_ext/Error.h>
+#include <Rinternals.h>
 
 using namespace std;
 
@@ -482,7 +485,7 @@ void Chain::connect(int period, MLSimulation * pMLSimulation)
 					// see if valid here
 					DependentVariable * pVariable =
 						pMLSimulation->rVariables()[miniSteps[i]->variableId()];
-					//	PrintValue(getMiniStepDF(*miniSteps[i]));
+					//	Rf_PrintValue(getMiniStepDF(*miniSteps[i]));
 
 					if (!pVariable->validMiniStep(miniSteps[i]))
 					{
@@ -493,11 +496,11 @@ void Chain::connect(int period, MLSimulation * pMLSimulation)
 						if (pLastMiniStep != this->lpFirst)
 						{
 							//		Rprintf("lastl\n");
-							//	PrintValue(getMiniStepDF(*pLastMiniStep));
+							//	Rf_PrintValue(getMiniStepDF(*pLastMiniStep));
 							pMiniStep =
 								this->randomMiniStep(pLastMiniStep->pNext(),
 									this->lpLast);
-							//	PrintValue(getMiniStepDF(*pMiniStep));
+							//	Rf_PrintValue(getMiniStepDF(*pMiniStep));
 							pMLSimulation->initialize(this->lperiod);
 							pMLSimulation->executeMiniSteps(this->lpFirst->
 								pNext(), pMiniStep);
@@ -511,12 +514,12 @@ void Chain::connect(int period, MLSimulation * pMLSimulation)
 									this->pFirstMiniStepForLink(miniSteps[i]);
 								//	if (pFirstMiniStep != this->lpFirst)
 								// {
-								//	PrintValue(getMiniStepDF(*pFirstMiniStep));
+								//	Rf_PrintValue(getMiniStepDF(*pFirstMiniStep));
 								pMiniStep =
 									this->randomMiniStep(this->
 										lpFirst->pNext(),
 										pFirstMiniStep);
-								//	PrintValue(getMiniStepDF(*pMiniStep));
+								//	Rf_PrintValue(getMiniStepDF(*pMiniStep));
 								pMLSimulation->initialize(this->lperiod);
 								pMLSimulation->
 									executeMiniSteps(pFirstMiniStep,
@@ -551,16 +554,16 @@ void Chain::connect(int period, MLSimulation * pMLSimulation)
 			}
 			miniSteps = remainingMiniSteps;
 		}
-		//	PrintValue(getChainDF(*this, false));
+		//	Rf_PrintValue(getChainDF(*this, false));
 		//	Rprintf("****** count %d\n", count);
 		if (miniSteps.size() > 0)
 		{
 			for (unsigned i = 0; i < miniSteps.size(); i++)
 			{
-				PrintValue(getMiniStepDF(*miniSteps[i]));
+				Rf_PrintValue(getMiniStepDF(*miniSteps[i]));
 			}
 
-			error("Cannot create minimal chain due to constraints");
+			Rf_error("Cannot create minimal chain due to constraints");
 		}
 	}
 }
@@ -600,7 +603,7 @@ void Chain::onReciprocalRateChange(const MiniStep * pMiniStep, double newValue)
 void Chain::changeInitialState(const MiniStep * pMiniStep)
 {
 	//Rprintf("%d change\n",this->lperiod);
-//	PrintValue(getMiniStepDF(*pMiniStep));
+//	Rf_PrintValue(getMiniStepDF(*pMiniStep));
 	if (pMiniStep->networkMiniStep())
 	{
 		const NetworkChange * pNetworkChange =
@@ -708,12 +711,12 @@ void Chain::createInitialStateDifferences()
 								new NetworkChange(pNetworkData,
 									i,
 									iter1.actor(), false);
-							//		PrintValue(getMiniStepDF(*pMiniStep));
+							//		Rf_PrintValue(getMiniStepDF(*pMiniStep));
 							this->linitialStateDifferences.
 								push_back(pMiniStep);
 
 							iter1.next();
-							//	PrintValue(getMiniStepDF(
+							//	Rf_PrintValue(getMiniStepDF(
 							//		*this->linitialStateDifferences.back()));
 						}
 						else
@@ -735,7 +738,7 @@ void Chain::createInitialStateDifferences()
 									i,
 									iter2.actor(), false));
 							iter2.next();
-							//PrintValue(getMiniStepDF(
+							//Rf_PrintValue(getMiniStepDF(
 							//		*this->linitialStateDifferences.back()));
 						}
 						else
@@ -1122,7 +1125,7 @@ void  Chain::printConsecutiveCancelingPairs() const
 //		Rprintf("\nStart\n ");
 	for (unsigned i = 0; i < this->lccpMiniSteps.size(); i++)
 	{
-		PrintValue(getMiniStepDF(*this->lccpMiniSteps[i]));
+		Rf_PrintValue(getMiniStepDF(*this->lccpMiniSteps[i]));
 	}
 //		Rprintf("\nend\n ");
 }
@@ -1233,7 +1236,7 @@ MiniStep * Chain::pFirstMiniStepForLink(const MiniStep * pLinkMiniStep) const
 	}
 	if (pMiniStep != this->lpLast)
 	{
-		PrintValue(getMiniStepDF(*pMiniStep));
+		Rf_PrintValue(getMiniStepDF(*pMiniStep));
 	}
 	else
 		Rprintf("last\n");
@@ -1311,9 +1314,9 @@ Chain * Chain::copyChain() const
 	pChain->lsigma2 = this->lsigma2;
 //	Rprintf("%x\n", pChain);
 	//	SEXP ch2 = getChainDF(*this);
-				//		PrintValue(ch2);
+				//		Rf_PrintValue(ch2);
 				//	SEXP ch1 = getChainDF(*pChain);
-				//		PrintValue(ch1);
+				//		Rf_PrintValue(ch1);
 	for(unsigned i=0; i < this->linitialStateDifferences.size(); i++)
 	{
 		pChain->linitialStateDifferences.push_back(
@@ -1326,8 +1329,8 @@ Chain * Chain::copyChain() const
 	}
 // 	for(int i=0; i< this->linitialStateDifferences.size(); i++)
 // 	{
-// 		PrintValue(getMiniStepDF(*(this->linitialStateDifferences[i])));
-// 		PrintValue(getMiniStepDF(*(pChain->linitialStateDifferences[i])));
+// 		Rf_PrintValue(getMiniStepDF(*(this->linitialStateDifferences[i])));
+// 		Rf_PrintValue(getMiniStepDF(*(pChain->linitialStateDifferences[i])));
 // 	}
 	return pChain;
 	}

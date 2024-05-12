@@ -3,9 +3,12 @@
 \docType{data}
 \title{Alcohol use data: excerpt from "Teenage Friends and Lifestyle Study" data}
 \description{
-Data from an excerpt of 50 girls from the Teenage Friends and Lifestyle Study data
-set. Useful as a small example of network and behaviour, for which
-models can be fitted quickly.
+Alcohol use data from an excerpt of 50 girls from    
+an excerpt of the network, alcohol consumption, and smoking data     
+for 50 randomly chosen girls from the
+Teenage Friends and Lifestyle Study data set. Useful as a small    
+example of network and behaviour, for which models can be    
+fitted quickly, and for which there are no missing values.
 }
 \format{
  A matrix of variables relating to the use of alcohol for the actors in
@@ -16,8 +19,8 @@ models can be fitted quickly.
 \url{https://www.stats.ox.ac.uk/~snijders/siena/s50_data.zip}
 }
 \references{
-West, P. and Sweeting, H. (1995) Background Rationale and Design of the 
-West of Scotland 11-16 Study. 
+West, P. and Sweeting, H. (1995), \emph{Background Rationale and Design of the
+West of Scotland 11-16 Study}.
 Working Paper No. 52. MRC Medical Sociology Unit Glasgow.
 
 See \url{https://www.stats.ox.ac.uk/~snijders/siena/s50_data.htm}

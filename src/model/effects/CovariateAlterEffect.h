@@ -1,7 +1,7 @@
 /******************************************************************************
  * SIENA: Simulation Investigation for Empirical Network Analysis
  *
- * Web: http://www.stats.ox.ac.uk/~snijders/siena/
+ * Web: https://www.stats.ox.ac.uk/~snijders/siena/
  *
  * File: CovariateAlterEffect.h
  *
@@ -32,10 +32,10 @@ protected:
 	virtual double tieStatistic(int alter);
 
 private:
-	bool lleftThresholded;
-	bool lrightThresholded;
-	double lthreshold;
-	bool lsquared;
+	bool lleftThresholded {};
+	bool lrightThresholded {};
+	double lthreshold {};
+	bool lsquared {};
 };
 
 }

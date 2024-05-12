@@ -38,6 +38,8 @@ behaviorOneModeObjective,xxxxxx tot. alter av. dist. 2,xxxxxx tot. alters av. di
 behaviorOneModeObjective,xxxxxx av. in-alt.dist. 2,xxxxxx av. in-alt. dist. 2,avInAltDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx tot. in-alt. dist. 2,xxxxxx tot. in-alt. dist. 2,totInAltDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx av. in-alt. tot. dist. 2,xxxxxx av. in-alt. tot. dist. 2,avTInAltDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorOneModeObjective,xxxxxx av. in-sim. dist. 2,xxxxxx av. in-sim. dist. 2,avInSimDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorOneModeObjective,xxxxxx tot. in-sim. dist. 2,xxxxxx tot. in-sim. dist. 2,totInSimDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx max. alter,xxxxxx max. alters,maxAlt,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx max. alter,xxxxxx max. alters,maxAlt_gmm,FALSE,yyyyyy,,gmm,FALSE,FALSE,FALSE,TRUE,FALSE,",",0,0,gmm,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx min. alter,xxxxxx min. alters,minAlt,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
@@ -68,6 +70,10 @@ behaviorSymmetricObjective,xxxxxx ave. alter x pop. alter,xxxxxx ave. alters * t
 behaviorSymmetricObjective,xxxxxx total alter x pop. alter,xxxxxx total alters * their degr.,totAltPop,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorSymmetricObjective,xxxxxx av. alter dist. 2,xxxxxx av. alters dist. 2,avAltDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorSymmetricObjective,xxxxxx tot. alter dist. 2,xxxxxx tot. alters dist. 2,totAltDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorSymmetricObjective,xxxxxx av. alter tot. dist. 2,xxxxxx av. alters tot. dist. 2,avTAltDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorSymmetricObjective,xxxxxx tot. alter av. dist. 2,xxxxxx tot. alters av. dist. 2,totAAltDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorSymmetricObjective,xxxxxx av. sim. dist. 2,xxxxxx av. sim. dist. 2,avInSimDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorSymmetricObjective,xxxxxx tot. sim. dist. 2,xxxxxx tot. sim. dist. 2,totInSimDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorSymmetricObjective,xxxxxx max. alter,xxxxxx max. alters,maxAlt,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorSymmetricObjective,xxxxxx min. alter,xxxxxx min. alters,minAlt,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorSymmetricObjective,xxxxxx dense triads,xxxxxx dense triads,behDenseTriads,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,5,objective,NA,NA,0,0,0,0,OK,FALSE
@@ -80,6 +86,8 @@ behaviorBipartiteObjective,xxxxxx av. in-alt.dist. 2,xxxxxx av. in-alt. dist. 2,
 behaviorBipartiteObjective,xxxxxx tot. in-alt.dist. 2,xxxxxx tot. in-alt. dist. 2,totInAltDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorBipartiteObjective,xxxxxx av. in-alt. tot. dist. 2,xxxxxx av. in-alt. tot. dist. 2,avTInAltDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorBipartiteObjective,xxxxxx tot. in-alt. av. dist. 2,xxxxxx tot. in-alt. av. dist. 2,totAInAltDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorBipartiteObjective,xxxxxx av. in-sim.dist. 2,xxxxxx av. in-sim. dist. 2,avInSimDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorBipartiteObjective,xxxxxx tot. in-sim.dist. 2,xxxxxx tot. in-sim. dist. 2,totInSimDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneOneModeObjective,xxxxxx double outdegree (#),xxxxxx joint outdegree sum (#),FFDeg,FALSE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneOneModeObjective,xxxxxx double indegree (#),xxxxxx joint indegree sum (#),BBDeg,FALSE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneOneModeObjective,xxxxxx combined out-indegree (#),xxxxxx crossed out-indegree sum (#),FBDeg,FALSE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
@@ -196,18 +204,19 @@ covarBBehaviorBipartiteObjective,xxxxxx: alter's (zzzzzz) yyyyyy average,xxxxxx 
 covarBBehaviorBipartiteObjective,xxxxxx: alter's (zzzzzz) yyyyyy total,xxxxxx alter's (zzzzzz) yyyyyy total,totXAlt,TRUE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 covarSymmetricObjective,xxxxxx alter,Sum of degrees x xxxxxx,altX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,xxxxxx squared alt,Sum of degrees x squared xxxxxx,altSqX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarSymmetricObjective,xxxxxx left thr. (#) alter,Sum degr. * (xxxxxx <= #),altLThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
-covarSymmetricObjective,xxxxxx right thr. (#) alter,Sum degr. * (xxxxxx >= #),altRThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
+covarSymmetricObjective,xxxxxx left thr. (#) alter,Sum degr. * (xxxxxx <= #),altLThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarSymmetricObjective,xxxxxx right thr. (#) alter,Sum degr. * (xxxxxx >= #),altRThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarSymmetricObjective,degree to pos. xxxxxx more(#), sum deg. to pos. xxxxxx more(#),outXMore,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 covarSymmetricObjective,xxxxxx ego,Sum of degrees x xxxxxx,egoX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 covarSymmetricObjective,xxxxxx ego,Sum of degrees x xxxxxx,egoX_gmm,FALSE,xxxxxx,,gmm,FALSE,FALSE,FALSE,TRUE,FALSE,",",0,0,gmm,NA,NA,0,0,0,0,ego,FALSE
 covarSymmetricObjective,xxxxxx squared ego,Sum of degrees x squared xxxxxx,egoSqX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,xxxxxx ego and alt,2 * sum degr. x xxxxxx,egoPlusAltX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,xxxxxx sq. ego and alt,2 * sum degr. x squared xxxxxx,egoPlusAltSqX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarSymmetricObjective,xxxxxx left thr. (#) ego,Sum degr. * (xxxxxx <= #),egoLThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
-covarSymmetricObjective,xxxxxx right thr. (#) ego,Sum degr. * (xxxxxx >= #),egoRThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
-covarSymmetricObjective,abs. (outdegree - xxxxxx),Sum of abs. (outdeg. - xxxxxx),degAbsDiffX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
-covarSymmetricObjective,pos. (outdegree - xxxxxx),Sum of pos. (outdeg. - xxxxxx),degPosDiffX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
-covarSymmetricObjective,neg. (xxxxxx - outdegree),Sum of neg. (xxxxxx - outdegree),degNegDiffX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
+covarSymmetricObjective,xxxxxx left thr. (#) ego,Sum degr. * (xxxxxx <= #),egoLThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarSymmetricObjective,xxxxxx right thr. (#) ego,Sum degr. * (xxxxxx >= #),egoRThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarSymmetricObjective,abs. (outdegree - xxxxxx),Sum of abs. (outdeg. - xxxxxx),degAbsDiffX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
+covarSymmetricObjective,pos. (outdegree - xxxxxx),Sum of pos. (outdeg. - xxxxxx),degPosDiffX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
+covarSymmetricObjective,neg. (xxxxxx - outdegree),Sum of neg. (xxxxxx - outdegree),degNegDiffX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 covarSymmetricObjective,xxxxxx difference,Sum_ties diff xxxxxx,diffX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,xxxxxx abs. difference,Sum_ties abs.diff xxxxxx,absDiffX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,xxxxxx diff. squared,Sum_ties diff.sq xxxxxx,diffSqX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
@@ -218,10 +227,13 @@ covarSymmetricObjective,ind. pop.^(1/#) weighted xxxxxx,indegree pop.^(1/#) weig
 covarSymmetricObjective,outd. pop.^(1/#) weighted xxxxxx,outdegree pop.^(1/#) weighted xxxxxx,outPopX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,ind. act.^(1/#) weighted xxxxxx,indegree act.^(1/#) weighted xxxxxx,inActX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,outd. act.^(1/#) weighted xxxxxx,indegree act.^(1/#) weighted xxxxxx,outActX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarSymmetricObjective,same xxxxxx,same xxxxxx,sameX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarSymmetricObjective,same xxxxxx,number ties between same xxxxxx,sameX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarSymmetricObjective,unequal xxxxxx,number ties between different xxxxxx,unequalX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarSymmetricObjective,ind. pop. from same xxxxxx,indegree pop. from same values on xxxxxx,sameXInPop,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,ind. pop. from dif. xxxxxx,indegree pop. from dif. values on xxxxxx,diffXInPop,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarSymmetricObjective,outd. act. to same xxxxxx,sum sqr. outd. to same values on xxxxxx,sameXOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
-covarSymmetricObjective,outd. act. to dif. xxxxxx,sum sqr. outd. to dif. values on xxxxxx,diffXOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
+covarSymmetricObjective,outd. act.^(1/#) to same xxxxxx,sum sqr. outd.^(1/#) to same values on xxxxxx,sameXOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
+covarSymmetricObjective,outd. act.^(1/#) to dif. xxxxxx,sum sqr. outd.^(1/#) to dif. values on xxxxxx,diffXOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
+covarSymmetricObjective,outd. act.^(1/#) to same-diff xxxxxx,sum sqr. outd. (#) to same-diff values on xxxxxx,crossXOutAct,FALSE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 covarSymmetricObjective,outd. act. to hom. xxxxxx,sum sqr. outd. to hom. values on xxxxxx,homXOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 covarSymmetricObjective,outd. act. weight alt. xxxxxx,sum sqr. outd. weight alt. xxxxxx,altXOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 covarSymmetricObjective,trans. triads intermed. xxxxxx,Number of trans. triads intermed. weight xxxxxx,transTripX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
@@ -229,11 +241,13 @@ covarSymmetricObjective,transitive triads same xxxxxx,Number of transitive triad
 covarSymmetricObjective,transitive triads diff. xxxxxx,Number of transitive triads diff. on xxxxxx,diffXTransTrip,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 covarSymmetricObjective,transitive triplets homog. xxxxxx,Number of transitive triplets homogeneous on xxxxxx,homXTransTrip,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 covarSymmetricObjective,transitive triads jumping xxxxxx,Number of transitive triads jumping xxxxxx,jumpXTransTrip,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
+covarSymmetricObjective,4-cycles (#) same xxxxxx,sum 4-cycles^1/# same xxxxxx,sameXCycle4,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 covarSymmetricObjective,xxxxxx ego x xxxxxx alter,xxxxxx ego x xxxxxx alter,egoXaltX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,xxxxxx of indirect ties,xxxxxx of indirect ties,IndTies,FALSE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,xxxxxx alter at dist 2 (#),xxxxxx alter at dist 2 (#),altDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,xxxxxx tot alter at dist 2 (#),xxxxxx tot alter at dist 2 (#),totDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,xxxxxx ego-alter dist 2 similarity,xxxxxx ego-alter dist 2 similarity,simEgoDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarSymmetricObjective,xxxxxx ego-alter dist 2 same (#),xxxxxx ego-alter dist 2 same (#),sameEgoDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,xxxxxx similarity at dist 2,xxxxxx similarity at dist 2,simDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,xxxxxx in-alter dist 2,xxxxxx in-alter dist 2,altInDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarSymmetricObjective,xxxxxx tot in-alter dist 2,xxxxxx tot in-alter dist 2,totInDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
@@ -241,19 +255,21 @@ covarSymmetricObjective,xxxxxx ego-in-alter dist 2 similarity,xxxxxx ego-in-alte
 covarSymmetricObjective,xxxxxx group-av. ego,Sum of degr. x aver. xxxxxx,avGroupEgoX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 covarBipartiteObjective,xxxxxx alter,Sum of indegrees x xxxxxx,altX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarBipartiteObjective,xxxxxx squared alter,Sum of indegrees x squared xxxxxx,altSqX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarBipartiteObjective,xxxxxx left thr. (#) alter,Sum indegr. * (xxxxxx <= #),altLThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
-covarBipartiteObjective,xxxxxx right thr. (#) alter,Sum indegr. * (xxxxxx >= #),altRThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
+covarBipartiteObjective,xxxxxx left thr. (#) alter,Sum indegr. * (xxxxxx <= #),altLThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarBipartiteObjective,xxxxxx right thr. (#) alter,Sum indegr. * (xxxxxx >= #),altRThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarBipartiteObjective,outd. to pos. xxxxxx more(#), sum outd. to pos. xxxxxx more(#),outXMore,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 covarBipartiteObjective,xxxxxx ego,Sum of outdegrees x xxxxxx,egoX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 covarBipartiteObjective,xxxxxx ego,Sum of outdegrees x xxxxxx,egoX_gmm,FALSE,xxxxxx,,gmm,FALSE,FALSE,FALSE,TRUE,FALSE,",",0,0,gmm,NA,NA,0,0,0,0,ego,FALSE
 covarBipartiteObjective,xxxxxx ego,Sum of outdegrees x squared xxxxxx,egoSqX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 covarBipartiteObjective,xxxxxx left thr. (#) ego,Sum outdegr. * (xxxxxx <= #),egoLThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 covarBipartiteObjective,xxxxxx right thr. (#) ego,Sum outdegr. * (xxxxxx >= #),egoRThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
-covarBipartiteObjective,abs. (outdegree - xxxxxx),Sum of abs. (outdeg. - xxxxxx),degAbsDiffX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
-covarBipartiteObjective,pos. (outdegree - xxxxxx),Sum of pos. (outdeg. - xxxxxx),degPosDiffX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
-covarBipartiteObjective,neg. (xxxxxx - outdegree),Sum of neg. (xxxxxx - outdegree),degNegDiffX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
+covarBipartiteObjective,abs. (outdegree - xxxxxx),Sum of abs. (outdeg. - xxxxxx),degAbsDiffX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
+covarBipartiteObjective,pos. (outdegree - xxxxxx),Sum of pos. (outdeg. - xxxxxx),degPosDiffX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
+covarBipartiteObjective,neg. (xxxxxx - outdegree),Sum of neg. (xxxxxx - outdegree),degNegDiffX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 covarBipartiteObjective,xxxxxx in-alter dist 2,xxxxxx in-alter dist 2,altInDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarBipartiteObjective,xxxxxx tot in-alter dist 2,xxxxxx tot in-alter dist 2,totInDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarBipartiteObjective,xxxxxx ego-in-alter dist 2 similarity,xxxxxx ego-in-alter dist 2 similarity,simEgoInDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarBipartiteObjective,xxxxxx ego-in-alter dist 2 same (#),xxxxxx ego-in-alter dist 2  same (#),sameEgoInDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarBipartiteObjective,ind. pop.^(1/#) weighted xxxxxx,indegree pop.^(1/#) weighted xxxxxx,inPopX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarBipartiteObjective,outd. act.^(1/#) weighted xxxxxx,outdegree act.^(1/#) weighted xxxxxx,outActX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarBipartiteObjective,ind. pop. from same xxxxxx,indegree pop. from same values on xxxxxx,sameXInPop,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
@@ -262,10 +278,14 @@ covarBipartiteObjective,4-cycles (#) same xxxxxx,sum 4-cycles^1/# same xxxxxx,sa
 covarBipartiteObjective,outd. act. to hom. xxxxxx,sum sqr. outd. to hom. values on xxxxxx,homXOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 covarBipartiteObjective,outd. act. weight alt. xxxxxx,sum sqr. outd. weight alt. xxxxxx,altXOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 covarBipartiteObjective,xxxxxx group-av. ego,Sum of outdegr. x aver. xxxxxx,avGroupEgoX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
+doubleCovarNetObjective,same xxxxxx-yyyyyy,number ties between same xxxxxx-yyyyyy,sameXV,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+doubleCovarNetObjective,ind. pop. from same xxxxxx to same yyyyyy,ind. pop. from same xxxxxx to same yyyyyy,sameXVInPop,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,3,objective,NA,NA,0,0,0,0,dyadic,FALSE
+doubleCovarNetObjective,ind. pop. from same xxxxxx to same yyyyyy,ind. pop. from same xxxxxx to same yyyyyy,sameXVInPop2,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,3,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,xxxxxx alter,Sum indegrees x xxxxxx,altX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,xxxxxx squared alter,Sum indegrees x sq. xxxxxx,altSqX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarNonSymmetricObjective,xxxxxx left thr. (#) alter,Sum indegr. * (xxxxxx <= #),altLThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
-covarNonSymmetricObjective,xxxxxx right thr. (#) alter,Sum indegr. * (xxxxxx >= #),altRThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
+covarNonSymmetricObjective,xxxxxx left thr. (#) alter,Sum indegr. * (xxxxxx <= #),altLThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarNonSymmetricObjective,xxxxxx right thr. (#) alter,Sum indegr. * (xxxxxx >= #),altRThresholdX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarNonSymmetricObjective,outd. to pos. xxxxxx more(#), sum outd. to pos. xxxxxx more(#),outXMore,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 covarNonSymmetricObjective,xxxxxx ego,Sum outdegrees x xxxxxx,egoX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 covarNonSymmetricObjective,xxxxxx ego,Sum outdegrees x xxxxxx,egoX_gmm,FALSE,xxxxxx,,gmm,FALSE,FALSE,FALSE,TRUE,FALSE,",",0,0,gmm,NA,NA,0,0,0,0,ego,FALSE
 covarNonSymmetricObjective,xxxxxx squared ego,Sum outdegrees x sq. xxxxxx,egoSqX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
@@ -285,6 +305,7 @@ covarNonSymmetricObjective,xxxxxx similarity,Similarity on xxxxxx,simX_gmm,FALSE
 covarNonSymmetricObjective,xxxxxx similarity x reciprocity,Similarity x reciprocity on xxxxxx,simRecipX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,transitive triplets xxxxxx similarity,Number of trans trip similar on xxxxxx,simXTransTrip,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,same xxxxxx,Same values on xxxxxx,sameX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarNonSymmetricObjective,unequal xxxxxx,number ties between different xxxxxx,unequalX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,same xxxxxx x reciprocity,Same values on xxxxxx x reciprocity,sameXRecip,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,ind. pop.^(1/#) weighted xxxxxx,indegree pop.^(1/#) weighted xxxxxx,inPopX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,outd. pop.^(1/#) weighted xxxxxx,outdegree pop.^(1/#) weighted xxxxxx,outPopX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
@@ -292,10 +313,11 @@ covarNonSymmetricObjective,ind. act.^(1/#) weighted xxxxxx,indegree act.^(1/#) w
 covarNonSymmetricObjective,outd. act.^(1/#) weighted xxxxxx,outdegree act.^(1/#) weighted xxxxxx,outActX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,ind. pop. from same xxxxxx,indegree pop. from same values on xxxxxx,sameXInPop,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,ind. pop. from dif. xxxxxx,indegree pop. from dif. values on xxxxxx,diffXInPop,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarNonSymmetricObjective,outd. act. to same xxxxxx,sum sqr. outd. to same values on xxxxxx,sameXOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+covarNonSymmetricObjective,outd. act.^(1/#) to same xxxxxx,sum sqr. outd. to same values on xxxxxx,sameXOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+covarNonSymmetricObjective,outd. act.^(1/#) to dif. xxxxxx,sum sqr. outd. to dif. values on xxxxxx,diffXOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+covarNonSymmetricObjective,outd. act.^(1/#) to same-diff xxxxxx,sum sqr. outd. (#) to same-diff values on xxxxxx,crossXOutAct,FALSE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 covarNonSymmetricObjective,outd. act. to hom. xxxxxx,sum sqr. outd. to hom. values on xxxxxx,homXOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 covarNonSymmetricObjective,outd. act. weight alt. xxxxxx,sum sqr. outd. weight alt. xxxxxx,altXOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
-covarNonSymmetricObjective,outd. act. to dif. xxxxxx,sum sqr. outd. to dif. values on xxxxxx,diffXOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 covarNonSymmetricObjective,rec.deg. act. to same xxxxxx,sum sqr. outd. to same values on xxxxxx,sameXReciAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 covarNonSymmetricObjective,rec.deg. act. to dif. xxxxxx,sum sqr. outd. to dif. values on xxxxxx,diffXReciAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 covarNonSymmetricObjective,trans. triplets intermed. xxxxxx,Number of trans. triplets intermed. weight xxxxxx,transTripX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
@@ -306,6 +328,7 @@ covarNonSymmetricObjective,transitive triplets jumping xxxxxx,Number of transiti
 covarNonSymmetricObjective,trans. rec. triads hom. xxxxxx,Number of transit. recipr. triads hom. on xxxxxx,homXTransRecTrip,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 covarNonSymmetricObjective,trans. rec. triads same xxxxxx,Number of transit. recipr. triads same on xxxxxx,sameXTransRecTrip,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 covarNonSymmetricObjective,trans. rec. triads diff. xxxxxx,Number of transit. recipr. triads diff. on xxxxxx,diffXTransRecTrip,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
+covarNonSymmetricObjective,4-cycles (#) same xxxxxx,sum 4-cycles^1/# same xxxxxx,sameXCycle4,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 covarNonSymmetricObjective,xxxxxx ego x xxxxxx alter,Sum xxxxxx ego x xxxxxx alter,egoXaltX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,xxxxxx ego x xxxxxx alter x recipr.,Sum xxxxxx ego x xxxxxx rec.alter,egoXaltXRecip,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,higher xxxxxx,ego > alter for xxxxxx,higher,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
@@ -314,9 +337,11 @@ covarNonSymmetricObjective,xxxxxx alter at dist 2 (#),xxxxxx alter at dist 2 (#)
 covarNonSymmetricObjective,xxxxxx tot alter at dist 2 (#),xxxxxx tot alter at dist 2 (#),totDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,xxxxxx similarity at dist 2,xxxxxx similarity at dist 2,simDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,xxxxxx ego-alter dist 2 similarity,xxxxxx ego-alter dist 2 similarity,simEgoDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarNonSymmetricObjective,xxxxxx ego-alter dist 2 same (#),xxxxxx ego-alter dist 2 same (#),sameEgoDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,xxxxxx in-alter dist 2,xxxxxx in-alter dist 2,altInDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,xxxxxx tot in-alter dist 2,xxxxxx tot in-alter dist 2,totInDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,xxxxxx ego-in-alter dist 2 similarity,xxxxxx ego-in-alter dist 2 similarity,simEgoInDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarNonSymmetricObjective,xxxxxx ego-in-alter dist 2 same (#),xxxxxx ego-in-alter dist 2 same (#),sameEgoInDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,xxxxxx group-av. ego,Sum of outdegr. x aver. xxxxxx,avGroupEgoX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 covarBehaviorNetObjective,xxxxxx: av. sim. (zzzzzz) x ego's yyyyyy,xxxxxx av. sim. (zzzzzz) x ego's yyyyyy,avSimEgoX,TRUE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 covarBehaviorNetObjective,xxxxxx: tot. sim. (zzzzzz) x ego's yyyyyy,xxxxxx tot. sim. (zzzzzz) x ego's yyyyyy,totSimEgoX,TRUE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
@@ -336,6 +361,8 @@ bipartiteObjective,outdegree - activity (sqrt),Sum of outdegrees^(1.5),outActSqr
 bipartiteObjective,outdegree-trunc(#),Sum of outdegrees trunc(#),outTrunc,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 bipartiteObjective,outdegree-trunc(#),Sum of outdegrees trunc(#),outTrunc2,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,5,objective,NA,NA,0,0,0,0,,FALSE
 bipartiteObjective,outdegree-more(#),Sum of outdegrees more (#),outMore,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+bipartiteObjective,outdegree-more(#),Sum of outdegrees more (#),outMore2,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+bipartiteObjective,outdegree-more(#),Sum of outdegrees more (#),outMore3,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 bipartiteObjective,out-isolate,Number of out-isolates,outIso,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 bipartiteObjective,1/(outdegree + #),Sum 1/(outdegrees + #),outInv,FALSE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 bipartiteObjective,1/(outdegree+#)(outdegree+1+#),Sum 1/(outdegrees + #)(outdegrees + 1 + #),outSqInv,FALSE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
@@ -393,6 +420,8 @@ nonSymmetricObjective,rec.degree^(1/#) - activity,Sum rec.degr^(1/#) x outdegr,r
 nonSymmetricObjective,outdegree-trunc(#),Sum of outdegrees trunc(#),outTrunc,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,TRUE
 nonSymmetricObjective,outdegree-trunc(#),Sum of outdegrees trunc(#),outTrunc2,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,5,objective,NA,NA,0,0,0,0,,TRUE
 nonSymmetricObjective,outdegree more(#),Sum of outdegrees more(#),outMore,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,TRUE
+nonSymmetricObjective,outdegree more(#),Sum of outdegrees more(#),outMore2,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,TRUE
+nonSymmetricObjective,outdegree more(#),Sum of outdegrees more(#),outMore3,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,TRUE
 nonSymmetricObjective,out-isolate,Number of out-isolates,outIso,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,TRUE
 nonSymmetricObjective,1/(outdegree + #),Sum 1/(outdegrees + #),outInv,FALSE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,TRUE
 nonSymmetricObjective,1/(outdegree+#)(outdegree+1+#),Sum 1/(outdegrees + #)(outdegrees + 1 + #),outSqInv,FALSE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,TRUE
@@ -459,6 +488,8 @@ symmetricObjective,degree^(1/#) assortativity,Sum of degree^(1/#) products,outIn
 symmetricObjective,outdegree-trunc(#),Sum of outdegrees trunc(#),outTrunc,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 symmetricObjective,outdegree-trunc(#),Sum of outdegrees trunc(#),outTrunc2,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,5,objective,NA,NA,0,0,0,0,,FALSE
 symmetricObjective,outdegree more(#),Sum of outdegrees more(#),outMore,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+symmetricObjective,outdegree more(#),Sum of outdegrees more(#),outMore2,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+symmetricObjective,outdegree more(#),Sum of outdegrees more(#),outMore3,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 symmetricObjective,out-isolate,Number of isolates,outIso,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 symmetricObjective,1/(degree + #),Sum 1/(degrees + #),outInv,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 symmetricObjective,1/(degree+#)(degree+1+#),Sum 1/(degrees + #)(degrees + 1 + #),outSqInv,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
@@ -477,9 +508,14 @@ unspecifiedContinuousInteraction,behavior xxxxxx: unspecified interaction,beh. x
 nonSymmetricSymmetricObjective,xxxxxx,sum crprod. with xxxxxx,crprod,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricSymmetricSObjective,degree^(1/#) xxxxxx popularity,sum ind. x centrd degr.^(1/#) xxxxxx,outPopIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricSymmetricSObjective,degree^(1/#) xxxxxx activity,sum outd. x centrd degr.^(1/#) xxxxxx,outActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
+nonSymmetricSymmetricSObjective,1/deg.^(1/#) xxxxxx ego, 1/deg.^(1/#) xxxxxx ego,divOutEgoIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
+nonSymmetricSymmetricSObjective,1/deg.^(1/#) xxxxxx ego, 1/deg.^(1/#) xxxxxx ego,divInEgoIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
 nonSymmetricSymmetricSObjective,av. degree xxxxxx,sum outd. x av. degree xxxxxx -#,avDegIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
-nonSymmetricSymmetricObjective,twopath^(1/#) xxxxxx activity,sum deg. x 2path^(1/#) xxxxxx,outOutActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
-nonSymmetricSymmetricObjective,twopath^(1/#) xxxxxx average,average deg. x 2path^(1/#) xxxxxx,outOutAvIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricSymmetricObjective,mixed twopath^(1/#) xxxxxx activity,sum deg. x mixed 2path^(1/#) xxxxxx,outOutActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricSymmetricObjective,mixed twopath^(1/#) xxxxxx average,average deg. x mixed 2path^(1/#) xxxxxx,outOutAvIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricSymmetricObjective, xxxxxx twopath^(1/#) activity,sum deg. x 2path^(1/#),dist2OutInActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,ego,FALSE
+nonSymmetricSymmetricObjective,shared xxxxxx outdeg.^{1/#} act.,sum outd. x W-dist.2 outd.^(1/#) xxxxxx,outOutDist2ActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricSymmetricObjective,shared xxxxxx av. outd.^{1/#} act.,av. outd. x W-dist.2 outd.^(1/#) xxxxxx,outOutDist2AvIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricSymmetricObjective,both degrees^(1/#) xxxxxx,sum tied degree^(1/#) products xxxxxx,both,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricSymmetricObjective,deg.^(1/#) xxxxxx abs diff.,sum abs deg^(1/#) diff xxxxxx,absOutDiffIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricSymmetricObjective,duplex xxxxxx outdegree^(1/#) activity,sum dupl. xxxxxx outdeg.^(1/#),doubleOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,,FALSE
@@ -489,7 +525,10 @@ nonSymmetricSymmetricSObjective,xxxxxx to any agreement,"mixed triplets W->X=>X,
 nonSymmetricSymmetricSObjective,XWX closure of xxxxxx,"trunc mixed tripl X->W=>X, W = xxxxxx",cl.XWX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 nonSymmetricSymmetricSObjective,closure of xxxxxx,"mixed triplets W->W=>X, W = xxxxxx",closure,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricSymmetricSObjective,mixed incoming with xxxxxx,"mixed XXW triplets, W = xxxxxx",mixedInXW,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
-nonSymmetricSymmetricObjective,shared xxxxxx (#) to agreement,"mixed 4cycles WWXX, W = xxxxxx",sharedTo,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+nonSymmetricSymmetricObjective,shared xxxxxx (#) to agreement,"mixed 4cycles WWXX, W = xxxxxx",sharedTo,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,3,objective,NA,NA,0,0,0,0,,FALSE
+nonSymmetricSymmetricObjective,"av. two-mode xxxxxx alter (#) by tie","mixed av. 4cycles WWXX, W = xxxxxx",avAlt.2M.tie,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,3,objective,NA,NA,0,0,0,0,,FALSE
+nonSymmetricSymmetricObjective,ind. pop. by outd. xxxxxx (#),"mixed out-in-out-3paths XXW, W = xxxxxx",inPopOutW,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricSymmetricObjective,nbr out-in dist.2 xxxxxx^(1/#) activity,sum outd. x nbr out-in dist.2 xxxxxx^(1/#),nDist2ActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,ego,FALSE
 nonSymmetricSymmetricSObjective,Jaccard xxxxxx sim.,Jaccard xxxxxx sim.,JoutMix,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricSymmetricSObjective,GWESP(#) xxxxxx,Numb. edgew. shrd. xxxxxx partn.(#),gwespMix,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricNonSymmetricObjective,xxxxxx,sum crprod. with xxxxxx,crprod,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
@@ -500,8 +539,15 @@ nonSymmetricNonSymmetricObjective,indeg.^(1/#) xxxxxx activity,sum outdeg. x cen
 nonSymmetricNonSymmetricObjective,xxxxxx x indeg.^(1/#) xxxxxx activity,sum crprod. with xxxxxx x centrd indeg.^(1/#) xxxxxx,crprodInActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricNonSymmetricObjective,outdeg.^(1/#) xxxxxx popularity,sum indeg. x centrd outdeg.^(1/#) xxxxxx,outPopIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricNonSymmetricObjective,outdeg.^(1/#) xxxxxx activity,sum outdeg. x centrd outdeg.^(1/#) xxxxxx,outActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
-nonSymmetricNonSymmetricObjective,twopath^(1/#) xxxxxx activity,sum deg. x 2path^(1/#) xxxxxx,outOutActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
-nonSymmetricNonSymmetricObjective,twopath^(1/#) xxxxxx average,average deg. x 2path^(1/#) xxxxxx,outOutAvIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricNonSymmetricObjective,1/outdeg.^(1/#) xxxxxx ego, 1/outdeg.^(1/#) xxxxxx ego,divOutEgoIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
+nonSymmetricNonSymmetricObjective,1/indeg.^(1/#) xxxxxx ego, 1/indeg.^(1/#) xxxxxx ego,divInEgoIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
+nonSymmetricNonSymmetricObjective,1/outdeg.^(1/#) xxxxxx alter, 1/outdeg.^(1/#) xxxxxx alter,divOutAltIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricNonSymmetricObjective,1/indeg.^(1/#) xxxxxx alter, 1/indeg.^(1/#) xxxxxx alter,divInAltIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricNonSymmetricObjective,mixed twopath^(1/#) xxxxxx activity,sum deg. x mixed 2path^(1/#) xxxxxx,outOutActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricNonSymmetricObjective,mixed twopath^(1/#) xxxxxx average,average deg. x mixed 2path^(1/#) xxxxxx,outOutAvIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricNonSymmetricObjective,xxxxxx twopath^(1/#) activity,sum deg. x 2path^(1/#) xxxxxx,dist2OutInActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,ego,FALSE
+nonSymmetricNonSymmetricObjective,shared xxxxxx outdeg.^{1/#} act.,sum outd. x W-dist.2 outd.^(1/#) xxxxxx,outOutDist2ActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricNonSymmetricObjective,"av. two-mode xxxxxx alter (#) by tot",av. outd. x W-dist.2 outd.^(1/#) xxxxxx,avAlt.2M.tot,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricNonSymmetricObjective,av. degree xxxxxx,sum outd. x av. outdegree xxxxxx -#,avDegIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
 nonSymmetricNonSymmetricObjective,outdeg.^(1/#) xxxxxx abs diff.,sum abs outdeg^(1/#) diff xxxxxx,absOutDiffIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricNonSymmetricObjective,both degrees^(1/#) xxxxxx,sum tied deg.^(1/#) products xxxxxx,both,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
@@ -530,7 +576,10 @@ nonSymmetricNonSymmetricObjective,closure of xxxxxx,"mixed triplets W->W=>X, W =
 nonSymmetricNonSymmetricObjective,cyclic closure of xxxxxx,"mixed cyclic triplets WWX, W = xxxxxx",cyClosure,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricNonSymmetricObjective,shared incoming xxxxxx,"incoming mixed triplets WWX, W = xxxxxx",sharedIn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricNonSymmetricObjective,mixed incoming with xxxxxx,"mixed XXW triplets, W = xxxxxx",mixedInXW,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
-nonSymmetricNonSymmetricObjective,shared xxxxxx (#) to agreement,"mixed 4cycles WWXX, W = xxxxxx",sharedTo,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+nonSymmetricNonSymmetricObjective,shared xxxxxx (#) to agreement,"mixed 4cycles WWXX, W = xxxxxx",sharedTo,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,3,objective,NA,NA,0,0,0,0,,FALSE
+nonSymmetricNonSymmetricObjective,"av. two-mode xxxxxx alter (#) by tie","mixed av. 4cycles WWXX, W = xxxxxx",avAlt.2M.tie,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,3,objective,NA,NA,0,0,0,0,,FALSE
+nonSymmetricNonSymmetricObjective,ind. pop. by outd. xxxxxx (#),"mixed out-in-out-3paths XXW, W = xxxxxx",inPopOutW,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricNonSymmetricObjective,nbr out-in dist.2 xxxxxx^(1/#) activity,sum outd. x nbr out-in dist.2 xxxxxx^(1/#),nDist2ActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,ego,FALSE
 nonSymmetricNonSymmetricObjective,Jaccard xxxxxx in-sim.,Jaccard xxxxxx in-sim.,JinMix,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricNonSymmetricObjective,Jaccard xxxxxx out-sim.,Jaccard xxxxxx out-sim.,JoutMix,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricNonSymmetricObjective,GWESP I -> K -> J(#) xxxxxx,Numb. edgew. shrd. xxxxxx partn. by twopath(#),gwespFFMix,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,dyadic,FALSE
@@ -540,23 +589,41 @@ nonSymmetricNonSymmetricObjective,GWESP I -> K <- J(#) xxxxxx,Numb. edgew. shrd.
 nonSymmetricNonSymmetricObjective,GWESP I <> K <> J(#) xxxxxx,Numb. edgew. shrd. xxxxxx partn. in AND out twostars(#),gwespRRMix,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteNonSymmetricObjective,indegree^(1/#) xxxxxx activity,sum outd. x centrd ind.^(1/#) xxxxxx,inActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
 bipartiteNonSymmetricObjective,outdegree^(1/#) xxxxxx activity,sum outd. x centrd degree^(1/#) xxxxxx,outActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteNonSymmetricObjective,1/outdeg.^(1/#) xxxxxx ego, 1/outdeg.^(1/#) xxxxxx ego,divOutEgoIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
+bipartiteNonSymmetricObjective,1/indeg.^(1/#) xxxxxx ego, 1/indeg.^(1/#) xxxxxx ego,divInEgoIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
+bipartiteNonSymmetricObjective,1/indeg.^(1/#) xxxxxx alter, 1/indeg.^(1/#) xxxxxx alter,divInAltIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteNonSymmetricObjective,av. degree xxxxxx,sum outd. x av. outdegree xxxxxx -#,avDegIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
-bipartiteNonSymmetricObjective,twopath^(1/#) xxxxxx activity,sum deg. x 2path^(1/#) xxxxxx,outOutActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
-bipartiteNonSymmetricObjective,twopath^(1/#) xxxxxx average,average deg. x 2path^(1/#) xxxxxx,outOutAvIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteNonSymmetricObjective,mixed twopath^(1/#) xxxxxx activity,sum deg. x mixed 2path^(1/#) xxxxxx,outOutActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteNonSymmetricObjective,mixed twopath^(1/#) xxxxxx average,average deg. x mixed 2path^(1/#) xxxxxx,outOutAvIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteNonSymmetricObjective,xxxxxx twopath^(1/#) activity,sum deg. x 2path^(1/#) xxxxxx,dist2OutInActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,ego,FALSE
+bipartiteNonSymmetricObjective,shared xxxxxx outdeg.^{1/#} act.,sum outd. x W-dist.2 outd.^(1/#) xxxxxx,outOutDist2ActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteNonSymmetricObjective,"av. two-mode xxxxxx alter (#) by tot",av. outd. x W-dist.2 outd.^(1/#) xxxxxx,avAlt.2M.tot,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteNonSymmetricObjective,xxxxxx to agreement,"mixed triplets W->X=>X, W = xxxxxx",to,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteNonSymmetricObjective,xxxxxx (back) to agreement,"mixed triplets X(back)WW, W = xxxxxx",toBack,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteNonSymmetricObjective,mutual xxxxxx to agreement,"mixed triplets X(recip)WW, W = xxxxxx",toRecip,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
-bipartiteNonSymmetricObjective,shared xxxxxx (#) to agreement,"mixed 4cycles WWXX, W = xxxxxx",sharedTo,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+bipartiteNonSymmetricObjective,shared xxxxxx (#) to agreement,"mixed 4cycles WWXX, W = xxxxxx",sharedTo,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,3,objective,NA,NA,0,0,0,0,,FALSE
+bipartiteNonSymmetricObjective,"av. two-mode xxxxxx alter (#) by tie","mixed av. 4cycles WWXX, W = xxxxxx",avAlt.2M.tie,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,3,objective,NA,NA,0,0,0,0,,FALSE
+bipartiteNonSymmetricObjective,ind. pop. by outd. xxxxxx (#),"mixed out-in-out-3paths XXW, W = xxxxxx",inPopOutW,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteNonSymmetricObjective,nbr out-in dist.2 xxxxxx^(1/#) activity,sum outd. x nbr out-in dist.2 xxxxxx^(1/#),nDist2ActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,ego,FALSE
 bipartiteNonSymmetricObjective,xxxxxx to any agreement,"mixed triplets W->X=>X, W = xxxxxx",toAny,FALSE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
+bipartiteNonSymmetricObjective,Jaccard xxxxxx out-sim.,Jaccard xxxxxx out-sim.,JoutMix,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteNonSymmetricObjective,GWESP I -> K <- J(#) xxxxxx,Numb. edgew. shrd. xxxxxx partn. by in twostars(#),gwespFBMix,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteSymmetricObjective,degree^(1/#) xxxxxx activity,sum outd. x centrd degre.^(1/#) xxxxxx,outActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteSymmetricObjective,1/deg.^(1/#) xxxxxx ego, 1/deg.^(1/#) xxxxxx ego,divInEgoIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
+bipartiteSymmetricObjective,1/deg.^(1/#) xxxxxx alter, 1/deg.^(1/#) xxxxxx alter,divInAltIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteSymmetricObjective,av. degree xxxxxx,sum outd. x av. degr. xxxxxx -#,avDegIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
-bipartiteSymmetricObjective,twopath^(1/#) xxxxxx activity,sum deg. x 2path^(1/#) xxxxxx,outOutActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
-bipartiteSymmetricObjective,twopath^(1/#) xxxxxx average,average deg. x 2path^(1/#) xxxxxx,outOutAvIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteSymmetricObjective,mixed twopath^(1/#) xxxxxx activity,sum deg. x mixed 2path^(1/#) xxxxxx,outOutActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteSymmetricObjective,mixed twopath^(1/#) xxxxxx average,average deg. x mixed 2path^(1/#) xxxxxx,outOutAvIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteSymmetricObjective,xxxxxx twopath^(1/#) activity,sum deg. x 2path^(1/#) xxxxxx,dist2OutInActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,ego,FALSE
+bipartiteSymmetricObjective,shared xxxxxx outdeg.^{1/#} act.,sum outd. x W-dist.2 outd.^(1/#) xxxxxx,outOutDist2ActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteSymmetricObjective,"av. two-mode xxxxxx alter (#) by tot",av. outd. x W-dist.2 outd.^(1/#) xxxxxx,avAlt.2M.tot,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteSymmetricObjective,xxxxxx to agreement,"mixed triplets W->X=>X, W = xxxxxx",to,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteSymmetricObjective,xxxxxx (backwards) to agreement,"mixed triplets X(backwards)WW, W = xxxxxx",toBack,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteSymmetricObjective,mutual xxxxxx to agreement,"mixed triplets X(reciprocal)WW, W = xxxxxx",toRecip,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
-bipartiteSymmetricObjective,shared xxxxxx (#) to agreement,"mixed 4cycles WWXX, W = xxxxxx",sharedTo,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+bipartiteSymmetricObjective,shared xxxxxx (#) to agreement,"mixed 4cycles WWXX, W = xxxxxx",sharedTo,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,3,objective,NA,NA,0,0,0,0,,FALSE
+bipartiteSymmetricObjective,"av. two-mode xxxxxx alter (#) by tie","mixed av. 4cycles WWXX, W = xxxxxx",avAlt.2M.tie,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,3,objective,NA,NA,0,0,0,0,,FALSE
+bipartiteSymmetricObjective,ind. pop. by outd. xxxxxx (#),"mixed out-in-out-3paths XXW, W = xxxxxx",inPopOutW,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteSymmetricObjective,nbr out-in dist.2 xxxxxx^(1/#) activity,sum outd. x nbr out-in dist.2 xxxxxx^(1/#),nDist2ActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,ego,FALSE
 bipartiteSymmetricObjective,xxxxxx to any agreement,"mixed triplets W->X=>X, W = xxxxxx",toAny,FALSE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 continuousFeedback,feedback from yyyyyy,Feedback of yyyyyy on xxxxxx (A_xxxxxx.yyyyyy),feedback,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 continuousIntercept,intercept,Intercept of xxxxxx (b_xxxxxx),intercept,NA,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
@@ -573,27 +640,48 @@ continuousOneModeObjective,xxxxxx nonrecip outdegree,beh. xxxxxx non-reciprocate
 continuousRate,scale parameter period 1,Time scaling continuous behavior change,scale,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,1,NA,0,0,0,0,,FALSE
 continuousRate,scale parameter (period nnnnnn),Time scaling continuous behavior change in period nnnnnn,scale,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,nnnnnn,NA,0,0,0,0,,FALSE
 continuousWiener,wiener (xxxxxx.yyyyyy),Wiener process matrix (G_xxxxxx.yyyyyy),wiener,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
+continuousBipartiteObjective,xxxxxx outdegree,beh. xxxxxx outdegrees,outdeg,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousBipartiteObjective,xxxxxx outdegree (sqrt),beh. xxxxxx outdegrees (sqrt),outdegSqrt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousBipartiteObjective,xxxxxx isolate out,beh. xxxxxx isolate out,isolateOut,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 nonSymmetricBipartiteObjective,outdeg.^(1/#) xxxxxx popularity,sum outdegr x centrd degr^(1/#) xxxxxx,outPopIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricBipartiteObjective,outdeg.^(1/#) xxxxxx activity,sum outdeg. x centrd degree^(1/#) xxxxxx,outActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricBipartiteObjective,1/outdeg.^(1/#) xxxxxx ego, 1/outdeg.^(1/#) xxxxxx ego,divOutEgoIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
+nonSymmetricBipartiteObjective,1/outdeg.^(1/#) xxxxxx alter, 1/outdeg.^(1/#) xxxxxx alter,divOutAltIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricBipartiteObjective,av. degree xxxxxx,sum outd. x av. outdeg. xxxxxx -#,avDegIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
-nonSymmetricBipartiteObjective,outdeg.^(1/#) xxxxxx dist.2 act.,sum outdeg. x 2path^(1/#) xxxxxx,outOutActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
-nonSymmetricBipartiteObjective,outdeg.^(1/#) xxxxxx dist.2 ave.,average pitdeg. x 2path^(1/#) xxxxxx,outOutAvIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricBipartiteObjective,mixed outdeg.^(1/#) xxxxxx dist.2 act.,sum outdeg. x mixed 2path^(1/#) xxxxxx,outOutActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricBipartiteObjective,mixed outdeg.^(1/#) xxxxxx dist.2 ave.,average outdeg. x mixed 2path^(1/#) xxxxxx,outOutAvIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricBipartiteObjective,xxxxxx outdeg.^(1/#) dist.2 act.,sum outdeg. x 2path^(1/#) xxxxxx,dist2OutInActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,ego,FALSE
 nonSymmetricBipartiteObjective,outdeg.^(1/#) xxxxxx abs diff.,sum abs outdeg^(1/#) diff xxxxxx,absOutDiffIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricBipartiteObjective,from xxxxxx agreement,"mixed triplets XWW, W = xxxxxx",from,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
-nonSymmetricBipartiteObjective,shared xxxxxx (#) to agreement,"mixed 4cycles WWXX, W = xxxxxx",sharedTo,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+nonSymmetricBipartiteObjective,shared xxxxxx (#) to agreement,"mixed 4cycles WWXX, W = xxxxxx",sharedTo,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,3,objective,NA,NA,0,0,0,0,,FALSE
+nonSymmetricBipartiteObjective,"av. two-mode xxxxxx alter (#) by tie","mixed av. 4cycles WWXX, W = xxxxxx",avAlt.2M.tie,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,3,objective,NA,NA,0,0,0,0,,FALSE
+nonSymmetricBipartiteObjective,ind. pop. by outd. xxxxxx (#),"mixed out-in-out-3paths XXW, W = xxxxxx",inPopOutW,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricBipartiteObjective,nbr out-in dist.2 xxxxxx^(1/#) activity,sum outd. x nbr out-in dist.2 xxxxxx^(1/#),nDist2ActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,ego,FALSE
 nonSymmetricBipartiteObjective,Jaccard xxxxxx out-sim.,Jaccard xxxxxx out-sim.,JoutMix,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricBipartiteObjective,GWESP(#) xxxxxx,Numb. edgew. shrd. xxxxxx partn.(#),gwespMix,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteBipartiteObjective,xxxxxx,sum crprod. with xxxxxx,crprod,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteBipartiteObjective,indegree^(1/#) xxxxxx popularity,sum ind. x centrd ind.^(1/#) xxxxxx,inPopIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
 bipartiteBipartiteObjective,outdegree^(1/#) xxxxxx activity,sum outd. x centrd outdegree^(1/#) xxxxxx,outActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteBipartiteObjective,1/outdeg.^(1/#) xxxxxx ego, 1/outdeg.^(1/#) xxxxxx ego,divOutEgoIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,ego,FALSE
 bipartiteBipartiteObjective,duplex xxxxxx outdegree^(1/#) activity,sum dupl. xxxxxx outdeg.^(1/#),doubleOutAct,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,,FALSE
-bipartiteBipartiteObjective,shared xxxxxx (#) to agreement,"mixed 4cycles WWXX, W = xxxxxx",sharedTo,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+bipartiteBipartiteObjective,shared xxxxxx outdeg.^{1/#} act.,sum outd. x W-dist.2 outd.^(1/#) xxxxxx,outOutDist2ActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteBipartiteObjective,"av. two-mode xxxxxx alter (#) by tot",av. outd. x W-dist.2 outd.^(1/#) xxxxxx,avAlt.2M.tot,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteBipartiteObjective,Jaccard xxxxxx out-sim.,Jaccard xxxxxx out-sim.,JoutMix,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteBipartiteObjective,shared xxxxxx (#) to agreement,"mixed 4cycles WWXX, W = xxxxxx",sharedTo,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,3,objective,NA,NA,0,0,0,0,,FALSE
+bipartiteBipartiteObjective,"av. two-mode xxxxxx alter (#) by tie","mixed av. 4cycles WWXX, W = xxxxxx",avAlt.2M.tie,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,3,objective,NA,NA,0,0,0,0,,FALSE
+bipartiteBipartiteObjective,ind. pop. by outd. xxxxxx (#),"mixed out-in-out-3paths XXW, W = xxxxxx",inPopOutW,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
+bipartiteBipartiteObjective,nbr out-in dist.2 xxxxxx^(1/#) activity,sum outd. x nbr out-in dist.2 xxxxxx^(1/#),nDist2ActIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,ego,FALSE
+covarNetNetObjective,xxxxxx closure same yyyyyy,"m.tr. W->W=>X, W = xxxxxx, same yyyyyy",sameWWClosure,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarNetNetObjective,xxxxxx closure diff. yyyyyy,"m.tr. W->W=>X, W = xxxxxx, diff. yyyyyy",diffWWClosure,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNetNetObjective,xxxxxx closure jumping yyyyyy,"m.tr. W->W=>X, W = xxxxxx, jump yyyyyy",jumpWWClosure,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNetNetObjective,from xxxxxx agr. jump. yyyyyy,"m.tr. XWW, W = xxxxxx, jump yyyyyy",jumpFrom,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNetNetObjective,shared inc. xxxxxx jump. yyyyyy,"inc. m.tr. WWX, W = xxxxxx, jump yyyyyy",jumpSharedIn,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarNetNetObjective,mixed xxxxxx closure same yyyyyy,"m.tr. W->X=>X, W = xxxxxx, same yyyyyy",sameWXClosure,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarNetNetObjective,mixed xxxxxx closure jumping yyyyyy,"m.tr. W->X=>X, W = xxxxxx, jump yyyyyy",jumpWXClosure,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarNetNetObjective,mixed xxxxxx closure homog. yyyyyy,"m.tr. W->X=>X, W = xxxxxx, homog. yyyyyy",homWXClosure,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarNetNetObjective,mixed xxxxxx WX closure same yyyyyy,"m.tr. W->X=>X, W = xxxxxx, same yyyyyy",sameWXClosure,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarNetNetObjective,mixed xxxxxx WX closure diff. yyyyyy,"m.tr. W->X=>X, W = xxxxxx, diff. yyyyyy",diffWXClosure,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarNetNetObjective,mixed xxxxxx WX closure jumping yyyyyy,"m.tr. W->X=>X, W = xxxxxx, jump yyyyyy",jumpWXClosure,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarNetNetObjective,mixed xxxxxx WX closure homog. yyyyyy,"m.tr. W->X=>X, W = xxxxxx, homog. yyyyyy",homWXClosure,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarNetNetObjective,mixed xxxxxx XW closure same yyyyyy,"m.tr. X->W=>X, W = xxxxxx, same yyyyyy",sameXWClosure,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+covarNetNetObjective,mixed xxxxxx XW closure diff. yyyyyy,"m.tr. X->W=>X, W = xxxxxx, diff. yyyyyy",diffXWClosure,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNetNetObjective,from xxxxxx agr. x hom. yyyyyy,"m.tr. WWX, W = xxxxxx, hom. yyyyyy",homCovNetNet,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNetNetObjective,from xxxxxx agr. contrasting yyyyyy,"m.tr. XWW, W = xxxxxx, contrast yyyyyy",contrastCovNetNet,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNetNetObjective,from xxxxxx agr. all diff. yyyyyy,"m.tr. XWW, W = xxxxxx, all diff. yyyyyy",allDifCovNetNet,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
@@ -619,4 +707,6 @@ covarBNetNetObjective,yyyyyy tot alt. at dist 2 on xxxxxx (#),yyyyyy tot alt. at
 covarBNetNetObjective,yyyyyy similarity at dist 2 on xxxxxx,yyyyyy similarity at dist 2 on xxxxxx,simDist2W,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarABipNetObjective,mixed xxxxxx closure same yyyyyy,"m.tr. W->X=>X, W = xxxxxx, same yyyyyy",sameWXClosure,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 dyadANetNetObjective,yyyyyy weighted by zzzzzz to agrmnt,"mixed triplets W->X=>X, W = yyyyyy, weight zzzzzz",toU,TRUE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+dyadBNetNetObjective,"shared yyyyyy wghtd by zzzzzz (#) to agreement","mixed 4cycles WWXX, W = xxxxxx, weight zzzzzz",sharedToU,TRUE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+dyadBNetNetObjective,"av. two-mode xxxxxx alter (#) weight zzzzzz by tie","mixed av. 4cycles WWXX, W = xxxxxx, weight zzzzzz",avAltU.2M.tie,TRUE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 tripleNetworkObjective,from xxxxxx agr. weighted by yyyyyy ind,"m.tr. XWW, W = xxxxxx, weight ind. yyyyyy",from.w.ind,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE

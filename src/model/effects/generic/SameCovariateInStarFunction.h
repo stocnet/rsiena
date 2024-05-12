@@ -29,7 +29,7 @@ public:
 	virtual double value(int alter) const;
 
 private:
-	bool lexcludeMissing;
+	bool lexcludeMissing {};
 };
 
 }

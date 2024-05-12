@@ -38,7 +38,7 @@ private:
 	// Indicates if the reciprocal version of the similarity effect is
 	// required
 
-	bool lreciprocal;
+	bool lreciprocal {};
 };
 
 }

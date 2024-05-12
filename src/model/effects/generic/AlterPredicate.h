@@ -49,8 +49,8 @@ protected:
 	AlterPredicate();
 
 private:
-	int lego;
-	int lperiod;
+	int lego{};
+	int lperiod{};
 };
 
 // ----------------------------------------------------------------------------

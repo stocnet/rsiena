@@ -12,20 +12,20 @@
 
 \title{Auxiliary functions for goodness of fit assessment by \code{\link{sienaGOF}}}
 \description{
- The functions given here are auxiliary to function \code{\link{sienaGOF}}
+ The functions given here are auxiliary to function \code{\link{sienaGOF}}  
  which assesses goodness of fit for actor-oriented models.
 
- The auxiliary functions are, first, some functions of networks or behavior
- (i.e., statistics) for which the simulated values for the fitted model
- are compared to the observed value; second, some extraction functions
- to extract the observed and simulated networks and/or behavior
- from the \code{\link{sienaFit}} object produced by \code{\link{siena07}}
+ The auxiliary functions are, first, some functions of networks or behaviour  
+ (i.e., statistics) for which the simulated values for the fitted model  
+ are compared to the observed value; second, some extraction functions  
+ to extract the observed and simulated networks and/or behaviour  
+ from the \code{\link{sienaFit}} object produced by \code{\link{siena07}}  
  with \code{returnDeps=TRUE}.
 
- These functions are exported here mainly to enable users to write
- their own versions. At the end of this help page some non-exported functions
- are listed. These are not exported because they depend on packages that
- are not in the R base distribution; and to show templates for readers
+ These functions are exported here mainly to enable users to write  
+ their own versions. At the end of this help page some non-exported functions  
+ are listed. These are not exported because they depend on packages that  
+ are not in the R base distribution; and to show templates for readers  
  wishing to contruct their own functions.
  }
 
@@ -103,7 +103,7 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
 
  \code{TriadCensus} returns the distribution of the Holland-Leinhardt triad
  census according to the algorithm by Batagelj and Mrvar
- (implementation by Parimalarangan Slota, and Madduri). An alternative is the
+ (implementation by Parimalarangan, Slota, and Madduri). An alternative is the
  \code{TriadCensus.sna} function mentioned below, from package \code{sna}, which
  gives the same results. Here the \code{levls} parameter can be used to exclude
  some triads, e.g., for non-directed networks.\cr
@@ -175,25 +175,25 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
 }
 
 \references{
-\itemize{
-\item Batagelj, V., and Mrvar, A. (2001).
+   Batagelj, V., and Mrvar, A. (2001),
   A subquadratic triad census algorithm for large sparse networks with small
-  maximum degree. \emph{Social Networks}, 23, 237-243.
-\item See \url{https://www.stats.ox.ac.uk/~snijders/siena/}
-  for general information on RSiena.
-\item Holland, P.W., and Leinhardt, S. (1976).
-  Local structure in social networks. \emph{Sociological Methodology}, 6, 1-45.
-\item Hollway, J., Lomi, A., Pallotti, F., and Stadtfeld, C. (2017)
+  maximum degree. \emph{Social Networks}, \bold{23}, 237--243.
+  
+   Holland, P.W., and Leinhardt, S. (1976),
+  Local structure in social networks. \emph{Sociological Methodology}, \bold{6}, 1--45.
+  
+   Hollway, J., Lomi, A., Pallotti, F., and Stadtfeld, C. (2017),
    Multilevel social spaces: The network dynamics of organizational fields.
-   \emph{Network Science}, 5(2), 187-212.
-\item Lospinoso, J.A. and Snijders, T.A.B. (2019).
-  Goodness of fit for stochastic actor-orientedmodels.
-  \emph{Methodological Innovations}, 12:2059799119884282.
-\item Parimalarangan S., Slota, G.M., and Madduri, K. (2017).
+   \emph{Network Science}, \bold{5}, 187--212.
+   
+   Lospinoso, J.A. and Snijders, T.A.B. (2019),
+  Goodness of fit for stochastic actor-oriented models.
+  \emph{Methodological Innovations}, \bold{12}:2059799119884282.
+  
+   Parimalarangan S., Slota, G.M., and Madduri, K. (2017),
  Fast parallel graph triad census and triangle counting on shared-memory
-  platforms, 2017 IEEE International Parallel and Distributed Processing
-  Symposium Workshops (IPDPSW), Lake Buena Vista, FL, pp. 1500-1509.
-}
+  platforms, \emph{2017 IEEE International Parallel and Distributed Processing
+  Symposium Workshops (IPDPSW)}, Lake Buena Vista, FL, pp. 1500-1509.
 }
 \author{Josh Lospinoso, Tom Snijders}
 \seealso{\code{\link{siena07}}, \code{\link{sienaGOF}} }
@@ -273,12 +273,12 @@ plot(goftc, center=TRUE, scale=TRUE)
 # note the keys at the x-axis (widen the plot if they are not clear).
 descriptives.sienaGOF(goftc)
 
-\dontrun{
 ### The mixed triad census for co-evolution of one-mode and two-mode networks:
 actors <- sienaNodeSet(50, nodeSetName="actors")
 activities <- sienaNodeSet(20, nodeSetName="activities")
 onemodenet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)),
                             nodeSet="actors")
+# Not meaningful, just for example:
 twomodenet <- sienaDependent(array(c(s502[1:50, 1:20], s503[1:50, 1:20]),
                                                         dim=c(50, 20, 2)),
                             type= "bipartite", nodeSet=c("actors", "activities"))
@@ -295,14 +295,13 @@ twoeff <- includeEffects(twoeff, to, name="twomodenet",
                             interaction1="onemodenet")
 twoeff
 # Shorter phases 2 and 3, just for example:
-twoalgorithm <- sienaAlgorithmCreate(projname=NULL, nsub=1, n3=100,
+twoalgorithm <- sienaAlgorithmCreate(projname=NULL, nsub=1, n3=50,
                                      seed=5634)
 (ans <- siena07(twoalgorithm, data=twodata, effects=twoeff, returnDeps=TRUE,
    batch=TRUE))
 (gof.two <- sienaGOF(ans, mixedTriadCensus,
                         varName=c("onemodenet", "twomodenet"), verbose=TRUE))
 plot(gof.two, center=TRUE, scale=TRUE)
-}
 
 \dontrun{
 ### Here come some useful functions for building your own auxiliary statistics:

@@ -53,7 +53,7 @@ private:
 	const ActorSet * lpSecondActorSet;
 	
 	// The average covariate value
-	double lmean;
+	double lmean {};
 };
 
 

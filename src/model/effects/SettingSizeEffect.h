@@ -40,15 +40,15 @@ public:
 	virtual double egoStatistic(int ego, const Network * pNetwork);
 
 private:
-	double lparameter;
-	bool ldifference;
-	bool llogar;
-	bool lroot;
-	bool linv;
-	bool lcreation;
-	bool levalDifference;
-	bool levalLog;
-	bool levalSqrt;
+	double lparameter {};
+	bool ldifference {};
+	bool llogar {};
+	bool lroot {};
+	bool linv {};
+	bool lcreation {};
+	bool levalDifference {};
+	bool levalLog {};
+	bool levalSqrt {};
 };
 
 }

@@ -50,8 +50,8 @@ private:
 	// A: lflag[i] <= lround for all actors
 	// B: lflag[i] == lround for invalid actors
 
-	int * lflag;
-	int lround;
+	int * lflag {};
+	int lround {};
 };
 
 }

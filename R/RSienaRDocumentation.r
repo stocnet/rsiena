@@ -11,8 +11,8 @@
 ##
 ##@getInternals Documentation
 getInternals <- function()
-{
-    fnlist <- read.csv("RSienafnlist.csv", as.is=TRUE)
+{   
+    fnlist <- utils::read.csv("RSienafnlist.csv", as.is=TRUE)
     mylist <- ls(parent.frame())
     ##  print(mylist)
     ## require(codetools)

@@ -79,11 +79,10 @@ private:
 	// calculate the same contribution twice.
 
 	DiffusionEffectValueTable * lpTable;
-	std::string leffectName;
-	int linternalEffectParameter;
-	int labsInternalEffectParameter;
-	bool linternalNonZero;
-
+	std::string leffectName {};
+	int linternalEffectParameter {};
+	int labsInternalEffectParameter {};
+	bool linternalNonZero {};
 };
 
 }

@@ -49,12 +49,12 @@ public:
 	virtual double egoStatistic(int ego, double * currentValues);
 
 private:
-	bool laverage;
-	bool lalterPopularity;
-	bool legoPopularity;
-	bool lhi;
-	bool llo;
-	bool lcenter;
+	bool laverage {};
+	bool lalterPopularity {};
+	bool legoPopularity {};
+	bool lhi {};
+	bool llo {};
+	bool lcenter {};
 };
 
 }

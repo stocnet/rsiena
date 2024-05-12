@@ -51,6 +51,9 @@ public:
 
 	double similarity(double a, double b) const;
 	double similarityNetwork(double a, double b, std::string name) const;
+		
+	virtual double min() const;
+	virtual double max() const;
 
 private:
 	// The underlying set of actors
@@ -58,13 +61,13 @@ private:
 
 	// The average covariate value (to be passed from outside)
 	// If centered, this is 0.
-	double lmean;
+	double lmean {};
 	
 	// The overall range of values (to be passed from outside)
-	double lrange;
+	double lrange {};
 
 	// The  similarity mean(to be passed from outside)
-	double lsimilarityMean;
+	double lsimilarityMean {};
 
 	// The alter similarity means for each network (to be passed from outside)
 	std::map<std::string, double> lsimilarityMeans;

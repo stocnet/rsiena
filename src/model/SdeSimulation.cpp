@@ -12,10 +12,11 @@
 #include <cmath> 
 #include <R_ext/Error.h>
 #include <R_ext/Print.h>
-#include <Rinternals.h>
-//#include <Eigen/Dense>
 
 #include "EpochSimulation.h"
+#include <R_ext/Error.h>
+#include <R_ext/Print.h>
+#include <Rinternals.h>
 #include "EffectInfo.h"
 #include "SdeSimulation.h"
 #include "model/Model.h"
@@ -23,6 +24,7 @@
 #include "model/effects/ContinuousEffect.h"
 #include "model/variables/ContinuousVariable.h"
 #include "utils/Random.h"
+#include <Rinternals.h>
 
 namespace siena
 {
@@ -42,7 +44,7 @@ SdeSimulation::SdeSimulation(EpochSimulation * pSimulation)
 	
 	if (nContinuous > 1)
 	{
-		error("More than one continuous dependent variable: not implemented");
+		Rf_error("More than one continuous dependent variable: not implemented");
 	}
 	// for (unsigned i = 0; i < pSimulation->rcontinuousVariables.size(); i++) {
 

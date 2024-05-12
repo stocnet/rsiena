@@ -3,7 +3,7 @@
 \title{
 Function to create user-specified interactions for a Siena model.
 }
-\description{This function allows the user to include or exclude
+\description{This function allows the user to include or exclude   
   an interaction effect in a Siena effects object.
 }
 \usage{
@@ -65,6 +65,14 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   including an interaction effect in a model, also to include the
   corresponding main effects. This is however not enforced
   by \code{includeInteraction()}.\cr
+  
+  As from version 1.3.24, effects object have a "version" attribute.
+  Effects objects including interaction effects are not necessarily compatible
+  between versions of \code{RSiena}. Therefore it is recommended to create
+  such effects objects again when changing to a new version of \code{RSiena}.
+  If an effects object including any interaction effects is used from an
+  old version of \code{RSiena}, this will lead to a warning when running
+  \code{\link{siena07}}. \cr
 
   An interaction effect does not have its own internal effect parameter.
   The internal effect parameters of the interacting main effects are used,
@@ -73,7 +81,8 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   or not all of them, then nevertheless the internal effect parameters as
   specified in the effects object are used for the interaction.
   These can be set using function \code{setEffect} with the desired value
-  of \code{parameter} and (in this case) \code{include=FALSE}. \cr
+  of \code{parameter} and (in this case) \code{include=FALSE} or 
+  \code{fix=TRUE, initialValue=0}. \cr
   The values of the internal effect parameters can be checked for a
   \code{\link{sienaFit}} object \code{ans} produced by \code{\link{siena07}}
   by looking at \code{ans$effects}, which is the requested effects object

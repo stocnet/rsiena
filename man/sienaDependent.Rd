@@ -3,12 +3,13 @@
 \alias{sienaNet}
 \title{Function to create a dependent variable for a Siena model}
 \description{
-  Creates a Siena dependent variable: either a network, created from a matrix
-  or array or list of sparse matrix of triples; or a behavior variable,
-  created from a matrix.\cr
-  \code{sienaDependent()} and \code{sienaNet()} are identical functions;
-  the second name was used from the start of the \code{RSiena} package,
-  but the first name indicates more precisely the purpose of this function.
+  Creates a Siena dependent variable: either a network,  
+  created from a matrix or array or list of sparse matrix of triples;   
+  or a behavior variable, created from a matrix.\cr   
+  \code{sienaDependent()} and \code{sienaNet()} are identical   
+  functions; the second name was used from the start of the   
+  \code{RSiena} package, but the first name    
+  indicates more precisely the purpose of this function.
 }
 \usage{
 sienaDependent(netarray, type=c("oneMode", "bipartite", "behavior", "continuous"),
@@ -98,5 +99,10 @@ str(sp501)
 ## so that is supplied additionally by @Dim.
 mymatlist <- list(sp501, sp502, sp503)
 mynet.sp <- sienaDependent(mymatlist)
+# For a bipartite (two-mode) network:
+senders <- sienaNodeSet(50, nodeSetName="senders")
+receivers <- sienaNodeSet(30, nodeSetName="receivers")
+mynet <- sienaDependent(array(c(s501[,1:30], s502[,1:30]), dim=c(50, 30, 2)),
+      nodeSet=c("senders", "receivers"))
 }
 \keyword{classes}

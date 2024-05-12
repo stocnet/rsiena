@@ -61,7 +61,7 @@ private:
 	const Network * lpNetwork;
 	const Network * lpPrimarySetting;
 	TwoNetworkCache * lpTwoNetworkCache;
-	int lstepType;
+	int lstepType {};
 
 };
 // ----------------------------------------------------------------------------

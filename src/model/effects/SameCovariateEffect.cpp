@@ -28,9 +28,10 @@ namespace siena
  * considered
  */
 SameCovariateEffect::SameCovariateEffect(const EffectInfo * pEffectInfo,
-		bool reciprocal) :
+		bool same, bool reciprocal) :
 	CovariateDependentNetworkEffect(pEffectInfo)
 {
+	this->lsame = same;
 	this->lreciprocal = reciprocal;
 }
 
@@ -42,14 +43,23 @@ double SameCovariateEffect::calculateContribution(int alter) const
 {
 	int change = 0;
 
-	if (!this->lreciprocal || this->inTieExists(alter))
+	if (this->lsame)
 	{
-		if (fabs(this->value(alter) - this->value(this->ego())) < EPSILON)
+		if (!this->lreciprocal || this->inTieExists(alter))
+		{
+			if (fabs(this->value(alter) - this->value(this->ego())) < EPSILON)
+			{
+				change = 1;
+			}
+		}
+	}
+	else
+	{
+		if (fabs(this->value(alter) - this->value(this->ego())) >= EPSILON)
 		{
 			change = 1;
 		}
 	}
-
 	return change;
 }
 
@@ -63,13 +73,23 @@ double SameCovariateEffect::tieStatistic(int alter)
 {
 	double statistic = 0;
 
-	if (!this->missing(this->ego()) && !this->missing(alter) &&
-		(!this->lreciprocal || this->inTieExists(alter)) &&
-		fabs(this->value(alter) - this->value(this->ego())) < EPSILON)
+	if (this->lsame)
 	{
-		statistic = 1;
+		if (!this->missing(this->ego()) && !this->missing(alter) &&
+			(!this->lreciprocal || this->inTieExists(alter)) &&
+			fabs(this->value(alter) - this->value(this->ego())) < EPSILON)
+		{
+			statistic = 1;
+		}
 	}
-
+	else
+	{
+		if (!this->missing(this->ego()) && !this->missing(alter) &&
+			fabs(this->value(alter) - this->value(this->ego())) >= EPSILON)
+		{
+			statistic = 1;
+		}
+	}
 	return statistic;
 }
 

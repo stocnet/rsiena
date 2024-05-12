@@ -6,8 +6,8 @@ funnelPlot(anslist, k, threshold=NULL, origin=TRUE,
            plotAboveThreshold=TRUE, verbose=TRUE, ...)
 }
 \description{
-  Draws a funnel plot for a list of sienaFit objects that all have estimated
-  the same parameter.
+  Draws a funnel plot for a list of sienaFit objects that all  
+  have estimated the same parameter.
 }
 \arguments{
   \item{anslist}{A list of object of class \code{sienaFit}.}

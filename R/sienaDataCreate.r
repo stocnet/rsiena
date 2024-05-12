@@ -14,6 +14,14 @@ addAttributes <- function(x, name, ...) UseMethod("addAttributes")
 # Note: this is used when creating the data object;
 # the attributes are not part of the variables.
 
+##@lowIntegers utility function DataCreate
+lowIntegers <- function(vals, centr){
+	is.wholenumber <- function(x, tol = 1e-6){abs(x - round(x)) < tol}
+	all(is.wholenumber(vals), na.rm=TRUE) && (min(vals, na.rm=TRUE) >= 0) &&
+					(max(vals, na.rm=TRUE) <= 20)  && (!centr)
+}
+
+
 ##@addAttributes.coCovar DataCreate
 addAttributes.coCovar <- function(x, name, ...)
 {
@@ -50,6 +58,7 @@ addAttributes.coCovar <- function(x, name, ...)
 	attr(x, "name") <- name
 	attr(x, "vartotal") <- vartotal
 	attr(x, "nonMissingCount") <- nonMissingCount
+	attr(x, "lowIntegers") <- lowIntegers(x, attr(x, "centered"))
 	if ((!is.null(attr(x, "imputationValues"))) && (attr(x, "centered")))
 	{
 		attr(x, "imputationValues") <- attr(x, "imputationValues") - varmean
@@ -92,6 +101,7 @@ addAttributes.varCovar <- function(x, name, ...)
 	attr(x, 'name') <- name
 	attr(x, "vartotal") <- vartotal
 	attr(x, "nonMissingCount") <- nonMissingCount
+	attr(x, "lowIntegers") <- lowIntegers(x, attr(x, "centered"))
     if ((!is.null(attr(x, "imputationValues"))) && (attr(x, "centered")))
 	{
 		attr(x, "imputationValues") <- attr(x, "imputationValues") - varmean
@@ -240,8 +250,11 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 	if (length(dots) == 1)
 	{
 		ldots <- list(...)
-		dotsIsList <- (is.list(ldots[[1]]))
+		dotsIsList <- ((is.list(ldots[[1]])) & 
+						(! inherits((ldots[[1]]), "sienaDependent")))
 # If dotsIsList, it needs to be a list of variables
+# The second condition is to rule out the case of a single dependent network
+# given as a list of sparse matrices.
 		if (dotsIsList) 
 		{
 			dots <- as.list(substitute(...))[-1]
@@ -616,6 +629,14 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 	types <- sapply(depvars, function(x)attr(x, "type"))
 	depvars <- depvars[c(which(!(types %in% c('behavior', 'continuous'))),
 						which(types == 'behavior'), which(types == "continuous"))]
+	onemodes <- which(types == "oneMode")
+	bipartites <- which(types == "bipartite")
+	onemodes.mx <- max(c(onemodes, 0))
+	bipartites.mn <- min(c(bipartites, v1+1))
+	if (bipartites.mn < onemodes.mx)
+	{
+		stop("One-mode networks (if any) should be given before bipartite networks (if any).")
+	}
 
 	for (i in 1:v1) ## dependent variables
 	{
@@ -994,13 +1015,15 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 				attr(depvars[[i]], "noMissing") <- noMissing
 		   }
 		}
+			
+		if (someOnly)
+		{
+		message("For dependent variable ", names(depvars)[i], ", in some periods,")
+		message("there are only increases, or only decreases.")
+		message("This will be respected in the simulations. ")
+		message("If this is not desired, use allowOnly=FALSE when creating the dependent variable.")
+		}
 		attr(depvars[[i]], 'name') <- names(depvars)[i]
-	}
-	if (someOnly)
-	{
-message('For some variables, in some periods, there are only increases, or only decreases.')
-message('This will be respected in the simulations. ')
-message('If this is not desired, use allowOnly=FALSE when creating the dependent variables.')
 	}
 	## create the object
 	z <- NULL
@@ -1014,7 +1037,8 @@ message('If this is not desired, use allowOnly=FALSE when creating the dependent
 	z$compositionChange <- compositionChange
 	z <- checkConstraints(z)
 	z <- covarDist2(z)
-	class(z) <- 'siena'
+	attr(z, "version") <- packageDescription(pkgname, fields = "Version")
+	class(z) <- "siena"
 	z
 }
 ##@checkConstraints DataCreate
@@ -2032,6 +2056,7 @@ sienaGroupCreate <- function(objlist, singleOK=FALSE, getDocumentation=FALSE)
 		names(group) <- paste('Data', 1:length(group), sep="")
 	}
 	class(group)<- c("sienaGroup", "siena")
+	attr(group, "version") <- packageDescription(pkgname, fields = "Version")
 	balmeans <- calcBalmeanGroup (group)
 	names(balmeans) <- netnames
 	attr(group, "balmean") <- balmeans
@@ -2394,8 +2419,9 @@ getGroupNetRanges <- function(data)
 					varmax <- max(varmax, sapply(depvar, function(x)
 											 {
 												 tmp <- x@x
+												 ifelse(length(tmp)==0,0,
 												 max(tmp[!(is.na(tmp) |
-														   tmp %in% c(10, 11))])
+														   tmp %in% c(10, 11))]))
 											 }), na.rm=TRUE)
 				}
 				else

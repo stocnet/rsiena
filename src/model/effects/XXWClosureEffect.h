@@ -47,15 +47,15 @@ private:
 
 	// For a fixed i, this variable stores the value of sum_h x_{hi} w_{hj} for
 	// each j.
-	double * loutStarSums;
+	double * loutStarSums {};
 
 	// For a fixed i, this variable stores the value of sum_h w_{ih} x_{jh} for
 	// each j.
-	double * linStarSums;
+	double * linStarSums {};
 
 	// divide indicates whether there will be division by the indegree
-	bool loutst; // contribution from outstars
-	bool linst; // contribution from instars
+	bool loutst {}; // contribution from outstars
+	bool linst {}; // contribution from instars
 };
 
 }

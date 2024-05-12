@@ -3,9 +3,10 @@
 \alias{siena}
 \title{Function to create a Siena data object}
 \description{
-Creates a Siena data object from input dependent variables
-    (networks and possibly behavioural variables), covariates, and
-    composition change objects.}
+    Creates a Siena data object from input dependent variables   
+    (networks and possibly behavioural variables), covariates,
+     and composition change objects.
+}
 \usage{
 sienaDataCreate(..., nodeSets=NULL, getDocumentation=FALSE)
 }
@@ -28,14 +29,14 @@ sienaDataCreate(..., nodeSets=NULL, getDocumentation=FALSE)
 }
 \details{
 The function checks that the objects fit, that there is at least one dependent
-variable, and adds various attributes to each dependent variable describing the
+variable, and adds various attributes to each variable describing the
 data. If there is more than one nodeSet they must all be specified.\cr
 Function \code{\link{print01Report}} will give a basic description of the data
 object and is a check useful, e.g., for diagnosing problems.
 }
 \value{
 An object of class "siena" which is designed to be used in a siena
-model fit by \code{link{siena07}}. The components of the object are:
+model fit by \code{\link{siena07}}. The components of the object are:
 \item{nodeSets}{List of node sets involved}
 \item{observations}{Integer indicating number of waves of data}
 \item{depvars}{List of networks and behavior variables}

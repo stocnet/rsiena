@@ -33,7 +33,7 @@ public:
 
 private:
 	// lpar is the internal effect parameter
-	int lpar;
+	int lpar {};
 };
 
 }

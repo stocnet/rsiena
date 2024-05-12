@@ -5,6 +5,8 @@
  *      Author: ortmann
  */
 
+#undef length
+#include <Rinternals.h>
 #include "PrimarySetting.h"
 
 #include "network/Network.h"
@@ -53,7 +55,7 @@ PrimarySetting::~PrimarySetting() {
 // 	SEXP r = eval(call, R_GlobalEnv);
 
 // 	std::vector<int> ret;
-// 	for (int i = 0; i < length(r); i++)
+// 	for (int i = 0; i < Rf_length(r); i++)
 // 		ret.push_back(INTEGER(r)[i]);
 
 // 	UNPROTECT(1);

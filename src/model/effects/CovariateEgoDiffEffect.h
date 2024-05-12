@@ -34,8 +34,8 @@ protected:
 	virtual double egoStatistic(int ego, const Network * pNetwork);
 
 private:
-	bool lplus;
-	bool lminus;
+	bool lplus {};
+	bool lminus {};
 };
 
 }

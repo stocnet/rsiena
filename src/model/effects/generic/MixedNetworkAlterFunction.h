@@ -23,6 +23,8 @@ namespace siena
 class Network;
 class TwoNetworkCache;
 class NetworkCache;
+class CommonNeighborIterator;
+
 
 class MixedNetworkAlterFunction: public AlterFunction
 {
@@ -41,10 +43,12 @@ protected:
 	inline const Network * pSecondNetwork() const;
 	inline TwoNetworkCache * pTwoNetworkCache() const;
 	inline NetworkCache * pFirstNetworkCache() const;
+	CommonNeighborIterator firstNetworkInStars(int i, int j) const;
+
 
 private:
-	std::string lfirstNetworkName;
-	std::string lsecondNetworkName;
+	std::string lfirstNetworkName {};
+	std::string lsecondNetworkName {};
 	const Network * lpFirstNetwork;
 	const Network * lpSecondNetwork;
 	TwoNetworkCache * lpTwoNetworkCache;

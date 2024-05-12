@@ -6,7 +6,7 @@
 Internal data frame used to construct effect objects.
 }
 \description{
-This data frame is used internally to construct effect objects.
+This data frame is used internally to construct effect objects.  
 }
 \usage{data(allEffects)}
 \format{

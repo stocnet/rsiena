@@ -31,7 +31,8 @@ namespace siena
  * Constructor.
  */
 MixedThreeCyclesFunction::MixedThreeCyclesFunction(string firstNetworkName,
-							string secondNetworkName, double parameter) :
+							string secondNetworkName, double parameter,
+							bool average) :
 				MixedNetworkAlterFunction(firstNetworkName, secondNetworkName)
 {
 	this->lsqrtTable = SqrtTable::instance();
@@ -39,6 +40,19 @@ MixedThreeCyclesFunction::MixedThreeCyclesFunction(string firstNetworkName,
 	this->lcenter = (parameter >= 3);
 	this->lpFirstInStarTable = 0;
 	this->lvariableName = firstNetworkName;
+	this->laverage= average;
+	if ((this->laverage) && (this->lcenter))
+	{
+		throw logic_error("sharedTo_Av can only have parameters 1 or 2");
+	}
+}
+
+/**
+ * Deallocates this function.
+ */
+MixedThreeCyclesFunction::~MixedThreeCyclesFunction()
+{
+	delete[] this->ltimesFound;
 }
 
 /**
@@ -61,7 +75,7 @@ void MixedThreeCyclesFunction::initialize(const Data * pData,
 	{
 		throw logic_error("Network data for " + this->lvariableName + " expected.");
 	}
-	if (lcenter)
+	if (this->lcenter)
 	{
 		this->lavInTwoStar =
 			(pNetworkData->averageSquaredInDegree() - pNetworkData->averageInDegree())
@@ -74,6 +88,70 @@ void MixedThreeCyclesFunction::initialize(const Data * pData,
 	else
 	{
 		this->lavInTwoStar = 0;
+	}
+	// A helper array of ltimesFound
+	this->ln = this->pFirstNetwork()->n();
+	this->ltimesFound = new int[this->ln];
+	for (int h = 0; h < this->ln; h++)
+	{
+		this->ltimesFound[h] = 0;
+	}
+}
+
+
+/**
+ * Does the necessary preprocessing work for calculating the
+ * value for a specific ego. This method must be invoked before
+ * calling OutActDoubleDistance2Function::value(...).
+ */
+
+void MixedThreeCyclesFunction::preprocessEgo(int ego)
+{
+	MixedNetworkAlterFunction::preprocessEgo(ego);
+	this->lsumDegs = 1;
+	
+	if (this->laverage) // prepare the denominator
+	{
+		double degs = 0;
+		const Network * pFirstNetwork = this->pFirstNetwork();
+		if (this->lroot)
+		{
+			for (int k = 0; k < this->ln; k++)
+			{
+				this->ltimesFound[k] = 0;
+			}
+		}
+	
+		for (IncidentTieIterator iter(pFirstNetwork->outTies(ego));
+			iter.valid();
+			iter.next())
+		{	
+			for (IncidentTieIterator iter2(pFirstNetwork->inTies(iter.actor()));
+				iter2.valid();
+				iter2.next())
+			{
+				if (iter2.actor() != this->ego())
+				{
+					if (this->lroot)
+					{
+						this->ltimesFound[iter2.actor()] ++;
+					}
+					else
+					{
+						degs ++;						
+					}
+				}
+			}
+		}
+		if (this->lroot)
+		{	
+			degs = 0;
+			for (int k = 0; k < this->ln; k++)
+			{
+				degs += this->lsqrtTable->sqrt(this->ltimesFound[k]);
+			}
+		}
+		this->lsumDegs = degs;
 	}
 }
 
@@ -108,6 +186,10 @@ double MixedThreeCyclesFunction::value(int alter) const
 		(this->lpFirstInStarTable->get(iter.actor()) - this->lavInTwoStar);
 			}
 		}
+	}
+	if ((this->laverage) && (this->lsumDegs > 0))
+	{
+		statistic /= this->lsumDegs;
 	}
 	return statistic;
 }

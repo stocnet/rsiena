@@ -74,8 +74,6 @@ public:
 	bool insertMissing();
 	bool deleteMissing();
 	double proposalProbability() const;
-	bool missingData() const;
-	Aspect aspect() const;
 
 	void missingNetworkProbability(double probability);
 	double missingNetworkProbability() const;
@@ -121,21 +119,19 @@ private:
 	MiniStep * createMiniStep(const Option * pOption,
 		int difference, bool value) const;
 
-	double lproposalProbability;
-	bool lmissingData;
-	Aspect laspect;
-	double lprobabilityArray[8];// probabilities of MH step types
-//	int lacceptances[NBRTYPES];
-//	int lrejections[NBRTYPES];
-	int laborts[NBRTYPES];
-	double lmissingNetworkProbability;
-	double lmissingBehaviorProbability;
+	double lproposalProbability{};
+	double lprobabilityArray[NBRTYPES-2]{};// probabilities of MH step types
+//	lacceptances defined in DependentVariable.h
+//	lrejections defined in DependentVariable.h
+	int laborts[NBRTYPES]{};
+	double lmissingNetworkProbability{};
+	double lmissingBehaviorProbability{};
 	// current length of permuted interval
-	double lcurrentPermutationLength;
-	unsigned lthisPermutationLength;
+	double lcurrentPermutationLength{};
+	unsigned lthisPermutationLength{};
 
 	// A vector of options with missing values in the initial observation
-	std::vector<const Option *> linitialMissingOptions;
+	std::vector<const Option *> linitialMissingOptions{};
 };
 
 }

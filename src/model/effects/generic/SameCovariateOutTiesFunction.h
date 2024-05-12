@@ -32,8 +32,8 @@ public:
 	virtual double value(int alter) const;
 
 private:
-	bool lexcludeMissing;
-	bool lsameValue;
+	bool lexcludeMissing {};
+	bool lsameValue {};
 };
 
 }

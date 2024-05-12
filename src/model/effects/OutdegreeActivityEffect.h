@@ -51,9 +51,9 @@ protected:
 	virtual double endowmentStatistic(Network * pLostTieNetwork);
 
 private:
-	bool lcentered;
-	double lcentering;
-	string lvariableName;
+	bool lcentered {};
+	double lcentering {};
+	string lvariableName {};
 
 };
 

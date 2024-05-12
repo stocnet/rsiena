@@ -55,34 +55,34 @@ public:
 
 private:
 	// An array of values per each observation
-	double ** lvalues;
+	double ** lvalues {};
 
 	// Missingness indicators
-	bool ** lmissing;
+	bool ** lmissing {};
 
 	// Structural value indicators
-	bool ** lstructural;
+	bool ** lstructural {};
 
 	// An array of values per each observation
-	double ** lvaluesLessMissings;
+	double ** lvaluesLessMissings {};
 
 	// An array of values per each observation
-	double ** lvaluesLessMissingStarts;
+	double ** lvaluesLessMissingStarts {};
 
 	// The smallest non-missing value
-	double lmin;
+	double lmin {};
 
 	// The largest non-missing value
-	double lmax;
+	double lmax {};
 
 	// The overall mean value over all observations
-	double loverallMean;
+	double loverallMean {};
 
 	// The range of observed values
-	double lrange;
+	double lrange {};
 
 	// The similarity mean
-	double lsimilarityMean;
+	double lsimilarityMean {};
 
 	// The alter similarity means for each network (to be passed from outside)
 	std::map<std::string, double> lsimilarityMeans;

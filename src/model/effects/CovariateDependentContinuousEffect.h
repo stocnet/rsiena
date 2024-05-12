@@ -60,8 +60,8 @@ private:
 	// variable per each actor.
 	// This array is 0 for covariate-based effects.
 	
-	const int * lvalues;
-	const double * lcontinuousValues;
+	const int * lvalues {};
+	const double * lcontinuousValues {};
 };
 
 }

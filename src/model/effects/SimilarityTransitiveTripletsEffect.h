@@ -36,7 +36,7 @@ private:
 	// Indicates if the reciprocal version of the similarity transitive 
 	// triplets effect is required; currently not implemented.
 
-	bool lreciprocal;
+	bool lreciprocal {};
 };
 
 }

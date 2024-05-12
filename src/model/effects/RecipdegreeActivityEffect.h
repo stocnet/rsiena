@@ -40,7 +40,7 @@ protected:
 
 private:
 	// Indicates if the square root of reciprocated degrees must be used
-	bool lroot;
+	bool lroot {};
 
 	// Lookup table for fast square root calculations
 	SqrtTable * lsqrtTable;

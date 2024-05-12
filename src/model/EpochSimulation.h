@@ -137,21 +137,21 @@ private:
     std::map<std::string, ContinuousVariable *> lcontinuousVariableMap;
 	
 	// The current period to be simulated
-	int lperiod;
+	int lperiod {};
 
 	// An array of cummulative rates used for the random selection of
 	// the dependent variable to change and the actor to make the change.
 
-	double * lcummulativeRates;
+	double * lcummulativeRates {};
 
 	// The total rate over all dependent variables
-	double lgrandTotalRate;
+	double lgrandTotalRate {};
 
 	// The current time of the simulation
-	double ltime;
+	double ltime {};
 
 	// The current increment of time of the simulation
-	double ltau;
+	double ltau {};
 
 	// A sorted set of exogenous events of composition change
 	const EventSet * lpEvents;
@@ -160,7 +160,7 @@ private:
 	EventSet::const_iterator lnextEvent;
 
 	// Target amount of change for this period if we are using conditional simulation
-	int ltargetChange;
+	int ltargetChange {};
 
 	// The dependent variable the simulation is conditioned upon
 	DependentVariable * lpConditioningVariable;
@@ -175,7 +175,7 @@ private:
 	Cache * lpCache;
 
 	Chain * lpChain;
-	bool lsimpleRates;
+	bool lsimpleRates {};
 
 };
 

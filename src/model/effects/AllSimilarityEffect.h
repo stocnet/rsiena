@@ -32,8 +32,8 @@ public:
 	virtual double egoStatistic(int ego, double * currentValues);
 
 private:
-	bool lnear;
-	int lp;
+	bool lnear{};
+	int lp{};
 };
 
 }

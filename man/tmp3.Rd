@@ -5,7 +5,7 @@
 \description{
 Third timepoint of van de Bunt's freshman dataset.\cr
 
-Codes: 1 = best friendship; 2 = friendship; 3 = friendly relationship;
+Codes: 1 = best friendship; 2 = friendship; 3 = friendly relationship;   
 4 = neutral relationship; 5 = troubled relationship; 0 = unknown person.
 }
 \format{
@@ -17,9 +17,10 @@ Codes: 1 = best friendship; 2 = friendship; 3 = friendly relationship;
   \url{https://www.stats.ox.ac.uk/~snijders/siena/vdBunt_data.zip}
 }
 \references{
-  Van de Bunt, G.G., M.A.J. van Duijn, and T.A.B. Snijders (1999).
+  Van de Bunt, G.G., van Duijn, M.A.J., and Snijders, T.A.B.  (1999),
   Friendship networks through time: An actor-oriented statistical network model.
-  \emph{Computational and Mathematical Organization Theory}, 5, 167-192. \cr
+  \emph{Computational and Mathematical Organization Theory}, \bold{5}, 167--192.
+  
   Also see \url{https://www.stats.ox.ac.uk/~snijders/siena/vdBunt_data.htm}.
 }
 \seealso{\code{\link{tmp4}}}

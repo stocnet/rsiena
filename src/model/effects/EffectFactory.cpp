@@ -34,6 +34,7 @@
 #include "model/effects/generic/EgoOutDegreeFunction.h"
 #include "model/effects/generic/EgoRecipDegreeFunction.h"
 #include "model/effects/generic/DegreeFunction.h"
+#include "model/effects/generic/ReciprocalFunction.h"
 #include "model/effects/generic/BetweennessFunction.h"
 #include "model/effects/generic/GwespFunction.h"
 #include "model/effects/generic/InStarFunction.h"
@@ -45,14 +46,18 @@
 #include "model/effects/generic/TwoStepFunction.h"
 #include "model/effects/generic/ReverseTwoPathFunction.h"
 #include "model/effects/generic/MixedTwoStepFunction.h"
+#include "model/effects/generic/MixedThreePathFunction.h"
 #include "model/effects/generic/WeightedMixedTwoPathFunction.h"
 #include "model/effects/generic/ConditionalFunction.h"
 #include "model/effects/generic/EqualCovariatePredicate.h"
+#include "model/effects/generic/DoubleEqualCovariateFunction.h"
+#include "model/effects/generic/DoubleCovariateCatFunction.h"
 #include "model/effects/generic/MissingCovariatePredicate.h"
 #include "model/effects/generic/DoubleOutActFunction.h"
 #include "model/effects/generic/CovariateDistance2AlterNetworkFunction.h"
 #include "model/effects/generic/CovariateDistance2InAlterNetworkFunction.h"
 #include "model/effects/generic/CovariateDistance2SimilarityNetworkFunction.h"
+#include "model/effects/generic/CovariateDistance2EgoAltSameNetworkFunction.h"
 #include "model/effects/generic/CovariateDistance2EgoAltSimNetworkFunction.h"
 #include "model/effects/generic/CovariateMixedNetworkAlterFunction.h"
 #include "model/effects/generic/CovariateDegreeFunction.h"
@@ -66,8 +71,12 @@
 #include "model/effects/generic/DifferentCovariateOutStarFunction.h"
 #include "model/effects/generic/HomCovariateMixedTwoPathFunction.h"
 #include "model/effects/generic/OutActDistance2Function.h"
+#include "model/effects/generic/OutActDoubleDistance2Function.h"
+#include "model/effects/generic/DegreeDistance2Function.h"
 #include "model/effects/generic/MixedThreeCyclesFunction.h"
+#include "model/effects/generic/MixedDyadicCovThreeCyclesFunction.h"
 #include "model/effects/generic/InStarsTimesDegreesFunction.h"
+#include "model/effects/generic/IndirectTiesFunction.h"
 #include "model/tables/EgocentricConfigurationTable.h"
 #include "model/tables/NetworkCache.h"
 
@@ -374,6 +383,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false);
 	}
+	else if (effectName == "outMore2")
+	{
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "outMore3")
+	{
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false);
+	}
 	else if (effectName == "outIso")
 	{
 		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, true, true);
@@ -526,6 +543,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new CovariateAlterEffect(pEffectInfo, false, true, false);
 	}
+	else if (effectName == "outXMore")
+	{
+		pEffect = new TruncatedOutXEffect(pEffectInfo);
+	}
 	else if (effectName == "egoX")
 	{
 		pEffect = new CovariateEgoEffect(pEffectInfo, false, false);
@@ -604,7 +625,41 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "sameX")
 	{
-		pEffect = new SameCovariateEffect(pEffectInfo, false);
+		pEffect = new SameCovariateEffect(pEffectInfo, true, false);
+	}
+	else if (effectName == "sameXV")
+	{
+		string covariateName1 = pEffectInfo->interactionName1();
+		string covariateName2 = pEffectInfo->interactionName2();
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new DoubleEqualCovariateFunction(covariateName1, covariateName2, false),
+			new DoubleEqualCovariateFunction(covariateName1, covariateName2, true));
+	}
+	else if (effectName == "sameXVInPop")
+	{
+		string networkName = pEffectInfo->variableName();
+		string covariateName1 = pEffectInfo->interactionName1();
+		string covariateName2 = pEffectInfo->interactionName2();
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new DoubleCovariateCatFunction(covariateName1, covariateName2,
+				networkName, pEffectInfo->internalEffectParameter(), false, false),
+			new DoubleCovariateCatFunction(covariateName1, covariateName2, 
+				networkName, pEffectInfo->internalEffectParameter(), true, false));
+	}
+	else if (effectName == "sameXVInPop2")
+	{
+		string networkName = pEffectInfo->variableName();
+		string covariateName1 = pEffectInfo->interactionName1();
+		string covariateName2 = pEffectInfo->interactionName2();
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new DoubleCovariateCatFunction(covariateName1, covariateName2,
+				networkName, pEffectInfo->internalEffectParameter(), false, true),
+			new DoubleCovariateCatFunction(covariateName1, covariateName2, 
+				networkName, pEffectInfo->internalEffectParameter(), true, true));
+	}
+	else if (effectName == "unequalX")
+	{
+		pEffect = new SameCovariateEffect(pEffectInfo, false, false);
 	}
 	else if (effectName == "higher")
 	{
@@ -612,7 +667,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "sameXRecip")
 	{
-		pEffect = new SameCovariateEffect(pEffectInfo, true);
+		pEffect = new SameCovariateEffect(pEffectInfo, true, true);
 	}
 	else if (effectName == "sameXTransTrip")
 	{
@@ -713,6 +768,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "diffXOutAct")
 	{
 		pEffect = new SameCovariateActivityEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "crossXOutAct")
+	{
+		pEffect = new CrossCovariateActivityEffect(pEffectInfo, false);
 	}
 	else if (effectName == "homXOutAct")
 	{
@@ -954,6 +1013,58 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new DifferenceFunction(pFirstFunction, pSecondFunction));
+	}
+	else if (effectName == "divOutEgoIntn")
+	{
+		AlterFunction * pFunction =
+			new EgoOutDegreeFunction(pEffectInfo->interactionName1());
+
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pFunction = new IntSqrtFunction(pFunction);
+		}
+
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new ReciprocalFunction(pFunction));
+	}
+	else if (effectName == "divInEgoIntn")
+	{
+		AlterFunction * pFunction =
+			new EgoInDegreeFunction(pEffectInfo->interactionName1());
+
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pFunction = new IntSqrtFunction(pFunction);
+		}
+
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new ReciprocalFunction(pFunction));
+	}
+	else if (effectName == "divOutAltIntn")
+	{
+		AlterFunction * pFunction =
+			new OutDegreeFunction(pEffectInfo->interactionName1());
+
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pFunction = new IntSqrtFunction(pFunction);
+		}
+
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new ReciprocalFunction(pFunction));
+	}
+	else if (effectName == "divInAltIntn")
+	{
+		AlterFunction * pFunction =
+			new InDegreeFunction(pEffectInfo->interactionName1());
+
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pFunction = new IntSqrtFunction(pFunction);
+		}
+
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new ReciprocalFunction(pFunction));
 	}
 	else if (effectName == "absOutDiffIntn")
 	{
@@ -1252,12 +1363,72 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 							pEffectInfo->variableName(),
 							pEffectInfo->internalEffectParameter(), false, false, true));
 	}
+	else if (effectName == "dist2OutInActIntn")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new DegreeDistance2Function(pEffectInfo->interactionName1(),
+							pEffectInfo->internalEffectParameter(), false, true, false));
+	}
 	else if (effectName == "sharedTo")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 						new MixedThreeCyclesFunction(pEffectInfo->interactionName1(),
 							pEffectInfo->variableName(),
-							pEffectInfo->internalEffectParameter()));
+							pEffectInfo->internalEffectParameter(),
+							false));
+	}
+	else if (effectName == "sharedToU")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+						new MixedDyadicCovThreeCyclesFunction(pEffectInfo->interactionName1(),
+							pEffectInfo->variableName(),
+							pEffectInfo->interactionName2(),
+							pEffectInfo->internalEffectParameter(),
+							false));
+	}
+	else if (effectName == "avAlt.2M.tie")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+						new MixedThreeCyclesFunction(pEffectInfo->interactionName1(),
+							pEffectInfo->variableName(),
+							pEffectInfo->internalEffectParameter(),
+							true));
+	}
+	else if (effectName == "avAltU.2M.tie")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+						new MixedDyadicCovThreeCyclesFunction(pEffectInfo->interactionName1(),
+							pEffectInfo->variableName(),
+							pEffectInfo->interactionName2(),
+							pEffectInfo->internalEffectParameter(),
+							true));
+	}
+	else if (effectName == "inPopOutW")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new MixedThreePathFunction(pEffectInfo->variableName(),
+							pEffectInfo->interactionName1(),							
+							pEffectInfo->internalEffectParameter(), true, false, false));
+	}
+	else if (effectName == "nDist2ActIntn")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new IndirectTiesFunction(pEffectInfo->interactionName1(),							
+							pEffectInfo->internalEffectParameter(), false, true));
+	}
+	else if (effectName == "outOutDist2ActIntn")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new OutActDoubleDistance2Function(pEffectInfo->interactionName1(),
+							pEffectInfo->variableName(),
+							pEffectInfo->internalEffectParameter(), false, false));
+	}
+	else if (effectName == "avAlt.2M.tot")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new OutActDoubleDistance2Function(pEffectInfo->interactionName1(),
+							pEffectInfo->variableName(),
+							pEffectInfo->internalEffectParameter(), false, true));
 	}
 	else if (effectName == "inPopIntnX")
 	{
@@ -1413,6 +1584,31 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 					new SameCovariateInStarFunction(networkName,
 												covariateName, true), 0)));
 	}
+	else if (effectName == "sameWWClosure")
+	{
+		string networkName = pEffectInfo->interactionName1();
+		string covariateName = pEffectInfo->interactionName2();
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new SameCovariateTwoPathFunction(
+							networkName, covariateName, true, false),
+			new ConditionalFunction(
+				new MissingCovariatePredicate(covariateName),
+				0,
+				new SameCovariateTwoPathFunction(
+							networkName, covariateName, true, true)));
+	}
+	else if (effectName == "diffWWClosure")
+	{
+		string networkName = pEffectInfo->interactionName1();
+		string covariateName = pEffectInfo->interactionName2();
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new SameCovariateTwoPathFunction(networkName, covariateName, false, false),
+			new ConditionalFunction(
+				new MissingCovariatePredicate(covariateName),
+				0,
+				new SameCovariateTwoPathFunction(
+							networkName, covariateName, false, true)));
+	}
 	else if (effectName == "jumpWWClosure")
 	{
 		string networkName = pEffectInfo->interactionName1();
@@ -1421,7 +1617,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			new ConditionalFunction(new EqualCovariatePredicate(covariateName),
 				0,
 				new SameCovariateTwoPathFunction(networkName,
-										covariateName, false)),
+										covariateName, true, false)),
 			new ConditionalFunction(
 				new MissingCovariatePredicate(covariateName),
 				0,
@@ -1429,7 +1625,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 					new EqualCovariatePredicate(covariateName),
 					0,
 					new SameCovariateTwoPathFunction(networkName,
-										covariateName, true))));
+										covariateName, true, true))));
 	}
 	else if (effectName == "jumpFrom")
 	{
@@ -1578,13 +1774,28 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new SameCovariateMixedTwoPathFunction(
 							pEffectInfo->variableName(),
-							networkName, covariateName, false),
+							networkName, covariateName, true, false),
 			new ConditionalFunction(
 				new MissingCovariatePredicate(covariateName),
 				0,
 				new SameCovariateMixedTwoPathFunction(
 							pEffectInfo->variableName(),
-							networkName, covariateName, true)));
+							networkName, covariateName, true, true)));
+	}
+	else if (effectName == "diffWXClosure")
+	{
+		string networkName = pEffectInfo->interactionName1();
+		string covariateName = pEffectInfo->interactionName2();
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new SameCovariateMixedTwoPathFunction(
+							pEffectInfo->variableName(),
+							networkName, covariateName, false, false),
+			new ConditionalFunction(
+				new MissingCovariatePredicate(covariateName),
+				0,
+				new SameCovariateMixedTwoPathFunction(
+							pEffectInfo->variableName(),
+							networkName, covariateName, false, true)));
 	}
 	else if (effectName == "homWXClosure")
 	{
@@ -1594,7 +1805,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			new ConditionalFunction(new EqualCovariatePredicate(covariateName),
 				new SameCovariateMixedTwoPathFunction(
 								pEffectInfo->variableName(),
-								networkName, covariateName, false), 0),
+								networkName, covariateName, true, false), 0),
 			new ConditionalFunction(
 				new MissingCovariatePredicate(covariateName),
 				0,
@@ -1602,7 +1813,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 					new EqualCovariatePredicate(covariateName),
 					new SameCovariateMixedTwoPathFunction(
 							pEffectInfo->variableName(),
-							networkName, covariateName, true), 0)));
+							networkName, covariateName, true, true), 0)));
 	}
 	else if (effectName == "jumpWXClosure")
 	{
@@ -1613,7 +1824,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 				0,
 				new SameCovariateMixedTwoPathFunction(
 								pEffectInfo->variableName(),
-								networkName, covariateName, false)),
+								networkName, covariateName, true, false)),
 			new ConditionalFunction(
 				new MissingCovariatePredicate(covariateName),
 				0,
@@ -1622,7 +1833,37 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 					0,
 					new SameCovariateMixedTwoPathFunction(
 							pEffectInfo->variableName(),
-							networkName, covariateName, true))));
+							networkName, covariateName, true, true))));
+	}
+	else if (effectName == "sameXWClosure")
+	{
+		string networkName = pEffectInfo->interactionName1();
+		string covariateName = pEffectInfo->interactionName2();
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new SameCovariateMixedTwoPathFunction(networkName,
+							pEffectInfo->variableName(),
+							covariateName, true, false),
+			new ConditionalFunction(
+				new MissingCovariatePredicate(covariateName),
+				0,
+				new SameCovariateMixedTwoPathFunction(networkName,
+							pEffectInfo->variableName(),
+							covariateName, true, true)));
+	}
+	else if (effectName == "diffXWClosure")
+	{
+		string networkName = pEffectInfo->interactionName1();
+		string covariateName = pEffectInfo->interactionName2();
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new SameCovariateMixedTwoPathFunction(networkName,
+							pEffectInfo->variableName(),
+							covariateName, false, false),
+			new ConditionalFunction(
+				new MissingCovariatePredicate(covariateName),
+				0,
+				new SameCovariateMixedTwoPathFunction(networkName,
+							pEffectInfo->variableName(),
+							covariateName, false, true)));
 	}
 	else if (effectName == "closure")
 	{
@@ -1906,6 +2147,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "totSimRecPop")
 	{
 		pEffect = new ReciprocatedSimilarityEffect(pEffectInfo, false, true);
+	}
+	else if (effectName == "avInSimDist2")
+	{
+		pEffect = new AverageSimilarityInDist2Effect(pEffectInfo, true);
+	}
+	else if (effectName == "totInSimDist2")
+	{
+		pEffect = new AverageSimilarityInDist2Effect(pEffectInfo, false);
 	}
 	else if (effectName == "avAlt")
 	{
@@ -2297,6 +2546,34 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}
+	else if (effectName == "sameEgoDist2")
+	{
+		string networkName = pEffectInfo->variableName();
+		string covariateName = pEffectInfo->interactionName1();
+		double parameter = pEffectInfo->internalEffectParameter();
+		AlterFunction * pChangeFunction =
+			new CovariateDistance2EgoAltSameNetworkFunction(networkName,
+				covariateName, false, true, parameter);
+		AlterFunction * pStatisticFunction =
+			new CovariateDistance2EgoAltSameNetworkFunction(networkName,
+				covariateName, true, true, parameter);
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			pChangeFunction, pStatisticFunction);
+	}
+	else if (effectName == "sameEgoInDist2")
+	{
+		string networkName = pEffectInfo->variableName();
+		string covariateName = pEffectInfo->interactionName1();
+		double parameter = pEffectInfo->internalEffectParameter();
+		AlterFunction * pChangeFunction =
+			new CovariateDistance2EgoAltSameNetworkFunction(networkName,
+				covariateName, false, false, parameter);
+		AlterFunction * pStatisticFunction =
+			new CovariateDistance2EgoAltSameNetworkFunction(networkName,
+				covariateName, true, false, parameter);
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			pChangeFunction, pStatisticFunction);
+	}
 	else if (effectName == "altInDist2")
 	{
 		string networkName = pEffectInfo->variableName();
@@ -2419,7 +2696,6 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "intercept")
 	{
 		pEffect = new InterceptEffect(pEffectInfo);
-
 	}
 	else if (effectName == "feedback")
 	{

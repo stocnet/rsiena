@@ -68,10 +68,10 @@ protected:
 
 private:
 	// Indicates if loops are permitted in this network
-	bool lloopsPermitted;
+	bool lloopsPermitted {};
 
 	// The reciprocal degree of each actor
-	int * lpReciprocalDegree;
+	int * lpReciprocalDegree {};
 };
 
 }

@@ -22,13 +22,13 @@ public:
 
 private:
 	// The index of the respective variable
-	int lvariableIndex;
+	int lvariableIndex{};
 
 	// The ego
-	int lego;
+	int lego{};
 
 	// The alter (0 for behavior variable)
-	int lalter;
+	int lalter{};
 };
 
 

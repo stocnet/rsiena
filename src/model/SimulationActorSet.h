@@ -47,13 +47,13 @@ private:
 	const ActorSet * lpActorSet;
 
 	// The number of actors in this set
-	int ln;
+	int ln {};
 
 	// An indicator per actor if the actor is currently active
-	bool * lactive;
+	bool * lactive {};
 
 	// The number of currently active actors
-	int lactiveActorCount;
+	int lactiveActorCount {};
 };
 
 

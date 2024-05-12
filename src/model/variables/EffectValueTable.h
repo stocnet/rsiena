@@ -39,15 +39,15 @@ private:
 	double (* lpFunction)(int);
 
 	// The look-up table for effect values
-	double * lvalues;
+	double * lvalues {};
 
 	// Here we remember the parameter value whenever we store a value
 	// in the table.
 
-	double * lparameterValues;
+	double * lparameterValues {};
 
 	// The actual value of the effect parameter
-	double lparameter;
+	double lparameter {};
 };
 
 }

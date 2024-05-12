@@ -47,7 +47,7 @@ protected:
 	virtual double tieStatistic(int alter);
 
 private:
-	bool lroot;
+	bool lroot {};
 	// Lookup table for fast square root calculations:
 	SqrtTable * lsqrtTable;
 };

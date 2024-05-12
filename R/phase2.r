@@ -12,6 +12,8 @@
 ## ****************************************************************************/
 ## args: z: internal control object
 ##       x: model object (readonly as not returned)
+## Hidden options exist that are activated 
+## if the algorithm object x has a component x$moreUpdates or x$phase2imp
 
 ##@storeinFRANstore siena07 Used to avoid Namespace problems with multiple processes
 storeinFRANstore <- function(...)
@@ -102,6 +104,7 @@ proc2subphase <- function(z, x, subphase, ...)
 		z$n2min <- z$n2minimum[subphase]
 		z$n2max <- z$n2maximum[subphase]
 	}
+	Report(paste("Number of iterations minimum ", z$n2min, ", maximum", z$n2max, ".\n", sep=""), cf)
 	z$repeatsubphase <- 0
 	repeat
 	{
@@ -514,7 +517,8 @@ doIterations<- function(z, x, subphase,...)
 #Report(paste("thavs: ", round(z$thavn), "\n"), cf)
 #PrtOutMat(as.matrix(z$thav), cf)
 
-
+# This is a hidden option: 
+# it is activated if the algorithm object x has a component x$moreUpdates
 		if (x$maxlike && !is.null(x$moreUpdates) && x$moreUpdates > 0)
 		{
 			z <- doMoreUpdates(z, x, x$moreUpdates * subphase)

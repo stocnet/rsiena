@@ -38,9 +38,9 @@ public:
 
 private:
 	// lcentermean = whether to center about the general mean
-	bool lcenterMean;
+	bool lcenterMean {};
 	// if not lcenter, centering is about the following value
-	double lcenteringValue;
+	double lcenteringValue {};
 };
 
 }

@@ -21,7 +21,8 @@ class SameCovariateMixedTwoPathFunction: public CovariateMixedNetworkAlterFuncti
 {
 public:
 	SameCovariateMixedTwoPathFunction(std::string firstNetworkName,
-		std::string secondNetworkName, std::string covariateName, bool excludeMissing);
+		std::string secondNetworkName, std::string covariateName, 
+		bool same, bool excludeMissing);
 		
 	virtual void initialize(const Data * pData,
 		State * pState, int period, Cache * pCache);
@@ -29,7 +30,8 @@ public:
 	virtual double value(int alter) const;
 
 private:
-	bool lexcludeMissing;
+	bool lsame {};
+	bool lexcludeMissing {};
 };
 
 }

@@ -53,20 +53,15 @@ protected:
 	BehaviorLongitudinalData * pBehaviorData() const;
 
 private:
-	std::string lcovariateName;
-	int lperiod;
+	std::string lcovariateName {};
+	int lperiod {};
 	ConstantCovariate * lpConstantCovariate;
 	ChangingCovariate * lpChangingCovariate;
 	BehaviorLongitudinalData * lpBehaviorData;
-	/* -Wunused-private-field
-	const Network * lpFirstNetwork;
-	const Network * lpSecondNetwork;
-	TwoNetworkCache * lpTwoNetworkCache;
-	*/
 
 	// The current value of a behavior variable per each actor.
 	// This array is 0 for covariate-based effects.
-	const int * lvalues;
+	const int * lvalues {};
 };
 
 

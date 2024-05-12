@@ -26,6 +26,7 @@ sienaCompositionChange <- function(changelist, nodeSet="Actors", option=1)
 	}
     out <- changelist
     class(out) <- "compositionChange"
+	 attr(out, "version") <- packageDescription(pkgname, fields = "Version")
     if (is.vector(nodeSet) && length(nodeSet) > 1)
 	{
         stop ("only one node set relevant")
@@ -256,7 +257,14 @@ coDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
             stop("val must be numeric or a factor")
         }
     }
-    else
+	if ((!is.factor(val)) & warn)
+	{
+		if (max(val, na.rm=TRUE) == min(val, na.rm=TRUE))
+		{
+			warning('Note: all values are identical to ', max(val, na.rm=TRUE),'.')
+		}
+	}
+    if (sparse)
     {
         if (!inherits(val, "TsparseMatrix"))
         {
@@ -267,13 +275,6 @@ coDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
 	if ((sum(!is.na(val))==0) & warn)
 	{
 		warning('Note: all values are missing.')
-	}
-	if (!is.factor(val))
-	{
-		if ((var(as.vector(val), na.rm=TRUE)==0) & warn)
-		{
-			warning('Note: all values are identical to ', mean(as.vector(val), na.rm=TRUE),'.')
-		}
 	}
     vardims <- dim(val)
     if (length(nodeSets) > 2)
@@ -336,6 +337,13 @@ varDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
         if (!(is.numeric(val) || is.factor(val)))
             stop("val must be numeric or a factor")
         vardims <- dim(val)
+		if ((!is.factor(val)) & warn)
+		{
+			if (max(val, na.rm=TRUE) == min(val, na.rm=TRUE))
+			{
+				warning('Note: all values are identical to ', max(val, na.rm=TRUE),'.')
+			}
+		}
     }
     else
     {
@@ -348,18 +356,10 @@ varDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
             stop("all matrices must have the same dimension")
         vardims <- vardims[, 1]
         vardims[3] <- length(val)
-
     }
 	if ((sum(!is.na(val))==0) & warn)
 	{
 		warning('Note: all values are missing.')
-	}
-	if ((!is.factor(val)) & warn)
-	{
-		if (var(as.vector(val), na.rm=TRUE)==0)
-		{
-			warning('Note: all values are identical to ', mean(as.vector(val), na.rm=TRUE),'.')
-		}
 	}
     if (length(nodeSets) > 2)
         stop("nodeSets may only have one or two elements")
@@ -573,6 +573,7 @@ sienaDependent <- function(netarray, type=c("oneMode","bipartite","behavior",
 
     obj <- netarray
     class(obj) <- ("sienaDependent")
+	attr(obj, "version") <- packageDescription(pkgname, fields = "Version")
     attr(obj, "type") <- type
     attr(obj, "sparse") <- sparse
     attr(obj, "nodeSet") <- nodeSet

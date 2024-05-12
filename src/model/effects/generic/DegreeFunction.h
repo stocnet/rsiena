@@ -27,7 +27,7 @@ public:
 	virtual double value(int alter) const;
 	
 private:
-	double lp;
+	double lp {};
 };
 
 }

@@ -66,16 +66,16 @@ private:
 	// The network this cache object is associated with
 	const Network * lpNetwork;
 
-	bool loneModeNetwork;
+	bool loneModeNetwork {};
 
 	// Stores the values of ties from ego to each of the alters.
-	int * loutTieValues;
+	int * loutTieValues {};
 
 	// Stores the values of ties to ego from each of the alters.
-	int * linTieValues;
+	int * linTieValues {};
 
 	// Stores the values of the stepType (settings model)
-	int lstepTypeValue;
+	int lstepTypeValue {};
 
 	// The number of two-paths from the ego to each of the alters
 	EgocentricConfigurationTable * lpTwoPathTable;

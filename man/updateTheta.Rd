@@ -13,7 +13,8 @@ to update an effects object.
 }
 \usage{
 updateTheta(effects, prevAns, varName=NULL)
-updateSpecification(effects.to, effects.from, name.to=NULL, name.from=NULL)
+updateSpecification(effects.to, effects.from,
+                          effects.extra=NULL, name.to=NULL, name.from=NULL)
 }
 \arguments{
   \item{effects}{Object of class \code{\link{sienaEffects}}.}
@@ -24,6 +25,7 @@ updateSpecification(effects.to, effects.from, name.to=NULL, name.from=NULL)
        dependent variable / these dependent variables.}
   \item{effects.to}{Object of class \code{\link{sienaEffects}}.}
   \item{effects.from}{Object of class \code{\link{sienaEffects}}.}
+  \item{effects.extra}{Object of class \code{\link{sienaEffects}}.}
   \item{name.to}{Character string, name of dependent variable in \code{object.to}.}
   \item{name.from}{Character string, name of dependent variable in
        \code{object.from}.}
@@ -41,14 +43,13 @@ updateSpecification(effects.to, effects.from, name.to=NULL, name.from=NULL)
   By \code{updateSpecification}, the effects included in \code{effects.from}
   are also included in \code{effects.to}; if \code{name.to} and/or
   \code{name.from} is specified, this is restricted to effects
-  for those dependent variables.
-  If \code{name.to = "all"} (should then not be used as variable name!),
-  the effects for all dependent variables will be updated. \cr
-  Correspondence between effects is defined by \code{"name", "shortName"
-  "type", "groupName", "interaction1", "interaction2", "period", "effect1",
-  "effect2",} and \code{"effect3"}. This means that inclusion of user-defined
-  interactions will be updated only if they were available (i.e., defined)
-  already in \code{effects.to}.
+  for those dependent variables.\cr
+  If \code{effects.from} contains interaction effects, the corresponding
+  main effects will be looked for in \code{effects.from}; if they are not
+  found there, they will be looked for in \code{effects.extra}.
+  It is not guaranteed that this will be successful.
+  For \code{effects.extra}, it is best to use an effects object constructed for
+  the same data set as \code{effects.from}, and by the same version of RSiena.
 }
 \value{
   Updated effects object.
@@ -71,6 +72,7 @@ mynet1 <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
 mydata <- sienaDataCreate(mynet1)
 myeff1 <- getEffects(mydata)
 myeff1 <- includeEffects(myeff1, transTrip)
+myeff1 <- includeInteraction(myeff1, recip, inPop)
 myalgorithm <- sienaAlgorithmCreate(nsub=1, n3=100, projname=NULL)
 ans <- siena07(myalgorithm, data=mydata, effects=myeff1, batch=TRUE)
 ans$theta
@@ -78,21 +80,7 @@ ans$theta
 ##
 ## For updateSpecification:
 myeff2 <- getEffects(mydata)
-myeff2 <- includeEffects(myeff2, inPop)
+myeff2 <- includeEffects(myeff2, outAct)
 updateSpecification(myeff2, myeff1)
-# Create (meaningless) two-dimensional dependent network
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s503, s501), dim=c(50, 50, 2)))
-mydata12 <- sienaDataCreate(mynet1, mynet2)
-myeff12 <- getEffects(mydata12)
-myeff.new <- getEffects(mydata12)
-(myeff12 <- includeEffects(myeff12, inPop, outPop, outAct))
-# update myeff.new only for mynet1:
-updateSpecification(myeff.new, myeff12)
-# update myeff.new for all dependent networks:
-(myeff.updated <- updateSpecification(myeff.new, myeff12, "all"))
-# use multivariate effects object to update univariate effects object:
-myeff1 <- getEffects(sienaDataCreate(mynet1))
-updateSpecification(myeff1, myeff.updated)
 }
 \keyword{ models }

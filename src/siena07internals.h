@@ -13,6 +13,7 @@
 #define SIENA07INTERNALS_H_
 
 #include <Rinternals.h>
+
 #include <vector>
 
 namespace siena

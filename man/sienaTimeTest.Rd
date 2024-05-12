@@ -2,12 +2,13 @@
 \alias{sienaTimeTest}
 \title{Functions to assess and account for time heterogeneity of parameters}
 \description{
- Takes a \code{sienaFit} object estimated by Method of Moments,
- and tests for time heterogeneity by the addition of interactions with
- time dummy variables at waves \code{m=2...(M-1)}.
+ Takes a \code{sienaFit} object estimated by Method of Moments,  
+ and tests for time heterogeneity by the addition of interactions with  
+ time dummy variables at waves \code{m=2...(M-1)}.  
  The test used is the score-type test of Schweinberger (2012).
- Tests for joint significance, parameter-wise significance,
- period-wise significance, individual significance, and one-step
+
+ Tests for joint significance, parameter-wise significance,  
+ period-wise significance, individual significance, and one-step   
  estimates of the unrestricted model parameters are returned in a list.
  }
 \usage{
@@ -92,17 +93,16 @@ sienaTimeTest(sienaFit, effects=NULL, excludedEffects=NULL, condition=FALSE)
     estimates, and \eqn{p}-values for the individual interactions.}
 }
 
-\references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}
-  for general information on RSiena.
-
+\references{
 J.A. Lospinoso, M. Schweinberger, T.A.B. Snijders, and R.M. Ripley
-(2011). Assessing and Accounting for Time Heterogeneity in Stochastic
+(2011), Assessing and Accounting for Time Heterogeneity in Stochastic
 Actor Oriented Models. \emph{Advances in Data Analysis and Computation},
-5:147-176.
+\bold{5}, 147--176.
 
-M. Schweinberger (2012). Statistical modeling of network panel data:
+M. Schweinberger (2012), Statistical modeling of network panel data:
 Goodness-of-fit. \emph{British Journal of Statistical
-and Mathematical Psychology} \bold{65}, 263--281.}
+and Mathematical Psychology} \bold{65}, 263--281.
+}
 
 \author{Josh Lospinoso, Tom Snijders}
 \seealso{\code{\link{siena07}}, \code{\link{plot.sienaTimeTest}},
@@ -145,7 +145,7 @@ myeff <- includeTimeDummy(myeff, density, timeDummy="all")
 myeff <- includeTimeDummy(myeff, recip, timeDummy="2,3,5")
 myeff <- includeTimeDummy(myeff, balance, timeDummy="4")
 \dontrun{
-(ansp <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE))
+(ansp <- siena07(myalgorithm, data=mydata, effects=myeff))
 ttp <- sienaTimeTest(ansp, effects=1:4)
 
 ## Pairwise plots show
@@ -181,12 +181,11 @@ myeff <- includeInteraction(myeff, egoX, recip, interaction1=c('time5', ''))
 ## corresponding to myeff <- includeTimeDummy(myeff, balance, timeDummy="4"):
 myeff <- includeInteraction(myeff, egoX, balance, interaction1=c('time4', ''))
 \dontrun{
-(anspp <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE))
+(anspp <- siena07(myalgorithm, data=mydata, effects=myeff))
 ## anspp contains identical results as ansp above.
 }
 
-## A demonstration of RateX heterogeneity. Note that rate interactions are not
-## implemented in general, just RateX which is the interaction Rate x cCovar.
+## A demonstration of RateX heterogeneity.
 \dontrun{
 mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
 myccov <- coCovar(s50a[,1])
@@ -194,7 +193,7 @@ mydata <- sienaDataCreate(mynet1, myccov)
 myeff <- getEffects(mydata)
 myeff <- includeEffects(myeff, transTrip, balance)
 myeff <- includeTimeDummy(myeff, RateX, type="rate", interaction1="myccov")
-ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE)
+(ans <- siena07(myalgorithm, data=mydata, effects=myeff))
 }
 }
 \keyword{tests}

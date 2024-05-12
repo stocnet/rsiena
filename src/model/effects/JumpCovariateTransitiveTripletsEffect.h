@@ -33,7 +33,7 @@ private:
 	// Indicates if a reciprocal version of the effect is required;
    // currently not implemented.
 
-	bool lreciprocal;
+	bool lreciprocal {};
 };
 
 }

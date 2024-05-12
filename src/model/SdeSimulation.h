@@ -62,27 +62,23 @@ private:
 	//const SimulationActorSet * lpActorSet;
 
 	// The current period, in [0, observations - 2]
-	int lperiod;
+	int lperiod {};
 
 	// Model parameters (excl B)
-	double lbasicScale;		// Basic scale parameter for the current period
-	double lA;				// Feedback matrix - MatrixXd A(1,1);
-	double lG;				// Diffusion parameters - MatrixXd * G;
+	double lbasicScale {};		// Basic scale parameter for the current period
+	double lA {};				// Feedback matrix - MatrixXd A(1,1);
+	double lG {};				// Diffusion parameters - MatrixXd * G;
 
 	// Bergstrom coefficients (excl B)
-	double lAdt;
-	double lQdt;
+	double lAdt {};
+	double lQdt {};
 	
-	// The distance of this variable from the observed data at the beginning
-	// of the current period
-	double lsimulatedDistance;
-
 	// The score for the basic scale parameter for this variable for this period
-	double lbasicScaleScore;
+	double lbasicScaleScore {};
 
 	// The derivative for the basic rate parameter for this variable for
 	// this period - only for MLE
-	// double lbasicScaleDerivative;
+	// double lbasicScaleDerivative {};
 };
 
 // ----------------------------------------------------------------------------

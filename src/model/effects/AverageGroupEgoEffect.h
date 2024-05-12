@@ -45,14 +45,14 @@ protected:
 
 private:
 	// lcentermean = whether to center about the general mean
-//	bool lcenterMean;
+//	bool lcenterMean {};
 	// if not lcenter, centering is about the following value
-//	double lcenteringValue;
-	double lnm;
-	double lGroupMean;
-//	double loverallCenterMean;
-	BehaviorLongitudinalData * lpBehaviorData;
-	int lperiod;
+//	double lcenteringValue {};
+	double lnm {};
+	double lGroupMean {};
+//	double loverallCenterMean {};
+	BehaviorLongitudinalData * lpBehaviorData {};
+	int lperiod {};
 };
 
 }
