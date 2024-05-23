@@ -228,6 +228,7 @@ calculateRIDynamics <- function(data=NULL, theta=NULL, algorithm=NULL, effects=N
 	RIDynamics$effectNames <- paste(effectTypes[currentNetObjEffs], " ",
 						(effects$effectName[noRate])[currentNetObjEffs], sep="")
 	class(RIDynamics) <- "sienaRIDynamics"
+	attr(RIDynamics, "version") <- packageDescription(pkgname, fields = "Version")
 	RIDynamics
 }
 

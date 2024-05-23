@@ -71,7 +71,8 @@ includeEffects <- function(myeff, ..., include=TRUE, name=myeff$name[1],
 		if (verbose)
 		{
 			print.sienaEffects(myeff[use,], includeRandoms = 
-					any(myeff$random & (myeff$shortName != 'density')))
+					any(myeff$random & (myeff$shortName != 'density')),
+					 includeShortNames=TRUE)
 		}
 	}
 	if (hasArg('initialValue'))
@@ -246,7 +247,8 @@ includeInteraction <- function(myeff, ...,
 	if (verbose)
 	{
 		print.sienaEffects(myeff[intn,], includeRandoms = 
-					any(myeff$random & (myeff$shortName != 'density')))
+					any(myeff$random & (myeff$shortName != 'density')),
+					 includeShortNames=TRUE)
 	}
 	myeff
 }
@@ -321,7 +323,8 @@ setEffect <- function(myeff, shortName, parameter=NULL,
 	  }
 	  else
 	  {
-	    print.sienaEffects(myeff[use,], includeRandoms = random)
+	    print.sienaEffects(myeff[use,], includeRandoms = random,
+					 includeShortNames=TRUE)
 	  }
 	}
 	myeff

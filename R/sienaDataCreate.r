@@ -1037,7 +1037,8 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 	z$compositionChange <- compositionChange
 	z <- checkConstraints(z)
 	z <- covarDist2(z)
-	class(z) <- 'siena'
+	attr(z, "version") <- packageDescription(pkgname, fields = "Version")
+	class(z) <- "siena"
 	z
 }
 ##@checkConstraints DataCreate
@@ -2055,6 +2056,7 @@ sienaGroupCreate <- function(objlist, singleOK=FALSE, getDocumentation=FALSE)
 		names(group) <- paste('Data', 1:length(group), sep="")
 	}
 	class(group)<- c("sienaGroup", "siena")
+	attr(group, "version") <- packageDescription(pkgname, fields = "Version")
 	balmeans <- calcBalmeanGroup (group)
 	names(balmeans) <- netnames
 	attr(group, "balmean") <- balmeans

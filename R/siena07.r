@@ -224,6 +224,7 @@ z$compTime <- round(time1 - time0, digits=2)
 	}
 
 	class(z) <- "sienaFit"
+	attr(z, "version") <- packageDescription(pkgname, fields = "Version")
 	z$tkvars <- NULL
 	z$pb <- NULL
 	z

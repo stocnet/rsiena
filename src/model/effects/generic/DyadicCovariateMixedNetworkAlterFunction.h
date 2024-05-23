@@ -46,10 +46,23 @@ protected:
 	double dyadicValue(int i, int j) const;
 	bool missing(int i, int j) const;
 	bool constantCovariate() const;
+	int dyCov_n() const;
+	int dyCov_m() const;
+	int firstNet_n() const;
+	int firstNet_m() const;
+	int secondNet_n() const;
+	int secondNet_m() const;
 
 private:
 	std::string lDyadicCovariateName;
 	int lperiod {};
+    // number of elements of the respective node sets:
+	int ldyadic_n {};
+	int ldyadic_m {};
+	int lFirstNet_n {};
+	int lFirstNet_m {};
+	int lSecondNet_n {};
+	int lSecondNet_m {};
 	// The constant covariate this effect depends on or 0, if the
 	// effect depends on a changing covariate:
 	ConstantDyadicCovariate * lpConstantCovariate;
