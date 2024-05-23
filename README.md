@@ -36,7 +36,7 @@ install.packages("https://github.com/stocnet/rsiena/releases/latest/download/RSi
 install.packages("https://github.com/stocnet/rsiena/releases/latest/download/RSiena.tgz", repos = NULL)
 ```
 
-To install the source version from GitHub install the `{remotes}` package and then run the following. NB: this requires compilation of `C++` source files so it may take some time.
+To compile and install the source version from GitHub, install the `{remotes}` package and then run the following. NB: this requires compilation of `C++` source files so it may take some time.
 
 ```r
 # latest version
@@ -65,14 +65,9 @@ Some or all of these networks can be two-mode networks. The restriction is that 
 ## Manual:  
 There is an extensive [manual](https://www.stats.ox.ac.uk/~snijders/siena/RSiena_Manual.pdf) which is complementary to the help pages in the package.
 
-## Migration in progress...
+## Further information...
 
-We are migrating RSiena development and releases to this repository.
-
-The main website is still [here](http://www.stats.ox.ac.uk/~snijders/siena/) for the time being,
-however we are currently migrating many resources to [this website](http://stocnet.github.io/rsiena/),
-and you can find [a wiki here](https://github.com/stocnet/rsiena/wiki) that holds much of the information on the original website,
-including background on SAOMs and RSiena, and links to teaching materials, literature, and contributing people and projects.
+The main Siena website is [here](http://www.stats.ox.ac.uk/~snijders/siena/). It has a lot of resources, such as scripts and papers with explanations, and lists of published applications. In future, some of these resources may be migrated to [this website](http://stocnet.github.io/rsiena/); you can find [a wiki here](https://github.com/stocnet/rsiena/wiki) that holds much of the information on the original website, including background on SAOMs and RSiena as well as links to teaching materials, literature, and contributing people and projects.
 
 ## Installation
 
