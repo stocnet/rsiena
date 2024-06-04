@@ -104,7 +104,8 @@
 ## Are these the change probabilities or the tie probabilities?
 
 ##@expectedChangeProbabilities. Use as RSiena:::expectedChangeProbabilities
-expectedChangeProbabilities <- function(conts, effects, theta, thedata=NULL, effectNames = NULL)
+expectedChangeProbabilities <- function(conts, effects, theta, thedata=NULL, 
+	getChangeStatistics=FALSE, effectNames = NULL)
 {
 	rms <- function(xx){sqrt((1/dim(xx)[2])*rowSums(xx^2,na.rm=TRUE))}
 	waves <- length(conts[[1]])
@@ -229,6 +230,10 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 				# the first row is for the unchanged parameter vector theta,
 				# each of the following has put one element of theta to 0.
 				# for behavior it is a matrix of dim (effects + 1) * 3
+
+			}
+		}
+	}
 distributions
 }
 
