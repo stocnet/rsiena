@@ -229,6 +229,10 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 				# the first row is for the unchanged parameter vector theta,
 				# each of the following has put one element of theta to 0.
 				# for behavior it is a matrix of dim (effects + 1) * 3
+
+			}
+		}
+	}
 distributions
 }
 
