@@ -78,36 +78,34 @@
 # 	ans
 # }
 
-# calculateDistributions <- function(effectContributions = NULL, theta = NULL)
-# {
-# 	neffects <- dim(effectContributions)[1]
-# 	nchoices <- dim(effectContributions)[2]
-# 	distributions <- array(NA, dim = c(neffects+1,nchoices))
-# 	the.choices <- !is.na(colSums(effectContributions))
-# 	if (sum(the.choices) >= 2)
-# 	{
-# 		distributions[1,the.choices] <-
-# 			exp(colSums(theta*effectContributions[,the.choices,drop=FALSE], na.rm=TRUE))/
-# 			sum(exp(colSums(theta*effectContributions[,the.choices,drop=FALSE], na.rm=TRUE)))
-# 		for(eff in 1:neffects)
-# 		{
-# 			th <- theta
-# 			th[eff] <- 0
-# 			distributions[eff+1,the.choices] <-
-# 				exp(colSums(th*effectContributions[,the.choices,drop=FALSE], na.rm=TRUE))/
-# 				sum(exp(colSums(th*effectContributions[,the.choices,drop=FALSE], na.rm=TRUE)))
-# 		}
-# 	}
-# 	distributions
-# }
+##@softmax Recursive softmax formula, see https://rpubs.com/FJRubio/softmax. Use as RSiena:::softmax
+softmax <- function(par){
+  n.par <- length(par)
+  par1 <- sort(par, decreasing = TRUE)
+  Lk <- par1[1]
+  for (k in 1:(n.par-1)) {
+    Lk <- max(par1[k+1], Lk) + log1p(exp(-abs(par1[k+1] - Lk))) 
+  }
+  val <- exp(par - Lk)
+  return(val)
+}
 
-## Are these the change probabilities or the tie probabilities?
+##@calculateChoiceProbability. Use as RSiena:::calculateChoiceProbability (just a simplified calculateDistribution)
+calculateChoiceProbability <- function(effectContributions = NULL, theta = NULL)
+{
+	distributions <- matrix(NA, dim = dim(effectContributions))
+	the.choices <- !is.na(colSums(effectContributions))
+	if (sum(the.choices) >= 2) ## should produce an error instead of an empty array?
+	{
+		distributions[1,the.choices] <- softmax(theta*effectContributions[,the.choices,drop=FALSE])
+	}
+	distributions
+}
 
 ##@expectedChangeProbabilities. Use as RSiena:::expectedChangeProbabilities
 expectedChangeProbabilities <- function(conts, effects, theta, thedata=NULL, 
 	getChangeStatistics=FALSE, effectNames = NULL)
 {
-	rms <- function(xx){sqrt((1/dim(xx)[2])*rowSums(xx^2,na.rm=TRUE))}
 	waves <- length(conts[[1]])
 	effects <- effects[effects$include == TRUE,]
 	noRate <- effects$type != "rate"
@@ -146,13 +144,13 @@ expectedChangeProbabilities <- function(conts, effects, theta, thedata=NULL,
 			{
 				if (dim(depNetwork)[2] >= actors)
 				{
-					stop("sienaRI does not work for bipartite networks with second mode >= first mode")
+					stop("does not work for bipartite networks with second mode >= first mode")
 				}
 				choices <- dim(depNetwork)[2] + 1
 			}
 			else
 			{
-				stop("sienaRI does not work for dependent variables of type 'continuous'")
+				stop("does not work for dependent variables of type 'continuous'")
 			}
 
 			# impute for wave 1
@@ -188,6 +186,14 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 			changeStats <-list()
 			sigma <- list()
 			sigmas <- matrix(NA, sum(currentDepEffs), waves)
+			if (networkTypes[eff] == "behavior")
+			{
+				toggleProbabilities <- array(0, dim=c(actors, 3, waves))
+			}
+			else
+			{
+				toggleProbabilities <- array(0, dim=c(actors, choices, waves))
+			}
 			for(w in 1:waves)
 			{
 				currentDepEffectContributions <- conts[[1]][[w]][currentDepEffs]
@@ -208,34 +214,35 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 				{
 					cdec <- array(cdec, dim=c(1,dim(cdec)))
 				}
-##
 				rownames(cdec) <- effectNa[currentDepEffs]
 				if (getChangeStatistics)
 				{
 					changeStats[[w]] <- cdec
 				}
 				# replace structural 0s and 1s by NA,
-				# so they are omitted from calculation of RI, R_H, sigma
+				# so they are omitted from calculation
 				if (networkTypes[eff] == "oneMode")
 				{
 					#	structuralsw <- structurals[,,w]
 					for (ff in 1:(dim(cdec)[1])){cdec[ff,,][t(structurals[,,w])] <- NA}
 				}
 				distributions <- apply(cdec, 3,
-					calculateDistributions, theta[which(currentDepEffs)])
-
-				# distributions is a list, length = number of actors
-				# distributions[[i]] is for actor i, a matrix of dim (effects + 1) * (actors as alters)
-				# giving the probability of toggling the tie variable to the alters;
-				# the first row is for the unchanged parameter vector theta,
-				# each of the following has put one element of theta to 0.
-				# for behavior it is a matrix of dim (effects + 1) * 3
-
+					calculateChoiceProbability, theta[which(currentDepEffs)])
+				if (networkTypes[eff] == "behavior")
+				{
+					toggleProbabilities[,,w] <-
+						t(vapply(distributions, function(x){x[1,]}, rep(0,3)))
+				}
+				else
+				{
+					toggleProbabilities[,,w] <-
+						t(vapply(distributions, function(x){x[1,]}, rep(0,choices)))
+				}
 			}
 		}
 	}
-distributions
-}
+toggleProbabilities                                             
+}            
 
 ## we probably want to extract a tie probability matrix from this
 
