@@ -15,6 +15,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	useCluster = FALSE, nbrNodes = 2,
 	thetaValues = NULL,
     returnThetas = FALSE,
+	thetaBound = 50,
 	targets = NULL,
 	initC=TRUE,
 	clusterString=rep("localhost", nbrNodes), tt=NULL,
@@ -46,6 +47,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	## x is designed to be readonly. Only z is returned.
 	z$x <- x
 	z$returnThetas <- returnThetas
+	z$thetaBound <- thetaBound
 	if (useCluster)
 	{
 		if (parallelTesting)
@@ -429,9 +431,17 @@ FormatString <- function(pp, value)
 	ppuse <- min(30, pp)
 	nbrs <- format(1:ppuse)
 	nch <- nchar(nbrs[1])
-	formatstr <- paste("%", nch, "d.%", (13 - nch), ".4f\n", sep="",
+#	formatstr <- paste("%", nch, "d.%", (13 - nch), ".4f\n", sep="",
+#		collapse="")
+#	paste(sprintf(formatstr, 1:ppuse, value[1:ppuse]), collapse="")
+# In version 1.4.13 changed to:
+	formatstr1 <- paste("%", nch, "d.%", (13 - nch), ".4f\n", sep="",
 		collapse="")
-	paste(sprintf(formatstr, 1:ppuse, value[1:ppuse]), collapse="")
+	formatstr2 <- paste("%", nch, "d.%", (13 - nch), ".4g\n", sep="",
+		collapse="")
+	formatstr <- ifelse(abs(value[1:ppuse]) >= 1e5, formatstr2, formatstr1)
+	formatstr[is.na(formatstr)] <- formatstr1 
+	paste(sprintf(formatstr, 1:ppuse, value[1:ppuse]), collapse="")	
 }
 ##@DisplayDeviations siena07 Progress reporting
 DisplayDeviations <- function(z, fra)
