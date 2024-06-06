@@ -80,20 +80,23 @@
 
 ##@softmax Recursive softmax formula, see https://rpubs.com/FJRubio/softmax. Use as RSiena:::softmax
 softmax <- function(par){
-  n.par <- length(par)
-  par1 <- sort(par, decreasing = TRUE)
-  Lk <- par1[1]
-  for (k in 1:(n.par-1)) {
-    Lk <- max(par1[k+1], Lk) + log1p(exp(-abs(par1[k+1] - Lk))) 
-  }
-  val <- exp(par - Lk)
-  return(val)
+#   n.par <- length(par)
+#   par1 <- sort(par, decreasing = TRUE)
+#   Lk <- par1[1]
+#   for (k in 1:(n.par-1)) {
+#     Lk <- max(par1[k+1], Lk) + log1p(exp(-abs(par1[k+1] - Lk))) 
+#   }
+#   val <- exp(par - Lk)
+#   return(val)
+exp(colSums(par, na.rm=TRUE))/
+			sum(exp(colSums(par, na.rm=TRUE)))
 }
 
 ##@calculateChoiceProbability. Use as RSiena:::calculateChoiceProbability (just a simplified calculateDistribution)
 calculateChoiceProbability <- function(effectContributions = NULL, theta = NULL)
 {
-	distributions <- matrix(NA, dim = dim(effectContributions))
+	nchoices <- dim(effectContributions)[2]
+	distributions <- array(NA, dim = c(1,nchoices))
 	the.choices <- !is.na(colSums(effectContributions))
 	if (sum(the.choices) >= 2) ## should produce an error instead of an empty array?
 	{
@@ -241,7 +244,7 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 			}
 		}
 	}
-toggleProbabilities                                             
+distributions                                             
 }            
 
 ## we probably want to extract a tie probability matrix from this
