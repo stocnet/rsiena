@@ -195,7 +195,7 @@ It also contains contributions written
 by Mark Huisman, Michael Schweinberger, and Christian Steglich.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.4.11.
+This version was renewed for \RS version 1.4.13.
 \end{abstract}
 
 
@@ -1146,7 +1146,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.4.11).
+  identified by a version number (e.g.\ 1.4.13).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -1520,6 +1520,7 @@ see \url{https://www.stat.cmu.edu/~nynke/code.html}.
 
 
 \subsubsection{Individual covariates}
+\label{S_covariates}
 
 Individual (i.e., actor-bound, or monadic) variables
 are defined by the functions
@@ -4504,6 +4505,24 @@ the option \texttt{verbose = TRUE}, as in
 results1  <- siena07(algorithm1, data = mydata, effects = myeff,
                       verbose = TRUE)
 \end{verbatim}
+
+Experience shows that parameters estimated by \sfn{siena07} are
+not very large in magnitude, mostly they are less than 20 in
+absolute value. Therefore, when the algorithm at some moment leads to 
+provisional values larger than, say,~50, this is a signal that the
+algorithm is diverging. This will lead to a stop of the algorithm;
+the default threshold value of 50 can be changed by the keyword
+\texttt{thetaBound}. E.g., one could use
+\begin{verbatim}
+results1  <- siena07(algorithm1, data = mydata, effects = myeff,
+                      thetaBound=100)
+\end{verbatim}
+Some effects associated with covariates will have values that scale
+inversely with the covariates. 
+It was mentioned in Section~\ref{S_covariates} that actor
+covariates should be preferably have standard deviations between, say,
+0.1 and~10. This will normally lead to parameter values less than 10.
+The same goes for dyadic covariates.
 
 \subsection{Parameters of the algorithm}
 \label{S_param}
@@ -10642,7 +10661,7 @@ defined by \\
 \texttt{(sameXOutAct)} defined by the
  squared number of ties to those
  others who have the same covariate value as $i$,\\
- $s^{\rm net}_{i\vit}(x) =  \sum_j \big(x_{ij} \, I\{v_i = v_j \}\big)^2 $;\\
+ $s^{\rm net}_{i\vit}(x) =  \big( \sum_j x_{ij} \, I\{v_i = v_j \}\big)^2 $;\\
  for internal effect parameter $p=2$, it is defined by\\
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \, I\{v_i = v_j \}
             \sqrt{\sum_h x_{ih}\, I\{v_i = v_h \}} $;\\
@@ -10676,7 +10695,20 @@ defined by \\
 \texttt{(homXOutAct)} defined by the
  sum of outgoing ties weighted by the number of outgoing
  ties to those with the same covariate value (as alter),\\
- $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sum_h x_{ih} \,I\{v_j = v_h \} $;
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sum_h x_{ih} \,I\{v_h = v_j \} $;
+
+
+ \item {\em outdegree activity to homogeneous covariate}
+\texttt{(homXOutAct2)},\\
+ almost the same as \texttt{homXOutAct}, but much more efficiently programmed,
+ and only for covariates with integer values from 0 to 20; defined by the
+ sum of outgoing ties weighted by the number of outgoing
+ ties to those with the same covariate value (as alter),
+ but it should be positive:\\
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sum_h x_{ih} \,I\{v_h = v_j > 0\} $;\\[0.3em]
+ for internal effect parameter $p=2$ it is defined by\\
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sqrt{\sum_h x_{ih} \,I\{v_h = v_j > 0\}} $;\\[0.3em]
+ note that ties to alters with $v_j=0$ do not contribute anything;
 
  \item {\em outdegree activity weighted by alter's covariate}
   \texttt{(altXOutAct)} defined by the
@@ -11145,6 +11177,10 @@ the following effects are available.
 These are useful, e.g., for bipartite (two-mode) networks.
  Then $V$ must be a covariate for the first mode, and $U$ for the second mode.
 
+If it is desired to use them for the same variables ($V = U$),
+it is necessary to define a data set with two identical variables
+(i.e., with all variables equal) bearing the same name.
+
 \begin{enumerate}
 \setcounter{enumi}{\value{savenumi}}
 
@@ -11212,6 +11248,10 @@ For \texttt{sameXVInPop}, they tend to choose nodes of the same $U$ category.
 For \texttt{sameXCycle4}, if they tend to choose some particular node in common,
 they will also tend to choose some other nodes in common.
 
+Note effect \texttt{homXOutAct2}, which is an ego version of  \texttt{sameXVInPop},
+expressing that ego has differential propensities to ties with alters
+of different categories; the role of $U$ in \texttt{sameXVInPop}
+is taken by $V$ in the definition of \texttt{homXOutAct2}.
 
 
 \setcounter{savenumi}{\value{enumi}}
@@ -12261,8 +12301,8 @@ $ s^{\rm net}_{i\vit}(x) =  \,  x_{i+} \sum_k  w_{ik}\,(w_{+k} - \bar w)     \bi
 
 \item
 \begin{minipage}[t]{.70\textwidth}
-   shared $W$ outdegree activity effect ($X$: shared $W$ outdegree$^{1/p}$ activity)  
-    \texttt{(outOutDist2ActIntn)} 
+   shared $W$ outdegree activity effect ($X$: shared $W$ outdegree$^{1/p}$ activity)
+    \texttt{(outOutDist2ActIntn)}
    defined by the outdegree of $i$
    multiplied by sum of $X$-outdegrees of those $h$ to whom $i$ has a
    distance-2 $W$-tie  $i \rightarrow k \leftarrow h$ (counting multiplicities).\\
@@ -16769,12 +16809,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.4.11.tar.gz|\\
+\verb|R CMD check RSiena_1.4.13.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.4.11.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.4.13.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16876,7 +16916,10 @@ For example, compare the construction of \texttt{sameXTransTrip} to that of
 
               For how to deal with internal effect parameters, look up
               a function defining an effect that has such
-              a parameter.
+              a parameter.\\
+              It is advisable to use the hash sign (\texttt{\#}) in the
+              effect and function names. See subsection~\ref{S_hash}.
+              
 
 		\item Build the package and install it.  Check from R that
               the new effect (which has only been created nominally)
@@ -16952,6 +16995,56 @@ rather than an \sfn{egoStatistic}.
 Note that if your new effect could usefully be used as part of a multiple
 network effect you should use the generic effect approach and not the following.
 
+\subsection{The use of the hash (\texttt{\#}) sign 
+\protect \newline
+in names of effects  and estimation statistics}
+\label{S_hash}
+
+If an effect contains an  internal effect parameter,
+it is advisable to report the value of the internal effect parameter
+in the names of the effect and the estimation statistics reported 
+when printing the effects object and the estimation results.
+These names are the columns \texttt{effectName} and \texttt{functionName}
+in the effects object, and their origins are the corresponding
+columns in file \texttt{allEffects.csv}. 
+The value of the internal effect parameter can be included 
+by the use of the hash sign (\texttt{\#}).
+In function \sfn{setEffect}, occurrences of \texttt{"\#"} 
+in columns \texttt{effectName} and \texttt{functionName}
+are replaced by the value of the internal effect parameter 
+(given explicitly by the user, or else the default value). 
+
+Thus, the hash sign  (\texttt{\#}) is a placeholder for the value of 
+the internal effect parameter.
+When you look in the file \texttt{allEffects.csv}, you will see
+many occurrences of this symbol.
+
+A difficulty occurs when the replacement has been done
+(so there is no more  \texttt{"\#"}), but a new
+call of \sfn{setEffect} is made with a new value of the
+internal effect parameter. 
+To make the correct replacement then, the following rule is followed
+for defining the names in \texttt{allEffects.csv}:
+
+\begin{itemize}
+\item The symbol \texttt{\#} should occur in the \texttt{effectName} 
+and \texttt{functionName} in \texttt{allEffects.csv} in only the following substrings:
+\begin{itemize}
+  \item \texttt{"1/\#"}
+  \item \texttt{"(\#)"}
+  \item \texttt{"\#-"} 
+  \item \texttt{"={\char32}\#"}
+  \item \texttt{"+{\char32}\#"}
+  \item \texttt{"-{\char32}\#"}
+\end{itemize}
+where \texttt{"\char32"} denotes one blank space (used here for the sake
+of clarity, not for use in \texttt{allEffects.csv}). 
+\item No confusion should be possible, i.e., 
+        no substrings in \texttt{allEffects.csv}
+     of these kinds are permitted where \texttt{\#}  is any number.
+\end{itemize}
+
+
 
 \subsection{Example: adding the truncated out-degree effect}
 
@@ -16988,7 +17081,7 @@ where $p$ is an \hyperlink{T_effpar}{internal effect parameter}.
       The hash sign (\texttt{\#}) in these names will be replaced
       by the value of the
       internal effect parameter in the written output.
-      The `parm' column, which defines
+      The \texttt{parm} column, which defines
       the default value of the internal effect parameter, was set to 5.
       \\
       The package was built. Loading it in \R and creating an
@@ -17063,7 +17156,7 @@ where $p$ is an \hyperlink{T_effpar}{internal effect parameter}.
       The explanation also was adapted.
       The header file now implies that for the function
       \texttt{TruncatedOutdegreeEffect}
-      functions are needed of the types \sfn{calculateContribution},\\
+      functions are needed of the types \sfn{calculateContribution},
       \sfn{endowmentStatistic} and \sfn{egoStatistic}.
       \\
       This was implemented in the file \textsf{TruncatedOutdegreeEffect.cpp},
@@ -17077,7 +17170,7 @@ where $p$ is an \hyperlink{T_effpar}{internal effect parameter}.
       in which the current function is defined, and the arrow \texttt{->}
       indicates a further pointer; thus, the variable\\
       \texttt{this->pNetwork()->outDegree(this->ego())}\\
-      refers to the outdegree of ego (denoted in our mathematical
+      refers to the outdegree of ego (ego being denoted in our mathematical
       formulae by $i$) in the current network -- in other words,
       $x_{i+}$.\\
       The variable \texttt{this->lc} refers to the
@@ -17553,7 +17646,7 @@ an object of class `sienaGroup' from a list of Siena data objects:
 variable to indicate if it is OK to have just one object; `getDocumentation'
 is a flag to  allow documentation of internal functions, not for use by users\\
 
-4 & effectsDocumentation & 
+4 & effectsDocumentation &
 
 effectsDocumentation() & & Prints a html or
 \LaTeX\ table with the  effects details\\
@@ -17838,6 +17931,40 @@ Changes in RSiena:
 \fi
 
 
+\item 2024-06-06 GitHub, package version 1.4.13
+
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects:
+   \begin{itemize}
+  \item New effect \texttt{homXOutAct2}.
+    \end{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+  \item The handling of internal effect parameters in the columns 
+    \texttt{effectName}
+    and \texttt{functionName} of \texttt{sienaEffects} objects is improved.
+    This was achieved by changes in functions \sfn{setEffect}
+    and \sfn{includeInteraction}.
+    Effectnames as reproduced by \texttt{sienaFit} objects should now 
+    contain the correct values of internal effect parameters.
+  \item New parameter \texttt{thetaBound} for \sfn{siena07}, which has the 
+    effect of stopping the estimation process if some parameters become 
+    too large (which would signal divergence).
+  \item Display of deviations in \texttt{siena07gui} modified so that numbers 
+    larger than or equal to \texttt{1e5} in absolute value are displayed in 
+    exponential format (and use only one line in the gui).
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+  \item Function \sfn{setEffect} corrected (it did not give the proper internal
+    parameters in the \sfn{effectName}).
+  \item Function \sfn{updateSpecification} corrected (it did not work properly
+    for including interactions).
+    \end{itemize}
+\end{itemize}
+
 \item 2024-04-23 GitHub, package version 1.4.11
 
 Changes in RSiena:
@@ -17854,7 +17981,7 @@ Changes in RSiena:
    \begin{itemize}
   \item Method \sfn{print.sienaEffects} has an extra parameter \texttt{includeShortNames}
     to do what the name of this parameter suggests.
-    \end{itemize}  
+    \end{itemize}
 \end{itemize}
 
 
