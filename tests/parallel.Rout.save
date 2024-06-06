@@ -47,17 +47,16 @@ Total of 407 iteration steps.
 > (myeff <- includeEffects(myeff, transTrip, cycle4))
   effectName          shortName include fix   test  initialValue parm
 1 transitive triplets transTrip TRUE    FALSE FALSE          0   0   
-2 4-cycles (#)        cycle4    TRUE    FALSE FALSE          0   1   
+2 4 cycles (#)        cycle4    TRUE    FALSE FALSE          0   1   
   effectName                  include fix   test  initialValue parm
 1 basic rate parameter mynet1 TRUE    FALSE FALSE    4.80941   0   
 2 outdegree (density)         TRUE    FALSE FALSE   -0.56039   0   
 3 reciprocity                 TRUE    FALSE FALSE    0.00000   0   
 4 transitive triplets         TRUE    FALSE FALSE    0.00000   0   
-5 4-cycles (#)                TRUE    FALSE FALSE    0.00000   1   
+5 4 cycles (#)                TRUE    FALSE FALSE    0.00000   1   
 > (myeff <- includeEffects(myeff, cycle4, include=FALSE))
-[1] effectName   shortName    include      fix          test        
-[6] initialValue parm        
-<0 rows> (or 0-length row.names)
+  effectName   shortName include fix   test  initialValue parm
+1 4 cycles (#) cycle4    FALSE   FALSE FALSE          0   1   
   effectName                  include fix   test  initialValue parm
 1 basic rate parameter mynet1 TRUE    FALSE FALSE    4.80941   0   
 2 outdegree (density)         TRUE    FALSE FALSE   -0.56039   0   
@@ -134,10 +133,14 @@ Total of 588 iteration steps.
 4 indegree - popularity       TRUE    FALSE FALSE    0.00000   0   
 5 outdegree - activity        TRUE    TRUE  TRUE     0.00000   0   
 > (myeff <- includeInteraction(myeff, recip, inPop, fix=TRUE, test=TRUE))
-  effectName                          shortName include fix  test initialValue
-1 reciprocity x indegree - popularity unspInt   TRUE    TRUE TRUE          0  
-  parm effect1 effect2
-1 0    14      77     
+  effectName                              shortName include fix   test 
+1 14 reciprocity                          recip     TRUE    FALSE FALSE
+2 77 indegree - popularity                inPop     TRUE    FALSE FALSE
+3 231 reciprocity x indegree - popularity unspInt   TRUE    TRUE  TRUE 
+  initialValue parm effect1 effect2
+1          0   0     0       0     
+2          0   0     0       0     
+3          0   0    14      77     
   effectName                          include fix   test  initialValue parm
 1 basic rate parameter mynet1         TRUE    FALSE FALSE    4.80941   0   
 2 outdegree (density)                 TRUE    FALSE FALSE   -0.56039   0   
@@ -205,9 +208,8 @@ Overall maximum convergence ratio:    0.2334
 Total of 588 iteration steps.
 
 > myeff <- includeEffects(myeff, recip, include=FALSE)
-[1] effectName   shortName    include      fix          test        
-[6] initialValue parm        
-<0 rows> (or 0-length row.names)
+  effectName  shortName include fix   test  initialValue parm
+1 reciprocity recip     FALSE   FALSE FALSE          0   0   
 > myeff <- includeEffects(myeff, recip, type='endow')
   effectName  shortName include fix   test  initialValue parm type 
 1 reciprocity recip     TRUE    FALSE FALSE          0   0    endow
@@ -821,9 +823,61 @@ Overall maximum convergence ratio:    0.5163
 
 Total of 285 iteration steps.
 
+> ##test19
+> print('test19')
+[1] "test19"
+> myalgorithm <- sienaAlgorithmCreate(nsub=1, n3=20, seed=1943)
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+> alc <- coCovar(s50a[,1])
+> smoke <- coCovar(s50s[,1])
+> mydata <- sienaDataCreate(mynet, alc, smoke)
+> myeff <- getEffects(mydata)
+> myeff <- setEffect(myeff, gwespFF)
+  effectName             shortName include fix   test  initialValue parm
+1 GWESP I -> K -> J (69) gwespFF   TRUE    FALSE FALSE          0   69  
+> myeff <- setEffect(myeff, gwespFF, parameter=20)
+  effectName             shortName include fix   test  initialValue parm
+1 GWESP I -> K -> J (20) gwespFF   TRUE    FALSE FALSE          0   20  
+> myeff <- setEffect(myeff, outTrunc, parameter=2, include=FALSE)
+  effectName         shortName include fix   test  initialValue parm
+1 outdegree-trunc(2) outTrunc  FALSE   FALSE FALSE          0   2   
+> myeff <- includeInteraction(myeff, outTrunc, egoX, egoX, 
++ 						interaction1=c("","smoke","alc"))
+  effectName                                   shortName include fix   test 
+1 123 outdegree-trunc(2)                       outTrunc  FALSE   FALSE FALSE
+2 248 alc ego                                  egoX      FALSE   FALSE FALSE
+3 426 smoke ego                                egoX      FALSE   FALSE FALSE
+4 589 smoke ego x alc ego x outdegree-trunc(2) unspInt   TRUE    FALSE FALSE
+  initialValue parm effect1 effect2 effect3
+1          0   2      0       0       0    
+2          0   0      0       0       0    
+3          0   0      0       0       0    
+4          0   0    123     426     248    
+> (ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE,
++                               silent=TRUE))
+Estimates, standard errors and convergence t-ratios
+
+                                                   Estimate   Standard   Convergence 
+                                                                Error      t-ratio   
+
+Rate parameters: 
+  0       Rate parameter                            6.5214  ( 1.2176   )             
+
+Other parameters: 
+  1. eval outdegree (density)                      -2.7629  ( 0.1541   )    0.0529   
+  2. eval reciprocity                               2.2463  ( 0.2132   )   -0.0283   
+  3. eval GWESP I -> K -> J (20)                    1.6860  ( 0.2467   )    0.0164   
+  4. eval smoke ego x alc ego x outdegree-trunc(2)  0.4931  ( 0.2613   )   -0.0452   
+
+Overall maximum convergence ratio:    0.2486 
+
+
+Total of 297 iteration steps.
+
 > ## delete output file
 > if (file.exists('Siena.txt')){unlink('Siena.txt')}
 > 
 > proc.time()
    user  system elapsed 
-  13.03    0.15   14.62 
+  13.10    0.10   15.67 
