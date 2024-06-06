@@ -231,17 +231,17 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 				}
 				distributions <- apply(cdec, 3,
 					calculateChoiceProbability, theta[which(currentDepEffs)])
-				if (networkTypes[eff] == "behavior")
-				{
-					toggleProbabilities[,,w] <-
-						t(vapply(distributions, function(x){x[1,]}, rep(0,3)))
-				}
-				else
-				{
-					toggleProbabilities[,,w] <-
-						t(vapply(distributions, function(x){x[1,]}, rep(0,choices)))
-				}
-			}
+			# 	if (networkTypes[eff] == "behavior")
+			# 	{
+			# 		toggleProbabilities[,,w] <-
+			# 			t(vapply(distributions, function(x){x[1,]}, rep(0,3)))
+			# 	}
+			# 	else
+			# 	{
+			# 		toggleProbabilities[,,w] <-
+			# 			t(vapply(distributions, function(x){x[1,]}, rep(0,choices)))
+			# 	}
+			# }
 		}
 	}
 distributions                                             
