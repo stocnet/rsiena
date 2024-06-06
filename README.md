@@ -8,10 +8,11 @@
 ![](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)
 
 
-SIENA is a program for the statistical analysis of network data, with the focus on social networks.
+SIENA is a program for the statistical analysis of longitudinal network data, with the focus on social networks.
 Networks here are understood as entire (complete) networks, not as personal (egocentered) networks: 
 it is assumed that a set of nodes (social actors) is given, and all ties (links) between these nodes are known - 
 except perhaps for a moderate amount of missing data.
+`Longitudinal` means that two or more repeated observations ("panel data") are available.
 The name SIENA stands for Simulation Investigation for Empirical Network Analysis.
 The R package is called RSiena.
 
@@ -36,7 +37,7 @@ install.packages("https://github.com/stocnet/rsiena/releases/latest/download/RSi
 install.packages("https://github.com/stocnet/rsiena/releases/latest/download/RSiena.tgz", repos = NULL)
 ```
 
-To install the source version from GitHub install the `{remotes}` package and then run the following. NB: this requires compilation of `C++` source files so it may take some time.
+To compile and install the source version from GitHub, install the `{remotes}` package and then run the following. NB: this requires compilation of `C++` source files so it may take some time.
 
 ```r
 # latest version
@@ -65,14 +66,9 @@ Some or all of these networks can be two-mode networks. The restriction is that 
 ## Manual:  
 There is an extensive [manual](https://www.stats.ox.ac.uk/~snijders/siena/RSiena_Manual.pdf) which is complementary to the help pages in the package.
 
-## Migration in progress...
+## Further information...
 
-We are migrating RSiena development and releases to this repository.
-
-The main website is still [here](http://www.stats.ox.ac.uk/~snijders/siena/) for the time being,
-however we are currently migrating many resources to [this website](http://stocnet.github.io/rsiena/),
-and you can find [a wiki here](https://github.com/stocnet/rsiena/wiki) that holds much of the information on the original website,
-including background on SAOMs and RSiena, and links to teaching materials, literature, and contributing people and projects.
+The main Siena website is [here](http://www.stats.ox.ac.uk/~snijders/siena/). It has a lot of resources, such as scripts and papers with explanations, and lists of published applications. In future, some of these resources may be migrated to [this website](http://stocnet.github.io/rsiena/); you can find [a wiki here](https://github.com/stocnet/rsiena/wiki) that holds much of the information on the original website, including background on SAOMs and RSiena as well as links to teaching materials, literature, and contributing people and projects.
 
 ## Installation
 
@@ -104,20 +100,14 @@ The development version of RSiena can be similarly installed as:
 
 To cite the RSiena package in publications use:
 
-> Ruth M. Ripley, Tom A. B. Snijders, Zsofia Boda, Andras Voros, and Paulina Preciado (2023). Manual
-> for Siena version 4.0. R package version 1.3.22.
+> Ruth M. Ripley, Tom A. B. Snijders, Zsofia Boda, Andras Voros, and Paulina Preciado (2024). Manual
+> for Siena version 4.0. R package version 1.4.13.
 > https://www.cran.r-project.org/web/packages/RSiena/.
 
-A BibTeX entry for LaTeX users is
+A BibTeX entry for LaTeX users is obtained by requesting
 
-```bib
-@TechReport{,
-  title = {Manual for {Siena} version 4.0},
-  author = {Ruth M. Ripley and Tom A. B. Snijders and Zsofia B'{o}da and Andr'{a}s V"{o}r"{o}s and Paulina Preciado},
-  year = {2023},
-  institution = {Oxford: University of Oxford, Department of Statistics; Nuffield College},
-  note = {R package version 1.3.22. https://www.cran.r-project.org/web/packages/RSiena/},
-}
-```
+`citation(package="RSiena")` 
+
+in an `R` session.
 
 For more references, see https://www.stats.ox.ac.uk/~snijders/siena/. 
