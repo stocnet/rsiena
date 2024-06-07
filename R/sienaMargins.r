@@ -9,7 +9,7 @@
 # * calculate (average) marginal effects
 # *****************************************************************************/
 
-# Currently uses getChangeContribution from RIsiena.R
+# Currently uses getChangeContribution from sienaRI.R
 # We might try to use RSiena:::getTargets() with returnStaticCHangeContribution = TRUE?
 
 
@@ -159,4 +159,67 @@ expectedChangeProbabilities <- function(conts, effects, theta, thedata = NULL,
   # toggleProbabilities is an array of choices by actors by wave
   attr(toggleProbabilities, "version") <- packageDescription(pkgname, fields = "Version")
   toggleProbabilities
+}
+
+# The following is inefficient but does extract probabilities for chains
+
+##@expectedChangeDynamics expectedChangeDynamics simulates sequences of micro-steps and calculates the predicted probability each time
+expectedChangeDynamics <- function(data=NULL, theta=NULL, algorithm=NULL, effects=NULL, depvar=NULL, returnActorStatistics=NULL)
+{
+  x <- algorithm
+	currentNetName <- depvar
+	z  <-  NULL
+	z$FRAN <- getFromNamespace(x$FRANname, pkgname)
+	x$cconditional <-  FALSE
+	z$print <- FALSE
+	z$Phase <- 3
+	z <- initializeFRAN(z, x, data, effects, prevAns=NULL, initC=FALSE, returnDeps=FALSE)
+	z$returnChangeContributions <- TRUE
+	z$theta <- theta
+	if (!is.null(x$randomSeed))
+	{
+		set.seed(x$randomSeed, kind="default")
+	}
+	else
+	{
+		if (exists(".Random.seed"))
+		{
+			rm(.Random.seed, pos=1)
+			RNGkind(kind="default")
+		}
+	}
+	chains <- x$n3
+	periods <- data$observation-1
+	effects <- effects[effects$include==TRUE,]
+	noRate <- effects$type != "rate"
+	thetaNoRate <- theta[noRate]
+#	networkName <- effects$name[noRate]
+	currentNetObjEffs <- effects$name[noRate] == currentNetName
+	output <- list()
+	for (chain in (1:chains))
+	{
+#cat("The following line leads to an error\n")
+#browser()
+		ans <- z$FRAN(z, x)
+		for(period in 1:periods)
+		{
+			periodExpectedProb <- list()
+      microSteps <- length(ans$changeContributions[[1]][[period]])
+			for(microStep in 1:microSteps)
+			{
+				if(attr(ans$changeContributions[[1]][[period]][[microStep]],
+												"networkName")==currentNetName)
+				{
+          cdec <- ans$changeContributions[[1]][[period]][[microStep]]
+          distributions <- apply(cdec, 3,
+                                 calculateChoiceProbability, thetaNoRate[currentNetObjEffs])
+        # matrix manipulation should be more efficient solution
+        # distributions is an array of actor by choices
+        periodExpectedProb[[microStep]] <- t(distributions)
+				}
+			}
+      output[[period]] <- periodExpectedProb
+		}
+	}
+output
 }
