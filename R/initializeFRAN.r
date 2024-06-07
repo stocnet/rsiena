@@ -329,7 +329,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 			{
 				cat("The maximum absolute value of the initial parameters is", 
 						max(abs(z$theta[!z$fixed])), 
-						"which is larger than thetaBound =", z$thetaBound, ".\n")
+						",\nwhich is larger than thetaBound =", z$thetaBound, ".\n")
 				stop("thetaBound in the call of siena07 should be set higher.")
 			}
 		}
