@@ -62,7 +62,7 @@ expectedChangeProbabilities <- function(conts, effects, theta, thedata = NULL,
   effectIds <- paste(effectNa, effectTypes, networkInteraction, sep = ".")
   currentDepName <- ""
   depNumber <- 0
-  for(eff in 1:seq_along(effectIds)) {
+  for(eff in 1:length(effectIds)) { # seq_along throws an error?
     if(networkNames[eff] != currentDepName) {
       currentDepName <- networkNames[eff]
       actors <- length(conts[[1]][[1]][[1]])
@@ -211,8 +211,17 @@ expectedChangeDynamics <- function(data=NULL, theta=NULL, algorithm=NULL, effect
 												"networkName")==currentNetName)
 				{
           cdec <- ans$changeContributions[[1]][[period]][[microStep]]
-          distributions <- apply(cdec, 3,
-                                 calculateChoiceProbability, thetaNoRate[currentNetObjEffs])
+          distributions <- calculateChoiceProbability(
+            cdec,
+            thetaNoRate[currentNetObjEffs]
+          )
+        # Fehler in apply(cdec, 3, calculateChoiceProbability, thetaNoRate[currentNetObjEffs]) : 
+        #  'MARGIN' passt nicht zu dim(X)
+        # Original:
+        # 			distributions <- calculateDistributions(
+        # ans$changeContributions[[1]][[period]][[microStep]],
+        # thetaNoRate[currentNetObjEffs])
+        
         # matrix manipulation should be more efficient solution
         # distributions is an array of actor by choices
         periodExpectedProb[[microStep]] <- t(distributions)
