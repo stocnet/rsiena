@@ -5,7 +5,7 @@
 # *
 # * File: sienaMargins.r
 # *
-# * Description: Used to calculate predicted edge probabilities, to be extended to 
+# * Description: Used to calculate predicted edge probabilities, to be extended to
 # * calculate (average) marginal effects
 # *****************************************************************************/
 
@@ -45,7 +45,7 @@ calculateChoiceProbability <- function(effectContributions = NULL, theta = NULL)
 }
 
 ##@expectedChangeProbabilities. Use as RSiena:::expectedChangeProbabilities
-expectedChangeProbabilities <- function(conts, effects, theta, thedata = NULL, 
+expectedChangeProbabilities <- function(conts, effects, theta, thedata = NULL,
                                         getChangeStatistics = FALSE, effectNames = NULL) {
   waves <- length(conts[[1]])
   effects <- effects[effects$include == TRUE, ]
@@ -163,72 +163,67 @@ expectedChangeProbabilities <- function(conts, effects, theta, thedata = NULL,
 
 # The following is inefficient but does extract probabilities for chains
 
-##@expectedChangeDynamics expectedChangeDynamics simulates sequences of micro-steps and calculates the predicted probability each time
-expectedChangeDynamics <- function(data=NULL, theta=NULL, algorithm=NULL, effects=NULL, depvar=NULL, returnActorStatistics=NULL)
-{
+##@expectedChangeDynamics. Use as RSiena:::expectedChangeDynamics.
+# Simulates sequences of micro-steps and calculates the predicted probabilities each time
+expectedChangeDynamics <- function(data = NULL, theta = NULL, algorithm = NULL, effects = NULL, depvar = NULL,
+                                   returnActorStatistics = NULL) {
   x <- algorithm
-	currentNetName <- depvar
-	z  <-  NULL
-	z$FRAN <- getFromNamespace(x$FRANname, pkgname)
-	x$cconditional <-  FALSE
-	z$print <- FALSE
-	z$Phase <- 3
-	z <- initializeFRAN(z, x, data, effects, prevAns=NULL, initC=FALSE, returnDeps=FALSE)
-	z$returnChangeContributions <- TRUE
-	z$theta <- theta
-	if (!is.null(x$randomSeed))
-	{
-		set.seed(x$randomSeed, kind="default")
-	}
-	else
-	{
-		if (exists(".Random.seed"))
-		{
-			rm(.Random.seed, pos=1)
-			RNGkind(kind="default")
-		}
-	}
-	chains <- x$n3
-	periods <- data$observation-1
-	effects <- effects[effects$include==TRUE,]
-	noRate <- effects$type != "rate"
-	thetaNoRate <- theta[noRate]
-#	networkName <- effects$name[noRate]
-	currentNetObjEffs <- effects$name[noRate] == currentNetName
-	output <- list()
-	for (chain in (1:chains))
-	{
-#cat("The following line leads to an error\n")
-#browser()
-		ans <- z$FRAN(z, x)
-		for(period in 1:periods)
-		{
-			periodExpectedProb <- list()
+  currentNetName <- depvar
+  z  <-  NULL
+  z$FRAN <- getFromNamespace(x$FRANname, pkgname)
+  x$cconditional <-  FALSE
+  z$print <- FALSE
+  z$Phase <- 3
+  z <- initializeFRAN(z, x, data, effects, prevAns=NULL, initC=FALSE, returnDeps=FALSE)
+  z$returnChangeContributions <- TRUE
+  z$theta <- theta
+  if (!is.null(x$randomSeed))
+  {
+    set.seed(x$randomSeed, kind="default")
+  } else {
+    if (exists(".Random.seed")) {
+      rm(.Random.seed, pos = 1)
+      RNGkind(kind = "default")
+    }
+  }
+  chains <- x$n3
+  periods <- data$observation-1
+  effects <- effects[effects$include == TRUE,]
+  noRate <- effects$type != "rate"
+  thetaNoRate <- theta[noRate]
+  #	networkName <- effects$name[noRate]
+  currentNetObjEffs <- effects$name[noRate] == currentNetName
+  output <- list()
+  for (chain in (1:chains))
+  {
+    # cat("The following line leads to an error\n")
+    # browser()
+    ans <- z$FRAN(z, x)
+    for(period in 1:periods) {
+      periodExpectedProb <- list()
       microSteps <- length(ans$changeContributions[[1]][[period]])
-			for(microStep in 1:microSteps)
-			{
-				if(attr(ans$changeContributions[[1]][[period]][[microStep]],
-												"networkName")==currentNetName)
-				{
+      for(microStep in 1:microSteps) {
+        if(attr(ans$changeContributions[[1]][[period]][[microStep]],
+                "networkName")==currentNetName) {
           cdec <- ans$changeContributions[[1]][[period]][[microStep]]
           distributions <- calculateChoiceProbability(
             cdec,
             thetaNoRate[currentNetObjEffs]
           )
-        # Fehler in apply(cdec, 3, calculateChoiceProbability, thetaNoRate[currentNetObjEffs]) : 
-        #  'MARGIN' passt nicht zu dim(X)
-        # Original:
-        # 			distributions <- calculateDistributions(
-        # ans$changeContributions[[1]][[period]][[microStep]],
-        # thetaNoRate[currentNetObjEffs])
-        
-        # matrix manipulation should be more efficient solution
-        # distributions is an array of actor by choices
-        periodExpectedProb[[microStep]] <- t(distributions)
-				}
-			}
+          # Fehler in apply(cdec, 3, calculateChoiceProbability, thetaNoRate[currentNetObjEffs]) : 
+          #  'MARGIN' passt nicht zu dim(X)
+          # Original:
+          # 			distributions <- calculateDistributions(
+          # ans$changeContributions[[1]][[period]][[microStep]],
+          # thetaNoRate[currentNetObjEffs])
+
+          # matrix manipulation should be more efficient solution
+          # distributions is an array of actor by choices (still???? probably not)
+          periodExpectedProb[[microStep]] <- t(distributions)
+        }
+      }
       output[[period]] <- periodExpectedProb
-		}
-	}
-output
+    }
+  }
+  output
 }
