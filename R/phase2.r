@@ -525,7 +525,7 @@ doIterations<- function(z, x, subphase,...)
 						max(abs(z$theta[!z$fixed])), 
 						",\nwhich is larger than thetaBound =", z$thetaBound, ".\n")
 				larger <- rep("", length(z$theta))
-				larger[!z$fixed][abs(z$theta[!z$fixed] > z$thetaBound)] <- " *****"
+				larger[((!z$fixed)&(abs(z$theta > z$thetaBound)))] <- " *****"
 				print(cbind(z$effects$effectName, round(z$theta, 4), larger), quote=FALSE)
 				if (interactive())
 				{
