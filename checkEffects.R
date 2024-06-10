@@ -1962,7 +1962,7 @@ mymodel2 <- getEffects(mydata)
 mymodel2 <- setEffect(mymodel2, avAlt.2M.tot, name="mynet1", interaction1="mynet2", parameter=2)
 (ans2 <- siena07(mycontrols, data=mydata, effects=mymodel2))
 ans2$targets # 115.00000 116.00000  70.00000  86.89495 106.00000 122.00000  90.00000
-sum(rowSums(s502) * divi(rowSums(sqrt(twop) %*% diag(rowSums(s502) - avdeg)), 
+sum(rowSums(s502) * divi(rowSums(sqrt(twop) %*% diag(rowSums(s502) - avdeg)),
 									rowSums(sqrt(twop)) )) # 86.89495 OK avAlt.2M.tot p = 2
 
 
@@ -2687,5 +2687,52 @@ for (i in 1:n){
 	a[i] <- divi(sum(sqrt(intwostars1[i,]) * intwostars3[i,]), rowSums(sqrt(intwostars1))[i])
 }
 sum(a) #  OK 8.303456
+
+
+################################################################################
+### check homXOutAct and homXOutAct2
+################################################################################
+
+mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+# construct actor covariate
+sets1 <- 1*((1:50) < 22) + 1
+table(sets1)
+binary <- coCovar(sets1, centered=FALSE)
+mydata <- sienaDataCreate(mynet, binary)
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, homXOutAct, interaction1="binary")
+(myeff <- includeEffects(myeff, outAct))
+myalg <- sienaAlgorithmCreate(projname=NULL, seed=1234)
+(ans <- siena07(myalg, data=mydata, effects=myeff))
+ans$targets
+# 116  70 350 258
+# check target statistics: outdegree activity
+sum(rowSums(s502)) # 116 OK
+sum((rowSums(s502))^2) # 350 OK
+# check target statistics: homXOutAct
+mat <- outer(1:50,1:50,function(i,j){sets[i]==sets[j]})
+# not diag(mat) <- 0
+sum(diag(s502 %*% mat %*% t(s502)))  # OK
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, homXOutAct2, interaction1="binary", parameter=1)
+(myeff <- includeEffects(myeff, outAct))
+(ans <- siena07(myalg, data=mydata, effects=myeff))
+ans$targets
+#  116  70 350  258
+# Estimates not identical, but very close; targets are identical.
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, homXOutAct2, interaction1="binary", parameter=2)
+(myeff <- includeEffects(myeff, outAct))
+(ans <- siena07(myalg, data=mydata, effects=myeff))
+ans$targets
+#  116  70 350 168.7262
+sum(diag(s502 %*% sqrt(mat %*% t(s502)))) # 168.7262 OK
+
+
+
+
+homXOutAct2 niet voor bipartite!?
 
 

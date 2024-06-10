@@ -4,7 +4,7 @@
 \alias{sienaGroupEffects}
 \title{Function to create a Siena effects object}
 \description{
-  Creates a basic list of effects for all dependent  
+  Creates a basic list of effects for all dependent
   variables in the input siena object.
 }
 \usage{
@@ -26,7 +26,7 @@ getEffects(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeriodSde=FALSE
 }
 \details{
 Creates a data frame of effects for use in siena model estimation.
-The regular way of changing this object is by the functions 
+The regular way of changing this object is by the functions
 \code{\link{includeEffects}}, \code{\link{setEffect}},
 and \code{\link{includeInteraction}}.
 
@@ -77,7 +77,7 @@ for data set \code{x}.\cr
     "oneMode", "behavior", or "bipartite"}
   \item{groupName}{name of relevant group data object}
   \item{group}{sequential number of relevant group data object in total}
-  \item{effectNumber}{a unique identifier of the row}
+  \item{effectNumber}{the sequence number of the row}
   The combination of \code{name}, \code{shortName}, \code{interaction1},
   \code{interaction2}, and \code{type} uniquely identifies any effect
   other than basic rate effects and user-specified interaction effects.
@@ -96,13 +96,16 @@ for data set \code{x}.\cr
   indicated in the manual (Chapter 12) by \code{p}, and is fixed
   during the estimation.
 
+  Note that if an effects object is printed by \code{print(...)},
+  by default only the included rows are printed.
+
   A list of all effects in a given effects object (e.g., \code{myeff}),
   including their names of dependent variables, effect names, short names,
   and values of interaction1 and interaction2 (if any),
-  is obtained by executing \code{\link{effectsDocumentation}(myeff)}.  
-  
+  is obtained by executing \code{\link{effectsDocumentation}(myeff)}.
+
   As from version 1.3.24, effects object have a "version" attribute.
-  Effects objects including interaction effects created by 
+  Effects objects including interaction effects created by
   \code{\link{includeInteraction}} are not necessarily compatible
   between versions of \code{RSiena}. Therefore it is recommended,
   for effects objects including any interaction effects,
@@ -112,12 +115,13 @@ for data set \code{x}.\cr
   \code{\link{siena07}}. \cr
 }
 \references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
-\author{Ruth Ripley}
+\author{Ruth Ripley, Tom Snijders}
 \seealso{\code{\link{sienaDataCreate}}, \code{\link{sienaGroupCreate}},
         \code{\link{includeEffects}}, \code{\link{setEffect}},
         \code{\link{includeGMoMStatistics}},
         \code{\link{updateSpecification}},
-        \code{\link{print.sienaEffects}},\code{\link{effectsDocumentation}}}
+        \code{\link{print.sienaEffects}},
+		\code{\link{effectsDocumentation}}}
 \examples{
 mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
 mybeh <- sienaDependent(s50a, type="behavior")

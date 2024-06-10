@@ -193,6 +193,51 @@ bool CovariateDependentNetworkEffect::missing(int i) const
 
 
 /**
+ * Returns the covariate minimum value.
+ * For behavior, this is the minimum non-centered value.
+ */
+double CovariateDependentNetworkEffect::covariateMinimum() const
+{
+	double mini = 0;
+	if (this->lpConstantCovariate)
+	{
+		mini = this->lpConstantCovariate->min();
+	}
+	else if (this->lpChangingCovariate)
+	{
+		mini = this->lpChangingCovariate->min();
+	}
+	else
+	{
+		mini = this->lpBehaviorData->min();
+	}
+	return mini;
+}
+
+/**
+ * Returns the covariate maximum value.
+ * For behavior, this is the maximum non-centered value.
+ */
+double CovariateDependentNetworkEffect::covariateMaximum() const
+{
+	double maxi = 0;
+	if (this->lpConstantCovariate)
+	{
+		maxi = this->lpConstantCovariate->max();
+	}
+	else if (this->lpChangingCovariate)
+	{
+		maxi = this->lpChangingCovariate->max();
+	}
+	else
+	{
+		maxi = this->lpBehaviorData->max();
+	}
+	return maxi;
+}
+
+
+/**
  * Returns the centered similarity of the given actors.
  */
 double CovariateDependentNetworkEffect::actor_similarity(int i, int j) const

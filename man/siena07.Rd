@@ -20,6 +20,7 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
         useCluster=FALSE, nbrNodes=2,
         thetaValues = NULL,
         returnThetas = FALSE,
+        thetaBound = 50,
         targets = NULL,
         initC=TRUE,
         clusterString=rep("localhost", nbrNodes), tt=NULL,
@@ -45,6 +46,12 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
     dependent variable). Can only be used if \code{x$simOnly=TRUE}.}
   \item{returnThetas}{Boolean: whether to return theta values
    and generated estimation statistics of Phase 2 runs.}
+  \item{thetaBound}{Numeric: if at some moment during estimation the maximum
+   absolute value of the parameters exceeds \code{thetaBound}, estimation
+   is interrupted. In interactive use, the user is requested to give
+   a higher number; if non-numeric input is given, estimation stops.
+   In non-interactive use, estimation stops anyway.
+   The check is turned off by using \code{thetaBound=Inf}.}
   \item{targets}{Numeric vector of length equal to the number of estimated
     parameters, meant to supersede the targets calculated from the data set;
     see "Details". Not for regular use.}
@@ -177,6 +184,14 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
  in Phase 3 will be constant for each set of \code{nbrNodes} consecutive
  simulations. This must be noted in the interpretation, and will be visible
  in \code{thetaUsed} (see below).
+
+ The keyword \code{thetaBound} is used because in practice, parameter values
+ of Stochastic Actor-oriented Models will be relatively small,
+ and for usual models values larger than 30 never occur, which means
+ that when they occur this is regarded as a signal of divergence
+ of the algorithm.\cr
+ Note that covariates should have large enough standard deviations;
+ see the manual.
 }
 \value{
   Returns an object of class \code{\link{sienaFit}}, some parts of which are:

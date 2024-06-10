@@ -190,5 +190,20 @@ myeff <- getEffects(mygroup)
 myeff <- setEffect(myeff, simX, interaction1='cova')
 (ans <- siena07(myalgorithm, data=mygroup, effects=myeff, batch=TRUE,
                               silent=TRUE))
+##test19
+print('test19')
+myalgorithm <- sienaAlgorithmCreate(nsub=1, n3=20, seed=1943)
+mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+alc <- coCovar(s50a[,1])
+smoke <- coCovar(s50s[,1])
+mydata <- sienaDataCreate(mynet, alc, smoke)
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, gwespFF)
+myeff <- setEffect(myeff, gwespFF, parameter=20)
+myeff <- setEffect(myeff, outTrunc, parameter=2, include=FALSE)
+myeff <- includeInteraction(myeff, outTrunc, egoX, egoX, 
+						interaction1=c("","smoke","alc"))
+(ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE,
+                              silent=TRUE))
 ## delete output file
 if (file.exists('Siena.txt')){unlink('Siena.txt')}
