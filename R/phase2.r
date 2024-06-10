@@ -516,6 +516,43 @@ doIterations<- function(z, x, subphase,...)
  
 #Report(paste("thavs: ", round(z$thavn), "\n"), cf)
 #PrtOutMat(as.matrix(z$thav), cf)
+		
+		if (any(!z$fixed))
+		{
+			if (max(abs(z$theta[!z$fixed])) > z$thetaBound)
+			{
+				cat("The update steps have led to a parameter with maximum absolute value", 
+						max(abs(z$theta[!z$fixed])), 
+						",\nwhich is larger than thetaBound =", z$thetaBound, ".\n")
+				larger <- rep("", length(z$theta))
+				larger[((!z$fixed)&(abs(z$theta > z$thetaBound)))] <- " *****"
+				print(cbind(z$effects$effectName, round(z$theta, 4), larger), quote=FALSE)
+				if (interactive())
+				{
+					cat("If you wish to continue estimation in this session,")
+					cat("\ngive a higher value for thetaBound.\n")
+					thetaBound0 <- z$thetaBound
+					z$thetaBound <- as.numeric(readline(prompt="Give a number: "))
+					if (is.na(z$thetaBound)) 
+					{
+						stop("You gave no numeric answer, therefore the estimation stops.")
+					}
+					if (z$thetaBound > thetaBound0)
+					{
+						cat("OK, estimation continues.\n")
+						flush.console()
+					}
+					else
+					{
+						stop("You gave a lower number, therefore the estimation stops.")
+					}
+				}
+				else
+				{
+					stop("thetaBound should be set higher.")
+				}
+			}
+		}
 
 # This is a hidden option: 
 # it is activated if the algorithm object x has a component x$moreUpdates
