@@ -48,7 +48,7 @@ private:
 	bool lsqrt {};
 	bool lthree {};
 	bool lcondition1(int theAlter, double theOwnValue) const;
-	double changeStat(double d, bool nosqrt) const;
+	double changeStat(double d, bool diffSqrt) const;
 	// Lookup table for fast square root calculations
 	SqrtTable * lsqrtTable;
 };

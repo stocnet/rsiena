@@ -10,7 +10,7 @@
 ## *
 ## ****************************************************************************/
 ##@print.sienaEffects Methods
-print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
+print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE, 
     expandDummies=FALSE, includeRandoms=FALSE, dropRates=FALSE, includeShortNames=FALSE, ...)
 {
     if (!inherits(x, "sienaEffects"))
@@ -29,13 +29,13 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
             || !all(x[, "timeDummy"] == "," ))
         {
             x <- sienaTimeFix(x)$effects
-            x <- fixUpEffectNames(x)
+#            x <- fixUpEffectNames(x)
         }
         else
         {
             if (nrow(interactions) > 0)
             {
-                x <- fixUpEffectNames(x)
+#                x <- fixUpEffectNames(x)
             }
         }
     }
@@ -327,6 +327,7 @@ updateSpecification <- function(effects.to, effects.from,
 	{
 	# look up the interacting main effects, and try to get information
 	# about which are the interacting effects.
+	    cat("Handling interactions ... ")
 		efn1 <- prevEffects$effect1[inter]
 		efn2 <- prevEffects$effect2[inter]
 		efn3 <- prevEffects$effect3[inter]
@@ -411,7 +412,10 @@ updateSpecification <- function(effects.to, effects.from,
         tests <- prevEffects[inter,"test"]
         rand  <- prevEffects[inter,"randomEffects"]
 		initv <- prevEffects[inter,"initialValue"]
+#browser()
         for (k in seq_along(inter)){
+			cat(k," ")
+			flush.console()
 			if (three[k])
 			{
 				if (inherits(try(
@@ -432,8 +436,8 @@ updateSpecification <- function(effects.to, effects.from,
 				if (inherits(try(
 					effects.to <- includeInteraction(effects.to, shn1[k], shn2[k],
 						name=nam[k],
-						interaction1=c(int11[k],int21[k]),
-						interaction2=c(int12[k],int22[k]),
+						interaction1=c(int11[k],int12[k]),
+						interaction2=c(int21[k],int22[k]),
 						initialValue=initv[k],
 						type=typ[k], fix=fixx[k], test=tests[k], random=rand[k],
 						verbose=FALSE, character=TRUE), 
@@ -443,6 +447,7 @@ updateSpecification <- function(effects.to, effects.from,
 				}
 			}
         }
+		cat("\n")
     }
     effects.to
 }

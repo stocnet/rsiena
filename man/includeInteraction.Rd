@@ -3,7 +3,7 @@
 \title{
 Function to create user-specified interactions for a Siena model.
 }
-\description{This function allows the user to include or exclude   
+\description{This function allows the user to include or exclude
   an interaction effect in a Siena effects object.
 }
 \usage{
@@ -14,9 +14,13 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
     character = FALSE, verbose = TRUE)
 }
 \arguments{
-  \item{myeff}{a Siena effects object as created by \code{\link{getEffects}}}
+  \item{myeff}{a Siena effects object as created by \code{\link{getEffects}},
+    which is either an object of class \code{sienaEffects}
+    or \code{sienaGroupEffects}.
+  }
   \item{\dots}{2 or 3 short names to identify the effects
-    which should be interacted.}
+    which should be interacted.
+  }
   \item{include}{Boolean. default TRUE, but can be switched to FALSE to
     turn off an interaction.
   }
@@ -49,7 +53,7 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   \item{character}{Boolean: are the effect names character strings or not.}
   \item{verbose}{Boolean: should the print of altered effects be produced.}
 }
-\details{The details provided should uniquely identify up to three
+\details{The details provided should uniquely identify two or three
   effects. If so, an interaction effect will be created and included or
   not in the model. \cr
   Whether interactions between two or three given effects
@@ -64,8 +68,8 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   From the point of view of model building it is usually advisable, when
   including an interaction effect in a model, also to include the
   corresponding main effects. This is however not enforced
-  by \code{includeInteraction()}.\cr
-  
+  by \code{includeInteraction}.\cr
+
   As from version 1.3.24, effects object have a "version" attribute.
   Effects objects including interaction effects are not necessarily compatible
   between versions of \code{RSiena}. Therefore it is recommended to create
@@ -81,13 +85,19 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   or not all of them, then nevertheless the internal effect parameters as
   specified in the effects object are used for the interaction.
   These can be set using function \code{setEffect} with the desired value
-  of \code{parameter} and (in this case) \code{include=FALSE} or 
+  of \code{parameter} and (in this case) \code{include=FALSE} or
   \code{fix=TRUE, initialValue=0}. \cr
+  If an internal effect parameter is changed for one of the main effects
+  after the last call of \code{includeInteraction} for a given interaction
+  effect, this will not be visible in the name of the interaction effect
+  when the effects object is printed.
+  However, the correct value of the internal effect parameter
+  will be used by \code{\link{siena07}}.\cr
   The values of the internal effect parameters can be checked for a
   \code{\link{sienaFit}} object \code{ans} produced by \code{\link{siena07}}
   by looking at \code{ans$effects}, which is the requested effects object
   to which the main effects of the user-defined interactions were added,
-  if they were not yet included.
+  if they were not included.\cr
 
   Interaction effects are constructed from effects with shortName
   \code{unspInt} (for networks) and \code{behUnspInt} (for behavior)
@@ -112,14 +122,15 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   including their names of dependent variables, effect names, short names,
   and values of interaction1 and interaction2 (if any),
   is obtained by executing \code{\link{effectsDocumentation}(myeff)}.
-  }
+}
 \value{
   An updated version of the input effects object; if \code{include},
   containing the interaction effect between "effect1" and "effect2" and
   possibly "effect3"; if not, without this interaction effect.
   The shortName of the interaction effect is "unspInt" for network effects
   and "behUnspInt" for behavior effects. \cr
-  If \code{verbose=TRUE}, details of the fields altered will be printed.
+  If \code{verbose=TRUE}, the interacting effects and the interaction effect
+  will be printed, with their row numbers in the effects object.
 }
 \references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley, Tom Snijders}
@@ -132,10 +143,14 @@ mynet <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
 alc <- varCovar(s50a)
 mydata <- sienaDataCreate(mynet, alc)
 myeff <- getEffects(mydata)
-myeff <- includeEffects(myeff, transTrip)
 myeff <- includeInteraction(myeff, recip, inPop)
 myeff <- includeEffects(myeff, egoX, altX, simX, interaction1="alc")
 myeff <- includeInteraction(myeff, recip, simX, interaction1=c("", "alc"))
+myeff <- setEffect(myeff, gwespFF, parameter=20)
+myeff <- includeInteraction(myeff, recip, gwespFF)
+myeff
+(myeff <- setEffect(myeff, gwespFF, parameter=69, include=FALSE))
+myeff <- includeInteraction(myeff, recip, gwespFF)
 myeff
 }
 \keyword{ classes }

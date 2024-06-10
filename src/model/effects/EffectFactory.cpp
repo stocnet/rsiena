@@ -777,6 +777,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new HomCovariateActivityEffect(pEffectInfo, true);
 	}
+	else if (effectName == "homXOutAct2")
+	{
+		pEffect = new CatCovariateActivityEffect(pEffectInfo);
+	}
 	else if (effectName == "altXOutAct")
 	{
 		pEffect = new AlterCovariateActivityEffect(pEffectInfo);

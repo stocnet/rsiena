@@ -1,3 +1,30 @@
+# RSiena 1.4.13
+
+2024-06-06
+
+## Changes in RSiena:
+
+### Effects:
+  * New effect `homXOutAct2`.
+### Bug corrections: 
+  * Function `setEffect` corrected (it did not give the proper internal
+    parameters in the `effectName`). 
+  * Function `updateSpecification` corrected (it did not work properly
+    for including interactions).
+### Improved functionality:
+  * The handling of internal effect parameters in the columns `effectName`
+    and `functionName` of `sienaEffects` objects is improved.
+    This was achieved by changes in functions `setEffect` 
+    and `includeInteraction`.     
+    Effectnames as reproduced by `sienaFit` objects should now contain the
+    correct values of internal effect parameters.
+  * New parameter `thetaBound` for `siena07`, which has the effect of stopping
+    the estimation process if some parameters become too large (which would
+    signal divergence). 
+  * Display of deviations in `siena07gui` modified so that numbers larger 
+    than or equal to 1e5 in absolute value are displayed in exponential format
+    (and use only one line in the gui) (function `FormatString` in `siena07.r`).
+
 
 # RSiena 1.4.12
 
@@ -9,7 +36,7 @@
 ### Improved coding:
   * All objects created by functions, if not print or summary,
    now have an attribute "version", which is the package version.
-### Miscellenea:
+### Miscellanea:
   * New RSiena logo inst/rsienalogo-2.png
 
 
