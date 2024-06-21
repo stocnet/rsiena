@@ -15237,36 +15237,36 @@ reciprocated degrees.
 \item \emph{average exposure effect} (\verb|avExposure|),
   defined as the proportion of $i$'s alters who have adopted the innovation,
 \[
-a_{i\vit}(y) \, = \, \frac{\sum_{j=1}^n z_j\, x_{ij} }{\sum_{j=1}^n x_{ij}};
+a_{i\vit}(x, z) \, = \, \frac{\sum_{j=1}^n z_j\, x_{ij} }{\sum_{j=1}^n x_{ij}};
 \]
 
 \item \emph{total exposure effect} (\verb|totExposure|), defined as the
  number of $i$'s alters who have adopted the innovation,
 \[
-a_{i\vit}(y) \,=\, \sum_{j=1}^n z_j\, x_{ij} ;
+a_{i\vit}(x, z) \,=\, \sum_{j=1}^n z_j\, x_{ij} ;
 \]
 \item \emph{infection by indegree effect} (\verb|infectIn|),
   defined as the sum of indegrees of $i$'s alters who are also adopters of the innovation,
 \[
-a_{i\vit}(y) \, =\, \sum_{j=1}^n z_j \,x_{ij}\, x_{+j};
+a_{i\vit}(x, z) \, =\, \sum_{j=1}^n z_j \,x_{ij}\, x_{+j};
 \]
   for non-directed networks this is called the
    \emph{infection by degree effect} (\verb|infectDeg|);
 \item \emph{infection by outdegree effect} (\verb|infectOut|),
  defined as the sum of outdegrees of $i$'s alters who are also adopters of the innovation,
 \[
-a_{i\vit}(y)\, = \, \sum_{j=1}^n z_j\, x_{ij}\, x_{j+};
+a_{i\vit}(x, z)\, = \, \sum_{j=1}^n z_j\, x_{ij}\, x_{j+};
 \]
 \item \emph{infection by covariate effect} (\verb|infectCovar|),
  defined as the sum of covariate values of $i$'s alters who are also adopters of the innovation,
 \[
-a_{i\vit}(y)\, =\, \sum_{j=1}^n z_j\, x_{ij}\, v_j;
+a_{i\vit}(x, z)\, =\, \sum_{j=1}^n z_j\, x_{ij}\, v_j;
 \]
 \item \emph{susceptibility to average exposure by indegree effect}
  (\verb|susceptAvIn|),
  defined as the interaction between $i$'s indegree and $i$'s average exposure,
 \[
-a_{i\vit}(y)\, = \,x_{+i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij}};
+a_{i\vit}(x, z)\, = \,x_{+i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij}};
 \]
   for non-directed networks the equivalent effect is \verb|totExposure|;
 
@@ -15274,7 +15274,7 @@ a_{i\vit}(y)\, = \,x_{+i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij
  (\verb|susceptAvCovar|),
   defined as the interaction between $i$'s covariate value and $i$'s  average exposure,
 \[
-a_{i\vit}(y) \, = \, v_{i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij}}.
+a_{i\vit}(x, z) \, = \, v_{i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij}}.
 \]
 
 \end{enumerate}
@@ -15284,7 +15284,7 @@ on the internal effect parameter $p$; the formulae given above are the default,
 valid for $p=0$.
 
 The parameter $p$ must be integer-valued. If $p > 0$, the contribution is
-changed to $a_{i\vit}(y) = 0$ if less than $p$ alters
+changed to $a_{i\vit}(x, z) = 0$ if less than $p$ alters
 have adopted the innovation, i.e., if
 \[
 \sum_{j=1}^n  z_j\, x_{ij} \, < \, p \ .
@@ -15300,7 +15300,7 @@ are more than $|p|$ alters who have adopted the innovation,
 only the value $|p|$ is used.
 This means that for $p < 0$,
 $\sum_{j=1}^n  z_j\, x_{ij}$ in the formula for
- $a_{ik}(y) $ is replaced by
+ $a_{ik}(x, z) $ is replaced by
  \[
  \left\{ \begin{array}{ll}
                 0 & \text{  if  } \sum_{j=1}^n  z_j\, x_{ij} < |p| \\[0.9ex]
