@@ -2733,7 +2733,7 @@ sum(diag(s502 %*% sqrt(mat %*% t(s502)))) # 168.7262 OK
 
 
 
-homXOutAct2 niet voor bipartite!?
+# homXOutAct2 niet voor bipartite!?
 
 
 
