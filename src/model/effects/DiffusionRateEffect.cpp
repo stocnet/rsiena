@@ -136,7 +136,7 @@ double DiffusionRateEffect::proximityValue(Network * pNetwork, int i,
 			 iter.valid();
 			 iter.next())
 		{
-			if (this->leffectName == "totInExposureDist2" || this->leffectName == "avTinExposureDist2" || this->leffectName == "totAInExposureDist2")
+			if (this->leffectName == "anyInExposureDist2" || this->leffectName == "totInExposureDist2" || this->leffectName == "avTinExposureDist2" || this->leffectName == "totAInExposureDist2")
 			{
 				int j = iter.actor();
 				double totalAlterInDist2Value = 0; // count values of j's in-alters
@@ -154,6 +154,10 @@ double DiffusionRateEffect::proximityValue(Network * pNetwork, int i,
 				if((this->leffectName == "totAInExposureDist2") && ((pNetwork->inDegree(j)-1) > 0))
 				{
 					totalAlterInDist2Value /= (pNetwork->inDegree(j) - 1);
+				}
+				if(this->leffectName == "anyInExposureDist2") // only works for binary behavior
+				{
+					totalAlterInDist2Value = std::min(totalAlterInDist2Value, 1.0);
 				}
 				totalAlterValue += totalAlterInDist2Value;
 			}
@@ -230,6 +234,7 @@ double DiffusionRateEffect::value(int i, int period) const
 		this->leffectName == "infectDeg" ||
 		this->leffectName == "infectIn" ||
 		this->leffectName == "infectOut" ||
+		this ->leffectName == "anyInExposureDist2" ||
 		this ->leffectName == "totInExposureDist2" ||
 		this->leffectName == "totAInExposureDist2") // not divided by number of i's alters!
 	{

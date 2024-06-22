@@ -1586,7 +1586,8 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 						effectName == "totExposure" ||
 						effectName == "infectDeg" ||
 						effectName == "infectIn" ||
-						effectName == "infectOut" ||
+						effectName == "infectOut" ||												
+						effectName == "anyInExposureDist2" ||
 						effectName == "totInExposureDist2" ||
 						effectName == "avTinExposureDist2" ||
 						effectName == "totAInExposureDist2")
@@ -1728,7 +1729,7 @@ double StatisticCalculator::calculateDiffusionRateEffect(
 			 iter.valid();
 			 iter.next())
 		{
-			if (effectName == "totInExposureDist2" || effectName == "avTinExposureDist2" || effectName == "totAInExposureDist2")
+			if (effectName == "anyInExposureDist2" || "totInExposureDist2" || effectName == "avTinExposureDist2" || effectName == "totAInExposureDist2")
 			{
 				int j = iter.actor();
 				double totalAlterInDist2Value = 0; // count values of j's in-alters
@@ -1750,6 +1751,10 @@ double StatisticCalculator::calculateDiffusionRateEffect(
 				if((effectName == "totAInExposureDist2") && ((pStructural->inDegree(j)-1) > 0))
 				{
 					totalAlterInDist2Value /= (pStructural->inDegree(j) - 1);
+				}
+				if((effectName == "anyInExposureDist2")) // only correct for binary behavior variable!
+				{
+					totalAlterInDist2Value = std::min(totalAlterInDist2Value, 1.0);
 				}
 				totalAlterValue += totalAlterInDist2Value;
 			}

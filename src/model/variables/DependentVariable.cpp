@@ -396,6 +396,7 @@ void DependentVariable::initializeRateFunction()
 					effectName == "infectIn" ||
 					effectName == "infectDeg" ||
 					effectName == "infectOut" ||
+					effectName == "anyInExposureDist2"  ||
 					effectName == "totInExposureDist2"  ||
 					effectName == "avTinExposureDist2" ||
 					effectName == "totAInExposureDist2")
@@ -1254,6 +1255,7 @@ void DependentVariable::accumulateRateScores(double tau,
 						effectName == "infectIn" ||
 						effectName == "infectDeg" ||
 						effectName == "infectOut" ||
+						effectName == "anyInExposureDist2"  ||
 						effectName == "totInExposureDist2"  ||
 						effectName == "avTinExposureDist2" ||
 						effectName == "totAInExposureDist2")
@@ -2092,7 +2094,7 @@ double DependentVariable::calculateDiffusionRateEffect(
 			 iter.valid();
 			 iter.next())
 		{	
-			if (effectName == "totInExposureDist2"  || effectName == "avTinExposureDist2" || effectName == "totAInExposureDist2")
+			if (effectName == "anyInExposureDist2"  || effectName == "totInExposureDist2"  || effectName == "avTinExposureDist2" || effectName == "totAInExposureDist2")
 			{
 				int j = iter.actor();
 				double totalAlterInDist2Value = 0; // count values of j's in-alters
@@ -2111,6 +2113,10 @@ double DependentVariable::calculateDiffusionRateEffect(
 				if((effectName == "totAInExposureDist2") && ((pNetwork->inDegree(j)-1) > 0))
 				{
 					totalAlterInDist2Value /= (pNetwork->inDegree(j) - 1);
+				}
+				if(effectName == "anyInExposureDist2")
+				{
+					totalAlterInDist2Value = std::min(totalAlterInDist2Value, 1.0);
 				}
 				totalAlterValue += totalAlterInDist2Value;
 			}
