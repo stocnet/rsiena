@@ -1,5 +1,3 @@
-#!/usr/bin/env Rscript
-
 ################################################################################
 ################################################################################
 ### file Test-neweffect.R
@@ -24,7 +22,7 @@ ans <- siena07(
   silent = TRUE,
   data = mydata,
   effects = mymodel,
-  returnChains = TRUE
+  returnChains = FALSE
 )
 
 
