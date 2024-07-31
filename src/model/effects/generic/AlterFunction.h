@@ -28,6 +28,8 @@ public:
 
 	virtual void initialize(const Data * pData,
 		State * pState, int period, Cache * pCache);
+	virtual void initialize(const Data * pData,
+		State * pState, State * pSimulatedState, int period, Cache * pCache);
 	virtual void preprocessEgo(int ego);
 
 	inline int ego() const;
