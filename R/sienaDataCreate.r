@@ -2055,6 +2055,7 @@ sienaGroupCreate <- function(objlist, singleOK=FALSE, getDocumentation=FALSE)
 	{
 		names(group) <- paste('Data', 1:length(group), sep="")
 	}
+# This is where the names Data1 etc. are created.
 	class(group)<- c("sienaGroup", "siena")
 	attr(group, "version") <- packageDescription(pkgname, fields = "Version")
 	balmeans <- calcBalmeanGroup (group)
