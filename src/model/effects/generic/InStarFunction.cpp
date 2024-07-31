@@ -33,6 +33,20 @@ InStarFunction::InStarFunction(string networkName, bool root) :
 	this->lsqrtTable = SqrtTable::instance();
 }
 
+/**
+ * Constructor.
+ * @param[in] networkName the name of the network variable this function is
+ * associated with
+ * @param[simulatedState] If `true` the value() function uses the simulated
+ *        state, if any or the value at the end of the period.
+ */
+InStarFunction::InStarFunction(string networkName, bool root, const bool simulatedState) :
+	NetworkAlterFunction(networkName, simulatedState)
+{
+	this->lpTable = 0;
+	this->lroot = root;
+	this->lsqrtTable = SqrtTable::instance();
+}
 
 /**
  * Initializes this function.
@@ -50,6 +64,21 @@ void InStarFunction::initialize(const Data * pData,
 	this->lpTable = this->pNetworkCache()->pInStarTable();
 }
 
+/**
+ * Initializes this function.
+ * @param[in] pData the observed data
+ * @param[in] pState the current state of the dependent variables
+ * @param[in] period the period of interest
+ * @param[in] pCache the cache object to be used to speed up calculations
+ */
+void InStarFunction::initialize(const Data * pData,
+	State * pState, State * pSimulatedState,  
+	int period,
+	Cache * pCache)
+{
+	NetworkAlterFunction::initialize(pData, pState, pSimulatedState, period, pCache);
+	this->lpTable = this->pNetworkCache()->pInStarTable();
+}
 
 /**
  * Returns the value of this function for the given alter. It is assumed

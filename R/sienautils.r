@@ -78,6 +78,7 @@ sienaCompositionChangeFromFile <- function(filename, nodeSet="Actors",
 	}
     out <- changelist
     class(out) <- "compositionChange"
+	 attr(out, "version") <- packageDescription(pkgname, fields = "Version")
     if (is.vector(nodeSet) && length(nodeSet) > 1)
 	{
         stop ("only one node set relevant")
@@ -175,6 +176,7 @@ coCovar <- function(val, centered=TRUE, nodeSet="Actors", warn=TRUE,
 	}
     out <- val
     class(out) <- "coCovar"
+	 attr(out, "version") <- packageDescription(pkgname, fields = "Version")
     attr(out, "centered") <- centered
     attr(out, "nodeSet") <- nodeSet
     attr(out, "imputationValues") <- imputationValues
@@ -233,6 +235,7 @@ varCovar<- function(val, centered=TRUE, nodeSet="Actors", warn=TRUE, imputationV
 	}
     out <- val
     class(out) <- "varCovar"
+	 attr(out, "version") <- packageDescription(pkgname, fields = "Version")
     attr(out, "centered") <- centered
     attr(out, "nodeSet") <- nodeSet
     attr(out, "imputationValues") <- imputationValues
@@ -316,6 +319,7 @@ coDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
 	}
     out <- val
     class(out) <- "coDyadCovar"
+	 attr(out, "version") <- packageDescription(pkgname, fields = "Version")
 	attr(out, "type") <- type
     attr(out, "centered") <- centered
     attr(out, "nodeSet") <- nodeSets
@@ -398,6 +402,7 @@ varDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
 	}
     out <- val
     class(out) <- "varDyadCovar"
+	 attr(out, "version") <- packageDescription(pkgname, fields = "Version")
 	attr(out, "type") <- type
     attr(out, "centered") <- centered
     attr(out, "nodeSet") <- nodeSets

@@ -31,10 +31,16 @@ class MixedNetworkAlterFunction: public AlterFunction
 public:
 	MixedNetworkAlterFunction(std::string firstNetworkName,
 		std::string secondNetworkName);
+	// for gmom:
+	MixedNetworkAlterFunction(std::string firstNetworkName,
+		std::string secondNetworkName, const bool simulatedState);
+	
 	virtual ~MixedNetworkAlterFunction();
 
 	virtual void initialize(const Data * pData,
 		State * pState, int period, Cache * pCache);
+	virtual void initialize(const Data * pData,
+		State * pState, State * pSimulatedState, int period, Cache * pCache);
 
 protected:
 	bool firstOutTieExists(int alter) const;
@@ -45,7 +51,6 @@ protected:
 	inline NetworkCache * pFirstNetworkCache() const;
 	CommonNeighborIterator firstNetworkInStars(int i, int j) const;
 
-
 private:
 	std::string lfirstNetworkName {};
 	std::string lsecondNetworkName {};
@@ -53,6 +58,9 @@ private:
 	const Network * lpSecondNetwork;
 	TwoNetworkCache * lpTwoNetworkCache;
 	NetworkCache * lpFirstNetworkCache;
+	//! If `1` value(), pNetwork() and pNetworkCache() etc. return
+	//! the simulated value at the end of the period:
+	int lSimulatedOffset {};
 };
 
 

@@ -1,0 +1,249 @@
+
+
+-----------------------------------
+New Analysis started.
+Date and time: 31/07/2024 16:04:00
+New results follow.
+-----------------------------------
+
+RSiena version 1.4.14 (31 jul 24)
+
+
+@1
+Estimation by stochastic approximation algorithm.
+=================================================
+
+Current random number seed is 4321.
+Effects object used: myeff2 
+Model Type:
+Network 1 mynet1 : Standard actor-oriented model 
+Network 2 mynet2 : Standard actor-oriented model 
+Estimation method: unconditional moment estimation
+ by the Generalized Method of Moments.
+
+Time duration for simulations is 1.0.
+Standard errors are estimated with the likelihood ratio method.
+Initial value of gain parameter is  0.2000000.
+Reduction factor for gain parameter is  0.5000000.
+Number of subphases in Phase 2 is 2.
+
+Initial parameter values are 
+  1. rate:  basic rate parameter mynet1                     4.6960
+  2. eval:  mynet1: outdegree (density)                    -1.4885
+  3. eval:  mynet1: reciprocity                             0.0000
+  4. eval:  mynet1: mynet2                                  0.0000
+  5. rate:  basic rate parameter mynet2                     4.3288
+  6. eval:  mynet2: outdegree (density)                    -1.4442
+  7. eval:  mynet2: reciprocity                             0.0000
+  8. eval:  mynet2: mynet1                                  0.0000
+
+
+Values of target statistics are
+  1. Amount of network change                                           115.0000
+  2. mynet1: Number of ties                                             116.0000
+  3. mynet1: Number of reciprocated ties                                 70.0000
+  4. mynet1: sum crprod. with mynet2                                     49.0000
+  5. Amount of network change                                           106.0000
+  6. mynet2: Number of ties                                             122.0000
+  7. mynet2: Number of reciprocated ties                                 90.0000
+  8. mynet2: sum crprod. with mynet1                                     31.0000
+  9. Gmm statistic: mynet2: sum crprod. with mynet1                      36.0000
+These were calculated from the data.
+
+ 8 parameters, 9 statistics
+
+Estimation of derivatives by the LR method (type 1).
+
+
+@2
+End of stochastic approximation algorithm, phase 3.
+---------------------------------------------------
+
+Total of 1811 iterations.
+Parameter estimates based on 811 iterations,
+convergence diagnostics, covariance and derivative matrices based on 1000 iterations.
+
+Information for convergence diagnosis.
+Averages, standard deviations, and t-ratios for deviations from targets:
+  1.  -6.2011   7.2921  -0.8504 
+  2.  -1.9241   7.8250  -0.2459 
+  3.   1.6762   7.6246   0.2198 
+  4.   1.6868   4.8589   0.3471 
+  5.   2.4112   6.1660   0.3910 
+  6.  -1.2677   9.3872  -0.1351 
+  7.   2.1226   8.8355   0.2402 
+  8.  -3.2545   4.7518  -0.6849 
+
+Good convergence is indicated by the t-ratios being close to zero.
+
+Overall maximum convergence ratio =  2.0288 .
+One or more of the t-statistics are rather large.
+Convergence of the algorithm is doubtful.
+
+
+
+@2
+Estimation Results.
+-------------------
+
+Regular end of estimation algorithm.
+Total of 1811 iteration steps.
+
+
+@3
+Estimates and standard errors
+                             
+ 1. rate:  basic rate parameter mynet1                             5.1925  (   0.8974)
+ 2. eval:  mynet1: outdegree (density)                            -2.4931  (   0.1574)
+ 3. eval:  mynet1: reciprocity                                     2.2627  (   0.2766)
+ 4. eval:  mynet1: mynet2                                          1.9546  (   0.3498)
+ 5. rate:  basic rate parameter mynet2                             4.7395  (   0.7774)
+ 6. eval:  mynet2: outdegree (density)                            -2.5369  (   0.2133)
+ 7. eval:  mynet2: reciprocity                                     3.4332  (   0.3529)
+ 8. eval:  mynet2: mynet1                                         -0.3331  (   0.5055)
+
+
+@3
+Covariance matrices
+                   
+Covariance matrix of estimates (correlations below diagonal):
+     0.805      0.035      0.059     -0.138     -0.042     -0.030      0.039      0.042
+     0.250      0.025     -0.023     -0.027      0.013     -0.001     -0.002      0.019
+     0.237     -0.520      0.076     -0.010     -0.001     -0.006      0.007      0.004
+    -0.440     -0.488     -0.101      0.122     -0.061      0.009      0.005     -0.074
+    -0.060      0.103     -0.003     -0.224      0.604     -0.008     -0.043      0.141
+    -0.154     -0.029     -0.109      0.123     -0.048      0.046     -0.055     -0.022
+     0.123     -0.044      0.073      0.041     -0.157     -0.733      0.125     -0.044
+     0.092      0.244      0.026     -0.416      0.359     -0.208     -0.244      0.255
+
+Derivative matrix of expected statistics X by parameters and
+covariance/correlation matrix of X can be found using
+summary(ans) within R, or by using the 'verbose' option in Siena07.
+ 
+Total computation time 5.47 seconds.
+
+
+-----------------------------------
+New Analysis started.
+Date and time: 31/07/2024 16:04:51
+New results follow.
+-----------------------------------
+
+RSiena version 1.4.14 (31 jul 24)
+
+
+@1
+Estimation by stochastic approximation algorithm.
+=================================================
+
+Current random number seed is 4321.
+Effects object used: myeff7 
+Model Type:
+Network 1 mynet1 : Standard actor-oriented model 
+Network 2 mynet2 : Standard actor-oriented model 
+Estimation method: unconditional moment estimation
+ by the Generalized Method of Moments.
+
+Time duration for simulations is 1.0.
+Standard errors are estimated with the likelihood ratio method.
+Initial value of gain parameter is  0.2000000.
+Reduction factor for gain parameter is  0.5000000.
+Number of subphases in Phase 2 is 2.
+
+Initial parameter values are 
+  1. rate:  basic rate parameter mynet1                     4.6960
+  2. eval:  mynet1: outdegree (density)                    -1.4885
+  3. eval:  mynet1: reciprocity                             0.0000
+  4. eval:  mynet1: mynet2                                  0.0000
+  5. rate:  basic rate parameter mynet2                     4.3288
+  6. eval:  mynet2: outdegree (density)                    -1.4442
+  7. eval:  mynet2: reciprocity                             0.0000
+  8. eval:  mynet2: mynet1                                  0.0000
+  9. eval:  mynet2: from mynet1 agreement                   0.0000
+
+
+Values of target statistics are
+  1. Amount of network change                                           115.0000
+  2. mynet1: Number of ties                                             116.0000
+  3. mynet1: Number of reciprocated ties                                 70.0000
+  4. mynet1: sum crprod. with mynet2                                     49.0000
+  5. Amount of network change                                           106.0000
+  6. mynet2: Number of ties                                             122.0000
+  7. mynet2: Number of reciprocated ties                                 90.0000
+  8. mynet2: sum crprod. with mynet1                                     31.0000
+  9. mynet2: mixed triplets XWW, W = mynet1                              50.0000
+ 10. Gmm statistic: mynet2: mixed triplets XWW, W = mynet1               51.0000
+These were calculated from the data.
+
+ 9 parameters, 10 statistics
+
+Estimation of derivatives by the LR method (type 1).
+
+
+@2
+End of stochastic approximation algorithm, phase 3.
+---------------------------------------------------
+
+Total of 1504 iterations.
+Parameter estimates based on 504 iterations,
+convergence diagnostics, covariance and derivative matrices based on 1000 iterations.
+
+Information for convergence diagnosis.
+Averages, standard deviations, and t-ratios for deviations from targets:
+  1.  -0.5403   7.3767  -0.0732 
+  2.  -1.6945   7.6457  -0.2216 
+  3.  -1.6113   7.1639  -0.2249 
+  4.  -1.2369   6.0902  -0.2031 
+  5.  -1.5864   5.9718  -0.2656 
+  6.  -0.5177   8.5874  -0.0603 
+  7.  -0.4178   7.8052  -0.0535 
+  8.   0.9058   4.2089   0.2152 
+  9.   0.2980   9.3589   0.0318 
+
+Good convergence is indicated by the t-ratios being close to zero.
+
+Overall maximum convergence ratio =  0.47 .
+
+
+
+@2
+Estimation Results.
+-------------------
+
+Regular end of estimation algorithm.
+Total of 1504 iteration steps.
+
+
+@3
+Estimates and standard errors
+                             
+ 1. rate:  basic rate parameter mynet1                             4.7091  (   0.7708)
+ 2. eval:  mynet1: outdegree (density)                            -2.6738  (   0.2114)
+ 3. eval:  mynet1: reciprocity                                     1.9590  (   0.3311)
+ 4. eval:  mynet1: mynet2                                          2.8926  (   0.4889)
+ 5. rate:  basic rate parameter mynet2                             4.8177  (   0.8369)
+ 6. eval:  mynet2: outdegree (density)                            -2.7957  (   0.2190)
+ 7. eval:  mynet2: reciprocity                                     3.0629  (   0.3182)
+ 8. eval:  mynet2: mynet1                                          0.5597  (   0.4875)
+ 9. eval:  mynet2: from mynet1 agreement                           1.0504  (   0.3508)
+
+
+@3
+Covariance matrices
+                   
+Covariance matrix of estimates (correlations below diagonal):
+     0.594      0.049      0.040     -0.201     -0.054     -0.014      0.019      0.040      0.021
+     0.302      0.045     -0.035     -0.068     -0.021     -0.005      0.010     -0.006      0.003
+     0.158     -0.501      0.110     -0.008      0.000     -0.001     -0.004      0.025     -0.003
+    -0.534     -0.661     -0.050      0.239      0.033      0.020     -0.033     -0.027      0.000
+    -0.083     -0.121      0.000      0.080      0.700      0.027     -0.042      0.126     -0.106
+    -0.086     -0.111     -0.011      0.186      0.147      0.048     -0.047     -0.023     -0.029
+     0.079      0.144     -0.040     -0.213     -0.158     -0.669      0.101     -0.020      0.016
+     0.107     -0.062      0.153     -0.111      0.309     -0.216     -0.129      0.238     -0.064
+     0.077      0.036     -0.023     -0.001     -0.362     -0.378      0.144     -0.376      0.123
+
+Derivative matrix of expected statistics X by parameters and
+covariance/correlation matrix of X can be found using
+summary(ans) within R, or by using the 'verbose' option in Siena07.
+ 
+Total computation time 5.08 seconds.
