@@ -26,6 +26,12 @@ class OutTieFunction: public NetworkAlterFunction
 {
 public:
 	OutTieFunction(std::string networkName);
+	OutTieFunction(std::string networkName, const bool simulatedState);
+				
+	virtual void initialize(const Data * pData,
+		State * pState, int period, Cache * pCache);		
+	virtual void initialize(const Data * pData,
+		State * pState, State * pSimulatedState, int period, Cache * pCache);
 
 	virtual double value(int alter) const;
 };

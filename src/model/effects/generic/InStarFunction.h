@@ -39,9 +39,12 @@ class InStarFunction: public NetworkAlterFunction, IntAlterFunction
 {
 public:
 	InStarFunction(std::string networkName, bool root);
+	InStarFunction(std::string networkName, bool root, const bool simulatedState);
 
 	virtual void initialize(const Data * pData,
 		State * pState, int period, Cache * pCache);
+	virtual void initialize(const Data * pData,
+		State * pState, State * pSimulatedState, int period, Cache * pCache);
 
 	virtual double value(int alter) const;
 	virtual int intValue(int alter);
