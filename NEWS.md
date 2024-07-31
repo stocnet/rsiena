@@ -1,3 +1,23 @@
+# RSiena 1.4.14
+
+2024-07-31
+
+## Changes in RSiena:
+
+### Effects:
+  * New gmm effects for co-evolution of multiple networks: 
+    `crprod_gmm`, `to_gmm`, `from_gmm`.
+### Bug corrections:
+  * Bug corrected in `sienaGOF` which occurred for models with tested effects
+    if `iterations` is less than `sienaFitObject$n3`. 
+### Coding
+  * The new gmm effects required the extension of the function classes
+    `AlterFunction`, `NetworkAlterFunction`, and `MixedNetworkAlterFunction`
+    to allow making estimation statistics depend totally on the simulated state.
+  * Function `fixUpEffectNames(effects, defaultEffects)`
+    moved from `initializeFRAN.r` to `sienaEffects.r`. 
+
+
 # RSiena 1.4.13
 
 2024-06-06
