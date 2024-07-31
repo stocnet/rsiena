@@ -13,7 +13,6 @@
 #ifndef GENERICNETWORKEFFECT_H_
 #define GENERICNETWORKEFFECT_H_
 
-#include <string>
 #include "model/effects/NetworkEffect.h"
 
 namespace siena
@@ -36,8 +35,6 @@ public:
 		State * pState,
 		int period,
 		Cache * pCache);
-	virtual void initialize(const Data * pData,
-			State * pState, State * pSimulatedState, int period, Cache * pCache); 
 	virtual void preprocessEgo(int ego);
 
 	virtual double calculateContribution(int alter) const;
@@ -48,7 +45,6 @@ protected:
 private:
 	AlterFunction * lpEffectFunction;
 	AlterFunction * lpStatisticFunction;
-	std::string lEffectType {};
 };
 
 }

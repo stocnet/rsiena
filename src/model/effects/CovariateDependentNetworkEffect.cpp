@@ -46,7 +46,6 @@ CovariateDependentNetworkEffect::CovariateDependentNetworkEffect(
  * Constructor.
  *
  * @param pEffectInfo The effect info.
- * in addition, for gmom:
  * @param simulatedState If `true` the value(), missing() and actor_similarity()
  *        functions uses the simulated state, if any or the value at the end
  *        of the period.

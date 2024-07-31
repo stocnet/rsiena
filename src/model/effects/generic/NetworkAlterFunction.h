@@ -27,15 +27,10 @@ class NetworkAlterFunction: public AlterFunction, public NamedObject
 {
 public:
 	NetworkAlterFunction(std::string networkName);
-	// for gmom:
-	NetworkAlterFunction(std::string networkName, const bool simulatedState);
 	virtual ~NetworkAlterFunction();
 
 	virtual void initialize(const Data * pData,
 		State * pState, int period, Cache * pCache);
-		
-	virtual void initialize(const Data * pData,
-		State * pState, State * pSimulatedState, int period, Cache * pCache);
 
 protected:
 	bool inTieExists(int alter) const;
@@ -47,9 +42,6 @@ private:
 	const Network * lpNetwork;
 	std::string lnetworkName {};
 	NetworkCache * lpNetworkCache;
-	//! If `1` value(), pNetwork() and pNetworkCache() returns the simulated value
-	//! at the end of the period:
-	int lSimulatedOffset {};
 };
 
 

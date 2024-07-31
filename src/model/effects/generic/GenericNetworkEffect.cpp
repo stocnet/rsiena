@@ -9,14 +9,11 @@
  * GenericNetworkEffect.
  *****************************************************************************/
 
-#include <stdexcept>
 #include "GenericNetworkEffect.h"
 #include "network/Network.h"
 #include "network/IncidentTieIterator.h"
 #include "model/effects/generic/AlterFunction.h"
 #include "model/tables/Cache.h"
-#include "model/EffectInfo.h"
-#include "data/Data.h"
 
 namespace siena
 {
@@ -30,7 +27,6 @@ GenericNetworkEffect::GenericNetworkEffect(const EffectInfo * pEffectInfo,
 {
 	this->lpEffectFunction = pFunction;
 	this->lpStatisticFunction = pFunction;
-	this->lEffectType = pEffectInfo->effectType();
 }
 
 
@@ -44,7 +40,6 @@ GenericNetworkEffect::GenericNetworkEffect(const EffectInfo * pEffectInfo,
 {
 	this->lpEffectFunction = pEffectFunction;
 	this->lpStatisticFunction = pStatisticFunction;
-	this->lEffectType = pEffectInfo->effectType();
 }
 
 
@@ -62,6 +57,7 @@ GenericNetworkEffect::~GenericNetworkEffect()
 		delete this->lpEffectFunction;
 		delete this->lpStatisticFunction;
 	}
+
 	this->lpEffectFunction = 0;
 	this->lpStatisticFunction = 0;
 }
@@ -81,33 +77,11 @@ void GenericNetworkEffect::initialize(const Data * pData,
 {
 	NetworkEffect::initialize(pData, pState, period, pCache);
 	this->lpEffectFunction->initialize(pData, pState, period, pCache);
+
 	if (this->lpStatisticFunction != this->lpEffectFunction)
 	{
 		this->lpStatisticFunction->initialize(pData, pState, period, pCache);
 	}
-}
-
-
-/**
- * Initializes this effect.
- * @param[in] pData the observed data
- * @param[in] pState the current state of the dependent variables
- * @param[in] pSimulatedState the current simulated state of the dependent variables
- * @param[in] period the period of interest
- * @param[in] pCache the cache object to be used to speed up calculations
- */
-void GenericNetworkEffect::initialize(const Data * pData,
-	State * pState, State * pSimulatedState,  
-	int period,
-	Cache * pCache)
-{
-	NetworkEffect::initialize(pData, pState, pSimulatedState, period, pCache);
-	this->lpEffectFunction->initialize(pData, pState, pSimulatedState, period, pCache);
-	if (this->lpStatisticFunction != this->lpEffectFunction)
-	{
-		this->lpStatisticFunction->initialize(pData, pState, pSimulatedState, period, pCache);
-	}
-// For the GMoM, only the estimation statistic is different.
 }
 
 

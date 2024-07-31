@@ -134,10 +134,6 @@ map<const string, const string> EffectFactory::init_groups() {
 	map.insert(make_pair("totAlt_gmm", "totAlt"));
 	map.insert(make_pair("maxAlt_gmm", "maxAlt"));
 	map.insert(make_pair("minAlt_gmm", "minAlt"));
-	//
-	map.insert(make_pair("crprod_gmm", "crpod"));
-	map.insert(make_pair("from_gmm", "from"));
-	map.insert(make_pair("to_gmm", "to"));
 	return map;
 }
 
@@ -923,11 +919,6 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new OutTieFunction(pEffectInfo->interactionName1()));
 	}
-	else if (effectName == "crprod_gmm")
-	{
-		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new OutTieFunction(pEffectInfo->interactionName1(), true));
-	}
 	else if (effectName == "crprodRecip")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
@@ -1226,12 +1217,6 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			new InStarFunction(pEffectInfo->interactionName1(),
 							(pEffectInfo->internalEffectParameter() >= 2)));
 	}
-	else if (effectName == "from_gmm")
-	{
-		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new InStarFunction(pEffectInfo->interactionName1(),
-							(pEffectInfo->internalEffectParameter() >= 2), true));
-	}
 	else if (effectName == "fromMutual")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
@@ -1245,14 +1230,6 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 						pEffectInfo->interactionName1(),
 						pEffectInfo->variableName(),
 						FORWARD, FORWARD, pEffectInfo->internalEffectParameter()));
-	}
-	else if (effectName == "to_gmm")
-	{
-		pEffect = new GenericNetworkEffect(pEffectInfo,
-				new MixedTwoStepFunction(
-						pEffectInfo->interactionName1(),
-						pEffectInfo->variableName(),
-						FORWARD, FORWARD, pEffectInfo->internalEffectParameter(), true));
 	}
 	else if (effectName == "toBack") // formerly mixedInWX
 	{
@@ -1323,14 +1300,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "transTrip.EE")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new MixedTwoStepFunction(pEffectInfo->variableName(), // is not mixed, TwoStepFunction equivalent not implemented
+			new MixedTwoStepFunction(pEffectInfo->variableName(), // not mixed, TwoStepFunction equivalent not implemented
 					pEffectInfo->variableName(),
 					EITHER, EITHER, 0));
 	}
 	else if (effectName == "transTrip.FE")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new MixedTwoStepFunction(pEffectInfo->variableName(), // is not mixed, TwoStepFunction equivalent not implemented
+			new MixedTwoStepFunction(pEffectInfo->variableName(), // not mixed, TwoStepFunction equivalent not implemented
 					pEffectInfo->variableName(),
 					FORWARD, EITHER, 0));
 	}
@@ -2191,8 +2168,8 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		}
 		else
 		{
-			pEffect = new AverageAlterEffect(pEffectInfo, true, false);
-		}
+		pEffect = new AverageAlterEffect(pEffectInfo, true, false);
+	}
 	}
 	else if (effectName == "avAlt_gmm")
 	{
