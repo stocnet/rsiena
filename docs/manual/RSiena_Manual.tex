@@ -192,10 +192,11 @@ a contributed package to the statistical system \Rn.
 It complements, but does not replace the help pages
 for the \RS functions!
 It also contains contributions written
-by Mark Huisman, Michael Schweinberger, and Christian Steglich.
+by Mark Huisman, Michael Schweinberger, Christian Steglich,
+and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.4.13.
+This version was renewed for \RS version 1.4.18.
 \end{abstract}
 
 
@@ -1146,7 +1147,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.4.13).
+  identified by a version number (e.g.\ 1.4.18).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -4508,7 +4509,7 @@ results1  <- siena07(algorithm1, data = mydata, effects = myeff,
 
 Experience shows that parameters estimated by \sfn{siena07} are
 not very large in magnitude, mostly they are less than 20 in
-absolute value. Therefore, when the algorithm at some moment leads to 
+absolute value. Therefore, when the algorithm at some moment leads to
 provisional values larger than, say,~50, this is a signal that the
 algorithm is diverging. This will lead to a stop of the algorithm;
 the default threshold value of 50 can be changed by the keyword
@@ -4518,7 +4519,7 @@ results1  <- siena07(algorithm1, data = mydata, effects = myeff,
                       thetaBound=100)
 \end{verbatim}
 Some effects associated with covariates will have values that scale
-inversely with the covariates. 
+inversely with the covariates.
 It was mentioned in Section~\ref{S_covariates} that actor
 covariates should be preferably have standard deviations between, say,
 0.1 and~10. This will normally lead to parameter values less than 10.
@@ -5629,8 +5630,8 @@ Compared to the regular Method of Moments (MoM), the Generalized Method of
 Moments (GMoM) allows using more statistics than parameters,
 thereby exploiting more information in the observed data.
 The additional information derives from the use of supplementary statistics,
-referred to as GMoM statistics. The GMoM statistics are defined only for the effects
-of the evaluation function. Thus, they are used under the assumption that
+referred to as GMoM statistics. The GMoM statistics are defined only for
+evaluation effects. Thus, they are used under the assumption that
 effects operate in the same strength for the creation and the dissolution of ties,
 and the increasing and decreasing of the behavior. In other words,
 the creation and the endowment effects
@@ -5644,28 +5645,36 @@ function \sfn{includeGMoMStatistics},
 and setting option \texttt{gmm=TRUE}
 in the algorithm object created by the function \sfn{sienaAlgorithmCreate}.
 
-Several GMoM statistics have been implemented for the evolution of networks
-and for co-evolution of networks and behaviors.
+Although the statistics are added to the effect object,
+one should keep in mind that the GMoM statistics are not effects
+in the stochastic model, i.e., they are not
+included as terms in the objective function.
+They are only used for parameter estimation to evaluate the moment conditions.
 
-% We denote by $X$ the network, by $Z$ the behavior,
-% and by $X(t_m)$ and $Z(t_m)$ the network and the behavior at time $t_m$.
+Several GMoM statistics have been implemented.
+\bigskip
+
+\noindent
+\textbf{\emph{GMoM statistics for network evolution }}
+\medskip
+
 The statistics for the network evolution \citep{ASS2015}
-%(\texttt{newrecip}, \texttt{persistrecip}, \texttt{realrecip},
-%\texttt{realtrans}, \texttt{agreetrans})
 complement the information provided by the regular statistics by
 considering two consecutive observations of the network.
-%While the regular statistics depend only on the network
-%at time $t_m$, i.e., $\sum_{m=2}^M\sum_{i=1}^n S_{ik}(X(t_m))$,
-%the GMoM statistics simultaneously consider the networks at time $t_m$ and $t_{m+1}$, i.e.,
-%$\sum_{m=2}^M\sum_{i=1}^n S_{ik}(X(t_m),X(t_{m-1}))$.
 This formulation allows distinguishing between different antecedents of a same effect.
 The implemented statistics are named \texttt{newrecip}, \texttt{persistrecip}, \texttt{realrecip},
 \texttt{realtrans}, \texttt{agreetrans}.
+\bigskip
+
+\noindent
+\textbf{\emph{GMoM statistics for co-evolution of networks and behavior }}
+\medskip
+
 The GMoM statistics for the co-evolution of networks and behaviors \citep{ASS2019}
 supplement the information of the cross-lagged statistics, depending jointly
 on network and behavior, by considering the network and behavior at the same time point.
 Thus, the GMoM statistics account for the information on the simultaneous observation
-of network and behavioral changes. The name of the implemented GMoM statistics
+of network and behavioral changes. The names of the implemented GMoM statistics
 are \texttt{avSim\_gmm}, \texttt{avAlt\_gmm}, \texttt{totAlt\_gmm}, \texttt{maxAlt\_gmm},
 \texttt{minAlt\_gmm}, \texttt{egoX\_gmm}, \texttt{simX\_gmm}.
 
@@ -5676,12 +5685,6 @@ myeff <- includeGMoMStatistics(myeff, egoX_gmm, interaction1 = "mybeh")
 myeff <- includeGMoMStatistics(myeff, simX_gmm, interaction1 = "mybeh")
 \end{verbatim}
 specify the GMoM statistics for the covariate-related activity and similarity effects.
-
-Although the statistics are added to the effect object,
-one should keep in mind that the GMoM statistics are not effects
-in the stochastic model, i.e., they are not
-included as terms in the objective function.
-They are only used for parameter estimation to evaluate the moment conditions.
 
 The distinction between model effects
 and GMoM statistics is recalled when printing the effect object in the R console.
@@ -5734,13 +5737,33 @@ and statistics operating for parameter estimation is lost.
 14 mynet mybeh ego                      GMoM
 15 mynet mybeh similarity               GMoM
 \end{verbatim}}
-
 \normalsize
+\bigskip
+
+
+\noindent
+\textbf{\emph{GMoM statistics for co-evolution of multiple networks }}
+\medskip
+
+Similarly to the co-evolution of networks and behavior as treated in  
+\citep{ASS2019}, GMoM statistics have been implemented 
+for the co-evolution of multiple networks, using contemporaneous 
+statistics that supplement the cross-lagged statistics of the MoM.
+supplement the information of the cross-lagged statistics, depending jointly
+on network and behavior, by considering the network and behavior at the same time point.
+The implemented GMoM statistics are \texttt{crprod\_gmm}, \texttt{to\_gmm}, 
+and \texttt{from\_gmm}, supplementing the effects with shortnames
+\texttt{crprod}, \texttt{to}, and \texttt{from}.
+\bigskip
+
+\noindent
+\textbf{\emph{Operation of GMoM estimation }}
+\medskip
 
 The computation of the GMoM estimates is more time consuming than that of the regular MoM.
 The GMoM estimator is computed by minimizing the distance between the
 expected value of the statistics and their sample counterpart.
-The minimization demands the computation of a matrix of weights
+The definition of the distance demands the computation of a matrix of weights
 describing the importance of the statistics and their sensitivity
 to the parameters. To estimate the matrix of the GMoM weights, a larger number of simulations
 in phase 1 and phase 3 and (at least) one iteration of the function \textsf{siena07} is used.
@@ -9454,10 +9477,15 @@ the {\em number of four-cycles} with shortName \texttt{(cycle4)} \\
  This effect is difficult to interpret: actor $i$ can increase this effect by making a
  new tie to an actor $j$ at distance 2 but also by dropping a direct tie to an
  actor $j$ to whom $i$ is also connected via a two-path
- $i \rightarrow h \rightarrow j$.
- Instead of this effect it may be preferable to use one of the many other
- effects representing closure (\texttt{transTrip}, \texttt{transTies},
- the various gwesp effects, the various Jaccard effects, etc.).
+ $i \rightarrow h \rightarrow j$.\\
+ When using this effect to represent a particular theoretical mechanism,
+ it may be advisable to use it as separate creation
+ and endowment effects (using  \texttt{type=creat} and \texttt{type=endow}),
+ to avoid this ambiguity.
+ For representing network closure it may be preferable to use one of the many other
+ effects representing it (\texttt{transTrip}, \texttt{transTies},
+ the various gwesp effects, the various Jaccard effects, etc.).\\
+
 
  \item {\em number of doubly achieved distances two effect} \texttt{(nbrDist2twice)},
  defined by
@@ -9609,6 +9637,9 @@ nodes $h$ for which there is the two-in-star $i \leftarrow h \rightarrow j$;\\
 \texttt{gwespRR}: uses $\text{EPRR}_{ik}$, counting the number of nodes $j$
 with $i \rightarrow j$ and there are exactly $k$ other
 nodes $h$ for which there are the reciprocal ties $i \rightleftarrows h \rightleftarrows j$.
+
+For further interpretations and distinctions between the different directionalities
+in these effects, see \citet{RPW2009}.
 
 In version 1-1.251 the implementation was changed (thanks to Nynke Niezink),
 because earlier versions were not quite according to what is described above.
@@ -9884,7 +9915,8 @@ and
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \big( \frac 1n \sum_h  {x_{h+}} \,-\, p \big)=
                            x_{i+}\, \big( \frac 1n \sum_h x_{h+} \,-\, p \big) $ \, ;\\[0.2em]
   this effect is a network-by-period level effect and therefore is useful only
-  for multigroup data sets or for data sets with many periods;\\
+  for \\
+  multi-group data sets or for data sets with many periods;\\
   it may be beneficial for convergence to use a value of $p$ that is
   close to the average degree (but constant, while this effect
   is for the dynamic average outdegree);
@@ -11458,6 +11490,7 @@ for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{j+}} - \sqrt{\
 for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{i+}} - \sqrt{\bar w}) =
                            x_{i+}\, (\sqrt{w_{i+}} - \sqrt{\bar w}) $;\\[0.2em]
 
+\setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
 \smallskip
 
@@ -11527,7 +11560,8 @@ where $\text{divi}(a,b)$ is defined as above;
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \big( \frac 1n \sum_h  {w_{h+}} \,-\, p \big)=
                            x_{i+}\, \big( \frac 1n \sum_h w_{h+} \,-\, p \big) $ \, ;\\[0.2em]
   this effect is a network-by-period level effect and therefore is useful only
-  for multigroup data sets or for data sets with many periods;\\
+  for \\
+  multi-group data sets or for data sets with many periods;\\
   it may be beneficial for convergence to use a value of $p$ that is
   close to the average $W$-degree (but constant, while this effect
   is for the dynamic average outdegree);
@@ -16809,12 +16843,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.4.13.tar.gz|\\
+\verb|R CMD check RSiena_1.4.18.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.4.13.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.4.18.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16919,7 +16953,7 @@ For example, compare the construction of \texttt{sameXTransTrip} to that of
               a parameter.\\
               It is advisable to use the hash sign (\texttt{\#}) in the
               effect and function names. See subsection~\ref{S_hash}.
-              
+
 
 		\item Build the package and install it.  Check from R that
               the new effect (which has only been created nominally)
@@ -16995,26 +17029,26 @@ rather than an \sfn{egoStatistic}.
 Note that if your new effect could usefully be used as part of a multiple
 network effect you should use the generic effect approach and not the following.
 
-\subsection{The use of the hash (\texttt{\#}) sign 
+\subsection{The use of the hash (\texttt{\#}) sign
 \protect \newline
 in names of effects  and estimation statistics}
 \label{S_hash}
 
 If an effect contains an  internal effect parameter,
 it is advisable to report the value of the internal effect parameter
-in the names of the effect and the estimation statistics reported 
+in the names of the effect and the estimation statistics reported
 when printing the effects object and the estimation results.
 These names are the columns \texttt{effectName} and \texttt{functionName}
 in the effects object, and their origins are the corresponding
-columns in file \texttt{allEffects.csv}. 
-The value of the internal effect parameter can be included 
+columns in file \texttt{allEffects.csv}.
+The value of the internal effect parameter can be included
 by the use of the hash sign (\texttt{\#}).
-In function \sfn{setEffect}, occurrences of \texttt{"\#"} 
+In function \sfn{setEffect}, occurrences of \texttt{"\#"}
 in columns \texttt{effectName} and \texttt{functionName}
-are replaced by the value of the internal effect parameter 
-(given explicitly by the user, or else the default value). 
+are replaced by the value of the internal effect parameter
+(given explicitly by the user, or else the default value).
 
-Thus, the hash sign  (\texttt{\#}) is a placeholder for the value of 
+Thus, the hash sign  (\texttt{\#}) is a placeholder for the value of
 the internal effect parameter.
 When you look in the file \texttt{allEffects.csv}, you will see
 many occurrences of this symbol.
@@ -17022,24 +17056,24 @@ many occurrences of this symbol.
 A difficulty occurs when the replacement has been done
 (so there is no more  \texttt{"\#"}), but a new
 call of \sfn{setEffect} is made with a new value of the
-internal effect parameter. 
+internal effect parameter.
 To make the correct replacement then, the following rule is followed
 for defining the names in \texttt{allEffects.csv}:
 
 \begin{itemize}
-\item The symbol \texttt{\#} should occur in the \texttt{effectName} 
+\item The symbol \texttt{\#} should occur in the \texttt{effectName}
 and \texttt{functionName} in \texttt{allEffects.csv} in only the following substrings:
 \begin{itemize}
   \item \texttt{"1/\#"}
   \item \texttt{"(\#)"}
-  \item \texttt{"\#-"} 
+  \item \texttt{"\#-"}
   \item \texttt{"={\char32}\#"}
   \item \texttt{"+{\char32}\#"}
   \item \texttt{"-{\char32}\#"}
 \end{itemize}
 where \texttt{"\char32"} denotes one blank space (used here for the sake
-of clarity, not for use in \texttt{allEffects.csv}). 
-\item No confusion should be possible, i.e., 
+of clarity, not for use in \texttt{allEffects.csv}).
+\item No confusion should be possible, i.e.,
         no substrings in \texttt{allEffects.csv}
      of these kinds are permitted where \texttt{\#}  is any number.
 \end{itemize}
@@ -17931,6 +17965,24 @@ Changes in RSiena:
 \fi
 
 
+\item 2024-07-31 GitHub, package version 1.4.18
+
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects:
+   \begin{itemize}
+  \item New gmm effects for co-evolution of multiple networks:
+    \texttt{crprod\_gmm}, \texttt{to\_gmm}, \texttt{from\_gmm}.
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+  \item Bug corrected in \sfn{sienaGOF} which occurred for models with tested effects
+    if \texttt{iterations} is less than \texttt{sienaFitObject\$n3}.
+    \end{itemize}
+\end{itemize}
+
+
 \item 2024-06-06 GitHub, package version 1.4.13
 
 
@@ -17942,18 +17994,18 @@ Changes in RSiena:
     \end{itemize}
 \item Improvements of functionality:
    \begin{itemize}
-  \item The handling of internal effect parameters in the columns 
+  \item The handling of internal effect parameters in the columns
     \texttt{effectName}
     and \texttt{functionName} of \texttt{sienaEffects} objects is improved.
     This was achieved by changes in functions \sfn{setEffect}
     and \sfn{includeInteraction}.
-    Effectnames as reproduced by \texttt{sienaFit} objects should now 
+    Effectnames as reproduced by \texttt{sienaFit} objects should now
     contain the correct values of internal effect parameters.
-  \item New parameter \texttt{thetaBound} for \sfn{siena07}, which has the 
-    effect of stopping the estimation process if some parameters become 
+  \item New parameter \texttt{thetaBound} for \sfn{siena07}, which has the
+    effect of stopping the estimation process if some parameters become
     too large (which would signal divergence).
-  \item Display of deviations in \texttt{siena07gui} modified so that numbers 
-    larger than or equal to \texttt{1e5} in absolute value are displayed in 
+  \item Display of deviations in \texttt{siena07gui} modified so that numbers
+    larger than or equal to \texttt{1e5} in absolute value are displayed in
     exponential format (and use only one line in the gui).
     \end{itemize}
 \item Bug corrections:
