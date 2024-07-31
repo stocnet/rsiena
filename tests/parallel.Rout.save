@@ -1,7 +1,7 @@
 
-R version 4.3.2 (2023-10-31 ucrt) -- "Eye Holes"
-Copyright (C) 2023 The R Foundation for Statistical Computing
-Platform: x86_64-w64-mingw32/x64 (64-bit)
+R version 4.4.1 (2024-06-14 ucrt) -- "Race for Your Life"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
@@ -943,4 +943,4 @@ Total of 353 iteration steps.
 > 
 > proc.time()
    user  system elapsed 
-  15.76    0.17   18.40 
+  15.15    0.23   17.73 
