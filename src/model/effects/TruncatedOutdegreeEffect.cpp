@@ -25,11 +25,23 @@ namespace siena
  * Constructor.
  */
 TruncatedOutdegreeEffect::TruncatedOutdegreeEffect(
-	const EffectInfo * pEffectInfo, bool right, bool outIso) : NetworkEffect(pEffectInfo)
+	const EffectInfo * pEffectInfo,
+		bool right, bool outIso, bool outThreshold): NetworkEffect(pEffectInfo)
 {
 	this->lOutIso = outIso;
 	this->lc = 1;
 	this->lright = right;
+	this->loutThreshold = outThreshold;
+	if ((this->lOutIso ) & (!this->lright))
+	{
+		throw invalid_argument(
+			"Truncated/MoreThreshold OutdegreeEffect: outIso requires right");
+	}
+	if ((this->loutThreshold) & (this->lOutIso ) & (this->lright))
+	{
+		throw invalid_argument(
+			"Truncated/MoreThreshold OutdegreeEffect: outThreshold cannot go with outIso and right");
+	}
 
 	if (this->lOutIso)
 	{
@@ -40,11 +52,10 @@ TruncatedOutdegreeEffect::TruncatedOutdegreeEffect(
 		this->lc = int(pEffectInfo->internalEffectParameter() + 0.01);
 	}
 	// C++ always rounds downward
-
 	if (this->lc < 1)
 	{
 		throw invalid_argument(
-			"Truncated/More OutdegreeEffect: Parameter value must be at least 1");
+			"Truncated/More/Threshold OutdegreeEffect: Parameter value must be at least 1");
 	}
 }
 
@@ -97,19 +108,23 @@ double TruncatedOutdegreeEffect::calculateContribution(int alter) const
 	}
 	else // More
 	{
-		if (this->outTieExists(alter))
-		{
+		// When introducing a new tie, the new out-degree would be d+1, and
+		// the new effect value would have increased by 1 if d >= this->lc
 		// After a tie withdrawal, the new out-degree would be d-1, and
 		// the new effect value would have decreased by 1 if d > this->lc
-			if (d > this->lc)
+		if (this->outTieExists(alter))
+		{
+			d--;
+		}
+		if (this->loutThreshold)
+		{
+			if (d == this->lc)
 			{
 				change = 1;
 			}
 		}
 		else
 		{
-		// When introducing a new tie, the new out-degree would be d+1, and
-		// the new effect value would have increased by 1 if d >= this->lc
 			if (d >= this->lc)
 			{
 				change = 1;
@@ -155,7 +170,14 @@ double TruncatedOutdegreeEffect::egoStatistic(int ego,
 		{
 			if (statistic > this->lc)
 			{
-				statistic = statistic - this->lc;
+				if (this->loutThreshold)
+				{
+					statistic = 1;
+				}
+				else
+				{
+					statistic = statistic - this->lc;
+				}
 			}
 			else
 			{

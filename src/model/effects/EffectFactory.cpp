@@ -377,27 +377,35 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "outTrunc")
 	{
-		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, true, false);
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, true, false, false);
 	}
 	else if (effectName == "outTrunc2")
 	{
-		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, true, false);
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, true, false, false);
 	}
 	else if (effectName == "outMore")
 	{
-		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false);
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false, false);
 	}
 	else if (effectName == "outMore2")
 	{
-		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false);
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false, false);
 	}
 	else if (effectName == "outMore3")
 	{
-		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false);
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false, false);
 	}
 	else if (effectName == "outIso")
 	{
-		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, true, true);
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, true, true, false);
+	}
+	else if (effectName == "outThreshold")
+	{
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false, true);
+	}
+	else if (effectName == "outThreshold2")
+	{
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false, true);
 	}
 	else if (effectName == "outInv")
 	{

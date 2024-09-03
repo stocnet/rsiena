@@ -107,6 +107,18 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 	{
 		z$int2 <- 1
 	}
+	if (!is.null(prevAns))
+	{
+		if (!inherits(prevAns, "sienaFit"))
+		{
+			stop("prevAns should be a sienaFit object")
+		}
+		if (x$gmm & (!prevAns$gmm))
+		{
+			cat("Use of Generalized Method of Moments also required for prevAns.\n")
+			stop("Algorithm object specifies gmm, but prevAns did not use it.")
+		}	
+	}
 	if (!initC) ## i.e. first time round
 	{
 		if (!inherits(data,"siena"))
@@ -321,7 +333,8 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		z$posj <- rep(FALSE, z$pp)
 		z$posj[requestedEffects$basicRate] <- TRUE
 		z$BasicRateFunction <- z$posj
-		z$gmmEffects <- (requestedEffects$type=="gmm")
+z$gmmEffects <- ((requestedEffects$type=="gmm") & requestedEffects$fix) # hhoho
+#browser()
 		
 		if (any(!z$fixed))
 		{
@@ -530,13 +543,12 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 				  z$gamma <- prevAns$gamma
 				  temp <- (1-x$diagonalize)*z$D0 +
 				    x$diagonalize*diag(diag(z$D0), nrow=dim(z$D0)[1])
-				  temp[which(z$fixed & !z$gmmEffects), ] <- 0.0
-				  temp[, which(z$fixed & !z$gmmEffects)] <- 0.0
-				  diag(temp)[which(z$fixed & !z$gmmEffects)] <- 1.0
+				  temp[z$fixed[!z$gmmEffects], ] <- 0.0
+				  temp[, z$fixed[!z$gmmEffects]] <- 0.0
+				  diag(temp)[z$fixed[!z$gmmEffects]] <- 1.0
 				  # Invert this matrix
 				  z$dinvv <- solve(temp)%*%z$B
 				}
-
 				z$sf <- prevAns$sf
 				# check for backward compatibility with pre-1.1-220 versions:
 				if (is.null(prevAns$regrCoef))

@@ -28,7 +28,7 @@ class TruncatedOutdegreeEffect : public NetworkEffect
 {
 public:
 	TruncatedOutdegreeEffect(const EffectInfo * pEffectInfo, 
-									bool right, bool outIso);
+								bool right, bool outIso, bool outThreshold);
 
 	virtual double calculateContribution(int alter) const;
 
@@ -40,6 +40,7 @@ private:
 	int lc {};
 	bool lright {};
 	bool lOutIso {};
+	bool loutThreshold {};
 };
 
 }

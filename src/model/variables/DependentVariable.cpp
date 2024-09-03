@@ -1324,6 +1324,7 @@ void DependentVariable::accumulateRateScores(double tau,
 		case DOUBLESTEP50:
 		case DOUBLESTEP75:
 		case DOUBLESTEP100:
+		case NETCONTEMP:
 		case AAGREE:
 			break;
 		case BFORCE:
@@ -2458,6 +2459,7 @@ double DependentVariable::networkDoubleStepProb() const
 	// This method is overridden in NetworkVariable. Here we return 0.
 	return 0;
 }
+
 
 /**
  * Returns if there are any constraints on the permitted changes of this

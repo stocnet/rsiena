@@ -196,7 +196,7 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.4.18.
+This version was renewed for \RS version 1.4.19.
 \end{abstract}
 
 
@@ -349,7 +349,7 @@ A basic reference for the network dynamics model is \citet{Snijders01}
 or \citet{Snijders05}.
 Basic references for the model of network-behavior co-evolution
 are \citet*{SnijdersEA07} and \citet*{SteglichEA10}.
-Review articles are \citet{Snijders2017} and \citet{SnijdersPickup16}.
+Review articles are \citet{Snijders2017} and \citet{SnijdersPickup17}.
 
 More specific references are \citet{KoskinenEdling2012} for the
 dynamics of two-mode networks and \citet{SLT2013} for the
@@ -1147,7 +1147,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.4.18).
+  identified by a version number (e.g.\ 1.4.19).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -2722,6 +2722,11 @@ the corresponding change statistic is
            \protect\newline one-mode networks}
 \label{S_imp_str1}
 
+Advice for model specification for one-mode networks is given
+also in the slide set
+\emph{Model Specification Recommendations for Siena}, available as\\
+\url{https://www.stats.ox.ac.uk/~snijders/siena/Siena_ModelSpec_s.pdf}
+
 For the structural part of the model for network dynamics,
 for one-mode (or unipartite) networks,
 the most important effects are as follows.
@@ -2853,6 +2858,10 @@ The basic list of these and other effects is as follows.
       transitive reciprocated triplets effect.\\
       In a non-directed network, the three-cycles effect is identical
       to the transitive triplets effect.
+
+      For models where the gwesp effect is used instead of the
+      transitive ties effect, the interaction gwesp$\times$reciprocity
+      can fulfill the role of the three-cycles effect.
       \end{minipage}
 \hfill
 \begin{minipage}[t]{.2\textwidth}
@@ -2887,9 +2896,12 @@ The basic list of these and other effects is as follows.
       configurations characterized by the \underline{absence} of certain ties,
       not only by their presence.
       This leads to difficulties in interpretation, and may be undesirable.
+      Therefore this effect should be used only with caution,
+      in cases where it is important for the specific research question.
+
 
 \item[{\hspace*{-1ex}$\bigodot$}]
-     The following eight degree-related effects may be important especially for networks
+     The following nine degree-related effects may be important especially for networks
      where degrees are theoretically important and represent social status
      or other features important for network dynamics;
      and/or for networks with high dispersion in in- or out-degrees
@@ -2925,6 +2937,14 @@ The basic list of these and other effects is as follows.
      actors with high out-degrees to send out extra outgoing ties
      `because' of their high current out-degrees.
      This also leads to dispersion in out-degrees of the actors.
+\item The \emph{ reciprocal degree activity effect} (where internal effect
+     parameter with value 2 will be the `sqrt' version).
+     This reflects tendencies for
+     actors with high reciprocal degrees (number of other actors
+     to whom the actor has incoming as well as outgoing ties) to send out extra outgoing ties
+     `because' of their high current  reciprocal degrees.
+     For this effect, usually negative parameters $\beta_k$
+     are expected (`fewer' instead of `extra').
 \item The \emph{in-in degree assortativity effect} (where parameter 2 is the same
     as the sqrt version, while parameter 1 is the non-sqrt version)
      reflects tendencies for actors with high in-degrees
@@ -3292,8 +3312,6 @@ If $X$ and $W$ both are one-mode networks, the \emph{closure of W} effect
 
 \subsection{Hierarchy requirements}
 
-
-
 From linear regression we know that when a model contains an interaction
 effect, usually also the corresponding main effects should be included.
 Similarly for higher-order interactions, their lower-order terms
@@ -3307,11 +3325,18 @@ in regression analysis and do not need reiteration.
 % Andrea's klas12b heeft een voorbeeld van een interactieeffect zonder hoofdeffect:
 % ethniciteit * tijd.
 The hierarchy principle for the \saom\ is that when an effect
-represented by some graphical structure is included in the model,
+represented by some graphical structure is included in the model
+for the purpose of testing and interpretation,
 the effects for the \underline{sub-structures that are part of the
-structure} should also be included.
+structure} should usually also be included to avoid misinterpretation.
 In other words, testing of higher-order structures implies that
-the corresponding lower-order structures should also be included.
+the corresponding lower-order structures should be controlled for.
+This can be done by including the effects representing them
+in the model and estimating their parameters;
+or including them in the model with a parameter fixed at~0,
+tested by a score-type test (Section~\ref{S_Scoretest}), 
+and found to be non-significant.
+
 
 An example is the transitive triplets effect \textit{transTrip}.
 
@@ -3671,12 +3696,12 @@ coefficients are zero (see Section~\ref{S_test}).
 \subsection{Model Type: non-directed networks}
 \label{S_modeltype_nd}
 
-Dynamics for non-directed networks is explained in \citet{SnijdersPickup16}.
+Dynamics for non-directed networks is explained in \citet{SnijdersPickup17}.
 
 \RS detects automatically when the networks all are non-directed,
 and then employs a model for this special case.
 For non-directed networks, the Model Type has five possible values,
-as described in \citet{SnijdersPickup16}.
+as described in \citet{SnijdersPickup17}.
 This is specified by the parameter \sfn{modelType} in function
 \textsf{sienaAlgorithmCreate}.
 Value \texttt{modelType = 1} is for directed networks, values
@@ -3777,8 +3802,21 @@ For the respective values \texttt{modelType = 7, 8, 9, 10},
 the probability that a double step is taken is, respectively,
 0.25, 0.50, 0.75, and 1.00.
 
-These model types are not intended for use in regular applications.
+Since version 1.4.19,  \texttt{modelType = 11} can be used for dependent
+networks. This is called the
+\emph{Contemporaneous evaluation statistics model}.
+This model type implies that, for co-evolution models for this dependent network,
+which may involve other dependent networks as well as dependent behavioral
+variables, all evaluation effects are estimated using simultaneous statistics
+for estimation by the Method of Moments
+(for \texttt{modelType = 1}, the default, the MoM estimation statistics
+are cross-lagged).
+For this model type, creation and endowment effects are estimated as usual,
+i.e., using cross-lagged creation and maintenance statistics.
+\medskip
 
+These model types are meant for research purposes,
+not intended for use in regular empirical applications.
 
 
 \subsection{Model Type: behavior}
@@ -5745,13 +5783,13 @@ and statistics operating for parameter estimation is lost.
 \textbf{\emph{GMoM statistics for co-evolution of multiple networks }}
 \medskip
 
-Similarly to the co-evolution of networks and behavior as treated in  
-\citep{ASS2019}, GMoM statistics have been implemented 
-for the co-evolution of multiple networks, using contemporaneous 
+Similarly to the co-evolution of networks and behavior as treated in
+\citep{ASS2019}, GMoM statistics have been implemented
+for the co-evolution of multiple networks, using contemporaneous
 statistics that supplement the cross-lagged statistics of the MoM.
 supplement the information of the cross-lagged statistics, depending jointly
 on network and behavior, by considering the network and behavior at the same time point.
-The implemented GMoM statistics are \texttt{crprod\_gmm}, \texttt{to\_gmm}, 
+The implemented GMoM statistics are \texttt{crprod\_gmm}, \texttt{to\_gmm},
 and \texttt{from\_gmm}, supplementing the effects with shortnames
 \texttt{crprod}, \texttt{to}, and \texttt{from}.
 \bigskip
@@ -7780,8 +7818,20 @@ The four options are:
       except for the basic rate parameters;
       and except for explicitly specified interaction
       effects between variables depending on the group, and other effects.
-      This is a very strong assumption, and undesirable unless
-      options 3-4 are impossible.
+      This is a strong assumption, and usually not very desirable if
+      options 3-4 are possible.\\
+      This option can be applied, e.g., if there are important changes
+      of composition between waves. If there are three waves, and
+      the sets of actors at these waves are $N_1$, $N_2$, and $N_3$,
+      respectively, then the intersections of the node sets
+      $N_{12} = N_1 \cap N_2$ and $N_{23} = N_2 \cap N_3$ can be
+      utilized to form two longitudinal data sets each with two waves.
+      These can then be combined in a multi-group data set
+      and analyzed by the multi-group option.
+      This can be straightforwardly extended to more than three waves.
+      \\
+      This is the ``inclusive'' analytic strategy
+      proposed by \citet{delaHayeETAl2017}.
 \item Analyzing the different networks separately, without any assumption
       that parameters are the same but using the same model specification,
       and post-processing the output files by a meta-analysis
@@ -7892,6 +7942,25 @@ normalized with respect to the same range
 $r_V$ for all groups; and the centering of this transform,
 which affects the parameter of the \texttt{outdegree (density)} effect,
 is group-specific.
+
+\subsubsection{Group-level variables}
+
+Group-level covariates for actors as well as for
+dyads can be used without any problem. They can be defined for each
+group separately, with the same name across groups,
+and with a constant value within the group.
+To avoid the warning that would result, the option \texttt{warn=FALSE}
+can be used for the functions \sfn{coCovar} etc.
+
+Group level variables can be used with ego effects (\texttt{egoX})
+and interactions of ego effects with other effects.
+
+A specific useful type of group-level variable is a set of group dummy
+variables where each dummy variable has value 1 with a given group and
+0 for all other groups.
+Such dummies, and their interactions,
+can be used to represent time heterogeneity.
+
 
 \subsection{Multi-group Siena analysis}
 \label{S_multigroup}
@@ -9878,19 +9947,29 @@ and
  but with a sign reversal for the parameter;
 
 
- \item {\em out-degree more than $p$} where $p$ is some constant
+ \item {\em out-degree more than $p$} (\texttt{outMore}) where $p$ is some constant
  (internal effect parameter, see above),
-  there are two implementations here:
- \texttt{outMore}, \texttt{outMore2}, and \texttt{outMore3},
+  there are three implementations here:
+ (\texttt{outMore}), (\texttt{outMore2}), and (\texttt{outMore3}),
  to allow the simultaneous use of this
  effect with three different internal effect parameters;
  they are defined by \\
  $s^{\rm net}_{i\vit}(x) = \text{max}(x_{i+}\,-\, p, \, 0)$;\\
  this can be regarded as the mirror image of \texttt{outTrunc};
+ 
+ \item {\em out-degree larger than $p$} (\texttt{outThreshold}) 
+ (out-threshold($p$)) where $p$ is some constant
+ (internal effect parameter, see above),
+  there are two implementations here:
+(\texttt{outThreshold}) and (\texttt{outThreshold2}),
+ to allow the simultaneous use of this
+ effect with two different internal effect parameters;
+ they are defined by \\
+ $s^{\rm net}_{i\vit}(x) = I(x_{i+} > p)$;\\
 
  \item {\em square root out-degree}, defined by  \\
  $s^{\rm net}_{i\vit}(x) = \sqrt{x_{i+}}$;\\
- this is left out in later versions of \si;
+ this was left out in later versions of \si;
 
  \item {\em squared (out-degree -- $p$)}, where $p$ is some constant,
  defined by  \\
@@ -11321,7 +11400,7 @@ the generality already now.
 \label{S_NonDirEff}
 
 For non-directed (symmetric) networks
-\citep[see Section~\ref{S_modeltype_nd} and][]{SnijdersPickup16},
+\citep[see Section~\ref{S_modeltype_nd} and][]{SnijdersPickup17},
 in principle the same effects are used as above; you may search
 in this manual for `non-directed' to see the cases where the definition of
 an effect for non-directed networks deviates from the
@@ -16843,12 +16922,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.4.18.tar.gz|\\
+\verb|R CMD check RSiena_1.4.19.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.4.18.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.4.19.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -17945,7 +18024,6 @@ news(package="packageName")
 
 \item 2024-mm-dd GitHub, package version 1.x.x.
 
-
 Changes in RSiena:
 \begin{itemize}
 \item New effects:
@@ -17963,6 +18041,32 @@ Changes in RSiena:
 \end{itemize}
 
 \fi
+
+\item 2024-09-03 GitHub, package version 1.4.19.
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects:
+   \begin{itemize}
+  \item New effects \texttt{outThreshold} and \texttt{outThreshold2}.
+  \item \texttt{outActIntn} is an ego effect.
+    \end{itemize}
+\item New functionality:
+   \begin{itemize}
+  \item New network option 11 
+    (\emph{Contemporaneous evaluation statistics model}) for use of 
+    contemporaneous statistics
+    for estimating all evaluation effects of the network variable.
+  \item If \sfn{setEffect} is called for an effect with \texttt{type=gmm}, an error message
+    is given that the function called should be \sfn{includeGMoMStatistics}.
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+  \item Error corrected that occurred for estimation by the GMoM if
+    some effects are fixed.
+  \item Correction of list of effect names when \texttt{thetaBound} is exceeded.
+    \end{itemize}
+\end{itemize}
 
 
 \item 2024-07-31 GitHub, package version 1.4.18

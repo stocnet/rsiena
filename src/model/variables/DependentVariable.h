@@ -31,7 +31,7 @@ namespace siena
  * and the possible types of model for behavioral variables.
  */
 	enum NetworkModelType { NOTUSED, NORMAL, AFORCE, AAGREE, BFORCE, BAGREE, BJOINT,
-		DOUBLESTEP25, DOUBLESTEP50, DOUBLESTEP75, DOUBLESTEP100 };
+		DOUBLESTEP25, DOUBLESTEP50, DOUBLESTEP75, DOUBLESTEP100, NETCONTEMP };
 	enum BehaviorModelType { OUTOFUSE, RESTRICT, ABSORB };
 
 // ----------------------------------------------------------------------------

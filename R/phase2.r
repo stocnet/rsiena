@@ -526,7 +526,7 @@ doIterations<- function(z, x, subphase,...)
 						",\nwhich is larger than thetaBound =", z$thetaBound, ".\n")
 				larger <- rep("", length(z$theta))
 				larger[((!z$fixed)&(abs(z$theta > z$thetaBound)))] <- " *****"
-				print(cbind(z$effects$effectName, round(z$theta, 4), larger), quote=FALSE)
+				print(cbind(z$requestedEffects$effectName, round(z$theta, 4), larger), quote=FALSE)
 				if (interactive())
 				{
 					cat("If you wish to continue estimation in this session,")

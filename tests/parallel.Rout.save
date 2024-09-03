@@ -136,7 +136,7 @@ Total of 588 iteration steps.
   effectName                              shortName include fix   test 
 1 14 reciprocity                          recip     TRUE    FALSE FALSE
 2 77 indegree - popularity                inPop     TRUE    FALSE FALSE
-3 231 reciprocity x indegree - popularity unspInt   TRUE    TRUE  TRUE 
+3 237 reciprocity x indegree - popularity unspInt   TRUE    TRUE  TRUE 
   initialValue parm effect1 effect2
 1          0   0     0       0     
 2          0   0     0       0     
@@ -846,14 +846,14 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 + 						interaction1=c("","smoke","alc"))
   effectName                                   shortName include fix   test 
 1 123 outdegree-trunc(2)                       outTrunc  FALSE   FALSE FALSE
-2 248 alc ego                                  egoX      FALSE   FALSE FALSE
-3 426 smoke ego                                egoX      FALSE   FALSE FALSE
-4 589 smoke ego x alc ego x outdegree-trunc(2) unspInt   TRUE    FALSE FALSE
+2 254 alc ego                                  egoX      FALSE   FALSE FALSE
+3 432 smoke ego                                egoX      FALSE   FALSE FALSE
+4 595 smoke ego x alc ego x outdegree-trunc(2) unspInt   TRUE    FALSE FALSE
   initialValue parm effect1 effect2 effect3
 1          0   2      0       0       0    
 2          0   0      0       0       0    
 3          0   0      0       0       0    
-4          0   0    123     426     248    
+4          0   0    123     432     254    
 > (ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE,
 +                               silent=TRUE))
 Estimates, standard errors and convergence t-ratios
@@ -878,7 +878,9 @@ Total of 297 iteration steps.
 > ##test20
 > print('test20')
 [1] "test20"
-> myalgorithm <- sienaAlgorithmCreate(nsub=2, n3=20, seed=1293)
+> myalgorithm1 <- sienaAlgorithmCreate(nsub=2, n3=50, seed=1293)
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> myalgorithm2 <- sienaAlgorithmCreate(nsub=2, n3=50, gmm=TRUE, seed=1293)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
 > mynet2 <- sienaDependent(array(c(s503, s502), dim=c(50, 50, 2)))
@@ -890,33 +892,87 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 > myeff <- setEffect(myeff, from, name='mynet1', interaction1='mynet2')
   effectName                    shortName include fix   test  initialValue parm
 1 mynet1: from mynet2 agreement from      TRUE    FALSE FALSE          0   0   
-> (ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE,
-+                               silent=TRUE))
+> (myeff <- includeGMoMStatistics(myeff, from_gmm, name='mynet2',
++                                 interaction1='mynet1'))
+    name shortName type include
+1 mynet2  from_gmm  gmm    TRUE
+
+ Effects and statistics for estimation by the Generalized Method of Moments
+
+ Effects
+  name   effectName                    include fix   test  initialValue parm
+1 mynet1 basic rate parameter mynet1   TRUE    FALSE FALSE    4.69604   0   
+2 mynet1 mynet1: outdegree (density)   TRUE    FALSE FALSE   -1.48852   0   
+3 mynet1 mynet1: reciprocity           TRUE    FALSE FALSE    0.00000   0   
+4 mynet1 mynet1: from mynet2 agreement TRUE    FALSE FALSE    0.00000   0   
+5 mynet2 basic rate parameter mynet2   TRUE    FALSE FALSE    4.32885   0   
+6 mynet2 mynet2: outdegree (density)   TRUE    FALSE FALSE   -1.53104   0   
+7 mynet2 mynet2: reciprocity           TRUE    FALSE FALSE    0.00000   0   
+8 mynet2 mynet2: mynet1                TRUE    FALSE FALSE    0.00000   0   
+  type
+1 rate
+2 eval
+3 eval
+4 eval
+5 rate
+6 eval
+7 eval
+8 eval
+
+ Regular and GMoM statistics
+  name   effectName                    Statistic
+1 mynet1 basic rate parameter mynet1   Regular  
+2 mynet1 mynet1: outdegree (density)   Regular  
+3 mynet1 mynet1: reciprocity           Regular  
+4 mynet1 mynet1: from mynet2 agreement Regular  
+5 mynet2 basic rate parameter mynet2   Regular  
+6 mynet2 mynet2: outdegree (density)   Regular  
+7 mynet2 mynet2: reciprocity           Regular  
+8 mynet2 mynet2: mynet1                Regular  
+9 mynet2 mynet2: from mynet1 agreement GMoM     
+> (ans <- siena07(myalgorithm1, data=mydata, effects=myeff[myeff$type!="gmm",],
++                 batch=TRUE, silent=TRUE))
 Estimates, standard errors and convergence t-ratios
 
                                         Estimate   Standard   Convergence 
                                                      Error      t-ratio   
-  1. rate basic rate parameter mynet1    5.6484  ( 8.9588   )    0.5637   
-  2. eval mynet1: outdegree (density)   -2.5305  ( 2.4963   )   -0.2937   
-  3. eval mynet1: reciprocity            1.9880  ( 0.9159   )   -0.4189   
-  4. eval mynet1: from mynet2 agreement  1.3280  ( 2.7970   )   -0.1509   
-  5. rate basic rate parameter mynet2    4.6919  ( 0.5721   )    0.1545   
-  6. eval mynet2: outdegree (density)   -2.7862  ( 1.5279   )   -0.6006   
-  7. eval mynet2: reciprocity            1.7889  ( 3.2425   )   -0.7178   
-  8. eval mynet2: mynet1                 3.1491  ( 3.2873   )   -1.0576   
+  1. rate basic rate parameter mynet1    5.6484  (  4.8181  )    0.4124   
+  2. eval mynet1: outdegree (density)   -2.5305  (  3.6595  )   -0.1408   
+  3. eval mynet1: reciprocity            1.9880  (  1.7456  )   -0.1755   
+  4. eval mynet1: from mynet2 agreement  1.3280  (  0.3647  )    0.0327   
+  5. rate basic rate parameter mynet2    4.6919  ( 13.9914  )   -0.0588   
+  6. eval mynet2: outdegree (density)   -2.7862  (  6.3305  )   -0.3071   
+  7. eval mynet2: reciprocity            1.7889  (  4.4589  )   -0.2856   
+  8. eval mynet2: mynet1                 3.1491  ( 16.3708  )   -0.5944   
 
-Overall maximum convergence ratio:    1.3244 
+Overall maximum convergence ratio:    0.8311 
 
 
-Total of 421 iteration steps.
+Total of 451 iteration steps.
 
-> myeff2 <- includeGMoMStatistics(myeff, from_gmm, name='mynet2', 
-+ 							interaction1='mynet1')							
-    name shortName type include
-1 mynet2  from_gmm  gmm    TRUE
-> myalgorithm2 <- sienaAlgorithmCreate(nsub=2, n3=50, gmm=TRUE, seed=4321)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> (ans2 <- siena07(myalgorithm2, data=mydata, effects=myeff2, prevAns=ans, batch=TRUE,
+> (ans1 <- siena07(myalgorithm2, data=mydata, effects=myeff,
++                  batch=TRUE, silent=TRUE))
+Estimated by Generalized Method of Moments
+
+Estimates, standard errors and convergence t-ratios
+
+                                        Estimate   Standard   Convergence 
+                                                     Error      t-ratio   
+  1. rate basic rate parameter mynet1    6.5246  ( 1.2116   )    0.2813   
+  2. eval mynet1: outdegree (density)   -2.4313  ( 0.1013   )    0.9608   
+  3. eval mynet1: reciprocity            1.9982  ( 0.3344   )    0.4908   
+  4. eval mynet1: from mynet2 agreement  1.3022  ( 0.1893   )   -0.2027   
+  5. rate basic rate parameter mynet2    5.3700  ( 0.7518   )    0.4329   
+  6. eval mynet2: outdegree (density)   -2.7382  ( 0.3141   )   -0.5356   
+  7. eval mynet2: reciprocity            2.0974  ( 0.3273   )   -0.0738   
+  8. eval mynet2: mynet1                 2.5565  ( 0.6419   )   -0.8309   
+
+Overall maximum convergence ratio:    2.9446 
+
+
+Total of 805 iteration steps.
+
+> (ans2 <- siena07(myalgorithm2, data=mydata, effects=myeff, prevAns=ans1, batch=TRUE,
 +                               silent=TRUE))
 Estimated by Generalized Method of Moments
 
@@ -924,23 +980,23 @@ Estimates, standard errors and convergence t-ratios
 
                                         Estimate   Standard   Convergence 
                                                      Error      t-ratio   
-  1. rate basic rate parameter mynet1    5.2118  ( 1.6381   )   -0.9497   
-  2. eval mynet1: outdegree (density)   -2.6228  ( 0.2938   )   -0.1933   
-  3. eval mynet1: reciprocity            1.9644  ( 0.5495   )    0.2009   
-  4. eval mynet1: from mynet2 agreement  1.4420  ( 0.4027   )   -0.5325   
-  5. rate basic rate parameter mynet2    4.3875  ( 1.6687   )    1.6201   
-  6. eval mynet2: outdegree (density)   -2.8977  ( 0.4029   )    0.1397   
-  7. eval mynet2: reciprocity            1.7423  ( 1.1347   )   -0.0395   
-  8. eval mynet2: mynet1                 3.4663  ( 0.5330   )   -0.6985   
+  1. rate basic rate parameter mynet1    5.5636  ( 1.5233   )    0.1939   
+  2. eval mynet1: outdegree (density)   -2.7065  ( 0.2318   )   -0.5055   
+  3. eval mynet1: reciprocity            2.0255  ( 0.2781   )    0.1909   
+  4. eval mynet1: from mynet2 agreement  1.4707  ( 0.3011   )    0.4625   
+  5. rate basic rate parameter mynet2    4.1588  ( 0.9636   )   -0.5116   
+  6. eval mynet2: outdegree (density)   -2.8884  ( 0.5728   )   -0.1983   
+  7. eval mynet2: reciprocity            1.6279  ( 0.7282   )   -0.1402   
+  8. eval mynet2: mynet1                 3.7185  ( 0.9913   )   -0.5917   
 
-Overall maximum convergence ratio:    2.5963 
+Overall maximum convergence ratio:    1.6267 
 
 
-Total of 353 iteration steps.
+Total of 590 iteration steps.
 
 > ## delete output file
 > if (file.exists('Siena.txt')){unlink('Siena.txt')}
 > 
 > proc.time()
    user  system elapsed 
-  15.15    0.23   17.73 
+  16.01    0.18   21.98 
