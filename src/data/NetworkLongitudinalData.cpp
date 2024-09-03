@@ -447,6 +447,15 @@ int NetworkLongitudinalData::modelType() const
 }
 
 /**
+ * Returns whether the model type is NETCONTEMP.
+ */
+bool NetworkLongitudinalData::networkModelTypeContemp() const
+{
+	// This uses the order specified in 
+	// enum NetworkModelType in DependentVariable.h
+	return (this->lmodelType==11);
+}
+/**
  * Stores the average in-degree over all receivers and observations.
  */
 void NetworkLongitudinalData::averageInDegree(double val)

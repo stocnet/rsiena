@@ -2796,3 +2796,56 @@ sum(s503r * (s501 %*% s503r))  # 44 OK
 sum(s503r * (s502 %*% s503r))  # 52 OK
 
 
+################################################################################
+### check modelType 11
+################################################################################
+
+
+(mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234, modelType=c(mynet1=11, mynet2=11)))
+set.seed(1234)
+(perm <- c(sample(1:25), 26:50))
+s502r <- s502[perm,perm]
+s503r <- s503[perm,perm]
+mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- sienaDependent(array(c(s502r, s503r), dim=c(50, 50, 2)))
+mydata <- sienaDataCreate(mynet1, mynet2)
+
+myeff <- getEffects(mydata)
+# for crprod:
+myeff <- setEffect(myeff, crprod, name='mynet2', interaction1='mynet1')
+myeff
+(ans <- siena07(mycontrols, data=mydata, effects=myeff))
+ans$targets
+# contemp:
+sum(s503r * s502) # 36, OK
+
+myeff2 <- setEffect(myeff, crprod, name='mynet1', interaction1='mynet2')
+(ans <- siena07(mycontrols, data=mydata, effects=myeff2))
+ans$targets
+# Warning: Noninvertible estimated covariance matrix. This should indeed happen.
+
+(mycontrols2 <- sienaAlgorithmCreate(projname=NULL, seed=1234, modelType=c(mynet1=1, mynet2=11)))
+(ans2 <- siena07(mycontrols2, data=mydata, effects=myeff))
+ans2$targets # OK
+(ans32 <- siena07(mycontrols2, data=mydata, effects=myeff2))
+ans32$targets # OK
+
+################################################################################
+### check outThreshold
+################################################################################
+
+mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+mydata <- sienaDataCreate(mynet)
+poscov <- (mydata$cCovars$mycova > 0)
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=138)
+
+mymodel <- getEffects(mydata)
+(mymodel <- setEffect(mymodel,outThreshold, parameter=2))
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+sum(rowSums(s502)> 2) # 23 OK
+sum(rowSums(s502)>= 3) # 23 OK
+(mymodel <- setEffect(mymodel,outThreshold2, parameter=4))
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+sum(rowSums(s502)> 4) # 3 OK

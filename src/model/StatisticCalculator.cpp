@@ -473,8 +473,6 @@ void StatisticCalculator::calculateNetworkGMMStatistics(
 		NetworkEffect * pEffect = (NetworkEffect *) factory.createEffect(pInfo);
 
 		// Initialize the effect to work with our data and state of variables.
-//	pEffect->initialize(this->lpData, this->lpPredictorState,
-//		this->lperiod, &cache);
 		pEffect->initialize(this->lpData, this->lpPredictorState, this->lpState,
 			this->lperiod, &cache);
 
@@ -573,15 +571,25 @@ void StatisticCalculator::calculateBehaviorGMMStatistics(
 void StatisticCalculator::calculateNetworkEvaluationStatistics(
 	NetworkLongitudinalData * pNetworkData)
 {
-	// We want to pass all networks to the effects in a single state,
+	// Explanation Krists: We want to pass all networks to the effects in a single state,
 	// hence we overwrite the network in the predictor state.
 	// We do not use the predictor network with effects this network owns.
-
+// Explanation Tom: lpPredictorState is the state of everything at the start of the wave.
+// pCurrentLessMissingsEtc->pNetwork(name) is the simulated state of this dependent network
+// (modified with respect to missings and structurals).
+// for only the dependent network, pNetworkData is used to overwrite 
+// The component of lpPredictorState corresponding to this dependent network.
+// the modified lpPredictorState is then used to initialize the effects.
+// For option NETCONTEMP, the entire pCurrentLessMissingsEtc is used to initialize.
+// for option NETCONTEMP, the replacement in this->lpPredictorState is supefluous
+// but I left it in to change as little as possible for enabling this option.
 	string name = pNetworkData->name();
-	const Network * pPredictorNetwork = this->lpPredictorState->pNetwork(name);
+	const Network * pPredictorNetwork = this->lpPredictorState->pNetwork(name);	
 	const Network * pCurrentLessMissingsEtc =
 		this->lpStateLessMissingsEtc->pNetwork(name);
 	this->lpPredictorState->pNetwork(name, pCurrentLessMissingsEtc);
+// if the contemporaneous statistics should be used for  all networks:
+// the preceding line should be done for all networks
 
 	// Loop through the evaluation effects, calculate the statistics,
 	// and store them.
@@ -599,8 +607,16 @@ void StatisticCalculator::calculateNetworkEvaluationStatistics(
 
 		// Initialize the effect to work with our data and state of variables.
 
-		pEffect->initialize(this->lpData, this->lpPredictorState,
-			this->lperiod, &cache);
+		if (pNetworkData->networkModelTypeContemp())
+		{
+			pEffect->initialize(this->lpData, this->lpStateLessMissingsEtc,
+				this->lperiod, &cache);			
+		}
+		else
+		{
+			pEffect->initialize(this->lpData, this->lpPredictorState,
+				this->lperiod, &cache);
+		}
 
 		if(this->lneedActorStatistics)
 		{
@@ -624,8 +640,16 @@ void StatisticCalculator::calculateNetworkEvaluationStatistics(
 			for (int e = 0; e < egos ; e++)
 			{
 				cache.initialize(e);
-				pEffect->initialize(this->lpData, this->lpPredictorState,
+				if (pNetworkData->networkModelTypeContemp())
+				{
+					pEffect->initialize(this->lpData, this->lpStateLessMissingsEtc,
+						this->lperiod, &cache);			
+				}
+				else
+				{
+					pEffect->initialize(this->lpData, this->lpPredictorState,
 						this->lperiod, &cache);
+				}
 				double * contributions = new double[egos];
 					this->lstaticChangeContributions[pInfo].at(e) = contributions;
 					pEffect->preprocessEgo(e);

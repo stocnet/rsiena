@@ -128,9 +128,9 @@ sienaModelCreate <- function(fn,
 
 	if (!is.null(modelType))
 	{
-		if (any(!(modelType %in% 1:10)))
+		if (any(!(modelType %in% 1:11)))
 		{
-			stop('modelType can only have integer values from 1 to 10\n')
+			stop('modelType can only have integer values from 1 to 11\n')
 		}
 		if ((maxlike) & (any(modelType %in% 7:10)))
 		{
@@ -243,7 +243,7 @@ sienaAlgorithmCreate <- sienaModelCreate
 
 ##@ModelTypeStrings DataCreate
 ModelTypeStrings <- function(i){
-	ifelse(((i >= 1) && (i <= 8) && (!is.null(i))),
+	ifelse(((i >= 1) && (i <= 11) && (!is.null(i))),
 		switch(i,
 			"Standard actor-oriented model",
 			"Forcing model",
@@ -254,7 +254,8 @@ ModelTypeStrings <- function(i){
 			"Double Step Model 0.25",
 			"Double Step Model 0.50",
 			"Double Step Model 0.75",
-			"Double Step Model 1.00"), "")
+			"Double Step Model 1.00",
+			"Contemporaneous evaluation statistics model"), "")
 }
 
 ##@BehaviorModelTypeStrings DataCreate

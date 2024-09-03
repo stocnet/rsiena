@@ -137,7 +137,8 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
     7=Double Step model with double step probability 0.25,
     8=Double Step model with double step probability 0.50,
     9=Double Step model with double step probability 0.75,
-    10=Double Step model with double step probability 1.00.
+    10=Double Step model with double step probability 1.00,\cr
+	11=Contemporaneous evaluation statistics model.
     \cr
     Names should be the names of all dependent network variables,
     in the same order as in the Siena data set.\cr
