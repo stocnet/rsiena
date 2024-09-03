@@ -173,12 +173,31 @@ phase3.2 <- function(z, x, ...)
         z$tstat <- tstat
 		if (z$gmm)
         {
-          W <- solve(cov(z$sf))
-          gamma <- z$dfra[,-which(z$gmmEffects==TRUE)]
-          B0 <- t(gamma) %*% W
-          B <- solve(diag(sqrt(rowSums(B0*B0)))) %*% B0 # Row-normlized matrix B
-          D0 <- B%*%gamma # Matrix D = B * gammaT 
-          dbGmm <- solve(D0)%*%B
+			cvsf <- cov(z$sf)
+			if (inherits(try(W <- solve(cvsf), silent=TRUE),
+ 						"try-error"))
+			{
+				warning("Results not reliable")
+				Report("Statistics collinear. Results not reliable.\n", outf)					
+				cvsf[ z$fixed & !z$gmmEffects, ] <- 0
+				cvsf[ , z$fixed & !z$gmmEffects] <- 0
+				diag(cvsf)[z$fixed & !z$gmmEffects] <- 1
+				cvsfr <- cvsf + 0.01*diag(cvsf)
+				W <- solve(cvsfr)
+			}
+			gamma <- z$dfra[,-which(z$gmmEffects==TRUE)]
+			B0 <- t(gamma) %*% W
+			B <- solve(diag(sqrt(rowSums(B0*B0)))) %*% B0 # Row-normalized matrix B
+			D0 <- B%*%gamma # Matrix D = B * gammaT 
+			if (inherits(try(D0inv <- solve(D0), silent=TRUE),
+ 						"try-error"))
+			{
+				z$dinvv <- NULL
+			}
+			else
+			{
+				z$dinvv <- D0inv%*%B			
+			}
           sf <- B%*%colMeans(z$sf)
           dmsf <- diag(B%*%z$msf%*%t(B))
           dimTheta <- length(sf)
@@ -195,7 +214,6 @@ phase3.2 <- function(z, x, ...)
           z$D0 <- D0
           z$gamma <- t(gamma)
           z$W <- W
-          z$dinvv <- dbGmm
         }
  		# tconv.max = Maximum value of t-ratio for convergence,
  		# for any linear combination.
@@ -346,8 +364,16 @@ phase3.2 <- function(z, x, ...)
 			}
 		}
 		else if (z$gmm)
-		{
-		  cov.est <-  solve(D0) %*% (B%*%z$msfc%*%t(B)) %*% t(solve(D0))
+		{		  
+			if (inherits(try(D0inv <- solve(D0), silent=TRUE),
+ 						"try-error"))
+			{
+				cov.est <- matrix(NA, nrow(D0), nrow(D0))
+			}
+			else
+			{
+				cov.est <-  D0inv %*% (B%*%z$msfc%*%t(B)) %*% t(D0inv)	
+			}
 		}
 		else
 		{
