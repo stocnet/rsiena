@@ -202,24 +202,26 @@ myeff <- setEffect(myeff, gwespFF)
 myeff <- setEffect(myeff, gwespFF, parameter=20)
 myeff <- setEffect(myeff, outTrunc, parameter=2, include=FALSE)
 myeff <- includeInteraction(myeff, outTrunc, egoX, egoX,
-						interaction1=c("","smoke","alc"))
+                        interaction1=c("","smoke","alc"))
 (ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE,
                               silent=TRUE))
 ##test20
 print('test20')
-myalgorithm <- sienaAlgorithmCreate(nsub=2, n3=20, seed=1293)
+myalgorithm1 <- sienaAlgorithmCreate(nsub=2, n3=50, seed=1293)
+myalgorithm2 <- sienaAlgorithmCreate(nsub=2, n3=50, gmm=TRUE, seed=1293)
 mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
 mynet2 <- sienaDependent(array(c(s503, s502), dim=c(50, 50, 2)))
 mydata <- sienaDataCreate(mynet1, mynet2)
 myeff <- getEffects(mydata)
 myeff <- includeEffects(myeff, crprod, name='mynet2', interaction1='mynet1')
 myeff <- setEffect(myeff, from, name='mynet1', interaction1='mynet2')
-(ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE,
-                              silent=TRUE))
-myeff2 <- includeGMoMStatistics(myeff, from_gmm, name='mynet2', 
-							interaction1='mynet1')							
-myalgorithm2 <- sienaAlgorithmCreate(nsub=2, n3=50, gmm=TRUE, seed=4321)
-(ans2 <- siena07(myalgorithm2, data=mydata, effects=myeff2, prevAns=ans, batch=TRUE,
-                              silent=TRUE))
+(myeff <- includeGMoMStatistics(myeff, from_gmm, name='mynet2',
+                                interaction1='mynet1'))
+(ans <- siena07(myalgorithm1, data=mydata, effects=myeff[myeff$type!="gmm",],
+                batch=TRUE, silent=TRUE))
+(ans1 <- siena07(myalgorithm2, data=mydata, effects=myeff,
+                 batch=TRUE, silent=TRUE))
+(ans2 <- siena07(myalgorithm2, data=mydata, effects=myeff, prevAns=ans1, batch=TRUE,
+                 silent=TRUE))
 ## delete output file
 if (file.exists('Siena.txt')){unlink('Siena.txt')}

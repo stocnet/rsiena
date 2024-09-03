@@ -52,7 +52,7 @@ includeEffects <- function(myeff, ..., include=TRUE, name=myeff$name[1],
 	myeff[use, "fix"] <- fix
   	if (sum(myeff[use, "type"]=="gmm") > 0)
   	{
-	    stop("\n To include a GMoM statistic use the function includeGMoMStatistics")
+	    stop("\n To include a GMoM statistic use the function includeGMoMStatistics.")
 	}
 	if (sum(use) <= 0)
 	{
@@ -287,6 +287,10 @@ setEffect <- function(myeff, shortName, parameter=NULL,
 	if (shortName=="AltsAvAlt")
 	{
 		stop("Effect AltsAvAlt renamed to avXAlt.")
+	}
+	if (type=="gmm")
+	{
+	    stop("\n To include a GMoM statistic use the function includeGMoMStatistics.")
 	}
 	use <- myeff$shortName == shortName &
 			myeff$name == name &

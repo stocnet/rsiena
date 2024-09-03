@@ -1,13 +1,33 @@
+# RSiena 1.4.19
+
+2024-09-03
+
+## Changes in RSiena:
+
+### Effects
+  * New effects `outThreshold` and `outThreshold2`.
+  * `outActIntn` is an ego effect (`allEffects.csv`).
+### New functionality:
+  * Network option 11 = `NETCONTEMP` for use of contemporaneous statistics
+    for estimating all evaluation effects of the network variable.
+### Bug corrections
+  * Error corrected that occurred for estimation by the GMoM if
+    some effects are fixed.
+  * List of effect names when `thetaBound` is exceeded corrected (`phase2.r`).
+### Error messages
+  * If `setEffect` is called for an effect with `type=gmm`, an error message
+    is given that the function called should be `includeGMoMStatistics`. 
+
 # RSiena 1.4.18
 
 2024-07-31
 
 ## Changes in RSiena:
 
-### Effects:
+### Effects
   * New gmm effects for co-evolution of multiple networks: 
     `crprod_gmm`, `to_gmm`, `from_gmm`.
-### Bug corrections:
+### Bug corrections
   * Bug corrected in `sienaGOF` which occurred for models with tested effects
     if `iterations` is less than `sienaFitObject$n3`. 
 ### Coding
@@ -16,7 +36,6 @@
     to allow making estimation statistics depend totally on the simulated state.
   * Function `fixUpEffectNames(effects, defaultEffects)`
     moved from `initializeFRAN.r` to `sienaEffects.r`. 
-
 
 # RSiena 1.4.13
 

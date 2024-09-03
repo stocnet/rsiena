@@ -218,6 +218,11 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
   \item{sf}{Matrix of simulated deviations from targets in phase 3.}
   \item{sf2}{Array of periodwise deviations from simulations in phase 3.
     Not included if \code{x$lessMem=TRUE}.}
+  \item{W}{If \code{x$gmm=TRUE}: Estimated optimal matrix of weights for
+    estimation by the Generalized Method of Moments.}
+  \item{B}{If \code{x$gmm=TRUE}: Row-normalized matrix of weights for
+    equating the linear combination of estimation statistics to 0,
+    for estimation by the Generalized Method of Moments.}
   \item{tconv}{t-statistics for convergence.}
   \item{tmax}{maximum absolute t-statistic for convergence for
     non-fixed parameters.}
@@ -231,8 +236,7 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
     simulation in phase 3. Not included if finite difference method is used
     or if \code{x$lessMem=TRUE}.}
   \item{scores}{Score functions, added over waves, for each
-    simulation in phase 3. Only included
-    if \code{x$lessMem=FALSE}.}
+    simulation in phase 3. Only included if \code{x$lessMem=FALSE}.}
   \item{regrCoef}{If \code{x$dolby} and not \code{x$maxlike}:
     regression coefficients of estimation statistics on score functions.}
   \item{regrCor}{If \code{x$dolby} and not \code{x$maxlike}:
