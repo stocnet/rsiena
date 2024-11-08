@@ -65,7 +65,6 @@
     (and use only one line in the gui) (function `FormatString` in `siena07.r`).
 
 
-
 # RSiena 1.4.12
 
 2024-04-27
