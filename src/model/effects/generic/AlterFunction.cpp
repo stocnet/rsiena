@@ -39,6 +39,21 @@ void AlterFunction::initialize(const Data * pData,
 }
 
 /**
+ * Initializes this function.
+ * @param[in] pData the observed data
+ * @param[in] pState the current state of the dependent variables
+ * @param[in] pSimulatedState the current simulated state of the dependent variables
+ * @param[in] period the period of interest
+ * @param[in] pCache the cache object to be used to speed up calculations
+ */
+void AlterFunction::initialize(const Data * pData,
+	State * pState, State * pSimulatedState,  
+	int period,
+	Cache * pCache)
+{
+}
+
+/**
  * Does the necessary preprocessing work for calculating the alter
  * function for a specific ego. This method must be invoked before
  * calling AlterFunction::value(...).

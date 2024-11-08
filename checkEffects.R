@@ -477,6 +477,7 @@ mymodel <- includeEffects(mymodel, crprodInActIntn, name='mynet2',
                         interaction1='mynet1')
 mymodel
 
+mycontrols <- sienaAlgorithmCreate(projname=NULL)
 # for crprodInActIntn effect (parameter = 2):
 (ans <- siena07(mycontrols, data=mydata, effects=mymodel))
 ans$targets
@@ -1962,7 +1963,7 @@ mymodel2 <- getEffects(mydata)
 mymodel2 <- setEffect(mymodel2, avAlt.2M.tot, name="mynet1", interaction1="mynet2", parameter=2)
 (ans2 <- siena07(mycontrols, data=mydata, effects=mymodel2))
 ans2$targets # 115.00000 116.00000  70.00000  86.89495 106.00000 122.00000  90.00000
-sum(rowSums(s502) * divi(rowSums(sqrt(twop) %*% diag(rowSums(s502) - avdeg)), 
+sum(rowSums(s502) * divi(rowSums(sqrt(twop) %*% diag(rowSums(s502) - avdeg)),
 									rowSums(sqrt(twop)) )) # 86.89495 OK avAlt.2M.tot p = 2
 
 
@@ -2689,3 +2690,162 @@ for (i in 1:n){
 sum(a) #  OK 8.303456
 
 
+################################################################################
+### check homXOutAct and homXOutAct2
+################################################################################
+
+mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+# construct actor covariate
+sets1 <- 1*((1:50) < 22) + 1
+table(sets1)
+binary <- coCovar(sets1, centered=FALSE)
+mydata <- sienaDataCreate(mynet, binary)
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, homXOutAct, interaction1="binary")
+(myeff <- includeEffects(myeff, outAct))
+myalg <- sienaAlgorithmCreate(projname=NULL, seed=1234)
+(ans <- siena07(myalg, data=mydata, effects=myeff))
+ans$targets
+# 116  70 350 258
+# check target statistics: outdegree activity
+sum(rowSums(s502)) # 116 OK
+sum((rowSums(s502))^2) # 350 OK
+# check target statistics: homXOutAct
+mat <- outer(1:50,1:50,function(i,j){sets[i]==sets[j]})
+# not diag(mat) <- 0
+sum(diag(s502 %*% mat %*% t(s502)))  # OK
+
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, homXOutAct2, interaction1="binary", parameter=1)
+(myeff <- includeEffects(myeff, outAct))
+(ans <- siena07(myalg, data=mydata, effects=myeff))
+ans$targets
+#  116  70 350  258
+# Estimates not identical, but very close; targets are identical.
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, homXOutAct2, interaction1="binary", parameter=2)
+(myeff <- includeEffects(myeff, outAct))
+(ans <- siena07(myalg, data=mydata, effects=myeff))
+ans$targets
+#  116  70 350 168.7262
+sum(diag(s502 %*% sqrt(mat %*% t(s502)))) # 168.7262 OK
+
+
+
+################################################################################
+### check crprod_gmm
+################################################################################
+
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
+
+set.seed(1234)
+(perm <- c(sample(1:25), 26:50))
+
+s502r <- s502[perm,perm]
+s503r <- s503[perm,perm]
+
+mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- sienaDependent(array(c(s502r, s503r), dim=c(50, 50, 2)))
+mydata <- sienaDataCreate(mynet1, mynet2)
+
+myeff <- getEffects(mydata)
+# for crprod:
+myeff <- setEffect(myeff, crprod, name='mynet2', interaction1='mynet1')
+myeff <- setEffect(myeff, crprod, name='mynet1', interaction1='mynet2')
+myeff
+(ans <- siena07(mycontrols, data=mydata, effects=myeff))
+
+ans$targets
+sum(s502 * s502r)  # 49 OK
+sum(s503r * s501)  # 31 OK
+# contemp:
+sum(s503r * s502) # 36, different which is good
+
+myeff2 <- includeGMoMStatistics(myeff, crprod_gmm, name='mynet2', interaction1='mynet1')
+myeff2
+
+algorithm2 <- sienaAlgorithmCreate(nsub=2, n3=1000, gmm=TRUE, seed=4321)
+(ans2 <- siena07(algorithm2, data=mydata, effects=myeff2))
+algorithm3 <- sienaAlgorithmCreate(nsub=4, n3=10000, gmm=TRUE, seed=597)
+ans3 <- siena07(algorithm3, data=mydata, effects=myeff2, prevAns=ans2)
+algorithm4 <- sienaAlgorithmCreate(nsub=5, n3=10000, gmm=TRUE, seed=597)
+ans4 <- siena07(algorithm4, data=mydata, effects=myeff2, prevAns=ans3)
+ans4
+(ans5 <- siena07(algorithm3, data=mydata, effects=myeff2, prevAns=ans4))
+ans5$targets # OK
+
+myeff6 <- setEffect(myeff, from, name='mynet2', interaction1='mynet1')
+(ans6 <- siena07(mycontrols, data=mydata, effects=myeff6))
+myeff7 <- includeGMoMStatistics(myeff6, from_gmm, name='mynet2', interaction1='mynet1')
+(ans7 <- siena07(algorithm2, data=mydata, effects=myeff7))
+(ans7 <- siena07(algorithm4, data=mydata, effects=myeff7, prevAns=ans7))
+ans7$targets
+sum(s503r * (s501 %*% t(s501)))  # 50 OK
+# contemp:
+sum(s503r * (s502 %*% t(s502)))  # 51 OK
+
+myeff8 <- setEffect(myeff, to, name='mynet2', interaction1='mynet1')
+(ans8 <- siena07(mycontrols, data=mydata, effects=myeff8))
+myeff9 <- includeGMoMStatistics(myeff8, to_gmm, name='mynet2', interaction1='mynet1')
+(ans9 <- siena07(algorithm2, data=mydata, effects=myeff9))
+(ans9 <- siena07(algorithm4, data=mydata, effects=myeff9, prevAns=ans9))
+ans9$targets
+sum(s503r * (s501 %*% s503r))  # 44 OK
+# contemp:
+sum(s503r * (s502 %*% s503r))  # 52 OK
+
+
+################################################################################
+### check modelType 11
+################################################################################
+
+
+(mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234, modelType=c(mynet1=11, mynet2=11)))
+set.seed(1234)
+(perm <- c(sample(1:25), 26:50))
+s502r <- s502[perm,perm]
+s503r <- s503[perm,perm]
+mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- sienaDependent(array(c(s502r, s503r), dim=c(50, 50, 2)))
+mydata <- sienaDataCreate(mynet1, mynet2)
+
+myeff <- getEffects(mydata)
+# for crprod:
+myeff <- setEffect(myeff, crprod, name='mynet2', interaction1='mynet1')
+myeff
+(ans <- siena07(mycontrols, data=mydata, effects=myeff))
+ans$targets
+# contemp:
+sum(s503r * s502) # 36, OK
+
+myeff2 <- setEffect(myeff, crprod, name='mynet1', interaction1='mynet2')
+(ans <- siena07(mycontrols, data=mydata, effects=myeff2))
+ans$targets
+# Warning: Noninvertible estimated covariance matrix. This should indeed happen.
+
+(mycontrols2 <- sienaAlgorithmCreate(projname=NULL, seed=1234, modelType=c(mynet1=1, mynet2=11)))
+(ans2 <- siena07(mycontrols2, data=mydata, effects=myeff))
+ans2$targets # OK
+(ans32 <- siena07(mycontrols2, data=mydata, effects=myeff2))
+ans32$targets # OK
+
+################################################################################
+### check outThreshold
+################################################################################
+
+mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+mydata <- sienaDataCreate(mynet)
+poscov <- (mydata$cCovars$mycova > 0)
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=138)
+
+mymodel <- getEffects(mydata)
+(mymodel <- setEffect(mymodel,outThreshold, parameter=2))
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+sum(rowSums(s502)> 2) # 23 OK
+sum(rowSums(s502)>= 3) # 23 OK
+(mymodel <- setEffect(mymodel,outThreshold2, parameter=4))
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+sum(rowSums(s502)> 4) # 3 OK

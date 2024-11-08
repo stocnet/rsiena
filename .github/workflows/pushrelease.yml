@@ -8,7 +8,7 @@ name: Check and release
 jobs:
 
   build:
-    name: Build for ${{ matrix.config.os }}
+    name: Build for ${{ matrix.config.os }} (${{ matrix.config.r }})
     runs-on: ${{ matrix.config.os }}
     strategy:
       fail-fast: false
@@ -16,15 +16,14 @@ jobs:
         config:
           - {os: macOS-latest, r: 'release', artifact_name: '*.tar.gz', asset_name: macOS}
           - {os: windows-latest, r: 'release', artifact_name: '*.zip', asset_name: winOS}
-          - {os: ubuntu-20.04, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", artifact_name: '*.tar.gz', asset_name: linuxOS}
+          - {os: ubuntu-latest, r: 'release',  artifact_name: '*.tar.gz', asset_name: linuxOS}
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
-      RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         
       - uses: r-lib/actions/setup-r@v2
         with:
@@ -63,7 +62,8 @@ jobs:
         shell: Rscript {0}
     
       - name: Save binary artifact
-        uses: actions/upload-artifact@v1
+        if: success()
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.config.asset_name }}
           path: build/
@@ -76,74 +76,50 @@ jobs:
       contents: write
     steps:
       - name: Checkout one
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
         with:
           fetch-depth: '0'
+
       - name: Bump version and push tag
         id: newtag
-        uses: anothrNick/github-tag-action@1.39.0
+        uses: anothrNick/github-tag-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
           DEFAULT_BUMP: patch
           RELEASE_BRANCHES: main
+
       - name: Checkout two
-        uses: actions/checkout@v2
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.newtag.outputs.tag }}
-          release_name: Release ${{ steps.newtag.outputs.tag }}
-          draft: false
-          prerelease: false
-          
+        uses: actions/checkout@v4
+    
       - name: Download binaries
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         
       - name: Display structure of downloaded files
         run: ls -R
 
-      - name: Rename Mac release
-        run: mv ./macOS/*.tgz RSiena.tgz 
+      - name: Rename binaries release
+        shell: bash
+        run: |
+          mv ./macOS/*.tgz RSiena.tgz
+          mv ./linuxOS/*.tar.gz RSiena.tar.gz
+          mv ./winOS/*.zip RSiena.zip 
+          echo "Renamed files"
+          ls -R
 
-      - name: Upload Mac binary
-        id: upload-mac
-        uses: actions/upload-release-asset@v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release and Upload Assets
+        id: create_release
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: RSiena.tgz
-          asset_name: RSiena.tgz
-          asset_content_type: application/zip
-
-      - name: Rename Linux release
-        run: mv ./linuxOS/*.tar.gz RSiena.tar.gz 
-
-      - name: Upload Linux binary
-        id: upload-lin
-        uses: actions/upload-release-asset@v1.0.2
+          tag_name: ${{ steps.newtag.outputs.tag }}
+          name: Release ${{ steps.newtag.outputs.tag }}
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: true
+          # Specify the assets you want to upload
+          files: |
+            Rsiena.tgz
+            Rsiena.tar.gz
+            Rsiena.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: RSiena.tar.gz
-          asset_name: RSiena.tar.gz
-          asset_content_type: application/zip
-
-      - name: Rename Windows release
-        run: mv ./winOS/*.zip RSiena.zip 
-
-      - name: Upload Windows binary
-        id: upload-win
-        uses: actions/upload-release-asset@v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: RSiena.zip
-          asset_name: RSiena.zip
-          asset_content_type: application/zip
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 

@@ -80,8 +80,10 @@ void averageInDegree(double val);
 void averageOutDegree(double val);
 void averageReciprocalDegree(double val);
 virtual double observedDistribution(int value, int observation) const;
+
 void modelType(int type);
 int modelType() const;
+bool networkModelTypeContemp() const;
 
 bool oneModeNetwork() const;
 

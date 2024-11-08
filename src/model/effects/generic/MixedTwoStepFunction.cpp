@@ -42,6 +42,26 @@ MixedTwoStepFunction::MixedTwoStepFunction(std::string firstNetworkName,
 	this->lsqrtTable = SqrtTable::instance();
 }
 
+/**
+ * Constructor.
+ * @param[in] networkName the name of the network variable this function is
+ * associated with
+ */
+MixedTwoStepFunction::MixedTwoStepFunction(std::string firstNetworkName,
+                                           std::string secondNetworkName, 
+                                           Direction firstDirection, 
+                                           Direction secondDirection, 
+										   double par, bool simulatedState) :
+	MixedNetworkAlterFunction(firstNetworkName, secondNetworkName, simulatedState)
+{
+	this->lpTable = 0;
+	this->ldirection1 = firstDirection;
+	this->ldirection2 = secondDirection;
+	this->lroot = (fabs(par-2) < 0.001);
+	this->ltrunc = (fabs(par-3) < 0.001);
+	this->lsqrtTable = SqrtTable::instance();
+}
+
 
 /**
  * Initializes this function.
@@ -75,7 +95,42 @@ void MixedTwoStepFunction::initialize(const Data * pData,
 
 	if(this->lpTable == 0)
 		throw std::invalid_argument( "MixedTwoStepFunction expects different direction parameters" );
+}
 
+
+/**
+ * Initializes this function.
+ * @param[in] pData the observed data
+ * @param[in] pState the current state of the dependent variables
+ * @param[in] pSimulatedState the current simulated state of the dependent variables
+ * @param[in] period the period of interest
+ * @param[in] pCache the cache object to be used to speed up calculations
+ */
+void MixedTwoStepFunction::initialize(const Data * pData,
+	State * pState, State * pSimulatedState,
+	int period,
+	Cache * pCache)
+{
+	MixedNetworkAlterFunction::initialize(pData, pState, pSimulatedState, period, pCache);
+	if (ldirection1 == EITHER && ldirection2 == EITHER)
+		this->lpTable = this->pTwoNetworkCache()->pEETable();
+	if (ldirection1 == FORWARD && ldirection2 == EITHER)
+		this->lpTable = this->pTwoNetworkCache()->pFETable();
+	if (ldirection1 == FORWARD && ldirection2 == RECIPROCAL)
+		this->lpTable = this->pTwoNetworkCache()->pFRTable();
+	if (ldirection1 == EITHER && ldirection2 == RECIPROCAL)
+		this->lpTable = this->pTwoNetworkCache()->pERTable();
+	if (ldirection1 == FORWARD && ldirection2 == FORWARD)
+		this->lpTable = this->pTwoNetworkCache()->pTwoPathTable();
+	if (ldirection1 == BACKWARD && ldirection2 == FORWARD)
+		this->lpTable = this->pTwoNetworkCache()->pOutStarTable();
+	if (ldirection1 == FORWARD && ldirection2 == BACKWARD)
+		this->lpTable = this->pTwoNetworkCache()->pInStarTable();
+	if (ldirection1 == RECIPROCAL && ldirection2 == FORWARD)
+		this->lpTable = this->pTwoNetworkCache()->pRFTable();
+
+	if(this->lpTable == 0)
+		throw std::invalid_argument( "MixedTwoStepFunction expects different direction parameters" );
 }
 
 

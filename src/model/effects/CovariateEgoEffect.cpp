@@ -53,6 +53,15 @@ CovariateEgoEffect::CovariateEgoEffect(const EffectInfo * pEffectInfo,
 	this->lleftThresholded = leftThresholded;
 	this->lrightThresholded = rightThresholded;
 	this->lthreshold = pEffectInfo->internalEffectParameter();
+	// to make sure that there will be no numerical equality difficulties:
+	if (this->lleftThresholded)
+	{
+		this->lthreshold += 1e-12;
+	}
+	if (this->lrightThresholded)
+	{
+		this->lthreshold -= 1e-12;
+	}
 }
 
 

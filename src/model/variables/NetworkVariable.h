@@ -161,32 +161,26 @@ private:
 	double ** lsymmetricEndowmentEffectContribution;
 	double ** lsymmetricCreationEffectContribution;
 
-	// Probabilities for models with cooperation between actor and alter
-
+	// Probabilities for models with cooperation between actor and alter:
     double lsymmetricProbabilities[2] {};
 
 	// The current alter for two-mode models 
 	// with cooperation between actor and alter;
 	// and the previous alter for one-mode twostep models:
-
 	int lalter {};
 	
-	// the probability for taking the double step in option DOUBLESTEP:
-	
+	// the probability for taking the double step in option DOUBLESTEP:	
 	double lnetworkDoubleStepProb {};
 	
-	// being one of the option DOUBLESTEP options:
+	// being one of the option DOUBLESTEP options:	
+	bool lnetworkModelTypeDoubleStep {};	
 	
-	bool lnetworkModelTypeDoubleStep {};
-
 	// The probability of selecting the current alter for models with
 	// cooperation between actor and alter:
-
 	double lalterProbability {};
 
 	// The probability of making the proposed change for models with
-	// cooperation between actor and alter
-
+	// cooperation between actor and alter:
 	double lsymmetricProbability {};
 
 	ITieIterator* lsettingFlips;
@@ -195,7 +189,7 @@ private:
 
 	bool loneMode {};
 
-	// the model type
+	// the model type:
 	NetworkModelType lnetworkModelType;
 };
 

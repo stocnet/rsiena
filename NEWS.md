@@ -1,3 +1,69 @@
+# RSiena 1.4.19
+
+2024-09-03
+
+## Changes in RSiena:
+
+### Effects
+  * New effects `outThreshold` and `outThreshold2`.
+  * `outActIntn` is an ego effect (`allEffects.csv`).
+### New functionality:
+  * Network option 11 = `NETCONTEMP` for use of contemporaneous statistics
+    for estimating all evaluation effects of the network variable.
+### Bug corrections
+  * Error corrected that occurred for estimation by the GMoM if
+    some effects are fixed.
+  * List of effect names when `thetaBound` is exceeded corrected (`phase2.r`).
+### Error messages
+  * If `setEffect` is called for an effect with `type=gmm`, an error message
+    is given that the function called should be `includeGMoMStatistics`. 
+
+# RSiena 1.4.18
+
+2024-07-31
+
+## Changes in RSiena:
+
+### Effects
+  * New gmm effects for co-evolution of multiple networks: 
+    `crprod_gmm`, `to_gmm`, `from_gmm`.
+### Bug corrections
+  * Bug corrected in `sienaGOF` which occurred for models with tested effects
+    if `iterations` is less than `sienaFitObject$n3`. 
+### Coding
+  * The new gmm effects required the extension of the function classes
+    `AlterFunction`, `NetworkAlterFunction`, and `MixedNetworkAlterFunction`
+    to allow making estimation statistics depend totally on the simulated state.
+  * Function `fixUpEffectNames(effects, defaultEffects)`
+    moved from `initializeFRAN.r` to `sienaEffects.r`. 
+
+# RSiena 1.4.13
+
+2024-06-06
+
+## Changes in RSiena:
+
+### Effects:
+  * New effect `homXOutAct2`.
+### Bug corrections: 
+  * Function `setEffect` corrected (it did not give the proper internal
+    parameters in the `effectName`). 
+  * Function `updateSpecification` corrected (it did not work properly
+    for including interactions).
+### Improved functionality:
+  * The handling of internal effect parameters in the columns `effectName`
+    and `functionName` of `sienaEffects` objects is improved.
+    This was achieved by changes in functions `setEffect` 
+    and `includeInteraction`.     
+    Effectnames as reproduced by `sienaFit` objects should now contain the
+    correct values of internal effect parameters.
+  * New parameter `thetaBound` for `siena07`, which has the effect of stopping
+    the estimation process if some parameters become too large (which would
+    signal divergence). 
+  * Display of deviations in `siena07gui` modified so that numbers larger 
+    than or equal to 1e5 in absolute value are displayed in exponential format
+    (and use only one line in the gui) (function `FormatString` in `siena07.r`).
+
 
 
 # RSiena 1.4.12
@@ -10,7 +76,7 @@
 ### Improved coding:
   * All objects created by functions, if not print or summary,
    now have an attribute "version", which is the package version.
-### Miscellenea:
+### Miscellanea:
   * New RSiena logo inst/rsienalogo-2.png
 
 

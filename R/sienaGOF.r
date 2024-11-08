@@ -385,7 +385,6 @@ sienaGOF <- function(
 
 	if (sum(tested) > 0) {
 		effectsObject <- sienaFitObject$requestedEffects
-		nSims <- sienaFitObject$Phase3nits
 		for (i in period) {
 			names(OneStepMHD_old[[i]]) <-
 					effectsObject$effectName[tested]
@@ -414,7 +413,7 @@ sienaGOF <- function(
 			obsSuffStats <-
 					t(sienaFitObject$targets2[effectsToInclude, , drop=FALSE])
 			G <- sienaFitObject$sf2[, , effectsToInclude, drop=FALSE] -
-					rep(obsSuffStats, each=nSims)
+					rep(obsSuffStats, each=iterations)
 			sigma <- cov(apply(G, c(1, 3), sum), use="pairwise.complete.obs")
 			SF <- sienaFitObject$ssc[ , , effectsToInclude, drop=FALSE]
 			dimnames(SF)[[3]] <- effectsObject$effectName[effectsToInclude]
@@ -430,7 +429,7 @@ sienaGOF <- function(
 						drop=FALSE]
 				D <- t(apply(DF, c(3, 4), mean))
 			}
-			fra <- apply(G, 3, sum) / nSims
+			fra <- apply(G, 3, sum) / iterations
 			doTests <- rep(FALSE, sum(effectsToInclude))
 			names(doTests) <- effectsObject$effectName[effectsToInclude]
 			doTests[effectsObject$effectName[index]] <- TRUE
@@ -439,30 +438,28 @@ sienaGOF <- function(
 							sigma, fra, doTests, redundant,
 							maxlike=sienaFitObject$maxlike)$oneStep )
 
-      # \mu'_\theta(X)
+      # \mu'_\theta(X)	  
 			JacobianExpStat_old <- lapply(period, function (i) {
-				t(SF[,i,]) %*% simStatsByPeriod[[i]]/ nSims	 })
+				t(SF[1:iterations,i,]) %*% simStatsByPeriod[[i]]/ iterations	 })
 			JacobianExpStat <- lapply(period, function (i) {
-				t(SF[,i,]) %*% simStatsByPeriod_tilde[[i]]/ nSims })
-
+				t(SF[1:iterations,i,]) %*% simStatsByPeriod_tilde[[i]]/ iterations })
       # List structure: Period, effect index
       thetaIndices <- 1:sum(effectsToInclude)
 	  # \Gamma_i(\theta)  i=period, j=parameter, k=replication
 			ExpStatCovar_old <- lapply(period, function (i) {
             lapply(thetaIndices, function(j){
-              Reduce("+", lapply(1:nSims,function(k){
+              Reduce("+", lapply(1:iterations,function(k){
                 simStatsByPeriod[[i]][k,] %*% t(simStatsByPeriod[[i]][k,]) * SF[k,i,j]
-              })) / nSims
+              })) / iterations
 				- JacobianExpStat[[i]][j,] %*%
 			t(ExpStat[[i]]) - ExpStat[[i]] %*% t(JacobianExpStat[[i]][j,])
             })
         })
 			ExpStatCovar <- lapply(period, function (i) {
 				lapply(thetaIndices, function(j){
-				Reduce("+", lapply(1:nSims,function(k){
+				Reduce("+", lapply(1:iterations,function(k){
 			simStatsByPeriod_tilde[[i]][k,] %*%
-				t(simStatsByPeriod_tilde[[i]][k,]) * SF[k,i,j] })) / nSims})})
-
+				t(simStatsByPeriod_tilde[[i]][k,]) * SF[k,i,j] })) / iterations})})
       # \Xi_i(\theta)
 			JacobianCovar_old <- lapply(period, function (i) {
 				lapply(thetaIndices, function(j){
