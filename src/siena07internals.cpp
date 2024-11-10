@@ -745,10 +745,14 @@ void setupBehavior(SEXP BEHAVIOR, BehaviorLongitudinalData * pBehaviorData)
 		pBehaviorData->similarityMeans(REAL(simMeans)[net],
 				CHAR(STRING_ELT(simNames, net)));
 	}
-
+    SEXP var;
+    PROTECT(var = Rf_install("variance"));
+    SEXP variance = Rf_getAttrib(VECTOR_ELT(BEHAVIOR,0), var);
+    pBehaviorData->variance(REAL(variance)[0]);
+     
 	// Now that the values are set, calculate some important statistics
 	pBehaviorData->calculateProperties();
-	UNPROTECT(5);
+	UNPROTECT(6);
 }
 
 /**

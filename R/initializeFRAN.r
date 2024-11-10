@@ -1846,6 +1846,8 @@ unpackBehavior<- function(depvar, observations)
     attr(beh, "simMean") <- attr(depvar, "simMean")
     ## attr simMeans
     attr(beh, "simMeans") <- attr(depvar, "simMeans")
+    ## attr variance
+    attr(beh, "variance") <- attr(depvar, "variance")
     if (attr(depvar, "type") == "behavior")
     {
         beh <- round(beh)
