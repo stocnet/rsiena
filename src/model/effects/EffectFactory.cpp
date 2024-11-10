@@ -2191,6 +2191,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new AverageSimilarityInDist2Effect(pEffectInfo, false);
 	}
+    else if (effectName == "avSimVarAlt")
+    {
+        pEffect = new VarianceAlterSimilarityEffect(pEffectInfo, true, false, false);
+    }
 	else if (effectName == "avAlt")
 	{
 		if (pContinuousData)
@@ -2304,6 +2308,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new AverageAlterInDist2Effect(pEffectInfo, false, true);
 	}
+    else if (effectName == "varAlt")
+    {
+        pEffect = new VarianceAlterEffect(pEffectInfo);
+    }
 	else if (effectName == "behDenseTriads")
 	{
 		pEffect = new DenseTriadsBehaviorEffect(pEffectInfo);

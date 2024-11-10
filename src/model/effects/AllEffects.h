@@ -130,6 +130,8 @@
 #include "TransitiveTripletsEffect.h"
 #include "TruncatedOutdegreeEffect.h"
 #include "TruncatedOutXEffect.h"
+#include "VarianceAlterEffect.h"
+#include "VarianceAlterSimilarityEffect.h"
 #include "WienerEffect.h"
 #include "WWXClosureEffect.h"
 #include "WXXClosureEffect.h"

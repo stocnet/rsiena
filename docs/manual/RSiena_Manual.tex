@@ -196,7 +196,7 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.4.19.
+This version was renewed for \RS version 1.4.20.
 \end{abstract}
 
 
@@ -1147,7 +1147,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.4.19).
+  identified by a version number (e.g.\ 1.4.20).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -14424,6 +14424,14 @@ The list of these effects is the following.
  and the other actors $j$ to whom he is reciprocally tied, multiplied by their indegrees,\\
  $s^{\rm beh}_{i\vit}(x, z) =  \sum_j x_{ij} x_{ji} x_{+j} ({\rm sim}^z_{ij} - \widehat{{\rm sim}^z}) $;
 
+ \item {\em average similarity $\times$ variance alter effect} \texttt{(avSimVarAlt)},
+ defined by the average of centered similarity scores ${\rm sim}^z_{ij}$ between $i$
+ and the other actors $j$ to whom he is tied, multiplied the centered variance of the behavior of his alters, \\
+ $s^{\rm beh}_{i\vit}(x, z) = x_{i+}^{-1} \,
+        \sum_j x_{ij}  ({\rm sim}^z_{ij} - \widehat{{\rm sim}^z}) $ \cdot \big(x_{i+}^{-1}\,\sum_j (x_{ij} z_j)^2 - x_{i+}^{-2}\, 
+       (\sum_j x_{ij}z_j)^2 - \widehat{{\rm var}^z} \big) $\\
+ (and $0$ if $x_{i+} = 0$) ; \\
+where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values in all but the final wave; \\ 
 
  \item {\em average attraction toward higher effect} \texttt{(avAttHigher)}, defined by the
  average of non-centered similarity scores ${\rm sim}^z_{ij}$ between $i$
@@ -14681,6 +14689,14 @@ The list of these effects is the following.
  $s^{\rm beh}_{i\vit}(x, z) =  z_i \big( \text{min}_j \, x_{ij}\, z_j \big) $\\
  (and the mean behavior, i.e. $0$, if $\sum_j x_{ij} = 0$) ;
 
+ \item {\em variance alter effect} \texttt{(varAlt)},
+ defined by  $i$'s
+ behavior multiplied by the centered variance of the behavior of his alters, \\
+ $s^{\rm beh}_{i\vit}(x, z) =  z_i \big(x_{i+}^{-1}\sum_j (x_{ij} z_j)^2 - x_{i+}^{-1} 
+       (\sum_j x_{ij}z_j)^2 - \widehat{{\rm var}^z} \big) $\\
+ (and $0$ if $x_{i+} = 0$) ; \\
+where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values
+in all but the final wave; \\ 
 
  \item {\em dense triads effect} \texttt{(behDenseTriads)},
  defined by  $i$'s
@@ -16922,12 +16938,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.4.19.tar.gz|\\
+\verb|R CMD check RSiena_1.4.20.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.4.19.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.4.20.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -18041,6 +18057,22 @@ Changes in RSiena:
 \end{itemize}
 
 \fi
+
+\item 2024-11-10 GitHub, package version 1.4.20.
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects:
+   \begin{itemize}
+	\item New effects \texttt{varAlt} and \texttt{avSimVarAlt}.
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+	\item Interaction effects for continuous behavior turned off. The R side of
+	\texttt{includeInteraction} for continuous behavior had been implemented but 
+	not the C++ side, so now an error message is given.
+    \end{itemize}
+\end{itemize}
 
 \item 2024-09-03 GitHub, package version 1.4.19.
 
