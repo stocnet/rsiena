@@ -185,6 +185,11 @@ includeInteraction <- function(myeff, ...,
 	{
 		effect3 <- 0
 	}
+    ## interaction effects not yet implemented for continuous behavior
+    if (any(myeff$netType[c(effect1, effect2, effect3)] == "continuous"))
+    {
+        stop("Interaction effects not yet implemented for continuous behavior")
+    }
 	## does the effect already exist?
 	intn <- (myeff$effect1 == effect1) & (myeff$effect2 == effect2)
 	if (effect3 > 0)
