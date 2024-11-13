@@ -350,6 +350,8 @@ or \citet{Snijders05}.
 Basic references for the model of network-behavior co-evolution
 are \citet*{SnijdersEA07} and \citet*{SteglichEA10}.
 Review articles are \citet{Snijders2017} and \citet{SnijdersPickup17}.
+The latter is also the reference for the model for dynamics
+of non-directed networks.
 
 More specific references are \citet{KoskinenEdling2012} for the
 dynamics of two-mode networks and \citet{SLT2013} for the
@@ -3334,7 +3336,7 @@ the corresponding lower-order structures should be controlled for.
 This can be done by including the effects representing them
 in the model and estimating their parameters;
 or including them in the model with a parameter fixed at~0,
-tested by a score-type test (Section~\ref{S_Scoretest}), 
+tested by a score-type test (Section~\ref{S_Scoretest}),
 and found to be non-significant.
 
 
@@ -9956,8 +9958,8 @@ and
  they are defined by \\
  $s^{\rm net}_{i\vit}(x) = \text{max}(x_{i+}\,-\, p, \, 0)$;\\
  this can be regarded as the mirror image of \texttt{outTrunc};
- 
- \item {\em out-degree larger than $p$} (\texttt{outThreshold}) 
+
+ \item {\em out-degree larger than $p$} (\texttt{outThreshold})
  (out-threshold($p$)) where $p$ is some constant
  (internal effect parameter, see above),
   there are two implementations here:
@@ -11238,23 +11240,6 @@ where $\bar v$ is (again) the global mean of $V$.
   Note that for ego ($i$) the own value is used and for alter ($j$) the alters' covariate-average
   (these are alter's in-alters!), so that this effect is about a comparison between $i$
    and the in-neighbourhoods of the $j$'s.
-
-\item \emph{ego-(in-alter-distance-2) same covariate} \texttt{(sameEgoInDist2)},
-      defined as the sum, for all actors $j$ to whom $i$ has a tie,
-      of the proportion of values $v_h$ equal to $v_i$
-      in their in-neighbourhoods (i.e., for all actors $h$, other than $i$,
-       who send ties to $j$; configurations $i \rightarrow j \leftarrow h$):
-\[
- s^{\rm net}_{i\vit}(x) = \sum_{j;\, j \neq i, \, x_{+j} > x_{ij} } \frac{x_{ij}}{x_{+j} - x_{ij}}
-                        \, \sum_{h \neq i} x_{hj}\, I\{v_h = v_i\} \ ,
-\]
-where 0/0 is defined as 0; for internal effect parameter $p=0$ it is defined
-as the number of out-ties $j$ who have any incoming tie from an actor $h$
-with $v_h = v_i\,$:
-\[
- s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\,
-                I\Big\{  \Big( \sum_{h \neq i} x_{hj}\, I\{v_h = v_i\} \Big) > 0 \Big\} \ .
-\]
 
 \item \emph{ego-(in-alter-distance-2) same covariate} \texttt{(sameEgoInDist2)},
       defined as the sum, for all actors $j$ to whom $i$ has a tie,
@@ -18053,8 +18038,8 @@ Changes in RSiena:
     \end{itemize}
 \item New functionality:
    \begin{itemize}
-  \item New network option 11 
-    (\emph{Contemporaneous evaluation statistics model}) for use of 
+  \item New network option 11
+    (\emph{Contemporaneous evaluation statistics model}) for use of
     contemporaneous statistics
     for estimating all evaluation effects of the network variable.
   \item If \sfn{setEffect} is called for an effect with \texttt{type=gmm}, an error message
@@ -18064,7 +18049,7 @@ Changes in RSiena:
    \begin{itemize}
   \item Error corrected that occurred for estimation by the GMoM if
     some effects are fixed.
-  \item Correction of list of effect names when \texttt{thetaBound} is exceeded.
+  \item Correction of list of effect names given when \texttt{thetaBound} is exceeded.
     \end{itemize}
 \end{itemize}
 
