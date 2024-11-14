@@ -2168,6 +2168,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new AverageTwoInStarAlterEffect(pEffectInfo, false, false);
 	}
+	else if (effectName == "totGwdspFFAlt")
+	{
+		pEffect = new TotalGwdspAlterEffect(pEffectInfo, true);
+	}
+	else if (effectName == "totGwdspFBAlt")
+	{
+		pEffect = new TotalGwdspAlterEffect(pEffectInfo, false);
+	}
 	else if (effectName == "avAlt")
 	{
 		if (pContinuousData)

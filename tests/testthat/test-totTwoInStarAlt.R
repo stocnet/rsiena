@@ -67,15 +67,16 @@ test_that("Target statistics are correct", {
     return(matrix_vals)
   }
 
-  divi <- function(x, y) {
-    ifelse(y == 0, 0, x / y)
-  }
+  # divi <- function(x, y) {
+  #   ifelse(y == 0, 0, x / y)
+  # }
 
   instarmat <- instars(mynet[, , 1])
-  weighted <- divi(
-    (mybeh[, , 2]) %*% instarmat,
-    (mybeh[, , 2])  %*%  (instarmat > 0)
-  )
+  # weighted <- divi(
+  #   (mybeh[, , 2]) %*% instarmat,
+  #   (mybeh[, , 2])  %*%  (instarmat > 0)
+  # )
+  weighted <- (mybeh[, , 2]) %*% instarmat
   totTwoInStarAlt_target <- sum((mybeh[, , 2]) * weighted)
 
   expect_equal(

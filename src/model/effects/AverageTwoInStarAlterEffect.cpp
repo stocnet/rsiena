@@ -11,13 +11,20 @@
 
 #include <cmath>
 #include "AverageTwoInStarAlterEffect.h"
+#include "data/OneModeNetworkLongitudinalData.h"
 #include "network/Network.h"
 #include "network/OneModeNetwork.h"
-#include "network/CommonNeighborIterator.h"
+// #include "network/CommonNeighborIterator.h"
 #include "network/IncidentTieIterator.h"
 #include "model/variables/NetworkVariable.h"
 #include "model/variables/BehaviorVariable.h"
 #include "NetworkDependentBehaviorEffect.h"
+// #include "NetworkEffect.h"
+#include "model/tables/ConfigurationTable.h"
+#include "model/EffectInfo.h"
+
+// #include "model/tables/NetworkCache.h"
+// #include "model/tables/EgocentricConfigurationTable.h"
 
 using namespace std;
 
@@ -35,6 +42,7 @@ AverageTwoInStarAlterEffect::AverageTwoInStarAlterEffect(
 	// Indicates whether there will be division by the outdegree of ego (not used)
 	this->ldivide2 = divide2;
 	// Indicates whether there will be division by the indegree of alter (not used)
+	// this->lcentered = centered;
 }
 
 /**
@@ -55,53 +63,43 @@ double AverageTwoInStarAlterEffect::calculateChangeContribution(int actor,
 {
 	double contribution = 0;
 	const Network * pNetwork = this->pNetwork();
-
-	// is the if clause really necessary? The IncidentTieIterator should be able to handle this
+	
 	if (pNetwork->outDegree(actor) > 0) 
 	{
 		// The formula for the effect:
 		// s_i(x) = v_i * sum(v_j) over all two-in-star alters j of i,
-		// weighted by the number of common two-in-stars divided by
-		// the sum of behavior of each two-in-star alter
+		// weighted by the number of common two-in-stars divided
 		// We need to calculate the change delta in s_i(x), if we changed
 		// v_i to v_i + d (d being the given amount of change in v_i).
 		// divide1 and divide2 are not used for now
 
 		double sumAlterValue = 0;
-		double denom = 0;
-		for (int j = 0; j < this->n(); j++)
+		// double denom = 0;
+		for (int j = 0; j < this->n(); j++) //inefficient?
 		{
+			double alterValue = 0;
 			if (j != actor)
 			{
-				double instars = pNetwork->inTwoStarCount(actor, j);
-				// double instarCount = 0;
-				// for (IncidentTieIterator iterH = pNetwork->outTies(j);
-				// 			iterH.valid();
-				// 			iterH.next())
-				// 	{
-				// 		int h = iterH.actor();
-				// 		for (IncidentTieIterator iterI = pNetwork->inTies(h);
-				// 					iterI.valid();
-				// 					iterI.next())
-				// 			{
-				// 				int i = iterI.actor();
-				// 				if (i == actor) // should stop after this - use while?
-				// 				{
-				// 					instars ++;
-				// 				}
-				// 			}
-				// 	}
-				if (instars > 0)
+				// int instars = pNetwork->inTwoStarCount(actor, j);
+				int instars = this->pInStarTable()->get(j);
+
+				double alterValue = this->value(j) * instars;
+				int tieValue =  this->pNetwork()->tieValue(actor, j);
+				if (((pNetwork->inDegree(j) - tieValue)> 0) && (this->ldivide2))
 				{
-					denom += this->value(j);
+					alterValue /= (pNetwork->inDegree(j) - tieValue);
 				}
-				sumAlterValue += this->value(j) * instars;
+				sumAlterValue += alterValue;
 			}
 		}
 		contribution = difference * sumAlterValue;
-		if (denom != 0)
+		// if (denom != 0)
+		// {
+		// 	contribution /= denom; //what happens if denom == 0 but sumaAlterValue != 0 ?
+		// }
+		if (this->ldivide1)
 		{
-			contribution /= denom; //what happens if denom == 0 but sumaAlterValue != 0 ?
+			contribution /= pNetwork->outDegree(actor);
 		}
 	}
 	return contribution;
@@ -116,40 +114,28 @@ double AverageTwoInStarAlterEffect::egoStatistic(int ego, double * currentValues
 	double statistic = 0;
 	const Network * pNetwork = this->pNetwork();
 
-	double denom = 0;
+	// double denom = 0;
 	for (int j = 0; j < this->n(); j++)
 	{
 		if (j != ego)
 		{
-			double instarCount = pNetwork->inTwoStarCount(ego, j);
-			// double instarCount = 0;
-			// for (IncidentTieIterator iterH = pNetwork->outTies(j);
-			// 			iterH.valid();
-			// 			iterH.next())
-			// 	{
-			// 		int h = iterH.actor();
-			// 		for (IncidentTieIterator iterI = pNetwork->inTies(h);
-			// 					iterI.valid();
-			// 					iterI.next())
-			// 			{
-			// 				int i = iterI.actor();
-			// 				if (i == ego) // should stop after this - use while?
-			// 				{
-			// 					instarCount ++;
-			// 				}
-			// 			}
-			// 	}
-			if (instarCount > 0)
-			{
-				denom += currentValues[j] + this->overallCenterMean();
-			}
+			int instarCount = pNetwork->inTwoStarCount(ego, j);
+			// Configuration Table can not be used because preprocess ego has not been called before?
+			// if (instarCount > 0)
+			// {
+			// 	denom += currentValues[j] + this->overallCenterMean();
+			// }
 			statistic += (currentValues[j] + this->overallCenterMean()) * instarCount;
 		}
 	}
 	statistic *= (currentValues[ego] + this->overallCenterMean());
-	if (denom != 0)
+	// if (denom != 0)
+	// {
+	// 	statistic /= denom; //what happens if denom == 0 but statistic != 0 ?
+	// }
+	if ((pNetwork->outDegree(ego) > 0) && (this->ldivide1))
 	{
-		statistic /= denom; //what happens if denom == 0 but statistic != 0 ?
+		statistic /= pNetwork->outDegree(ego);
 	}
 	
 	return statistic;

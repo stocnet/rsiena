@@ -132,6 +132,7 @@
 #include "TransitiveTripletsEffect.h"
 #include "TruncatedOutdegreeEffect.h"
 #include "TruncatedOutXEffect.h"
+#include "TotalGwdspAlterEffect.h"
 #include "WienerEffect.h"
 #include "WWXClosureEffect.h"
 #include "WXXClosureEffect.h"
