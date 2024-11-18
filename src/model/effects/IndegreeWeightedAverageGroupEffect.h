@@ -3,14 +3,14 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: IndegreeWeightedAverageEffect.h
+ * File: IndegreeWeightedAverageGroupEffect.h
  *
  * Description: This file contains the definition of the
- * IndegreeWeightedAverageEffect class.
+ * IndegreeWeightedAverageGroupEffect class.
  *****************************************************************************/
 
-#ifndef IndegreeWeightedAverageEffect_H_
-#define IndegreeWeightedAverageEffect_H_
+#ifndef INDEGREEWEIGHTEDAVERAGEGROUPEFFECT_H_
+#define INDEGREEWEIGHTEDAVERAGEGROUPEFFECT_H_
 
 #include "NetworkDependentBehaviorEffect.h"
 
@@ -20,10 +20,10 @@ namespace siena
 /**
  * Average of the statistic z_j weighted by indegree for the group.
  */
-class IndegreeWeightedAverageEffect : public NetworkDependentBehaviorEffect
+class IndegreeWeightedAverageGroupEffect : public NetworkDependentBehaviorEffect
 {
 public:
-	IndegreeWeightedAverageEffect(const EffectInfo * pEffectInfo);
+	IndegreeWeightedAverageGroupEffect(const EffectInfo * pEffectInfo, bool divide);
 
 	virtual void initialize(const Data * pData,
 		State * pState,
@@ -41,8 +41,9 @@ private:
 	bool lcenterMean {};
 	// if not lcenter, centering is about the following value
 	double lcenteringValue {};
+	bool ldivide {};
 };
 
 }
 
-#endif /*IndegreeWeightedAverageEffect_H_*/
+#endif /*INDEGREEWEIGHTEDAVERAGEGROUPEFFECT_H_*/

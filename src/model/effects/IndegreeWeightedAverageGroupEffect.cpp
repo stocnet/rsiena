@@ -3,10 +3,10 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: IndegreeWeightedAverageEffect.cpp
+ * File: IndegreeWeightedAverageGroupEffect.cpp
  *
  * Description: This file contains the implementation of the
- * IndegreeWeightedAverageEffect class.
+ * IndegreeWeightedAverageGroupEffect class.
  *****************************************************************************/
 
 //#include <R_ext/Print.h>
@@ -18,7 +18,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <stdexcept>
-#include "IndegreeWeightedAverageEffect.h"
+#include "IndegreeWeightedAverageGroupEffect.h"
 #include "network/Network.h"
 #include "network/IncidentTieIterator.h"
 #include "model/variables/NetworkVariable.h"
@@ -34,7 +34,7 @@ namespace siena
 /**
  * Constructor.
  */
-IndegreeWeightedAverageEffect::IndegreeWeightedAverageEffect(const EffectInfo * pEffectInfo) :
+IndegreeWeightedAverageGroupEffect::IndegreeWeightedAverageGroupEffect(const EffectInfo * pEffectInfo, bool divide) :
 	NetworkDependentBehaviorEffect(pEffectInfo)
 {
 	this->lcenterMean = (pEffectInfo->internalEffectParameter() <= 0.5);
@@ -46,6 +46,7 @@ IndegreeWeightedAverageEffect::IndegreeWeightedAverageEffect(const EffectInfo * 
 	{
 		this->lcenteringValue = 0.0;
 	}
+	this->ldivide = divide;
 }
 
 /**
@@ -55,7 +56,7 @@ IndegreeWeightedAverageEffect::IndegreeWeightedAverageEffect(const EffectInfo * 
  * @param[in] period the period of interest
  * @param[in] pCache the cache object to be used to speed up calculations
  */
-void IndegreeWeightedAverageEffect::initialize(const Data * pData,
+void IndegreeWeightedAverageGroupEffect::initialize(const Data * pData,
 	State * pState,
 	int period,
 	Cache * pCache)
@@ -68,7 +69,7 @@ void IndegreeWeightedAverageEffect::initialize(const Data * pData,
  * Calculates the change in the statistic corresponding to this effect if
  * the given actor would change his behavior by the given amount.
  */
-double IndegreeWeightedAverageEffect::calculateChangeContribution(int actor,
+double IndegreeWeightedAverageGroupEffect::calculateChangeContribution(int actor,
 	int difference)
 {
 	double statistic = 0;
@@ -77,10 +78,16 @@ double IndegreeWeightedAverageEffect::calculateChangeContribution(int actor,
 	for (int i = 0; i < this->n(); i++)
 	{
 		statistic += this->centeredValue(i) * this->pNetwork()->inDegree(i);
-        weightedN += this->pNetwork()->inDegree(i);
+		if (this->ldivide)
+		{
+	        weightedN += this->pNetwork()->inDegree(i);
+		}
 	}
 	statistic += this->centeredValue(actor) * this->pNetwork()->inDegree(actor) + difference;
-    weightedN += this->pNetwork()->inDegree(actor);
+	if (this->ldivide)
+	{
+	    weightedN += this->pNetwork()->inDegree(actor);
+	}
     statistic /= weightedN;
 	if (!this->lcenterMean)
 	{
@@ -94,16 +101,22 @@ double IndegreeWeightedAverageEffect::calculateChangeContribution(int actor,
  * Returns the statistic corresponding to the given ego with respect to the
  * given values of the behavior variable.
  */
-double IndegreeWeightedAverageEffect::egoStatistic(int ego, double * currentValues)
+double IndegreeWeightedAverageGroupEffect::egoStatistic(int ego, double * currentValues)
 {
 	double thesum = 0;
     int weightsum = 0;
  	for (int i = 0; i < this->n(); i++)
 	{
 		thesum += currentValues[i] * this->pNetwork()->inDegree(i);
+		if (this->ldivide)
+		{
         weightsum += this->pNetwork()->inDegree(i);
+		}
 	}
-    thesum /= weightsum;    
+	if (this->ldivide)
+	{
+	    thesum /= weightsum;    
+	}
 	if (!this->lcenterMean)
 	{
 		thesum += (this->overallCenterMean() - this->lcenteringValue);
@@ -117,7 +130,7 @@ double IndegreeWeightedAverageEffect::egoStatistic(int ego, double * currentValu
  * the endowment function with respect to the initial values of a
  * behavior variable and the current values.
  */
-double IndegreeWeightedAverageEffect::egoEndowmentStatistic(int ego,
+double IndegreeWeightedAverageGroupEffect::egoEndowmentStatistic(int ego,
  	const int * difference,
 	double * currentValues)
 {

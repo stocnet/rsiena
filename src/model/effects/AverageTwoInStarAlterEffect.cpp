@@ -77,12 +77,10 @@ double AverageTwoInStarAlterEffect::calculateChangeContribution(int actor,
 		// double denom = 0;
 		for (int j = 0; j < this->n(); j++) //inefficient?
 		{
-			double alterValue = 0;
 			if (j != actor)
 			{
 				// int instars = pNetwork->inTwoStarCount(actor, j);
 				int instars = this->pInStarTable()->get(j);
-
 				double alterValue = this->value(j) * instars;
 				int tieValue =  this->pNetwork()->tieValue(actor, j);
 				if (((pNetwork->inDegree(j) - tieValue)> 0) && (this->ldivide2))
@@ -126,6 +124,12 @@ double AverageTwoInStarAlterEffect::egoStatistic(int ego, double * currentValues
 			// 	denom += currentValues[j] + this->overallCenterMean();
 			// }
 			statistic += (currentValues[j] + this->overallCenterMean()) * instarCount;
+		}
+		// tieFromi =  this->pNetwork()->tieValue(i, iter.actor());
+		if ((pNetwork->inDegree(j) > 1) && (this->ldivide2))
+		{
+			statistic /= (pNetwork->inDegree(j) - 1);
+				// there always is a tie i -> iteri.actor()
 		}
 	}
 	statistic *= (currentValues[ego] + this->overallCenterMean());

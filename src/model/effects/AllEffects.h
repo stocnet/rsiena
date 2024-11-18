@@ -56,7 +56,7 @@
 #include "DenseTriadsEffect.h"
 #include "DenseTriadsSimilarityEffect.h"
 #include "DensityEffect.h"
-#include "IndegreeWeightedAverageEffect.h"
+#include "IndegreeWeightedAverageGroupEffect.h"
 #include "DistanceTwoEffect.h"
 #include "DoubleDegreeBehaviorEffect.h"
 #include "DoubleInPopEffect.h"

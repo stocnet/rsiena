@@ -36,7 +36,7 @@ namespace siena
  * @param[in] pEffectInfo the effect descriptor
  * @param[in] squared indicates if the covariate values must be squared
  */
-AverageGroupEgoEffect::AverageGroupEgoEffect(const EffectInfo * pEffectInfo) :
+AverageGroupEgoEffect::AverageGroupEgoEffect(const EffectInfo * pEffectInfo, bool divide) :
 	CovariateDependentNetworkEffect(pEffectInfo)
 {
 //	this->lcenterMean = (pEffectInfo->internalEffectParameter() <= 0.5);
@@ -48,6 +48,9 @@ AverageGroupEgoEffect::AverageGroupEgoEffect(const EffectInfo * pEffectInfo) :
 //	{
 //		this->lcenteringValue = 0.0;
 //	}
+	this->ldivide = divide;
+	// Indicates whether there will be division by the number of actors.
+
 }
 
 

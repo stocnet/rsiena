@@ -2763,7 +2763,7 @@ sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
 c_p <- ifelse(p <= 0.5, 0, p - mbh)
 sum((mybeh[,,2]-mbh)*(mean((mybeh[,,2]-mbh))-c_p))
 ################################################################################
-### check indegWeightAverage
+### check indegAvGroup
 ################################################################################
 
 
@@ -2772,7 +2772,7 @@ mybeh <- sienaDependent(s50a[,2:3], type="behavior")
 mydata <- sienaDataCreate(mynet, mybeh)
 mymodel <- getEffects(mydata)
 p <- 1
-mymodel <- setEffect(mymodel,indegWeightAverage, 
+mymodel <- setEffect(mymodel,indegAvGroup, 
                       name='mybeh', interaction1='mynet', parameter=p)
 mymodel
 mycontrols <- sienaAlgorithmCreate(projname=NULL)
@@ -2782,7 +2782,7 @@ ans$targets
 sum(mybeh[,,2] - mbh) # OK linear shape
 sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
 
-# for indegWeightAverage effect:
+# for indegAvGroup effect:
 ## The target statistic equals the sum over s_i^beh, weighted by
 ##substracting c_p from the mean for p > 0.5
 
@@ -2798,7 +2798,7 @@ mymodel <- getEffects(mydata)
 p <- 1
 mymodel <- includeEffects (mymodel, linear, quad,  name='mybeh', include=FALSE)
 
-mymodel <- setEffect(mymodel,indegWeightAverage, 
+mymodel <- setEffect(mymodel,indegAvGroup, 
                      name='mybeh', interaction1='mynet', parameter=p)
 mymodel
 mycontrols <- sienaAlgorithmCreate(projname=NULL)
@@ -2807,7 +2807,7 @@ mycontrols <- sienaAlgorithmCreate(projname=NULL)
                 prevAns = ans, returnDeps=TRUE))
 ans$targets
 
-#IndegWeightedAverage
+#indegedAverage
 
 c_p <- ifelse(p <= 0.5, 0, p - mbh)
 (mbh <- mean(mybeh))

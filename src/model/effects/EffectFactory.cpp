@@ -823,7 +823,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "avGroupEgoX")
 	{
-		pEffect = new AverageGroupEgoEffect(pEffectInfo);
+		pEffect = new AverageGroupEgoEffect(pEffectInfo, true);
+	}
+	else if (effectName == "totGroupEgoX")
+	{
+		pEffect = new AverageGroupEgoEffect(pEffectInfo, false);
 	}
 	else if (effectName == "cycle4")
 	{
@@ -1952,9 +1956,13 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new SimilarityIndegreeEffect(pEffectInfo, false, false);
 	}
-	else if (effectName == "indegWeightAverage")
+	else if (effectName == "indegAvGroup")
 	{
-		pEffect = new IndegreeWeightedAverageEffect(pEffectInfo);
+		pEffect = new IndegreeWeightedAverageGroupEffect(pEffectInfo, true);
+	}
+	else if (effectName == "indegTotGroup")
+	{
+		pEffect = new IndegreeWeightedAverageGroupEffect(pEffectInfo, false);
 	}
 	else if (effectName == "indeg")
 	{
@@ -2146,7 +2154,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "popAlt")
 	{
-		pEffect = new PopularityAlterEffect(pEffectInfo);
+		pEffect = new PopularityAlterEffect(pEffectInfo, true);
+	}
+	else if (effectName == "totPopAlt")
+	{
+		pEffect = new PopularityAlterEffect(pEffectInfo, false);
 	}
 	else if (effectName == "avSimRecPop")
 	{
@@ -2167,6 +2179,18 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "totTwoInStarAlt")
 	{
 		pEffect = new AverageTwoInStarAlterEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "avTwoInStarAlt")
+	{
+		pEffect = new AverageTwoInStarAlterEffect(pEffectInfo, true, false);
+	}
+	else if (effectName == "avTwoInStarAltA")
+	{
+		pEffect = new AverageTwoInStarAlterEffect(pEffectInfo, true, true);
+	}
+	else if (effectName == "totTwoInStarAltA")
+	{
+		pEffect = new AverageTwoInStarAlterEffect(pEffectInfo, false, true);
 	}
 	else if (effectName == "totGwdspFFAlt")
 	{
@@ -2193,7 +2217,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "avGroup")
 	{
-		pEffect = new AverageGroupEffect(pEffectInfo);
+		pEffect = new AverageGroupEffect(pEffectInfo, true);
+	}
+		else if (effectName == "totGroup")
+	{
+		pEffect = new AverageGroupEffect(pEffectInfo, false);
 	}
 	else if (effectName == "totAlt")
 	{
