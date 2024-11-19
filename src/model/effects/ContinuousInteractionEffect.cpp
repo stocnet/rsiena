@@ -115,7 +115,7 @@ double ContinuousInteractionEffect::egoStatistic(int i,
 {
     double statistic;
     
-    if (std::abs(currentValues[i]) > 0.000001)
+    if (std::abs(currentValues[i]) > 1e-10)
     {
         statistic = this->lpEffect1->egoStatistic(i, currentValues) *
         this->lpEffect2->egoStatistic(i, currentValues);
