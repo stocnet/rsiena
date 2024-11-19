@@ -186,10 +186,10 @@ includeInteraction <- function(myeff, ...,
 		effect3 <- 0
 	}
     ## interaction effects not yet implemented for continuous behavior
-    if (any(myeff$netType[c(effect1, effect2, effect3)] == "continuous"))
-    {
-        stop("Interaction effects not yet implemented for continuous behavior")
-    }
+ #   if (any(myeff$netType[c(effect1, effect2, effect3)] == "continuous"))
+ #   {
+ #       stop("Interaction effects not yet implemented for continuous behavior")
+ #   }
 	## does the effect already exist?
 	intn <- (myeff$effect1 == effect1) & (myeff$effect2 == effect2)
 	if (effect3 > 0)
@@ -736,19 +736,13 @@ fixUpEffectNames <- function(effects)
                                 "must all be same type: evaluation")
                        }
                    }
-                   ## check types - at most one should be not OK here
+                   ## check types - all should be OK here
                    inters <- rbind(inter1, inter2, inter3)
-                   if (length(which(inters$interactionType != "OK")) > 1)
+                   if (any(inters$interactionType != "OK"))
 				   {
 				   	   stop("invalid behavior interaction specification: ",
-				   			"at most one effect with interactionType ",
-				   			"not OK is allowed")
+				   			"only effects with interactionType OK are allowed")
                    }
-                   ##if (any(inters$interactionType != "OK"))
-                   ##{
-                   ##    stop("invalid behavior interaction specification: ",
-                   ##         "only effects with interactionType OK are allowed")
-                   ##}
                    ## construct a name
 				   tmpnames <- inters$effectName
 				   tmpnames[-1] <- sub(paste("behavior ", inters$name[1], " ",
