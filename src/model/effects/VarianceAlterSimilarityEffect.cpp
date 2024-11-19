@@ -51,7 +51,7 @@ double VarianceAlterSimilarityEffect::calculateChangeContribution(int actor,
     int difference)
 {
     double contribution = 0;
-    double variance = 0;
+    double varianceAlt = 0;
     const Network * pNetwork = this->pNetwork();
     int neighborCount = pNetwork->outDegree(actor);
     
@@ -115,15 +115,15 @@ double VarianceAlterSimilarityEffect::calculateChangeContribution(int actor,
              iter.next())
         {
             int j = iter.actor();
-            variance += pow(this->centeredValue(j), 2);
+            varianceAlt += pow(this->centeredValue(j), 2);
         }
-        variance /= neighborCount;
-        variance -= pow(totalAlterValue(actor) / neighborCount, 2);
-        variance -= this->variance();
+        varianceAlt /= neighborCount;
+        varianceAlt -= pow(totalAlterValue(actor) / neighborCount, 2);
+        varianceAlt -= this->variance();
     }
     
     // step 3: determine the effect contribution
-    contribution *= variance;
+    contribution *= varianceAlt;
     
     return contribution;
 }
@@ -139,7 +139,7 @@ double VarianceAlterSimilarityEffect::egoStatistic(int ego,
     const Network * pNetwork = this->pNetwork();
 
     double statistic = 0;
-    double variance = 0;
+    double varianceAlt = 0;
     int neighborCount = pNetwork->outDegree(ego);
 
     if (neighborCount > 0)
@@ -169,7 +169,7 @@ double VarianceAlterSimilarityEffect::egoStatistic(int ego,
             }
         }
         
-        variance = sumSquares / neighborCount - pow(sum / neighborCount, 2);
+        varianceAlt = sumSquares / neighborCount - pow(sum / neighborCount, 2);
         
         if (this->laverage) // neighborCount > 0
         {
@@ -181,7 +181,7 @@ double VarianceAlterSimilarityEffect::egoStatistic(int ego,
             statistic *= pNetwork->inDegree(ego);
         }
         
-        statistic *= (variance - this->variance());
+        statistic *= (varianceAlt - this->variance());
     }
     
     return statistic;
@@ -198,95 +198,7 @@ double VarianceAlterSimilarityEffect::egoEndowmentStatistic(int ego, const int *
 {
     throw runtime_error(string("endowmentStatistic not implemented for") +
                "variance alter x average similarity.");
-    
-//    if (this->lalterPopularity)
-//    {
-//        throw runtime_error(string("endowmentStatistic not implemented for") +
-//            "average similarity x popularity alter effect and " +
-//            "total similarity x popularity alter effect.");
-//    }
-//
-//    double statistic = 0;
-//    const Network * pNetwork = this->pNetwork();
-//
-//    double similarityMean =  this->similarityMean();
-//
-//    if (!this->missing(this->period(), ego) &&
-//        !this->missing(this->period() + 1, ego))
-//    {
-//        if (difference[ego] > 0)
-//        {
-//            if (pNetwork->outDegree(ego))
-//            {
-//                double thisStatistic = 0;
-//
-//                for (IncidentTieIterator iter = pNetwork->outTies(ego);
-//                     iter.valid();
-//                     iter.next())
-//                {
-//                    if (!this->missing(this->period(), iter.actor()) &&
-//                        !this->missing(this->period() + 1, iter.actor()))
-//                    {
-//                        double alterValue = currentValues[iter.actor()];
-//                        double range = this->range();
-//                        thisStatistic += iter.value() *
-//                            (1.0 - fabs(alterValue - currentValues[ego]) /
-//                                range);
-//                        thisStatistic -= similarityMean;
-//                    }
-//                }
-//
-//                if (this->laverage)
-//                {
-//                    thisStatistic /= pNetwork->outDegree(ego);
-//                }
-//
-//                if (this->legoPopularity)
-//                {
-//                    thisStatistic *= pNetwork->inDegree(ego);
-//                }
-//                statistic = thisStatistic;
-//
-//                // do the same using the current state plus difference
-//                // in i's value rather than current state and subtract it.
-//                // not sure whether this is correct.
-//
-//                thisStatistic = 0;
-//
-//                for (IncidentTieIterator iter = pNetwork->outTies(ego);
-//                     iter.valid();
-//                     iter.next())
-//                {
-//                    if (!this->missing(this->period(), iter.actor()) &&
-//                        !this->missing(this->period() + 1, iter.actor()))
-//                    {
-//                        double alterValue = currentValues[iter.actor()] +
-//                            difference[iter.actor()];
-//                        double range = this->range();
-//                        thisStatistic += iter.value() *
-//                            (1.0 - fabs(alterValue - (difference[ego] +
-//                                    currentValues[ego]))
-//                                / range);
-//                        thisStatistic -= similarityMean;
-//                    }
-//                }
-//
-//                if (this->laverage)
-//                {
-//                    thisStatistic /= pNetwork->outDegree(ego);
-//                }
-//                if (this->legoPopularity)
-//                {
-//                    thisStatistic *= pNetwork->inDegree(ego);
-//                }
-//
-//                statistic -= thisStatistic;
-//            }
-//        }
-//    }
-//
-//    return statistic;
-
+    // This egoEndowmentStatistic function can likely be removed.
 }
 
 }

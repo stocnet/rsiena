@@ -2849,3 +2849,39 @@ sum(rowSums(s502)>= 3) # 23 OK
 (ans <- siena07(mycontrols, data=mydata, effects=mymodel))
 ans$targets
 sum(rowSums(s502)> 4) # 3 OK
+
+
+################################################################################
+### check varAlt
+################################################################################
+
+mynet <- sienaDependent(array(c(net1, net2, net3), dim = c(50,50,3)))
+alcohol <- sienaDependent(s50a, type = "behavior")
+mydata <- sienaDataCreate(mynet, alcohol)
+myeff <- getEffects(mydata)
+myeff <- includeEffects(myeff, varAlt, name="alcohol", interaction1="mynet")
+myalg <- sienaAlgorithmCreate(projname=NULL, seed=138)
+(ans <- siena07(myalg, data=mydata, effects=myeff))
+ans$targets2[9,]
+
+# check target statistic
+alco <- s50a
+centeringVariance <- 99/100*var(c(alco[,1:2]))
+
+varAlter2 <- matrix(0, n, 2)
+for (i in 1:n) {
+  if (sum(s501[i, ]) > 1) {
+    npeers <- sum(s501[i, ])
+    varAlter2[i, 1] <- var(alco[s501[i, ] == 1, 2]) * (npeers - 1) / npeers
+  }
+  if (sum(s502[i, ]) > 1) {
+    npeers <- sum(s502[i, ])
+    varAlter2[i, 2] <- var(alco[s502[i, ] == 1, 3]) * (npeers - 1) / npeers
+  }
+}
+temp <- varAlter2[,1] - centeringVariance
+temp[rowSums(s501) == 0] <- 0
+sum(temp * (alco[,2] - mean(alco))) # 5.157153 OK
+temp <- varAlter2[,2] - centeringVariance
+temp[rowSums(s502) == 0] <- 0
+sum(temp * (alco[,3] - mean(alco))) # -11.39942 OK

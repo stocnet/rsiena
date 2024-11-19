@@ -1246,10 +1246,10 @@ rangeAndSimilarity <- function(vals, rvals=NULL)
     sum <- sum(c(vals), na.rm = TRUE)
     sumSq <- sum(c(vals)^2, na.rm = TRUE)
     nonmis <- sum(!is.na(c(vals)))
-    var <- ifelse(nonmis==0, 0, (sumSq/nonmis) - (sum/nonmis)^2)
+    variance <- ifelse(nonmis==0, 0, (sumSq/nonmis) - (sum/nonmis)^2)
 
 	list(simTotal=simTotal, simMean=simMean, range=rvals, simCnt=simCnt,
-        sum=sum, sumSq=sumSq, variance=var, varCnt=nonmis)
+        sum=sum, sumSq=sumSq, variance=variance, varCnt=nonmis)
 }
 ##@groupRangeAndSimilarityAndMean DataCreate
 ## calculates attributes at group level and re-centers actor covariates
