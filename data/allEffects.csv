@@ -649,13 +649,14 @@ continuousIntercept,intercept,Intercept of xxxxxx (b_xxxxxx),intercept,NA,,,eval
 continuousOneModeObjective,xxxxxx average alter,beh. xxxxxx average alters,avAlt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 continuousOneModeObjective,xxxxxx max. alter,beh. xxxxxx max. alters,maxAlt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 continuousOneModeObjective,xxxxxx min. alter,beh. xxxxxx min. alters,minAlt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
-continuousOneModeObjective,xxxxxx indegree,beh. xxxxxx indegrees,indeg,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
-continuousOneModeObjective,xxxxxx indegree (sqrt),beh. xxxxxx indegrees (sqrt),indegSqrt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
-continuousOneModeObjective,xxxxxx outdegree,beh. xxxxxx outdegrees,outdeg,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
-continuousOneModeObjective,xxxxxx outdegree (sqrt),beh. xxxxxx outdegrees (sqrt),outdegSqrt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
-continuousOneModeObjective,xxxxxx isolate out,beh. xxxxxx isolate out,isolateOut,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
-continuousOneModeObjective,xxxxxx recip outdegree,beh. xxxxxx reciprocated outdegree,recipDeg,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
-continuousOneModeObjective,xxxxxx nonrecip outdegree,beh. xxxxxx non-reciprocated outdegree,nonrecipDeg,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,yyyyyy indegree,beh. xxxxxx indegrees,indeg,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,yyyyyy indegree (sqrt),beh. xxxxxx indegrees (sqrt),indegSqrt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,yyyyyy outdegree,beh. xxxxxx outdegrees,outdeg,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,yyyyyy outdegree (sqrt),beh. xxxxxx outdegrees (sqrt),outdegSqrt,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,yyyyyy isolate out,beh. xxxxxx isolate out,isolateOut,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,yyyyyy recip outdegree,beh. xxxxxx reciprocated outdegree,recipDeg,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,yyyyyy out-indegree balance,beh. xxxxxx out-indegree balance,outInBalance,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
+continuousOneModeObjective,yyyyyy nonrecip outdegree,beh. xxxxxx non-reciprocated outdegree,nonrecipDeg,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 continuousRate,scale parameter period 1,Time scaling continuous behavior change,scale,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,1,NA,0,0,0,0,,FALSE
 continuousRate,scale parameter (period nnnnnn),Time scaling continuous behavior change in period nnnnnn,scale,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,nnnnnn,NA,0,0,0,0,,FALSE
 continuousWiener,wiener (xxxxxx.yyyyyy),Wiener process matrix (G_xxxxxx.yyyyyy),wiener,NA,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
