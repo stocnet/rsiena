@@ -1,3 +1,24 @@
+# RSiena 1.4.20
+
+2024-11-10
+
+## Changes in RSiena:
+
+### Effects
+  * New effects `varAlt` and `avSimVarAlt`.
+### Bug corrections
+  * Interaction effects for continuous behavior now turned off. The R side of
+    `includeInteraction` for continuous behavior had been implemented but 
+    not the C++ side, so now an error message is given.
+### Error messages
+  * If `includeInteraction' is called for a continuous behavior effect, an
+    error message is given that interaction effects are not yet implemented
+    for continuous behavior.
+### Coding
+  * For the new effects, `lvariance`, the behavior variance over all but the 
+    last wave, was included as member data of `BehaviorLongitudinalData` 
+    together with the corresponding member functions. 
+
 # RSiena 1.4.19
 
 2024-09-03

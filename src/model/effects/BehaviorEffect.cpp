@@ -155,6 +155,15 @@ double BehaviorEffect::similarityMean() const
 
 
 /**
+ * Returns the value of the variance  over all observations.
+ */
+double BehaviorEffect::variance() const
+{
+    return this->lpBehaviorData->variance();
+}
+
+
+/**
  * Returns the statistic corresponding to this effect as part of
  * the evaluation function with respect to the given values of
  * the behavior variable.

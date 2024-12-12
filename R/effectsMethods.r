@@ -21,7 +21,7 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
         sink(fileName, split=TRUE)
     }
 
-    interactions <- x[x$shortName %in% c("unspInt", "behUnspInt") & x$include &
+    interactions <- x[x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt") & x$include &
         x$effect1 > 0, ]
     if (expandDummies)
     {
@@ -43,7 +43,7 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
     {
         nDependents <- length(unique(x$name))
         userSpecifieds <- x$shortName[x$include] %in%
-            c("unspInt", "behUnspInt")
+            c("unspInt", "behUnspInt", "contUnspInt")
         endowments <- !x$type[x$include] %in% c("rate", "eval", "gmm")
         # includes creations and gmm
         gmm <- any(x$type[x$include] %in% "gmm")
@@ -322,7 +322,7 @@ updateSpecification <- function(effects.to, effects.from,
 # the above does not transfer interaction effects.
 # A lot of work is needed to get the information about the interacting effects.
     inter <- which(prevEffects$include &
-						(prevEffects$shortName %in% c("unspInt","behUnspInt")))
+						(prevEffects$shortName %in% c("unspInt","behUnspInt","contUnspInt")))
     if (length(inter) >= 1)
 	{
 	# look up the interacting main effects, and try to get information

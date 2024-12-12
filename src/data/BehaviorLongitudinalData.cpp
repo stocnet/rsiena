@@ -312,6 +312,22 @@ double BehaviorLongitudinalData::observedDistribution(int value,
 	return frequency;
 }
 
+/**
+ * Returns the value of the variance over all observations.
+ */
+double BehaviorLongitudinalData::variance() const
+{
+    return this->lvariance;
+}
+
+
+/**
+ * Stores the value of the variance over all observations.
+ */
+void BehaviorLongitudinalData::variance(double variance)
+{
+    this->lvariance = variance;
+}
 
 /**
  * Calculates various properties of the observed data.

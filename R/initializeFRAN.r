@@ -160,11 +160,12 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		}
 		if (x$useStdInits)
 		{
-		# The restriction to effects with shortname not unspInt or behUnspInt
-		# is because of the possibility to call getEffects with
+		# The restriction to effects with shortname not unspInt, behUnspInt, or 
+		# contUnspInt is because of the possibility to call getEffects with
 		# non-default values of nintn and behNintn.
-			effectsr <- (!(effects$shortName %in% c("unspInt","behUnspInt")))
-			defEffectsr <- (!(defaultEffects$shortName %in% c("unspInt","behUnspInt")))
+			effectsr <- (!(effects$shortName %in% c("unspInt","behUnspInt","contUnspInt")))
+			defEffectsr <- (!(defaultEffects$shortName %in% c("unspInt","behUnspInt",
+			                                                  "contUnspInt")))
 			if (any(effects$shortName[effectsr] != defaultEffects$shortName[defEffectsr]))
 			{
 				cat("There seems to be a mismatch between data set and effects object.\n")
@@ -643,26 +644,26 @@ z$gmmEffects <- ((requestedEffects$type=="gmm") & requestedEffects$fix) # hhoho
 		basicEffects <-
 			lapply(myeffects, function(x)
 				{
-					x[!x$shortName %in% c("unspInt", "behUnspInt"), ]
+					x[!x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt"), ]
 				}
 				)
 		basicEffectsl <-
 			lapply(myeffects, function(x)
 				{
-					!x$shortName %in% c("unspInt", "behUnspInt")
+					!x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt")
 				}
 				)
 
 		interactionEffects <-
 			lapply(myeffects, function(x)
 				{
-					x[x$shortName %in% c("unspInt", "behUnspInt"), ]
+					x[x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt"), ]
 				}
 				)
 		interactionEffectsl <-
 			lapply(myeffects, function(x)
 				{
-					x$shortName %in% c("unspInt", "behUnspInt")
+					x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt")
 				}
 				)
 		## store effects objects as we may need to recreate them
@@ -1846,6 +1847,8 @@ unpackBehavior<- function(depvar, observations)
     attr(beh, "simMean") <- attr(depvar, "simMean")
     ## attr simMeans
     attr(beh, "simMeans") <- attr(depvar, "simMeans")
+    ## attr variance
+    attr(beh, "variance") <- attr(depvar, "variance")
     if (attr(depvar, "type") == "behavior")
     {
         beh <- round(beh)
@@ -2132,15 +2135,21 @@ numberIntn <- function(myeff){
 
 ##@ numberIntn siena07 sienaBayes, number of behavior interaction effects used for getEffects
 numberBehIntn <- function(myeff){
-	if (!is.null(myeff)){	
-		numbeh <- length(unique(myeff$name[myeff$shortName=="linear"]))# number of dependent behaviors
+	if (!is.null(myeff)){
+		numbeh <- length(unique(myeff$name[myeff$shortName=="linear"])) # number of discrete behaviors
 		nbehIntn <- sum(myeff$shortName == 'behUnspInt')/3 # 3 for eval - creation - endow
+		numcont <- length(unique(myeff$name[myeff$shortName=="intercept"])) # nr. of continuous behaviors
+		ncontIntn <- sum(myeff$shortName == 'contUnspInt')
 	}
 	else
 	{
 		numbeh <- 0
+		numcont <- 0
 	}		
-	ifelse((numbeh <= 0), 4, nbehIntn/numbeh) # 4 is the default in getEffects
+	ifelse((numbeh == 0 && numcont == 0), 4,  # 4 is the default in getEffects
+	       ifelse(numbeh == 0, max(4, ncontIntn/numcont),
+           ifelse(numcont == 0, max(4, nbehIntn/numbeh),
+	              max(nbehIntn/numbeh, ncontIntn/numcont))))
 }
 
 
@@ -2166,7 +2175,7 @@ checkVersion <- function(dat, effs){
 		differentVersions <- (effectsVersion != attr(defaultEffects, "version"))
 	}
 	if ((differentVersions) & 
-		(any((effs$shortName %in% c("unspInt","behUnspInt"))&effs$include)))
+		(any((effs$shortName %in% c("unspInt","behUnspInt", "contUnspInt"))&effs$include)))
 		{
 		warning("Your effects object contains interaction effects and was made
 		  using a different RSiena version. 
