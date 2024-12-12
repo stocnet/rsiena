@@ -100,15 +100,17 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   if they were not included.\cr
 
   Interaction effects are constructed from effects with shortName
-  \code{unspInt} (for networks) and \code{behUnspInt} (for behavior)
-  by specifying their elements \code{effect1} and \code{effect2},
-  and possibly \code{effect3}. The shortName is not altered by this function.
+  \code{unspInt} (for networks), \code{behUnspInt} (for discrete behavior), 
+  and \code{contUnspInt} (for continuous behavior) by specifying their 
+  elements \code{effect1} and \code{effect2}, and possibly \code{effect3}. 
+  The shortName is not altered by this function.
 
   The number of possible user-specified interaction effects is limited
   by the parameters \code{nintn} (for dependent network variables)
-  and \code{behNintn} (for dependent behavior variables)
-  in the call of \code{\link{getEffects}}, which determine the numbers of
-  effects with shortNames \code{unspInt} and \code{behUnspInt}.
+  and \code{behNintn} (for dependent behavior variables) in the call of 
+  \code{\link{getEffects}}, which determine the numbers of effects with 
+  shortNames \code{unspInt}, \code{behUnspInt}, and \code{contUnspInt} 
+  (for the latter two, the maximum is \code{behNintn} each).
 
   The input names \code{interaction1} and \code{interaction2},
   which are vectors as indicated above, do not themselves
@@ -132,8 +134,9 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   An updated version of the input effects object; if \code{include},
   containing the interaction effect between "effect1" and "effect2" and
   possibly "effect3"; if not, without this interaction effect.
-  The shortName of the interaction effect is "unspInt" for network effects
-  and "behUnspInt" for behavior effects. \cr
+  The shortName of the interaction effect is "unspInt" for network effects,
+  "behUnspInt" for discrete behavior effects, and "contUnspInt" for
+  continuous behavior effects. \cr
   If \code{verbose=TRUE}, the interacting effects and the interaction effect
   will be printed, with their row numbers in the effects object.
 }

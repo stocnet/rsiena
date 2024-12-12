@@ -53,6 +53,8 @@ public:
 	void similarityMean(double similarityMean);
 	void similarityMeans(double similarityMean, std::string networkName);
 	virtual double observedDistribution(int value, int observation) const;
+    double variance() const;
+    void variance(double variance);
 	void calculateProperties();
 
 private:
@@ -92,6 +94,9 @@ private:
 	// The alter similarity means for each network (to be passed from outside)
 	std::map<std::string, double> lsimilarityMeans;
 
+    // The variance
+    double lvariance;
+    
 	// The distribution of observed values at each observation.
 	// lobservedDistributions[observation][value] stores the frequency of
 	// the given value at the given observation.

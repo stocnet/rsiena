@@ -3917,7 +3917,8 @@ for a given effects object, say \texttt{myeff}, by the function call
 Further see the help page for the function \sfn{effectsDocumentation}.
 Chapter~\ref{S_math} of this manual also gives the short names of all effects.
 The short name of all unspecified interaction effects is \texttt{unspInt}
-for network effects, and \texttt{behUnspInt} for behaviour effects.
+for network effects, \texttt{behUnspInt} for discrete behaviour effects,
+and \texttt{contUnspInt} for continuous behaviour effects.
 
 It should be mentioned that the keywords \texttt{interaction1},
 \texttt{interaction2}, and \texttt{interaction3} in functions such as
@@ -14693,11 +14694,11 @@ where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values in
  \item {\em variance alter effect} \texttt{(varAlt)},
  defined by  $i$'s
  behavior multiplied by the centered variance of the behavior of his alters, \\
- $s^{\rm beh}_{i\vit}(x, z) =  z_i \big(x_{i+}^{-1}\sum_j (x_{ij} z_j)^2 - x_{i+}^{-1}
+ $s^{\rm beh}_{i\vit}(x, z) =  z_i \big(x_{i+}^{-1}\sum_j (x_{ij} z_j)^2 - x_{i+}^{-1} 
        (\sum_j x_{ij}z_j)^2 - \widehat{{\rm var}^z} \big) $\\
  (and $0$ if $x_{i+} = 0$) ; \\
 where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values
-in all but the final wave; \\
+in all but the final wave; \\ 
 
  \item {\em dense triads effect} \texttt{(behDenseTriads)},
  defined by  $i$'s
@@ -18104,12 +18105,11 @@ Changes in RSiena:
 \item Bug corrections:
    \begin{itemize}
 	\item Interaction effects for continuous behavior turned off. The R side of
-	\texttt{includeInteraction} for continuous behavior had been implemented but
+	\texttt{includeInteraction} for continuous behavior had been implemented but 
 	not the C++ side, so now an error message is given.
     \end{itemize}
 \end{itemize}
 
->>>>>>> Stashed changes
 \item 2024-09-03 GitHub, package version 1.4.19.
 
 Changes in RSiena:
@@ -18188,6 +18188,7 @@ Changes in RSiena:
     for including interactions).
     \end{itemize}
 \end{itemize}
+
 
 \item 2024-04-23 GitHub, package version 1.4.11
 

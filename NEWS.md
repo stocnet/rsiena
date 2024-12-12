@@ -1,5 +1,3 @@
-<<<<<<< Updated upstream
-=======
 # RSiena 1.4.21
 
 2024-12-12
@@ -43,7 +41,6 @@
     last wave, was included as member data of `BehaviorLongitudinalData` 
     together with the corresponding member functions. 
 
->>>>>>> Stashed changes
 # RSiena 1.4.19
 
 2024-09-03
