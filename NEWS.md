@@ -1,3 +1,49 @@
+<<<<<<< Updated upstream
+=======
+# RSiena 1.4.21
+
+2024-12-12
+
+## Changes in RSiena:
+### New functionality
+  * New functions `selectionTable` and `influenceTable`. 
+### Effects
+  * New effect `altHigherEgoX`.
+  * Effect `higher` also implemented for symmetric networks.
+  * Used # in name of threshold effects.
+### Bug corrections
+  * In `siena.table`,  fixed parameter values are not reported as NA,
+    but as their fixed values.
+### Messages
+  * If `includeInteraction` is called with argument `parameter`, 
+    an error message appears that this keyword should not be given. 
+  * Extension of message in `sienaTimeTest` given in the case of
+    collinearities. 
+### Help pages
+  * Improved explanation of the use of `interaction1` and `interaction2`
+    in the help page for `includeInteraction`. 
+
+# RSiena 1.4.20
+
+2024-11-10
+
+## Changes in RSiena:
+### Effects
+  * New effects `varAlt` and `avSimVarAlt`.
+### Bug corrections
+  * Interaction effects for continuous behavior now turned off. The R side of
+    `includeInteraction` for continuous behavior had been implemented but 
+    not the C++ side, so now an error message is given.
+### Error messages
+  * If `includeInteraction' is called for a continuous behavior effect, an
+    error message is given that interaction effects are not yet implemented
+    for continuous behavior.
+### Coding
+  * For the new effects, `lvariance`, the behavior variance over all but the 
+    last wave, was included as member data of `BehaviorLongitudinalData` 
+    together with the corresponding member functions. 
+
+>>>>>>> Stashed changes
 # RSiena 1.4.19
 
 2024-09-03

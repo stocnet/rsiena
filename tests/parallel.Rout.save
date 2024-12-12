@@ -1,5 +1,5 @@
 
-R version 4.4.1 (2024-06-14 ucrt) -- "Race for Your Life"
+R version 4.4.2 (2024-10-31 ucrt) -- "Pile of Leaves"
 Copyright (C) 2024 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64
 
@@ -847,13 +847,13 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
   effectName                                   shortName include fix   test 
 1 123 outdegree-trunc(2)                       outTrunc  FALSE   FALSE FALSE
 2 254 alc ego                                  egoX      FALSE   FALSE FALSE
-3 432 smoke ego                                egoX      FALSE   FALSE FALSE
-4 595 smoke ego x alc ego x outdegree-trunc(2) unspInt   TRUE    FALSE FALSE
+3 435 smoke ego                                egoX      FALSE   FALSE FALSE
+4 601 smoke ego x alc ego x outdegree-trunc(2) unspInt   TRUE    FALSE FALSE
   initialValue parm effect1 effect2 effect3
 1          0   2      0       0       0    
 2          0   0      0       0       0    
 3          0   0      0       0       0    
-4          0   0    123     432     254    
+4          0   0    123     435     254    
 > (ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE,
 +                               silent=TRUE))
 Estimates, standard errors and convergence t-ratios
@@ -999,4 +999,4 @@ Total of 590 iteration steps.
 > 
 > proc.time()
    user  system elapsed 
-  16.01    0.18   21.98 
+  20.79    0.28   21.26 
