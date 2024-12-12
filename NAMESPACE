@@ -14,7 +14,8 @@ export(
 	OutdegreeDistribution, IndegreeDistribution, BehaviorDistribution,
 	TriadCensus, mixedTriadCensus, dyadicCov,
 	siena.table, xtable, score.Test, Wald.RSiena, Multipar.RSiena, 
-   testSame.RSiena, funnelPlot, meta.table
+   testSame.RSiena, funnelPlot, meta.table,
+   influenceTable, selectionTable
 )
 
 import(Matrix, lattice, parallel, MASS)
