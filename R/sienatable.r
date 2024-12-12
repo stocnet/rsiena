@@ -143,7 +143,8 @@ siena.table <- function(x, type='tex',
 	  if (!x$gmm)
 	  {
 	    theta <- x$theta
-	    theta[diag(x$covtheta) < 0.0 | x$fixed] <- NA
+#	    theta[diag(x$covtheta) < 0.0 | x$fixed] <- NA
+# This is misleading, theta could be nonzero for fixed
 	    ses <- sqrt(diag(x$covtheta))
 	    ses[x$fixed] <- NA
 	    max.t1 <- max(abs(x$tstat[!x$fixed]))
@@ -154,7 +155,8 @@ siena.table <- function(x, type='tex',
 	  {
 	    fixednogmm <- x$fixed[!x$gmmEffects]
 	    theta <- x$theta
-	    theta[diag(x$covtheta) < 0.0 | fixednogmm] <- NA
+#	    theta[diag(x$covtheta) < 0.0 | fixednogmm] <- NA
+# This is misleading, theta could be nonzero for fixed
 	    theta <- theta[!x$gmmEffects]
 	    ses <- sqrt(diag(x$covtheta))
 	    ses[fixednogmm] <- NA
