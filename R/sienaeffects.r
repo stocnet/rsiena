@@ -116,6 +116,10 @@ includeInteraction <- function(myeff, ...,
 	{
 		 stop("need exactly two or three effect short names")
 	}
+	if (hasArg("parameter"))
+	{
+		stop("includeInteraction should not mention a parameter; see the help page")
+	}
 	if (!character)
 	{
 		shortNames <- sapply(dots, function(x)deparse(x))

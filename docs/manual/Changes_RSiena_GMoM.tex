@@ -1,0 +1,263 @@
+\documentclass[a4paper,11pt]{article}
+\renewcommand{\baselinestretch}{1}
+%\usepackage[a4paper,top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage[top=2.6cm, bottom=3cm, left=2.5cm, right=3cm]{geometry}
+%\linespread{2}
+%\usepackage[top=2.5cm, bottom=2.5cm, outer=4.5cm, inner=2cm, heightrounded, marginparwidth=2.5cm, marginparsep=0.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{natbib}
+\renewcommand\labelitemi{--}
+\renewcommand\labelitemii{--}
+\renewcommand\labelitemiii{-}
+\newcommand{\sfn}[1]{\textsf{#1}}
+\newcommand{\SI}{{\sf SIENA }}
+\setlength{\bibsep}{0.02in}
+\renewcommand\bibsection{\section{\refname}}
+\usepackage{listings}
+\usepackage{bera}
+
+\lstset{basicstyle=\ttfamily,
+escapeinside={||},
+mathescape=true}
+
+\title{Changes in RSiena for implementing the GMoM}
+\author{Viviana Amati}
+\date{February 2021}
+
+\begin{document}
+\maketitle
+This file reports all the changes that have been implemented in\texttt{ RSiena} for the GMoM estimation. Changes for the Robbins-Monro algorithm concern mainly the R code, while changes for the definition of the statistics concern the C++ code.
+
+\subsection*{Folder Data}
+Basic GMoM effects have been included in the file \texttt{alleffects.csv}. They are fixed by default to 0 because the GMoM statistics are only used to evaluate the moment conditions and are not part of the probability model.
+
+\subsection*{Folder src}
+\begin{itemize}
+\item Added the files for the computation of the statistics for the network evolution only in the folder model/effects\\
+(Files: \texttt{AgreementTransitivityGMMEffect.h, RealTransitivityGMMEffect.h},\\\texttt{ReciprocityGMMEffect.h})
+	\item Files Model.cpp, Model.h, siena07internals.cpp, Stattisticscalculator.cpp: declaration of the effect type ``gmm'' and computation of the GMoM statistics
+	\item \texttt{model/AllEffects.h}: inclusion of the gmom effects for the network evolution only
+	\item \texttt{model/EffectFactory.h, model/EffectFactory.cpp}: implementation of the effect of type gmm, change short name of the statistics from simX\_sim to simX\_gmm
+	\item \texttt{model/AverageAlterEffect.h, model/AverageAlterEffect.cpp}: implementation of the GMoM statistic averageAlter
+	\item \texttt{model/MaxAlterEffect.h, model/MaxAlterEffect.cpp}: implementation of the GMoM statistics maxAlter and minAlter
+	\item \texttt{model/SimilarityEffect.h, model/SimilarityEffect.cpp}: implementation of the GMoM statistic simX
+\end{itemize}
+
+
+\subsection*{Folder R}
+\begin{itemize}
+	\item \texttt{effects.R}: replacement text for the GMoM statistics
+	\smallskip
+	\item \texttt{effectsMethods.R}: in function \texttt{print.sienaEffects}, when one or more GMoM statistics are included, and the effects object is printed in the console, both model effects and statistics are shown.
+		{\footnotesize
+	\begin{verbatim}
+	 Effects and statistics for estimation by the Generalized Method of Moments
+
+ Effects
+   name  effectName                     include fix   test  initialValue parm type
+1  mynet constant mynet rate (period 1) TRUE    FALSE FALSE    4.69604   0    rate
+2  mynet constant mynet rate (period 2) TRUE    FALSE FALSE    4.32885   0    rate
+3  mynet outdegree (density)            TRUE    FALSE FALSE   -1.46770   0    eval
+4  mynet reciprocity                    TRUE    FALSE FALSE    0.00000   0    eval
+5  mynet transitive triplets            TRUE    FALSE FALSE    0.00000   0    eval
+6  mynet 3-cycles                       TRUE    FALSE FALSE    0.00000   0    eval
+7  mynet mybeh ego                      TRUE    FALSE FALSE    0.00000   0    eval
+8  mynet mybeh similarity               TRUE    FALSE FALSE    0.00000   0    eval
+9  mybeh rate mybeh (period 1)          TRUE    FALSE FALSE    0.70571   0    rate
+10 mybeh rate mybeh (period 2)          TRUE    FALSE FALSE    0.84939   0    rate
+11 mybeh mybeh linear shape             TRUE    FALSE FALSE    0.32237   0    eval
+12 mybeh mybeh quadratic shape          TRUE    FALSE FALSE    0.00000   0    eval
+13 mybeh mybeh total similarity         TRUE    FALSE FALSE    0.00000   0    eval
+
+ Regular and GMoM statistics
+   name  effectName                     Statistic
+1  mynet constant mynet rate (period 1) Regular
+2  mynet constant mynet rate (period 2) Regular
+3  mynet outdegree (density)            Regular
+4  mynet reciprocity                    Regular
+5  mynet transitive triplets            Regular
+6  mynet 3-cycles                       Regular
+7  mynet mybeh ego                      Regular
+8  mynet mybeh similarity               Regular
+9  mybeh rate mybeh (period 1)          Regular
+10 mybeh rate mybeh (period 2)          Regular
+11 mybeh mybeh linear shape             Regular
+12 mybeh mybeh quadratic shape          Regular
+13 mybeh mybeh total similarity         Regular
+14 mynet mybeh ego                      GMoM
+15 mynet mybeh similarity               GMoM
+	\end{verbatim}}
+
+\item \texttt{sienaEffects.R}:\\
+Inclusion of the function \texttt{includeGMoMStatistics}. The function allows specifying the GMoM statistics. GMoM statistics are implemented as effects of type ``gmm'', with fixed value 0. In this way, they are not part of the probability model but are used to evaluate the moment condition. The documentation of the function is in the file \texttt{includeGMoMStatistics.Rd}.
+
+\item \texttt{effectsDocumentation.R}:\\
+Changes so that the GMoM statistics do not appear in the list of possible effects for the evaluation/creation/endowment functions.
+
+\item \texttt{initializeFRAN.R}:\\
+Created objects for GMoM statistics. Prevented the diagonalization of the scaling matrix $D^{-1}B$ in the Robbins-Monro step. Defined the requested effect when preVans is used with GMoM. Adjusted code for conditional estimation.
+
+\item \texttt{phase1.R}:\\
+The GMoM estimate for $\theta$ is the value $\hat{\theta}$ such that
+\[B\;E_{\theta}\,[\,s^*(X,Z)-s^*(x,z)\,]=0\quad,\]
+\noindent
+
+The changes in the code relate to the computation of
+\begin{itemize}
+	\item matrix of first-order derivatives of the statistics
+	\[\Gamma\ = \ \frac{\partial}{\partial\theta}E_{\theta}[s(X,Z)-s(x,z)]\]
+	\medskip
+  \item matrix of GMoM weights
+	\[W=\rm{Cov}[s(X,Z)]\]
+	\medskip
+	\item matrix \[B=\frac{\partial}{\partial\theta}\;E_{\theta}\,[\,s^*(X,Z)-
+s^*(x,z)\,]'\:W=\Gamma\; W\]
+\medskip
+\item matrix $D^{-1}B$ which is equivalent to the matrix $D^{-1}$ in the Newton-Raphson/Robbins-Monro step for the regular MoM, i.e.
+\medskip\\
+Regular MoM:\\
+$\theta_{i+1}=\theta_{i}-\underbrace{D^{-1}}_{\rm{dinvv}}E[S-s]$\\
+$\theta_{i+1}=\theta_{i}-\alpha\underbrace{D^{-1}}_{\rm{dinvv}}(S-s)$
+\medskip\\
+GMoM:\\
+$\theta_{i+1}=\theta_{i}-\underbrace{D^{-1}B}_{\rm{dinvv}}E[S-s]$\\
+$\theta_{i+1}=\theta_{i}-\alpha\underbrace{D^{-1}B}_{\rm{dinvv}}(S-s)$
+\bigskip\\
+
+This equivalence reduces the number of changes in phase 2, though now dinvv is not the inverse of the first order derivative matrix of the statistics anymore.
+\end{itemize}
+
+\item \texttt{phase2.R}:\\
+The GMoM statistics are fixed at 0 by default. Thus, all the conditions involving \texttt{z\$fixed} are changed  into \texttt{z\$fixed \& !z\$gmmEffects} so that they apply to the GMoM statistics as well. The term \texttt{z\$gmmEffects} is a logical variable taking value TRUE if the effect is a GMoM statistic, and FALSE otherwise.
+
+Similar changes are required to compute the change step and set it to 0 for the GMoM statistics.
+
+\item \texttt{phase3.R}:\\
+\begin{itemize}
+	\item Added message: ``Generalized Method of Moments estimation'' for printing the results
+	\item Computation of the matrices: $\Gamma$, $W$ and $B$ as described in \texttt{phase1.r}
+	\item Computation of the t-ratios for convergence and tmax
+	\[t-\rm{ratio} = \frac{\hat{B}(s(X,Z)-s(x,z))}
+{\sqrt{ \left(\hat{B}\;\hat{\Sigma}\;\hat{B}' \right)}} \ .\]
+	\item Computation the covariance matrix of the GMoM estimator as
+\[\Sigma_{\widehat{\theta}_{GMoM}}=(\hat{B}\;\hat{\Gamma})^{-
+1}(\hat{B}\;\hat{\Sigma}\;\hat{B}')((\hat{B}\;\hat{\Gamma})^{-1})'\]
+\end{itemize}
+
+\item \texttt{robmon.R}:
+\begin{itemize}
+	\item Creation of a binary variable \texttt{z\$gmm} indicating whether the GMoM is used.
+\begin{itemize}
+  \item If gmm=TRUE and no gmm effects are included, the algorithm stops and asks the user to select the regular MoM estimation
+	\item If gmm=FALSE and gmm effects are included, the algorithm stops and asks the user to select the GMoM estimation
+\end{itemize}
+\item Specification of the number of steps in phase 1 for the GMoM ($n1=100 + 7 *p$) with $p$ the number of parameters
+\end{itemize}
+
+
+\item \texttt{print07Report.R}:\\
+Format the GMoM statistics and standard errors for printing in the Rconsole.
+
+\item \texttt{printDataReport.R}:\\
+Formatting for the GMoM statistics
+
+\item \texttt{sienaModelCreate.R}:
+\begin{itemize}
+	\item Include the argument \texttt{z\$gmm}=TRUE for the GMoM estimation
+	\item Dolby is not implemented for the GMoM estimation
+\end{itemize}
+
+\item \texttt{sienaprint.R}:\\
+Changes for printing the GMoM results in the console (theta, standard error)
+
+\item \texttt{sienatable.R}:\\
+Changes for printing the GMoM results in html or tex
+\end{itemize}
+
+
+\subsection*{Folder man}
+\begin{itemize}
+\item \texttt{sienaAlgorithmCreate.Rd}:\\
+Inclusion of the argument gmm for the generalized method of moments and corresponding documentation.
+\item \texttt{includeGMoMStatistics.Rd}:\\
+Documentation for the new function \texttt{includeGMoMStatistics}
+\end{itemize}
+
+\subsection*{Folder tests}
+\texttt{parallel.R}:\\
+Inclusion of a test for the GMoM implementation (test15).
+
+
+\section*{List of GMoM effects implemented}
+The GMoM estimator uses more statistics than parameters and is computed by minimizing the distance between observed statistics and their expected values. Several GMoM statistics have been implemented for the evolution of networks and co-evolution of networks and behaviors. We denote by $X$ the network and by $Z$ the behavior.
+
+The statistics for the network evolution complement the information provided by the regular statistics by considering two consecutive observations of the network, i.e., the statistics depend on both the network at time $t_m$ and that at time $t_{m-1}$, $s^{*}(X(t_m),X(t_{m-1}))$. The GMoM statistics for the co-evolution of networks and behaviors supplement the information of the cross-lagged statistics depending jointly on the network and behavior by considering the network and behavior at the same time point, i.e., $s^{*}(X(t_m),Z(t_{m}))$.
+
+Essentially, the implemented effects are those in the two published papers and a few more. The complete list and corresponding definitions are describe in Table~\ref{tab:one}.
+
+Other effects can be implemented following the procedure described in the next section.
+\begin{table}%
+\footnotesize
+\begin{tabular}{ll}
+\hline
+Evolution & Formula of the statistic\\
+\hline
+\emph{Network evolution} & \\[2ex]
+New reciprocity & $s^{*}(X)=\sum_{m}\sum_{ij}(1-X_{ij}(t_{m-1}))\cdot (1-X_{ji}(t_{m-1}))\cdot X_{ij}(t_{m})\cdot X_{ji}(t_{m})$\\[5ex]
+Persistent reciprocity & $s^{*}(X)=\sum_{m}\sum_{ij}X_{ij}(t_{m-1})\cdot X_{ji}(t_{m-1})\cdot X_{ij}(t_{m})\cdot X_{ji}(t_{m})$\\[5ex]
+Real reciprocity & $s^{*}(X)=\sum_{m}\sum_{ij}(1-X_{ij}(t_{m-1}))\cdot X_{ji}(t_{m-1})\cdot X_{ij}(t_{m})\cdot X_{ji}(t_{m}) $\\[5ex]
+Real Transitivity & $s^{*}(X)=\sum_{m}\sum_{ijh}(1-X_{ij}(t_{m-1}))\cdot X_{ih}(t_{m-1})\cdot X_{hj}(t_{m-1})\cdot X_{ij}(t_{m})\cdot X_{ih}(t_{m})\cdot X_{hj}(t_{m})$\\[5ex]
+Agree transitivity & $s^{*}(X)=\sum_{m}\sum_{ijh}(1-X_{ij}(t_{m-1}))\cdot X_{ih}(t_{m-1})\cdot X_{jh}(t_{m-1})\cdot X_{ij}(t_{m})\cdot X_{ih}(t_{m})\cdot X_{jh}(t_{m})$\\[2ex]
+\hline\\
+\emph{Network-behavior evolution} & \\[2ex]
+Covariate ego &  $s^{*}(X,Z) = \sum_{m}\sum_i Z_i(t_m) \, \sum_j X_{ij}(t_m) $\\[5ex]
+Total similarity & $s^{*}(X,Z) = \sum_{m}\sum_{ij} X_{ij}(t_m) ({\rm sim}^Z_{ij}(t_m) - \widehat{{\rm sim}^Z}) $\\[5ex]
+Average similarity & $s^{*}(X,Z) = \sum_{m}\sum_{ij} X_{ij}(t_m) ({\rm sim}^Z_{ij}(t_m) - \widehat{{\rm sim}^Z})/ \big (\sum_j X_{ij}(t_m)\big) $\\[5ex]
+Total alter &  $s^{\rm beh}_{i}(X, Z) = \sum_{m}\sum_i Z_i(t_m) \big( \sum_j X_{ij}(t_m)\, Z_j(t_m) \big) $\\[5ex]
+Average alter & $s^{\rm beh}_{i}(X, Z) = \sum_{m}\sum_i Z_i(t_m) \big( \sum_j X_{ij}(t_m)\, Z_j(t_m) \big)/ \big (\sum_j X_{ij}(t_m)\big)  $\\[5ex]
+Minimum alter & $s^{\rm beh}_{i}(X, Z) = \sum_{m}\sum_i Z_i(t_m) \big( \min_j \, X_{ij}(t_m)\, Z_j(t_m) \big) $\\[5ex]
+Maximum alter & $s^{\rm beh}_{i}(X, Z) = \sum_{m}\sum_i Z_i(t_m) \big( \max_j \, X_{ij}(t_m)\, Z_j(t_m) \big) $\\[5ex]
+\hline
+\end{tabular}
+\caption{Implemented GMoM statistics and corresponding formulas}
+\label{tab:one}
+\end{table}
+
+\newpage
+\section*{How to implement a gmom effect}
+The following lines explain how to implement a GMoM effect. The code for the \texttt{egoX\_gmm} statistic is used as an illustration.
+\begin{enumerate}
+	\item Start from the CPP and H files of the regular statistic corresponding to the GMoM statistic that one wants to implement. Those files are in the folder \texttt{src/model/effects}.
+	\item In the file .CPP duplicate the constructor and include the \texttt{simulatedState} flag. When the \texttt{simulatedState} flag is set to TRUE the value of the behaviour or the network is taken at the end of the period.
+	
+\begin{lstlisting}[language=R]
+CovariateEgoEffect::CovariateEgoEffect(const EffectInfo * pEffectInfo,
+const bool leftThresholded, const bool rightThresholded,
+|\textbf{const bool simulatedState}|) :
+CovariateDependentNetworkEffect(pEffectInfo, |\textbf{simulatedState}|) {
+this->lleftThresholded = leftThresholded;
+this->lrightThresholded = rightThresholded;
+this->lthreshold = pEffectInfo->internalEffectParameter();
+}
+\end{lstlisting}
+
+\item Declare the \texttt{simulatedState} flag in the file .H
+\begin{lstlisting}[language=R]
+CovariateEgoEffect(const EffectInfo * pEffectInfo,
+const bool leftThresholded, const bool rightThresholded,
+|\textbf{const bool simulatedState}|);
+\end{lstlisting}
+\item Include the new effect in the file \texttt{EffectFactory.cpp}.
+\begin{lstlisting}[language=R]
+else if (effectName == "egoX_gmm")
+{
+ pEffect = new CovariateEgoEffect(pEffectInfo, false, false, |\textbf{true}|);
+}
+\end{lstlisting}
+\item Include the new effect in the file \texttt{allEffects.csv}. This can be done by copying the line of the regular statistic, changing the short name by adding the suffix \texttt{\_gmm}, and setting the value of the columns type and fix to ``gmm'' and ``TRUE'', respectively.
+\end{enumerate}
+
+
+\end{document}
+

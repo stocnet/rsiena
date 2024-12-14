@@ -24,12 +24,15 @@ namespace siena
 class HigherCovariateEffect : public CovariateDependentNetworkEffect
 {
 public:
-	HigherCovariateEffect(const EffectInfo * pEffectInfo);
+	HigherCovariateEffect(const EffectInfo * pEffectInfo, bool center);
 
 	virtual double calculateContribution(int alter) const;
 
 protected:
 	virtual double tieStatistic(int alter);
+
+private:
+	bool lcenter {};
 };
 
 }

@@ -20,9 +20,10 @@ namespace siena
 /**
  * Constructor.
  */
-HigherCovariateEffect::HigherCovariateEffect(const EffectInfo * pEffectInfo) :
+HigherCovariateEffect::HigherCovariateEffect(const EffectInfo * pEffectInfo, bool center) :
 	CovariateDependentNetworkEffect(pEffectInfo)
 {
+	this->lcenter = center;
 }
 
 
@@ -31,7 +32,7 @@ HigherCovariateEffect::HigherCovariateEffect(const EffectInfo * pEffectInfo) :
  */
 double HigherCovariateEffect::calculateContribution(int alter) const
 {
-	double change = 0;
+	double change = 0.5;
 	double egoValue = this->value(this->ego());
 	double alterValue = this->value(alter);
 
@@ -39,11 +40,15 @@ double HigherCovariateEffect::calculateContribution(int alter) const
 	{
 		change = 1;
 	}
-	else if (egoValue == alterValue)
+	else if (egoValue < alterValue)
 	{
-		change = 0.5;
+		change = 0;
 	}
 
+	if (this->lcenter)
+	{
+		change = 1 - (2*change); // should be called lower....
+	}
 	return change;
 }
 
@@ -68,6 +73,10 @@ double HigherCovariateEffect::tieStatistic(int alter)
 	else if (this->value(this->ego()) == this->value(alter))
 	{
 		statistic = 0.5;
+	}
+	if (this->lcenter)
+	{
+		statistic = 1-(2*statistic);
 	}
 
 	return statistic;

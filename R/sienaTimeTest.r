@@ -294,7 +294,8 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 		message("However, there are ", dim(sigma)[1] - rankSigma,
 							" linear dependencies between these.\n")
 		message("This may be because some of the parameters are already")
-		message("interactions with time dummies or other time variables.")
+		message("interactions with time dummies or other time variables.\n")
+		message("Look in the help page for the use of the <effects> parameter.\n")
 
 		subset0 <- rep(FALSE, dim(sigma)[1])
 		subset0[1:nBaseEffects] <- TRUE
@@ -346,14 +347,16 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 			if (rankSigma < dim(sigma)[1])
 			{
 				cat("After these exclusions, there still are linear dependencies.\n")
-				cat("Advice: use sienaTimeTest with a smaller set of effects.\n\n")
+				cat("Advice: use sienaTimeTest with a smaller set of effects.\n")
+				cat("Look in the help page for the use of the <effects> parameter.\n\n")
 				stop("Please rerun sienaTimeTest with appropriate excluded effects.")
 			}
 		}
 		else
 		{
 			cat("Automatic discovery of dependencies had no effect.\n")
-			cat("Advice: use sienaTimeTest with a smaller set of effects.\n\n")
+			cat("Advice: use sienaTimeTest with a smaller set of effects.\n")
+			cat("Look in the help page for the use of the <effects> parameter.\n\n")
 			stop("Please rerun sienaTimeTest with appropriate excluded effects.")
 		}
 	}

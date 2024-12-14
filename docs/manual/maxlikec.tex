@@ -1,0 +1,599 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[pdftex,dvipsnames]{color}
+\usepackage{graphicx,times}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage[pdfstartview={}]{hyperref}
+\textheight=9.5in
+\topmargin=-0.5in
+\newcommand{\eps}{\varepsilon}
+\newcommand{\abso}[1]{\;\mid#1\mid\;}
+\renewcommand{\=}{\,=\,}
+\newcommand{\+}{\,+\,}
+% ----------------------------------------------------------------
+\newcommand{\remark}[1]{\par\noindent{\color[named]{ProcessBlue}#1}\par}
+\newcommand{\mcc}[2]{\multicolumn{#1}{c}{#2}}
+\newcommand{\mcp}[2]{\multicolumn{#1}{c|}{#2}}
+\newcommand{\nm}[1]{\textsf{\small #1}}
+\newcommand{\nnm}[1]{\textsf{\small\textit{#1}}}
+\newcommand{\nmm}[1]{\nnm{#1}}
+\newcommand{\R}{{\sf R }}
+\newcommand{\sfn}[1]{\textbf{\texttt{#1}}}
+\newcommand{\Rn}{{\sf R}}
+\newcommand{\rs}{{\sf RSiena}}
+\newcommand{\RS}{{\sf RSiena }}
+\newcommand{\SI}{{\sf Siena3 }}
+\newcommand{\Sn}{{\sf Siena3}}
+% no labels in list of references:
+\makeatletter
+\renewcommand\@biblabel{}
+\makeatother
+
+\hyphenation{Snij-ders Duijn DataSpecification dataspecification dependentvariable ModelSpecification}
+
+% centered section headings with a period after the number;
+% sans serif fonts for section and subsection headings
+\renewcommand{\thesection}{\arabic{section}.}
+\renewcommand{\thesubsection}{\thesection\arabic{subsection}}
+\makeatletter
+ \renewcommand{\section}{\@startsection{section}{1}
+                {0pt}{\baselineskip}{0.5\baselineskip}
+                {\centering\sffamily} }
+ \renewcommand{\subsection}{\@startsection{subsection}{2}
+                {0pt}{0.7\baselineskip}{0.3\baselineskip}
+                {\sffamily} }
+\makeatother
+
+\newcommand{\ts}[1]{\par{\color[named]{Red}TS: #1}\par}
+
+\renewcommand{\baselinestretch}{1.0} %% For line spacing.
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1ex plus1ex}
+\raggedright
+\begin{document}
+
+\title{Maximum likelihood/FRAN}
+\author{Ruth Ripley}
+\date{}
+\maketitle
+
+\centerline{\emph{\today}}
+\bigskip
+\section{Introduction}
+
+The \R function \nnm{maxlikec} (so named during development when I had other
+versions which did not call C!) is the function which controls the maximum
+likelihood simulations.  It is used as an argument to the function
+\nnm{sienaModelCreate} and its name is stored as the element named \nm{FRAN} of
+the model object.  It has three (or 3+) modes: initial, to set up the C++ data
+structure, terminal (to tidy up) and ordinary (to do one complete
+simulation). (There is an extra mode for using multiple processors, which does
+some of the work of an initial call.) It uses C++ functions for most of its
+work.
+
+The interface to C++ and to \nnm{robmon} is more or less the same as for
+\nnm{simstats0c}. The terminal call is the same as for \nnm{simstats0c} and is
+done by the function \nnm{terminateFRAN}. The initial call is process by the
+funciton \nnm{initializeFRAN}.
+
+\section{Initial call to maxlikec}
+
+
+
+ Call \nnm{initializeFRAN}, which does the data set up in C++ as for
+\nnm{simstats0c} plus a call to C++ to initialise the
+chains.
+
+Extra details beyond \nnm{simstats0c} processing:
+\begin{enumerate}
+\item Calculate \nnm{nrunMH} as the multiplication factor (stored on \nnm{x} or
+  \nnm{z}) times the sum over dependent variables of the distances by
+  wave. Store on \nnm{z}.
+\item Store in C++ the parameters needed for maximum likelihood:
+\begin{enumerate}
+\item Values controlling length of permutation (on the input model)
+\begin{description}
+\item[maximumPermutationLength]
+\item[minimumPermutationLength]
+\item[initialPermutationLength]
+\end{description}
+\item Probabilities of the different MH steps (on the input model)
+\begin{description}
+\item[insertDiagonalProbability]
+\item[cancelDiagonalProbability]
+\item[permuteProbability]
+\item[insertPermuteProbability]
+\item[deletePermuteProbability]
+\item[insertRandomMissingProbability]
+\item[deleteRandomMissingProbability]
+\end{description}
+\item Proportion of missing data for each period: calculate from the number of
+  missing and non missing entries in each of the dependent variables, which are
+  stored as attributes of the group (which is either input or created for
+  convenience in \nnm{initializeFRAN}).
+\begin{description}
+\item[prmin]
+\item[prmib]
+\end{description}
+\item Simple rates flag: TRUE unless any selected effects have type "rate" but
+  are not basic rate effects.
+\end{enumerate}
+\item
+\begin{algorithmic}
+\IF{this is the first call, (i.e.\ to main process)}
+\STATE Set up a minimal chain: see section \ref{sec:minch}.
+\STATE Do a pre burnin for each chain: see section \ref{sec:preburnin}
+\STATE Do 500 normal MHsteps.
+\STATE Return minimal and post burnin chains as lists.
+\STATE Store the final chains on the model in C++, along with any intial and
+end state differences.
+\ELSE
+\STATE Copy the post burnin chains from the main process. Add them to
+ FRANstore (for use in R, for debugging only?) and store on the model in C++.
+\ENDIF
+\end{algorithmic}
+\end{enumerate}
+
+\subsection{Minimal Chain}
+\label{sec:minch}
+  \begin{algorithmic}
+\FORALL{periods}
+\FORALL{variables}
+\FORALL{actors}
+\IF{network variable}
+\FORALL{alters present in out ties for one only of this period or the next}
+\STATE create a ministep
+\ENDFOR
+\ELSE[behavior]
+\STATE If the values at either end are different, create enough plus or minus 1
+steps to get from one to the other.
+\ENDIF
+\ENDFOR
+\ENDFOR
+\STATE In each case ignore structural links or values. We do not need them in
+the processing, although they should be added in before returning a chain to
+\Rn. TODO: this is not currently done.
+\IF {no constraints between the networks}
+\STATE Create a chain from the ministeps in random order
+\ELSE
+\REPEAT
+\FORALL{ministeps}
+\STATE Try to insert in a random position in the chain
+\STATE If this fails, try to insert after any other for the same
+actor/alter combination in any network.
+\STATE Finally try to insert before any other for the same actor and alter.
+\ENDFOR
+\UNTIL{done as many loops as dependent variables}
+\IF{ any ministeps left}
+\STATE stop with error
+\ENDIF
+\ENDIF
+\STATE Initialize the variables for this period
+\STATE Calculate the probabilities for the chain (section \ref{sec:chprob})
+\ENDFOR
+  \end{algorithmic}
+ \subsection{Pre-burnin}
+\label{sec:preburnin}
+  \begin{algorithmic}
+\REPEAT
+\STATE do an insert diagonal step
+\UNTIL{have rejected 5 steps}
+\REPEAT
+\STATE do an insert permute step with permutation length set to 1
+\UNTIL{have rejected 5 steps}
+  \end{algorithmic}
+ \section{Simulation  call}
+\begin{enumerate}
+\item Copy over the updated parameters to the Model object.
+\item Create a simulation object and set up, from stored values on the Model
+  Object:
+\begin{description}
+\item[simpleRates] flag
+\item[prmin] Proportion of missing network data for this period
+\item[prmib] Proportion missing behavior data for this period
+\item[chain] for this period, terminal chain from last time.
+\end{description}
+\item Clear out the storage area for this chain.
+\item Set up from the input parameters:
+\begin{description}
+\item[addChainToStore]
+\item[needChangeContributions] Set to 1 if either addChainToStore or
+  needChangeContributions is 1 (not sure why!)
+\item[returnChains] Do we want the final chain returned
+\item[returnDataFrame] Return chain, if requested, as data frame rather than
+  list.
+\item[deriv] do we need to do derivatives (not in phase 2)
+\item[nrunMH] Number of MH steps to do
+\end{description}
+\item Run Initialize method of the simulation object. This sets up the initial
+  missing data lists (but no longer the initial state).
+\item Reinstate the
+  initial state by executing the vector of ministeps defining the differences.
+  from the data.
+\item If using multiple processes, we need to keep the same process for each
+  wave, which happens by default in snow. Just don't try to use load-balancing.
+\item Set up the probabilityArray (maybe I could not find anywhere to store
+  this, but it also initialises the stores for acceptance and rejection
+  statistics).
+\item Calculate the chain probabilities (to use the new parameters)
+\item Do \nnm{nrunMH} MH steps (section \ref{sec:mh})
+\item Set the flags \nnm{needScores} (always set to FALSE while doing the MH
+  steps and TRUE at this point) and optionally \nnm{needDerivatives}.
+\item Do a final pass of the chain calculating probabilities, scores and
+  optionally derivatives.
+\item Store the current chain on the model, after converting the initial state
+  to a vector of ministeps defining the differences.
+\item Calculate the end state differences. The latter are not currently used: if
+  they were to be carried over as an initial state for the next wave the chain
+  would need correcting. They are returned to \R with the chain.
+\item Return:
+\begin{description}
+\item[scores] These are the simulated targets
+\item[derivatives] Returned as a lower triangle of the matrix. (eventually!)
+\item[acceptance and rejection statistics] by variable. Permutation steps are
+  recorded under the first variable. \nnm{misdat} steps are separated out.
+\item[chain] Optional, based on \nnm{returnChains}. Can select format based on
+  returnDataFrame or not.
+\end{description}
+\end{enumerate}
+
+\subsection{MH steps}
+\label{sec:mh}
+\begin{enumerate}
+\item Choose a steptype with probability as in the array
+\item Do the step
+\item Store whether accepted or rejected
+\end{enumerate}
+\subsection{Individual Steps}
+\subsubsection{Insert Diagonal}
+\begin{enumerate}
+\item Choose a random ministep in the chain, including the option of the final
+  one.
+\item Set data to state just before this ministep.
+\item Choose variable and actor as for forward simulation.
+\item If actor not active, quit (should never occur)
+\item Calculate proposal probability
+\begin{align*}
+p(\tilde{v})&=\text{pr of chain after insert}\\
+& = \text{pr (chain length R+1) }
+ \prod_{r=1}^{R+1} \left( \text{ pr(var}_r )
+\text{pr(actor}_r)\text{pr(choice}_r) \right)\\
+p(v)&=\text{pr of chain before insert} \\
+ & = \text{pr (chain length R) }
+ \prod_{r=1}^{R} \left( \text{ pr(var}_r )
+\text{pr(actor}_r)\text{pr(choice}_r) \right)\\
+u(\tilde{v}|v) &= \text{pr of proposing this insertion} | \text{not
+  there}\\
+&=\frac{\text{pr(propose an insert) pr(this var) pr(this actor)}}{(R + 1)}\\
+u(v|\tilde{v}) &= \text{pr of proposing deletion} | \text{there}=
+\frac{\text{pr(propose a deletion)}}{\text{pr(this diagonal)}}\\
+\frac{p(\tilde{v}) u(v|\tilde{v})}
+ {p(v) u(\tilde{v}|v)}&=\frac{\text{pr (chain length R+1) }
+ \prod_{r=1}^{R+1} \left( \text{ pr(var}_r )
+\text{pr(actor}_r)\text{pr(choice}_r)\right) \times}{\text{ (pr chain length R) }
+ \prod_{r=1}^{R} \left( \text{ pr(var}_r )
+\text{pr(actor}_r)\text{pr(choice}_r) \right)}\\
+&\qquad \frac{\text{pr(delete diagonal) pr(this diagonal)}
+\times }
+{\text{pr(insert diagonal)pr(this position) pr(this var) pr(this actor)} }
+\end{align*}
+\item The product of probabilities all cancel out except the probability of the
+  diagonal step inserted, and further the variable and actor choices cancel out,
+  leaving only the choice probability of the diagonal step.
+\end{enumerate}
+\subsubsection{Cancel Diagonal}
+\begin{enumerate}
+\item If no diagonal ministeps, quit
+\item Find a random diagonal ministep
+\item Calculate the proposal probability: as for insert diagonal but upside down.
+\item If proposal probability greater than a random uniform, do the deletion
+\end{enumerate}
+\subsubsection{Permute}
+\begin{enumerate}
+\item Find a random ministep not equal to the final dummy step.
+\item Interval to permute is from here for $c0$ steps, stopping at end.
+\item If interval has one or less elements, quit
+\item Get a permutation and check if valid
+\item If not valid, quit
+\item Calculate proposal probability
+\begin{align*}
+ p(\tilde{v})&=\text{pr of chain after permute}\\
+ & = \text{pr (chain length R }
+  \prod_{r=1}^{R} \left( \text{ pr(var}_r )
+ \text{pr(actor}_r)\text{pr(choice}_r) \right)\\
+ p(v)&=\text{pr of chain before permute} \\
+  & = \text{pr (chain length R) }
+  \prod_{r=1}^{R} \left( \text{ pr(var}_r )
+ \text{pr(actor}_r)\text{pr(choice}_r) \right)\\
+ u(\tilde{v}|v) &= \text{pr of proposing this permutation} | \text{not
+   done}\\
+ &=\text{pr(propose a permute) pr(this interval)}\\
+u(v|\tilde{v}) &= \text{pr of proposing reverse permutation} | \text{done}\\
+ &=
+ \text{pr(propose a permute)}\text{pr(this interval)}\\
+\frac{p(\tilde{v}) u(v|\tilde{v})}
+  {p(v) u(\tilde{v}|v)}&=\frac{ \text{pr (chain length R) }
+\prod_{r=1}^{R} \left( \text{ pr(var}_r)
+ \text{pr(actor}_r)\text{pr(choice}_r)\right) }
+{ \text{pr (chain length R) }\prod_{r=1}^{R} \left( \text{ pr(var}_r )
+ \text{pr(actor}_r)\text{pr(choice}_r) \right)}\\
+% &\qquad \frac{\text{pr(delete diagonal) pr(this diagonal)}
+% \times }
+% {\text{pr(insert diagonal)pr(this position) pr(this var) pr(this actor)} }
+\end{align*}
+\item Calculations of choice probabilities only need to be done for the interval
+  permuted.
+\item If proposal probability greater than a random uniform, do the permutation.
+\end{enumerate}
+\subsubsection{Insert missing or CCP and permute}
+\begin{enumerate}
+\item Select a random real ministep of the chain: \nnm{miniStepA}
+\item Get the chain to the state before \nnm{miniStepA}
+\item Choose a variable
+  using relative rates, calculated as in \nnm{simstatsc}
+\item \begin{algorithmic}
+\IF [logically here, as our variable and actor choices are separate]
+{uponly or downonly for this variable}
+\STATE Exit
+\ENDIF[Why do we need to exit for missings too?]
+\end{algorithmic}
+\item  For the variable, choose an actor proportional to their personal lambda.
+\item \begin{algorithmic}
+\IF [will have rate 0]{actor not active}
+\STATE Exit
+\ENDIF
+\end{algorithmic}
+\item Choose change as in forward simulation.
+\item Quit if any of the conditions in section \ref{sec:quit} hold
+\item \begin{algorithmic}
+\IF {chosen change corresponds to a missing value at either end of the
+  period}
+\STATE set miniStepB to be the dummy at the end.
+\ELSE
+\STATE set miniStepB to be the place for the matching CCP: chosen
+randomly strictly between miniStepA and the next ministep for the same
+variable/actor/(alter).
+\ENDIF
+\end{algorithmic}
+\item Find the interval to permute: From miniStepA.next forwards for a maximum
+of \nnm{c0} steps. Stop at ministep-just-before-miniStepB if get that far.
+\item Shorten the interval by stopping if you find any duplicated non diagonal
+  variable/actor/alter combinations.
+\item Get a permutation and check whether the resulting chain is valid,
+  calculating the chain probabilities as you go.
+\item Quit if not valid
+\item Otherwise calculate the proposal probability. \\
+\sfn{ }\\
+For a CCP:
+\begin{align*}
+p(\tilde{v})&=\text{ pr of chain after insertions}\\
+& = \text{pr (chain length R+2) }
+ \prod_{r=1}^{R+2} \left( \text{ pr(var}_r )
+\text{pr(actor}_r)\text{pr(choice}_r) \right)\\
+p(v)&=\text{ pr of chain before insertions}\\
+& = \text{ pr (chain length R) }
+ \prod_{r=1}^{R} \left( \text{ pr(var}_r )
+\text{pr(actor}_r)\text{pr(choice}_r) \right)\\
+u(\tilde{v}|v) &= \text{pr of proposing insertions} | \text{not
+  there}\\
+&=\text{pr(insert permute) pr(these positions) pr(this var)} \times \\
+& \qquad  \text{pr(this actor) pr(this choice)}\\
+ u(v|\tilde{v}) &= \text{pr of proposing deletions} | \text{there} \\
+&=\text{pr(delete permute) pr(not select missing) pr(this CCP)}\\
+\frac{p(\tilde{v}) u(v|\tilde{v})}
+ {p(v) u(\tilde{v}|v)}&=\frac{\text{pr (chain length R+2) }
+ \prod_{r=1}^{R+2} \left( \text{ pr(var}_r )
+\text{pr(actor}_r)\text{pr(choice}_r)\right) \times}{\text{ (pr chain length R) }
+ \prod_{r=1}^{R} \left( \text{ pr(var}_r )
+\text{pr(actor}_r)\text{pr(choice}_r) \right)}\\
+&\qquad \frac{\text{pr(delete permute) pr(not select missing) pr(this CCP)}
+\times }
+{\text{pr(insert permute) pr(these positions) pr(this var)} } \\
+& \qquad \frac{1}{\text{pr(this actor) pr(this choice) }}
+\end{align*}
+For a missing data insertion:
+\begin{align*}
+p(\tilde{v})&=\text{ pr of chain after insertion}\\
+& = \text{ (pr chain length R+1) }
+ \prod_{r=1}^{R+1} \left( \text{ pr(var}_r )
+\text{pr(actor}_r)\text{pr(choice}_r) \right)\\
+p(v)&=\text{ pr of chain before insertions}\\
+& = \text{ (pr chain length R) }
+ \prod_{r=1}^{R} \left( \text{ pr(var}_r )
+\text{pr(actor}_r)\text{pr(choice}_r) \right)\\
+u(\tilde{v}|v) &= \text{pr of proposing insertion} | \text{not
+  there}\\
+&=\text{pr(insert permute) pr(this position) pr(this var)} \times \\
+& \qquad  \text{pr(this actor) pr(this choice)}\\
+ u(v|\tilde{v}) &= \text{pr of proposing deletions} | \text{there} \\
+&=\text{pr(delete permute) pr(select missing) pr(this missing one)}\\
+\frac{p(\tilde{v}) u(v|\tilde{v})}
+ {p(v) u(\tilde{v}|v)}&=\frac{\text{ (pr chain length R+1) }
+ \prod_{r=1}^{R+1} \left( \text{ pr(var}_r )
+\text{pr(actor}_r)\text{pr(choice}_r)\right) \times}{\text{ (pr chain length R) }
+ \prod_{r=1}^{R} \left( \text{ pr(var}_r )
+\text{pr(actor}_r)\text{pr(choice}_r) \right)}\\
+&\qquad \frac{\text{pr(delete permute) pr(select missing) pr(this missing)}
+\times }
+{\text{pr(insert permute) pr(this position) pr(this var)} } \\
+& \qquad \frac{1}{\text{pr(this actor) pr(this choice) }}
+\end{align*}
+The probability that the chain contains $R$ events is either a Poisson with mean
+the constant rate parameter:
+\begin{equation}\label{eq:like}
+\exp(-n\alpha(t_2-t_1))\frac{(n\alpha(t_2-t_1))^R}{R!}
+\end{equation}
+or approximated by a Gaussian with mean the sum of the reciprocal rates and
+variance the sum of the squares of the reciprocal rates.
+
+In each case the product terms will cancel for the part of the chain
+before the first insertion and after the final insertion (if there is one).
+
+It is necessary to know the number of CCP's which will exist after the
+insertions: the only reliable way I found was to do the insertions and find
+out.
+\item If this probability is bigger than a random uniform, do the insertion(s).
+\end{enumerate}
+\subsubsection{Delete missing or CCP and permute}
+\begin{enumerate}
+\item Decide whether to delete a CCP or a ministep corresponding to a missing
+  observation (referred to as a missing ministep in what follows). Do the latter
+  with probability \nnm{prmin} + \nnm{prmib} (This does not seem sensible, I
+  would suggest using the mean rather than the sum. In an extreme case you could
+  have the sum greater than 1).
+\item \begin{algorithmic}
+\IF {deleting a missing ministep}
+\STATE Decide on network or behavior using \nnm{prmin:prmib}.
+\STATE Pick a random missing ministep from network or behavior.
+\STATE If there are none of this type, quit.
+\ELSE
+\STATE Pick a random CCP
+\ENDIF
+\end{algorithmic}Pick a random missing ministep or CCP as appropriate. If the former, if it
+  happens to be the last step in the chain, quit.
+\item Set ministepA to be the ministep after the random missing or the first of
+  the CCP.
+\item \begin{algorithmic}
+\IF {deleting a missing ministep}
+\STATE set miniStepB to be the dummy at the end.
+\ELSE
+\STATE set miniStepB to be the ministep after the second of the CCP.
+\ENDIF
+\end{algorithmic}
+\item Find the interval to permute: From miniStepA.next forwards for a maximum
+of \nnm{c0} steps. Stop at ministep-just-before-miniStepB if get that far.
+\item Shorten the interval by stopping if you find any duplicated non diagonal
+  variable/actor/alter combinations.
+\item Get a permutation and check whether the resulting chain is valid,
+  calculating the chain probabilities as you go.
+\item Quit if not valid
+\item Calculate the proposal probabilities: same as for insert permute but
+  upside down.
+\item If proposal probability is greater than a random uniform, do the
+  deletion(s).
+\end{enumerate}
+\subsubsection{Insert initial missing}
+\begin{enumerate}
+\item If no missing values quit.
+\item Select a random missing option (variable, actor, plus alter if applicable).
+\item
+\begin{algorithmic}
+\IF {behavior}
+\STATE Select up or down at random, but if this goes outside range, try the
+other way.
+\ENDIF
+\end{algorithmic}
+\item Select ministepA, a random ministep not after the first occurrence of this
+  option, if any. The balancing ministep will be inserted before this ministep.
+\item Check that it is valid to alter the initial values of the network by a
+  toggle or the reverse of the direction selected, and insert the new ministep
+  before  ministepA. Note that you do not need to enforce upOnly and downOnly
+  on the change in the initial state.
+\item If not valid, and a behavior option, try the reverse change (unless you
+  know it won't be accepted because you have already been forced to change it!)
+\item If not valid, quit
+\item Proposal probability for behavior direction should be set to 1 unless a
+  genuine choice was accepted, when it should be 0.5.
+\item Calculate the proposal probability:
+\begin{align*}
+p(\tilde{v})&=\text{ pr of chain after changes}\\
+& = \text{ pr(new val of miss item) pr (chain length R+1) } \times\\
+& \qquad  \prod_{r=1}^{R+1} \left( \text{ pr(var}_r )
+\text{pr(actor}_r)\text{pr(choice}_r) \right)\\
+p(v)&=\text{ pr of chain before changes}\\
+& = \text{ pr(orig val of miss item)pr (chain length R) }\times \\
+& \qquad \prod_{r=1}^{R} \left( \text{ pr(var}_r )
+\text{pr(actor}_r)\text{pr(choice}_r) \right)\\
+u(\tilde{v}|v) &= \text{pr of proposing changes} | \text{not
+  there}\\
+&=\text{pr(insert missing) pr(this missing option) pr(direction)
+pr(ministep here)} \\
+ u(v|\tilde{v}) &= \text{pr of proposing undoing changes} | \text{there} \\
+&=\text{pr(delete missing) pr(this missing option)}\\
+\frac{p(\tilde{v}) u(v|\tilde{v})}
+ {p(v) u(\tilde{v}|v)}&=\frac{\text{ pr (chain length R+1) }
+ \prod_{r=1}^{R+1} \left( \text{ pr(var}_r )
+\text{pr(actor}_r)\text{pr(choice}_r)\right) \times}{\text{ pr (chain length R) }
+ \prod_{r=1}^{R} \left( \text{ pr(var}_r )
+\text{pr(actor}_r)\text{pr(choice}_r) \right)}\\
+&\qquad \frac{\text{pr(delete missing) pr(new val)} }
+{\text{pr(insert missing) pr(direction) pr(ministep here) pr(orig val)} }
+\end{align*}
+\item Probabilities for the different values of the missing item are set to the
+  proportion of non-missing values in the variable at the start of the period
+  which are equal to the value in question.
+\item The product of probabilities of ministeps will cancel out after ministepA.
+\item If proposal probability is greater than a random uniform, do the changes.
+\end{enumerate}
+\subsubsection{Delete initial missing}
+\begin{enumerate}
+\item If no missing values, quit
+\item Select a random missing option.
+\item If there are no ministeps for this option, quit
+\item If a behavior option, calculate what the direction probability would have
+  been at insertion.
+\item Calculate how many places could have been chosen for the position at
+  insertion.
+\item Check that doing a reverse change to the initial value and deleting the
+  ministep is valid.
+\item If not valid, exit
+\item Calculate proposal probability. Same as insert missing, but upside down.
+\item If proposal probability is greater than a random uniform, do the changes.
+\end{enumerate}
+\subsubsection{quits}
+\label{sec:quit}
+\begin{algorithmic}
+\IF {diagonal}
+\STATE Exit
+\ENDIF
+\IF [we exclude these: need to sort this out ]
+{network and structurally fixed link}
+\STATE Exit
+\ENDIF
+\IF [will have rate 0]
+{behavior and structurally fixed}
+\STATE Exit
+\ENDIF
+\IF [will be diag or down as not permissible change]
+{behavior and goes over end}
+\STATE Exit
+\ENDIF
+\IF
+{same variable/actor/(alter) as miniStepA}
+\STATE Exit
+\ENDIF
+\end{algorithmic}
+\subsubsection{Update chain probabilities}
+\label{sec:chprob}
+This reinitialises the data, but no longer the initial state.
+\subsection{Calculation of scores and derivatives}
+\label{sec:scores}
+Scores are as for method of moments. For the rates, set $\tau$ equal to 1 over
+the number of real events in the chain. (Not sure about structurals here!)
+
+Using similar notation, with $v_{rk_1k_2}$ the derivative of the score
+corresponding to$(\theta_{k_1}, \theta_{k_2})$ in the $r$-th chain,
+\begin{align*}
+\intertext{for a basic rate parameter, $(\lambda)$, for a
+dependent variable, not the total here, just the per actor rate}
+v_{rkk} &= \sum_{m=1}^M  \textrm{nbr of non-structurally determined links in the
+  chain}/ \lambda_m^2\\
+\intertext{for other parameters}
+v_{rk_1k_2}&= \sum_{m=1}^M \left [  \left( \sum_{a, \nnm{delta}_a}
+  s_{i,a\delta k_a} p_{i,a\delta} \right) \left (
+\sum_{ b, \nnm{delta}_b} s_{i,b\delta k_b} p_{i,a\delta} \right) -
+\sum_{a, \nnm{delta}}
+  s_{i,a\delta k_1}p_{i,a\delta}  s_{i,a\delta k_2}
+\right ]\\
+\intertext{with derivative matrix}
+ D_{jk}&=\frac{1}{R}\sum_{r=1}^R v_{rjk}
+\end{align*}
+
+Note that rate effects are uncorrelated with all other effects.
+
+
+\end{document}
+\frac{\exp(p_{rij})}{\sum_k\exp p_{rik}}

@@ -44,7 +44,7 @@ double RecipdegreePopularityEffect::calculateContribution(int alter) const
 	if (!pONetwork)
 	{
 		throw runtime_error(
-			"One-mode network expected in ReciprocalDegreeBehaviorEffect");
+			"One-mode network expected in ReciprocalDegreePopularityEffect");
 	}
 	
 	int degree = pONetwork->reciprocalDegree(alter);
@@ -80,7 +80,7 @@ double RecipdegreePopularityEffect::tieStatistic(int alter)
 	if (!pONetwork)
 	{
 		throw runtime_error(
-			"One-mode network expected in ReciprocalDegreeBehaviorEffect");
+			"One-mode network expected in ReciprocalDegreePopularityEffect");
 	}
 	
 	int degree = pONetwork->reciprocalDegree(alter);

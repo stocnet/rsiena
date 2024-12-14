@@ -198,10 +198,10 @@ sienaGOF <- function(
 	{
 		ttcSimulation <- system.time(simStatsByPeriod <-
 			lapply(period, function (j) {
-				simStatsByPeriod <- parSapply(cluster, 1:iterations,
+				simStatsByPeriod <- parLapply(cluster, 1:iterations,
 					function (i){auxFunction(i, sienaFitObject,
 										j, groupName, varName, ...)})
-				simStatsByPeriod <- matrix(simStatsByPeriod, ncol=iterations)
+				simStatsByPeriod <- matrix(unlist(simStatsByPeriod), ncol=iterations)
 				dimnames(simStatsByPeriod)[[1]] <-	plotKey
 				dimnames(simStatsByPeriod)[[2]] <-	1:iterations
 				t(simStatsByPeriod)
@@ -216,7 +216,7 @@ sienaGOF <- function(
 							message("  Period ", j, "\n")
 							flush.console()
 						}
-						simStatsByPeriod <- sapply(1:iterations, function (i)
+						simStatsByPeriod <- lapply(1:iterations, function (i)
 						{
 							if (verbose && (i %% 100 == 0) )
 								{
@@ -232,8 +232,13 @@ sienaGOF <- function(
 						cat("  > Completed ", iterations, " calculations\n\n")
 					}
 					flush.console()
+					if (var(vapply(simStatsByPeriod, length, FUN.VALUE=0))>1e-10)
+					{
+						stop("Function", deparse(substitute(auxiliaryFunction)),
+									"does not always give vectors of the same length")
+					}
 					simStatsByPeriod <-
-							matrix(simStatsByPeriod, ncol=iterations)
+							matrix(unlist(simStatsByPeriod), ncol=iterations)
 					dimnames(simStatsByPeriod)[[1]] <-	plotKey
 					dimnames(simStatsByPeriod)[[2]] <-	1:iterations
 					t(simStatsByPeriod)
@@ -1538,10 +1543,16 @@ dyadicCov <-  function (i, obsData, sims, period, groupName, varName, dc){
 	}
 	values <- unique(as.vector(dc))
 	tdyv <- sort(values[!is.na(values)])
-	tdyv <- tdyv[-which(tdyv==0)] # if 0 is included, take it out
+	# if 0 is included, take it out:
+	zeros <- which(tdyv==0)
+	if (length(zeros)>0)
+	{
+		tdyv <- tdyv[-zeros]
+	}
 	# Now we want to construct the table of numbers of m*dyv;
 	# and categories in dc not represented in m*dyv should get a 0.
 	# First make a named vector of the correct length with 0s in place.
+	ttmdyv <- tdyv
 	ttmdyv <- 0*tdyv
 	names(ttmdyv) <- tdyv
 	dims <- dimnames(tmdyv)[[1]]
