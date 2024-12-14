@@ -305,7 +305,7 @@ selectionTable.basis <- function(x, xd, name, vname,
 
 
 selectionTable <- function(x, xd, name, vname,
-                    as.matrix=TRUE,
+                    as.matrix=FALSE,
                     levls=NULL, levls.alt=levls, nfirst=x$nwarm+1,
                     multiplier=1,
 					include.endow=FALSE, include.creation=FALSE,
