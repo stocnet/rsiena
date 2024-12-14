@@ -305,6 +305,8 @@ influenceTable <- function(x, xd, netname, behname,
     df$select <- as.numeric(as.character(df$select))
     attr(df, "quad") <- infl.t$quad
 	class(df) <- c("influenceTable", class(df))
+	attr(df, "netname") <- netname
+	attr(df, "behname") <- behname
 	if (as.matrix)
 	{
 	    {
@@ -327,7 +329,6 @@ influenceTable <- function(x, xd, netname, behname,
 		return(df)
 	}
 }
-
 
 influenceTable.se <- function(x, xd, netname, behname, levls, ww, levls.alt=levls){
 # Calculates the standard error for a linear combination
