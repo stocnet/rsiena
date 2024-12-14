@@ -325,7 +325,7 @@ selectionTable <- function(x, xd, name, vname,
     df$ego <- factor(as.character(df$vego), levels=vals, ordered=TRUE)
     df$valter <- as.numeric(as.character(df$valter))
     df$select <- as.numeric(as.character(df$select))
-	class(df) <- c(class(df), "selectionTable")
+	class(df) <- c("selectionTable", class(df))
 	if (as.matrix)
 	{
 		mat <- matrix(as.numeric(as.character(df$select)),
