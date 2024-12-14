@@ -326,6 +326,11 @@ selectionTable <- function(x, xd, name, vname,
     df$valter <- as.numeric(as.character(df$valter))
     df$select <- as.numeric(as.character(df$select))
 	class(df) <- c("selectionTable", class(df))
+	attr(df, "name") <- name
+	attr(df, "vname") <- vname
+	attr(df, "multiplier") <- multiplier
+	attr(df, "levls") <- levls
+	attr(df, "levls.alt") <- levls.alt
 	if (as.matrix)
 	{
 		mat <- matrix(as.numeric(as.character(df$select)),
