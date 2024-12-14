@@ -285,7 +285,7 @@ influenceTable.basis <- function(x, xd, netname, behname,
 }
 
 influenceTable <- function(x, xd, netname, behname,
-                      as.matrix=TRUE,
+                      as.matrix=FALSE,
                        levls=NULL, levls.alt=levls, out.ego=1, 
 						silent=FALSE, nfirst=x$nwarm+1,
                         include.endow=FALSE, include.creation=FALSE){
@@ -304,7 +304,7 @@ influenceTable <- function(x, xd, netname, behname,
     df$zego <- as.numeric(as.character(df$zego))
     df$select <- as.numeric(as.character(df$select))
     attr(df, "quad") <- infl.t$quad
-	class(df) <- c(class(df), "influenceTable")
+	class(df) <- c("influenceTable", class(df))
 	if (as.matrix)
 	{
 	    {
