@@ -1,10 +1,11 @@
 # RSiena 1.4.21
 
-2024-12-12
+2024-12-18
 
 ## Changes in RSiena:
 ### New functionality
-  * New functions `selectionTable` and `influenceTable`. 
+  * New functions `selectionTable` and `influenceTable`, 
+    with `print` methods. 
 ### Effects
   * New effect `altHigherEgoX`.
   * Effect `higher` also implemented for symmetric networks.

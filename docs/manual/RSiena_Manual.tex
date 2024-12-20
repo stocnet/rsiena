@@ -21,6 +21,7 @@
 %\usetikzlibrary{plotmarks}
 \usetikzlibrary {arrows,decorations}
 %\usetikzlibrary {shapes}
+\usepackage[T1]{fontenc} % for searchable underscores in pdf
 
 \usepackage[pdfstartview={},
             pdftex,
@@ -11331,7 +11332,7 @@ it is necessary to define a data set with two identical variables
  The effect parameter $p$ can take the values 1, 2, 3 and 4.
  The formula given above is for $p=1$.\\
  For $p=3$, the effect is defined by the \underline{proportion} of ties from same-$V$ actors
- to same-$V$ nodes, as given by the formula \\[0.5em]
+ to same-$U$ nodes, as given by the formula \\[0.5em]
  $\displaystyle s^{\rm el}_{i\vit}(x) =  x_{ij}\, \frac{ \sum_{h,k} x_{hk}\, I\{v_h = v_i \geq 1,\, u_k=u_j \geq 1\}}
             { \sum_{h,k} I\{v_h = v_i \geq 1,\, u_k=u_j \geq 1\}} \ . \hfill (p=3) $
 
