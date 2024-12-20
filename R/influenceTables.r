@@ -60,6 +60,7 @@
 #                                                                           #
 #############################################################################
 
+##@influenceTable.basis  Basis for influenceTable
 influenceTable.basis <- function(x, xd, netname, behname,
                             levls=NULL, levls.alt=levls,
                             out.ego=1, silent=FALSE, nfirst=x$nwarm+1,
@@ -281,9 +282,10 @@ influenceTable.basis <- function(x, xd, netname, behname,
     df <- data.frame(alter, zalter, zego, select=(coeffs%*%ztheta))
     list(df=df, zeff.eval=zeff.eval, zeff.endow=zeff.endow,
          zeff.creation=zeff.creation, ztheta=ztheta, zmean=zmean, zsmean=zsmean,
-         Delta=Delta, coeffs=coeffs, quad=quad)
+         Delta=Delta, coeffs=coeffs, levls=levls, levls.alt=levls.alt, quad=quad)
 }
 
+##@influenceTable  influenceTable
 influenceTable <- function(x, xd, netname, behname,
                       as.matrix=FALSE,
                        levls=NULL, levls.alt=levls, out.ego=1, 
@@ -307,6 +309,8 @@ influenceTable <- function(x, xd, netname, behname,
 	class(df) <- c("influenceTable", class(df))
 	attr(df, "netname") <- netname
 	attr(df, "behname") <- behname
+	attr(df, "levls") <- infl.t$levls
+	attr(df, "levls.alt") <- infl.t$levls.alt
 	if (as.matrix)
 	{
 	    {
@@ -319,9 +323,9 @@ influenceTable <- function(x, xd, netname, behname,
 		mat <- matrix(as.numeric(as.character(df$select)),
             length(unique(df$zalter)),
             length(unique(df$zego)), byrow=TRUE)
-		colnames(mat) <- levls
-		rownames(mat) <- levls.alt
-		class(mat) <- c(class(mat), "influenceTable")
+		colnames(mat) <- infl.t$levls
+		rownames(mat) <- infl.t$levls.alt
+		class(mat) <- c("influenceTable", class(mat))
 		return(mat)
 	}
 	else
@@ -343,7 +347,7 @@ influenceTable.se <- function(x, xd, netname, behname, levls, ww, levls.alt=levl
     if (!all(dim(ww) == c(length(levls), length(levls.alt)))){
         stop('Dimension of ww should be the lengths of levls and levls.alt.\n')
     }
-    if (class(x) == "sienaBayesFit"){
+    if (inherits(x, "sienaBayesFit")){
         stop('This function does not work for sienaBayesFit objects.\n')
     }
     cat("Requested cell weights (row = alter's, col = ego's behavior value):\n")
@@ -372,3 +376,31 @@ influenceTable.se <- function(x, xd, netname, behname, levls, ww, levls.alt=levl
         "\nStandard error\n")
     print(sqrt((wt.r %*% cth %*% wt.r)[1,1]))
 }
+
+
+##@print.influenceTable Methods
+print.influenceTable <- function(x, ...)
+{
+	if (!inherits(x, "influenceTable"))
+	{
+		stop("not a legitimate influenceTable object")
+	}
+	if (inherits(x, "matrix"))
+	{
+		mat <- x
+		class(mat) <- "matrix"
+		print(mat)
+	}
+	else if (inherits(x, "data.frame"))
+	{		
+		mat <- matrix(as.numeric(as.character(x$select)),
+            length(unique(x$zalter)),
+            length(unique(x$zego)), byrow=TRUE)
+		colnames(mat) <- attr(x, "levls") 
+		rownames(mat) <- attr(x, "levls.alt")
+		print(mat)
+	}
+	invisible(x)
+}
+	
+	

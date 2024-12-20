@@ -3,7 +3,7 @@
 \alias{selectiontable}
 \alias{selection.Table}
 \alias{selection.table}
-\title{Functions to construct selection tables for SAOMs}
+\title{Function to construct selection tables for SAOMs}
 \description{
  The function \code{selectionTable} constructs a selection table
  which may be helpful for the interpretation of results
@@ -14,7 +14,7 @@
 
 \usage{
 selectionTable(x, xd, name, vname,
-    as.matrix=TRUE,levls=NULL, levls.alt=levls,
+    as.matrix=FALSE,levls=NULL, levls.alt=levls,
     nfirst=x$nwarm+1, multiplier=1,
     include.endow=FALSE, include.creation=FALSE,
     silent=FALSE)
@@ -41,10 +41,10 @@ selectionTable(x, xd, name, vname,
        posterior sample used for constructing the table.}
   \item{multiplier}{multiplier for the range of the actor covariate.}
   \item{include.endow}{boolean, used only for models utilizing selection and
-        endowment effects: by specifying \code{include.endow=TRUE},                           
+        endowment effects: by specifying \code{include.endow=TRUE},
         the sum of evaluation and endowment effects is used.}
   \item{include.creation}{boolean, used only for models utilizing selection and
-         creation effects: by specifying \code{include.creation=TRUE},                  
+         creation effects: by specifying \code{include.creation=TRUE},
         the sum of evaluation and creation effects is used.}
   \item{silent}{boolean; if \code{FALSE}, some information
      is reproduced at the console.}
@@ -79,13 +79,15 @@ selectionTable(x, xd, name, vname,
 
  The data set \code{xd} is only used to get the means and similarity means
  which are subtracted somewhere in the effects.
+
+ This function has its own print method.
 }
 
 \value{
-  \code{selectionTable} returns the selection table.\cr
-  If \code{as.matrix=TRUE} (the default), this is in matrix form.\cr
-  If \code{as.matrix=FALSE}, it is a data frame, where the rows are
-  all combinations of \code{levls} and \code{levls.alt}, and the columns:
+  An object of class  \code{selectionTable}.\cr
+  If \code{as.matrix=TRUE}, this object is a matrix;
+  if \code{as.matrix=FALSE} (the default), it is a data frame, where the rows
+  are all combinations of \code{levls} and \code{levls.alt}, and the columns:
   \item{ego}{ego's values as a factor;}
   \item{vego}{the values \code{levls}}
   \item{valter}{the values \code{levls.alt}}

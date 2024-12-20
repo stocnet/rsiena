@@ -97,6 +97,7 @@
 ########################################################################
 
 
+##@selectionTable.basis  Basis for selectionTable
 selectionTable.basis <- function(x, xd, name, vname,
                     levls=NULL, levls.alt=levls, nfirst=x$nwarm+1,
                     multiplier=1,
@@ -300,10 +301,11 @@ selectionTable.basis <- function(x, xd, name, vname,
     df <- data.frame(ego,vego,valter,select)
     list(df=df, veff.eval=veff.eval, veff.endow=veff.endow,
          veff.creation=veff.creation, vtheta=vtheta, vmean=vmean, vsmean=vsmean,
-         Delta=Delta, coeffs=coeffs)
+         Delta=Delta, coeffs=coeffs, levls=levls, levls.alt=levls.alt)
 }
 
 
+##@selectionTable  selectionTable
 selectionTable <- function(x, xd, name, vname,
                     as.matrix=FALSE,
                     levls=NULL, levls.alt=levls, nfirst=x$nwarm+1,
@@ -315,12 +317,13 @@ selectionTable <- function(x, xd, name, vname,
 # actor covariate vname (should be a character string),
 # dependent variable name (also a character string),
 # levels for ego levls, levels for alter levls.alt.
-    df <- selectionTable.basis(x=x, xd=xd, name=name, vname=vname,
+    sel.t <- selectionTable.basis(x=x, xd=xd, name=name, vname=vname,
 				levls=levls, levls.alt=levls.alt, nfirst=nfirst,
                 multiplier=multiplier,
 				include.endow=include.endow,
 				include.creation=include.creation,
-				silent=silent)$df
+				silent=silent)
+	df <- sel.t$df
     vals <- as.character(unique(df$vego))
     df$ego <- factor(as.character(df$vego), levels=vals, ordered=TRUE)
     df$valter <- as.numeric(as.character(df$valter))
@@ -329,16 +332,16 @@ selectionTable <- function(x, xd, name, vname,
 	attr(df, "name") <- name
 	attr(df, "vname") <- vname
 	attr(df, "multiplier") <- multiplier
-	attr(df, "levls") <- levls
-	attr(df, "levls.alt") <- levls.alt
+	attr(df, "levls") <- sel.t$levls
+	attr(df, "levls.alt") <- sel.t$levls.alt
 	if (as.matrix)
 	{
 		mat <- matrix(as.numeric(as.character(df$select)),
             length(unique(df$vego)),
             length(unique(df$valter)), byrow=TRUE)
-		colnames(mat) <- levls.alt
-		rownames(mat) <- levls
-		class(mat) <- c(class(mat), "selectionTable")
+		colnames(mat) <- sel.t$levls.alt
+		rownames(mat) <- sel.t$levls
+		class(mat) <- c("selectionTable" ,class(mat))
 		return(mat)
 	}
 	else
@@ -445,7 +448,7 @@ selectionTable.se <- function(x, xd, name, vname,
 # which is assumed to have rows corresponding to levls and columns to levls.alt.
 # The linear combination for which the standard error is computed is
 # sum_{h,k} ww[h,k] * selectionTable[h,k].
-    if (class(x) == "sienaBayesFit"){
+    if (inherits(x, "sienaBayesFit")){
         stop('This function does not work for sienaBayesFit objects.\n')
     }
     if (!all(dim(ww) == c(length(levls), length(levls.alt)))){
@@ -507,3 +510,31 @@ selectionTable.norm <- function(x, xd, name=attr(xd$depvars,"name")[1], vname,
     list(vnorm = vmean - (vtheta["altX"]/(2*vtheta["altSqX"])),
         se.vnorm = sqrt(t(grad) %*% covtheta %*% grad))
 }
+
+
+##@print.selectionTable Methods
+print.selectionTable <- function(x, ...)
+{
+	if (!inherits(x, "selectionTable"))
+	{
+		stop("not a legitimate selectionTable object")
+	}
+	if (inherits(x, "matrix"))
+	{
+		mat <- x
+		class(mat) <- "matrix"
+		print(mat)
+	}
+	else if (inherits(x, "data.frame"))
+	{
+		mat <- matrix(as.numeric(as.character(x$select)),
+            length(unique(x$vego)),
+            length(unique(x$valter)), byrow=TRUE)
+		colnames(mat) <- attr(x, "levls.alt")
+		rownames(mat) <- attr(x, "levls") 
+		print(mat)
+	}
+	invisible(x)
+}
+	
+	

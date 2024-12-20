@@ -3,7 +3,7 @@
 \alias{influencetable}
 \alias{influence.Table}
 \alias{influence.table}
-\title{Functions to construct influence tables for SAOMs}
+\title{Function to construct influence tables for SAOMs}
 \description{
  The function \code{influenceTable} constructs influence tables
  which may be helpful for the interpretation of results
@@ -14,7 +14,7 @@
 
 \usage{
 influenceTable(x, xd, netname, behname,
-    as.matrix=TRUE, levls=NULL, levls.alt=levls, 
+    as.matrix=FALSE, levls=NULL, levls.alt=levls,
     out.ego=1, silent=FALSE, nfirst=x$nwarm+1,
     include.endow=FALSE, include.creation=FALSE)
 }
@@ -68,18 +68,20 @@ influenceTable(x, xd, netname, behname,
 
  The data set \code{xd} is only used to get means and ranges
  which are used somewhere in the effects.
+ 
+ This function has its own print method.
 }
 
 \value{
-  \code{influenceTable} returns the influence table.\cr
+    An object of class \code{influenceTable}.\cr
   This represents the joint contribution to the evaluation function
   of effects \code{"linear"}, \code{"quad"}, \code{"avAlt"}, \code{"avSim"},
   \code{"totAlt"}, \code{"totSim"},  \code{"avAttHigher"}, \code{"avAttLower"},
   \code{"threshold"}, \code{"threshold2"}, \code{"threshold3"},
   and \code{"threshold4"}.\cr
-  If \code{as.matrix=TRUE} (the default), this is in matrix form;
-  if \code{as.matrix=FALSE}, it is a data frame, where the rows are
-  all combinations of \code{levls} and \code{levls.alt}, and the columns:
+  If \code{as.matrix=TRUE}, the object is a matrix;
+  if \code{as.matrix=FALSE} (the default), it is a data frame, where the rows
+  are all combinations of \code{levls} and \code{levls.alt}, and the columns:
   \item{alter}{alter's values as a factor;}
   \item{zalter}{the values \code{levls.alt}}
   \item{zego}{the values \code{levls}}
