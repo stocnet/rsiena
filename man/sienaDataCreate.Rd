@@ -20,8 +20,8 @@ sienaDataCreate(..., nodeSets=NULL, getDocumentation=FALSE)
   If there are one-mode as well as two-mode dependent networks,
   the one-mode networks should be mentioned first.}
   \item{nodeSets}{list of Siena node sets. Default is the single node
-    set named "Actors", length equal to the number of rows in the first
-    object of class "sienaDependent". If the entire data set contains more than
+    set named \code{Actors}, length equal to the number of rows in the first
+    object of class \code{sienaDependent}. If the entire data set contains more than
     one node set, then the node sets must have been specified in
     the creation of all data objects mentioned in \dots.}
   \item{getDocumentation}{Flag to allow documentation of internal
@@ -35,7 +35,7 @@ Function \code{\link{print01Report}} will give a basic description of the data
 object and is a check useful, e.g., for diagnosing problems.
 }
 \value{
-An object of class "siena" which is designed to be used in a siena
+An object of class \code{siena} which is designed to be used in a siena
 model fit by \code{\link{siena07}}. The components of the object are:
 \item{nodeSets}{List of node sets involved}
 \item{observations}{Integer indicating number of waves of data}

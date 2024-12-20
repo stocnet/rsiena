@@ -14,7 +14,8 @@ export(
 	OutdegreeDistribution, IndegreeDistribution, BehaviorDistribution,
 	TriadCensus, mixedTriadCensus, dyadicCov,
 	siena.table, xtable, score.Test, Wald.RSiena, Multipar.RSiena, 
-   testSame.RSiena, funnelPlot, meta.table
+   testSame.RSiena, funnelPlot, meta.table,
+   influenceTable, selectionTable
 )
 
 import(Matrix, lattice, parallel, MASS)
@@ -73,3 +74,5 @@ S3method(print, sienaGOF)
 S3method(plot, sienaGOF)
 S3method(print, xtable.sienaFit)
 S3method(print, chains.data.frame)
+S3method(print, influenceTable)
+S3method(print, selectionTable)

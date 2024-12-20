@@ -37,7 +37,11 @@ public:
 		int period,
 		Cache * pCache);
 	virtual void initialize(const Data * pData,
-			State * pState, State * pSimulatedState, int period, Cache * pCache); 
+			State * pState, 
+			State * pSimulatedState, 
+			int period, 
+			Cache * pCache); 
+// The pSimulatedState is used for the GMoM.
 	virtual void preprocessEgo(int ego);
 
 	virtual double calculateContribution(int alter) const;

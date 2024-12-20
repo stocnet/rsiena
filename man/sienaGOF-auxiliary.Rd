@@ -434,7 +434,7 @@ myeff <- includeEffects(myeff, transTrip, cycle3)
 myeff <- includeEffects(myeff, outdeg, name="mybeh", interaction1="mynet1")
 myeff <- includeEffects(myeff,  outdeg, name="mybeh", interaction1="mynet1")
 # Shorter phases 2 and 3, just for example:
-myalgorithm <- sienaAlgorithmCreate(nsub=2, n3=200, seed=765, projname=NULL)
+myalgorithm <- sienaAlgorithmCreate(nsub=1, n3=200, seed=765, projname=NULL)
 (ans2 <- siena07(myalgorithm, data=mydata, effects=myeff, returnDeps=TRUE,
    batch=TRUE))
 gofc <- sienaGOF(ans2, EigenvalueDistribution, varName="mynet1",

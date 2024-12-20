@@ -18,7 +18,7 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
     which is either an object of class \code{sienaEffects}
     or \code{sienaGroupEffects}.
   }
-  \item{\dots}{2 or 3 short names to identify the effects
+  \item{\dots}{2 or 3 shortNames to identify the effects
     which should be interacted.
   }
   \item{include}{Boolean. default TRUE, but can be switched to FALSE to
@@ -37,7 +37,7 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
     Trailing blanks may be omitted.
   }
   \item{interaction2}{
-    Vector of siena objects where needed to completely identify the
+    Vector of Siena objects where needed to completely identify the
     effect e.g. covariate name or behavior variable name.
     Trailing blanks may be omitted.
   }
@@ -112,10 +112,15 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   shortNames \code{unspInt}, \code{behUnspInt}, and \code{contUnspInt} 
   (for the latter two, the maximum is \code{behNintn} each).
 
-  The input names \code{interaction1} and \code{interaction2} do not themselves
+  The input names \code{interaction1} and \code{interaction2},
+  which are vectors as indicated above, do not themselves
   refer to created interactions, but to dependence of the base effects on
   other variables in the data set.
-  They are used to completely identify the effects.
+  They are used to completely identify the effects.\cr
+  The first element of these vectors applies to the first shortName,
+  the second to the second, and if \dots contains 3 shortNames,
+  the third to the third. See the list of examples below for the interaction
+  between \code{recip} and \code{simX} for an example.
 
   Further information about Siena effects objects is given
   in the help page for \code{\link{getEffects}}.

@@ -693,7 +693,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "higher")
 	{
-		pEffect = new HigherCovariateEffect(pEffectInfo);
+		pEffect = new HigherCovariateEffect(pEffectInfo, false);
+	}
+	else if (effectName == "altHigherEgoX")
+	{
+		pEffect = new HigherCovariateEffect(pEffectInfo,true);
 	}
 	else if (effectName == "sameXRecip")
 	{

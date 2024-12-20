@@ -1,9 +1,32 @@
+# RSiena 1.4.21
+
+2024-12-18
+
+## Changes in RSiena:
+### New functionality
+  * New functions `selectionTable` and `influenceTable`, 
+    with `print` methods. 
+### Effects
+  * New effect `altHigherEgoX`.
+  * Effect `higher` also implemented for symmetric networks.
+  * Used # in name of threshold effects.
+### Bug corrections
+  * In `siena.table`,  fixed parameter values are not reported as NA,
+    but as their fixed values.
+### Messages
+  * If `includeInteraction` is called with argument `parameter`, 
+    an error message appears that this keyword should not be given. 
+  * Extension of message in `sienaTimeTest` given in the case of
+    collinearities. 
+### Help pages
+  * Improved explanation of the use of `interaction1` and `interaction2`
+    in the help page for `includeInteraction`. 
+
 # RSiena 1.4.20
 
 2024-11-10
 
 ## Changes in RSiena:
-
 ### Effects
   * New effects `varAlt` and `avSimVarAlt`.
 ### Bug corrections

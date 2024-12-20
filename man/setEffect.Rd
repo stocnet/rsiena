@@ -9,7 +9,8 @@
 }
 \usage{
 setEffect(myeff, shortName, parameter = NULL,
-fix = FALSE, test = FALSE, random=FALSE, initialValue = 0, timeDummy = ",", include = TRUE,
+fix = FALSE, test = FALSE, random=FALSE, initialValue = 0, 
+timeDummy = ",", include = TRUE,
 name = myeff$name[1], type = "eval", interaction1 = "",
 interaction2 = "", effect1=0, effect2=0, effect3=0,
 period=1, group=1, character=FALSE, verbose = TRUE)

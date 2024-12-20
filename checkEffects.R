@@ -2855,7 +2855,7 @@ sum(rowSums(s502)> 4) # 3 OK
 ### check varAlt
 ################################################################################
 
-mynet <- sienaDependent(array(c(net1, net2, net3), dim = c(50,50,3)))
+mynet <- sienaDependent(array(c(s501, s502, s503), dim = c(50,50,3)))
 alcohol <- sienaDependent(s50a, type = "behavior")
 mydata <- sienaDataCreate(mynet, alcohol)
 myeff <- getEffects(mydata)
@@ -2868,6 +2868,7 @@ ans$targets2[9,]
 alco <- s50a
 centeringVariance <- 99/100*var(c(alco[,1:2]))
 
+n <- 50
 varAlter2 <- matrix(0, n, 2)
 for (i in 1:n) {
   if (sum(s501[i, ]) > 1) {
@@ -2885,3 +2886,17 @@ sum(temp * (alco[,2] - mean(alco))) # 5.157153 OK
 temp <- varAlter2[,2] - centeringVariance
 temp[rowSums(s502) == 0] <- 0
 sum(temp * (alco[,3] - mean(alco))) # -11.39942 OK
+
+################################################################################
+### check altHigherEgoX
+################################################################################
+
+mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+myvar <- coCovar(s50a[,2])
+mydata <- sienaDataCreate(mynet, myvar)
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=138)
+mymodel <- getEffects(mydata)
+(mymodel <- setEffect(mymodel,altHigherEgoX, interaction1="myvar"))
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+sum(s502*outer(myvar,myvar,function(x,y){sign(y-x)})) # OK

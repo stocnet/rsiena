@@ -1421,7 +1421,7 @@ void setupExogenousEventGroup(SEXP EXOGEVENTGROUP, Data *pData)
 }
 
 /**
- *  Creates all the basic effects for one network
+ *  Creates all the basic effects for one dependent variable
  */
 SEXP createEffects(SEXP EFFECTS, Model *pModel, vector<Data *> * pGroupData,
 		const char *networkName, int effectCol, int parmCol, int int1Col,
@@ -1536,7 +1536,7 @@ SEXP createEffects(SEXP EFFECTS, Model *pModel, vector<Data *> * pGroupData,
 }
 
 /**
- *  Creates all the interaction effects for one network
+ *  Creates all the interaction effects for one dependent variable
  */
 SEXP createInteractionEffects(SEXP EFFECTS, Model *pModel,
 		const char *networkName, int effectCol, int initValCol,
