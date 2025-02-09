@@ -12,7 +12,7 @@ export(
 	includeTimeDummy, sienaGOF, descriptives.sienaGOF, 
 	sparseMatrixExtraction, networkExtraction, behaviorExtraction,
 	OutdegreeDistribution, IndegreeDistribution, BehaviorDistribution,
-	TriadCensus, mixedTriadCensus, dyadicCov,
+	TriadCensus, mixedTriadCensus, dyadicCov, egoAlterCombi,
 	siena.table, xtable, score.Test, Wald.RSiena, Multipar.RSiena, 
    testSame.RSiena, funnelPlot, meta.table,
    influenceTable, selectionTable
@@ -31,8 +31,8 @@ importFrom("stats", ".getXlevels", "acf", "as.formula", "coef",
            "model.response", "model.weights", "na.omit", "naprint",
            "optim", "optimize", "pchisq", "plot.ts", "pnorm", 
            "predict.lm", "pt", "qchisq", "qnorm", "quantile",
-           "rWishart", "rnorm", "runif", "sd", "ts", "uniroot", "var",
-           "weighted.mean", "weights")
+           "rWishart", "rnorm", "runif", "sd", "setNames", "ts", "uniroot", 
+           "var", "weighted.mean", "weights")
 importFrom("utils", "browseURL", "edit",
            "flush.console", "getFromNamespace", "object.size",
            "packageDescription", "read.csv",
