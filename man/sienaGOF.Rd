@@ -28,7 +28,7 @@ sienaGOF(sienaFitObject, auxiliaryFunction,
         cluster=NULL, robust=FALSE, groupName="Data1",
         varName, tested=NULL, iterations=NULL, giveNAWarning=TRUE, \dots)
 \method{plot}{sienaGOF}(x, center=FALSE, scale=FALSE, violin=TRUE, key=NULL,
-        perc=.05, period=1, position=4, fontsize=12, \dots)
+        perc=.05, period=1, showAll=FALSE, position=4, fontsize=12, \dots)
 descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
         period=1, showAll=FALSE)
 }
@@ -102,8 +102,7 @@ descriptives.sienaGOF(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,
        for \code{plot.sienaGOF()}, e.g., the usual plotting parameters
        \code{main}, \code{xlab}, \code{ylab}, \code{cex}, \code{cex.main},
        \code{cex.lab}, and \code{cex.axis}.}
-  \item{showAll}{If \code{FALSE}, drops statistics with variance 0,
-       like in the plot.}
+  \item{showAll}{If \code{FALSE}, drops statistics with variance 0.}
 }
 \details{
  This function is used to assess the goodness of fit of an estimated stochastic

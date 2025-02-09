@@ -86,6 +86,9 @@ sienaGOF <- function(
 	{
 		stop("You need to supply the parameter <<auxiliaryFunction>>.")
 	}
+# This should be captured for possible later use
+# (when it will have been used the name is no longer available):
+	auxfu <- deparse(substitute(auxiliaryFunction))
 # There might be more than one varName:
 	if (is.null(sFO$f[[groupName]]$depvars[[varName[1]]]))
 	{
@@ -232,10 +235,10 @@ sienaGOF <- function(
 						cat("  > Completed ", iterations, " calculations\n\n")
 					}
 					flush.console()
-					if (var(vapply(simStatsByPeriod, length, FUN.VALUE=0))>1e-10)
+					if (var(vapply(simStatsByPeriod, length, FUN.VALUE=0))>1e-8)
 					{
-						stop("Function", deparse(substitute(auxiliaryFunction)),
-									"does not always give vectors of the same length")
+						stop("Function ", auxfu,
+							" does not always give vectors of the same length")
 					}
 					simStatsByPeriod <-
 							matrix(unlist(simStatsByPeriod), ncol=iterations)
@@ -648,7 +651,8 @@ summary.sienaGOF <- function(object, ...) {
 
 ##@plot.sienaGOF siena07 Plot method for sienaGOF
 plot.sienaGOF <- function (x, center=FALSE, scale=FALSE, violin=TRUE,
-		key=NULL, perc=.05, period=1, position=4, fontsize=12, ...)
+		key=NULL, perc=.05, period=1, showAll=FALSE,
+		position=4, fontsize=12, ...)
 {
 	## require(lattice)
 	args <- list(...)
@@ -681,17 +685,25 @@ plot.sienaGOF <- function (x, center=FALSE, scale=FALSE, violin=TRUE,
 	## Need to check for useless statistics here:
 	n.obs <- nrow(obs)
 
-	screen <- sapply(1:ncol(obs),function(i){
+	if (showAll)
+	{
+		screen <- sapply(1:ncol(obs),function(i){
+					(sum(is.nan(rbind(sims,obs)[,i])) == 0) })
+	}
+	else
+	{
+		screen <- sapply(1:ncol(obs),function(i){
 						(sum(is.nan(rbind(sims,obs)[,i])) == 0) }) &
 				(diag(var(rbind(sims,obs)))!=0)
-
-	if (any((diag(var(rbind(sims,obs)))==0)))
-	{	cat("Note: some statistics are not plotted because their variance is 0.\n")
-		cat("This holds for the statistic")
-		if (sum(diag(var(rbind(sims,obs)))==0) > 1){cat("s")}
-		cat(": ")
-		cat(paste(attr(x,"key")[which(diag(var(rbind(sims,obs)))==0)], sep=", "))
-		cat(".\n")
+		if (any((diag(var(rbind(sims,obs)))==0)))
+		{	
+			cat("Note: some statistics are not plotted because their variance is 0.\n")
+			cat("This holds for the statistic")
+			if (sum(diag(var(rbind(sims,obs)))==0) > 1){cat("s")}
+			cat(": ")
+			cat(paste(attr(x,"key")[which(diag(var(rbind(sims,obs)))==0)], sep=", "))
+			cat(".\n")
+		}
 	}
 
 	sims <- sims[,screen, drop=FALSE]
@@ -1523,7 +1535,7 @@ TriadCensus <- function (i, obsData, sims, period, groupName, varName, levls = 1
 
 ##@dyadicCov sienaGOF Auxiliary variable for dyadic covariate
 #
-# An auxiliary function calculating the proportion of ties
+# An auxiliary function calculating the number of ties
 # for subsets of ordered pairs corresponding to
 # certain values of the categorical dyadic covariate dc.
 # dc should be a matrix of the same dimensions as
@@ -1559,3 +1571,38 @@ dyadicCov <-  function (i, obsData, sims, period, groupName, varName, dc){
 	ttmdyv[dims] <- tmdyv # The other entries remain 0
 	ttmdyv
 }
+
+egoAlterCombi <- function (i, obsData, sims, period, groupName, varName, 
+     trafo=NULL) 
+{
+# An auxiliary function calculating the number of ties
+# for each ego-alter combination of values of the dependent variable;
+# the dependent variable is transformed by trafo.
+	if (length(varName) != 2){
+		stop("egoAlterCombi expects two varName parameters")
+	}
+	if (is.null(trafo)){
+		trafo <- function(x){x}
+	}
+	varName1 <- varName[1]
+	varName2 <- varName[2]
+	m <- sparseMatrixExtraction(i, obsData, sims, period, groupName, 
+		varName1)
+	x <- behaviorExtraction(i, obsData, sims, period, groupName, 
+		varName2)
+	brange <- attr(obsData[[groupName]]$depvars[[varName2]], 
+			"behRange")[1]:attr(obsData[[groupName]]$depvars[[varName2]], 
+			"behRange")[2]
+	combi.egoalter <- outer(10*trafo(x), trafo(x) ,'+')		
+	possible.pairs <- 
+		sort(unique(as.vector(outer(10*trafo(brange), trafo(brange), '+'))))
+	tmeax <- table((m * combi.egoalter)@x, useNA = "no")
+	ppnames <- as.character(possible.pairs)	
+	teax <- setNames(0*possible.pairs, ppnames)
+	teax[dimnames(tmeax)[[1]]] <- tmeax
+	# pad names with leading 0s, if necessary:
+	pp.names <- ifelse(nchar(ppnames)==1, paste("0",ppnames,sep=""),ppnames)
+	names(teax) <- pp.names	
+	teax
+}
+
