@@ -21,6 +21,7 @@
 %\usetikzlibrary{plotmarks}
 \usetikzlibrary {arrows,decorations}
 %\usetikzlibrary {shapes}
+\usepackage{times}
 \usepackage[T1]{fontenc} % for searchable underscores in pdf
 
 \usepackage[pdfstartview={},
@@ -197,7 +198,7 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.4.21.
+This version was renewed for \RS version 1.4.22.
 \end{abstract}
 
 
@@ -796,8 +797,9 @@ different impact) of effects for the increase and the decrease of behavior.
 \subsubsection{Outline of estimation procedure}
 \label{S_estim}
 \noindent
-\RS estimates parameters by the function \sfn{siena07}
-and (alternatively) \sfn{sienacpp}, using the following procedure:
+\RS estimates parameters by the function \sfn{siena07},
+%and (alternatively) \sfn{sienacpp}
+using the following procedure:
 \begin{enumerate}
 \item  Certain statistics are used that reflect the parameter values;\\
   the finally obtained parameters should be such that the \emph{expected
@@ -835,11 +837,26 @@ and (alternatively) \sfn{sienacpp}, using the following procedure:
   phase.
 
   If the estimation has to be repeated, this can be done by employing the
-  argument \texttt{prevAns} in the call of \sfn{siena07}
-  (or \sfn{sienacpp}).
+  argument \texttt{prevAns} in the call of \sfn{siena07}.
+ % (or \sfn{sienacpp}).
   See the help page for  \sfn{siena07}.
 \end{enumerate}
 \end{enumerate}
+
+If you are using Windows, when the estimation is running you will see a
+screen with intermediate results: current parameter values, the
+differences (`deviation values') between simulated and observed
+statistics (these should average out to 0 if the current
+parameters are close to the correct estimated value), and the
+\hyperlink{T_quasiac}{quasi-autocorrelations} discussed in Section
+\ref{S_Est}.
+(If you are running \RS from \texttt{RStudio}, this screen is visible
+when you click on the little feather that appears in the taskbar
+when the estimation is running.)
+It is possible to intervene in the algorithm by clicking on the
+appropriate buttons:
+the algorithm may be restarted or terminated. In most cases
+this is not necessary.
 
 
 \subsubsection{Design issues for longitudinal network modeling}
@@ -915,9 +932,6 @@ of the software appear).
 \url{http://cran.r-project.org/web/packages/RSiena/} .\\
             However, it is advisable to have
 \fi
-            Currently (mid February 2024), \RS is archived on CRAN,
-            which means that it is not directly available.
-            This hopefully will be restored soon.
 
             You can download
             the latest version of \RS
@@ -1014,7 +1028,7 @@ remotes::install_github("stocnet/rsiena", build=FALSE)
 	\item	Use functions \sfn{includeEffects}, \sfn{setEffect} and
             \sfn{includeInteraction} to further specify the model
             (see Sections~\ref{S_imp_str1}~--~\ref{S_eff_beh}).
-	\item	Use \sfn{siena07} or \sfn{sienacpp}
+	\item	Use \sfn{siena07} %or \sfn{sienacpp}
             to run the estimation procedure.\footnote{The
             use of multiple processes can speed up the estimation.
             For directions on how to utilize multiple processors,
@@ -1150,7 +1164,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.4.21).
+  identified by a version number (e.g.\ 1.4.22).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -3469,7 +3483,7 @@ These constraints will continue to be respected during the simulations
 The constraints for the simulations can be changed
 (e.g., turned off) by function \sfn{sienaDataConstraint}.
 
-Script \url{http://www.stats.ox.ac.uk/~snijders/siena/RscriptSienaOrdered.R}\\
+Script \small{\url{http://www.stats.ox.ac.uk/~snijders/siena/RscriptSienaOrdered.R}}\\
 gives a demonstration of how this feature can be used for analyzing networks
 with ordered values.
 \medskip
@@ -3886,6 +3900,7 @@ interaction effects.
 Ad hoc interaction effects have to be defined specifically in each case,
 like \texttt{transRecTrip}; Section~\ref{S_f} contains many other examples.
 Standard interaction effects can be defined directly.
+They are also called `user-defined interaction effects'. 
 The change statistic of a standard interaction effect is the product of the
 change statistics of the interacting effects.
 This does not always make sense; whether it is permitted
@@ -4295,6 +4310,16 @@ The \textsf{MaxDegree} option does not work for likelihood-based
 estimation; therefore, neither ML estimation using \textsf{siena07}
 nor multilevel estimation using \textsf{sienaBayes} support
 this option.
+However, you can obtain the same result of avoiding the creation
+of outdegrees larger than a given value by using the effect with shortName
+\texttt{outMore} or \texttt{outThreshold}. For example, to avoid
+outdegrees larger than 12,
+\begin{verbatim}
+effs <- setEffect(effs, outMore, parameter=12, initialValue=-30, fix=TRUE)
+\end{verbatim}
+(On the log-probability scale, a contribution of \verb!-30!  is
+practically minus infinity.)
+
 
 
 \subsection{Goodness of fit with auxiliary statistics: \textsf{sienaGOF}}
@@ -4320,19 +4345,301 @@ simulated values for the ends of the periods.
 The differences are assessed by combining the auxiliary statistics
 using the Mahalanobis distance.
 
-Various auxiliary statistics are available directly (`out of the box'),
-e.g., distributions of indegrees and outdegrees and of behavioral
-variables. These are listed in the help page for
-\verb!sienaGOF-auxiliary!. Some other auxiliary statistics, requiring
-additional packages such as \texttt{igraph} and \texttt{sna},
-are available by copying script from the examples in the same help page.
-(The reason for this construction is to reduce dependencies
-of \RS on other packages.)
-
 The examples in the help pages for \textsf{sienaGOF} and \sfn{sienaGOF-auxiliary}
 give ample help for how to use this function.
 Also see the script on the \SI website.
 
+
+\subsubsection{Auxiliary statistics}
+
+Various auxiliary statistics are available directly (`out of the box'),
+e.g., distributions of indegrees and outdegrees and of behavioral
+variables. These are listed in the help page for
+ \sfn{sienaGOF-auxiliary}.
+
+Some other auxiliary statistics, requiring
+additional packages such as \texttt{igraph} and \texttt{sna},
+are available by copying script from the examples in the same help page.
+(The reason for this construction is to reduce dependencies
+of \RS on other packages.) This includes the auxiliary statistics
+for the distribution of geodesic distances.
+
+Note that for the indegree and outdegree distributions, you need
+to specify a parameter \texttt{levls}, which is the set of values
+for which the distribution is calculated.
+The default value \texttt{0:8} often is not adequate, use a different one!!!
+For example if outdegrees ranging mainly from 0 to 10 but with outliers up to 27,
+you could use options \texttt{cumulative=TRUE} and \texttt{levls=c(0:10,15,20,30)}
+(the details of the distribution in the tail do not matter so much).
+
+A very useful auxiliary variable is \sfn{dyadicCov}. Have a look at the example
+on the help page for  \sfn{sienaGOF-auxiliary} to see how this can be used
+to check the adequacy of the representation of ties for ego-alter combinations
+of actor covariates or dependent behavioral variables.
+\medskip
+
+\noindent
+\textbf{\emph{Triad census}}
+\smallskip
+
+\noindent
+Another auxiliary statistic is \sfn{TriadCensus},
+which checks the fit for the \emph{triad census}
+introduced by \citet{HollandLeinhardt1970,HollandLeinhardt1976}.
+These authors noted that
+much of local network structure is expressed by triads,
+the configurations of ties between triples of nodes.
+There are 16 different possible configurations of ties between three nodes.
+The \emph{triad census} is the vector of frequencies of these 16 configurations.
+These are shown in Figure~\ref{F_triads}.
+\citet{HollandLeinhardt1976} showed that many interesting characteristics
+of networks can be expressed as linear combinations of the
+triad census.
+See, e.g., Chapter~14 of \citet{WassermanFaust94} for more information.
+
+\begin{figure}[htb]
+\begin{center}
+\begin{tikzpicture}
+\begin{scope}
+\boldmath
+\tikzstyle{every node}=[x=5ex,y=5ex,inner sep=0pt,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {003};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\boldmath
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {012};
+\end{scope}
+\end{tikzpicture}
+\bigskip
+
+\begin{tikzpicture}
+\begin{scope}
+\boldmath
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (j)  ;
+\draw (j) -> (i);
+\node[fill=none, draw=none] (t) at (1,-0.7) {102};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\boldmath
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (k) -> (j)  ;
+\draw (k) -> (i);
+\node[fill=none, draw=none] (t) at (1,-0.7) {021D};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\boldmath
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\draw (j) -> (k);
+\node[fill=none, draw=none] (t) at (1,-0.7) {021U};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\boldmath
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\draw (k) -> (j);
+\node[fill=none, draw=none] (t) at (1,-0.7) {021C};
+\end{scope}
+\end{tikzpicture}
+\bigskip
+
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (j)  ;
+\draw (j) -> (i);
+\draw (k) -> (j)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {111D};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (j)  ;
+\draw (j) -> (i);
+\draw (j) -> (k)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {111U};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\draw (i) -> (j);
+\draw (j) -> (k)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {030T};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (j)  ;
+\draw (j) -> (k);
+\draw (k) -> (i)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {030C};
+\end{scope}
+\end{tikzpicture}
+\bigskip
+
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\draw (k) -> (i)  ;
+\draw (i) -> (j);
+\draw (j) -> (i)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {201};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (k) -> (i)  ;
+\draw (k) -> (j)  ;
+\draw (i) -> (j);
+\draw (j) -> (i)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {120D};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\draw (j) -> (k)  ;
+\draw (i) -> (j);
+\draw (j) -> (i)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {120U};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\draw (k) -> (j)  ;
+\draw (i) -> (j);
+\draw (j) -> (i)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {120C};
+\end{scope}
+\end{tikzpicture}
+\bigskip
+
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\draw (k) -> (j)  ;
+\draw (i) -> (j);
+\draw (j) -> (i)  ;
+\draw (j) -> (k)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {210};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\draw (k) -> (j)  ;
+\draw (i) -> (j);
+\draw (j) -> (i)  ;
+\draw (j) -> (k)  ;
+\draw (k) -> (i)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {300};
+\end{scope}
+\end{tikzpicture}
+\end{center}
+
+\caption{The 16 different configurations possible for three nodes in a digraph
+\citep[after][]{HollandLeinhardt1976}.}
+\label{F_triads}
+\end{figure}
+
+\clearpage
 
 \subsubsection{Plots}
 The results of \verb!sienaGOF! can be plotted which then produces
@@ -4492,11 +4799,12 @@ you can set the seed; see Section~\ref{S_param}.
 \hypertarget{T_S_options}{   }
 % provisionally placed here.
 
-The estimation process is implemented in functions \textsf{siena07}
-and \sfn{sienacpp} (alternatives for each other),
+The estimation process is implemented in function \textsf{siena07},
+%and \sfn{sienacpp} (alternatives for each other),
 using an algorithm specification defined in function \textsf{sienaAlgorithmCreate}.
 Estimation starts with initial values for the parameters,
-and the functions \textsf{siena07} and \sfn{sienacpp} both return a
+and the function \textsf{siena07} %and \sfn{sienacpp} both
+returns a
 so-called \textsf{sienaFit} object containing the estimates and their standard errors and
 a lot of further information.
 Since the estimation procedure is iterative (i.e., depending on the
@@ -4505,9 +4813,13 @@ the results are not always completely satisfactory. We shall see below
 how the satisfactory convergence of the algorithm can be checked,
 and how to go on if this is not satisfactory.
 
+There used to be a function \sfn{sienacpp}, which was
+an alternative for \sfn{siena07}, for which
+estimation stayed entirely in the `back end' \sfn{C++} part of \si.
+\sfn{sienacpp} was available only in \sfn{RSienaTest},
+and is not documented here.
 
-
-
+\iffalse
 Much of what follows is about the use of \sfn{siena07}
 but applies equally to \sfn{sienacpp}.
 The difference between these two functions is that
@@ -4524,6 +4836,7 @@ and distance between first and last simulations are small).
 Further, results from \sfn{sienacpp} cannot used for
 \sfn{sienaGOF}.
 Note that \sfn{sienacpp} is available only in \sfn{RSienaTest}.
+\fi
 
 The estimation algorithm is determined by a call of functions
 such as
@@ -4535,7 +4848,7 @@ The function \textsf{sienaAlgorithmCreate} defines an algorithm specification
 object with options for the algorithm, and the function  \textsf{siena07}
 carries out the estimation.
 If you do not want to see the graphical interface with intermediate
-results, or if your computer has problems showing this, then add
+results (see below), or if your computer has problems showing this, then add
 the option \texttt{batch = TRUE}, as in
 \begin{verbatim}
 results1  <- siena07(algorithm1, data = mydata, effects = myeff,
@@ -4548,6 +4861,22 @@ the option \texttt{verbose = TRUE}, as in
 results1  <- siena07(algorithm1, data = mydata, effects = myeff,
                       verbose = TRUE)
 \end{verbatim}
+
+The graphical interface is available in Windows, and consists of a
+screen with intermediate results: current parameter values, the
+differences (`deviation values') between simulated and observed
+statistics (these should average out to 0 if the current
+parameters are close to the correct estimated value), and the
+\hyperlink{T_quasiac}{quasi-autocorrelations} discussed in Section
+\ref{S_Est}.
+(If you are running \RS from \texttt{RStudio}, this screen is visible
+when you click on the little feather that appears in the taskbar
+when the estimation is running.)
+It is possible to intervene in the algorithm by clicking on the
+appropriate buttons:
+the algorithm may be restarted or terminated. In most cases
+this is not necessary.
+
 
 Experience shows that parameters estimated by \sfn{siena07} are
 not very large in magnitude, mostly they are less than 20 in
@@ -5653,7 +5982,7 @@ itself in a probability distribution.
 
 Estimation by the regular Method of Moments (MoM)
 and Generalized Method of Moments (GMoM)
-is implemented in the functions \sfn{siena07} and \sfn{sienacpp}.
+is implemented in the function \sfn{siena07}.% and \sfn{sienacpp}.
 ML estimation is done by the function \sfn{siena07}, using a set of options
 created by \sfn{sienaAlgorithmCreate} with \sfn{maxlike = TRUE}.
 Bayesian estimation is done by the function \sfn{sienaBayes},
@@ -5829,7 +6158,7 @@ We refer to  the  \R script \texttt{GMoMscript.R} on the \SI webpage for an illu
 
 Like the MoM, the GMoM allows conditional as well as unconditional estimation (see Section~\ref{S_cond}).
 
-
+\iffalse
 \subsubsection{Using the function \sfn{sienacpp}}
 \label{S_GMoM_sienacpp}
 
@@ -5841,6 +6170,7 @@ uses \texttt{maxlike = FALSE}, the estimation function \sfn{sienacpp}
 will use the MoM or the GMoM; the latter will be used as soon as
 at least one of the effects were specified in the effects object with
 \texttt{type = "gmm"}.
+\fi
 
 The specification of the effects object for GMoM estimation requires
 that in the effects object, apart from the basic rate effects,
@@ -6317,7 +6647,8 @@ unconditional estimation.
 \item
   If multiple processors are available, then using
   multiple processes can speed up the estimation in \textsf{siena07},
-  \sfn{sienacpp}, and \textsf{sienaGOF}.
+ % \sfn{sienacpp},
+  and \textsf{sienaGOF}.
   The help pages for these functions show how to do this.
   You can find out the number of processes possible by
 \begin{verbatim}
@@ -7592,14 +7923,16 @@ a constant rate function, the out-degree effect, and
 the reciprocity effect.
 
 Then let the program estimate the parameters, using function \textsf{siena07}.
-You will see a
+If you are using Windows, you will see a
 screen with intermediate results: current parameter values, the
 differences (`deviation values') between simulated and observed
 statistics (these should average out to 0 if the current
 parameters are close to the correct estimated value), and the
 \hyperlink{T_quasiac}{quasi-autocorrelations} discussed in Section
 \ref{S_Est}.
-
+(If you are running \RS from \texttt{RStudio}, this screen is visible
+when you click on the little feather that appears in the taskbar
+when the estimation is running.)
 It is possible to intervene in the algorithm by clicking on the
 appropriate buttons:
 the algorithm may be restarted or terminated. In most cases
@@ -9130,6 +9463,10 @@ by $p$, and called in this manual an \emph{internal effect parameter}.
 }
 (These are totally different from the statistical parameters which are
 the weights of the effects in the objective function.)
+
+The internal effect parameter is used to define several
+specifications of effects; they are fixed parameters
+which cannot be estimated. 
 These are set or modified by the \texttt{setEffect} function, e.g.,
 \begin{verbatim}
 myeffects <- setEffect(myeffects, gwespFF, parameter = 69)
@@ -11565,12 +11902,15 @@ for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{+i}} - \sqrt{\
 for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{j+}} - \sqrt{\bar w})$;\\[0.2em]
 
  \item {\em Effect of out-degree  in W on X-activity } ($X$: outdegree$^{1/p}$ $W$ activity) \texttt{(outActIntn)}\\
- defined by the $W$-out-degree of $i$ (for $p = 2$ its square root)
- times $i$'s $X$-out-degree:\\[0.2em]
+ defined by the centered $W$-out-degree of $i$ (for $p = 2$ its square root, for $p=0$ its logarithm)
+ times $i$'s $X$-out-degree:\\[0.3em]
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, ({w_{i+}} - {\bar w}) =
                            x_{i+}\, ({w_{i+}} - {\bar w}) $ or\\[0.2em]
 for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{i+}} - \sqrt{\bar w}) =
-                           x_{i+}\, (\sqrt{w_{i+}} - \sqrt{\bar w}) $;\\[0.2em]
+                           x_{i+}\, (\sqrt{w_{i+}} - \sqrt{\bar w}) $;\\[0.3em]
+or for $p=0 $ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \big(\log(w_{i+}) - \log(\bar w)\big) =
+                           x_{i+}\, \big(\log(w_{i+}) - \log(\bar w)\big) $,\\[0.3em]
+where $\log(0)$ is defined as 0;
 
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
@@ -14695,11 +15035,11 @@ where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values in
  \item {\em variance alter effect} \texttt{(varAlt)},
  defined by  $i$'s
  behavior multiplied by the centered variance of the behavior of his alters, \\
- $s^{\rm beh}_{i\vit}(x, z) =  z_i \big(x_{i+}^{-1}\sum_j (x_{ij} z_j)^2 - x_{i+}^{-1} 
+ $s^{\rm beh}_{i\vit}(x, z) =  z_i \big(x_{i+}^{-1}\sum_j (x_{ij} z_j)^2 - x_{i+}^{-1}
        (\sum_j x_{ij}z_j)^2 - \widehat{{\rm var}^z} \big) $\\
  (and $0$ if $x_{i+} = 0$) ; \\
 where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values
-in all but the final wave; \\ 
+in all but the final wave; \\
 
  \item {\em dense triads effect} \texttt{(behDenseTriads)},
  defined by  $i$'s
@@ -16390,6 +16730,8 @@ measure of `fit'.
 The following measures that have something of the same purpose
 are available in \RS through function  \sfn{sienaRI}.
 
+Some further material is at \url{https://www.stats.ox.ac.uk/~snijders/siena/EffectSizes_s.pdf}.
+
 \subsubsection{Relative importance of effects}
 
 The measure for \emph{relative importance of effects} in {\saom}s,
@@ -16941,12 +17283,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type
-\verb|R CMD check RSiena_1.4.21.tar.gz|\\
+\verb|R CMD check RSiena_1.4.22.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.4.21.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.4.22.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -18061,7 +18403,27 @@ Changes in RSiena:
 
 \fi
 
-\item 2024-12-12 GitHub, package version 1.4.21.
+\item 2025-02-08 GitHub, package version 1.4.22.
+
+Changes in RSiena:
+\begin{itemize}
+\item New functionality:
+   \begin{itemize}
+   \item New auxiliary GOF function \sfn{egoAlterCombi}.
+   \item Parameter \texttt{showAll} added to  \sfn{plot.sienaGOF}.
+    \end{itemize}
+\item  Effects
+   \begin{itemize}
+	\item Parameter 0 (for logarithm) in \texttt{outActIntn}.
+    \end{itemize}
+\item Documentation
+   \begin{itemize}
+	\item Description of \textit{sienacpp} omitted from manual.
+    \end{itemize}
+\end{itemize}
+
+\item 2024-12-18 GitHub, package version 1.4.21;
+   but the package has date 2024-12-12 and the Github release is from 2025-01-14.
 
 Changes in RSiena:
 \begin{itemize}
@@ -18106,7 +18468,7 @@ Changes in RSiena:
 \item Bug corrections:
    \begin{itemize}
 	\item Interaction effects for continuous behavior turned off. The R side of
-	\texttt{includeInteraction} for continuous behavior had been implemented but 
+	\texttt{includeInteraction} for continuous behavior had been implemented but
 	not the C++ side, so now an error message is given.
     \end{itemize}
 \end{itemize}

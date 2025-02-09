@@ -1,3 +1,22 @@
+# RSiena 1.4.22
+
+2025-02-08
+
+## Changes in RSiena:
+### New functionality
+  * New auxiliary GOF function `egoAlterCombi`. 
+  * Parameter `showAll` added to `plot.sienaGOF`.
+### New src functionality
+  * New table `IntLogTable` and new generic function`IntLogFunction`. 
+### Effects
+  * Internal parameter 0 (for log(x)) added for `outActIntn`.
+    (It would be trivial to implement this also for the other
+    mixed degree effects, but currently there seems no need.)
+### Bug correction.
+  * In `sienaGOF`,  if the auxiliaryFunction does not always 
+    give vectors of the same length, the error message gives properly
+    the name of the auxiliaryFunction.
+
 # RSiena 1.4.21
 
 2024-12-18

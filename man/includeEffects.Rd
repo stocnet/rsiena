@@ -18,17 +18,18 @@ includeEffects(myeff, ..., include = TRUE, name = myeff$name[1], type = "eval",
   \item{\dots}{
 short names to identify the effects which should be included or excluded.}
   \item{include}{Boolean. default TRUE, but can be switched to FALSE to
-    turn off an effect.}
+  turn off an effect.}
   \item{name}{Name of dependent variable (network or behavior) for which effects
-    are being included. Defaults to the first in the effects object.}
+  are being included. Defaults to the first in the effects object,
+  which is the first dependent variable specified in \code{\link{sienaDataCreate}}.}
   \item{type}{
   Type of effects to be included: "eval", "endow", "creation", or "rate".}
   \item{interaction1}{
   Name of siena object where needed to completely identify the
-  effects e.g. covariate name or behavior variable name.}
+  effects, e.g., covariate name or behavior variable name.}
   \item{interaction2}{
   Name of siena object where needed to completely identify the
-  effects e.g. covariate name or behavior variable name.}
+  effects, e.g., covariate name or behavior variable name.}
   \item{fix}{
   Boolean. Are the effects to be fixed at the value stored in
   \code{myeff$initialValue} or not.}
