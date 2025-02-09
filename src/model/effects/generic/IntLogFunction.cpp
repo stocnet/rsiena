@@ -3,29 +3,29 @@
  *
  * Web: https://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: IntSqrtFunction.cpp
+ * File: IntLogFunction.cpp
  *
  * Description: This file contains the implementation of the class
- * IntSqrtFunction.
+ * IntLogFunction.
  *****************************************************************************/
 
-#include "IntSqrtFunction.h"
-#include "utils/SqrtTable.h"
+#include "IntLogFunction.h"
+#include "utils/LogTable.h"
 
 namespace siena
 {
 
-IntSqrtFunction::IntSqrtFunction(AlterFunction * pFunction)
+IntLogFunction::IntLogFunction(AlterFunction * pFunction)
 {
 	this->lpFunction = pFunction;
-	this->lpSqrtTable = SqrtTable::instance();
+	this->lpLogTable = LogTable::instance();
 }
 
 
 /**
  * Deallocates this function.
  */
-IntSqrtFunction::~IntSqrtFunction()
+IntLogFunction::~IntLogFunction()
 {
 	delete this->lpFunction;
 }
@@ -38,7 +38,7 @@ IntSqrtFunction::~IntSqrtFunction()
  * @param[in] period the period of interest
  * @param[in] pCache the cache object to be used to speed up calculations
  */
-void IntSqrtFunction::initialize(const Data * pData,
+void IntLogFunction::initialize(const Data * pData,
 	State * pState,
 	int period,
 	Cache * pCache)
@@ -51,9 +51,9 @@ void IntSqrtFunction::initialize(const Data * pData,
 /**
  * Does the necessary preprocessing work for calculating the alter
  * function for a specific ego. This method must be invoked before
- * calling IntSqrtFunction::value(...).
+ * calling IntLogFunction::value(...).
  */
-void IntSqrtFunction::preprocessEgo(int ego)
+void IntLogFunction::preprocessEgo(int ego)
 {
 	AlterFunction::preprocessEgo(ego);
 	this->lpFunction->preprocessEgo(ego);
@@ -65,9 +65,9 @@ void IntSqrtFunction::preprocessEgo(int ego)
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
  */
-double IntSqrtFunction::value(int alter) const
+double IntLogFunction::value(int alter) const
 {
-	return this->lpSqrtTable->sqrt(this->lpFunction->value(alter));
+	return this->lpLogTable->log(this->lpFunction->value(alter));
 }
 
 }
