@@ -438,7 +438,6 @@ SEXP effects(SEXP RpData, SEXP EFFECTSLIST)
 			R_NilValue,
 			R_NilValue));
 
-
 	/* ans will be the return value */
 	SEXP ans;
 	PROTECT(ans = Rf_allocVector(VECSXP, 2));
@@ -720,16 +719,18 @@ SEXP getTargetActorStatistics(SEXP dataptr, SEXP modelptr, SEXP effectslist, SEX
 			vector<double *> actorStatistics;
 			getActorStatistics(effectslist, &calculator, &actorStatistics);
 			for (unsigned e = 0; e < actorStatistics.size(); e++)
-		 {
+			{
 				SEXP actorStatsValues;
 				PROTECT(actorStatsValues = Rf_allocVector(REALSXP,actors));
 				double * astats = REAL(actorStatsValues);
 				for (int i = 0; i < actors; i++)
-			{
+				{
 					astats[i] = actorStatistics.at(e)[i];
 				}
 				SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats,group), period+1), e, actorStatsValues);
-				UNPROTECT(1);
+				UNPROTECT(1);             
+                // Free memory allocated by getActorStatistics
+                delete[] actorStatistics.at(e);   
 			}
 		}
 	}
@@ -798,9 +799,14 @@ SEXP getTargetsChangeContributions(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST
 					SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), period+1), e), 
 								actor, actorsVal);
 					UNPROTECT(1);
+                    
+                    // Free memory allocated by getChangeContributionStatistics
+                    delete[] changeContributions.at(e).at(actor);                    
 				}
 			}
 		}
+        
+        // Handle period 0 separately
 		State State (pData, 0);
 		StatisticCalculator calculator(pData, pModel, &State, 0, false, true);
 			vector<vector<double * > > changeContributions;
@@ -830,12 +836,16 @@ SEXP getTargetsChangeContributions(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST
 				SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), 0), e), 
 						actor, actorsVal);
 				UNPROTECT(1);
+                
+                // Free memory allocated by getChangeContributionStatistics
+                delete[] changeContributions.at(e).at(actor); // added version 1.4.23
 			}
 		}
 	}
 	UNPROTECT(2);
 	return altStats;
 }
+
 
 /**
  *  Gets target values relative to the input data
