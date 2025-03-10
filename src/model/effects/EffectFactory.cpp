@@ -39,6 +39,7 @@
 #include "model/effects/generic/BetweennessFunction.h"
 #include "model/effects/generic/GwespFunction.h"
 #include "model/effects/generic/InStarFunction.h"
+#include "model/effects/generic/InStarOnlyFunction.h"
 #include "model/effects/generic/OutStarFunction.h"
 #include "model/effects/generic/InJaccardFunction.h"
 #include "model/effects/generic/OutJaccardFunction.h"
@@ -1273,6 +1274,12 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new ReciprocatedTwoPathFunction(pEffectInfo->interactionName1(),
+							(pEffectInfo->internalEffectParameter() >= 2)));
+	}
+	else if (effectName == "fromAny")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new InStarOnlyFunction(pEffectInfo->interactionName1(),
 							(pEffectInfo->internalEffectParameter() >= 2)));
 	}
 	else if (effectName == "to")

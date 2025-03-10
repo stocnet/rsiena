@@ -677,6 +677,7 @@ nonSymmetricBipartiteObjective,xxxxxx outdeg.^(1/#) dist.2 act.,sum outdeg. x 2p
 nonSymmetricBipartiteObjective,outdeg.^(1/#) xxxxxx abs diff.,sum abs outdeg^(1/#) diff xxxxxx,absOutDiffIntn,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricBipartiteObjective,from xxxxxx agreement,"mixed triplets XWW, W = xxxxxx",from,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricBipartiteObjective,from xxxxxx agreement,"mixed triplets XWW, W = xxxxxx",from_gmm,TRUE,xxxxxx,,gmm,FALSE,FALSE,FALSE,TRUE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+nonSymmetricBipartiteObjective,from xxxxxx any agreement,"mixed triplets XWW, W = xxxxxx",fromAny,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 nonSymmetricBipartiteObjective,shared xxxxxx (#) to agreement,"mixed 4cycles WWXX, W = xxxxxx",sharedTo,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,3,objective,NA,NA,0,0,0,0,,FALSE
 nonSymmetricBipartiteObjective,"av. two-mode xxxxxx alter (#) by tie","mixed av. 4cycles WWXX, W = xxxxxx",avAlt.2M.tie,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,3,objective,NA,NA,0,0,0,0,,FALSE
 nonSymmetricBipartiteObjective,ind. pop. by outd. xxxxxx (#),"mixed out-in-out-3paths XXW, W = xxxxxx",inPopOutW,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
