@@ -5439,7 +5439,7 @@ this may have several reasons.
       case of deviant in-degrees.
 
       Sometimes transitivity can better be modeled by the GWESP effects
-      (search for this term in the manual) than by transitive triplers.
+      (search for this term in the manual) than by transitive triplets.
       This may help with convergence.
 
       For modeling large networks, it is important to represent
@@ -7397,7 +7397,7 @@ should be included into the model and estimated as the other
 parameters.
 
 The one-sided test statistic, which can be regarded as normal variate, equals {\tt 1.9996}
-indicating that the value of the transitivity parameter is positive.
+indicating that the value of the reciprocity parameter is positive.
 
 In this example, the one-step estimate of reciprocity is {\tt 1.2567},
 suggesting that this parameter is positive, which agrees with the one-sided test.
@@ -8379,7 +8379,7 @@ It combines estimates for a common model
    and according to a Fisher-type combination of one-sided $p$-values.
 
 The function  \textsf{siena08} takes as input the \textsf{sienaFit}
-objects produced by separate runs of  \textsf{siena08}.
+objects produced by separate runs of  \textsf{siena07}.
 These \textsf{sienaFit} objects must have exactly the same model
 specification and the same names of all variables; but it is allowed
 that there are differences with respect to parameters being fixed
@@ -9568,7 +9568,7 @@ and for maintaining existing ties.
  \texttt{(transTrip)},
    defined by the number of transitive
  patterns in $i$'s relations (ordered pairs of actors
- $(j,h)$ to both of whom $i$ is tied, while also $j$ is tied to $h$),\\
+ $(j,h)$ to both of whom $i$ is tied, while also $h$ is tied to $j$),\\
   $s^{\rm net}_{i\vit}(x) =  \sum_{j, h} x_{ij}\, x_{ih}\, x_{hj}\,$;\\
  (there was an error here until version 3.313,
  which amounted to combining the transitive triplets and transitive
