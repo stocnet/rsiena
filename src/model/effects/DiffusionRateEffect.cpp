@@ -29,41 +29,43 @@ namespace siena
 
 /**
  * Constructor.
- * @param[in] pVariable the network variable this effect depends on
+ * @param[in] pNetwork the network variable this effect depends on
  * @param[in] pBehaviorVariable the behavior variable this effect depends on
+ * @param[in] effectName the name of this effect
  * @param[in] parameter the statistical parameter of this effect
+ * @param[in] internalEffectParameter the internal effect parameter
  */
-DiffusionRateEffect::DiffusionRateEffect(const NetworkVariable * pVariable,
+DiffusionRateEffect::DiffusionRateEffect(const NetworkVariable * pNetwork,
 	const BehaviorVariable * pBehaviorVariable,
 	string effectName,
 	double parameter,
 	double internalEffectParameter)
 {
-	this->lpVariable = pVariable;
+	this->lpNetwork = pNetwork;
 	this->lpBehaviorVariable = pBehaviorVariable;
 	this->leffectName = effectName;
 	double possibleDegreeNumer = this->lpBehaviorVariable->range()
-		* max(this->lpVariable->n(), this->lpVariable->m());
+		* max(this->lpNetwork->n(), this->lpNetwork->m());
 	double possibleDegreeDenom = 1;
 
-	if (effectName == "avExposure" || effectName == "avTinExposureDist2")
+	if (effectName == "avExposure"|| effectName == "avTinExposureDist2")
 	{
-		possibleDegreeDenom = max(this->lpVariable->n(), this->lpVariable->m());
+		possibleDegreeDenom = max(this->lpNetwork->n(), this->lpNetwork->m());
 	}
 	if (effectName == "susceptAvIn")
 	{
-		possibleDegreeNumer *= max(this->lpVariable->n(), this->lpVariable->m());
-		possibleDegreeDenom = max(this->lpVariable->n(), this->lpVariable->m());
+		possibleDegreeNumer *= max(this->lpNetwork->n(), this->lpNetwork->m());
+		possibleDegreeDenom = max(this->lpNetwork->n(), this->lpNetwork->m());
 	}
 	if ((effectName == "infectDeg") || (effectName == "infectIn") ||
 										(effectName == "infectOut"))
 	{
-		possibleDegreeNumer *= max(this->lpVariable->n(),
-				this->lpVariable->m());
+		possibleDegreeNumer *= max(this->lpNetwork->n(),
+				this->lpNetwork->m());
 	}
 	this->lpTable = new DiffusionEffectValueTable(possibleDegreeNumer,
 			possibleDegreeDenom);
-	this->lpTable->parameter(parameter);
+	this->lpTable->setParameter(parameter);
 	this->linternalEffectParameter = round(internalEffectParameter);
 	this->labsInternalEffectParameter = std::abs(this->linternalEffectParameter);
 	this->linternalNonZero = (this->linternalEffectParameter != 0);
@@ -75,7 +77,17 @@ DiffusionRateEffect::DiffusionRateEffect(const NetworkVariable * pVariable,
 	}
 }
 
-DiffusionRateEffect::DiffusionRateEffect(const NetworkVariable * pVariable,
+/**
+ * Constructor.
+ * @param[in] pNetwork the network variable this effect depends on
+ * @param[in] pBehaviorVariable the behavior variable this effect depends on
+ * @param[in] pConstantCovariate the covariate this effect depends on
+ * @param[in] pChangingCovariate the changing covariate this effect depends on
+ * @param[in] effectName the name of this effect
+ * @param[in] parameter the statistical parameter of this effect
+ * @param[in] internalEffectParameter the internal effect parameter
+ */
+DiffusionRateEffect::DiffusionRateEffect(const NetworkVariable * pNetwork,
 	const BehaviorVariable * pBehaviorVariable,
 	const ConstantCovariate * pConstantCovariate,
 	const ChangingCovariate * pChangingCovariate,
@@ -83,7 +95,7 @@ DiffusionRateEffect::DiffusionRateEffect(const NetworkVariable * pVariable,
 	double parameter,
 	double internalEffectParameter)
 {
-	this->lpVariable = pVariable;
+	this->lpNetwork = pNetwork;
 	this->lpBehaviorVariable = pBehaviorVariable;
 	this->lpChangingCovariate = pChangingCovariate;
 	this->lpConstantCovariate = pConstantCovariate;
@@ -98,13 +110,13 @@ DiffusionRateEffect::DiffusionRateEffect(const NetworkVariable * pVariable,
 	if (effectName == "susceptAvCovar")
 	{
 		possibleDegreeNumer = (this->lpBehaviorVariable->range())
-			* max(this->lpVariable->n(), this->lpVariable->m());
-		possibleDegreeDenom = max(this->lpVariable->n(), this->lpVariable->m());
+			* max(this->lpNetwork->n(), this->lpNetwork->m());
+		possibleDegreeDenom = max(this->lpNetwork->n(), this->lpNetwork->m());
 	}
 
 	this->lpTable = new DiffusionEffectValueTable(possibleDegreeNumer,
 		possibleDegreeDenom);
-	this->lpTable->parameter(parameter);
+	this->lpTable->setParameter(parameter);
 
 	if ((effectName == "infectCovar") && (this->linternalEffectParameter < 0))
 	{
@@ -136,40 +148,39 @@ double DiffusionRateEffect::proximityValue(Network * pNetwork, int i,
 			 iter.valid();
 			 iter.next())
 		{
-			if (this->leffectName == "anyInExposureDist2" || this->leffectName == "totInExposureDist2" || this->leffectName == "avTinExposureDist2" || this->leffectName == "totAInExposureDist2")
+			if (leffectName == "anyInExposureDist2" || leffectName == "totInExposureDist2" || leffectName == "avTinExposureDist2" || leffectName == "totAInExposureDist2")
 			{
 				int j = iter.actor();
 				double totalAlterInDist2Value = 0; // count values of j's in-alters
 				for (IncidentTieIterator iterH = pNetwork->inTies(j);
 					iterH.valid();
 					iterH.next())
-				{
-					double alterInDist2Value = this->lpBehaviorVariable->value(iterH.actor());
-					if ((i != iterH.actor()) && (alterInDist2Value >= 0.5))
+				{	
+					if (i != iterH.actor())
+					{
+						double alterInDist2Value = pBehaviorData->value(this->lperiod,iterH.actor());  // this is the value at the start of the period
+						if(alterInDist2Value >= 0.5)
 						{
 							numInfectedAlter++;
 						}
-				totalAlterInDist2Value += alterInDist2Value;
+						totalAlterInDist2Value += alterInDist2Value;
+					}
 				}
-				if((this->leffectName == "totAInExposureDist2") && ((pNetwork->inDegree(j)-1) > 0))
+				if((leffectName == "totAInExposureDist2") && ((pNetwork->inDegree(j)-1) > 0))
 				{
 					totalAlterInDist2Value /= (pNetwork->inDegree(j) - 1);
 				}
-				if(this->leffectName == "anyInExposureDist2") // only works for binary behavior
+				if((leffectName == "anyInExposureDist2")) // only correct for binary behavior variable!
 				{
 					totalAlterInDist2Value = std::min(totalAlterInDist2Value, 1.0);
 				}
 				totalAlterValue += totalAlterInDist2Value;
-			}
-			else
-			{
+			} else {
 				double alterValue = this->lpBehaviorVariable->value(iter.actor());
-
 				if (alterValue >= 0.5)
 				{
 					numInfectedAlter++;
 				}
-
 				if (this->leffectName == "infectIn")
 				{
 					alterValue *= pNetwork->inDegree(iter.actor());
@@ -179,12 +190,9 @@ double DiffusionRateEffect::proximityValue(Network * pNetwork, int i,
 				{
 					alterValue *= pNetwork->outDegree(iter.actor());
 				}
-
 				totalAlterValue += alterValue;
 			}
-		}
-	}
-
+	}	
 	if (this->linternalNonZero)
 	{
 		if (numInfectedAlter < this->labsInternalEffectParameter)
@@ -218,9 +226,9 @@ double DiffusionRateEffect::proximityValue(Network * pNetwork, int i,
 
 double DiffusionRateEffect::value(int i, int period) const
 {
-	Network * pNetwork = this->lpVariable->pNetwork();
+	Network * pNetwork = this->lpNetwork->pNetwork();
 
-	if (this->leffectName == "avExposure" || this->leffectName == "avTinExposureDist2")
+	if (this->leffectName == "avExposure")
 	{
 		return this->proximityValue(pNetwork, i, 1, max(1,
 				pNetwork->outDegree(i)));
@@ -233,10 +241,7 @@ double DiffusionRateEffect::value(int i, int period) const
 	else if (this->leffectName == "totExposure" ||
 		this->leffectName == "infectDeg" ||
 		this->leffectName == "infectIn" ||
-		this->leffectName == "infectOut" ||
-		this ->leffectName == "anyInExposureDist2" ||
-		this ->leffectName == "totInExposureDist2" ||
-		this->leffectName == "totAInExposureDist2") // not divided by number of i's alters!
+		this->leffectName == "infectOut")
 	{
 		return this->proximityValue(pNetwork, i, 1, 1);
 	}
@@ -303,26 +308,31 @@ double DiffusionRateEffect::value(int i, int period) const
 		throw new logic_error("Unexpected diffusion rate effect type"+this->leffectName);
 	}
 }
+
+/**
+ * Why are we doing this? they are already methods for DiffusionRateEffectTable
+ */
+
 /**
  * Stores the parameter for the diffusion rate effect.
  */
-void DiffusionRateEffect::parameter(double parameterValue) const
+void DiffusionRateEffect::setParameter(double parameterValue) const
 {
-	this->lpTable->parameter(parameterValue);
+	this->lpTable->setParameter(parameterValue);
 }
 
 /**
  * Returns the parameter for the diffusion rate effect.
  */
-double DiffusionRateEffect::parameter() const
+double DiffusionRateEffect::getParameter() const
 {
-	return this->lpTable->parameter();
+	return this->lpTable->getParameter();
 }
 
 /**
  * Stores the internal effect parameter for the diffusion rate effect.
  */
-void DiffusionRateEffect::internalEffectParameter(int parValue)
+void DiffusionRateEffect::setInternalEffectParameter(int parValue)
 {
 	this->linternalEffectParameter = parValue;
 	this->linternalNonZero = (this->linternalEffectParameter != 0);
@@ -331,7 +341,7 @@ void DiffusionRateEffect::internalEffectParameter(int parValue)
 /**
  * Returns the internal effect parameter for the diffusion rate effect.
  */
-int DiffusionRateEffect::internalEffectParameter() const
+int DiffusionRateEffect::getInternalEffectParameter() const
 {
 	return this->linternalEffectParameter;
 }

@@ -1729,7 +1729,7 @@ double StatisticCalculator::calculateDiffusionRateEffect(
 			 iter.valid();
 			 iter.next())
 		{
-			if (effectName == "anyInExposureDist2" || "totInExposureDist2" || effectName == "avTinExposureDist2" || effectName == "totAInExposureDist2")
+			if (effectName == "anyInExposureDist2" || effectName == "totInExposureDist2" || effectName == "avTinExposureDist2" || effectName == "totAInExposureDist2")
 			{
 				int j = iter.actor();
 				double totalAlterInDist2Value = 0; // count values of j's in-alters

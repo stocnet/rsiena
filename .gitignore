@@ -53,3 +53,8 @@ rsconnect/
 # Ignore RSiena-test
 
 RSiena-test/
+
+# Ignore Doxygen output
+doxyconfig
+/html/*
+/latex/*

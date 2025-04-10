@@ -147,20 +147,7 @@ public:
 
 	std::map<const EffectInfo *, double> ldiffusionscores;
 	std::map<const EffectInfo *, double> ldiffusionsumterms;
-	double calculateDiffusionRateEffect(
-		const BehaviorVariable * pBehaviorVariable,
-		const Network * pNetwork,
-		int i, std::string effectName,
-		int internalEffectParameter);
-	double calculateDiffusionRateEffect(
-		const BehaviorVariable * pBehaviorVariable,
-		const Network * pNetwork,
-		int i, std::string effectName,
-		int internalEffectParameter,
-		const ConstantCovariate * pConstantCovariate,
-		const ChangingCovariate * pChangingCovariate);
-// note: calculateDiffusionRateEffect is also a function in StatisticCalculator (almost the same...)
-
+	
 	// Maximum likelihood related
 
 	/**
@@ -283,7 +270,6 @@ private:
 	std::vector<StructuralRateEffect *> lstructuralRateEffects;
 
 	// The diffusion rate effects.
-
 	std::vector<DiffusionRateEffect *> ldiffusionRateEffects;
 
 	// The evaluation function for this variable

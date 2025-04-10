@@ -58,12 +58,12 @@ public:
 	double proximityValue(Network * pNetwork, int i, int egoNumer,
 			int egoDenom) const;
 	double value(int i, int period) const;
-	void parameter(double parameterValue) const;
-	double parameter() const;
-	void internalEffectParameter(int parValue);
-	int internalEffectParameter() const;
+	void setParameter(double parameterValue) const;
+	double getParameter() const;
+	void setInternalEffectParameter(int parValue);
+	int getInternalEffectParameter() const;
 
-private:
+	private:
 	// The network variable this effect depends on
 	const NetworkVariable * lpVariable;
 
