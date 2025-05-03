@@ -1593,67 +1593,67 @@ SEXP createInteractionEffects(SEXP EFFECTS, Model *pModel,
  *  for one period. The call will relate to one group only, although all effects
  *  are the same apart from the basic rates. Not used in maximum likelihood.
  */
+ 
 void getChangeContributionStatistics(SEXP EFFECTSLIST,
 		const StatisticCalculator * pCalculator, vector<vector<double *> > *rChangeContributions)
 {
+    // get the column names from the names attribute
+    SEXP cols = PROTECT(Rf_install("names"));
+    SEXP Names = Rf_getAttrib(VECTOR_ELT(EFFECTSLIST, 0), cols);
 
-	// get the column names from the names attribute
-	SEXP cols = PROTECT(Rf_install("names"));
-	SEXP Names = Rf_getAttrib(VECTOR_ELT(EFFECTSLIST, 0), cols);
+    int netTypeCol; /* net type */
+    int nameCol; /* network name */
+    int effectCol;  /* short name of effect */
+    int parmCol;
+    int int1Col;
+    int int2Col;
+    int initValCol;
+    int typeCol;
+    int groupCol;
+    int periodCol;
+    int pointerCol;
+    int rateTypeCol;
+    int intptr1Col;
+    int intptr2Col;
+    int intptr3Col;
+    int settingCol;
 
-	int netTypeCol; /* net type */
-	int nameCol; /* network name */
-	int effectCol;  /* short name of effect */
-	int parmCol;
-	int int1Col;
-	int int2Col;
-	int initValCol;
-	int typeCol;
-	int groupCol;
-	int periodCol;
-	int pointerCol;
-	int rateTypeCol;
-	int intptr1Col;
-	int intptr2Col;
-	int intptr3Col;
-	int settingCol;
+    // Get the column numbers:
+    getColNos(Names, &netTypeCol, &nameCol, &effectCol,
+            &parmCol, &int1Col, &int2Col, &initValCol,
+            &typeCol, &groupCol, &periodCol, &pointerCol,
+            &rateTypeCol, &intptr1Col, &intptr2Col, &intptr3Col,
+            &settingCol);
 
-// Get the column numbers:
-	getColNos(Names, &netTypeCol, &nameCol, &effectCol,
-			&parmCol, &int1Col, &int2Col, &initValCol,
-			&typeCol, &groupCol, &periodCol, &pointerCol,
-			&rateTypeCol, &intptr1Col, &intptr2Col, &intptr3Col,
-			&settingCol);
+    for (int ii = 0; ii < Rf_length(EFFECTSLIST); ii++)
+    {
+        SEXP EFFECTS = VECTOR_ELT(EFFECTSLIST, ii);
 
-	for (int ii = 0; ii < Rf_length(EFFECTSLIST); ii++)
-	{
-		SEXP EFFECTS = VECTOR_ELT(EFFECTSLIST, ii);
-
-		for (int i = 0; i < Rf_length(VECTOR_ELT(EFFECTS,0)); i++)
-		{
-			const char * effectType = CHAR(STRING_ELT(VECTOR_ELT(EFFECTS, typeCol), i));
-			const char * netType = CHAR(STRING_ELT(VECTOR_ELT(EFFECTS, netTypeCol), i));
-			if(strcmp(netType, "oneMode") == 0 || strcmp(netType, "bipartite") == 0 ||
-									strcmp(netType, "behavior") == 0)
-			{
+        for (int i = 0; i < Rf_length(VECTOR_ELT(EFFECTS, 0)); i++)
+        {
+            const char * effectType = CHAR(STRING_ELT(VECTOR_ELT(EFFECTS, typeCol), i));
+            const char * netType = CHAR(STRING_ELT(VECTOR_ELT(EFFECTS, netTypeCol), i));
+            if(strcmp(netType, "oneMode") == 0 || strcmp(netType, "bipartite") == 0 ||
+                    strcmp(netType, "behavior") == 0)
+            {
 				// todo At the moment, change contributions cannot be calculated for endowment or creation effects
 				// modifications in the corresponding methods (calculateNetworkEndowmentStatistics, calculateNetworkCreationStatistics,
 				// and calculateBehaviorStatistics) in StatisticCalculator.cpp would be necessary!!!
 				//if (strcmp(effectType, "eval") == 0 || strcmp(effectType, "endow") == 0 || strcmp(effectType, "creation") == 0)
-				if (strcmp(effectType, "eval") == 0)
-				{
+                if (strcmp(effectType, "eval") == 0)
+                {
 					EffectInfo * pEffectInfo = (EffectInfo *) R_ExternalPtrAddr(VECTOR_ELT(VECTOR_ELT(EFFECTS,pointerCol), i));
 					if(rChangeContributions != 0)
-					{
+                    {
 						rChangeContributions->push_back(pCalculator->staticChangeContributions(pEffectInfo));
-					}
-				}
-			}
-		}
-	}
-	UNPROTECT(1);
+                    }
+                }
+            }
+        }
+    }
+    UNPROTECT(1);
 }
-
+ 
 /**
  *  Retrieves the statistics of individual actors for each of the effects,
  *  for one period. The call will relate to one group only, although all effects
