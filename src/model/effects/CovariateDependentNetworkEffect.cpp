@@ -194,6 +194,28 @@ bool CovariateDependentNetworkEffect::missing(int i) const
 
 
 /**
+ * Returns the covariate number of cases.
+ * For behavior, this is the minimum non-centered value.
+ */
+int CovariateDependentNetworkEffect::covarN() const
+{
+	int covN = 0;
+	if (this->lpConstantCovariate)
+	{
+		covN = this->lpConstantCovariate->covariateN();
+	}
+	else if (this->lpChangingCovariate)
+	{
+		covN = this->lpChangingCovariate->covariateN();
+	}
+	else
+	{
+		covN = this->lpBehaviorData->observationCount();
+	}
+	return covN;
+}
+
+/**
  * Returns the covariate minimum value.
  * For behavior, this is the minimum non-centered value.
  */

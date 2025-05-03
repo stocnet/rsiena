@@ -16,6 +16,7 @@
 #include "data/ConstantCovariate.h"
 #include "data/ChangingCovariate.h"
 #include "data/BehaviorLongitudinalData.h"
+#include "data/LongitudinalData.h"
 #include "model/State.h"
 
 using namespace std;
@@ -141,6 +142,50 @@ double DoubleCovariateFunction::secondCovariateValue(int i) const
 	return value;
 }
 
+
+/**
+ * Returns the first covariate number of cases.
+ */
+int DoubleCovariateFunction::firstCovariateN() const
+{
+	int ncov = 0;
+
+	if (this->lpFirstConstantCovariate)
+	{
+		ncov = this->lpFirstConstantCovariate->covariateN();
+	}
+	else if (this->lpFirstChangingCovariate)
+	{
+		ncov = this->lpFirstChangingCovariate->covariateN();
+	}
+	else
+	{
+		ncov = this->lpFirstBehaviorData->observationCount();
+	}
+	return ncov;
+}
+
+/**
+ * Returns the second covariate number of cases.
+ */
+int DoubleCovariateFunction::secondCovariateN() const
+{
+	int ncov = 0;
+
+	if (this->lpSecondConstantCovariate)
+	{
+		ncov = this->lpSecondConstantCovariate->covariateN();
+	}
+	else if (this->lpSecondChangingCovariate)
+	{
+		ncov = this->lpSecondChangingCovariate->covariateN();
+	}
+	else
+	{
+		ncov = this->lpSecondBehaviorData->observationCount();
+	}
+	return ncov;
+}
 
 /**
  * Returns the first covariate value for the given actor, rounded to integer.

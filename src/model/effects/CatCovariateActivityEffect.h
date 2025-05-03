@@ -12,7 +12,7 @@
 #ifndef CATCOVARIATEACTIVITYEFFECT_H_
 #define CATCOVARIATEACTIVITYEFFECT_H_
 
-#include "CovariateDependentNetworkEffect.h"
+#include "CatCovariateDependentNetworkEffect.h"
 
 namespace siena
 {
@@ -26,7 +26,7 @@ class SqrtTable;
 /**
  * Same and different covariate activity effects (see manual).
  */
-class CatCovariateActivityEffect : public CovariateDependentNetworkEffect
+class CatCovariateActivityEffect : public CatCovariateDependentNetworkEffect
 {
 public:
 	CatCovariateActivityEffect(const EffectInfo * pEffectInfo);
@@ -45,8 +45,10 @@ private:
 	// An array of counts of tie values
 	// between ego and alters with specific covariate values
 	int * lpNumberTieValues {};
+	double * lpAllCovariateTies {};
 	int lcovMax {};
 	bool lroot {};
+	bool laverage {};
 	double changeStat(double d, bool nosqrt) const;
 	// Lookup table for fast square root calculations:
 	SqrtTable * lsqrtTable;

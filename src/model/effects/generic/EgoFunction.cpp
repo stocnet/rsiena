@@ -15,8 +15,7 @@ namespace siena
 {
 
 /**
- * Creates a new function as a difference between the value of the two
- * give functions.
+ * Creates a new function which uses ego's value
  */
 EgoFunction::EgoFunction(AlterFunction * pFirstFunction)
 {
@@ -63,9 +62,10 @@ void EgoFunction::preprocessEgo(int ego)
 
 
 /**
- * Returns the value of this function for the given alter. It is asEgoed
+ * Returns the value of this function for the given alter. It is assumed
  * that the function has been initialized before and pre-processed with
  * respect to a certain ego.
+ * Note that this->ego() is used instead of alter.
  */
 double EgoFunction::value(int alter) const
 {

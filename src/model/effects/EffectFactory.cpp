@@ -768,15 +768,13 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		string networkName = pEffectInfo->variableName();
 		string covariateName = pEffectInfo->interactionName1();
+		int parameter = int(round(pEffectInfo->internalEffectParameter()));
 		AlterFunction * pChangeFunction =
-			new SameCovariateInTiesFunction(networkName, covariateName, true, true, false);
+			new SameCovariateInTiesFunction(networkName, covariateName, 
+													true, true, parameter, false);
 		AlterFunction * pStatisticFunction =
-			new SameCovariateInTiesFunction(networkName, covariateName, true, true, true);
-		if (pEffectInfo->internalEffectParameter() == 2)
-		{
-			pChangeFunction = new IntSqrtFunction(pChangeFunction);
-			pStatisticFunction = new IntSqrtFunction(pStatisticFunction);
-		}
+			new SameCovariateInTiesFunction(networkName, covariateName, 
+													true, true, parameter, true);
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}
@@ -784,15 +782,13 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		string networkName = pEffectInfo->variableName();
 		string covariateName = pEffectInfo->interactionName1();
+		int parameter = int(round(pEffectInfo->internalEffectParameter()));
 		AlterFunction * pChangeFunction =
-			new SameCovariateInTiesFunction(networkName, covariateName, false, true, false);
+			new SameCovariateInTiesFunction(networkName, covariateName, 
+												false, true, parameter, false);	
 		AlterFunction * pStatisticFunction =
-			new SameCovariateInTiesFunction(networkName, covariateName, false, true, true);
-		if (pEffectInfo->internalEffectParameter() == 2)
-		{
-			pChangeFunction = new IntSqrtFunction(pChangeFunction);
-			pStatisticFunction = new IntSqrtFunction(pStatisticFunction);
-		}
+			new SameCovariateInTiesFunction(networkName, covariateName, 
+												false, true, parameter, true);
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}
@@ -854,7 +850,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "sameXCycle4")
 	{
-		pEffect = new SameCovariateFourCyclesEffect(pEffectInfo, true);
+		pEffect = new SameCovariateFourCyclesEffect(pEffectInfo);
+	}
+	else if (effectName == "sameInXCycle4")
+	{
+		pEffect = new SameInCovariateFourCyclesEffect(pEffectInfo);
 	}
 	else if (effectName == "avGroupEgoX")
 	{
@@ -862,15 +862,16 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "cycle4")
 	{
-		pEffect = new FourCyclesEffect(pEffectInfo, true);
+		pEffect = new FourCyclesEffect(pEffectInfo);
 	}
 	else if (effectName == "sharedPop")
 	{
-		pEffect = new FourCyclesEffect(pEffectInfo, false);
+		pEffect = new FourCyclesEffect(pEffectInfo);
 	}
 	else if (effectName == "cycle4ND")
-	{
-		pEffect = new FourCyclesEffect(pEffectInfo, false);
+	{		
+		throw domain_error(
+	"effect shortName cycle4ND replaced by cycle4; please change your code");
 	}
 	else if ((effectName == "gwespFF")||(effectName == "gwesp"))
 	{
@@ -1261,19 +1262,24 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new InStarFunction(pEffectInfo->interactionName1(),
-							(pEffectInfo->internalEffectParameter() >= 2)));
+							(pEffectInfo->internalEffectParameter() >= 2), false));
 	}
 	else if (effectName == "from_gmm")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new InStarFunction(pEffectInfo->interactionName1(),
-							(pEffectInfo->internalEffectParameter() >= 2), true));
+							(pEffectInfo->internalEffectParameter() >= 2), false, true));
 	}
 	else if (effectName == "fromMutual")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new ReciprocatedTwoPathFunction(pEffectInfo->interactionName1(),
 							(pEffectInfo->internalEffectParameter() >= 2)));
+	}
+	else if (effectName == "fromAny")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new InStarFunction(pEffectInfo->interactionName1(), false, true));
 	}
 	else if (effectName == "to")
 	{
@@ -1538,17 +1544,13 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		string networkName = pEffectInfo->interactionName1();
 		string covariateName = pEffectInfo->interactionName2();
+		int parameter = int(round(pEffectInfo->internalEffectParameter()));
 		AlterFunction * pChangeFunction =
 			new SameCovariateInTiesFunction(networkName, covariateName,
-									true, false, false);
+									true, false, parameter, false);
 		AlterFunction * pStatisticFunction =
 			new SameCovariateInTiesFunction(networkName, covariateName,
-									true, false, true);
-		if (pEffectInfo->internalEffectParameter() == 2)
-		{
-			pChangeFunction = new IntSqrtFunction(pChangeFunction);
-			pStatisticFunction = new IntSqrtFunction(pStatisticFunction);
-		}
+									true, false, parameter, true);
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}
@@ -1556,17 +1558,13 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		string networkName = pEffectInfo->interactionName1();
 		string covariateName = pEffectInfo->interactionName2();
+		int parameter = int(round(pEffectInfo->internalEffectParameter()));
 		AlterFunction * pChangeFunction =
 			new EgoFunction(new SameCovariateInTiesFunction(networkName, covariateName,
-									true, false, false));
+									true, false, parameter, false));
 		AlterFunction * pStatisticFunction =
 			new EgoFunction(new SameCovariateInTiesFunction(networkName, covariateName,
-									true, false, true));
-		if (pEffectInfo->internalEffectParameter() == 2)
-		{
-			pChangeFunction = new IntSqrtFunction(pChangeFunction);
-			pStatisticFunction = new IntSqrtFunction(pStatisticFunction);
-		}
+									true, false, parameter, true));
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}
@@ -1622,14 +1620,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		string covariateName = pEffectInfo->interactionName2();
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new ConditionalFunction(new EqualCovariatePredicate(covariateName),
-				new InStarFunction(networkName, false),
+				new InStarFunction(networkName, false, false),
 				0),
 			new ConditionalFunction(
 				new MissingCovariatePredicate(covariateName),
 				0,
 				new ConditionalFunction(
 					new EqualCovariatePredicate(covariateName),
-					new InStarFunction(networkName, false),
+					new InStarFunction(networkName, false, false),
 					0)));
 	}
 	else if (effectName == "homCovNetNet")

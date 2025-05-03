@@ -32,15 +32,12 @@ namespace siena
  */
 SameCovariateInTiesFunction::SameCovariateInTiesFunction(
 		string networkName, string covariateName, bool sameValue,
-		bool sameVariable, int parameter, bool excludeMissing) :
+		bool sameVariable, bool excludeMissing) :
 	CovariateNetworkAlterFunction(networkName, covariateName)
 {
 	this->lsameValue = sameValue;
 	this->lsameVariable = sameVariable;
 	this->lexcludeMissing = excludeMissing;
-	this->laverage = (parameter >= 3);
-	this->lroot = ((parameter == 2)||(parameter == 4));
-	this->lCovNumberEgo = 1;
 }
 
 /**
@@ -55,61 +52,19 @@ void SameCovariateInTiesFunction::initialize(const Data * pData,
 	int period,
 	Cache * pCache)
 {
-	CovariateNetworkAlterFunction::initialize(pData, pState, period, pCache);	
-	
-	if (this->laverage)
-	{
-		int covMin = int(round(this->covariateMinimum()));
-		int covMax = int(round(this->covariateMaximum()));
-		covMax++;
-	
-		if (covMin < 0)
-		{
-			throw logic_error("sameXInPop: minimum of covariate is negative");		
-		}
-		if (covMax > 20)
-		{
-			throw logic_error("sameXInPop: covariate has a maximum which is too large");		
-		}
-		this->lpCovariateNumbers = new int[covMax] {};
-		
-		for (int i = 0; i < covMax; i++)
-		{
-			this->lpCovariateNumbers[i] = 0;		
-		}
-		for (int i = 0; i < this->covariateN(); i++)
-		{
-			this->lpCovariateNumbers[this->covIntValue(i)]++;		
-		}
-	}
+	CovariateNetworkAlterFunction::initialize(pData, pState, period, pCache);
 }
 
-
-
-/**
- * Deallocates this SameCovariateInTiesFunction object.
- */
-SameCovariateInTiesFunction::~SameCovariateInTiesFunction()
-{
-	if (this->laverage)
-	{
-		delete[] this->lpCovariateNumbers;
-		this->lpCovariateNumbers = 0;
-	}
-}
 
 /**
  * Does the necessary preprocessing work for calculating the
  * predicate for a specific ego. This method must be invoked before
  * calling SameCovariateInTiesFunction::value(...).
  */
+
 void SameCovariateInTiesFunction::preprocessEgo(int ego)
 {
-	this->lCovEgo = this->covvalue(ego);
-	if (this->laverage)
-	{
-		this->lCovNumberEgo = this->lpCovariateNumbers[this->covIntValue(ego)];
-	}
+	CovariateNetworkAlterFunction::preprocessEgo(ego);
 }
 
 /**
@@ -119,13 +74,12 @@ void SameCovariateInTiesFunction::preprocessEgo(int ego)
  */
 double SameCovariateInTiesFunction::value(int alter) const
 {
-	double statistic = 0;
-	double vval = 0;
+	int statistic = 0;
 	if  (!(this->lexcludeMissing && this->missing(this->ego())))
 	{
 		const Network * pNetwork = this->pNetwork();
 		// Iterate over incoming ties of alter
-		if (this->lsameValue)
+		if (lsameValue)
 		{
 			for (IncidentTieIterator iter =	pNetwork->inTies(alter);
 			iter.valid();
@@ -136,10 +90,11 @@ double SameCovariateInTiesFunction::value(int alter) const
 				// ego needs to have the same covariate value as h:
 				if (!(this->lexcludeMissing && this->missing(h)))
 				{
-					if ((fabs(this->covvalue(h)
-									- this->lCovEgo) < EPSILON))
+					if ((fabs(this->CovariateNetworkAlterFunction::covvalue(h)
+									- this->CovariateNetworkAlterFunction::covvalue(this->ego()))
+								< EPSILON))
 					{
-						statistic++;
+						statistic++ ;
 					}
 				}
 			}
@@ -161,39 +116,17 @@ double SameCovariateInTiesFunction::value(int alter) const
 				// ego needs to have a different covariate value than h:
 				if (!(this->lexcludeMissing && this->missing(h)))
 				{
-					if (fabs(this->covvalue(h)
-									- this->lCovEgo) >= EPSILON)
+					if ((fabs(this->CovariateNetworkAlterFunction::covvalue(h)
+									- this->CovariateNetworkAlterFunction::covvalue(this->ego()))
+								>= EPSILON))
 					{
-						statistic++;
+						statistic++ ;
 					}
 				}
 			}
 		}
-		if (this->laverage)
-		{
-			if (this->lsameValue)
-			{
-				vval = statistic/(this->lpCovariateNumbers[int(round(this->lCovEgo))]); 
-			}
-			else
-			{
-				int totdiff = this->covariateN() - this->lpCovariateNumbers[int(round(this->lCovEgo))];
-				if (totdiff > 0) // else 0/0
-				{
-					vval = statistic/totdiff; 
-				}
-			}
-		}
-		else
-		{
-			vval = statistic;
-		}
-		if (this->lroot)
-		{
-			vval = sqrt(vval);
-		}
 	}
-	return vval;
+	return statistic;
 }
 
 }
