@@ -71,6 +71,7 @@ mydyadcovar <- coDyadCovar(matrix(as.numeric(rnorm(2500) > 2), nrow=50))
 mydata <- sienaDataCreate(mynet1, mybeh, mycovar, mydyadcovar)
 myeff <- getEffects(mydata)
 myeff
+print(myeff, includeShortNames=TRUE)
 summary(myeff)
 }
 \keyword{print}

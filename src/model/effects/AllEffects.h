@@ -114,6 +114,7 @@
 #include "SameCovariateEffect.h"
 #include "SameCovariateActivityEffect.h"
 #include "SameCovariateFourCyclesEffect.h"
+#include "SameInCovariateFourCyclesEffect.h"
 #include "SettingSizeEffect.h"
 #include "SameCovariateTransitiveTripletsEffect.h"
 #include "HomCovariateTransitiveTripletsEffect.h"

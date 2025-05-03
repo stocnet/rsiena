@@ -46,6 +46,8 @@ protected:
 	double secondCovariateValue(int i) const;
 	int firstCovariateIntValue(int i) const;
 	int secondCovariateIntValue(int i) const;
+	int firstCovariateN() const;
+	int secondCovariateN() const;
 	bool firstMissing(int i) const;
 	bool secondMissing(int i) const;
 	double firstCovariateMinimum() const;

@@ -67,10 +67,8 @@ void DoubleCovariateCatFunction::initialize(const Data * pData,
 	Cache * pCache)
 {
 	DoubleCovariateFunction::initialize(pData, pState, period, pCache);
-	this->lpNetwork = pState->pNetwork(this->lnetworkName);
-//	this->lpNetworkCache = pCache->pNetworkCache(this->lpNetwork);
-
-//	this->lperiod = period;
+	this->lpNetwork = pState->pNetwork(this->lnetworkName); 
+// see inline methods in DoubleCovariateCatFunction.h
 
 	int firstMin = int(round(this->firstCovariateMinimum()));
 	int firstMax = int(round(this->firstCovariateMaximum()));
@@ -101,12 +99,12 @@ void DoubleCovariateCatFunction::initialize(const Data * pData,
 	this->lpFirstCovariateNumbers = new int[firstMax] {};
 	this->lpSecondCovariateNumbers = new int[this->lSecondMax] {};
 		
-	for (int i = 0; i < this->pNetwork()->n(); i++)
+	for (int i = 0; i < this->firstCovariateN(); i++)
 	{
 		this->lpFirstCovariateNumbers[this->firstCovariateIntValue(i)]++;		
 	}
 	
-	for (int i = 0; i < this->pNetwork()->m(); i++)
+	for (int i = 0; i < this->secondCovariateN(); i++)
 	{
 		this->lpSecondCovariateNumbers[this->secondCovariateIntValue(i)]++;		
 	}
@@ -118,10 +116,14 @@ void DoubleCovariateCatFunction::initialize(const Data * pData,
  */
 DoubleCovariateCatFunction::~DoubleCovariateCatFunction()
 {
-	delete[] this->lpNumberTieValues;
-	this->lpNumberTieValues = 0;
+	delete[] this->lpSecondCovariateNumbers;
+	this->lpSecondCovariateNumbers = 0;
+	delete[] this->lpFirstCovariateNumbers;
+	this->lpFirstCovariateNumbers = 0;
 	delete[] this->lpTotalCovariateCombinations;
 	this->lpTotalCovariateCombinations = 0;
+	delete[] this->lpNumberTieValues;
+	this->lpNumberTieValues = 0;
 }
 
 void DoubleCovariateCatFunction::preprocessEgo(int ego)
@@ -133,7 +135,7 @@ void DoubleCovariateCatFunction::preprocessEgo(int ego)
 		this->lpNumberTieValues[b]= 0;
 	}
 	
-	if (!this->firstMissing(ego))
+	if ((!this->firstMissing(ego))||(!this->lexcludeMissing))
 	{	
 		if (this->lbyTies) // iterate by ties
 		{
@@ -173,7 +175,7 @@ void DoubleCovariateCatFunction::preprocessEgo(int ego)
 		{
 			if (this->lexcludeMissing)
 			{
-				for (int i = 0; i < this->pNetwork()->n(); i++)
+				for (int i = 0; i < this->firstCovariateN(); i++)
 				{
 				// i needs to have the same covariate value as ego:
 					if (!(this->firstMissing(i) || this->firstMissing(ego)))
@@ -197,7 +199,7 @@ void DoubleCovariateCatFunction::preprocessEgo(int ego)
 			}
 			else
 			{		
-				for (int i = 0; i < this->pNetwork()->n(); i++)
+				for (int i = 0; i < this->firstCovariateN(); i++)
 				{
 					// i needs to have the same covariate value as ego:	
 					if (this->firstCovariateIntValue(i) == this->firstCovariateIntValue(ego))

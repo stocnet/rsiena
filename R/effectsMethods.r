@@ -50,8 +50,9 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
         timeDummies <- !x$timeDummy[x$include] == ","
 		if (includeShortNames)
 		{
-			specs <- as.data.frame(x[, c("name", "effectName", "shortName", "include", "fix",
-                "test", "initialValue", "parm")])		
+			specs <- as.data.frame(x[, c("effectNumber", "name", "effectName", 
+				"shortName", "include", "fix",
+                "test", "initialValue", "parm")])	
 		}
 		else
 		{
@@ -77,7 +78,8 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
         }
         if (nDependents == 1)
         {
-            specs <- specs[, -1]  # drop name of dependent variable
+			whichname <- which(names(specs)=="name")
+            specs <- specs[, -whichname]  # drop name of dependent variable
         }
         if (any(endowments))
         {

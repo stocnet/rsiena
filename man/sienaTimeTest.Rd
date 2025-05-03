@@ -88,7 +88,7 @@ sienaTimeTest(sienaFit, effects=NULL, excludedEffects=NULL, condition=FALSE)
       across dummies for each separate effect.}
   \item{GroupTest }{A chi-squared test for joint significance
       across dummies; if \code{sienaFit} is a fit for a multi-group object
-      then these refer to each group; else they refer to ecah period.}
+      then these refer to each group; else they refer to each period.}
   \item{IndividualTest }{A matrix displaying initial estimates, one-step
     estimates, and \eqn{p}-values for the individual interactions.}
 }

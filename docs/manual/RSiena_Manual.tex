@@ -78,6 +78,7 @@
 \newcommand{\se}{\mbox{s.e.}}
 
 \newcommand{\sfn}[1]{\textsf{#1}}
+\newcommand{\shn}[1]{\textsf{#1}}
 
 \newcommand{\R}{{\sf R }}
 \newcommand{\Rn}{{\sf R}}
@@ -198,7 +199,7 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.4.22.
+This version was renewed for \RS version 1.4.23.
 \end{abstract}
 
 
@@ -1164,7 +1165,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.4.22).
+  identified by a version number (e.g.\ 1.4.23).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -3900,7 +3901,7 @@ interaction effects.
 Ad hoc interaction effects have to be defined specifically in each case,
 like \texttt{transRecTrip}; Section~\ref{S_f} contains many other examples.
 Standard interaction effects can be defined directly.
-They are also called `user-defined interaction effects'. 
+They are also called `user-defined interaction effects'.
 The change statistic of a standard interaction effect is the product of the
 change statistics of the interacting effects.
 This does not always make sense; whether it is permitted
@@ -4320,7 +4321,7 @@ effs <- setEffect(effs, outMore, parameter=12, initialValue=-30, fix=TRUE)
 (On the log-probability scale, a contribution of \verb!-30!  is
 practically minus infinity.)
 
-
+\newpage
 
 \subsection{Goodness of fit with auxiliary statistics: \textsf{sienaGOF}}
 \label{S_gof}
@@ -4375,7 +4376,8 @@ you could use options \texttt{cumulative=TRUE} and \texttt{levls=c(0:10,15,20,30
 A very useful auxiliary variable is \sfn{dyadicCov}. Have a look at the example
 on the help page for  \sfn{sienaGOF-auxiliary} to see how this can be used
 to check the adequacy of the representation of ties for ego-alter combinations
-of actor covariates or dependent behavioral variables.
+of actor covariates. For dependent behavioral variables, there is the
+auxiliary variable \sfn{egoAlterCombi}.
 \medskip
 
 \noindent
@@ -9466,7 +9468,7 @@ the weights of the effects in the objective function.)
 
 The internal effect parameter is used to define several
 specifications of effects; they are fixed parameters
-which cannot be estimated. 
+which cannot be estimated.
 These are set or modified by the \texttt{setEffect} function, e.g.,
 \begin{verbatim}
 myeffects <- setEffect(myeffects, gwespFF, parameter = 69)
@@ -9764,18 +9766,16 @@ and for maintaining existing ties.
 \end{minipage}
 
 \vspace{-4em} % I do not know why this is necessary
- \item \begin{minipage}[t]{.68\textwidth}
+ \item \begin{minipage}[t]{.62\textwidth}
 for two-mode networks and for non-directed networks: \\
-the {\em number of four-cycles} with shortName \texttt{(cycle4)} \\
-   for the two-mode and \texttt{(cycle4ND)} for the  non-directed case,\\[0.3em]
+the {\em number of four-cycles} with shortName \texttt{(cycle4)}; \\
+ (the shortName \texttt{(cycle4ND)} for the  non-directed case was replaced by
+   \texttt{(cycle4)} in \RS version 1.4.22) \\[0.3em]
  $s^{\rm net}_{i\vit}(x) =  \frac14 \sum_{j,k,h; \text{all different}}
             x_{ij}\, x_{ik}\, x_{hj}\, x_{hk}\,$;\\[0.3em]
- for parameter $p = 2$ the square root is taken; \\[0.3em]
+ for parameter $p = 2$ the square root is taken: \\[0.3em]
  $s^{\rm net}_{i\vit}(x) =  \frac12 \sum_{j}  x_{ij} \sqrt{ \sum_{k,h; \text{all different}}
-             x_{ik}\, x_{hj}\, x_{hk} }\,$;\\[0.3em]
- note that this is like the \texttt{sharedPop} effect above, \\
- but for the two-mode  and non-directed cases \\
- the directionality plays no role;
+             x_{ik}\, x_{hj}\, x_{hk} }\,$;
       \end{minipage}
 \hfill
 \begin{minipage}[t]{.15\textwidth}
@@ -9799,6 +9799,10 @@ the {\em number of four-cycles} with shortName \texttt{(cycle4)} \\
 \endpicture
 \end{center}
 \end{minipage}
+
+ note that this is like the \texttt{sharedPop} effect above,
+ but for the two-mode  and non-directed cases
+ the directionality plays no role;
 
  \item {\em transitive ties effect} \texttt{(transTies)}
  (earlier called \emph{(direct and indirect ties) effect}),
@@ -11113,16 +11117,24 @@ defined by \\
  number of incoming ties received by those to whom $i$ is tied
  and sent by others who have the same covariate value as $i$,\\
  $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sum_h x_{hj}\, I\{v_i = v_h \} $;\\
- for internal effect parameter $p=2$, it is defined by\\
- $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sqrt{\sum_h x_{hj}\, I\{v_i = v_h \}} $;\\
+ for internal effect parameter $p=2$, the square root of the sum over $h$ is taken;\\
+ for internal effect parameter $p=3$, available only for
+ covariates with integer values from 0 to 20, it is defined by\\
+ $\displaystyle s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \frac{\sum_h x_{hj}\, I\{v_i = v_h \}}
+                {\sum_h I\{v_i = v_h \}} $;\\
+ for internal effect parameter $p=4$, the square root of the ratio of sums is taken;
 
  \item {\em indegree popularity from different covariate}
 \texttt{(diffXInPop)} defined by the
  number of incoming ties received by those to whom $i$ is tied
  and sent by others who have a different covariate value than $i$,\\
  $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sum_h x_{hj}\, I\{v_i \neq v_h \} $;\\
- for internal effect parameter $p=2$, it is defined by\\
- $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sqrt{\sum_h x_{hj}\, I\{v_i \neq v_h \}} $;\\
+ for internal effect parameter $p=2$, the square root of the sum over $h$ is taken;\\
+ for internal effect parameter $p=3$, available only for
+ covariates with integer values from 0 to 20, it is defined by\\
+ $\displaystyle s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \frac{\sum_h x_{hj}\, I\{v_i \neq v_h \}}
+                {\sum_h I\{v_i \neq v_h \}} $;\\
+ for internal effect parameter $p=4$, the square root of the ratio of sums is taken;
 
  \item {\em outdegree activity to same covariate}
 \texttt{(sameXOutAct)} defined by the
@@ -11172,10 +11184,24 @@ defined by \\
  sum of outgoing ties weighted by the number of outgoing
  ties to those with the same covariate value (as alter),
  but it should be positive:\\
- $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sum_h x_{ih} \,I\{v_h = v_j > 0\} $;\\[0.3em]
- for internal effect parameter $p=2$ it is defined by\\
- $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sqrt{\sum_h x_{ih} \,I\{v_h = v_j > 0\}} $;\\[0.3em]
- note that ties to alters with $v_j=0$ do not contribute anything;
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sum_h x_{ih} \,I\{v_h = v_j > 0\} $;
+
+ The effect parameter $p$ can take the values 1, 2, 3 and 4.
+ The formula given above is for $p=1$.\\
+ For $p=3$, the effect is defined by the \underline{proportion} of ties from same-$V$ actors
+ to same-$U$ nodes, as given by the formula \\[0.5em]
+ $\displaystyle s^{\rm net}_{i\vit}(x) =   \sum_j x_{ij}\, \frac{ \sum_{h} x_{ih}\, I\{v_h = v_j > 0 \}}
+            { \sum_{h} I\{v_h = v_j > 0 \}} \ . \hfill (p=3) $
+
+ For $p=2$ and $p=4$, the square root is taken: \\[0.5em]
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sqrt{\sum_h x_{ih} \,I\{v_h = v_j > 0\}}
+                 \hfill (p=2)$\\[0.3em]
+ and \\[0.3em]
+ $\displaystyle s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \sqrt{ \frac{ \sum_{h} x_{ih}\, I\{v_h = v_j > 0 \}}
+            { \sum_{h} I\{v_h = v_j > 0 \}}}  \ . \hfill (p=4)$\\[0.3em]
+
+The default is $p=3$.
+
 
  \item {\em outdegree activity weighted by alter's covariate}
   \texttt{(altXOutAct)} defined by the
@@ -11374,7 +11400,13 @@ $s^{\rm net}_{i\vit}(x ) = \sum_j  x^{\rm{simm}}_{ij}\,v_j $ .
 \end{center}
 \end{minipage}
 
-\setcounter{savenumi}{\value{enumi}}
+ \item
+ {\em number of four-cycles to same covariate}  \texttt{(sameInXCycle4)},\\
+ defined by the number of four-cycles sent to actors with the
+ same covariate value,  \\[0.3em]
+ $s^{\rm net}_{i\vit}(x) =  \frac14 \sum_{j,k,h; \text{all different}}
+            x_{ij}\, x_{ik}\, x_{hj}\, x_{hk}\,I\{v_j = v_k\} $;\\[0.3em]
+ for parameter $p=2$ the square root is taken.
 
  \item {\em group average} \texttt{(avGroupEgoX)}, defined by ego's value multiplied by the
  average of the covariate for this period,  \\
@@ -11389,6 +11421,9 @@ $s^{\rm net}_{i\vit}(x ) = \sum_j  x^{\rm{simm}}_{ij}\,v_j $ .
  in the multi-group object.
  Note that always, the average $\overline {v} $ is centered by the global mean.
  For multi-group data, global centering means centering over all groups.
+
+\setcounter{savenumi}{\value{enumi}}
+
 \end{enumerate}
 
 \noindent
@@ -11648,7 +11683,7 @@ it is necessary to define a data set with two identical variables
   these can be given \texttt{imputationValues}  equal to 0,
   see the help page for \sfn{coCovar} and \sfn{varCovar}.
 
- \item \emph{indegree popularity from same covariate1 to same covariate2},
+ \item \emph{indegree popularity from same covariate1 to same covariate2},\\
  \texttt{(sameXVInPop)} and \texttt{(sameXVInPop2)}.
   This is an elementary effect that is implemented only for non-centered categorical
   actor variables with values within the range of numbers from 0 to 20.\\
@@ -11662,7 +11697,7 @@ it is necessary to define a data set with two identical variables
              \hfill (p=1) $\\[0.3em]
  where the indicator function $ I\{v_h = v_i\geq 1,\, u_k=u_j \geq 1 \} $ is 1
  if the condition $\{v_h = v_i \geq 1,\, u_k=u_j \geq 1 \} $ is satisfied, and 0 if it is not.\\
-  The exclusion of values 0 is for the treatment of missing values:
+  The exclusion of values 0 is for the treatment of missing values:\\
   these can be given \texttt{imputationValues}  equal to 0,
   see the help page for \sfn{coCovar} and \sfn{varCovar}.
 
@@ -12192,6 +12227,16 @@ Further there are a number of mixed triadic effects.
 \vfill
 \end{minipage}
 \smallskip
+\item
+ {\em any agreement along W leading to X}, ($X$: from $W$ any agreement)  \texttt{(fromAny)} \\[0.2em] % \texttt{(fromWAgree)}\\
+ $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, I\{ w_{ih}\, w_{jh} > 0\}\,$;\\[0.2em]
+ this refers to agreement of actors with respect to their $W$-choices
+ (structural equivalence with respect to outgoing $W$-choices), 
+ truncated to~1;
+ the contribution of the tie $i \stackrel{X}{\rightarrow} j$
+ is proportional to whether there are any joint $W$ choices of others,
+ $i \stackrel{W}{\rightarrow} h \stackrel{W}{\leftarrow} j$.
+ \smallskip
  \item
 \begin{minipage}[t]{.7\textwidth}
  {\em  W leading to agreement along X}, ($X$: $W$ to agreement) \texttt{(to)} \\[0.2em]
@@ -13257,7 +13302,12 @@ and the covariate $V$ as \texttt{interaction2}.
  having the same value of $V$ as ego:\\
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \sum_h w_{hj}\,I\{v_i = v_h\}  $ \\
  or for $p=2$ \\
-   $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \sqrt{\sum_h w_{hj}\,I\{v_i = v_h\}}   $;
+   $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \sqrt{\sum_h w_{hj}\,I\{v_i = v_h\}}   $;\\
+ for internal effect parameter $p=3$, available only for
+ covariates with integer values from 0 to 20, it is defined by\\
+ $\displaystyle s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \frac{\sum_h w_{hj}\, I\{v_i = v_h \}}
+                {\sum_h I\{v_i = v_h \}} $;\\
+ for internal effect parameter $p=4$, the square root of the ratio of sums is taken;
 
  \item {\em Effect of in-degree in W, restricted to same $V$, on X-activity }
  ($X$: indegree$^{1/p}$ $W$ from same $V$ - activity) \texttt{(sameXinActIntn)}\\
@@ -13265,7 +13315,13 @@ and the covariate $V$ as \texttt{interaction2}.
  having the same value of $V$ as ego:\\
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \sum_h w_{hi}\,I\{v_i = v_h\}  $ \\
  or for $p=2$ \\
-   $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \sqrt{\sum_h w_{hi}\,I\{v_i = v_h\}}   $;
+   $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \sqrt{\sum_h w_{hi}\,I\{v_i = v_h\}}   $;\\
+ for internal effect parameter $p=3$, available only for
+ covariates with integer values from 0 to 20, it is defined by\\
+ $\displaystyle s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \frac{\sum_h w_{hi}\, I\{v_i = v_h \}}
+                {\sum_h I\{v_i = v_h \}} $;\\
+ for internal effect parameter $p=4$, the square root of the ratio of sums is taken;
+
 
  \item {\em Effect of out-degree in W, restricted to same $V$, on X-popularity }
  ($X$: outdegree$^{1/p}$ $W$ to same $V$ - popularity)   \texttt{(sameXoutPopIntn)}\\
@@ -14441,7 +14497,7 @@ reciprocated degrees.
  \[ \exp\big( \alpha_h / (x_{i+} +1)\big) \ . \]
  \item logarithmic outdegree effect  \texttt{(outRateLog)} \\
  This effect multiplies the factor $\lambda^{\rm net}_{i3}$ by
- \[ \exp\Big( \ln\big(\alpha_h (x_{i+} +1)\big)\Big) \,=\,
+ \[ \exp\big(\alpha_h\, \ln (x_{i+} +1)\big) \,=\,
                  \big(x_{i+} +1\big)^{\alpha_h} \ . \]
 
  \item inverse indegree effect  \texttt{(inRateInv)} \\
@@ -14449,7 +14505,7 @@ reciprocated degrees.
  \[ \exp\big( \alpha_h / (x_{+i} +1)\big) \ . \]
  \item logarithmic indegree effect  \texttt{(inRateLog)} \\
  This effect multiplies the factor $\lambda^{\rm net}_{i3}$ by
- \[ \exp\Big( \ln\big(\alpha_h (x_{+i} +1)\big)\Big) \,=\,
+ \[ \exp\big(\alpha_h\, \ln (x_{+i} +1) \big) \,=\,
                  \big(x_{+i} +1\big)^{\alpha_h} \ . \]
 
 
@@ -14458,7 +14514,7 @@ reciprocated degrees.
  \[ \exp\big( \alpha_h / (x_{i(r)} +1)\big) \ . \]
  \item logarithmic reciprocal degree effect  \texttt{(recipRateLog)} \\
  This effect multiplies the factor $\lambda^{\rm net}_{i3}$ by
- \[ \exp\Big( \ln\big(\alpha_h (x_{i(r)} +1)\big)\Big) \,=\,
+ \[ \exp\big(\alpha_h \, \ln(x_{i(r)} +1)\big) \,=\,
                  \big(x_{i(r)} +1\big)^{\alpha_h} \ . \]
 
  The exponential link function and logarithmic transformation collaborate
@@ -17283,12 +17339,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type
-\verb|R CMD check RSiena_1.4.22.tar.gz|\\
+\verb|R CMD check RSiena_1.4.23.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.4.22.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.4.23.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -17791,6 +17847,19 @@ A different approach was taken for effectGroups
 the former is for covariates on the first node set, the second for
 covariates on the second node set.
 
+For effects defined for one dependent network and two actor covariates,
+the following effectGroup is defined:
+\begin{itemize}
+\item \sfn{doubleCovarNetObjective} is for effects where the
+    first covariate is for the actors and, if the network is two-mode,
+    the second covariate is for the second mode;
+    moreover, both covariates should have no more than
+    20 distinct values. (This restriction is currently
+    coded in \sfn{effects.r}, \sfn{sienaDataCreate.r},
+    and three C++ functions. That is perhaps overdone.)
+\end{itemize}
+\medskip
+
 For effects defined for two dependent networks and one actor covariate,
 the following effectGroups are defined:
 \begin{itemize}
@@ -17811,7 +17880,8 @@ the following effectGroup is defined:
 \end{itemize}
 \medskip
 
-Further some of the complex effectGroups are the following:
+Further some of the complex effectGroups are the following.
+For co-evolution of multiple networks:
 \begin{itemize}
 \item \sfn{nonSymmetricNonSymmetricObjective} is for combination of two
     directed networks, one in the role of dependent network and the other
@@ -17843,6 +17913,12 @@ Further some of the complex effectGroups are the following:
     of two networks and a dyadic covariate, where the dyadic covariate
     should have the same first and second node sets
     as the explanatory network;
+\end{itemize}
+\medskip
+
+\noindent
+For dependent behavioral variables:
+\begin{itemize}
 \item \sfn{behaviorOneOneModeObjective} is for dependent behavioral variables and
     two explanatory one-mode directed networks;
 \item \sfn{behaviorSymSymObjective} is for dependent behavioral variables and
@@ -17857,7 +17933,7 @@ Further some of the complex effectGroups are the following:
 
 If you wish to add an effect with a combination of variables that is not yet implemented,
 you have also to treat it in \sfn{effects.r} (which will require some figuring out) and
-mention it in \sfn{effectsDocumentation.r}.
+mention the effectGroup in \sfn{effectsDocumentation.r}.
 
 
 \appendix
@@ -18383,7 +18459,7 @@ news(package="packageName")
 \iffalse
 \template
 
-\item 2024-mm-dd GitHub, package version 1.x.x.
+\item 2025-mm-dd GitHub, package version 1.x.x.
 
 Changes in RSiena:
 \begin{itemize}
@@ -18402,6 +18478,45 @@ Changes in RSiena:
 \end{itemize}
 
 \fi
+
+\item 2025-05-03 GitHub, package version 1.4.23.
+
+Changes in RSiena:
+\begin{itemize}
+\item 
+\begin{itemize} Bug corrections
+  \item Repaired (hopefully) memory leak in \texttt{getTargetActorStatistics} and\\
+    \texttt{getTargetsChangeContributions} in \texttt{siena07setup.cpp}.
+  \item Repaired (hopefully) memory leak in \texttt{move} in \texttt{MLSimulation.cpp}.
+  \item Repaired memory leak  in \texttt{DoubleCovariateCatFunction}.
+\end{itemize}
+\item  Effects
+\begin{itemize}
+  \item New effects \texttt{fromAny}, \texttt{sameInXCycle4}.
+  \item Effect shortName \texttt{cycle4ND} replaced by \texttt{cycle4}.
+  \item Better treatment of missing covariate values in effect \texttt{sameXCycle4}.
+  \item Internal effect parameter values 3 and 4 for \texttt{sameXInPop}, 
+  \texttt{diffXInPop},
+    \texttt{sameXInPopIntn},  \texttt{sameXInActIntn}, \texttt{homXOutAct2}.
+  \item New C++ class \texttt{CatCovariateDependentNetworkEffect} 
+  (for \texttt{homXOutAct2}).
+  \item Added \texttt{(\#)} to the \texttt{effectName} of \texttt{from}, 
+  \texttt{sameXInPop}, \texttt{diffXInPop}, \texttt{sameXVInPop}, \texttt{sameXVInPop2}
+  in \texttt{allEffects.csv}.  
+\end{itemize}
+\item
+\begin{itemize} New functionality
+  \item In \sfn{print.sienaEffects(..., includeShortNames=TRUE)}, 
+  the \texttt{effectNumber} is also printed.
+\end{itemize}
+\item
+ \begin{itemize} Changes in documentation:
+  \item Definition of effects \texttt{outRateLog}, \texttt{inRateLog}, and \texttt{recipRateLog}
+    corrected in the manual.
+\end{itemize}
+
+\end{itemize}
+
 
 \item 2025-02-08 GitHub, package version 1.4.22.
 
@@ -18468,7 +18583,7 @@ Changes in RSiena:
 \item Bug corrections:
    \begin{itemize}
 	\item Interaction effects for continuous behavior turned off. The R side of
-	\texttt{includeInteraction} for continuous behavior had been implemented but
+	\sfn{includeInteraction} for continuous behavior had been implemented but
 	not the C++ side, so now an error message is given.
     \end{itemize}
 \end{itemize}
@@ -21402,7 +21517,7 @@ Fix to bug in sorting effects for multiple dependent variables.
 \item user specified interactions
 \item new utilities to update the effects object
 \end{itemize}
-\item 2010-01-15 R-forge revision 41 (RSienaTest only)
+\item 2010-01-15 R-forge revision 41 (\textsf{RSienaTest} only)
 
 \begin{itemize}
 \item
@@ -21415,7 +21530,7 @@ Fix to bug in sorting effects for multiple dependent variables.
   \item  remove extra sqrt roots in standard error of rates for conditional
   estimation (see revision 31)
 \end{itemize}
-\item 2010-01-15 R-forge revision 40:\textsf{RSiena}only
+\item 2010-01-15 R-forge revision 40: (\textsf{RSiena} only)
 
   remove extra sqrt roots in standard error of rates for conditional
   estimation (see revision 32)
@@ -21431,8 +21546,11 @@ Fix to bug in sorting effects for multiple dependent variables.
 Updated change log and manual in \textsf{RSiena} and \sfn{ChangeLog} in \textsf{RSienaTest}.
 
 \item 2010-01-01 R-forge revision 32
+\begin{itemize}
+\item
     print07report.r: corrected standard errors for rate estimate for
-    conditional estimation: needed square roots. RSiena
+    conditional estimation: needed square roots. (\textsf{RSiena})
+\end{itemize}
 
 \item 2009-12-31 R-forge revision 31
 \begin{itemize}

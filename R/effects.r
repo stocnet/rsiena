@@ -1411,7 +1411,7 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 				covObjEffects[covObjEffects$shortName %in%
 				c("altX", "altSqX",  "altLThresholdX", "altRThresholdX",
 					"homXOutAct", "homXOutAct2", "altXOutAct",
-					"inActX", "outActX"), ]
+					"inActX", "outActX", "sameInXCycle4"), ]
 			if (!tr & (!moreThan2))
 			{
 				covObjEffects <-

@@ -28,10 +28,11 @@ namespace siena
  * @param[in] pEffectInfo the effect descriptor
  * @param[in] squared indicates if the covariate values must be squared
  */
-SameCovariateFourCyclesEffect::SameCovariateFourCyclesEffect(const EffectInfo * pEffectInfo,
-	bool TwoMode) :	CovariateDependentNetworkEffect(pEffectInfo)
+SameCovariateFourCyclesEffect::SameCovariateFourCyclesEffect(const EffectInfo * pEffectInfo):
+		CovariateDependentNetworkEffect(pEffectInfo)
 {
-	this->lTwoMode = TwoMode;
+	this->lTwoMode = false;
+	
 	this->lcounters = 0;
 
 	if (pEffectInfo->internalEffectParameter() != 1 &&
@@ -65,16 +66,22 @@ void SameCovariateFourCyclesEffect::initialize(const Data * pData,
 	int period,
 	Cache * pCache)
 {
-	CovariateDependentNetworkEffect::initialize(pData, pState, period, pCache);
+	CovariateDependentNetworkEffect::initialize(pData, pState, period, pCache);	
+	
+	this->lTwoMode = !this->pNetwork()->isOneMode();
 
 	delete[] this->lcounters;
+	
+	int nm = this->pNetwork()->n();
 	if (this->lTwoMode)
 	{
-		this->lcounters = new long int[this->pNetwork()->m()];
+		nm = this->pNetwork()->m();
 	}
-	else
+
+	this->lcounters = new long int[nm];
+	for (int j = 0; j < nm; j++)
 	{
-		this->lcounters = new long int[this->pNetwork()->n()];
+		this->lcounters[j] = 0;
 	}
 }
 
@@ -89,8 +96,8 @@ void SameCovariateFourCyclesEffect::preprocessEgo(int ego)
 
 	const Network * pNetwork = this->pNetwork();
 
-	// Count the number of three paths i -> h <- k -> j from i to each j
-	this->countThreePaths(ego, pNetwork, this->lcounters);
+ // Count the number of three paths i -> h <- k -> j for v(k)=v(i)
+	this->countThreePaths(ego, pNetwork, this->lcounters, false);
 
 	if (this->lroot)
 	{
@@ -114,11 +121,10 @@ void SameCovariateFourCyclesEffect::preprocessEgo(int ego)
 
 /**
  * For each j and the given i, this method calculates the number of three-paths
- * i -> h <- k -> j for v(k)=v(i)
+ * i -> h <- k -> j for v(k)=v(i) 
  */
 void SameCovariateFourCyclesEffect::countThreePaths(int i,
-	const Network * pNetwork,
-	long int * counters) const
+	const Network * pNetwork, long int * counters, bool dropMissings) const
 {
 	// Initialize
 
@@ -132,26 +138,26 @@ void SameCovariateFourCyclesEffect::countThreePaths(int i,
 	{
 		counters[j] = 0;
 	}
-	double myvalue = this->value(this->ego());
+	double myvalue = this->value(i);
 
-	// Enumerate all three-paths i -> h <- k -> j and update the counters.
+	// Enumerate all three-paths i -> h <- k -> j for v(k)=v(i) 
+	// and update the counters.
 	// The (average) time complexity is obviously O(d^3), where d is the
 	// average degree.
-	if (!(this->missing(this->ego())))
+	if (!(this->missing(i) && dropMissings))
 	{
 		for (IncidentTieIterator iterI = pNetwork->outTies(i);
 			iterI.valid();
 			iterI.next())
 		{
 			int h = iterI.actor();
-
 			for (IncidentTieIterator iterH = pNetwork->inTies(h);
 				iterH.valid();
 				iterH.next())
 			{
 				int k = iterH.actor();
 
-				if ((i != k) && (!(this->missing(k))) &&
+				if ((i != k) && (!(this->missing(k) && dropMissings)) &&
 							(fabs(this->value(k) - myvalue) < EPSILON))
 				{
 					for (IncidentTieIterator iterK = pNetwork->outTies(k);
@@ -159,10 +165,9 @@ void SameCovariateFourCyclesEffect::countThreePaths(int i,
 						iterK.next())
 					{
 						int j = iterK.actor();
-
 						if (j != h)
 						{
-						counters[j]++;
+							counters[j]++;
 						}
 					}
 				}
@@ -203,24 +208,38 @@ double SameCovariateFourCyclesEffect::calculateContribution(int alter) const
 	return change;
 }
 
-/**
- * The contribution of the tie from the implicit ego to the given alter
- * to the statistic. It is assumed that preprocessEgo(ego) has been
- * called before.
- */
-double SameCovariateFourCyclesEffect::tieStatistic(int alter)
-{
-	// Avoid counting each 4-cycle four times in the evaluation statistic.
-	// TODO: Is it okay to divide by 4 for endowment statistic as well?
 
-	if (this->lroot)
+/**
+ * The contribution of ego to the statistic.
+ * Although preprocessEgo(ego) has been called before, it is not used,
+ * because missing data have to be dealt with.
+ * It would be more efficient to avoid 
+ * counting each 4-cycle four times in the evaluation statistic.
+ */
+double SameCovariateFourCyclesEffect::egoStatistic(int ego, const Network * pNetwork)
+{
+	double statistic = 0;
+	
+	if (pNetwork->outDegree(ego) > 0)
 	{
-	return 0.5*(this->lpSqrtTable->sqrt(this->lcounters[alter]));
+ // Count the number of three paths ego -> h <- k -> j for v(k)=v(i)
+		this->countThreePaths(ego, pNetwork, this->lcounters, true);		
+		for (IncidentTieIterator iterI = pNetwork->outTies(ego);
+			iterI.valid();
+			iterI.next())
+		{
+			if (this->lroot)
+			{
+				statistic += 0.5*(this->lpSqrtTable->sqrt(this->lcounters[iterI.actor()]));
+			}
+			else
+			{
+				statistic += 0.25*this->lcounters[iterI.actor()];
+			}
+		}	
 	}
-	else
-	{
-	return this->lcounters[alter] * 0.25;
-	}
+	return statistic;
 }
+
 
 }

@@ -14,6 +14,7 @@
 #include <string>
 #include <cmath>
 #include <R_ext/Error.h>
+#include <memory>
 #include "MLSimulation.h"
 
 #include <Rinternals.h>
@@ -726,38 +727,30 @@ bool MLSimulation::move()
 
 	////CHOOSING MINISTEPB
 
-	double * newReciprocalRate = new double[intLength];
-	double * newOptionSetProbability = new double[intLength];
-	double * newChoiceProbability = new double[intLength];
+	// Replace raw arrays with std::vector for automatic memory management
+	std::vector<double> newReciprocalRate(intLength);
+	std::vector<double> newOptionSetProbability(intLength);
+	std::vector<double> newChoiceProbability(intLength);
 
-	double * reciprocalRateA = 0;
-	double * optionSetProbabilityA = 0;
-	double * choiceProbabilityA = 0;
+	std::vector<double> reciprocalRateA;
+	std::vector<double> optionSetProbabilityA;
+	std::vector<double> choiceProbabilityA;
 
 	if (this->pModel()->localML())
 	{
-		reciprocalRateA = new double[intLength];
-		optionSetProbabilityA = new double[intLength];
-		choiceProbabilityA = new double[intLength];
+		reciprocalRateA.resize(intLength);
+		optionSetProbabilityA.resize(intLength);
+		choiceProbabilityA.resize(intLength);
 	}
 
-	bool * updateProb = new bool[intLength];
-	double * pi = new double[intLength];
+	std::vector<bool> updateProb(intLength, false);
+	std::vector<double> pi(intLength, 0.0);
 
 	pi[0] = 1;
 	piCount = 0;
 
-	// SETTING PI AND UPDATE
-	for (int k=0;k < intLength;k++)
-	{
-		updateProb[k] = false;
-	}
-	for (int k=1;k < intLength;k++)
-	{
-		pi[k] = 0;
-	}
-
-	MiniStep * pMiniStepAReverse = pMiniStepA->createReverseMiniStep();
+	// Use std::unique_ptr for automatic memory management of pMiniStepAReverse
+	std::unique_ptr<MiniStep> pMiniStepAReverse(pMiniStepA->createReverseMiniStep());
 	pMiniStepC = pFirst;
 
 	// CREATING VARIABLES, EGOS AND ALTERS FOR MiniSteps A AND C
@@ -910,7 +903,7 @@ bool MLSimulation::move()
 		}
 	}
 
-	delete pMiniStepAReverse;
+	// We don't need to delete pMiniStepAReverse anymore as it's managed by unique_ptr
 
 	// Making pi sum to 1
 	double piSum = 0;
@@ -923,7 +916,7 @@ bool MLSimulation::move()
 		pi[k] /= piSum;
 	}
 
-	int miniStepChoice = nextIntWithProbabilities(intLength, pi);
+	int miniStepChoice = nextIntWithProbabilities(intLength, pi.data());
 
 	// Will give no change
 		if (miniStepChoice == positionA)
@@ -1103,20 +1096,11 @@ bool MLSimulation::move()
 
 	this->recordOutcome(*pMiniStepA, accept, MOVE, false);
 
-	delete[] pi;
-	delete[] updateProb;
-	if (this->pModel()->localML())
-	{
-		delete[] choiceProbabilityA;
-		delete[] optionSetProbabilityA;
-		delete[] reciprocalRateA;
-	}
-	delete[] newChoiceProbability;
-	delete[] newOptionSetProbability;	
-	delete[] newReciprocalRate;
-	
+	// No need to delete arrays anymore as they're managed by std::vector
+
 	return accept;
 }
+
 
 /**
  * Implements the MH_permute Metropolis-Hastings step.
@@ -2613,7 +2597,6 @@ bool MLSimulation::insertMissing()
 	return accept;
 }
 
-
 /**
  * Implements the MH_DelMis Metropolis-Hastings step.
  */
@@ -2895,9 +2878,9 @@ bool MLSimulation::deleteMissing()
 		delete pMiniStepA;
 	}
 
-	delete[] newReciprocalRate;
-	delete[] newOptionSetProbability;
 	delete[] newChoiceProbability;
+	delete[] newOptionSetProbability;
+	delete[] newReciprocalRate;
 
 	return accept;
 }

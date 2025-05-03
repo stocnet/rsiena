@@ -34,6 +34,7 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   \item{interaction1}{
     Vector of Siena objects where needed to completely identify the
     effect e.g. covariate name or behavior variable name.
+    See the examples below.
     Trailing blanks may be omitted.
   }
   \item{interaction2}{
@@ -100,16 +101,16 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   if they were not included.\cr
 
   Interaction effects are constructed from effects with shortName
-  \code{unspInt} (for networks), \code{behUnspInt} (for discrete behavior), 
-  and \code{contUnspInt} (for continuous behavior) by specifying their 
-  elements \code{effect1} and \code{effect2}, and possibly \code{effect3}. 
+  \code{unspInt} (for networks), \code{behUnspInt} (for discrete behavior),
+  and \code{contUnspInt} (for continuous behavior) by specifying their
+  elements \code{effect1} and \code{effect2}, and possibly \code{effect3}.
   The shortName is not altered by this function.
 
   The number of possible user-specified interaction effects is limited
   by the parameters \code{nintn} (for dependent network variables)
-  and \code{behNintn} (for dependent behavior variables) in the call of 
-  \code{\link{getEffects}}, which determine the numbers of effects with 
-  shortNames \code{unspInt}, \code{behUnspInt}, and \code{contUnspInt} 
+  and \code{behNintn} (for dependent behavior variables) in the call of
+  \code{\link{getEffects}}, which determine the numbers of effects with
+  shortNames \code{unspInt}, \code{behUnspInt}, and \code{contUnspInt}
   (for the latter two, the maximum is \code{behNintn} each).
 
   The input names \code{interaction1} and \code{interaction2},
@@ -149,10 +150,12 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
 \examples{
 mynet <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
 alc <- varCovar(s50a)
-mydata <- sienaDataCreate(mynet, alc)
+sm <- varCovar(s50s)
+mydata <- sienaDataCreate(mynet, alc, sm)
 myeff <- getEffects(mydata)
 myeff <- includeInteraction(myeff, recip, inPop)
 myeff <- includeEffects(myeff, egoX, altX, simX, interaction1="alc")
+myeff <- includeInteraction(myeff, egoX, altX, interaction1=c("alc", "sm"))
 myeff <- includeInteraction(myeff, recip, simX, interaction1=c("", "alc"))
 myeff <- setEffect(myeff, gwespFF, parameter=20)
 myeff <- includeInteraction(myeff, recip, gwespFF)

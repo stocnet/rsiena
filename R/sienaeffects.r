@@ -42,6 +42,10 @@ includeEffects <- function(myeff, ..., include=TRUE, name=myeff$name[1],
 	{
 		stop("Effect AltsAvAlt now is called avXAlt. Use the new name please.")
 	}
+	if ("cycle4ND" %in% effectNames)
+	{
+		stop("Effect cycle4ND now is called cycle4. Use the new name please.")
+	}
 	use <- myeff$shortName %in% effectNames &
 	myeff$type==type &
 	myeff$name==name &
@@ -265,7 +269,6 @@ includeInteraction <- function(myeff, ...,
 			intn[effect3] <- TRUE
 		}
 		myeff2 <- myeff[intn,]	
-		myeff2$effectName <- paste(which(intn), myeff2$effectName)
 		print.sienaEffects(myeff2, includeOnly=FALSE, includeRandoms=random,
 								includeShortNames=TRUE)
 	}
