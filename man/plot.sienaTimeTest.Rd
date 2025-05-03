@@ -63,7 +63,7 @@
 }
 \author{Josh Lospinoso}
 \seealso{\code{\link{siena07}}, \code{\link{sienaTimeTest}},
-  \code{\link{xyplot}}}
+  \code{\link[lattice]{xyplot}}}
 \examples{
 \dontrun{
 myalgorithm <- sienaAlgorithmCreate(nsub=2, n3=500)

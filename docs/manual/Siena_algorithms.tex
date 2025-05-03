@@ -145,7 +145,7 @@
                          \rule{0pt}{2ex}}
 
 \newcommand{\nm}[1]{\textsf{\small #1}}
-\newcommand{\nnm}[1]{\textsf{\small\textit{#1}}}
+\newcommand{\nnm}[1]{\textsf{\small\textit{#1}\ }}
 \newcommand{\nmm}[1]{\nnm{#1}}
 \newcommand{\R}{{\sf R }}
 \newcommand{\Rn}{{\sf R}}
@@ -1348,9 +1348,16 @@ For \nnm{NetworkEffect.cpp}, these are computed  as
 Note that these are virtual effects, and will be refined in specific network
 effects, which are descendants of class \nnm{networkEffect}.
 It is necessary to redefine either \nnm{egoStatistic} or \nnm{tieStatistic}.
-Redefining both is superfluous, as is shown by the above.
-(If they would both be redefined for some effect, then
- \nnm{tieStatistic} for this effect would never be used.)
+
+For main effects, the redefined \nnm{tieStatistic} is not used
+if there also is a redefined \nnm{egoStatistic}.
+However, for network interaction effects of dyadic and ego effects,
+defined in Sections~\ref{S_dyadic} and~\ref{S_ego}, 
+the \nnm{tieStatistics} are calculated 
+as the products of the corresponding main
+effects (this happens in \nnm{NetworkInteractionEffect.cpp}). 
+Therefore, to be able to use a network effect in interactions, 
+it is necessary to redefine the \nnm{tieStatistic}. 
 
 The "number of distances equal to 2" effect is an example of an effect
 where decomposition (\ref{sum_tiestat}) is not straightforward,
@@ -1476,6 +1483,7 @@ Sufficient conditions for user-defined interactions are
 the following.
 
 \subsubsection{Dyadic effects}
+\label{S_dyadic}
 
 An effect is defined to be \emph{dyadic} if it can be written as
 \begin{equation}
@@ -1507,6 +1515,7 @@ One could say that the interaction between two dyadic effects is again
 a dyadic effect.
 
 \subsubsection{Ego effects}
+\label{S_ego}
 
 An effect is defined to be an \emph{ego} effect if it can be written as
 \begin{equation}
@@ -1539,10 +1548,13 @@ The same holds for interactions between two ego effects and
 any third effect, because the interaction between two ego effects is again
 an ego effect.
 
-In C++, whether an effect is an ego effect is used in
+Whether effects are ego effects or not is defined separately on the R side
+and the C++ side; it is not transferred from R to C++.
+In C++, whether an effect is an ego effect is used only in
 \nnm{NetworkInteractionEffect.cpp} for the calculation of the
 estimation function.
-This uses the property that ego effects always have a \nnm{tieStatistic()}.
+This uses the property that ego effects always have a \nnm{tieStatistic()},
+and that this is independent of alter.
 
 \subsubsection{Contextual effects}
 
@@ -1840,6 +1852,31 @@ Examples of this can be seen in effect classes \\
 and \texttt{OutTieFunction}.
 These then are specified as \texttt{gmm} statistics in
 \texttt{effectFactory} by using them with \texttt{simulatedState=true}.
+
+\newpage
+\section{Rate effects}
+
+Rate effects are currently of three types,
+defined by the rateType column of  \texttt{allEffects.csv}.
+The values are "structural", "diffusion", "covariate", or NA.
+
+Function  \nnm{DependentVariable::initializeRateFunction}
+in  \nnm{Dependentvariable.cpp}
+initializes the rate function; here also the functions\\
+ \nnm{model/effects/StructuralRateEffect.h} and
+ \nnm{model/effects/DiffusionRateEffect.h}
+are used.
+
+Functions \nnm{StatisticCalculator::calculateNetworkRateStatistics} and
+\nnm{StatisticCalculator::calculateBehaviorRateStatistics}
+in \nnm{StatisticCalculator.cpp}
+calculate the rate functions.
+
+The \texttt{RateX} effect is defined in a funny way.
+If you look for the string "RateX", it occurs nowhere in the cpp directory.
+It is identified by being the only rate effect of type "covariate",
+together with the dependent variable name and the explanatory variable,
+given by the parameter "interaction1".
 
 
 \newpage
@@ -5831,7 +5868,7 @@ $\Delta_{ik}(-1,z) = \Delta_{ik}(0,z) = 0$ and $\pi_i(1) = p_i(1)$,
 it does not matter whether we calculate (\ref{sc1})
 for $p_i$ or for $\pi_i$.
 
-\newpage  
+\newpage
 
 \section{sienaBayes}
 
@@ -5844,27 +5881,27 @@ Incomplete, to be expanded.
 
 If a \nnm{prevBayes} object is supplied, this initialization phase is
 skipped.
-  
+
 \begin{enumerate}
 \item Unless \nnm{prevAns=NULL}:\\
      Estimate using MoM with multigroup option, i.e., under assumption
-    of common parameter values, using only 2 subphases. 
+    of common parameter values, using only 2 subphases.
     This yields the \nnm{sienaFit} object \nnm{startupGlobal}.\\
     Defaults can be changed by parameters
     \nnm{initgainGlobal}, \nnm{initgainGroupwise}, and
     \nnm{initML}. \\
     Stop if some of the estimated non-rate parameters are larger than 40.
 \item If $ \nnm{priorPrecFactor} > 0$, use a weighted mean of the parameter estimate
-    in  \nnm{startupGlobal} and the prior mean. 
+    in  \nnm{startupGlobal} and the prior mean.
     This weighted mean is called the Kelley estimator\footnote{After
     the psychometrician Truman Lee Kelley}. \\
     The weights are the inverses of the covariance matrices
     of the estimate in \nnm{startupGlobal} and of \{the prior
     for the global parameters, multiplied by \nnm{priorPrecFactor}\}.
     Names of variables related to this include the string \nnm{prec}.
-\item 
-  For all groups seperately, if $\nnm{initgainGroupwise} > 0$, 
-  one subphase of the Robbins-Monro algorithm for MoM is executed, 
+\item
+  For all groups seperately, if $\nnm{initgainGroupwise} > 0$,
+  one subphase of the Robbins-Monro algorithm for MoM is executed,
   starting from the overall estimate, with step size \nnm{initgain},
   to estimate the group-varying parameters.\\
  This provides get initial values \nnm{initialEstimates} per group,
@@ -5872,7 +5909,7 @@ skipped.
     per group.\\
     Stop if some of the estimated non-rate parameters are larger than 40.
 \item The scale of basic rate parameters can be easily modified,
-   e.g., to the sqrt scale, 
+   e.g., to the sqrt scale,
     by changing functions \nnm{trafo}, \nnm{antitrafo}, \nnm{devtrafo}.
 \end{enumerate}
 
@@ -5882,7 +5919,7 @@ skipped.
 
 What follows is very incomplete.\\
 It is an older text by Ruth Ripley.
-\bigskip 
+\bigskip
 
 \begin{enumerate}
   \item Set up data in C as usual

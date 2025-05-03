@@ -23,7 +23,7 @@ nodeSet="Actors", sparse=is.list(netarray), allowOnly=TRUE, imputationValues=NUL
     (actors \eqn{\times}{*} waves).\cr
     \code{type="oneMode"} or \code{"bipartite"}: array of values or list of
     sparse matrices of type \code{"TsparseMatrix"},
-	see the \code{\link{Matrix}} package;
+	see the \code{\link[Matrix]{Matrix}} package;
     if an array is used, it should have dimensions:
     for a one-mode network, \eqn{n \times n \times M}{n * n * M},
     and for a two-mode network \eqn{n \times m \times M}{n * m * M},

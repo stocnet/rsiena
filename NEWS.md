@@ -1,3 +1,33 @@
+# RSiena 1.4.23
+
+2025-05-03
+
+## Changes in RSiena:
+### Bug corrections
+  * Repaired (hopefully) memory leak in `getTargetActorStatistics` and 
+    `getTargetsChangeContributions` in `siena07setup.cpp`. 
+  * Repaired (hopefully) memory leak in `move` in `MLSimulation.cpp`. 
+  * Repaired memory leak  in `DoubleCovariateCatFunction`. 
+### Effects
+  * New effects `fromAny`, `sameInXCycle4`. 
+  * Effect shortName `cycle4ND` replaced by `cycle4`.
+  * Better treatment of missing covariate values in effect `sameXCycle4`. 
+  * Internal effect parameter values 3 and 4 for `sameXInPop`,`diffXInPop`,
+    `sameXInPopIntn`,  `sameXInActIntn`, `homXOutAct2`. 
+  * New C++ class `CatCovariateDependentNetworkEffect` (for `homXOutAct2`). 
+  * Added `(#)` to the `effectName` of `from`, `sameXInPop`, `diffXInPop`, 
+	`sameXVInPop`, `sameXVInPop2`.
+### New functionality
+  * In `print.sienaEffects(..., includeShortNames=TRUE)`, the `effectNumber`
+    is also printed.
+### Coding
+  * Class `Covariate` has new variable `covariateN`, which then is transferred
+    as `covarN` to `CovariateDependentNetworkEffect` and 
+    `DoubleCovariateFunction`. 
+### Changes in documentation:
+  * Definition of effects `outRateLog`, `inRateLog`, and `recipRateLog`
+    corrected in the manual.
+
 # RSiena 1.4.22
 
 2025-02-08

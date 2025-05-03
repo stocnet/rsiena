@@ -118,7 +118,7 @@ psi.iwlsm(u, k, deriv = 0, w, sj2, hh)
     function.
   }
   \item{lqs.control}{
-    An optional list of control values for \code{\link{lqs}}.
+    An optional list of control values for \code{\link[MASS]{lqs}}.
   }
   \item{u}{
     numeric vector of evaluation points.
