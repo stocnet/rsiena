@@ -1116,19 +1116,6 @@ MiniStep * Chain::randomMissingBehaviorMiniStep() const
 		nextInt(this->lmissingBehaviorMiniSteps.size())];
 }
 
-/**
- * Prints the list of ccps.
- */
-void  Chain::printConsecutiveCancelingPairs() const
-{
-	// rr debug code for ccps
-//		Rprintf("\nStart\n ");
-	for (unsigned i = 0; i < this->lccpMiniSteps.size(); i++)
-	{
-		Rf_PrintValue(getMiniStepDF(*this->lccpMiniSteps[i]));
-	}
-//		Rprintf("\nend\n ");
-}
 
 // ----------------------------------------------------------------------------
 // Section: Intervals
