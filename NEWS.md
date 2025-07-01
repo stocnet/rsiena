@@ -1,3 +1,19 @@
+# RSiena 1.x.xx
+
+2025-07-04
+
+## Changes in RSiena:
+### Effects
+  * Error for creating effects in effects group `dyadSecondBipartiteObjective` 
+    was corrected in file `effects.r`, 
+    so they now are included also for changing dyadic covariates.
+    This affected effects `XWX`, `XWX1`, and `XWX2`.
+### Coding
+  * Function `Chains:printConsecutiveCancelingPairs` deleted from `model\ml`,
+    because it was not used and led to a protection error.
+  * Undid changes in version 1.4.23 to `getTargetActorStatistics` and 
+    `getTargetsChangeContributions` in `siena07setup.cpp`.
+
 # RSiena 1.4.23
 
 2025-05-03

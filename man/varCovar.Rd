@@ -18,7 +18,7 @@ varCovar(val, centered=TRUE, nodeSet="Actors",  warn=TRUE,
   \item{warn}{Logical: is a warning given if all values are \code{NA},
   or all non-missing values are the same.}
   \item{imputationValues}{Matrix of covariate values of same
-   dimensions as \code{val}a, to be used for imputation of
+   dimensions as \code{val}, to be used for imputation of
    \code{NA} values (if any) in \code{val}. Must not contain
    any \code{NA}.}
 }
