@@ -1,6 +1,6 @@
 
-R version 4.4.2 (2024-10-31 ucrt) -- "Pile of Leaves"
-Copyright (C) 2024 The R Foundation for Statistical Computing
+R version 4.5.0 (2025-04-11 ucrt) -- "How About a Twenty-Six"
+Copyright (C) 2025 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -925,7 +925,7 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 > myeff <- getEffects(mydata)
 > myeff <- includeEffects(myeff, crprod, name='mynet2', interaction1='mynet1')
   effectNumber effectName     shortName include fix   test  initialValue parm
-1 701          mynet2: mynet1 crprod    TRUE    FALSE FALSE          0   0   
+1 704          mynet2: mynet1 crprod    TRUE    FALSE FALSE          0   0   
 > myeff <- setEffect(myeff, from, name='mynet1', interaction1='mynet2')
   effectNumber effectName                        shortName include fix   test 
 1 343          mynet1: from mynet2 agreement (0) from      TRUE    FALSE FALSE
@@ -1038,4 +1038,4 @@ Total of 590 iteration steps.
 > 
 > proc.time()
    user  system elapsed 
-  20.42    0.31   20.95 
+  19.71    0.29   20.17 

@@ -1575,85 +1575,8 @@ bool MLSimulation::insertPermute(int c0)
 			// otherwise, 2 unless preceding or succeeding ministeps to A or B
 			// are the same.
 
-			// 			int newConsecutiveCancelingPairCount =
-			// 				this->pChain()->consecutiveCancelingPairCount() + 1;
-
-			// 			if (this->pChain()->nextMiniStepForOption(
-			// 					*(pLeftMiniStep->pOption()), this->pChain()->pFirst()))
-			// 			{
-			// 				newConsecutiveCancelingPairCount += 1;
-			// 				if (pLeftMiniStep->networkMiniStep())
-			// 				{
-			// 					if (pMiniStepA->pPrevious()->pOption() ==
-			// 						pLeftMiniStep->pOption())
-			// 					{
-			// 						newConsecutiveCancelingPairCount--;
-			// 					}
-			// 					if (pMiniStepB->pOption() ==
-			// 						pLeftMiniStep->pOption())
-			// 					{
-			// 						newConsecutiveCancelingPairCount--;
-			// 					}
-			// 				}
-			// 				else // behavior miniStep
-			// 				{
-
-			// 					BehaviorChange * pPreviousMiniStep =
-			// 						dynamic_cast<BehaviorChange *>
-			// 						(this->pChain()->nextMiniStepForOption(
-			// 							*(pLeftMiniStep->pOption()), pMiniStepA));
-			// 					if (pPreviousMiniStep)
-			// 					{
-			// 						pPreviousMiniStep = dynamic_cast<BehaviorChange *>
-			// 							(pPreviousMiniStep->pPreviousWithSameOption());
-			// 					}
-			// 					BehaviorChange * pNextMiniStep =
-			// 						dynamic_cast<BehaviorChange *>
-			// 						(this->pChain()->nextMiniStepForOption(
-			// 							*(pLeftMiniStep->pOption()), pMiniStepB));
-			// 					BehaviorChange * pThisMiniStep =
-			// 						dynamic_cast <BehaviorChange *>
-			// 						(pLeftMiniStep);
-			// 					int d0 = pThisMiniStep->difference();
-			// 					int dMinus = 0;
-			// 					int dPlus = 0;
-			// 					if (pPreviousMiniStep)
-			// 					{
-			// 						dPlus = pPreviousMiniStep->difference();
-			// 					}
-			// 					if (pNextMiniStep)
-			// 					{
-			// 						dMinus = pNextMiniStep->difference();
-			// 					}
-			// 					if (pPreviousMiniStep == pMiniStepA->pPrevious() ||
-			// 						dMinus == d0)
-			// 					{
-			// 						newConsecutiveCancelingPairCount--;
-			// 					}
-			// 					if (pNextMiniStep == pMiniStepB ||
-			// 						dPlus == d0)
-			// 					{
-			// 						newConsecutiveCancelingPairCount--;
-			// 					}
-			// 				}
-			// 			}
-			// 			Rf_PrintValue(getChainDF(*(this->pChain())));
-			// 			this->pChain()->printConsecutiveCancelingPairs();
 			this->pChain()->insertBefore(pLeftMiniStep, pMiniStepA);
 			this->pChain()->insertBefore(pRightMiniStep, pMiniStepB);
-			// 			Rf_PrintValue(getChainDF(*(this->pChain())));
-			// 			this->pChain()->printConsecutiveCancelingPairs();
-			// 			if (newConsecutiveCancelingPairCount !=
-			// 				this->pChain()->consecutiveCancelingPairCount())
-			// 			{
-			// 				Rprintf("ins diff %d %d \n",newConsecutiveCancelingPairCount,
-			// 					this->pChain()->consecutiveCancelingPairCount() );
-			// 			Rf_PrintValue(getMiniStepDF(*pMiniStepA));
-			//  				Rf_PrintValue(getMiniStepDF(*pMiniStepB));
-			//  				Rf_PrintValue(getMiniStepDF(*pLeftMiniStep));
-			//  				Rf_PrintValue(getMiniStepDF(*pRightMiniStep));
-			//  				Rf_error("time to stop");
-			//  			}
 
 			pr1 =
 			    (1 -
@@ -2052,89 +1975,11 @@ bool MLSimulation::deletePermute(int c0)
 			// otherwise, 2 unless preceding or succeeding ministeps to A or B
 			// are the same.
 
-			// 			Rf_PrintValue(getChainDF(*(this->pChain())));
-			// 			this->pChain()->printConsecutiveCancelingPairs();
-
-			// 			int newConsecutiveCancelingPairCount =
-			//  				this->pChain()->consecutiveCancelingPairCount() - 1;
-
-			// 			if (this->pChain()->nextMiniStepForOption(
-			// 					*(pMiniStepA->pOption()), this->pChain()->pFirst()))
-			// 			{
-			// 				newConsecutiveCancelingPairCount -= 1;
-			// 				if (pMiniStepA->networkMiniStep())
-			// 				{
-			// 					if (pMiniStepA->pPrevious()->pOption() ==
-			// 						pMiniStepA->pOption())
-			// 					{
-			// 						newConsecutiveCancelingPairCount++;
-			// 					}
-			// 					if (pMiniStepB->pNext()->pOption() ==
-			// 						pMiniStepB->pOption())
-			// 					{
-			// 						newConsecutiveCancelingPairCount++;
-			// 					}
-			// 				}
-			// 				else // behavior miniStep
-			// 				{
-
-			// 					BehaviorChange * pPreviousMiniStep =
-			// 						dynamic_cast<BehaviorChange *>
-			// 						(this->pChain()->nextMiniStepForOption(
-			// 							*(pMiniStepA->pOption()), pMiniStepA));
-			// 					if (pPreviousMiniStep)
-			// 					{
-			// 						pPreviousMiniStep =
-			// 						dynamic_cast<BehaviorChange *>
-			// 							(pPreviousMiniStep->pPreviousWithSameOption());
-			// 					}
-			// 					BehaviorChange * pNextMiniStep =
-			// 						dynamic_cast<BehaviorChange *>
-			// 						(this->pChain()->nextMiniStepForOption(
-			// 							*(pMiniStepB->pOption()), pMiniStepB));
-			// 					BehaviorChange * pThisMiniStep =
-			// 						dynamic_cast <BehaviorChange *>
-			// 						(pMiniStepA);
-			// 					int d0 = pThisMiniStep->difference();
-			// 					int dMinus = 0;
-			// 					int dPlus = 0;
-			// 					if (pPreviousMiniStep)
-			// 					{
-			// 						dPlus = pPreviousMiniStep->difference();
-			// 					}
-			// 					if (pNextMiniStep)
-			// 					{
-			// 						dMinus = pNextMiniStep->difference();
-			// 					}
-			// 					if (pPreviousMiniStep == pMiniStepA->pPrevious() ||
-			// 						dMinus == d0)
-			// 					{
-			// 						newConsecutiveCancelingPairCount++;
-			// 					}
-			// 					if (pNextMiniStep == pMiniStepB->pNext() ||
-			// 						dPlus == d0)
-			// 					{
-			// 						newConsecutiveCancelingPairCount++;
-			// 					}
-			// 				}
-			// 			}
 			// insert and delete
 			MiniStep * pAfterA = pMiniStepA->pNext();
 			this->pChain()->remove(pMiniStepA);
 			MiniStep * pAfterB = pMiniStepB->pNext();
 			this->pChain()->remove(pMiniStepB);
-			// 			if (newConsecutiveCancelingPairCount !=
-			// 				this->pChain()->consecutiveCancelingPairCount())
-			// 			{
-			// 			this->pChain()->printConsecutiveCancelingPairs();
-			// 				Rprintf("diff %d %d \n",newConsecutiveCancelingPairCount,
-			// 					this->pChain()->consecutiveCancelingPairCount() );
-			// 				Rf_PrintValue(getMiniStepDF(*pMiniStepA));
-			// 				Rf_PrintValue(getMiniStepDF(*pMiniStepB));
-			// 				Rf_PrintValue(getMiniStepDF(*pAfterA));
-			// 				Rf_PrintValue(getMiniStepDF(*pAfterB));
-			// 				Rf_error("time to stop");
-			// 			}
 			this->pChain()->insertBefore(pMiniStepA, pAfterA);
 			this->pChain()->insertBefore(pMiniStepB, pAfterB);
 

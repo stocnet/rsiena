@@ -76,7 +76,6 @@ public:
 	double sigma2() const;
 	double finalReciprocalRate() const;
 	void finalReciprocalRate(double value);
-	void printConsecutiveCancelingPairs() const;
 	const std::vector <MiniStep *> & rEndStateDifferences() const;
 	const std::vector <MiniStep *> & rInitialStateDifferences() const;
 

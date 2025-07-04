@@ -728,9 +728,7 @@ SEXP getTargetActorStatistics(SEXP dataptr, SEXP modelptr, SEXP effectslist, SEX
 					astats[i] = actorStatistics.at(e)[i];
 				}
 				SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), period+1), e, actorStatsValues);
-				UNPROTECT(1);             
-                // claude: Free memory allocated by getActorStatistics
-                delete[] actorStatistics.at(e);
+				UNPROTECT(1);         
 			}
 		}
 	}
@@ -799,9 +797,7 @@ SEXP getTargetsChangeContributions(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST
 					}
 					SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), period+1), e), 
 								actor, actorsVal);
-					UNPROTECT(1);
-					// claude: Free memory allocated by getChangeContributionStatistics
-                   delete[] changeContributions.at(e).at(actor);             
+					UNPROTECT(1);         
 				}
 			}
 		}
