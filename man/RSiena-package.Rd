@@ -48,7 +48,7 @@ Bug reports can be submitted at
     Package: \tab RSiena\cr
     Type: \tab Package\cr
     Version: \tab 1.4.24\cr
-    Date: \tab 2025-06-30\cr
+    Date: \tab 2025-07-04\cr
     Depends: \tab R (>= 3.5.0)\cr
     Imports: \tab Matrix, lattice, parallel, MASS, methods, xtable\cr
     Suggests: \tab network, tools, codetools, tcltk\cr

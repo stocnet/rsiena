@@ -199,7 +199,7 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.4.23.
+This version was renewed for \RS version 1.4.24.
 \end{abstract}
 
 
@@ -1165,7 +1165,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.4.23).
+  identified by a version number (e.g.\ 1.4.24).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -12231,7 +12231,7 @@ Further there are a number of mixed triadic effects.
  {\em any agreement along W leading to X}, ($X$: from $W$ any agreement)  \texttt{(fromAny)} \\[0.2em] % \texttt{(fromWAgree)}\\
  $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, I\{ w_{ih}\, w_{jh} > 0\}\,$;\\[0.2em]
  this refers to agreement of actors with respect to their $W$-choices
- (structural equivalence with respect to outgoing $W$-choices), 
+ (structural equivalence with respect to outgoing $W$-choices),
  truncated to~1;
  the contribution of the tie $i \stackrel{X}{\rightarrow} j$
  is proportional to whether there are any joint $W$ choices of others,
@@ -17339,12 +17339,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type
-\verb|R CMD check RSiena_1.4.23.tar.gz|\\
+\verb|R CMD check RSiena_1.4.24.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.4.23.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.4.24.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -18479,44 +18479,63 @@ Changes in RSiena:
 
 \fi
 
+
+\item 2025-07-04 GitHub, package version 1.4.24.
+
+Changes in RSiena:
+\begin{itemize}
+ \item Effects:
+ \begin{itemize}
+  \item Some effects available for constant dyadic covariates were by
+    accident not yet available for changing dyadic covariates.
+    Now they are. The effects in question are
+    \texttt{XWX}, \texttt{XWX1}, and \texttt{XWX2}.
+ \end{itemize}
+\end{itemize}
+
 \item 2025-05-03 GitHub, package version 1.4.23.
 
 Changes in RSiena:
 \begin{itemize}
-\item 
-\begin{itemize} Bug corrections
-  \item Repaired (hopefully) memory leak in \texttt{getTargetActorStatistics} and\\
-    \texttt{getTargetsChangeContributions} in \texttt{siena07setup.cpp}.
-  \item Repaired (hopefully) memory leak in \texttt{move} in \texttt{MLSimulation.cpp}.
-  \item Repaired memory leak  in \texttt{DoubleCovariateCatFunction}.
-\end{itemize}
-\item  Effects
-\begin{itemize}
+ \item Bug corrections
+ \begin{itemize}
+  \item Repaired (hopefully) memory leak in
+   \texttt{getTargetActorStatistics} and\\
+      \texttt{getTargetsChangeContributions} in \texttt{siena07setup.cpp}.
+  \item Repaired (hopefully) memory leak in
+      \texttt{move} in \texttt{MLSimulation.cpp}.
+  \item Repaired memory leak in \texttt{DoubleCovariateCatFunction}.
+ \end{itemize}
+ \item  Effects
+ \begin{itemize}
   \item New effects \texttt{fromAny}, \texttt{sameInXCycle4}.
   \item Effect shortName \texttt{cycle4ND} replaced by \texttt{cycle4}.
   \item Better treatment of missing covariate values in effect \texttt{sameXCycle4}.
-  \item Internal effect parameter values 3 and 4 for \texttt{sameXInPop}, 
-  \texttt{diffXInPop},
-    \texttt{sameXInPopIntn},  \texttt{sameXInActIntn}, \texttt{homXOutAct2}.
-  \item New C++ class \texttt{CatCovariateDependentNetworkEffect} 
-  (for \texttt{homXOutAct2}).
-  \item Added \texttt{(\#)} to the \texttt{effectName} of \texttt{from}, 
-  \texttt{sameXInPop}, \texttt{diffXInPop}, \texttt{sameXVInPop}, \texttt{sameXVInPop2}
-  in \texttt{allEffects.csv}.  
-\end{itemize}
-\item
-\begin{itemize} New functionality
-  \item In \sfn{print.sienaEffects(..., includeShortNames=TRUE)}, 
-  the \texttt{effectNumber} is also printed.
-\end{itemize}
-\item
+  \item Internal effect parameter values 3 and 4 for \texttt{sameXInPop},
+      \texttt{diffXInPop},
+      \texttt{sameXInPopIntn},
+      \texttt{sameXInActIntn},
+      \texttt{homXOutAct2}.
+  \item New C++ class \texttt{CatCovariateDependentNetworkEffect}
+      (for \texttt{homXOutAct2}).
+  \item Added \texttt{(\#)} to the \texttt{effectName} of \texttt{from},
+      \texttt{sameXInPop},
+      \texttt{diffXInPop},
+      \texttt{sameXVInPop},
+      \texttt{sameXVInPop2}
+      in \texttt{allEffects.csv}.
+ \end{itemize}
+ \item
+ \begin{itemize} New functionality
+  \item In \sfn{print.sienaEffects(..., includeShortNames=TRUE)},
+      the \texttt{effectNumber} is also printed.
+ \end{itemize}
+ \item
  \begin{itemize} Changes in documentation:
   \item Definition of effects \texttt{outRateLog}, \texttt{inRateLog}, and \texttt{recipRateLog}
-    corrected in the manual.
+      corrected in the manual.
+ \end{itemize}
 \end{itemize}
-
-\end{itemize}
-
 
 \item 2025-02-08 GitHub, package version 1.4.22.
 
