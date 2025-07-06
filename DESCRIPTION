@@ -26,7 +26,7 @@ Authors@R: c(person("Tom A.B.", "Snijders", role = c("aut", "ctb"), email = "tom
               person("Robert", "Hellpap", role = "ctb"),
               person("Alvaro", "Uzaheta", role = "ctb", comment=c(ORCID = "0000-0003-4367-3670")),
               person("Steffen", "Triebel", role = "ctb"))
-Maintainer: Christian Steglich <c.e.g.steglich@rug.nl>
+Maintainer: Christian Steglich <christian.steglich@liu.se>
 Depends: R (>= 3.5.0)
 Imports: Matrix, lattice, parallel, MASS, methods, xtable
 Suggests: network, tools, codetools, tcltk
