@@ -118,8 +118,8 @@ jobs:
           fail_on_unmatched_files: true
           # Specify the assets you want to upload
           files: |
-            Rsiena.tgz
-            Rsiena.tar.gz
-            Rsiena.zip
+            RSiena.tgz
+            RSiena.tar.gz
+            RSiena.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
