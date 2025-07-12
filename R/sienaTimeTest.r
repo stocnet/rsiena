@@ -845,6 +845,7 @@ plot.sienaTimeTest <- function(x, pairwise=FALSE, effects,
 					panel.abline(a=toTest[subscripts[1], "initial"],
 						reference=TRUE,
 						col="black", lwd=2, alpha=.75)
+					# require grid	
 					# grid.text(paste("p = ", toTest$effectTest[subscripts[1]]),
 					#           0.02, 0.1, just="left")
 				}, ...)
