@@ -47,7 +47,7 @@ Total of 407 iteration steps.
 > (myeff <- includeEffects(myeff, transTrip, cycle4))
   effectNumber effectName          shortName include fix   test  initialValue
 1  20          transitive triplets transTrip TRUE    FALSE FALSE          0  
-2 191          4 cycles (#)        cycle4    TRUE    FALSE FALSE          0  
+2 197          4 cycles (#)        cycle4    TRUE    FALSE FALSE          0  
   parm
 1 0   
 2 1   
@@ -59,7 +59,7 @@ Total of 407 iteration steps.
 5 4 cycles (#)                TRUE    FALSE FALSE    0.00000   1   
 > (myeff <- includeEffects(myeff, cycle4, include=FALSE))
   effectNumber effectName   shortName include fix   test  initialValue parm
-1 191          4 cycles (#) cycle4    FALSE   FALSE FALSE          0   1   
+1 197          4 cycles (#) cycle4    FALSE   FALSE FALSE          0   1   
   effectName                  include fix   test  initialValue parm
 1 basic rate parameter mynet1 TRUE    FALSE FALSE    4.80941   0   
 2 outdegree (density)         TRUE    FALSE FALSE   -0.56039   0   
@@ -144,7 +144,7 @@ Total of 588 iteration steps.
   effectNumber effectName                          shortName include fix  
 1  14          reciprocity                         recip     TRUE    FALSE
 2  77          indegree - popularity               inPop     TRUE    FALSE
-3 237          reciprocity x indegree - popularity unspInt   TRUE    TRUE 
+3 243          reciprocity x indegree - popularity unspInt   TRUE    TRUE 
   test  initialValue parm effect1 effect2
 1 FALSE          0   0     0       0     
 2 FALSE          0   0     0       0     
@@ -309,12 +309,12 @@ Total of 240 iteration steps.
 > myeff <- getEffects(mydata)
 > myeff <- setEffect(myeff, linear, initialValue=0.34699930338, name="mynet2")
   effectNumber effectName          shortName include fix   test  initialValue
-1 470          mynet2 linear shape linear    TRUE    FALSE FALSE      0.347  
+1 476          mynet2 linear shape linear    TRUE    FALSE FALSE      0.347  
   parm
 1 0   
 > myeff <- setEffect(myeff, avAlt, name="mynet2", interaction1="mynet1")
   effectNumber effectName           shortName include fix   test  initialValue
-1 541          mynet2 average alter avAlt     TRUE    FALSE FALSE          0  
+1 547          mynet2 average alter avAlt     TRUE    FALSE FALSE          0  
   parm
 1 0   
 > ##myeff$initialValue[98] <- 0.34699930338 ## siena3 starting values differ
@@ -406,7 +406,7 @@ Total of 340 iteration steps.
 1 0   
 > myeff <- setEffect(myeff, altInDist2, interaction1="myvar1", parameter=1)
   effectNumber effectName             shortName  include fix   test 
-1 107          myvar1 in-alter dist 2 altInDist2 TRUE    FALSE FALSE
+1 110          myvar1 in-alter dist 2 altInDist2 TRUE    FALSE FALSE
   initialValue parm
 1          0   1   
 > ans <- siena07(sienaModelCreate(n3=50, nsub=2, seed=1),
@@ -485,12 +485,12 @@ Type "?sienaTimeTest" for more information on this output.
 > myeff <- getEffects(mydata)
 > myeff <- setEffect(myeff, altInDist2, interaction1="myvar1", parameter=1)
   effectNumber effectName             shortName  include fix   test 
-1 106          myvar1 in-alter dist 2 altInDist2 TRUE    FALSE FALSE
+1 109          myvar1 in-alter dist 2 altInDist2 TRUE    FALSE FALSE
   initialValue parm
 1          0   1   
 > myeff <- setEffect(myeff, egoX, interaction1="myvar1")
   effectNumber effectName shortName include fix   test  initialValue parm
-1 85           myvar1 ego egoX      TRUE    FALSE FALSE          0   0   
+1 88           myvar1 ego egoX      TRUE    FALSE FALSE          0   0   
 > (ans <- siena07(sienaModelCreate(n3=50, nsub=2, seed=1),
 +                data=mydata, effects=myeff, batch=TRUE, silent=TRUE))
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
@@ -566,8 +566,8 @@ Total of 266 iteration steps.
 9 mynet2 mynet2 quadratic shape          TRUE    FALSE FALSE    0.00000   0   
 > (myeff <- includeEffects(myeff, egoX, simX, interaction1="mynet2"))
   effectNumber effectName        shortName include fix   test  initialValue
-1 254          mynet2 ego        egoX      TRUE    FALSE FALSE          0  
-2 300          mynet2 similarity simX      TRUE    FALSE FALSE          0  
+1 260          mynet2 ego        egoX      TRUE    FALSE FALSE          0  
+2 306          mynet2 similarity simX      TRUE    FALSE FALSE          0  
   parm
 1 0   
 2 0   
@@ -585,7 +585,7 @@ Total of 266 iteration steps.
 11 mynet2 mynet2 quadratic shape          TRUE    FALSE FALSE    0.00000   0   
 > (myeff <- includeEffects(myeff, avSim, name="mynet2", interaction1="mynet1"))
   effectNumber effectName                shortName include fix   test 
-1 498          mynet2 average similarity avSim     TRUE    FALSE FALSE
+1 504          mynet2 average similarity avSim     TRUE    FALSE FALSE
   initialValue parm
 1          0   0   
    name   effectName                      include fix   test  initialValue parm
@@ -784,7 +784,7 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 > (myeff <- setEffect(myeff,avExposure,type='rate',parameter=2,
 + 							name='mybeh',interaction1='mynet'))
   effectNumber effectName                            shortName  include fix  
-1 462          average exposure effect on rate mybeh avExposure TRUE    FALSE
+1 468          average exposure effect on rate mybeh avExposure TRUE    FALSE
   test  initialValue parm
 1 FALSE          0   2   
   name  effectName                            include fix   test  initialValue
@@ -832,7 +832,7 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 > myeff <- getEffects(mygroup)
 > myeff <- setEffect(myeff, simX, interaction1='cova')
   effectNumber effectName      shortName include fix   test  initialValue parm
-1 300          cova similarity simX      TRUE    FALSE FALSE          0   0   
+1 306          cova similarity simX      TRUE    FALSE FALSE          0   0   
 > (ans <- siena07(myalgorithm, data=mygroup, effects=myeff, batch=TRUE,
 +                               silent=TRUE))
 Estimates, standard errors and convergence t-ratios
@@ -883,14 +883,14 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 + 						interaction1=c("","smoke","alc"))
   effectNumber effectName                               shortName include fix  
 1 123          outdegree-trunc(2)                       outTrunc  FALSE   FALSE
-2 254          alc ego                                  egoX      FALSE   FALSE
-3 438          smoke ego                                egoX      FALSE   FALSE
-4 607          smoke ego x alc ego x outdegree-trunc(2) unspInt   TRUE    FALSE
+2 260          alc ego                                  egoX      FALSE   FALSE
+3 444          smoke ego                                egoX      FALSE   FALSE
+4 613          smoke ego x alc ego x outdegree-trunc(2) unspInt   TRUE    FALSE
   test  initialValue parm effect1 effect2 effect3
 1 FALSE          0   2      0       0       0    
 2 FALSE          0   0      0       0       0    
 3 FALSE          0   0      0       0       0    
-4 FALSE          0   0    123     438     254    
+4 FALSE          0   0    123     444     260    
 > (ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE,
 +                               silent=TRUE))
 Estimates, standard errors and convergence t-ratios
@@ -925,10 +925,10 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 > myeff <- getEffects(mydata)
 > myeff <- includeEffects(myeff, crprod, name='mynet2', interaction1='mynet1')
   effectNumber effectName     shortName include fix   test  initialValue parm
-1 704          mynet2: mynet1 crprod    TRUE    FALSE FALSE          0   0   
+1 716          mynet2: mynet1 crprod    TRUE    FALSE FALSE          0   0   
 > myeff <- setEffect(myeff, from, name='mynet1', interaction1='mynet2')
   effectNumber effectName                        shortName include fix   test 
-1 343          mynet1: from mynet2 agreement (0) from      TRUE    FALSE FALSE
+1 349          mynet1: from mynet2 agreement (0) from      TRUE    FALSE FALSE
   initialValue parm
 1          0   0   
 > (myeff <- includeGMoMStatistics(myeff, from_gmm, name='mynet1',
@@ -1038,4 +1038,4 @@ Total of 590 iteration steps.
 > 
 > proc.time()
    user  system elapsed 
-  19.71    0.29   20.17 
+  19.15    0.23   19.70 

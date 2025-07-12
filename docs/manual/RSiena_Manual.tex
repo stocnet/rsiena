@@ -199,7 +199,7 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.4.24.
+This version was renewed for \RS version 1.5.1.
 \end{abstract}
 
 
@@ -1167,7 +1167,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.4.24).
+  identified by a version number (e.g.\ 1.5.1).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -10195,17 +10195,6 @@ and
  $s^{\rm net}_{i\vit}(x) = x_{i+}\, x_{+i}$;\\
  endowment effect only likelihood-based;
 
- \item {\em in-degree related activity ego effect} \texttt{(inAct\_ego)},
- 	 defined as the elementary effect version of the  half-centered  cross-product
- of the actor's in- and out-degrees,\\
- $ f^{\rm net,\, el}_{i\vit}(x) = \big(  x_{+i} - \bar x_{+.}\big)$\ ,\\
- where\\
- $ \bar x_{+.} \,=\,  \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij} \ $ ;
- for internal effect parameter $p=2$, it is defined by\\
- $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{   x_{+i}} - \sqrt{\bar x_{+.}} $ \ ; \\
- since this is an elementary effect, it can be used in interactions
- and in endowment and creation functions;
-
  \item {\em in-degree related activity effect (centered)} \texttt{(inAct.c)},
  defined by the sum of
  the cross-product of the actor's out- and centered in-degrees,\\
@@ -10227,16 +10216,6 @@ and
  $s^{\rm net}_{i\vit}(x) = x^2_{i+}$;\\
  endowment effect only likelihood-based;
 
- \item {\em out-degree related activity ego effect} \texttt{(outAct\_ego)},
- 	 defined as the elementary effect version of the half-centered
- squared out-degree of the actor,\\
- $ f^{\rm net,\, el}_{i\vit}(x)  =  \big(  x_{i+} - \bar x_{.+}\big)$ ,\\
- where\\
- $ \bar x_{.+} \,=\,  \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij} \ ;  $ \\
- for internal effect parameter $p=2$, it is defined by\\
- $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{  x_{i+}} -  \sqrt{\bar x_{.+}} $ \ ; \\
- since this is an elementary effect, it can be used in interactions
- and in endowment and creation functions;
 
  \item {\em out-degree related activity effect (centered)} \texttt{(outAct.c)},
  defined by the out-degree times the centered out-degree of the actor,\\
@@ -10248,6 +10227,46 @@ and
  $s^{\rm net}_{i\vit}(x) = x^{1.5}_{i+} = x_{i+}\,\sqrt{x_{i+}}$ \\
  endowment effect only likelihood-based;
 
+
+ \item[{\hspace*{-1ex}$\bigodot$}] 
+The following four effects are meant mainly for interactions.
+Recall that for interaction effects, the internal effect parameters
+should match; see Section~\ref{intint}.
+They are elementary effects (see Section~\ref {S_elementary}), 
+which means they can be used in interactions
+ and in endowment and creation functions.
+
+
+ \item {\em in-degree related activity ego effect} \texttt{(inAct\_ego)},
+ 	 defined as the elementary effect version of the  half-centered  cross-product
+ of the actor's in- and out-degrees,\\
+ $ f^{\rm net,\, el}_{i\vit}(x) = \big(  x_{+i} - \bar x_{+.}\big)$\ ,\\
+ where\\
+ $ \bar x_{+.} \,=\,  \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij} \ $ ;
+ for internal effect parameter $p=2$, it is defined by\\
+ $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{   x_{+i}} - \sqrt{\bar x_{+.}} $ \ ; \\
+
+ \item {\em out-degree related activity ego effect} \texttt{(outAct\_ego)},
+ 	 defined as the elementary effect version of the half-centered
+ squared out-degree of the actor,\\
+ $ f^{\rm net,\, el}_{i\vit}(x)  =  \big(  x_{i+} - \bar x_{.+}\big)$ ,\\
+ where\\
+ $ \bar x_{.+} \,=\,  \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij} \ ;  $ \\
+ for internal effect parameter $p=2$, it is defined by\\
+ $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{  x_{i+}} -  \sqrt{\bar x_{.+}} $ \ ; \\ 
+ 
+ \item {\em 1 divided by in-degree activity effect} \texttt{(divIn\_ego)},
+ the elementary effect defined by 1 divided by the actor's in-degree ,\\
+ $ f^{\rm net,\, el}_{i\vit}(x)  =  1/ x_{+i}\,$ ,\\
+ where $1/0$ is computed as 0;\\
+  for internal effect parameter $p=2$ the square root is taken;  
+
+ \item {\em 1 divided by out-degree activity effect} \texttt{(divOut\_ego)},
+ the elementary effect defined by 1 divided by the actor's out-degree ,\\
+ $ f^{\rm net,\, el}_{i\vit}(x)  =  1/ x_{i+}\,$ ,\\
+ where $1/0$ is computed as 0;\\
+ for internal effect parameter $p=2$ the square root is taken;
+ 
  \item {\em reciprocal degree-related activity effect} \texttt{(reciAct)}
  defined by the degree of $i$ multiplied by $i$'s reciprocal degree,\\
  $s^{\rm net}_{i\vit}(x) =   x_{i+}\, x^{(r)}_{i} $; \\
@@ -16798,7 +16817,11 @@ measure of `fit'.
 The following measures that have something of the same purpose
 are available in \RS through function  \sfn{sienaRI}.
 
-Some further material is at \url{https://www.stats.ox.ac.uk/~snijders/siena/EffectSizes_s.pdf}.
+Some further material is at \\
+\url{https://www.stats.ox.ac.uk/~snijders/siena/EffectSizes_s.pdf}.
+
+There is a script at \\
+\url{https://www.stats.ox.ac.uk/~snijders/siena/vdB_effsize.R}.
 
 \subsubsection{Relative importance of effects}
 
@@ -17338,12 +17361,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type
-\verb|R CMD check RSiena_1.4.24.tar.gz|\\
+\verb|R CMD check RSiena_1.5.1.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.4.24.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.5.1.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -18478,8 +18501,27 @@ Changes in RSiena:
 
 \fi
 
+\item 2025-07-12 GitHub, package version 1.5.1.
 
-\item 2025-07-04 GitHub, package version 1.4.24.
+Changes in RSiena:
+\begin{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+   \item \sfn{sienaRI} reinstated.
+  \item Option \texttt{prML=2} for maximum likelihood estimation
+    using the \texttt{move} proposal step reinstated (\sfn{sienaAlgorithmCreate}).
+    \end{itemize}
+\item Effects:
+   \begin{itemize}
+   \item New effects \texttt{divOut\_ego}, \texttt{divIn\_ego}.
+    \end{itemize}
+\end{itemize}
+
+\item 2025-07-07 CRAN, New version 1.5.0.
+
+New maintainer: Christian Steglich.
+
+\item 2025-07-05 GitHub, package version 1.4.25.
 
 Changes in RSiena:
 \begin{itemize}
@@ -18489,10 +18531,12 @@ Changes in RSiena:
     accident not yet available for changing dyadic covariates.
     Now they are. The effects in question are
     \texttt{XWX}, \texttt{XWX1}, and \texttt{XWX2}.
+ \item Coding:
+  \item Memory leaks closed.
  \end{itemize}
 \end{itemize}
 
-\item 2025-05-03 GitHub, package version 1.4.24.
+\item 2025-05-03 GitHub, package version 1.4.23.
 
 Changes in RSiena:
 \begin{itemize}
