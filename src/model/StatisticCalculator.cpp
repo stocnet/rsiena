@@ -160,13 +160,13 @@ StatisticCalculator::~StatisticCalculator()
 	for_each_map_value(this->lsettingDistances, &clear_map_value_array_pointers);
 	this->lsettingDistances.clear();
 
-	// this->lpPredictorState->deleteValues(); // now called by the State dtor
-	delete this->lpPredictorState;
-	this->lpPredictorState = 0;
-
 	// this->lpStateLessMissingsEtc->deleteValues(); // now called by the State dtor
 	delete this->lpStateLessMissingsEtc;
 	this->lpStateLessMissingsEtc = 0;
+	
+	// this->lpPredictorState->deleteValues(); // now called by the State dtor
+	delete this->lpPredictorState;
+	this->lpPredictorState = 0;
 
 	for_each_map_value(this->lstaticChangeContributions,
 			&clear_vector_of_array_pointers);
