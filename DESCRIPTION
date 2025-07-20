@@ -29,7 +29,12 @@ Authors@R: c(person("Tom A.B.", "Snijders", role = c("cre", "aut"), email = "tom
 Maintainer: Tom A.B. Snijders <tom.snijders@nuffield.ox.ac.uk>
 Depends: R (>= 3.5.0)
 Imports: Matrix, lattice, parallel, MASS, methods, xtable
-Suggests: network, tools, codetools, tcltk
+Suggests: 
+    network,
+    tools,
+    codetools,
+    tcltk,
+    testthat (>= 3.0.0)
 SystemRequirements: GNU make
 Description: The main purpose of this package is to perform simulation-based
    estimation of stochastic actor-oriented models for longitudinal network
@@ -46,3 +51,4 @@ NeedsCompilation: yes
 BuildResaveData: no
 URL: https://www.stats.ox.ac.uk/~snijders/siena/
 BugReports: https://github.com/stocnet/rsiena/issues
+Config/testthat/edition: 3
