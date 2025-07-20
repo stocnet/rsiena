@@ -199,7 +199,7 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.4.23.
+This version was renewed for \RS version 1.5.1.
 \end{abstract}
 
 
@@ -285,7 +285,7 @@ information:
 
 \RS was originally programmed by Ruth Ripley and Krists Boitmanis,
 in collaboration with Tom Snijders.
-Since May 2012 the maintainer is Tom Snijders.
+Starting in May 2012, maintainer of the software was Tom Snijders.
 Major contributions were made by Josh Lospinoso, Charlotte Greenan,
 Michael Schweinberger,
 Felix Sch\"{o}nenberger, Johan Koskinen, Mark Ortmann, Nynke Niezink,
@@ -297,6 +297,8 @@ Robert Hellpap, James Hollway, and Steffen Triebel.
 Currently, \RS is maintained by a research group
 at the University of Groningen, seconded by researchers in Z\"{u}rich,
 Stockholm, Geneva, and elsewhere.
+Since July 2025, Christian Steglich is responsible for package
+maintenance on CRAN.
 
 In addition to the `official' \R distribution of \RS
 and the \sfn{GitHub} development version, there is
@@ -1165,7 +1167,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.4.23).
+  identified by a version number (e.g.\ 1.5.1).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -2870,16 +2872,22 @@ The basic list of these and other effects is as follows.
       transitive triplets or transitive ties effect, may be
       interpreted as a tendency toward local hierarchy.
       The three-cycles effect also contributes to
-      network closure.\\
+      network closure.
+      \smallskip
+
+      \noindent
+      \textbf{However,}
       \citet{Block2015} has argued convincingly that instead of the
       three-cycles effect, it is often advisable to use the
       transitive reciprocated triplets effect.\\
-      In a non-directed network, the three-cycles effect is identical
-      to the transitive triplets effect.
-
       For models where the gwesp effect is used instead of the
       transitive ties effect, the interaction gwesp$\times$reciprocity
-      can fulfill the role of the three-cycles effect.
+      can fulfill the role of the transitive reciprocated triplets effect.
+      \smallskip
+
+      \noindent
+      In a non-directed network, the three-cycles effect is identical
+      to the transitive triplets effect.
       \end{minipage}
 \hfill
 \begin{minipage}[t]{.2\textwidth}
@@ -5441,7 +5449,7 @@ this may have several reasons.
       case of deviant in-degrees.
 
       Sometimes transitivity can better be modeled by the GWESP effects
-      (search for this term in the manual) than by transitive triplers.
+      (search for this term in the manual) than by transitive triplets.
       This may help with convergence.
 
       For modeling large networks, it is important to represent
@@ -7277,7 +7285,8 @@ The function \textsf{setEffect} is available to do this.
 For example, a score test for the evaluation effect of transitive ties
 in a network can be requested as follows.
 \begin{verbatim}
-myeff <- setEffect(myeff, transTies, fix = TRUE, test = TRUE, initialValue = 0.0)
+myeff <- setEffect(myeff, transTies, fix = TRUE, test = TRUE,
+                   initialValue = 0.0)
 \end{verbatim}
 
 The score-type test then
@@ -7297,7 +7306,7 @@ Note that while the  \sfn{summary} of this object and the results
 in the output file give the score tests for the set of \underline{all}
 fixed \& tested parameters, and for \underline{each} of these parameters
 separately, the function \sfn{score.Test} can give the combined test
-for \underline{any subvector}.
+for \underline{any set of fixed \& tested parameters}.
 
 It should be noted that using the \sfn{prevAns} option in \textsf{siena07}
 overrides the initial values in the effects object,
@@ -7317,7 +7326,8 @@ reasonable estimate was found in \sfn{sienaFit} object \texttt{myans0},
 and the user wishes to use this as starting values.
 \begin{verbatim}
 myeff <- updateTheta(myeff, myans0)
-myeff <- setEffect(myeff, transTies, fix = TRUE, test = TRUE, initialValue = 0)
+myeff <- setEffect(myeff, transTies, fix = TRUE, test = TRUE,
+                   initialValue = 0)
 myans1 <- siena07(estimationSettings, data = mydata, effects = myeff)
 summary(myans1)
 \end{verbatim}
@@ -7325,8 +7335,8 @@ summary(myans1)
 
 The one-step estimates are given in the file \texttt{pname.txt},
 mentioned in Section~\ref{S_output}.
-These are `quick and easy' estimates that are not totally
-reliable, but that can be used as approximations of the unrestricted estimates
+These are `quick and easy' estimates which are not totally
+reliable, but which can be used as approximations of the unrestricted estimates
 (that is, the estimates that would be obtained if the model were estimated
 once again, but without restricting the parameter by \texttt{fix = TRUE}).
 They are explained mathematically in \citet{Schweinberger12}.
@@ -7399,7 +7409,7 @@ should be included into the model and estimated as the other
 parameters.
 
 The one-sided test statistic, which can be regarded as normal variate, equals {\tt 1.9996}
-indicating that the value of the transitivity parameter is positive.
+indicating that the value of the reciprocity parameter is positive.
 
 In this example, the one-step estimate of reciprocity is {\tt 1.2567},
 suggesting that this parameter is positive, which agrees with the one-sided test.
@@ -8381,7 +8391,7 @@ It combines estimates for a common model
    and according to a Fisher-type combination of one-sided $p$-values.
 
 The function  \textsf{siena08} takes as input the \textsf{sienaFit}
-objects produced by separate runs of  \textsf{siena08}.
+objects produced by separate runs of  \textsf{siena07}.
 These \textsf{sienaFit} objects must have exactly the same model
 specification and the same names of all variables; but it is allowed
 that there are differences with respect to parameters being fixed
@@ -9570,7 +9580,7 @@ and for maintaining existing ties.
  \texttt{(transTrip)},
    defined by the number of transitive
  patterns in $i$'s relations (ordered pairs of actors
- $(j,h)$ to both of whom $i$ is tied, while also $j$ is tied to $h$),\\
+ $(j,h)$ to both of whom $i$ is tied, while also $h$ is tied to $j$),\\
   $s^{\rm net}_{i\vit}(x) =  \sum_{j, h} x_{ij}\, x_{ih}\, x_{hj}\,$;\\
  (there was an error here until version 3.313,
  which amounted to combining the transitive triplets and transitive
@@ -10185,17 +10195,6 @@ and
  $s^{\rm net}_{i\vit}(x) = x_{i+}\, x_{+i}$;\\
  endowment effect only likelihood-based;
 
- \item {\em in-degree related activity ego effect} \texttt{(inAct\_ego)},
- 	 defined as the elementary effect version of the  half-centered  cross-product
- of the actor's in- and out-degrees,\\
- $ f^{\rm net,\, el}_{i\vit}(x) = \big(  x_{+i} - \bar x_{+.}\big)$\ ,\\
- where\\
- $ \bar x_{+.} \,=\,  \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij} \ $ ;
- for internal effect parameter $p=2$, it is defined by\\
- $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{   x_{+i}} - \sqrt{\bar x_{+.}} $ \ ; \\
- since this is an elementary effect, it can be used in interactions
- and in endowment and creation functions;
-
  \item {\em in-degree related activity effect (centered)} \texttt{(inAct.c)},
  defined by the sum of
  the cross-product of the actor's out- and centered in-degrees,\\
@@ -10217,16 +10216,6 @@ and
  $s^{\rm net}_{i\vit}(x) = x^2_{i+}$;\\
  endowment effect only likelihood-based;
 
- \item {\em out-degree related activity ego effect} \texttt{(outAct\_ego)},
- 	 defined as the elementary effect version of the half-centered
- squared out-degree of the actor,\\
- $ f^{\rm net,\, el}_{i\vit}(x)  =  \big(  x_{i+} - \bar x_{.+}\big)$ ,\\
- where\\
- $ \bar x_{.+} \,=\,  \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij} \ ;  $ \\
- for internal effect parameter $p=2$, it is defined by\\
- $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{  x_{i+}} -  \sqrt{\bar x_{.+}} $ \ ; \\
- since this is an elementary effect, it can be used in interactions
- and in endowment and creation functions;
 
  \item {\em out-degree related activity effect (centered)} \texttt{(outAct.c)},
  defined by the out-degree times the centered out-degree of the actor,\\
@@ -10238,6 +10227,46 @@ and
  $s^{\rm net}_{i\vit}(x) = x^{1.5}_{i+} = x_{i+}\,\sqrt{x_{i+}}$ \\
  endowment effect only likelihood-based;
 
+
+ \item[{\hspace*{-1ex}$\bigodot$}] 
+The following four effects are meant mainly for interactions.
+Recall that for interaction effects, the internal effect parameters
+should match; see Section~\ref{intint}.
+They are elementary effects (see Section~\ref {S_elementary}), 
+which means they can be used in interactions
+ and in endowment and creation functions.
+
+
+ \item {\em in-degree related activity ego effect} \texttt{(inAct\_ego)},
+ 	 defined as the elementary effect version of the  half-centered  cross-product
+ of the actor's in- and out-degrees,\\
+ $ f^{\rm net,\, el}_{i\vit}(x) = \big(  x_{+i} - \bar x_{+.}\big)$\ ,\\
+ where\\
+ $ \bar x_{+.} \,=\,  \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij} \ $ ;
+ for internal effect parameter $p=2$, it is defined by\\
+ $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{   x_{+i}} - \sqrt{\bar x_{+.}} $ \ ; \\
+
+ \item {\em out-degree related activity ego effect} \texttt{(outAct\_ego)},
+ 	 defined as the elementary effect version of the half-centered
+ squared out-degree of the actor,\\
+ $ f^{\rm net,\, el}_{i\vit}(x)  =  \big(  x_{i+} - \bar x_{.+}\big)$ ,\\
+ where\\
+ $ \bar x_{.+} \,=\,  \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij} \ ;  $ \\
+ for internal effect parameter $p=2$, it is defined by\\
+ $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{  x_{i+}} -  \sqrt{\bar x_{.+}} $ \ ; \\ 
+ 
+ \item {\em 1 divided by in-degree activity effect} \texttt{(divIn\_ego)},
+ the elementary effect defined by 1 divided by the actor's in-degree ,\\
+ $ f^{\rm net,\, el}_{i\vit}(x)  =  1/ x_{+i}\,$ ,\\
+ where $1/0$ is computed as 0;\\
+  for internal effect parameter $p=2$ the square root is taken;  
+
+ \item {\em 1 divided by out-degree activity effect} \texttt{(divOut\_ego)},
+ the elementary effect defined by 1 divided by the actor's out-degree ,\\
+ $ f^{\rm net,\, el}_{i\vit}(x)  =  1/ x_{i+}\,$ ,\\
+ where $1/0$ is computed as 0;\\
+ for internal effect parameter $p=2$ the square root is taken;
+ 
  \item {\em reciprocal degree-related activity effect} \texttt{(reciAct)}
  defined by the degree of $i$ multiplied by $i$'s reciprocal degree,\\
  $s^{\rm net}_{i\vit}(x) =   x_{i+}\, x^{(r)}_{i} $; \\
@@ -11113,14 +11142,14 @@ defined by \\
  which implies that it must be non-centered.
 
  \item {\em indegree popularity from same covariate}
-\texttt{(sameXInPop)} defined by the
- number of incoming ties received by those to whom $i$ is tied
- and sent by others who have the same covariate value as $i$,\\
+\texttt{(sameXInPop)} defined by the sum over $j$ of outgoing ties $i \rightarrow j$ weighted by the
+number of actors with the same covariate value as $i$ who also have a tie to $j$:\\
  $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sum_h x_{hj}\, I\{v_i = v_h \} $;\\
  for internal effect parameter $p=2$, the square root of the sum over $h$ is taken;\\
  for internal effect parameter $p=3$, available only for
- covariates with integer values from 0 to 20, it is defined by\\
- $\displaystyle s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \frac{\sum_h x_{hj}\, I\{v_i = v_h \}}
+ covariates with integer values from 0 to 20, the weights are the
+ proportion of actors with the same covariate value as $i$ who also have a tie to $j$:\\
+ $\displaystyle s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \, \frac{\sum_h x_{hj}\, I\{v_i = v_h \}}
                 {\sum_h I\{v_i = v_h \}} $;\\
  for internal effect parameter $p=4$, the square root of the ratio of sums is taken;
 
@@ -11188,8 +11217,9 @@ defined by \\
 
  The effect parameter $p$ can take the values 1, 2, 3 and 4.
  The formula given above is for $p=1$.\\
- For $p=3$, the effect is defined by the \underline{proportion} of ties from same-$V$ actors
- to same-$U$ nodes, as given by the formula \\[0.5em]
+ For $p=3$, the effect is defined by the
+  sum of $i$'s outgoing ties, where the tie to $j$ is weighted by
+the fraction of alters with the same covariate value as $j$ who receive a tie from $i$: \\[0.5em]
  $\displaystyle s^{\rm net}_{i\vit}(x) =   \sum_j x_{ij}\, \frac{ \sum_{h} x_{ih}\, I\{v_h = v_j > 0 \}}
             { \sum_{h} I\{v_h = v_j > 0 \}} \ . \hfill (p=3) $
 
@@ -11201,6 +11231,7 @@ defined by \\
             { \sum_{h} I\{v_h = v_j > 0 \}}}  \ . \hfill (p=4)$\\[0.3em]
 
 The default is $p=3$.
+Covariate values equal to~0 are excluded as a way of dealing with missing covariate data.
 
 
  \item {\em outdegree activity weighted by alter's covariate}
@@ -12231,7 +12262,7 @@ Further there are a number of mixed triadic effects.
  {\em any agreement along W leading to X}, ($X$: from $W$ any agreement)  \texttt{(fromAny)} \\[0.2em] % \texttt{(fromWAgree)}\\
  $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, I\{ w_{ih}\, w_{jh} > 0\}\,$;\\[0.2em]
  this refers to agreement of actors with respect to their $W$-choices
- (structural equivalence with respect to outgoing $W$-choices), 
+ (structural equivalence with respect to outgoing $W$-choices),
  truncated to~1;
  the contribution of the tie $i \stackrel{X}{\rightarrow} j$
  is proportional to whether there are any joint $W$ choices of others,
@@ -16786,7 +16817,11 @@ measure of `fit'.
 The following measures that have something of the same purpose
 are available in \RS through function  \sfn{sienaRI}.
 
-Some further material is at \url{https://www.stats.ox.ac.uk/~snijders/siena/EffectSizes_s.pdf}.
+Some further material is at \\
+\url{https://www.stats.ox.ac.uk/~snijders/siena/EffectSizes_s.pdf}.
+
+There is a script at \\
+\url{https://www.stats.ox.ac.uk/~snijders/siena/vdB_effsize.R}.
 
 \subsubsection{Relative importance of effects}
 
@@ -17267,19 +17302,6 @@ to get the source code of the whole package.
 This is available from GitHub at
 \url{https://github.com/stocnet/rsiena/}.
 
-\iffalse
-
-In the file structure for \texttt{RSienaTest} there is a directory
-\texttt{doc} which contains a lot of programmers' documentation.
-These are in the form of \LaTeX \ files, which can be compiled
-to produce .pdf files.
-The file \texttt{Siena\_Algorithms.tex} contains a lot of details
-about algorithms used.
-For code developers, important files are
-\texttt{HowToCommit.tex} and \texttt{RSienaDeveloper.tex}.
-The latter file will guide you to the further documentation.
-\fi
-
 A lot of programmers' documentation is also in the file
 \href{http://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf}{\texttt{Siena\_algorithms.pdf}}
 which can be downloaded from the
@@ -17339,12 +17361,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type
-\verb|R CMD check RSiena_1.4.23.tar.gz|\\
+\verb|R CMD check RSiena_1.5.1.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.4.23.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.5.1.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -18479,44 +18501,84 @@ Changes in RSiena:
 
 \fi
 
+\item 2025-07-12 GitHub, package version 1.5.1.
+
+Changes in RSiena:
+\begin{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+   \item \sfn{sienaRI} reinstated.
+  \item Option \texttt{prML=2} for maximum likelihood estimation
+    using the \texttt{move} proposal step reinstated (\sfn{sienaAlgorithmCreate}).
+    \end{itemize}
+\item Effects:
+   \begin{itemize}
+   \item New effects \texttt{divOut\_ego}, \texttt{divIn\_ego}.
+    \end{itemize}
+\end{itemize}
+
+\item 2025-07-07 CRAN, New version 1.5.0.
+
+New maintainer: Christian Steglich.
+
+\item 2025-07-05 GitHub, package version 1.4.25.
+
+Changes in RSiena:
+\begin{itemize}
+ \item Effects:
+ \begin{itemize}
+  \item Some effects available for constant dyadic covariates were by
+    accident not yet available for changing dyadic covariates.
+    Now they are. The effects in question are
+    \texttt{XWX}, \texttt{XWX1}, and \texttt{XWX2}.
+ \item Coding:
+  \item Memory leaks closed.
+ \end{itemize}
+\end{itemize}
+
 \item 2025-05-03 GitHub, package version 1.4.23.
 
 Changes in RSiena:
 \begin{itemize}
-\item 
-\begin{itemize} Bug corrections
-  \item Repaired (hopefully) memory leak in \texttt{getTargetActorStatistics} and\\
-    \texttt{getTargetsChangeContributions} in \texttt{siena07setup.cpp}.
-  \item Repaired (hopefully) memory leak in \texttt{move} in \texttt{MLSimulation.cpp}.
-  \item Repaired memory leak  in \texttt{DoubleCovariateCatFunction}.
-\end{itemize}
-\item  Effects
-\begin{itemize}
+ \item Bug corrections
+ \begin{itemize}
+  \item Repaired (hopefully) memory leak in
+   \texttt{getTargetActorStatistics} and\\
+      \texttt{getTargetsChangeContributions} in \texttt{siena07setup.cpp}.
+  \item Repaired (hopefully) memory leak in
+      \texttt{move} in \texttt{MLSimulation.cpp}.
+  \item Repaired memory leak in \texttt{DoubleCovariateCatFunction}.
+ \end{itemize}
+ \item  Effects
+ \begin{itemize}
   \item New effects \texttt{fromAny}, \texttt{sameInXCycle4}.
   \item Effect shortName \texttt{cycle4ND} replaced by \texttt{cycle4}.
   \item Better treatment of missing covariate values in effect \texttt{sameXCycle4}.
-  \item Internal effect parameter values 3 and 4 for \texttt{sameXInPop}, 
-  \texttt{diffXInPop},
-    \texttt{sameXInPopIntn},  \texttt{sameXInActIntn}, \texttt{homXOutAct2}.
-  \item New C++ class \texttt{CatCovariateDependentNetworkEffect} 
-  (for \texttt{homXOutAct2}).
-  \item Added \texttt{(\#)} to the \texttt{effectName} of \texttt{from}, 
-  \texttt{sameXInPop}, \texttt{diffXInPop}, \texttt{sameXVInPop}, \texttt{sameXVInPop2}
-  in \texttt{allEffects.csv}.  
-\end{itemize}
-\item
-\begin{itemize} New functionality
-  \item In \sfn{print.sienaEffects(..., includeShortNames=TRUE)}, 
-  the \texttt{effectNumber} is also printed.
-\end{itemize}
-\item
+  \item Internal effect parameter values 3 and 4 for \texttt{sameXInPop},
+      \texttt{diffXInPop},
+      \texttt{sameXInPopIntn},
+      \texttt{sameXInActIntn},
+      \texttt{homXOutAct2}.
+  \item New C++ class \texttt{CatCovariateDependentNetworkEffect}
+      (for \texttt{homXOutAct2}).
+  \item Added \texttt{(\#)} to the \texttt{effectName} of \texttt{from},
+      \texttt{sameXInPop},
+      \texttt{diffXInPop},
+      \texttt{sameXVInPop},
+      \texttt{sameXVInPop2}
+      in \texttt{allEffects.csv}.
+ \end{itemize}
+ \item
+ \begin{itemize} New functionality
+  \item In \sfn{print.sienaEffects(..., includeShortNames=TRUE)},
+      the \texttt{effectNumber} is also printed.
+ \end{itemize}
+ \item
  \begin{itemize} Changes in documentation:
   \item Definition of effects \texttt{outRateLog}, \texttt{inRateLog}, and \texttt{recipRateLog}
-    corrected in the manual.
+      corrected in the manual.
+ \end{itemize}
 \end{itemize}
-
-\end{itemize}
-
 
 \item 2025-02-08 GitHub, package version 1.4.22.
 

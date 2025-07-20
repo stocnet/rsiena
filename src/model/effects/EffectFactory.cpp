@@ -498,6 +498,32 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new DifferenceFunction(pFirstFunction, pSecondFunction));
 	}
+	else if (effectName == "divOut_ego")
+	{
+		AlterFunction * pFunction =
+			new EgoOutDegreeFunction(pEffectInfo->variableName());
+
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pFunction = new IntSqrtFunction(pFunction);
+		}
+
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new ReciprocalFunction(pFunction));
+	}
+	else if (effectName == "divIn_ego")
+	{
+		AlterFunction * pFunction =
+			new EgoInDegreeFunction(pEffectInfo->variableName());
+
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pFunction = new IntSqrtFunction(pFunction);
+		}
+
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new ReciprocalFunction(pFunction));
+	}
 	else if (effectName == "inPop_dya")
 	{
 		string networkName = pEffectInfo->variableName();

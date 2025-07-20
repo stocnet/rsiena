@@ -1,3 +1,55 @@
+2025-07-12
+
+# RSiena 1.5.1
+
+## Changes in RSiena:
+### Functionality:
+  * `sienaRI` reinstated.
+  * Option `prML=2` for maximum likelihood estimation 
+    using the `move` proposal step reinstated (`sienaAlgorithmCreate`).
+### Effects
+  * New effects `divOut_ego`, `divIn_ego`. 
+### Coding
+  * Imported functions from packages `Matrix`, `lattice`, `parallel`, `MASS`, 
+    and `xtable` mentioned specifically in the `Namespace`
+    instead of importing these entire packages.
+
+
+# RSiena 1.5.0
+
+2025-07-05
+
+## New CRAN version
+
+## Changes in RSiena:
+### Maintainer
+  * Christian Steglich now is maintainer.
+
+# RSiena 1.4.25
+
+2025-07-05
+
+## Changes in RSiena:
+### Coding
+  * Undid other changes in version 1.4.23 to
+    `getTargetsChangeContributions` in `siena07setup.cpp`.
+
+# RSiena 1.4.24
+
+2025-07-04
+
+## Changes in RSiena:
+### Effects
+  * Error for creating effects in effects group `dyadSecondBipartiteObjective` 
+    was corrected in file `effects.r`, 
+    so they now are included also for changing dyadic covariates.
+    This affected effects `XWX`, `XWX1`, and `XWX2`.
+### Coding
+  * Function `Chains:printConsecutiveCancelingPairs` deleted from `model\ml`,
+    because it was not used and led to a protection error.
+  * Undid changes in version 1.4.23 to `getTargetActorStatistics` and 
+    `getTargetsChangeContributions` in `siena07setup.cpp`.
+
 # RSiena 1.4.23
 
 2025-05-03
@@ -245,8 +297,9 @@
 
 # RSiena 1.4.7
 
-2024-02-20
+2024-02-21
 
+## New CRAN version
 
 ## Changes in RSiena:
 

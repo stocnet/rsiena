@@ -9,7 +9,7 @@ export(
 	includeEffects, includeInteraction, includeGMoMStatistics, 
    effectsDocumentation, sienaDataConstraint, print.xtable.sienaFit, 
    siena08, iwlsm, sienaTimeTest,
-	includeTimeDummy, sienaGOF, descriptives.sienaGOF, 
+	includeTimeDummy, sienaGOF, descriptives.sienaGOF, sienaRI,
 	sparseMatrixExtraction, networkExtraction, behaviorExtraction,
 	OutdegreeDistribution, IndegreeDistribution, BehaviorDistribution,
 	TriadCensus, mixedTriadCensus, dyadicCov, egoAlterCombi,
@@ -18,7 +18,15 @@ export(
    influenceTable, selectionTable
 )
 
-import(Matrix, lattice, parallel, MASS)
+importFrom("Matrix", "Matrix", "sparseMatrix", "spMatrix", "drop0", 
+           "rankMatrix", "mat2triplet")
+importFrom("lattice", "xyplot", "trellis.par.get", "trellis.par.set", "bwplot",
+           "panel.violin", "panel.bwplot", "panel.xyplot", "panel.text",
+           "panel.abline") 
+importFrom("parallel", "clusterCall", "parLapply", "parRapply",
+           "clusterSetRNGStream", "makeCluster", "stopCluster")
+importFrom("xtable", "xtable", "print.xtable")
+importFrom("MASS", "cov.rob", "ginv")
 importFrom("grDevices", "rgb", "xy.coords")
 importFrom("graphics", "axis", "barplot", "layout", "lines",
            "mtext", "pairs", "panel.smooth", "par", "pie", "plot",
@@ -72,6 +80,9 @@ S3method(edit, sienaEffects)
 S3method(summary, sienaGOF)
 S3method(print, sienaGOF)
 S3method(plot, sienaGOF)
+S3method(summary, sienaRI)
+S3method(print, sienaRI)
+S3method(plot, sienaRI)
 S3method(print, xtable.sienaFit)
 S3method(print, chains.data.frame)
 S3method(print, influenceTable)
