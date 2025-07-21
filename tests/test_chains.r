@@ -104,7 +104,3 @@ RIDynamics6
 
 RI6 <- sienaRI(mydata3, ans=ans4)
 plot(RIDynamics6, staticRI=RI6[[1]])
-
-
-RIDynamics7 <- sienaRIDynamics(mydata3, ans=ans4, depvar="mynet2")
-RIDynamics7
