@@ -34,3 +34,6 @@ NEWSnew.md
 # Makevars
 Makevars
 Makevars.win
+
+# Mac OS
+.DS_Store
