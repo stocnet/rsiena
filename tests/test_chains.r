@@ -1,5 +1,7 @@
+# probably should devtools::skip_on_cran()
 # for interactive testing use
 # devtools::load_all()
+library(RSiena)
 
 # Run simple test model ----
 
@@ -26,15 +28,15 @@ head(ans$changeContributions[[1]][[1]][[1]])
 
 mycontrols$nsub <- 0
 ans2 <- siena07(
-  mycontrols, 
-  data=mydata, 
-  effects=mymodel, 
-  batch=TRUE, 
-  prevAns = ans, 
+  mycontrols,
+  data=mydata,
+  effects=mymodel,
+  batch=TRUE,
+  prevAns = ans,
   returnChangeContributions = TRUE)
 
 length(ans2$changeContributions)
-head(an2$changeContributions[[1]][[1]][[1]])
+head(ans2$changeContributions[[1]][[1]][[1]])
 
 # Test sienaRIDynamics ----
 
@@ -64,7 +66,7 @@ plot(RIDynamics2)
 ### Don't use ans but previously estimated coefficients
 
 RIDynamics3 <- sienaRIDynamics(data=mydata2, theta=c(ans2$rate,ans2$theta),
-             algorithm=myalgorithm2, effects=mymoldel2, intervalsPerPeriod=10)
+             algorithm=mycontrols2, effects=mymoldel2, intervalsPerPeriod=10)
 RIDynamics3
 plot(RIDynamics3)
 # if not exported to namespace use plot.sienaRIDynamics(RIDynamics3)

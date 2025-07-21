@@ -10,7 +10,7 @@ export(
    effectsDocumentation, sienaDataConstraint, print.xtable.sienaFit, 
    siena08, iwlsm, sienaTimeTest,
 	includeTimeDummy, sienaGOF, descriptives.sienaGOF, sienaRI,
-	sparseMatrixExtraction, networkExtraction, behaviorExtraction,
+   sienaRIDynamics, sparseMatrixExtraction, networkExtraction, behaviorExtraction,
 	OutdegreeDistribution, IndegreeDistribution, BehaviorDistribution,
 	TriadCensus, mixedTriadCensus, dyadicCov, egoAlterCombi,
 	siena.table, xtable, score.Test, Wald.RSiena, Multipar.RSiena, 
