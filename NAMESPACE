@@ -10,7 +10,7 @@ export(
    effectsDocumentation, sienaDataConstraint, print.xtable.sienaFit, 
    siena08, iwlsm, sienaTimeTest,
 	includeTimeDummy, sienaGOF, descriptives.sienaGOF, sienaRI,
-	sparseMatrixExtraction, networkExtraction, behaviorExtraction,
+   sienaRIDynamics, sparseMatrixExtraction, networkExtraction, behaviorExtraction,
 	OutdegreeDistribution, IndegreeDistribution, BehaviorDistribution,
 	TriadCensus, mixedTriadCensus, dyadicCov, egoAlterCombi,
 	siena.table, xtable, score.Test, Wald.RSiena, Multipar.RSiena, 
@@ -83,6 +83,9 @@ S3method(plot, sienaGOF)
 S3method(summary, sienaRI)
 S3method(print, sienaRI)
 S3method(plot, sienaRI)
+S3method(summary, sienaRIDynamics)
+S3method(print, sienaRIDynamics)
+S3method(plot, sienaRIDynamics)
 S3method(print, xtable.sienaFit)
 S3method(print, chains.data.frame)
 S3method(print, influenceTable)
