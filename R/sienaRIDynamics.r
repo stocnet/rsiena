@@ -10,7 +10,7 @@
 # *****************************************************************************/
 
 ##@sienaRIDynamics
-sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL, depvar=NULL, intervalsPerPeriod=NULL)
+sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL, depvar=NULL, intervalsPerPeriod=NULL, n3 = NULL, useChangeContributions = FALSE)
 {
 	if(length(data$depvars)>1){
 		if(is.null(depvar)){
@@ -66,7 +66,7 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 		{
 			intervalsPerPeriod <- 10
 		}
-		RIValues <- calculateRIDynamics(data = data, ans=ans, theta = ans$rate, algorithm = ans$x,  effects = effs, depvar = currentNetName, intervalsPerPeriod=intervalsPerPeriod)
+		RIValues <- calculateRIDynamics(data = data, ans=ans, theta = c(ans$rate, ans$theta), algorithm = ans$x,  effects = effs, depvar = currentNetName, intervalsPerPeriod=intervalsPerPeriod, n3 = n3, useChangeContributions = useChangeContributions)
 	}else{
 		if (!inherits(algorithm, "sienaAlgorithm"))
 		{
@@ -106,18 +106,39 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 			intervalsPerPeriod <- 10
 		}
 		## all necessary information available
-		RIValues <- calculateRIDynamics(data = data, ans= ans, theta = paras, algorithm = algo,  effects = effs, depvar = currentNetName, intervalsPerPeriod=intervalsPerPeriod)
+		RIValues <- calculateRIDynamics(data = data, ans= ans, theta = paras, algorithm = algo,  effects = effs, depvar = currentNetName, intervalsPerPeriod=intervalsPerPeriod, n3 = n3, useChangeContributions = useChangeContributions)
 	}
 	RIValues
 }
 
 ##@calculateRIDynamics calculateRIDynamics simulates sequences of micro-steps, and aggregates the relative importances of effects over micro-steps of same time intervals
-calculateRIDynamics <- function(data=NULL, ans=NULL, theta = theta, algorithm=NULL, effects=NULL, depvar=NULL, intervalsPerPeriod=10, returnActorStatistics=NULL)
+calculateRIDynamics <- function(data=NULL, ans=NULL, theta=theta, algorithm=NULL, effects=NULL, depvar=NULL, intervalsPerPeriod=10, returnActorStatistics=NULL, n3 = n3, useChangeContributions = useChangeContributions)
 {
-	x <- algorithm
-	x$nsub <- 0
-	ans <- siena07(x, data = data, effects = effects, 
-					prevAns=ans, initC=FALSE, returnDeps=FALSE, returnChangeContributions = TRUE)
+    x <- algorithm # why not use algorithm directly?
+	if (!is.null(n3)) {
+    	x$n3 <- as.integer(n3)
+	}
+	if (useChangeContributions) {
+        if (is.null(ans) || is.null(ans$changeContributions)) {
+            warning("useChangeContributions=TRUE, but 'ans' does not contain 'changeContributions'. Will rerun siena07 to generate them.")
+            useChangeContributions <- FALSE
+        }
+		if (!is.null(n3)) {
+		    warning("n3 cannot be changed when useChangeContributions=TRUE; using the number of chains stored in 'ans'.")
+    		n3 <- NULL
+		}
+    }
+    if (!useChangeContributions) {
+		x$nsub <- 0
+        if (!is.null(ans)) {
+			prevAns <- ans
+		} else {
+			prevAns <- NULL
+			effects$initialValue[effects$include] <- theta
+		}
+        ans <- siena07(x, data=data, effects=effects,
+                       prevAns=prevAns, initC=FALSE, returnDeps=FALSE, returnChangeContributions=TRUE)
+    }
 	chains <- x$n3
 	periods <- data$observation-1
 	effects <- effects[effects$include==TRUE,]
@@ -504,5 +525,3 @@ plot.sienaRIDynamics <- function(x, staticRI = NULL, col = NULL,
 	}
 	invisible(cl)
 }
-
-
