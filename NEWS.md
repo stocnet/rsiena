@@ -1,3 +1,13 @@
+2025-07-21
+
+# RSiena 1.5.2
+
+## Changes in RSiena:
+### Functionality:
+  * Users can now extract now extract the changeContributions when running `siena07` by setting an argument `returnChangeContributions=TRUE`. If used together with `nsub=0` and `prevAns` or modified initial values in the effects object, especially useful for post-estimation e.g. in `sienaRIDynamics`.
+  * `sienaRIDynamics` uses siena07 directly now and is reinstated.
+
+
 2025-07-12
 
 # RSiena 1.5.1

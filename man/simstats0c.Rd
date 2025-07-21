@@ -13,7 +13,7 @@ simstats0c(z, x, data=NULL, effects=NULL, fromFiniteDiff=FALSE,
            returnDeps=FALSE, returnChains=FALSE, returnChangeContributions=FALSE,
            byWave=FALSE, returnDataFrame=FALSE, returnLoglik=FALSE)
 maxlikec(z, x, data=NULL, effects=NULL,
-           returnChains=FALSE, returnChangeContributions=FALSE, byGroup = FALSE, 
+           returnChains=FALSE, byGroup = FALSE, 
            byWave=FALSE, returnDataFrame=FALSE, returnLoglik=FALSE, onlyLoglik=FALSE)
 initializeFRAN(z, x, data, effects, prevAns=NULL, initC,
            profileData=FALSE, returnDeps=FALSE, returnChains=FALSE,
