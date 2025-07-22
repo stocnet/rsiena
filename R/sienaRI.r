@@ -39,12 +39,14 @@ sienaRI <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL,
 		{
 			stop("sienaRI does not yet work for models containing endowment or creation effects")
 		}
-		if (any(ans$effects$shortName %in% c("unspInt", "behUnspInt"))){
+		if (any(ans$effects$shortName %in% c("unspInt", "behUnspInt", "contUnspInt"))){
 			stop("sienaRI does not work for models containing interaction effects")
 		}
 		contributions <- getChangeContributions(algorithm = ans$x, data = data,
 			effects = ans$effects)
 		# contributions[[1]] is periods by effects by actors by actors
+#cat("a\n")
+#browser()
 		RI <- expectedRelativeImportance(conts = contributions,
 			effects = ans$effects, theta =ans$theta, thedata=data,
 			getChangeStatistics=getChangeStats)
@@ -157,6 +159,9 @@ getChangeContributions <- function(algorithm, data, effects)
 	for(i in 1:length(myeffectsOrder)){
 		myeffects[[i]]<-tmpeffects[[myeffectsOrder[i]]]
 	}
+#cat("e\n") #Hier gaat hij fout. 
+# Voor returnStaticChangeContributions=TRUE gaat het wel goed.
+#browser()
 	ans <- .Call(C_getTargets, PACKAGE=pkgname, pData, pModel, myeffects,
 		parallelrun=TRUE, returnActorStatistics=FALSE,
 		returnStaticChangeContributions=TRUE)
@@ -282,6 +287,9 @@ message('\nNote that for symmetric networks, effect sizes are for modelType 2 (f
 					cdec <- array(cdec, dim=c(1,dim(cdec)))
 				}
 ##
+
+#cat("b\n")
+#browser()
 				rownames(cdec) <- effectNa[currentDepEffs]
 				if (getChangeStatistics)
 				{

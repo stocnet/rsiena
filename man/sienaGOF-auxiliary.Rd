@@ -9,23 +9,24 @@
 \alias{TriadCensus}
 \alias{mixedTriadCensus}
 \alias{dyadicCov}
+\alias{egoAlterCombi}
 
 \title{Auxiliary functions for goodness of fit assessment by \code{\link{sienaGOF}}}
 \description{
- The functions given here are auxiliary to function \code{\link{sienaGOF}}  
+ The functions given here are auxiliary to function \code{\link{sienaGOF}}
  which assesses goodness of fit for actor-oriented models.
 
- The auxiliary functions are, first, some functions of networks or behaviour  
- (i.e., statistics) for which the simulated values for the fitted model  
- are compared to the observed value; second, some extraction functions  
- to extract the observed and simulated networks and/or behaviour  
- from the \code{\link{sienaFit}} object produced by \code{\link{siena07}}  
+ The auxiliary functions are, first, some functions of networks or behaviour
+ (i.e., statistics) for which the simulated values for the fitted model
+ are compared to the observed value; second, some extraction functions
+ to extract the observed and simulated networks and/or behaviour
+ from the \code{\link{sienaFit}} object produced by \code{\link{siena07}}
  with \code{returnDeps=TRUE}.
 
- These functions are exported here mainly to enable users to write  
- their own versions. At the end of this help page some non-exported functions  
- are listed. These are not exported because they depend on packages that  
- are not in the R base distribution; and to show templates for readers  
+ These functions are exported here mainly to enable users to write
+ their own versions. At the end of this help page some non-exported functions
+ are listed. These are not exported because they depend on packages that
+ are not in the R base distribution; and to show templates for readers
  wishing to contruct their own functions.
  }
 
@@ -44,6 +45,8 @@ TriadCensus(i, obsData, sims, period, groupName, varName, levls=1:16)
 mixedTriadCensus(i, obsData, sims, period, groupName, varName)
 
 dyadicCov(i, obsData, sims, period, groupName, varName, dc)
+
+egoAlterCombi(i, obsData, sims, period, groupName, varName, trafo=NULL)
 
 sparseMatrixExtraction(i, obsData, sims, period, groupName, varName)
 
@@ -76,6 +79,9 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
     an array with dimensions \eqn{n \times n \times (M-1)}{n * n * (M-1)};
     where \eqn{n} is the number of actors and \eqn{M} is the number of waves.
     There may be more time points, but those after \eqn{(M-1)} will not be used.}
+  \item{trafo}{ For \code{egoAlterCombi}:
+    transformation of the dependent behavior variable.
+    Default: identity function.}
 }
 \details{
  The statistics should be chosen to represent features of the network
@@ -116,6 +122,10 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
  Since zero values of dc are not counted, it may be advisable
  to code dc so that all non-diagonal values are non-zero,
  and all diagonal values are zero.
+
+ \code{egoAlterCombi} returns the frequencies of realized ties for each
+  ego-alter combination of values of the dependent behavior variable,
+  transformed by trafo; if \code{NULL}, untransformed.
  }
 
 \value{
@@ -178,18 +188,18 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
    Batagelj, V., and Mrvar, A. (2001),
   A subquadratic triad census algorithm for large sparse networks with small
   maximum degree. \emph{Social Networks}, \bold{23}, 237--243.
-  
+
    Holland, P.W., and Leinhardt, S. (1976),
   Local structure in social networks. \emph{Sociological Methodology}, \bold{6}, 1--45.
-  
+
    Hollway, J., Lomi, A., Pallotti, F., and Stadtfeld, C. (2017),
    Multilevel social spaces: The network dynamics of organizational fields.
    \emph{Network Science}, \bold{5}, 187--212.
-   
+
    Lospinoso, J.A. and Snijders, T.A.B. (2019),
   Goodness of fit for stochastic actor-oriented models.
   \emph{Methodological Innovations}, \bold{12}:2059799119884282.
-  
+
    Parimalarangan S., Slota, G.M., and Madduri, K. (2017),
  Fast parallel graph triad census and triangle counting on shared-memory
   platforms, \emph{2017 IEEE International Parallel and Distributed Processing
@@ -238,6 +248,11 @@ plot(gofi)
     varName="mynet1", cumulative=FALSE))
 # cumulative is an example of "\dots".
 plot(gofo)
+
+traf <- function(z){pmax(pmin(z,4),2)}
+(gofea <- sienaGOF(ans, egoAlterCombi, verbose=TRUE, join=TRUE,
+    varName=c("mynet1","mybeh"), trafo=traf))
+plot(gofea)
 
 (gofdc <- sienaGOF(ans, dyadicCov, verbose=TRUE, join=TRUE,
     dc=mydycov, varName="mynet1"))
@@ -434,7 +449,7 @@ myeff <- includeEffects(myeff, transTrip, cycle3)
 myeff <- includeEffects(myeff, outdeg, name="mybeh", interaction1="mynet1")
 myeff <- includeEffects(myeff,  outdeg, name="mybeh", interaction1="mynet1")
 # Shorter phases 2 and 3, just for example:
-myalgorithm <- sienaAlgorithmCreate(nsub=2, n3=200, seed=765, projname=NULL)
+myalgorithm <- sienaAlgorithmCreate(nsub=1, n3=200, seed=765, projname=NULL)
 (ans2 <- siena07(myalgorithm, data=mydata, effects=myeff, returnDeps=TRUE,
    batch=TRUE))
 gofc <- sienaGOF(ans2, EigenvalueDistribution, varName="mynet1",

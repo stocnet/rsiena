@@ -34,7 +34,7 @@ class SqrtTable;
 class SameCovariateFourCyclesEffect : public CovariateDependentNetworkEffect
 {
 public:
-	SameCovariateFourCyclesEffect(const EffectInfo * pEffectInfo, bool  TwoMode);
+	SameCovariateFourCyclesEffect(const EffectInfo * pEffectInfo);
 	virtual ~SameCovariateFourCyclesEffect();
 
 	virtual void initialize(const Data * pData,
@@ -45,21 +45,21 @@ public:
 	virtual double calculateContribution(int alter) const;
 
 protected:
-	virtual double tieStatistic(int alter);
+	virtual double egoStatistic(int ego, const Network * pSummationTieNetwork);
 
 private:
 	// Indicates if the effect is used for a two-mode or one-mode network
 	bool lTwoMode {};
 
-	void countThreePaths(int i, const Network * pNetwork, long int * counters)
-		const;
+	void countThreePaths(int i, const Network * pNetwork, long int * counters, 
+			bool dropMissings) const;
 	// For a fixed i, this variable stores the number of three-paths
 	// i -> h <- k -> j per each j.
 
-	long int * lcounters {};
+	long int * lcounters {}; 
+	
 	// Indicates if the square root of the number of four-cycles has to
 	// be taken.
-
 	bool lroot {};
 	// Lookup table for fast square root calculations:
 	SqrtTable * lpSqrtTable;

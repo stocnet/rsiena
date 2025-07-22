@@ -86,6 +86,9 @@ sienaGOF <- function(
 	{
 		stop("You need to supply the parameter <<auxiliaryFunction>>.")
 	}
+# This should be captured for possible later use
+# (when it will have been used the name is no longer available):
+	auxfu <- deparse(substitute(auxiliaryFunction))
 # There might be more than one varName:
 	if (is.null(sFO$f[[groupName]]$depvars[[varName[1]]]))
 	{
@@ -198,10 +201,10 @@ sienaGOF <- function(
 	{
 		ttcSimulation <- system.time(simStatsByPeriod <-
 			lapply(period, function (j) {
-				simStatsByPeriod <- parSapply(cluster, 1:iterations,
+				simStatsByPeriod <- parLapply(cluster, 1:iterations,
 					function (i){auxFunction(i, sienaFitObject,
 										j, groupName, varName, ...)})
-				simStatsByPeriod <- matrix(simStatsByPeriod, ncol=iterations)
+				simStatsByPeriod <- matrix(unlist(simStatsByPeriod), ncol=iterations)
 				dimnames(simStatsByPeriod)[[1]] <-	plotKey
 				dimnames(simStatsByPeriod)[[2]] <-	1:iterations
 				t(simStatsByPeriod)
@@ -216,7 +219,7 @@ sienaGOF <- function(
 							message("  Period ", j, "\n")
 							flush.console()
 						}
-						simStatsByPeriod <- sapply(1:iterations, function (i)
+						simStatsByPeriod <- lapply(1:iterations, function (i)
 						{
 							if (verbose && (i %% 100 == 0) )
 								{
@@ -232,8 +235,13 @@ sienaGOF <- function(
 						cat("  > Completed ", iterations, " calculations\n\n")
 					}
 					flush.console()
+					if (var(vapply(simStatsByPeriod, length, FUN.VALUE=0))>1e-8)
+					{
+						stop("Function ", auxfu,
+							" does not always give vectors of the same length")
+					}
 					simStatsByPeriod <-
-							matrix(simStatsByPeriod, ncol=iterations)
+							matrix(unlist(simStatsByPeriod), ncol=iterations)
 					dimnames(simStatsByPeriod)[[1]] <-	plotKey
 					dimnames(simStatsByPeriod)[[2]] <-	1:iterations
 					t(simStatsByPeriod)
@@ -385,7 +393,6 @@ sienaGOF <- function(
 
 	if (sum(tested) > 0) {
 		effectsObject <- sienaFitObject$requestedEffects
-		nSims <- sienaFitObject$Phase3nits
 		for (i in period) {
 			names(OneStepMHD_old[[i]]) <-
 					effectsObject$effectName[tested]
@@ -414,7 +421,7 @@ sienaGOF <- function(
 			obsSuffStats <-
 					t(sienaFitObject$targets2[effectsToInclude, , drop=FALSE])
 			G <- sienaFitObject$sf2[, , effectsToInclude, drop=FALSE] -
-					rep(obsSuffStats, each=nSims)
+					rep(obsSuffStats, each=iterations)
 			sigma <- cov(apply(G, c(1, 3), sum), use="pairwise.complete.obs")
 			SF <- sienaFitObject$ssc[ , , effectsToInclude, drop=FALSE]
 			dimnames(SF)[[3]] <- effectsObject$effectName[effectsToInclude]
@@ -430,7 +437,7 @@ sienaGOF <- function(
 						drop=FALSE]
 				D <- t(apply(DF, c(3, 4), mean))
 			}
-			fra <- apply(G, 3, sum) / nSims
+			fra <- apply(G, 3, sum) / iterations
 			doTests <- rep(FALSE, sum(effectsToInclude))
 			names(doTests) <- effectsObject$effectName[effectsToInclude]
 			doTests[effectsObject$effectName[index]] <- TRUE
@@ -439,30 +446,28 @@ sienaGOF <- function(
 							sigma, fra, doTests, redundant,
 							maxlike=sienaFitObject$maxlike)$oneStep )
 
-      # \mu'_\theta(X)
+      # \mu'_\theta(X)	  
 			JacobianExpStat_old <- lapply(period, function (i) {
-				t(SF[,i,]) %*% simStatsByPeriod[[i]]/ nSims	 })
+				t(SF[1:iterations,i,]) %*% simStatsByPeriod[[i]]/ iterations	 })
 			JacobianExpStat <- lapply(period, function (i) {
-				t(SF[,i,]) %*% simStatsByPeriod_tilde[[i]]/ nSims })
-
+				t(SF[1:iterations,i,]) %*% simStatsByPeriod_tilde[[i]]/ iterations })
       # List structure: Period, effect index
       thetaIndices <- 1:sum(effectsToInclude)
 	  # \Gamma_i(\theta)  i=period, j=parameter, k=replication
 			ExpStatCovar_old <- lapply(period, function (i) {
             lapply(thetaIndices, function(j){
-              Reduce("+", lapply(1:nSims,function(k){
+              Reduce("+", lapply(1:iterations,function(k){
                 simStatsByPeriod[[i]][k,] %*% t(simStatsByPeriod[[i]][k,]) * SF[k,i,j]
-              })) / nSims
+              })) / iterations
 				- JacobianExpStat[[i]][j,] %*%
 			t(ExpStat[[i]]) - ExpStat[[i]] %*% t(JacobianExpStat[[i]][j,])
             })
         })
 			ExpStatCovar <- lapply(period, function (i) {
 				lapply(thetaIndices, function(j){
-				Reduce("+", lapply(1:nSims,function(k){
+				Reduce("+", lapply(1:iterations,function(k){
 			simStatsByPeriod_tilde[[i]][k,] %*%
-				t(simStatsByPeriod_tilde[[i]][k,]) * SF[k,i,j] })) / nSims})})
-
+				t(simStatsByPeriod_tilde[[i]][k,]) * SF[k,i,j] })) / iterations})})
       # \Xi_i(\theta)
 			JacobianCovar_old <- lapply(period, function (i) {
 				lapply(thetaIndices, function(j){
@@ -646,7 +651,8 @@ summary.sienaGOF <- function(object, ...) {
 
 ##@plot.sienaGOF siena07 Plot method for sienaGOF
 plot.sienaGOF <- function (x, center=FALSE, scale=FALSE, violin=TRUE,
-		key=NULL, perc=.05, period=1, position=4, fontsize=12, ...)
+		key=NULL, perc=.05, period=1, showAll=FALSE,
+		position=4, fontsize=12, ...)
 {
 	## require(lattice)
 	args <- list(...)
@@ -679,17 +685,25 @@ plot.sienaGOF <- function (x, center=FALSE, scale=FALSE, violin=TRUE,
 	## Need to check for useless statistics here:
 	n.obs <- nrow(obs)
 
-	screen <- sapply(1:ncol(obs),function(i){
+	if (showAll)
+	{
+		screen <- sapply(1:ncol(obs),function(i){
+					(sum(is.nan(rbind(sims,obs)[,i])) == 0) })
+	}
+	else
+	{
+		screen <- sapply(1:ncol(obs),function(i){
 						(sum(is.nan(rbind(sims,obs)[,i])) == 0) }) &
 				(diag(var(rbind(sims,obs)))!=0)
-
-	if (any((diag(var(rbind(sims,obs)))==0)))
-	{	cat("Note: some statistics are not plotted because their variance is 0.\n")
-		cat("This holds for the statistic")
-		if (sum(diag(var(rbind(sims,obs)))==0) > 1){cat("s")}
-		cat(": ")
-		cat(paste(attr(x,"key")[which(diag(var(rbind(sims,obs)))==0)], sep=", "))
-		cat(".\n")
+		if (any((diag(var(rbind(sims,obs)))==0)))
+		{	
+			cat("Note: some statistics are not plotted because their variance is 0.\n")
+			cat("This holds for the statistic")
+			if (sum(diag(var(rbind(sims,obs)))==0) > 1){cat("s")}
+			cat(": ")
+			cat(paste(attr(x,"key")[which(diag(var(rbind(sims,obs)))==0)], sep=", "))
+			cat(".\n")
+		}
 	}
 
 	sims <- sims[,screen, drop=FALSE]
@@ -1521,7 +1535,7 @@ TriadCensus <- function (i, obsData, sims, period, groupName, varName, levls = 1
 
 ##@dyadicCov sienaGOF Auxiliary variable for dyadic covariate
 #
-# An auxiliary function calculating the proportion of ties
+# An auxiliary function calculating the number of ties
 # for subsets of ordered pairs corresponding to
 # certain values of the categorical dyadic covariate dc.
 # dc should be a matrix of the same dimensions as
@@ -1541,13 +1555,54 @@ dyadicCov <-  function (i, obsData, sims, period, groupName, varName, dc){
 	}
 	values <- unique(as.vector(dc))
 	tdyv <- sort(values[!is.na(values)])
-	tdyv <- tdyv[-which(tdyv==0)] # if 0 is included, take it out
+	# if 0 is included, take it out:
+	zeros <- which(tdyv==0)
+	if (length(zeros)>0)
+	{
+		tdyv <- tdyv[-zeros]
+	}
 	# Now we want to construct the table of numbers of m*dyv;
 	# and categories in dc not represented in m*dyv should get a 0.
 	# First make a named vector of the correct length with 0s in place.
+	ttmdyv <- tdyv
 	ttmdyv <- 0*tdyv
 	names(ttmdyv) <- tdyv
 	dims <- dimnames(tmdyv)[[1]]
 	ttmdyv[dims] <- tmdyv # The other entries remain 0
 	ttmdyv
 }
+
+egoAlterCombi <- function (i, obsData, sims, period, groupName, varName, 
+     trafo=NULL) 
+{
+# An auxiliary function calculating the number of ties
+# for each ego-alter combination of values of the dependent variable;
+# the dependent variable is transformed by trafo.
+	if (length(varName) != 2){
+		stop("egoAlterCombi expects two varName parameters")
+	}
+	if (is.null(trafo)){
+		trafo <- function(x){x}
+	}
+	varName1 <- varName[1]
+	varName2 <- varName[2]
+	m <- sparseMatrixExtraction(i, obsData, sims, period, groupName, 
+		varName1)
+	x <- behaviorExtraction(i, obsData, sims, period, groupName, 
+		varName2)
+	brange <- attr(obsData[[groupName]]$depvars[[varName2]], 
+			"behRange")[1]:attr(obsData[[groupName]]$depvars[[varName2]], 
+			"behRange")[2]
+	combi.egoalter <- outer(10*trafo(x), trafo(x) ,'+')		
+	possible.pairs <- 
+		sort(unique(as.vector(outer(10*trafo(brange), trafo(brange), '+'))))
+	tmeax <- table((m * combi.egoalter)@x, useNA = "no")
+	ppnames <- as.character(possible.pairs)	
+	teax <- setNames(0*possible.pairs, ppnames)
+	teax[dimnames(tmeax)[[1]]] <- tmeax
+	# pad names with leading 0s, if necessary:
+	pp.names <- ifelse(nchar(ppnames)==1, paste("0",ppnames,sep=""),ppnames)
+	names(teax) <- pp.names	
+	teax
+}
+

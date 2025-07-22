@@ -25,11 +25,13 @@ namespace siena
 
 /**
  * Constructor.
+ * @param[in] pEffectInfo the effect descriptor
+ * @param[in] squared indicates if the covariate values must be squared
  */
-FourCyclesEffect::FourCyclesEffect(const EffectInfo * pEffectInfo, bool TwoMode) :
+FourCyclesEffect::FourCyclesEffect(const EffectInfo * pEffectInfo) :
 	NetworkEffect(pEffectInfo)
 {
-	this->lTwoMode = TwoMode;
+	this->lTwoMode = false;
 	this->lcounters = 0;
 
 	if (pEffectInfo->internalEffectParameter() != 1 &&
@@ -67,6 +69,7 @@ void FourCyclesEffect::initialize(const Data * pData,
 	Cache * pCache)
 {
 	NetworkEffect::initialize(pData, pState, period, pCache);
+   this->lTwoMode = !this->pNetwork()->isOneMode();
 
 	delete[] this->lcounters;
 	if (this->lTwoMode)

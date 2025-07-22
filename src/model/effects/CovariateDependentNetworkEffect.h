@@ -52,6 +52,9 @@ protected:
 	double value(const int i) const;
 	bool missing(int i) const;
 	double actor_similarity(int i, int j) const;
+	double covariateMaximum() const;
+	double covariateMinimum() const;
+	int covarN() const;
 	ConstantCovariate * pConstantCovariate() const;
 	ChangingCovariate * pChangingCovariate() const;
 	BehaviorLongitudinalData * pBehaviorData() const;
@@ -73,7 +76,7 @@ private:
 	// This array is 0 for covariate-based effects.
 
 	const int * lvalues {};
-   const double * lcontinuousValues {};
+    const double * lcontinuousValues {};
 };
 
 }

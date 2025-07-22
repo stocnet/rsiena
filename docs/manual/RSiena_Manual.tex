@@ -21,6 +21,8 @@
 %\usetikzlibrary{plotmarks}
 \usetikzlibrary {arrows,decorations}
 %\usetikzlibrary {shapes}
+\usepackage{times}
+\usepackage[T1]{fontenc} % for searchable underscores in pdf
 
 \usepackage[pdfstartview={},
             pdftex,
@@ -76,6 +78,7 @@
 \newcommand{\se}{\mbox{s.e.}}
 
 \newcommand{\sfn}[1]{\textsf{#1}}
+\newcommand{\shn}[1]{\textsf{#1}}
 
 \newcommand{\R}{{\sf R }}
 \newcommand{\Rn}{{\sf R}}
@@ -192,10 +195,11 @@ a contributed package to the statistical system \Rn.
 It complements, but does not replace the help pages
 for the \RS functions!
 It also contains contributions written
-by Mark Huisman, Michael Schweinberger, and Christian Steglich.
+by Mark Huisman, Michael Schweinberger, Christian Steglich,
+and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.4.11.
+This version was renewed for \RS version 1.5.2.
 \end{abstract}
 
 
@@ -281,7 +285,7 @@ information:
 
 \RS was originally programmed by Ruth Ripley and Krists Boitmanis,
 in collaboration with Tom Snijders.
-Since May 2012 the maintainer is Tom Snijders.
+Starting in May 2012, maintainer of the software was Tom Snijders.
 Major contributions were made by Josh Lospinoso, Charlotte Greenan,
 Michael Schweinberger,
 Felix Sch\"{o}nenberger, Johan Koskinen, Mark Ortmann, Nynke Niezink,
@@ -293,6 +297,8 @@ Robert Hellpap, James Hollway, and Steffen Triebel.
 Currently, \RS is maintained by a research group
 at the University of Groningen, seconded by researchers in Z\"{u}rich,
 Stockholm, Geneva, and elsewhere.
+Since July 2025, Christian Steglich is responsible for package
+maintenance on CRAN.
 
 In addition to the `official' \R distribution of \RS
 and the \sfn{GitHub} development version, there is
@@ -348,7 +354,9 @@ A basic reference for the network dynamics model is \citet{Snijders01}
 or \citet{Snijders05}.
 Basic references for the model of network-behavior co-evolution
 are \citet*{SnijdersEA07} and \citet*{SteglichEA10}.
-Review articles are \citet{Snijders2017} and \citet{SnijdersPickup16}.
+Review articles are \citet{Snijders2017} and \citet{SnijdersPickup17}.
+The latter is also the reference for the model for dynamics
+of non-directed networks.
 
 More specific references are \citet{KoskinenEdling2012} for the
 dynamics of two-mode networks and \citet{SLT2013} for the
@@ -792,8 +800,9 @@ different impact) of effects for the increase and the decrease of behavior.
 \subsubsection{Outline of estimation procedure}
 \label{S_estim}
 \noindent
-\RS estimates parameters by the function \sfn{siena07}
-and (alternatively) \sfn{sienacpp}, using the following procedure:
+\RS estimates parameters by the function \sfn{siena07},
+%and (alternatively) \sfn{sienacpp}
+using the following procedure:
 \begin{enumerate}
 \item  Certain statistics are used that reflect the parameter values;\\
   the finally obtained parameters should be such that the \emph{expected
@@ -831,11 +840,26 @@ and (alternatively) \sfn{sienacpp}, using the following procedure:
   phase.
 
   If the estimation has to be repeated, this can be done by employing the
-  argument \texttt{prevAns} in the call of \sfn{siena07}
-  (or \sfn{sienacpp}).
+  argument \texttt{prevAns} in the call of \sfn{siena07}.
+ % (or \sfn{sienacpp}).
   See the help page for  \sfn{siena07}.
 \end{enumerate}
 \end{enumerate}
+
+If you are using Windows, when the estimation is running you will see a
+screen with intermediate results: current parameter values, the
+differences (`deviation values') between simulated and observed
+statistics (these should average out to 0 if the current
+parameters are close to the correct estimated value), and the
+\hyperlink{T_quasiac}{quasi-autocorrelations} discussed in Section
+\ref{S_Est}.
+(If you are running \RS from \texttt{RStudio}, this screen is visible
+when you click on the little feather that appears in the taskbar
+when the estimation is running.)
+It is possible to intervene in the algorithm by clicking on the
+appropriate buttons:
+the algorithm may be restarted or terminated. In most cases
+this is not necessary.
 
 
 \subsubsection{Design issues for longitudinal network modeling}
@@ -911,9 +935,6 @@ of the software appear).
 \url{http://cran.r-project.org/web/packages/RSiena/} .\\
             However, it is advisable to have
 \fi
-            Currently (mid February 2024), \RS is archived on CRAN,
-            which means that it is not directly available.
-            This hopefully will be restored soon.
 
             You can download
             the latest version of \RS
@@ -1010,7 +1031,7 @@ remotes::install_github("stocnet/rsiena", build=FALSE)
 	\item	Use functions \sfn{includeEffects}, \sfn{setEffect} and
             \sfn{includeInteraction} to further specify the model
             (see Sections~\ref{S_imp_str1}~--~\ref{S_eff_beh}).
-	\item	Use \sfn{siena07} or \sfn{sienacpp}
+	\item	Use \sfn{siena07} %or \sfn{sienacpp}
             to run the estimation procedure.\footnote{The
             use of multiple processes can speed up the estimation.
             For directions on how to utilize multiple processors,
@@ -1146,7 +1167,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.4.11).
+  identified by a version number (e.g.\ 1.5.2).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -1520,6 +1541,7 @@ see \url{https://www.stat.cmu.edu/~nynke/code.html}.
 
 
 \subsubsection{Individual covariates}
+\label{S_covariates}
 
 Individual (i.e., actor-bound, or monadic) variables
 are defined by the functions
@@ -2720,6 +2742,11 @@ the corresponding change statistic is
            \protect\newline one-mode networks}
 \label{S_imp_str1}
 
+Advice for model specification for one-mode networks is given
+also in the slide set
+\emph{Model Specification Recommendations for Siena}, available as\\
+\url{https://www.stats.ox.ac.uk/~snijders/siena/Siena_ModelSpec_s.pdf}
+
 For the structural part of the model for network dynamics,
 for one-mode (or unipartite) networks,
 the most important effects are as follows.
@@ -2845,10 +2872,20 @@ The basic list of these and other effects is as follows.
       transitive triplets or transitive ties effect, may be
       interpreted as a tendency toward local hierarchy.
       The three-cycles effect also contributes to
-      network closure.\\
+      network closure.
+      \smallskip
+
+      \noindent
+      \textbf{However,}
       \citet{Block2015} has argued convincingly that instead of the
       three-cycles effect, it is often advisable to use the
       transitive reciprocated triplets effect.\\
+      For models where the gwesp effect is used instead of the
+      transitive ties effect, the interaction gwesp$\times$reciprocity
+      can fulfill the role of the transitive reciprocated triplets effect.
+      \smallskip
+
+      \noindent
       In a non-directed network, the three-cycles effect is identical
       to the transitive triplets effect.
       \end{minipage}
@@ -2885,9 +2922,12 @@ The basic list of these and other effects is as follows.
       configurations characterized by the \underline{absence} of certain ties,
       not only by their presence.
       This leads to difficulties in interpretation, and may be undesirable.
+      Therefore this effect should be used only with caution,
+      in cases where it is important for the specific research question.
+
 
 \item[{\hspace*{-1ex}$\bigodot$}]
-     The following eight degree-related effects may be important especially for networks
+     The following nine degree-related effects may be important especially for networks
      where degrees are theoretically important and represent social status
      or other features important for network dynamics;
      and/or for networks with high dispersion in in- or out-degrees
@@ -2923,6 +2963,14 @@ The basic list of these and other effects is as follows.
      actors with high out-degrees to send out extra outgoing ties
      `because' of their high current out-degrees.
      This also leads to dispersion in out-degrees of the actors.
+\item The \emph{ reciprocal degree activity effect} (where internal effect
+     parameter with value 2 will be the `sqrt' version).
+     This reflects tendencies for
+     actors with high reciprocal degrees (number of other actors
+     to whom the actor has incoming as well as outgoing ties) to send out extra outgoing ties
+     `because' of their high current  reciprocal degrees.
+     For this effect, usually negative parameters $\beta_k$
+     are expected (`fewer' instead of `extra').
 \item The \emph{in-in degree assortativity effect} (where parameter 2 is the same
     as the sqrt version, while parameter 1 is the non-sqrt version)
      reflects tendencies for actors with high in-degrees
@@ -3290,8 +3338,6 @@ If $X$ and $W$ both are one-mode networks, the \emph{closure of W} effect
 
 \subsection{Hierarchy requirements}
 
-
-
 From linear regression we know that when a model contains an interaction
 effect, usually also the corresponding main effects should be included.
 Similarly for higher-order interactions, their lower-order terms
@@ -3305,11 +3351,18 @@ in regression analysis and do not need reiteration.
 % Andrea's klas12b heeft een voorbeeld van een interactieeffect zonder hoofdeffect:
 % ethniciteit * tijd.
 The hierarchy principle for the \saom\ is that when an effect
-represented by some graphical structure is included in the model,
+represented by some graphical structure is included in the model
+for the purpose of testing and interpretation,
 the effects for the \underline{sub-structures that are part of the
-structure} should also be included.
+structure} should usually also be included to avoid misinterpretation.
 In other words, testing of higher-order structures implies that
-the corresponding lower-order structures should also be included.
+the corresponding lower-order structures should be controlled for.
+This can be done by including the effects representing them
+in the model and estimating their parameters;
+or including them in the model with a parameter fixed at~0,
+tested by a score-type test (Section~\ref{S_Scoretest}),
+and found to be non-significant.
+
 
 An example is the transitive triplets effect \textit{transTrip}.
 
@@ -3439,7 +3492,7 @@ These constraints will continue to be respected during the simulations
 The constraints for the simulations can be changed
 (e.g., turned off) by function \sfn{sienaDataConstraint}.
 
-Script \url{http://www.stats.ox.ac.uk/~snijders/siena/RscriptSienaOrdered.R}\\
+Script \small{\url{http://www.stats.ox.ac.uk/~snijders/siena/RscriptSienaOrdered.R}}\\
 gives a demonstration of how this feature can be used for analyzing networks
 with ordered values.
 \medskip
@@ -3669,12 +3722,12 @@ coefficients are zero (see Section~\ref{S_test}).
 \subsection{Model Type: non-directed networks}
 \label{S_modeltype_nd}
 
-Dynamics for non-directed networks is explained in \citet{SnijdersPickup16}.
+Dynamics for non-directed networks is explained in \citet{SnijdersPickup17}.
 
 \RS detects automatically when the networks all are non-directed,
 and then employs a model for this special case.
 For non-directed networks, the Model Type has five possible values,
-as described in \citet{SnijdersPickup16}.
+as described in \citet{SnijdersPickup17}.
 This is specified by the parameter \sfn{modelType} in function
 \textsf{sienaAlgorithmCreate}.
 Value \texttt{modelType = 1} is for directed networks, values
@@ -3775,8 +3828,21 @@ For the respective values \texttt{modelType = 7, 8, 9, 10},
 the probability that a double step is taken is, respectively,
 0.25, 0.50, 0.75, and 1.00.
 
-These model types are not intended for use in regular applications.
+Since version 1.4.19,  \texttt{modelType = 11} can be used for dependent
+networks. This is called the
+\emph{Contemporaneous evaluation statistics model}.
+This model type implies that, for co-evolution models for this dependent network,
+which may involve other dependent networks as well as dependent behavioral
+variables, all evaluation effects are estimated using simultaneous statistics
+for estimation by the Method of Moments
+(for \texttt{modelType = 1}, the default, the MoM estimation statistics
+are cross-lagged).
+For this model type, creation and endowment effects are estimated as usual,
+i.e., using cross-lagged creation and maintenance statistics.
+\medskip
 
+These model types are meant for research purposes,
+not intended for use in regular empirical applications.
 
 
 \subsection{Model Type: behavior}
@@ -3843,6 +3909,7 @@ interaction effects.
 Ad hoc interaction effects have to be defined specifically in each case,
 like \texttt{transRecTrip}; Section~\ref{S_f} contains many other examples.
 Standard interaction effects can be defined directly.
+They are also called `user-defined interaction effects'.
 The change statistic of a standard interaction effect is the product of the
 change statistics of the interacting effects.
 This does not always make sense; whether it is permitted
@@ -3875,7 +3942,8 @@ for a given effects object, say \texttt{myeff}, by the function call
 Further see the help page for the function \sfn{effectsDocumentation}.
 Chapter~\ref{S_math} of this manual also gives the short names of all effects.
 The short name of all unspecified interaction effects is \texttt{unspInt}
-for network effects, and \texttt{behUnspInt} for behaviour effects.
+for network effects, \texttt{behUnspInt} for discrete behaviour effects,
+and \texttt{contUnspInt} for continuous behaviour effects.
 
 It should be mentioned that the keywords \texttt{interaction1},
 \texttt{interaction2}, and \texttt{interaction3} in functions such as
@@ -4251,7 +4319,17 @@ The \textsf{MaxDegree} option does not work for likelihood-based
 estimation; therefore, neither ML estimation using \textsf{siena07}
 nor multilevel estimation using \textsf{sienaBayes} support
 this option.
+However, you can obtain the same result of avoiding the creation
+of outdegrees larger than a given value by using the effect with shortName
+\texttt{outMore} or \texttt{outThreshold}. For example, to avoid
+outdegrees larger than 12,
+\begin{verbatim}
+effs <- setEffect(effs, outMore, parameter=12, initialValue=-30, fix=TRUE)
+\end{verbatim}
+(On the log-probability scale, a contribution of \verb!-30!  is
+practically minus infinity.)
 
+\newpage
 
 \subsection{Goodness of fit with auxiliary statistics: \textsf{sienaGOF}}
 \label{S_gof}
@@ -4276,19 +4354,302 @@ simulated values for the ends of the periods.
 The differences are assessed by combining the auxiliary statistics
 using the Mahalanobis distance.
 
-Various auxiliary statistics are available directly (`out of the box'),
-e.g., distributions of indegrees and outdegrees and of behavioral
-variables. These are listed in the help page for
-\verb!sienaGOF-auxiliary!. Some other auxiliary statistics, requiring
-additional packages such as \texttt{igraph} and \texttt{sna},
-are available by copying script from the examples in the same help page.
-(The reason for this construction is to reduce dependencies
-of \RS on other packages.)
-
 The examples in the help pages for \textsf{sienaGOF} and \sfn{sienaGOF-auxiliary}
 give ample help for how to use this function.
 Also see the script on the \SI website.
 
+
+\subsubsection{Auxiliary statistics}
+
+Various auxiliary statistics are available directly (`out of the box'),
+e.g., distributions of indegrees and outdegrees and of behavioral
+variables. These are listed in the help page for
+ \sfn{sienaGOF-auxiliary}.
+
+Some other auxiliary statistics, requiring
+additional packages such as \texttt{igraph} and \texttt{sna},
+are available by copying script from the examples in the same help page.
+(The reason for this construction is to reduce dependencies
+of \RS on other packages.) This includes the auxiliary statistics
+for the distribution of geodesic distances.
+
+Note that for the indegree and outdegree distributions, you need
+to specify a parameter \texttt{levls}, which is the set of values
+for which the distribution is calculated.
+The default value \texttt{0:8} often is not adequate, use a different one!!!
+For example if outdegrees ranging mainly from 0 to 10 but with outliers up to 27,
+you could use options \texttt{cumulative=TRUE} and \texttt{levls=c(0:10,15,20,30)}
+(the details of the distribution in the tail do not matter so much).
+
+A very useful auxiliary variable is \sfn{dyadicCov}. Have a look at the example
+on the help page for  \sfn{sienaGOF-auxiliary} to see how this can be used
+to check the adequacy of the representation of ties for ego-alter combinations
+of actor covariates. For dependent behavioral variables, there is the
+auxiliary variable \sfn{egoAlterCombi}.
+\medskip
+
+\noindent
+\textbf{\emph{Triad census}}
+\smallskip
+
+\noindent
+Another auxiliary statistic is \sfn{TriadCensus},
+which checks the fit for the \emph{triad census}
+introduced by \citet{HollandLeinhardt1970,HollandLeinhardt1976}.
+These authors noted that
+much of local network structure is expressed by triads,
+the configurations of ties between triples of nodes.
+There are 16 different possible configurations of ties between three nodes.
+The \emph{triad census} is the vector of frequencies of these 16 configurations.
+These are shown in Figure~\ref{F_triads}.
+\citet{HollandLeinhardt1976} showed that many interesting characteristics
+of networks can be expressed as linear combinations of the
+triad census.
+See, e.g., Chapter~14 of \citet{WassermanFaust94} for more information.
+
+\begin{figure}[htb]
+\begin{center}
+\begin{tikzpicture}
+\begin{scope}
+\boldmath
+\tikzstyle{every node}=[x=5ex,y=5ex,inner sep=0pt,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {003};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\boldmath
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {012};
+\end{scope}
+\end{tikzpicture}
+\bigskip
+
+\begin{tikzpicture}
+\begin{scope}
+\boldmath
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (j)  ;
+\draw (j) -> (i);
+\node[fill=none, draw=none] (t) at (1,-0.7) {102};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\boldmath
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (k) -> (j)  ;
+\draw (k) -> (i);
+\node[fill=none, draw=none] (t) at (1,-0.7) {021D};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\boldmath
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\draw (j) -> (k);
+\node[fill=none, draw=none] (t) at (1,-0.7) {021U};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\boldmath
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\draw (k) -> (j);
+\node[fill=none, draw=none] (t) at (1,-0.7) {021C};
+\end{scope}
+\end{tikzpicture}
+\bigskip
+
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (j)  ;
+\draw (j) -> (i);
+\draw (k) -> (j)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {111D};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (j)  ;
+\draw (j) -> (i);
+\draw (j) -> (k)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {111U};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\draw (i) -> (j);
+\draw (j) -> (k)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {030T};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (j)  ;
+\draw (j) -> (k);
+\draw (k) -> (i)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {030C};
+\end{scope}
+\end{tikzpicture}
+\bigskip
+
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\draw (k) -> (i)  ;
+\draw (i) -> (j);
+\draw (j) -> (i)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {201};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (k) -> (i)  ;
+\draw (k) -> (j)  ;
+\draw (i) -> (j);
+\draw (j) -> (i)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {120D};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\draw (j) -> (k)  ;
+\draw (i) -> (j);
+\draw (j) -> (i)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {120U};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\draw (k) -> (j)  ;
+\draw (i) -> (j);
+\draw (j) -> (i)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {120C};
+\end{scope}
+\end{tikzpicture}
+\bigskip
+
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\draw (k) -> (j)  ;
+\draw (i) -> (j);
+\draw (j) -> (i)  ;
+\draw (j) -> (k)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {210};
+\end{scope}
+\end{tikzpicture}
+\hspace{5ex}
+\begin{tikzpicture}
+\begin{scope}
+\tikzstyle{every node}=[inner sep=0pt,x=5ex,y=5ex,minimum size=1ex,shape=circle,draw,fill=black]
+\tikzstyle{every path}=[very thick, -stealth', shorten <=1.5pt,shorten >=1.5pt, ->]
+\node (i) at (0,0)  {.};
+\node (j) at (2,0) {.};
+\node (k) at (1,1.73) {.} ;
+\draw (i) -> (k)  ;
+\draw (k) -> (j)  ;
+\draw (i) -> (j);
+\draw (j) -> (i)  ;
+\draw (j) -> (k)  ;
+\draw (k) -> (i)  ;
+\node[fill=none, draw=none] (t) at (1,-0.7) {300};
+\end{scope}
+\end{tikzpicture}
+\end{center}
+
+\caption{The 16 different configurations possible for three nodes in a digraph
+\citep[after][]{HollandLeinhardt1976}.}
+\label{F_triads}
+\end{figure}
+
+\clearpage
 
 \subsubsection{Plots}
 The results of \verb!sienaGOF! can be plotted which then produces
@@ -4448,11 +4809,12 @@ you can set the seed; see Section~\ref{S_param}.
 \hypertarget{T_S_options}{   }
 % provisionally placed here.
 
-The estimation process is implemented in functions \textsf{siena07}
-and \sfn{sienacpp} (alternatives for each other),
+The estimation process is implemented in function \textsf{siena07},
+%and \sfn{sienacpp} (alternatives for each other),
 using an algorithm specification defined in function \textsf{sienaAlgorithmCreate}.
 Estimation starts with initial values for the parameters,
-and the functions \textsf{siena07} and \sfn{sienacpp} both return a
+and the function \textsf{siena07} %and \sfn{sienacpp} both
+returns a
 so-called \textsf{sienaFit} object containing the estimates and their standard errors and
 a lot of further information.
 Since the estimation procedure is iterative (i.e., depending on the
@@ -4461,9 +4823,13 @@ the results are not always completely satisfactory. We shall see below
 how the satisfactory convergence of the algorithm can be checked,
 and how to go on if this is not satisfactory.
 
+There used to be a function \sfn{sienacpp}, which was
+an alternative for \sfn{siena07}, for which
+estimation stayed entirely in the `back end' \sfn{C++} part of \si.
+\sfn{sienacpp} was available only in \sfn{RSienaTest},
+and is not documented here.
 
-
-
+\iffalse
 Much of what follows is about the use of \sfn{siena07}
 but applies equally to \sfn{sienacpp}.
 The difference between these two functions is that
@@ -4480,6 +4846,7 @@ and distance between first and last simulations are small).
 Further, results from \sfn{sienacpp} cannot used for
 \sfn{sienaGOF}.
 Note that \sfn{sienacpp} is available only in \sfn{RSienaTest}.
+\fi
 
 The estimation algorithm is determined by a call of functions
 such as
@@ -4491,7 +4858,7 @@ The function \textsf{sienaAlgorithmCreate} defines an algorithm specification
 object with options for the algorithm, and the function  \textsf{siena07}
 carries out the estimation.
 If you do not want to see the graphical interface with intermediate
-results, or if your computer has problems showing this, then add
+results (see below), or if your computer has problems showing this, then add
 the option \texttt{batch = TRUE}, as in
 \begin{verbatim}
 results1  <- siena07(algorithm1, data = mydata, effects = myeff,
@@ -4504,6 +4871,40 @@ the option \texttt{verbose = TRUE}, as in
 results1  <- siena07(algorithm1, data = mydata, effects = myeff,
                       verbose = TRUE)
 \end{verbatim}
+
+The graphical interface is available in Windows, and consists of a
+screen with intermediate results: current parameter values, the
+differences (`deviation values') between simulated and observed
+statistics (these should average out to 0 if the current
+parameters are close to the correct estimated value), and the
+\hyperlink{T_quasiac}{quasi-autocorrelations} discussed in Section
+\ref{S_Est}.
+(If you are running \RS from \texttt{RStudio}, this screen is visible
+when you click on the little feather that appears in the taskbar
+when the estimation is running.)
+It is possible to intervene in the algorithm by clicking on the
+appropriate buttons:
+the algorithm may be restarted or terminated. In most cases
+this is not necessary.
+
+
+Experience shows that parameters estimated by \sfn{siena07} are
+not very large in magnitude, mostly they are less than 20 in
+absolute value. Therefore, when the algorithm at some moment leads to
+provisional values larger than, say,~50, this is a signal that the
+algorithm is diverging. This will lead to a stop of the algorithm;
+the default threshold value of 50 can be changed by the keyword
+\texttt{thetaBound}. E.g., one could use
+\begin{verbatim}
+results1  <- siena07(algorithm1, data = mydata, effects = myeff,
+                      thetaBound=100)
+\end{verbatim}
+Some effects associated with covariates will have values that scale
+inversely with the covariates.
+It was mentioned in Section~\ref{S_covariates} that actor
+covariates should be preferably have standard deviations between, say,
+0.1 and~10. This will normally lead to parameter values less than 10.
+The same goes for dyadic covariates.
 
 \subsection{Parameters of the algorithm}
 \label{S_param}
@@ -5048,7 +5449,7 @@ this may have several reasons.
       case of deviant in-degrees.
 
       Sometimes transitivity can better be modeled by the GWESP effects
-      (search for this term in the manual) than by transitive triplers.
+      (search for this term in the manual) than by transitive triplets.
       This may help with convergence.
 
       For modeling large networks, it is important to represent
@@ -5591,7 +5992,7 @@ itself in a probability distribution.
 
 Estimation by the regular Method of Moments (MoM)
 and Generalized Method of Moments (GMoM)
-is implemented in the functions \sfn{siena07} and \sfn{sienacpp}.
+is implemented in the function \sfn{siena07}.% and \sfn{sienacpp}.
 ML estimation is done by the function \sfn{siena07}, using a set of options
 created by \sfn{sienaAlgorithmCreate} with \sfn{maxlike = TRUE}.
 Bayesian estimation is done by the function \sfn{sienaBayes},
@@ -5610,8 +6011,8 @@ Compared to the regular Method of Moments (MoM), the Generalized Method of
 Moments (GMoM) allows using more statistics than parameters,
 thereby exploiting more information in the observed data.
 The additional information derives from the use of supplementary statistics,
-referred to as GMoM statistics. The GMoM statistics are defined only for the effects
-of the evaluation function. Thus, they are used under the assumption that
+referred to as GMoM statistics. The GMoM statistics are defined only for
+evaluation effects. Thus, they are used under the assumption that
 effects operate in the same strength for the creation and the dissolution of ties,
 and the increasing and decreasing of the behavior. In other words,
 the creation and the endowment effects
@@ -5625,28 +6026,36 @@ function \sfn{includeGMoMStatistics},
 and setting option \texttt{gmm=TRUE}
 in the algorithm object created by the function \sfn{sienaAlgorithmCreate}.
 
-Several GMoM statistics have been implemented for the evolution of networks
-and for co-evolution of networks and behaviors.
+Although the statistics are added to the effect object,
+one should keep in mind that the GMoM statistics are not effects
+in the stochastic model, i.e., they are not
+included as terms in the objective function.
+They are only used for parameter estimation to evaluate the moment conditions.
 
-% We denote by $X$ the network, by $Z$ the behavior,
-% and by $X(t_m)$ and $Z(t_m)$ the network and the behavior at time $t_m$.
+Several GMoM statistics have been implemented.
+\bigskip
+
+\noindent
+\textbf{\emph{GMoM statistics for network evolution }}
+\medskip
+
 The statistics for the network evolution \citep{ASS2015}
-%(\texttt{newrecip}, \texttt{persistrecip}, \texttt{realrecip},
-%\texttt{realtrans}, \texttt{agreetrans})
 complement the information provided by the regular statistics by
 considering two consecutive observations of the network.
-%While the regular statistics depend only on the network
-%at time $t_m$, i.e., $\sum_{m=2}^M\sum_{i=1}^n S_{ik}(X(t_m))$,
-%the GMoM statistics simultaneously consider the networks at time $t_m$ and $t_{m+1}$, i.e.,
-%$\sum_{m=2}^M\sum_{i=1}^n S_{ik}(X(t_m),X(t_{m-1}))$.
 This formulation allows distinguishing between different antecedents of a same effect.
 The implemented statistics are named \texttt{newrecip}, \texttt{persistrecip}, \texttt{realrecip},
 \texttt{realtrans}, \texttt{agreetrans}.
+\bigskip
+
+\noindent
+\textbf{\emph{GMoM statistics for co-evolution of networks and behavior }}
+\medskip
+
 The GMoM statistics for the co-evolution of networks and behaviors \citep{ASS2019}
 supplement the information of the cross-lagged statistics, depending jointly
 on network and behavior, by considering the network and behavior at the same time point.
 Thus, the GMoM statistics account for the information on the simultaneous observation
-of network and behavioral changes. The name of the implemented GMoM statistics
+of network and behavioral changes. The names of the implemented GMoM statistics
 are \texttt{avSim\_gmm}, \texttt{avAlt\_gmm}, \texttt{totAlt\_gmm}, \texttt{maxAlt\_gmm},
 \texttt{minAlt\_gmm}, \texttt{egoX\_gmm}, \texttt{simX\_gmm}.
 
@@ -5657,12 +6066,6 @@ myeff <- includeGMoMStatistics(myeff, egoX_gmm, interaction1 = "mybeh")
 myeff <- includeGMoMStatistics(myeff, simX_gmm, interaction1 = "mybeh")
 \end{verbatim}
 specify the GMoM statistics for the covariate-related activity and similarity effects.
-
-Although the statistics are added to the effect object,
-one should keep in mind that the GMoM statistics are not effects
-in the stochastic model, i.e., they are not
-included as terms in the objective function.
-They are only used for parameter estimation to evaluate the moment conditions.
 
 The distinction between model effects
 and GMoM statistics is recalled when printing the effect object in the R console.
@@ -5715,13 +6118,33 @@ and statistics operating for parameter estimation is lost.
 14 mynet mybeh ego                      GMoM
 15 mynet mybeh similarity               GMoM
 \end{verbatim}}
-
 \normalsize
+\bigskip
+
+
+\noindent
+\textbf{\emph{GMoM statistics for co-evolution of multiple networks }}
+\medskip
+
+Similarly to the co-evolution of networks and behavior as treated in
+\citep{ASS2019}, GMoM statistics have been implemented
+for the co-evolution of multiple networks, using contemporaneous
+statistics that supplement the cross-lagged statistics of the MoM.
+supplement the information of the cross-lagged statistics, depending jointly
+on network and behavior, by considering the network and behavior at the same time point.
+The implemented GMoM statistics are \texttt{crprod\_gmm}, \texttt{to\_gmm},
+and \texttt{from\_gmm}, supplementing the effects with shortnames
+\texttt{crprod}, \texttt{to}, and \texttt{from}.
+\bigskip
+
+\noindent
+\textbf{\emph{Operation of GMoM estimation }}
+\medskip
 
 The computation of the GMoM estimates is more time consuming than that of the regular MoM.
 The GMoM estimator is computed by minimizing the distance between the
 expected value of the statistics and their sample counterpart.
-The minimization demands the computation of a matrix of weights
+The definition of the distance demands the computation of a matrix of weights
 describing the importance of the statistics and their sensitivity
 to the parameters. To estimate the matrix of the GMoM weights, a larger number of simulations
 in phase 1 and phase 3 and (at least) one iteration of the function \textsf{siena07} is used.
@@ -5745,7 +6168,7 @@ We refer to  the  \R script \texttt{GMoMscript.R} on the \SI webpage for an illu
 
 Like the MoM, the GMoM allows conditional as well as unconditional estimation (see Section~\ref{S_cond}).
 
-
+\iffalse
 \subsubsection{Using the function \sfn{sienacpp}}
 \label{S_GMoM_sienacpp}
 
@@ -5757,6 +6180,7 @@ uses \texttt{maxlike = FALSE}, the estimation function \sfn{sienacpp}
 will use the MoM or the GMoM; the latter will be used as soon as
 at least one of the effects were specified in the effects object with
 \texttt{type = "gmm"}.
+\fi
 
 The specification of the effects object for GMoM estimation requires
 that in the effects object, apart from the basic rate effects,
@@ -6233,7 +6657,8 @@ unconditional estimation.
 \item
   If multiple processors are available, then using
   multiple processes can speed up the estimation in \textsf{siena07},
-  \sfn{sienacpp}, and \textsf{sienaGOF}.
+ % \sfn{sienacpp},
+  and \textsf{sienaGOF}.
   The help pages for these functions show how to do this.
   You can find out the number of processes possible by
 \begin{verbatim}
@@ -6860,7 +7285,8 @@ The function \textsf{setEffect} is available to do this.
 For example, a score test for the evaluation effect of transitive ties
 in a network can be requested as follows.
 \begin{verbatim}
-myeff <- setEffect(myeff, transTies, fix = TRUE, test = TRUE, initialValue = 0.0)
+myeff <- setEffect(myeff, transTies, fix = TRUE, test = TRUE,
+                   initialValue = 0.0)
 \end{verbatim}
 
 The score-type test then
@@ -6880,7 +7306,7 @@ Note that while the  \sfn{summary} of this object and the results
 in the output file give the score tests for the set of \underline{all}
 fixed \& tested parameters, and for \underline{each} of these parameters
 separately, the function \sfn{score.Test} can give the combined test
-for \underline{any subvector}.
+for \underline{any set of fixed \& tested parameters}.
 
 It should be noted that using the \sfn{prevAns} option in \textsf{siena07}
 overrides the initial values in the effects object,
@@ -6900,7 +7326,8 @@ reasonable estimate was found in \sfn{sienaFit} object \texttt{myans0},
 and the user wishes to use this as starting values.
 \begin{verbatim}
 myeff <- updateTheta(myeff, myans0)
-myeff <- setEffect(myeff, transTies, fix = TRUE, test = TRUE, initialValue = 0)
+myeff <- setEffect(myeff, transTies, fix = TRUE, test = TRUE,
+                   initialValue = 0)
 myans1 <- siena07(estimationSettings, data = mydata, effects = myeff)
 summary(myans1)
 \end{verbatim}
@@ -6908,8 +7335,8 @@ summary(myans1)
 
 The one-step estimates are given in the file \texttt{pname.txt},
 mentioned in Section~\ref{S_output}.
-These are `quick and easy' estimates that are not totally
-reliable, but that can be used as approximations of the unrestricted estimates
+These are `quick and easy' estimates which are not totally
+reliable, but which can be used as approximations of the unrestricted estimates
 (that is, the estimates that would be obtained if the model were estimated
 once again, but without restricting the parameter by \texttt{fix = TRUE}).
 They are explained mathematically in \citet{Schweinberger12}.
@@ -6982,7 +7409,7 @@ should be included into the model and estimated as the other
 parameters.
 
 The one-sided test statistic, which can be regarded as normal variate, equals {\tt 1.9996}
-indicating that the value of the transitivity parameter is positive.
+indicating that the value of the reciprocity parameter is positive.
 
 In this example, the one-step estimate of reciprocity is {\tt 1.2567},
 suggesting that this parameter is positive, which agrees with the one-sided test.
@@ -7508,14 +7935,16 @@ a constant rate function, the out-degree effect, and
 the reciprocity effect.
 
 Then let the program estimate the parameters, using function \textsf{siena07}.
-You will see a
+If you are using Windows, you will see a
 screen with intermediate results: current parameter values, the
 differences (`deviation values') between simulated and observed
 statistics (these should average out to 0 if the current
 parameters are close to the correct estimated value), and the
 \hyperlink{T_quasiac}{quasi-autocorrelations} discussed in Section
 \ref{S_Est}.
-
+(If you are running \RS from \texttt{RStudio}, this screen is visible
+when you click on the little feather that appears in the taskbar
+when the estimation is running.)
 It is possible to intervene in the algorithm by clicking on the
 appropriate buttons:
 the algorithm may be restarted or terminated. In most cases
@@ -7738,8 +8167,20 @@ The four options are:
       except for the basic rate parameters;
       and except for explicitly specified interaction
       effects between variables depending on the group, and other effects.
-      This is a very strong assumption, and undesirable unless
-      options 3-4 are impossible.
+      This is a strong assumption, and usually not very desirable if
+      options 3-4 are possible.\\
+      This option can be applied, e.g., if there are important changes
+      of composition between waves. If there are three waves, and
+      the sets of actors at these waves are $N_1$, $N_2$, and $N_3$,
+      respectively, then the intersections of the node sets
+      $N_{12} = N_1 \cap N_2$ and $N_{23} = N_2 \cap N_3$ can be
+      utilized to form two longitudinal data sets each with two waves.
+      These can then be combined in a multi-group data set
+      and analyzed by the multi-group option.
+      This can be straightforwardly extended to more than three waves.
+      \\
+      This is the ``inclusive'' analytic strategy
+      proposed by \citet{delaHayeETAl2017}.
 \item Analyzing the different networks separately, without any assumption
       that parameters are the same but using the same model specification,
       and post-processing the output files by a meta-analysis
@@ -7851,6 +8292,25 @@ $r_V$ for all groups; and the centering of this transform,
 which affects the parameter of the \texttt{outdegree (density)} effect,
 is group-specific.
 
+\subsubsection{Group-level variables}
+
+Group-level covariates for actors as well as for
+dyads can be used without any problem. They can be defined for each
+group separately, with the same name across groups,
+and with a constant value within the group.
+To avoid the warning that would result, the option \texttt{warn=FALSE}
+can be used for the functions \sfn{coCovar} etc.
+
+Group level variables can be used with ego effects (\texttt{egoX})
+and interactions of ego effects with other effects.
+
+A specific useful type of group-level variable is a set of group dummy
+variables where each dummy variable has value 1 with a given group and
+0 for all other groups.
+Such dummies, and their interactions,
+can be used to represent time heterogeneity.
+
+
 \subsection{Multi-group Siena analysis}
 \label{S_multigroup}
 
@@ -7931,7 +8391,7 @@ It combines estimates for a common model
    and according to a Fisher-type combination of one-sided $p$-values.
 
 The function  \textsf{siena08} takes as input the \textsf{sienaFit}
-objects produced by separate runs of  \textsf{siena08}.
+objects produced by separate runs of  \textsf{siena07}.
 These \textsf{sienaFit} objects must have exactly the same model
 specification and the same names of all variables; but it is allowed
 that there are differences with respect to parameters being fixed
@@ -9015,6 +9475,10 @@ by $p$, and called in this manual an \emph{internal effect parameter}.
 }
 (These are totally different from the statistical parameters which are
 the weights of the effects in the objective function.)
+
+The internal effect parameter is used to define several
+specifications of effects; they are fixed parameters
+which cannot be estimated.
 These are set or modified by the \texttt{setEffect} function, e.g.,
 \begin{verbatim}
 myeffects <- setEffect(myeffects, gwespFF, parameter = 69)
@@ -9116,7 +9580,7 @@ and for maintaining existing ties.
  \texttt{(transTrip)},
    defined by the number of transitive
  patterns in $i$'s relations (ordered pairs of actors
- $(j,h)$ to both of whom $i$ is tied, while also $j$ is tied to $h$),\\
+ $(j,h)$ to both of whom $i$ is tied, while also $h$ is tied to $j$),\\
   $s^{\rm net}_{i\vit}(x) =  \sum_{j, h} x_{ij}\, x_{ih}\, x_{hj}\,$;\\
  (there was an error here until version 3.313,
  which amounted to combining the transitive triplets and transitive
@@ -9312,18 +9776,16 @@ and for maintaining existing ties.
 \end{minipage}
 
 \vspace{-4em} % I do not know why this is necessary
- \item \begin{minipage}[t]{.68\textwidth}
+ \item \begin{minipage}[t]{.62\textwidth}
 for two-mode networks and for non-directed networks: \\
-the {\em number of four-cycles} with shortName \texttt{(cycle4)} \\
-   for the two-mode and \texttt{(cycle4ND)} for the  non-directed case,\\[0.3em]
+the {\em number of four-cycles} with shortName \texttt{(cycle4)}; \\
+ (the shortName \texttt{(cycle4ND)} for the  non-directed case was replaced by
+   \texttt{(cycle4)} in \RS version 1.4.22) \\[0.3em]
  $s^{\rm net}_{i\vit}(x) =  \frac14 \sum_{j,k,h; \text{all different}}
             x_{ij}\, x_{ik}\, x_{hj}\, x_{hk}\,$;\\[0.3em]
- for parameter $p = 2$ the square root is taken; \\[0.3em]
+ for parameter $p = 2$ the square root is taken: \\[0.3em]
  $s^{\rm net}_{i\vit}(x) =  \frac12 \sum_{j}  x_{ij} \sqrt{ \sum_{k,h; \text{all different}}
-             x_{ik}\, x_{hj}\, x_{hk} }\,$;\\[0.3em]
- note that this is like the \texttt{sharedPop} effect above, \\
- but for the two-mode  and non-directed cases \\
- the directionality plays no role;
+             x_{ik}\, x_{hj}\, x_{hk} }\,$;
       \end{minipage}
 \hfill
 \begin{minipage}[t]{.15\textwidth}
@@ -9347,6 +9809,10 @@ the {\em number of four-cycles} with shortName \texttt{(cycle4)} \\
 \endpicture
 \end{center}
 \end{minipage}
+
+ note that this is like the \texttt{sharedPop} effect above,
+ but for the two-mode  and non-directed cases
+ the directionality plays no role;
 
  \item {\em transitive ties effect} \texttt{(transTies)}
  (earlier called \emph{(direct and indirect ties) effect}),
@@ -9435,10 +9901,15 @@ the {\em number of four-cycles} with shortName \texttt{(cycle4)} \\
  This effect is difficult to interpret: actor $i$ can increase this effect by making a
  new tie to an actor $j$ at distance 2 but also by dropping a direct tie to an
  actor $j$ to whom $i$ is also connected via a two-path
- $i \rightarrow h \rightarrow j$.
- Instead of this effect it may be preferable to use one of the many other
- effects representing closure (\texttt{transTrip}, \texttt{transTies},
- the various gwesp effects, the various Jaccard effects, etc.).
+ $i \rightarrow h \rightarrow j$.\\
+ When using this effect to represent a particular theoretical mechanism,
+ it may be advisable to use it as separate creation
+ and endowment effects (using  \texttt{type=creat} and \texttt{type=endow}),
+ to avoid this ambiguity.
+ For representing network closure it may be preferable to use one of the many other
+ effects representing it (\texttt{transTrip}, \texttt{transTies},
+ the various gwesp effects, the various Jaccard effects, etc.).\\
+
 
  \item {\em number of doubly achieved distances two effect} \texttt{(nbrDist2twice)},
  defined by
@@ -9591,6 +10062,9 @@ nodes $h$ for which there is the two-in-star $i \leftarrow h \rightarrow j$;\\
 with $i \rightarrow j$ and there are exactly $k$ other
 nodes $h$ for which there are the reciprocal ties $i \rightleftarrows h \rightleftarrows j$.
 
+For further interpretations and distinctions between the different directionalities
+in these effects, see \citet{RPW2009}.
+
 In version 1-1.251 the implementation was changed (thanks to Nynke Niezink),
 because earlier versions were not quite according to what is described above.
 The effect was until version 1-1.250 implemented as\\
@@ -9721,17 +10195,6 @@ and
  $s^{\rm net}_{i\vit}(x) = x_{i+}\, x_{+i}$;\\
  endowment effect only likelihood-based;
 
- \item {\em in-degree related activity ego effect} \texttt{(inAct\_ego)},
- 	 defined as the elementary effect version of the  half-centered  cross-product
- of the actor's in- and out-degrees,\\
- $ f^{\rm net,\, el}_{i\vit}(x) = \big(  x_{+i} - \bar x_{+.}\big)$\ ,\\
- where\\
- $ \bar x_{+.} \,=\,  \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij} \ $ ;
- for internal effect parameter $p=2$, it is defined by\\
- $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{   x_{+i}} - \sqrt{\bar x_{+.}} $ \ ; \\
- since this is an elementary effect, it can be used in interactions
- and in endowment and creation functions;
-
  \item {\em in-degree related activity effect (centered)} \texttt{(inAct.c)},
  defined by the sum of
  the cross-product of the actor's out- and centered in-degrees,\\
@@ -9753,16 +10216,6 @@ and
  $s^{\rm net}_{i\vit}(x) = x^2_{i+}$;\\
  endowment effect only likelihood-based;
 
- \item {\em out-degree related activity ego effect} \texttt{(outAct\_ego)},
- 	 defined as the elementary effect version of the half-centered
- squared out-degree of the actor,\\
- $ f^{\rm net,\, el}_{i\vit}(x)  =  \big(  x_{i+} - \bar x_{.+}\big)$ ,\\
- where\\
- $ \bar x_{.+} \,=\,  \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij} \ ;  $ \\
- for internal effect parameter $p=2$, it is defined by\\
- $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{  x_{i+}} -  \sqrt{\bar x_{.+}} $ \ ; \\
- since this is an elementary effect, it can be used in interactions
- and in endowment and creation functions;
 
  \item {\em out-degree related activity effect (centered)} \texttt{(outAct.c)},
  defined by the out-degree times the centered out-degree of the actor,\\
@@ -9773,6 +10226,46 @@ and
  (earlier called {\em out-degree$\,\hat{\ }$(1.5)}), defined by  \\
  $s^{\rm net}_{i\vit}(x) = x^{1.5}_{i+} = x_{i+}\,\sqrt{x_{i+}}$ \\
  endowment effect only likelihood-based;
+
+
+ \item[{\hspace*{-1ex}$\bigodot$}]
+The following four effects are meant mainly for interactions.
+Recall that for interaction effects, the internal effect parameters
+should match; see Section~\ref{intint}.
+They are elementary effects (see Section~\ref {S_elementary}),
+which means they can be used in interactions
+ and in endowment and creation functions.
+
+
+ \item {\em in-degree related activity ego effect} \texttt{(inAct\_ego)},
+ 	 defined as the elementary effect version of the  half-centered  cross-product
+ of the actor's in- and out-degrees,\\
+ $ f^{\rm net,\, el}_{i\vit}(x) = \big(  x_{+i} - \bar x_{+.}\big)$\ ,\\
+ where\\
+ $ \bar x_{+.} \,=\,  \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij} \ $ ;
+ for internal effect parameter $p=2$, it is defined by\\
+ $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{   x_{+i}} - \sqrt{\bar x_{+.}} $ \ ; \\
+
+ \item {\em out-degree related activity ego effect} \texttt{(outAct\_ego)},
+ 	 defined as the elementary effect version of the half-centered
+ squared out-degree of the actor,\\
+ $ f^{\rm net,\, el}_{i\vit}(x)  =  \big(  x_{i+} - \bar x_{.+}\big)$ ,\\
+ where\\
+ $ \bar x_{.+} \,=\,  \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij} \ ;  $ \\
+ for internal effect parameter $p=2$, it is defined by\\
+ $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{  x_{i+}} -  \sqrt{\bar x_{.+}} $ \ ; \\
+
+ \item {\em 1 divided by in-degree activity effect} \texttt{(divIn\_ego)},
+ the elementary effect defined by 1 divided by the actor's in-degree ,\\
+ $ f^{\rm net,\, el}_{i\vit}(x)  =  1/ x_{+i}\,$ ,\\
+ where $1/0$ is computed as 0;\\
+  for internal effect parameter $p=2$ the square root is taken;
+
+ \item {\em 1 divided by out-degree activity effect} \texttt{(divOut\_ego)},
+ the elementary effect defined by 1 divided by the actor's out-degree ,\\
+ $ f^{\rm net,\, el}_{i\vit}(x)  =  1/ x_{i+}\,$ ,\\
+ where $1/0$ is computed as 0;\\
+ for internal effect parameter $p=2$ the square root is taken;
 
  \item {\em reciprocal degree-related activity effect} \texttt{(reciAct)}
  defined by the degree of $i$ multiplied by $i$'s reciprocal degree,\\
@@ -9828,19 +10321,29 @@ and
  but with a sign reversal for the parameter;
 
 
- \item {\em out-degree more than $p$} where $p$ is some constant
+ \item {\em out-degree more than $p$} (\texttt{outMore}) where $p$ is some constant
  (internal effect parameter, see above),
-  there are two implementations here:
- \texttt{outMore}, \texttt{outMore2}, and \texttt{outMore3},
+  there are three implementations here:
+ (\texttt{outMore}), (\texttt{outMore2}), and (\texttt{outMore3}),
  to allow the simultaneous use of this
  effect with three different internal effect parameters;
  they are defined by \\
  $s^{\rm net}_{i\vit}(x) = \text{max}(x_{i+}\,-\, p, \, 0)$;\\
  this can be regarded as the mirror image of \texttt{outTrunc};
 
+ \item {\em out-degree larger than $p$} (\texttt{outThreshold})
+ (out-threshold($p$)) where $p$ is some constant
+ (internal effect parameter, see above),
+  there are two implementations here:
+(\texttt{outThreshold}) and (\texttt{outThreshold2}),
+ to allow the simultaneous use of this
+ effect with two different internal effect parameters;
+ they are defined by \\
+ $s^{\rm net}_{i\vit}(x) = I(x_{i+} > p)$;\\
+
  \item {\em square root out-degree}, defined by  \\
  $s^{\rm net}_{i\vit}(x) = \sqrt{x_{i+}}$;\\
- this is left out in later versions of \si;
+ this was left out in later versions of \si;
 
  \item {\em squared (out-degree -- $p$)}, where $p$ is some constant,
  defined by  \\
@@ -9865,7 +10368,8 @@ and
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \big( \frac 1n \sum_h  {x_{h+}} \,-\, p \big)=
                            x_{i+}\, \big( \frac 1n \sum_h x_{h+} \,-\, p \big) $ \, ;\\[0.2em]
   this effect is a network-by-period level effect and therefore is useful only
-  for multigroup data sets or for data sets with many periods;\\
+  for \\
+  multi-group data sets or for data sets with many periods;\\
   it may be beneficial for convergence to use a value of $p$ that is
   close to the average degree (but constant, while this effect
   is for the dynamic average outdegree);
@@ -10532,6 +11036,21 @@ defined by \\
  defined by the product of $i$'s covariate and the sum of those of his alters,\\
  $s^{\rm net}_{i\vit}(x) = v_i \, \sum_j x_{ij}\, v_j $;
 
+ \item {\em sign(alter -- ego) for covariate} \texttt{(altHigherEgoX)} ,
+ defined by the number of ties $i \rightarrow j$ where $j$'s covariate
+ is larger than  $i$'s minus the number of ties
+ where $j$'s covariate is larger than  $i$'s,\\
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \text{sign}(v_j - v_i) $,\\
+ where $\text{sign}(d) = 1$ for $d > 0$, 0 for $d = 0$,
+ and --1 for $d < 0$;
+
+ \item {\em ego $>$ alter for covariate} \texttt{(higher)} ,
+ defined by the number of ties where $i$'s covariate
+ is larger than alter's, while equality counts for half,\\
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \text{dsign}(v_i - v_j) $,\\
+ where $\text{dsign}(d) = 0$ for $d < 0$, 0.5 for $d = 0$,
+ and 1 for $d > 0$;
+
  \item {\em covariate-ego $\times$ alter $\times$ reciprocity}
  \texttt{(egoXaltXRecip)},
  defined by the product of $i$'s covariate and the sum of those
@@ -10623,26 +11142,34 @@ defined by \\
  which implies that it must be non-centered.
 
  \item {\em indegree popularity from same covariate}
-\texttt{(sameXInPop)} defined by the
- number of incoming ties received by those to whom $i$ is tied
- and sent by others who have the same covariate value as $i$,\\
+\texttt{(sameXInPop)} defined by the sum over $j$ of outgoing ties $i \rightarrow j$ weighted by the
+number of actors with the same covariate value as $i$ who also have a tie to $j$:\\
  $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sum_h x_{hj}\, I\{v_i = v_h \} $;\\
- for internal effect parameter $p=2$, it is defined by\\
- $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sqrt{\sum_h x_{hj}\, I\{v_i = v_h \}} $;\\
+ for internal effect parameter $p=2$, the square root of the sum over $h$ is taken;\\
+ for internal effect parameter $p=3$, available only for
+ covariates with integer values from 0 to 20, the weights are the
+ proportion of actors with the same covariate value as $i$ who also have a tie to $j$:\\
+ $\displaystyle s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \, \frac{\sum_h x_{hj}\, I\{v_i = v_h \}}
+                {\sum_h I\{v_i = v_h \}} $;\\
+ for internal effect parameter $p=4$, the square root of the ratio of sums is taken;
 
  \item {\em indegree popularity from different covariate}
 \texttt{(diffXInPop)} defined by the
  number of incoming ties received by those to whom $i$ is tied
  and sent by others who have a different covariate value than $i$,\\
  $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sum_h x_{hj}\, I\{v_i \neq v_h \} $;\\
- for internal effect parameter $p=2$, it is defined by\\
- $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sqrt{\sum_h x_{hj}\, I\{v_i \neq v_h \}} $;\\
+ for internal effect parameter $p=2$, the square root of the sum over $h$ is taken;\\
+ for internal effect parameter $p=3$, available only for
+ covariates with integer values from 0 to 20, it is defined by\\
+ $\displaystyle s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \frac{\sum_h x_{hj}\, I\{v_i \neq v_h \}}
+                {\sum_h I\{v_i \neq v_h \}} $;\\
+ for internal effect parameter $p=4$, the square root of the ratio of sums is taken;
 
  \item {\em outdegree activity to same covariate}
 \texttt{(sameXOutAct)} defined by the
  squared number of ties to those
  others who have the same covariate value as $i$,\\
- $s^{\rm net}_{i\vit}(x) =  \sum_j \big(x_{ij} \, I\{v_i = v_j \}\big)^2 $;\\
+ $s^{\rm net}_{i\vit}(x) =  \big( \sum_j x_{ij} \, I\{v_i = v_j \}\big)^2 $;\\
  for internal effect parameter $p=2$, it is defined by\\
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij} \, I\{v_i = v_j \}
             \sqrt{\sum_h x_{ih}\, I\{v_i = v_h \}} $;\\
@@ -10676,7 +11203,36 @@ defined by \\
 \texttt{(homXOutAct)} defined by the
  sum of outgoing ties weighted by the number of outgoing
  ties to those with the same covariate value (as alter),\\
- $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sum_h x_{ih} \,I\{v_j = v_h \} $;
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sum_h x_{ih} \,I\{v_h = v_j \} $;
+
+
+ \item {\em outdegree activity to homogeneous covariate}
+\texttt{(homXOutAct2)},\\
+ almost the same as \texttt{homXOutAct}, but much more efficiently programmed,
+ and only for covariates with integer values from 0 to 20; defined by the
+ sum of outgoing ties weighted by the number of outgoing
+ ties to those with the same covariate value (as alter),
+ but it should be positive:\\
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sum_h x_{ih} \,I\{v_h = v_j > 0\} $;
+
+ The effect parameter $p$ can take the values 1, 2, 3 and 4.
+ The formula given above is for $p=1$.\\
+ For $p=3$, the effect is defined by the
+  sum of $i$'s outgoing ties, where the tie to $j$ is weighted by
+the fraction of alters with the same covariate value as $j$ who receive a tie from $i$: \\[0.5em]
+ $\displaystyle s^{\rm net}_{i\vit}(x) =   \sum_j x_{ij}\, \frac{ \sum_{h} x_{ih}\, I\{v_h = v_j > 0 \}}
+            { \sum_{h} I\{v_h = v_j > 0 \}} \ . \hfill (p=3) $
+
+ For $p=2$ and $p=4$, the square root is taken: \\[0.5em]
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \sqrt{\sum_h x_{ih} \,I\{v_h = v_j > 0\}}
+                 \hfill (p=2)$\\[0.3em]
+ and \\[0.3em]
+ $\displaystyle s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \sqrt{ \frac{ \sum_{h} x_{ih}\, I\{v_h = v_j > 0 \}}
+            { \sum_{h} I\{v_h = v_j > 0 \}}}  \ . \hfill (p=4)$\\[0.3em]
+
+The default is $p=3$.
+Covariate values equal to~0 are excluded as a way of dealing with missing covariate data.
+
 
  \item {\em outdegree activity weighted by alter's covariate}
   \texttt{(altXOutAct)} defined by the
@@ -10875,7 +11431,13 @@ $s^{\rm net}_{i\vit}(x ) = \sum_j  x^{\rm{simm}}_{ij}\,v_j $ .
 \end{center}
 \end{minipage}
 
-\setcounter{savenumi}{\value{enumi}}
+ \item
+ {\em number of four-cycles to same covariate}  \texttt{(sameInXCycle4)},\\
+ defined by the number of four-cycles sent to actors with the
+ same covariate value,  \\[0.3em]
+ $s^{\rm net}_{i\vit}(x) =  \frac14 \sum_{j,k,h; \text{all different}}
+            x_{ij}\, x_{ik}\, x_{hj}\, x_{hk}\,I\{v_j = v_k\} $;\\[0.3em]
+ for parameter $p=2$ the square root is taken.
 
  \item {\em group average} \texttt{(avGroupEgoX)}, defined by ego's value multiplied by the
  average of the covariate for this period,  \\
@@ -10890,6 +11452,9 @@ $s^{\rm net}_{i\vit}(x ) = \sum_j  x^{\rm{simm}}_{ij}\,v_j $ .
  in the multi-group object.
  Note that always, the average $\overline {v} $ is centered by the global mean.
  For multi-group data, global centering means centering over all groups.
+
+\setcounter{savenumi}{\value{enumi}}
+
 \end{enumerate}
 
 \noindent
@@ -11113,23 +11678,6 @@ with $v_h = v_i\,$:
                 I\Big\{  \Big( \sum_{h \neq i} x_{hj}\, I\{v_h = v_i\} \Big) > 0 \Big\} \ .
 \]
 
-\item \emph{ego-(in-alter-distance-2) same covariate} \texttt{(sameEgoInDist2)},
-      defined as the sum, for all actors $j$ to whom $i$ has a tie,
-      of the proportion of values $v_h$ equal to $v_i$
-      in their in-neighbourhoods (i.e., for all actors $h$, other than $i$,
-       who send ties to $j$; configurations $i \rightarrow j \leftarrow h$):
-\[
- s^{\rm net}_{i\vit}(x) = \sum_{j;\, j \neq i, \, x_{+j} > x_{ij} } \frac{x_{ij}}{x_{+j} - x_{ij}}
-                        \, \sum_{h \neq i} x_{hj}\, I\{v_h = v_i\} \ ,
-\]
-where 0/0 is defined as 0; for internal effect parameter $p=0$ it is defined
-as the number of out-ties $j$ who have any incoming tie from an actor $h$
-with $v_h = v_i\,$:
-\[
- s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\,
-                I\Big\{  \Big( \sum_{h \neq i} x_{hj}\, I\{v_h = v_i\} \Big) > 0 \Big\} \ .
-\]
-
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
 
@@ -11144,6 +11692,10 @@ For pairs of actor-dependent covariates $V$ and $U$ with values  $v_i$ and $u_j$
 the following effects are available.
 These are useful, e.g., for bipartite (two-mode) networks.
  Then $V$ must be a covariate for the first mode, and $U$ for the second mode.
+
+If it is desired to use them for the same variables ($V = U$),
+it is necessary to define a data set with two identical variables
+(i.e., with all variables equal) bearing the same name.
 
 \begin{enumerate}
 \setcounter{enumi}{\value{savenumi}}
@@ -11162,27 +11714,28 @@ These are useful, e.g., for bipartite (two-mode) networks.
   these can be given \texttt{imputationValues}  equal to 0,
   see the help page for \sfn{coCovar} and \sfn{varCovar}.
 
- \item \emph{indegree popularity from same covariate1 to same covariate2},
+ \item \emph{indegree popularity from same covariate1 to same covariate2},\\
  \texttt{(sameXVInPop)} and \texttt{(sameXVInPop2)}.
   This is an elementary effect that is implemented only for non-centered categorical
   actor variables with values within the range of numbers from 0 to 20.\\
-  It represents the frequency, or relative frequency, of ties from actors in the
+  It represents the frequency, or relative frequency, of ties
+  from actors in the
   same category of covariate $V$ to nodes in the same category of covariate $U$.\\
- It is defined, for the tie from $i$ to $j$, by the number of
-incoming ties sent by actors $h$ who have the same non-zero covariate value $v_h = v_i$ as $i$
- and received by those $k$ who have the same non-zero covariate value $u_k = u_j$ as $j$:\\[0.3em]
+ It is defined, for the tie from $i$ to $j$, by
+  the number of ties sent by actors $h$ who have the same non-zero covariate value $v_h = v_i$ as $i$
+  to those $k$ who have the same non-zero covariate value $u_k = u_j$ as $j$:\\[0.3em]
  $s^{\rm el}_{i\vit}(x) =  x_{ij}\, \sum_{h,k} x_{hk}\, I\{v_h = v_i \geq 1,\, u_k=u_j \geq 1\}  \ ,
              \hfill (p=1) $\\[0.3em]
  where the indicator function $ I\{v_h = v_i\geq 1,\, u_k=u_j \geq 1 \} $ is 1
  if the condition $\{v_h = v_i \geq 1,\, u_k=u_j \geq 1 \} $ is satisfied, and 0 if it is not.\\
-  The exclusion of values 0 is for the treatment of missing values:
+  The exclusion of values 0 is for the treatment of missing values:\\
   these can be given \texttt{imputationValues}  equal to 0,
   see the help page for \sfn{coCovar} and \sfn{varCovar}.
 
  The effect parameter $p$ can take the values 1, 2, 3 and 4.
  The formula given above is for $p=1$.\\
  For $p=3$, the effect is defined by the \underline{proportion} of ties from same-$V$ actors
- to same-$V$ nodes, as given by the formula \\[0.5em]
+ to same-$U$ nodes, as given by the formula \\[0.5em]
  $\displaystyle s^{\rm el}_{i\vit}(x) =  x_{ij}\, \frac{ \sum_{h,k} x_{hk}\, I\{v_h = v_i \geq 1,\, u_k=u_j \geq 1\}}
             { \sum_{h,k} I\{v_h = v_i \geq 1,\, u_k=u_j \geq 1\}} \ . \hfill (p=3) $
 
@@ -11212,6 +11765,10 @@ For \texttt{sameXVInPop}, they tend to choose nodes of the same $U$ category.
 For \texttt{sameXCycle4}, if they tend to choose some particular node in common,
 they will also tend to choose some other nodes in common.
 
+Note effect \texttt{homXOutAct2}, which is an ego version of  \texttt{sameXVInPop},
+expressing that ego has differential propensities to ties with alters
+of different categories; the role of $U$ in \texttt{sameXVInPop}
+is taken by $V$ in the definition of \texttt{homXOutAct2}.
 
 
 \setcounter{savenumi}{\value{enumi}}
@@ -11249,7 +11806,7 @@ the generality already now.
 \label{S_NonDirEff}
 
 For non-directed (symmetric) networks
-\citep[see Section~\ref{S_modeltype_nd} and][]{SnijdersPickup16},
+\citep[see Section~\ref{S_modeltype_nd} and][]{SnijdersPickup17},
 in principle the same effects are used as above; you may search
 in this manual for `non-directed' to see the cases where the definition of
 an effect for non-directed networks deviates from the
@@ -11411,13 +11968,17 @@ for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{+i}} - \sqrt{\
 for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{j+}} - \sqrt{\bar w})$;\\[0.2em]
 
  \item {\em Effect of out-degree  in W on X-activity } ($X$: outdegree$^{1/p}$ $W$ activity) \texttt{(outActIntn)}\\
- defined by the $W$-out-degree of $i$ (for $p = 2$ its square root)
- times $i$'s $X$-out-degree:\\[0.2em]
+ defined by the centered $W$-out-degree of $i$ (for $p = 2$ its square root, for $p=0$ its logarithm)
+ times $i$'s $X$-out-degree:\\[0.3em]
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, ({w_{i+}} - {\bar w}) =
                            x_{i+}\, ({w_{i+}} - {\bar w}) $ or\\[0.2em]
 for $p=2$ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, (\sqrt{w_{i+}} - \sqrt{\bar w}) =
-                           x_{i+}\, (\sqrt{w_{i+}} - \sqrt{\bar w}) $;\\[0.2em]
+                           x_{i+}\, (\sqrt{w_{i+}} - \sqrt{\bar w}) $;\\[0.3em]
+or for $p=0 $ \  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \big(\log(w_{i+}) - \log(\bar w)\big) =
+                           x_{i+}\, \big(\log(w_{i+}) - \log(\bar w)\big) $,\\[0.3em]
+where $\log(0)$ is defined as 0;
 
+\setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
 \smallskip
 
@@ -11487,7 +12048,8 @@ where $\text{divi}(a,b)$ is defined as above;
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \big( \frac 1n \sum_h  {w_{h+}} \,-\, p \big)=
                            x_{i+}\, \big( \frac 1n \sum_h w_{h+} \,-\, p \big) $ \, ;\\[0.2em]
   this effect is a network-by-period level effect and therefore is useful only
-  for multigroup data sets or for data sets with many periods;\\
+  for \\
+  multi-group data sets or for data sets with many periods;\\
   it may be beneficial for convergence to use a value of $p$ that is
   close to the average $W$-degree (but constant, while this effect
   is for the dynamic average outdegree);
@@ -11696,6 +12258,16 @@ Further there are a number of mixed triadic effects.
 \vfill
 \end{minipage}
 \smallskip
+\item
+ {\em any agreement along W leading to X}, ($X$: from $W$ any agreement)  \texttt{(fromAny)} \\[0.2em] % \texttt{(fromWAgree)}\\
+ $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, I\{ w_{ih}\, w_{jh} > 0\}\,$;\\[0.2em]
+ this refers to agreement of actors with respect to their $W$-choices
+ (structural equivalence with respect to outgoing $W$-choices),
+ truncated to~1;
+ the contribution of the tie $i \stackrel{X}{\rightarrow} j$
+ is proportional to whether there are any joint $W$ choices of others,
+ $i \stackrel{W}{\rightarrow} h \stackrel{W}{\leftarrow} j$.
+ \smallskip
  \item
 \begin{minipage}[t]{.7\textwidth}
  {\em  W leading to agreement along X}, ($X$: $W$ to agreement) \texttt{(to)} \\[0.2em]
@@ -12261,8 +12833,8 @@ $ s^{\rm net}_{i\vit}(x) =  \,  x_{i+} \sum_k  w_{ik}\,(w_{+k} - \bar w)     \bi
 
 \item
 \begin{minipage}[t]{.70\textwidth}
-   shared $W$ outdegree activity effect ($X$: shared $W$ outdegree$^{1/p}$ activity)  
-    \texttt{(outOutDist2ActIntn)} 
+   shared $W$ outdegree activity effect ($X$: shared $W$ outdegree$^{1/p}$ activity)
+    \texttt{(outOutDist2ActIntn)}
    defined by the outdegree of $i$
    multiplied by sum of $X$-outdegrees of those $h$ to whom $i$ has a
    distance-2 $W$-tie  $i \rightarrow k \leftarrow h$ (counting multiplicities).\\
@@ -12761,7 +13333,12 @@ and the covariate $V$ as \texttt{interaction2}.
  having the same value of $V$ as ego:\\
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \sum_h w_{hj}\,I\{v_i = v_h\}  $ \\
  or for $p=2$ \\
-   $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \sqrt{\sum_h w_{hj}\,I\{v_i = v_h\}}   $;
+   $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \sqrt{\sum_h w_{hj}\,I\{v_i = v_h\}}   $;\\
+ for internal effect parameter $p=3$, available only for
+ covariates with integer values from 0 to 20, it is defined by\\
+ $\displaystyle s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \frac{\sum_h w_{hj}\, I\{v_i = v_h \}}
+                {\sum_h I\{v_i = v_h \}} $;\\
+ for internal effect parameter $p=4$, the square root of the ratio of sums is taken;
 
  \item {\em Effect of in-degree in W, restricted to same $V$, on X-activity }
  ($X$: indegree$^{1/p}$ $W$ from same $V$ - activity) \texttt{(sameXinActIntn)}\\
@@ -12769,7 +13346,13 @@ and the covariate $V$ as \texttt{interaction2}.
  having the same value of $V$ as ego:\\
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \sum_h w_{hi}\,I\{v_i = v_h\}  $ \\
  or for $p=2$ \\
-   $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \sqrt{\sum_h w_{hi}\,I\{v_i = v_h\}}   $;
+   $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \sqrt{\sum_h w_{hi}\,I\{v_i = v_h\}}   $;\\
+ for internal effect parameter $p=3$, available only for
+ covariates with integer values from 0 to 20, it is defined by\\
+ $\displaystyle s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} \frac{\sum_h w_{hi}\, I\{v_i = v_h \}}
+                {\sum_h I\{v_i = v_h \}} $;\\
+ for internal effect parameter $p=4$, the square root of the ratio of sums is taken;
+
 
  \item {\em Effect of out-degree in W, restricted to same $V$, on X-popularity }
  ($X$: outdegree$^{1/p}$ $W$ to same $V$ - popularity)   \texttt{(sameXoutPopIntn)}\\
@@ -13945,7 +14528,7 @@ reciprocated degrees.
  \[ \exp\big( \alpha_h / (x_{i+} +1)\big) \ . \]
  \item logarithmic outdegree effect  \texttt{(outRateLog)} \\
  This effect multiplies the factor $\lambda^{\rm net}_{i3}$ by
- \[ \exp\Big( \ln\big(\alpha_h (x_{i+} +1)\big)\Big) \,=\,
+ \[ \exp\big(\alpha_h\, \ln (x_{i+} +1)\big) \,=\,
                  \big(x_{i+} +1\big)^{\alpha_h} \ . \]
 
  \item inverse indegree effect  \texttt{(inRateInv)} \\
@@ -13953,7 +14536,7 @@ reciprocated degrees.
  \[ \exp\big( \alpha_h / (x_{+i} +1)\big) \ . \]
  \item logarithmic indegree effect  \texttt{(inRateLog)} \\
  This effect multiplies the factor $\lambda^{\rm net}_{i3}$ by
- \[ \exp\Big( \ln\big(\alpha_h (x_{+i} +1)\big)\Big) \,=\,
+ \[ \exp\big(\alpha_h\, \ln (x_{+i} +1) \big) \,=\,
                  \big(x_{+i} +1\big)^{\alpha_h} \ . \]
 
 
@@ -13962,7 +14545,7 @@ reciprocated degrees.
  \[ \exp\big( \alpha_h / (x_{i(r)} +1)\big) \ . \]
  \item logarithmic reciprocal degree effect  \texttt{(recipRateLog)} \\
  This effect multiplies the factor $\lambda^{\rm net}_{i3}$ by
- \[ \exp\Big( \ln\big(\alpha_h (x_{i(r)} +1)\big)\Big) \,=\,
+ \[ \exp\big(\alpha_h \, \ln(x_{i(r)} +1)\big) \,=\,
                  \big(x_{i(r)} +1\big)^{\alpha_h} \ . \]
 
  The exponential link function and logarithmic transformation collaborate
@@ -14271,6 +14854,14 @@ The list of these effects is the following.
  and the other actors $j$ to whom he is reciprocally tied, multiplied by their indegrees,\\
  $s^{\rm beh}_{i\vit}(x, z) =  \sum_j x_{ij} x_{ji} x_{+j} ({\rm sim}^z_{ij} - \widehat{{\rm sim}^z}) $;
 
+ \item {\em average similarity $\times$ variance alter effect} \texttt{(avSimVarAlt)},
+ defined by the average of centered similarity scores ${\rm sim}^z_{ij}$ between $i$
+ and the other actors $j$ to whom he is tied, multiplied the centered variance of the behavior of his alters, \\
+ $s^{\rm beh}_{i\vit}(x, z) = x_{i+}^{-1} \,
+        \sum_j x_{ij}  ({\rm sim}^z_{ij} - \widehat{{\rm sim}^z}) \times \big(x_{i+}^{-1}\,\sum_j (x_{ij} z_j)^2 - x_{i+}^{-2}\,
+       (\sum_j x_{ij}z_j)^2 - \widehat{{\rm var}^z} \big) $\\
+ (and $0$ if $x_{i+} = 0$) ; \\
+where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values in all but the final wave; \\
 
  \item {\em average attraction toward higher effect} \texttt{(avAttHigher)}, defined by the
  average of non-centered similarity scores ${\rm sim}^z_{ij}$ between $i$
@@ -14528,6 +15119,14 @@ The list of these effects is the following.
  $s^{\rm beh}_{i\vit}(x, z) =  z_i \big( \text{min}_j \, x_{ij}\, z_j \big) $\\
  (and the mean behavior, i.e. $0$, if $\sum_j x_{ij} = 0$) ;
 
+ \item {\em variance alter effect} \texttt{(varAlt)},
+ defined by  $i$'s
+ behavior multiplied by the centered variance of the behavior of his alters, \\
+ $s^{\rm beh}_{i\vit}(x, z) =  z_i \big(x_{i+}^{-1}\sum_j (x_{ij} z_j)^2 - x_{i+}^{-1}
+       (\sum_j x_{ij}z_j)^2 - \widehat{{\rm var}^z} \big) $\\
+ (and $0$ if $x_{i+} = 0$) ; \\
+where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values
+in all but the final wave; \\
 
  \item {\em dense triads effect} \texttt{(behDenseTriads)},
  defined by  $i$'s
@@ -16218,6 +16817,12 @@ measure of `fit'.
 The following measures that have something of the same purpose
 are available in \RS through function  \sfn{sienaRI}.
 
+Some further material is at \\
+\url{https://www.stats.ox.ac.uk/~snijders/siena/EffectSizes_s.pdf}.
+
+There is a script at \\
+\url{https://www.stats.ox.ac.uk/~snijders/siena/vdB_effsize.R}.
+
 \subsubsection{Relative importance of effects}
 
 The measure for \emph{relative importance of effects} in {\saom}s,
@@ -16697,19 +17302,6 @@ to get the source code of the whole package.
 This is available from GitHub at
 \url{https://github.com/stocnet/rsiena/}.
 
-\iffalse
-
-In the file structure for \texttt{RSienaTest} there is a directory
-\texttt{doc} which contains a lot of programmers' documentation.
-These are in the form of \LaTeX \ files, which can be compiled
-to produce .pdf files.
-The file \texttt{Siena\_Algorithms.tex} contains a lot of details
-about algorithms used.
-For code developers, important files are
-\texttt{HowToCommit.tex} and \texttt{RSienaDeveloper.tex}.
-The latter file will guide you to the further documentation.
-\fi
-
 A lot of programmers' documentation is also in the file
 \href{http://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf}{\texttt{Siena\_algorithms.pdf}}
 which can be downloaded from the
@@ -16768,13 +17360,13 @@ Windows. Do not worry, unless you have created any new source files, when it
 might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
-  to work correctly when installed. Type\\
-\verb|R CMD check RSiena_1.4.11.tar.gz|\\
+  to work correctly when installed. Type
+\verb|R CMD check RSiena_1.5.2.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.4.11.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.5.2.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -16876,7 +17468,10 @@ For example, compare the construction of \texttt{sameXTransTrip} to that of
 
               For how to deal with internal effect parameters, look up
               a function defining an effect that has such
-              a parameter.
+              a parameter.\\
+              It is advisable to use the hash sign (\texttt{\#}) in the
+              effect and function names. See subsection~\ref{S_hash}.
+
 
 		\item Build the package and install it.  Check from R that
               the new effect (which has only been created nominally)
@@ -16952,6 +17547,56 @@ rather than an \sfn{egoStatistic}.
 Note that if your new effect could usefully be used as part of a multiple
 network effect you should use the generic effect approach and not the following.
 
+\subsection{The use of the hash (\texttt{\#}) sign
+\protect \newline
+in names of effects  and estimation statistics}
+\label{S_hash}
+
+If an effect contains an  internal effect parameter,
+it is advisable to report the value of the internal effect parameter
+in the names of the effect and the estimation statistics reported
+when printing the effects object and the estimation results.
+These names are the columns \texttt{effectName} and \texttt{functionName}
+in the effects object, and their origins are the corresponding
+columns in file \texttt{allEffects.csv}.
+The value of the internal effect parameter can be included
+by the use of the hash sign (\texttt{\#}).
+In function \sfn{setEffect}, occurrences of \texttt{"\#"}
+in columns \texttt{effectName} and \texttt{functionName}
+are replaced by the value of the internal effect parameter
+(given explicitly by the user, or else the default value).
+
+Thus, the hash sign  (\texttt{\#}) is a placeholder for the value of
+the internal effect parameter.
+When you look in the file \texttt{allEffects.csv}, you will see
+many occurrences of this symbol.
+
+A difficulty occurs when the replacement has been done
+(so there is no more  \texttt{"\#"}), but a new
+call of \sfn{setEffect} is made with a new value of the
+internal effect parameter.
+To make the correct replacement then, the following rule is followed
+for defining the names in \texttt{allEffects.csv}:
+
+\begin{itemize}
+\item The symbol \texttt{\#} should occur in the \texttt{effectName}
+and \texttt{functionName} in \texttt{allEffects.csv} in only the following substrings:
+\begin{itemize}
+  \item \texttt{"1/\#"}
+  \item \texttt{"(\#)"}
+  \item \texttt{"\#-"}
+  \item \texttt{"={\char32}\#"}
+  \item \texttt{"+{\char32}\#"}
+  \item \texttt{"-{\char32}\#"}
+\end{itemize}
+where \texttt{"\char32"} denotes one blank space (used here for the sake
+of clarity, not for use in \texttt{allEffects.csv}).
+\item No confusion should be possible, i.e.,
+        no substrings in \texttt{allEffects.csv}
+     of these kinds are permitted where \texttt{\#}  is any number.
+\end{itemize}
+
+
 
 \subsection{Example: adding the truncated out-degree effect}
 
@@ -16988,7 +17633,7 @@ where $p$ is an \hyperlink{T_effpar}{internal effect parameter}.
       The hash sign (\texttt{\#}) in these names will be replaced
       by the value of the
       internal effect parameter in the written output.
-      The `parm' column, which defines
+      The \texttt{parm} column, which defines
       the default value of the internal effect parameter, was set to 5.
       \\
       The package was built. Loading it in \R and creating an
@@ -17063,7 +17708,7 @@ where $p$ is an \hyperlink{T_effpar}{internal effect parameter}.
       The explanation also was adapted.
       The header file now implies that for the function
       \texttt{TruncatedOutdegreeEffect}
-      functions are needed of the types \sfn{calculateContribution},\\
+      functions are needed of the types \sfn{calculateContribution},
       \sfn{endowmentStatistic} and \sfn{egoStatistic}.
       \\
       This was implemented in the file \textsf{TruncatedOutdegreeEffect.cpp},
@@ -17077,7 +17722,7 @@ where $p$ is an \hyperlink{T_effpar}{internal effect parameter}.
       in which the current function is defined, and the arrow \texttt{->}
       indicates a further pointer; thus, the variable\\
       \texttt{this->pNetwork()->outDegree(this->ego())}\\
-      refers to the outdegree of ego (denoted in our mathematical
+      refers to the outdegree of ego (ego being denoted in our mathematical
       formulae by $i$) in the current network -- in other words,
       $x_{i+}$.\\
       The variable \texttt{this->lc} refers to the
@@ -17224,6 +17869,19 @@ A different approach was taken for effectGroups
 the former is for covariates on the first node set, the second for
 covariates on the second node set.
 
+For effects defined for one dependent network and two actor covariates,
+the following effectGroup is defined:
+\begin{itemize}
+\item \sfn{doubleCovarNetObjective} is for effects where the
+    first covariate is for the actors and, if the network is two-mode,
+    the second covariate is for the second mode;
+    moreover, both covariates should have no more than
+    20 distinct values. (This restriction is currently
+    coded in \sfn{effects.r}, \sfn{sienaDataCreate.r},
+    and three C++ functions. That is perhaps overdone.)
+\end{itemize}
+\medskip
+
 For effects defined for two dependent networks and one actor covariate,
 the following effectGroups are defined:
 \begin{itemize}
@@ -17244,7 +17902,8 @@ the following effectGroup is defined:
 \end{itemize}
 \medskip
 
-Further some of the complex effectGroups are the following:
+Further some of the complex effectGroups are the following.
+For co-evolution of multiple networks:
 \begin{itemize}
 \item \sfn{nonSymmetricNonSymmetricObjective} is for combination of two
     directed networks, one in the role of dependent network and the other
@@ -17276,6 +17935,12 @@ Further some of the complex effectGroups are the following:
     of two networks and a dyadic covariate, where the dyadic covariate
     should have the same first and second node sets
     as the explanatory network;
+\end{itemize}
+\medskip
+
+\noindent
+For dependent behavioral variables:
+\begin{itemize}
 \item \sfn{behaviorOneOneModeObjective} is for dependent behavioral variables and
     two explanatory one-mode directed networks;
 \item \sfn{behaviorSymSymObjective} is for dependent behavioral variables and
@@ -17290,7 +17955,7 @@ Further some of the complex effectGroups are the following:
 
 If you wish to add an effect with a combination of variables that is not yet implemented,
 you have also to treat it in \sfn{effects.r} (which will require some figuring out) and
-mention it in \sfn{effectsDocumentation.r}.
+mention the effectGroup in \sfn{effectsDocumentation.r}.
 
 
 \appendix
@@ -17553,7 +18218,7 @@ an object of class `sienaGroup' from a list of Siena data objects:
 variable to indicate if it is OK to have just one object; `getDocumentation'
 is a flag to  allow documentation of internal functions, not for use by users\\
 
-4 & effectsDocumentation & 
+4 & effectsDocumentation &
 
 effectsDocumentation() & & Prints a html or
 \LaTeX\ table with the  effects details\\
@@ -17816,8 +18481,7 @@ news(package="packageName")
 \iffalse
 \template
 
-\item 2024-mm-dd GitHub, package version 1.x.x.
-
+\item 2025-mm-dd GitHub, package version 1.x.x.
 
 Changes in RSiena:
 \begin{itemize}
@@ -17837,6 +18501,246 @@ Changes in RSiena:
 
 \fi
 
+\item 2025-07-22 GitHub, package version 1.5.2.
+
+Changes in RSiena:
+\begin{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+    \item Option \texttt{returnChangeContributions=TRUE} added to \sfn{siena07}, allowing users to extract the \texttt{changeContributions} to the \sfn{sienaFit} object.
+    \item \sfn{sienaRIDynamics} reinstated based on the above new option, replacing the original code.
+    \end{itemize}
+\end{itemize}
+
+
+\item 2025-07-12 GitHub, package version 1.5.1.
+
+Changes in RSiena:
+\begin{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+   \item \sfn{sienaRI} reinstated.
+  \item Option \texttt{prML=2} for maximum likelihood estimation
+    using the \texttt{move} proposal step reinstated (\sfn{sienaAlgorithmCreate}).
+    \end{itemize}
+\item Effects:
+   \begin{itemize}
+   \item New effects \texttt{divOut\_ego}, \texttt{divIn\_ego}.
+    \end{itemize}
+\end{itemize}
+
+\item 2025-07-07 CRAN, New version 1.5.0.
+
+New maintainer: Christian Steglich.
+
+\item 2025-07-05 GitHub, package version 1.4.25.
+
+Changes in RSiena:
+\begin{itemize}
+ \item Effects:
+ \begin{itemize}
+  \item Some effects available for constant dyadic covariates were by
+    accident not yet available for changing dyadic covariates.
+    Now they are. The effects in question are
+    \texttt{XWX}, \texttt{XWX1}, and \texttt{XWX2}.
+ \item Coding:
+  \item Memory leaks closed.
+ \end{itemize}
+\end{itemize}
+
+\item 2025-05-03 GitHub, package version 1.4.23.
+
+Changes in RSiena:
+\begin{itemize}
+ \item Bug corrections
+ \begin{itemize}
+  \item Repaired (hopefully) memory leak in
+   \texttt{getTargetActorStatistics} and\\
+      \texttt{getTargetsChangeContributions} in \texttt{siena07setup.cpp}.
+  \item Repaired (hopefully) memory leak in
+      \texttt{move} in \texttt{MLSimulation.cpp}.
+  \item Repaired memory leak in \texttt{DoubleCovariateCatFunction}.
+ \end{itemize}
+ \item  Effects
+ \begin{itemize}
+  \item New effects \texttt{fromAny}, \texttt{sameInXCycle4}.
+  \item Effect shortName \texttt{cycle4ND} replaced by \texttt{cycle4}.
+  \item Better treatment of missing covariate values in effect \texttt{sameXCycle4}.
+  \item Internal effect parameter values 3 and 4 for \texttt{sameXInPop},
+      \texttt{diffXInPop},
+      \texttt{sameXInPopIntn},
+      \texttt{sameXInActIntn},
+      \texttt{homXOutAct2}.
+  \item New C++ class \texttt{CatCovariateDependentNetworkEffect}
+      (for \texttt{homXOutAct2}).
+  \item Added \texttt{(\#)} to the \texttt{effectName} of \texttt{from},
+      \texttt{sameXInPop},
+      \texttt{diffXInPop},
+      \texttt{sameXVInPop},
+      \texttt{sameXVInPop2}
+      in \texttt{allEffects.csv}.
+ \end{itemize}
+ \item
+ \begin{itemize} New functionality
+  \item In \sfn{print.sienaEffects(..., includeShortNames=TRUE)},
+      the \texttt{effectNumber} is also printed.
+ \end{itemize}
+ \item
+ \begin{itemize} Changes in documentation:
+  \item Definition of effects \texttt{outRateLog}, \texttt{inRateLog}, and \texttt{recipRateLog}
+      corrected in the manual.
+ \end{itemize}
+\end{itemize}
+
+\item 2025-02-08 GitHub, package version 1.4.22.
+
+Changes in RSiena:
+\begin{itemize}
+\item New functionality:
+   \begin{itemize}
+   \item New auxiliary GOF function \sfn{egoAlterCombi}.
+   \item Parameter \texttt{showAll} added to  \sfn{plot.sienaGOF}.
+    \end{itemize}
+\item  Effects
+   \begin{itemize}
+	\item Parameter 0 (for logarithm) in \texttt{outActIntn}.
+    \end{itemize}
+\item Documentation
+   \begin{itemize}
+	\item Description of \textit{sienacpp} omitted from manual.
+    \end{itemize}
+\end{itemize}
+
+\item 2024-12-18 GitHub, package version 1.4.21;
+   but the package has date 2024-12-12 and the Github release is from 2025-01-14.
+
+Changes in RSiena:
+\begin{itemize}
+\item New functionality
+   \begin{itemize}
+	\item New functions \sfn{selectionTable} and \sfn{influenceTable}.
+    \end{itemize}
+\item  Effects
+   \begin{itemize}
+	\item New effect \texttt{altHigherEgoX}.
+    \item Effect \texttt{higher} also implemented for symmetric networks.
+    \item Used \# in name of threshold effects.
+    \end{itemize}
+\item Bug corrections
+   \begin{itemize}
+	\item In \sfn{siena.table},  fixed parameter values are not reported as \texttt{NA},
+    but as their fixed values.
+    \end{itemize}
+\item  Messages
+   \begin{itemize}
+	\item If \sfn{includeInteraction} is called with argument \sfn{parameter},
+    an error message appears that this keyword should not be given.
+  \item Extension of message in \sfn{sienaTimeTest} given in the case of
+    collinearities.
+    \end{itemize}
+\item  Help pages
+   \begin{itemize}
+	\item Improved explanation of the use of \texttt{interaction1} and \texttt{interaction2}
+    in the help page for \sfn{includeInteraction}.
+    \end{itemize}
+\end{itemize}
+
+
+\item 2024-11-10 GitHub, package version 1.4.20.
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects:
+   \begin{itemize}
+	\item New effects \texttt{varAlt} and \texttt{avSimVarAlt}.
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+	\item Interaction effects for continuous behavior turned off. The R side of
+	\sfn{includeInteraction} for continuous behavior had been implemented but
+	not the C++ side, so now an error message is given.
+    \end{itemize}
+\end{itemize}
+
+\item 2024-09-03 GitHub, package version 1.4.19.
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects:
+   \begin{itemize}
+  \item New effects \texttt{outThreshold} and \texttt{outThreshold2}.
+  \item \texttt{outActIntn} is an ego effect.
+    \end{itemize}
+\item New functionality:
+   \begin{itemize}
+  \item New network option 11
+    (\emph{Contemporaneous evaluation statistics model}) for use of
+    contemporaneous statistics
+    for estimating all evaluation effects of the network variable.
+  \item If \sfn{setEffect} is called for an effect with \texttt{type=gmm}, an error message
+    is given that the function called should be \sfn{includeGMoMStatistics}.
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+  \item Error corrected that occurred for estimation by the GMoM if
+    some effects are fixed.
+  \item Correction of list of effect names given when \texttt{thetaBound} is exceeded.
+    \end{itemize}
+\end{itemize}
+
+
+\item 2024-07-31 GitHub, package version 1.4.18
+
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects:
+   \begin{itemize}
+  \item New gmm effects for co-evolution of multiple networks:
+    \texttt{crprod\_gmm}, \texttt{to\_gmm}, \texttt{from\_gmm}.
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+  \item Bug corrected in \sfn{sienaGOF} which occurred for models with tested effects
+    if \texttt{iterations} is less than \texttt{sienaFitObject\$n3}.
+    \end{itemize}
+\end{itemize}
+
+
+\item 2024-06-06 GitHub, package version 1.4.13
+
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects:
+   \begin{itemize}
+  \item New effect \texttt{homXOutAct2}.
+    \end{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+  \item The handling of internal effect parameters in the columns
+    \texttt{effectName}
+    and \texttt{functionName} of \texttt{sienaEffects} objects is improved.
+    This was achieved by changes in functions \sfn{setEffect}
+    and \sfn{includeInteraction}.
+    Effectnames as reproduced by \texttt{sienaFit} objects should now
+    contain the correct values of internal effect parameters.
+  \item New parameter \texttt{thetaBound} for \sfn{siena07}, which has the
+    effect of stopping the estimation process if some parameters become
+    too large (which would signal divergence).
+  \item Display of deviations in \texttt{siena07gui} modified so that numbers
+    larger than or equal to \texttt{1e5} in absolute value are displayed in
+    exponential format (and use only one line in the gui).
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+  \item Function \sfn{setEffect} corrected (it did not give the proper internal
+    parameters in the \sfn{effectName}).
+  \item Function \sfn{updateSpecification} corrected (it did not work properly
+    for including interactions).
+    \end{itemize}
+\end{itemize}
+
 
 \item 2024-04-23 GitHub, package version 1.4.11
 
@@ -17854,7 +18758,7 @@ Changes in RSiena:
    \begin{itemize}
   \item Method \sfn{print.sienaEffects} has an extra parameter \texttt{includeShortNames}
     to do what the name of this parameter suggests.
-    \end{itemize}  
+    \end{itemize}
 \end{itemize}
 
 
@@ -20687,7 +21591,7 @@ Fix to bug in sorting effects for multiple dependent variables.
 \item user specified interactions
 \item new utilities to update the effects object
 \end{itemize}
-\item 2010-01-15 R-forge revision 41 (RSienaTest only)
+\item 2010-01-15 R-forge revision 41 (\textsf{RSienaTest} only)
 
 \begin{itemize}
 \item
@@ -20700,7 +21604,7 @@ Fix to bug in sorting effects for multiple dependent variables.
   \item  remove extra sqrt roots in standard error of rates for conditional
   estimation (see revision 31)
 \end{itemize}
-\item 2010-01-15 R-forge revision 40:\textsf{RSiena}only
+\item 2010-01-15 R-forge revision 40: (\textsf{RSiena} only)
 
   remove extra sqrt roots in standard error of rates for conditional
   estimation (see revision 32)
@@ -20716,8 +21620,11 @@ Fix to bug in sorting effects for multiple dependent variables.
 Updated change log and manual in \textsf{RSiena} and \sfn{ChangeLog} in \textsf{RSienaTest}.
 
 \item 2010-01-01 R-forge revision 32
+\begin{itemize}
+\item
     print07report.r: corrected standard errors for rate estimate for
-    conditional estimation: needed square roots. RSiena
+    conditional estimation: needed square roots. (\textsf{RSiena})
+\end{itemize}
 
 \item 2009-12-31 R-forge revision 31
 \begin{itemize}

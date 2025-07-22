@@ -34,7 +34,7 @@ class SqrtTable;
 class FourCyclesEffect : public NetworkEffect
 {
 public:
-	FourCyclesEffect(const EffectInfo * pEffectInfo, bool TwoMode);
+	FourCyclesEffect(const EffectInfo * pEffectInfos);
 	virtual ~FourCyclesEffect();
 
 	virtual void initialize(const Data * pData,

@@ -75,6 +75,7 @@ protected:
 	double range() const;
 	double similarity(double a, double b) const;
 	double similarityMean() const;
+    double variance() const;
 	virtual void initializeStatisticCalculation();
 	virtual void cleanupStatisticCalculation();
 	const int * initialValues();

@@ -1064,10 +1064,10 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 			if (attr(xx$dyvCovars[[j]], "type") == "oneMode" &&
 				(nodeSets[2] == attr(xx$dyvCovars[[j]], 'nodeSet')[1]) &&
 				(nodeSets[2] == attr(xx$dyvCovars[[j]], 'nodeSet')[2]) )
-			{
+			{ 
 				objEffects <- rbind(objEffects,
 					createEffects("dyadSecondBipartiteObjective",
-						names(xx$dycCovars)[j],
+						names(xx$dyvCovars)[j],
 						name=varname,
 						groupName=groupName, group=group,
 						netType=netType))
@@ -1410,8 +1410,8 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 			covObjEffects <-
 				covObjEffects[covObjEffects$shortName %in%
 				c("altX", "altSqX",  "altLThresholdX", "altRThresholdX",
-					"homXOutAct", "altXOutAct",
-					"inActX", "outActX"), ]
+					"homXOutAct", "homXOutAct2", "altXOutAct",
+					"inActX", "outActX", "sameInXCycle4"), ]
 			if (!tr & (!moreThan2))
 			{
 				covObjEffects <-

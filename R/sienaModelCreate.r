@@ -128,9 +128,9 @@ sienaModelCreate <- function(fn,
 
 	if (!is.null(modelType))
 	{
-		if (any(!(modelType %in% 1:10)))
+		if (any(!(modelType %in% 1:11)))
 		{
-			stop('modelType can only have integer values from 1 to 10\n')
+			stop('modelType can only have integer values from 1 to 11\n')
 		}
 		if ((maxlike) & (any(modelType %in% 7:10)))
 		{
@@ -168,7 +168,7 @@ sienaModelCreate <- function(fn,
 	model$prML <- prML
 	if (length (prML) == 1)
 	{
-#		if (prML <= 1) # old default
+		if (prML <= 1) # old default
 #	pridg=0.05, prcdg=0.05, prper=0.2, pripr=0.3, prdpr=0.3,
 #	prirms=0.05, prdrms=0.05,
 		{
@@ -181,17 +181,17 @@ sienaModelCreate <- function(fn,
 			model$prdrms <- 0.05   # delete random missing
 			# prob(move) = 0
 		}
-#		else  # prML == 2
-#		{
-#			model$pridg <-  0.05   # insert diagonal
-#			model$prcdg <-  0.05   # cancel diagonal
-#			model$prper <-  0      # permute
-#			model$pripr <-  0.3    # insert permute (CCP)
-#			model$prdpr <-  0.3    # delete permute (CCP)
-#			model$prirms <- 0.05   # insert random missing
-#			model$prdrms <- 0.05   # delete random missing
+		else  # prML == 2 
+		{
+			model$pridg <-  0.05   # insert diagonal
+			model$prcdg <-  0.05   # cancel diagonal
+			model$prper <-  0      # permute
+			model$pripr <-  0.3    # insert permute (CCP)
+			model$prdpr <-  0.3    # delete permute (CCP)
+			model$prirms <- 0.05   # insert random missing
+			model$prdrms <- 0.05   # delete random missing
 			# prob(move) = 0.2
-#		}
+		}
 	}
 	else
 	{
@@ -243,7 +243,7 @@ sienaAlgorithmCreate <- sienaModelCreate
 
 ##@ModelTypeStrings DataCreate
 ModelTypeStrings <- function(i){
-	ifelse(((i >= 1) && (i <= 8) && (!is.null(i))),
+	ifelse(((i >= 1) && (i <= 11) && (!is.null(i))),
 		switch(i,
 			"Standard actor-oriented model",
 			"Forcing model",
@@ -254,7 +254,8 @@ ModelTypeStrings <- function(i){
 			"Double Step Model 0.25",
 			"Double Step Model 0.50",
 			"Double Step Model 0.75",
-			"Double Step Model 1.00"), "")
+			"Double Step Model 1.00",
+			"Contemporaneous evaluation statistics model"), "")
 }
 
 ##@BehaviorModelTypeStrings DataCreate

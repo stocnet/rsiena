@@ -10,7 +10,7 @@
 ## *
 ## ****************************************************************************/
 ##@print.sienaEffects Methods
-print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
+print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE, 
     expandDummies=FALSE, includeRandoms=FALSE, dropRates=FALSE, includeShortNames=FALSE, ...)
 {
     if (!inherits(x, "sienaEffects"))
@@ -21,7 +21,7 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
         sink(fileName, split=TRUE)
     }
 
-    interactions <- x[x$shortName %in% c("unspInt", "behUnspInt") & x$include &
+    interactions <- x[x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt") & x$include &
         x$effect1 > 0, ]
     if (expandDummies)
     {
@@ -29,13 +29,13 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
             || !all(x[, "timeDummy"] == "," ))
         {
             x <- sienaTimeFix(x)$effects
-            x <- fixUpEffectNames(x)
+#            x <- fixUpEffectNames(x)
         }
         else
         {
             if (nrow(interactions) > 0)
             {
-                x <- fixUpEffectNames(x)
+#                x <- fixUpEffectNames(x)
             }
         }
     }
@@ -43,15 +43,16 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
     {
         nDependents <- length(unique(x$name))
         userSpecifieds <- x$shortName[x$include] %in%
-            c("unspInt", "behUnspInt")
+            c("unspInt", "behUnspInt", "contUnspInt")
         endowments <- !x$type[x$include] %in% c("rate", "eval", "gmm")
         # includes creations and gmm
         gmm <- any(x$type[x$include] %in% "gmm")
         timeDummies <- !x$timeDummy[x$include] == ","
 		if (includeShortNames)
 		{
-			specs <- as.data.frame(x[, c("name", "effectName", "shortName", "include", "fix",
-                "test", "initialValue", "parm")])		
+			specs <- as.data.frame(x[, c("effectNumber", "name", "effectName", 
+				"shortName", "include", "fix",
+                "test", "initialValue", "parm")])	
 		}
 		else
 		{
@@ -77,7 +78,8 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
         }
         if (nDependents == 1)
         {
-            specs <- specs[, -1]  # drop name of dependent variable
+			whichname <- which(names(specs)=="name")
+            specs <- specs[, -whichname]  # drop name of dependent variable
         }
         if (any(endowments))
         {
@@ -322,11 +324,12 @@ updateSpecification <- function(effects.to, effects.from,
 # the above does not transfer interaction effects.
 # A lot of work is needed to get the information about the interacting effects.
     inter <- which(prevEffects$include &
-						(prevEffects$shortName %in% c("unspInt","behUnspInt")))
+						(prevEffects$shortName %in% c("unspInt","behUnspInt","contUnspInt")))
     if (length(inter) >= 1)
 	{
 	# look up the interacting main effects, and try to get information
 	# about which are the interacting effects.
+	    cat("Handling interactions ... ")
 		efn1 <- prevEffects$effect1[inter]
 		efn2 <- prevEffects$effect2[inter]
 		efn3 <- prevEffects$effect3[inter]
@@ -411,7 +414,10 @@ updateSpecification <- function(effects.to, effects.from,
         tests <- prevEffects[inter,"test"]
         rand  <- prevEffects[inter,"randomEffects"]
 		initv <- prevEffects[inter,"initialValue"]
+#browser()
         for (k in seq_along(inter)){
+			cat(k," ")
+			flush.console()
 			if (three[k])
 			{
 				if (inherits(try(
@@ -432,8 +438,8 @@ updateSpecification <- function(effects.to, effects.from,
 				if (inherits(try(
 					effects.to <- includeInteraction(effects.to, shn1[k], shn2[k],
 						name=nam[k],
-						interaction1=c(int11[k],int21[k]),
-						interaction2=c(int12[k],int22[k]),
+						interaction1=c(int11[k],int12[k]),
+						interaction2=c(int21[k],int22[k]),
 						initialValue=initv[k],
 						type=typ[k], fix=fixx[k], test=tests[k], random=rand[k],
 						verbose=FALSE, character=TRUE), 
@@ -443,6 +449,7 @@ updateSpecification <- function(effects.to, effects.from,
 				}
 			}
         }
+		cat("\n")
     }
     effects.to
 }

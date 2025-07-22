@@ -135,6 +135,7 @@ NetworkVariable::NetworkVariable(NetworkLongitudinalData * pData,
 	this->lalter = 0;
 
 	this->lnetworkModelType = NetworkModelType(pData->modelType());
+	// this is a conversion of type integer to enum type NetworkModelType
 	this->lnetworkModelTypeDoubleStep = false;
 	this->lnetworkDoubleStepProb = 0;
 
@@ -325,7 +326,6 @@ bool NetworkVariable::networkModelTypeDoubleStep() const
 {
 	return this->lnetworkModelTypeDoubleStep;
 }
-
 
 /**
  * Returns the probability for the DOUBLESTEP model.
@@ -2041,6 +2041,7 @@ void NetworkVariable::accumulateSymmetricModelScores(int alter, bool accept)
 	case DOUBLESTEP50:
 	case DOUBLESTEP75:
 	case DOUBLESTEP100:
+	case NETCONTEMP:
 	case NOTUSED:
 		break;
 	}
@@ -2321,6 +2322,7 @@ bool NetworkVariable::calculateModelTypeBProbabilities()
 	case DOUBLESTEP50:
 	case DOUBLESTEP75:
 	case DOUBLESTEP100:
+	case NETCONTEMP:
 		break;
 	}
 

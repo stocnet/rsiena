@@ -244,6 +244,7 @@ int NetworkDependentBehaviorEffect::numberAlterEqualPop(int i) const
  */
 void NetworkDependentBehaviorEffect::preprocessEgo(int ego)
 {
+	BehaviorEffect::preprocessEgo(ego);
 	// set up the covariate based on current values of the network and behavior
 	const Network * pNetwork = this->pNetwork();
 

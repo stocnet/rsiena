@@ -47,8 +47,8 @@ Bug reports can be submitted at
   \tabular{ll}{
     Package: \tab RSiena\cr
     Type: \tab Package\cr
-    Version: \tab 1.4.12\cr
-    Date: \tab 2024-04-27\cr
+    Version: \tab 1.5.2\cr
+    Date: \tab 2025-07-21\cr
     Depends: \tab R (>= 3.5.0)\cr
     Imports: \tab Matrix, lattice, parallel, MASS, methods, xtable\cr
     Suggests: \tab network, tools, codetools, tcltk\cr
@@ -67,7 +67,7 @@ Bug reports can be submitted at
   Christoph Stadtfeld, Per Block, Marion Hoffman, Michael Schweinberger,
   Robert Hellpap, Alvaro Uzaheta, Robert Krause, James Hollway, and Steffen Triebel.
 
-  Maintainer: Tom A.B. Snijders <tom.snijders@nuffield.ox.ac.uk>
+  Maintainer: Christian Steglich <c.e.g.steglich@rug.nl>
 }
 \references{
     Amati, V., Schoenenberger, F., and Snijders, T.A.B. (2015),

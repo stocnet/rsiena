@@ -46,6 +46,7 @@ CovariateDependentNetworkEffect::CovariateDependentNetworkEffect(
  * Constructor.
  *
  * @param pEffectInfo The effect info.
+ * in addition, for gmom:
  * @param simulatedState If `true` the value(), missing() and actor_similarity()
  *        functions uses the simulated state, if any or the value at the end
  *        of the period.
@@ -189,6 +190,73 @@ bool CovariateDependentNetworkEffect::missing(int i) const
     }
     
     return missing;
+}
+
+
+/**
+ * Returns the covariate number of cases.
+ * For behavior, this is the minimum non-centered value.
+ */
+int CovariateDependentNetworkEffect::covarN() const
+{
+	int covN = 0;
+	if (this->lpConstantCovariate)
+	{
+		covN = this->lpConstantCovariate->covariateN();
+	}
+	else if (this->lpChangingCovariate)
+	{
+		covN = this->lpChangingCovariate->covariateN();
+	}
+	else
+	{
+		covN = this->lpBehaviorData->observationCount();
+	}
+	return covN;
+}
+
+/**
+ * Returns the covariate minimum value.
+ * For behavior, this is the minimum non-centered value.
+ */
+double CovariateDependentNetworkEffect::covariateMinimum() const
+{
+	double mini = 0;
+	if (this->lpConstantCovariate)
+	{
+		mini = this->lpConstantCovariate->min();
+	}
+	else if (this->lpChangingCovariate)
+	{
+		mini = this->lpChangingCovariate->min();
+	}
+	else
+	{
+		mini = this->lpBehaviorData->min();
+	}
+	return mini;
+}
+
+/**
+ * Returns the covariate maximum value.
+ * For behavior, this is the maximum non-centered value.
+ */
+double CovariateDependentNetworkEffect::covariateMaximum() const
+{
+	double maxi = 0;
+	if (this->lpConstantCovariate)
+	{
+		maxi = this->lpConstantCovariate->max();
+	}
+	else if (this->lpChangingCovariate)
+	{
+		maxi = this->lpChangingCovariate->max();
+	}
+	else
+	{
+		maxi = this->lpBehaviorData->max();
+	}
+	return maxi;
 }
 
 

@@ -137,7 +137,8 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
     7=Double Step model with double step probability 0.25,
     8=Double Step model with double step probability 0.50,
     9=Double Step model with double step probability 0.75,
-    10=Double Step model with double step probability 1.00.
+    10=Double Step model with double step probability 1.00,\cr
+	11=Contemporaneous evaluation statistics model.
     \cr
     Names should be the names of all dependent network variables,
     in the same order as in the Siena data set.\cr
@@ -190,7 +191,8 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL, Offset = NULL,
   Robbins-Monro algorithm. Those not
   available as arguments can be changed manually when desired.\cr
   The value \code{prML=1} defines the defaults valid in RSiena up to version
-  1.3.16. \cr
+  1.3.16. For ML estimation with only one dependent variable,
+  \code{prML=2} may be more efficient.\cr
   If \code{prML} is given as a vector of 7 probabilities, these are,
   consecutively: the probabilities of inserting a diagonal step, deleting a
   diagonal step, permuting, inserting a CCP, deleting a CCP, inserting random

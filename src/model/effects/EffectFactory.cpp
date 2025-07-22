@@ -25,6 +25,7 @@
 #include "model/effects/generic/ConstantFunction.h"
 #include "model/effects/generic/InDegreeFunction.h"
 #include "model/effects/generic/IntSqrtFunction.h"
+#include "model/effects/generic/IntLogFunction.h"
 #include "model/effects/generic/DifferenceFunction.h"
 #include "model/effects/generic/AbsDiffFunction.h"
 #include "model/effects/generic/SumFunction.h"
@@ -134,6 +135,10 @@ map<const string, const string> EffectFactory::init_groups() {
 	map.insert(make_pair("totAlt_gmm", "totAlt"));
 	map.insert(make_pair("maxAlt_gmm", "maxAlt"));
 	map.insert(make_pair("minAlt_gmm", "minAlt"));
+	//
+	map.insert(make_pair("crprod_gmm", "crpod"));
+	map.insert(make_pair("from_gmm", "from"));
+	map.insert(make_pair("to_gmm", "to"));
 	return map;
 }
 
@@ -181,6 +186,8 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			dynamic_cast<NetworkEffect *>(pEffect1);
 		BehaviorEffect * pBehaviorEffect1 =
 			dynamic_cast<BehaviorEffect *>(pEffect1);
+        ContinuousEffect * pContinuousEffect1 =
+            dynamic_cast<ContinuousEffect *>(pEffect1);
 
 		if (pNetworkEffect1)
 		{
@@ -196,7 +203,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 				pNetworkEffect2,
 				pNetworkEffect3);
 		}
-		else
+		else if (pBehaviorEffect1)
 		{
 			BehaviorEffect * pBehaviorEffect2 =
 				dynamic_cast<BehaviorEffect *>(pEffect2);
@@ -211,6 +218,22 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 				pBehaviorEffect2,
 				pBehaviorEffect3);
 		}
+        else
+        {
+            ContinuousEffect * pContinuousEffect2 =
+                dynamic_cast<ContinuousEffect *>(pEffect2);
+            ContinuousEffect * pContinuousEffect3 = 0;
+            if (pEffect3)
+            {
+                pContinuousEffect3 = dynamic_cast<ContinuousEffect *>(pEffect3);
+            }
+
+            pEffect = new ContinuousInteractionEffect(pEffectInfo,
+                pContinuousEffect1,
+                pContinuousEffect2,
+                pContinuousEffect3);
+        }
+
 	}
 	else if (effectName == "density")
 	{
@@ -373,27 +396,35 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "outTrunc")
 	{
-		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, true, false);
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, true, false, false);
 	}
 	else if (effectName == "outTrunc2")
 	{
-		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, true, false);
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, true, false, false);
 	}
 	else if (effectName == "outMore")
 	{
-		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false);
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false, false);
 	}
 	else if (effectName == "outMore2")
 	{
-		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false);
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false, false);
 	}
 	else if (effectName == "outMore3")
 	{
-		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false);
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false, false);
 	}
 	else if (effectName == "outIso")
 	{
-		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, true, true);
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, true, true, false);
+	}
+	else if (effectName == "outThreshold")
+	{
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false, true);
+	}
+	else if (effectName == "outThreshold2")
+	{
+		pEffect = new TruncatedOutdegreeEffect(pEffectInfo, false, false, true);
 	}
 	else if (effectName == "outInv")
 	{
@@ -466,6 +497,32 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		}
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new DifferenceFunction(pFirstFunction, pSecondFunction));
+	}
+	else if (effectName == "divOut_ego")
+	{
+		AlterFunction * pFunction =
+			new EgoOutDegreeFunction(pEffectInfo->variableName());
+
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pFunction = new IntSqrtFunction(pFunction);
+		}
+
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new ReciprocalFunction(pFunction));
+	}
+	else if (effectName == "divIn_ego")
+	{
+		AlterFunction * pFunction =
+			new EgoInDegreeFunction(pEffectInfo->variableName());
+
+		if (pEffectInfo->internalEffectParameter() == 2)
+		{
+			pFunction = new IntSqrtFunction(pFunction);
+		}
+
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new ReciprocalFunction(pFunction));
 	}
 	else if (effectName == "inPop_dya")
 	{
@@ -643,7 +700,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new DoubleCovariateCatFunction(covariateName1, covariateName2,
 				networkName, pEffectInfo->internalEffectParameter(), false, false),
-			new DoubleCovariateCatFunction(covariateName1, covariateName2, 
+			new DoubleCovariateCatFunction(covariateName1, covariateName2,
 				networkName, pEffectInfo->internalEffectParameter(), true, false));
 	}
 	else if (effectName == "sameXVInPop2")
@@ -654,7 +711,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new DoubleCovariateCatFunction(covariateName1, covariateName2,
 				networkName, pEffectInfo->internalEffectParameter(), false, true),
-			new DoubleCovariateCatFunction(covariateName1, covariateName2, 
+			new DoubleCovariateCatFunction(covariateName1, covariateName2,
 				networkName, pEffectInfo->internalEffectParameter(), true, true));
 	}
 	else if (effectName == "unequalX")
@@ -663,7 +720,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "higher")
 	{
-		pEffect = new HigherCovariateEffect(pEffectInfo);
+		pEffect = new HigherCovariateEffect(pEffectInfo, false);
+	}
+	else if (effectName == "altHigherEgoX")
+	{
+		pEffect = new HigherCovariateEffect(pEffectInfo,true);
 	}
 	else if (effectName == "sameXRecip")
 	{
@@ -733,15 +794,13 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		string networkName = pEffectInfo->variableName();
 		string covariateName = pEffectInfo->interactionName1();
+		int parameter = int(round(pEffectInfo->internalEffectParameter()));
 		AlterFunction * pChangeFunction =
-			new SameCovariateInTiesFunction(networkName, covariateName, true, true, false);
+			new SameCovariateInTiesFunction(networkName, covariateName, 
+													true, true, parameter, false);
 		AlterFunction * pStatisticFunction =
-			new SameCovariateInTiesFunction(networkName, covariateName, true, true, true);
-		if (pEffectInfo->internalEffectParameter() == 2)
-		{
-			pChangeFunction = new IntSqrtFunction(pChangeFunction);
-			pStatisticFunction = new IntSqrtFunction(pStatisticFunction);
-		}
+			new SameCovariateInTiesFunction(networkName, covariateName, 
+													true, true, parameter, true);
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}
@@ -749,15 +808,13 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		string networkName = pEffectInfo->variableName();
 		string covariateName = pEffectInfo->interactionName1();
+		int parameter = int(round(pEffectInfo->internalEffectParameter()));
 		AlterFunction * pChangeFunction =
-			new SameCovariateInTiesFunction(networkName, covariateName, false, true, false);
+			new SameCovariateInTiesFunction(networkName, covariateName, 
+												false, true, parameter, false);	
 		AlterFunction * pStatisticFunction =
-			new SameCovariateInTiesFunction(networkName, covariateName, false, true, true);
-		if (pEffectInfo->internalEffectParameter() == 2)
-		{
-			pChangeFunction = new IntSqrtFunction(pChangeFunction);
-			pStatisticFunction = new IntSqrtFunction(pStatisticFunction);
-		}
+			new SameCovariateInTiesFunction(networkName, covariateName, 
+												false, true, parameter, true);
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}
@@ -776,6 +833,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "homXOutAct")
 	{
 		pEffect = new HomCovariateActivityEffect(pEffectInfo, true);
+	}
+	else if (effectName == "homXOutAct2")
+	{
+		pEffect = new CatCovariateActivityEffect(pEffectInfo);
 	}
 	else if (effectName == "altXOutAct")
 	{
@@ -815,7 +876,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "sameXCycle4")
 	{
-		pEffect = new SameCovariateFourCyclesEffect(pEffectInfo, true);
+		pEffect = new SameCovariateFourCyclesEffect(pEffectInfo);
+	}
+	else if (effectName == "sameInXCycle4")
+	{
+		pEffect = new SameInCovariateFourCyclesEffect(pEffectInfo);
 	}
 	else if (effectName == "avGroupEgoX")
 	{
@@ -823,15 +888,16 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "cycle4")
 	{
-		pEffect = new FourCyclesEffect(pEffectInfo, true);
+		pEffect = new FourCyclesEffect(pEffectInfo);
 	}
 	else if (effectName == "sharedPop")
 	{
-		pEffect = new FourCyclesEffect(pEffectInfo, false);
+		pEffect = new FourCyclesEffect(pEffectInfo);
 	}
 	else if (effectName == "cycle4ND")
-	{
-		pEffect = new FourCyclesEffect(pEffectInfo, false);
+	{		
+		throw domain_error(
+	"effect shortName cycle4ND replaced by cycle4; please change your code");
 	}
 	else if ((effectName == "gwespFF")||(effectName == "gwesp"))
 	{
@@ -914,6 +980,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new OutTieFunction(pEffectInfo->interactionName1()));
+	}
+	else if (effectName == "crprod_gmm")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new OutTieFunction(pEffectInfo->interactionName1(), true));
 	}
 	else if (effectName == "crprodRecip")
 	{
@@ -1009,6 +1080,12 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		{
 			pFirstFunction = new IntSqrtFunction(pFirstFunction);
 			pSecondFunction->pFunction(sqrt);
+		}
+
+		if (pEffectInfo->internalEffectParameter() == 0)
+		{
+			pFirstFunction = new IntLogFunction(pFirstFunction);
+			pSecondFunction->pFunction(std::log);
 		}
 
 		pEffect = new GenericNetworkEffect(pEffectInfo,
@@ -1211,13 +1288,24 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new InStarFunction(pEffectInfo->interactionName1(),
-							(pEffectInfo->internalEffectParameter() >= 2)));
+							(pEffectInfo->internalEffectParameter() >= 2), false));
+	}
+	else if (effectName == "from_gmm")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new InStarFunction(pEffectInfo->interactionName1(),
+							(pEffectInfo->internalEffectParameter() >= 2), false, true));
 	}
 	else if (effectName == "fromMutual")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new ReciprocatedTwoPathFunction(pEffectInfo->interactionName1(),
 							(pEffectInfo->internalEffectParameter() >= 2)));
+	}
+	else if (effectName == "fromAny")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			new InStarFunction(pEffectInfo->interactionName1(), false, true));
 	}
 	else if (effectName == "to")
 	{
@@ -1226,6 +1314,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 						pEffectInfo->interactionName1(),
 						pEffectInfo->variableName(),
 						FORWARD, FORWARD, pEffectInfo->internalEffectParameter()));
+	}
+	else if (effectName == "to_gmm")
+	{
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+				new MixedTwoStepFunction(
+						pEffectInfo->interactionName1(),
+						pEffectInfo->variableName(),
+						FORWARD, FORWARD, pEffectInfo->internalEffectParameter(), true));
 	}
 	else if (effectName == "toBack") // formerly mixedInWX
 	{
@@ -1296,14 +1392,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "transTrip.EE")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new MixedTwoStepFunction(pEffectInfo->variableName(), // not mixed, TwoStepFunction equivalent not implemented
+			new MixedTwoStepFunction(pEffectInfo->variableName(), // is not mixed, TwoStepFunction equivalent not implemented
 					pEffectInfo->variableName(),
 					EITHER, EITHER, 0));
 	}
 	else if (effectName == "transTrip.FE")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new MixedTwoStepFunction(pEffectInfo->variableName(), // not mixed, TwoStepFunction equivalent not implemented
+			new MixedTwoStepFunction(pEffectInfo->variableName(), // is not mixed, TwoStepFunction equivalent not implemented
 					pEffectInfo->variableName(),
 					FORWARD, EITHER, 0));
 	}
@@ -1407,13 +1503,13 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new MixedThreePathFunction(pEffectInfo->variableName(),
-							pEffectInfo->interactionName1(),							
+							pEffectInfo->interactionName1(),
 							pEffectInfo->internalEffectParameter(), true, false, false));
 	}
 	else if (effectName == "nDist2ActIntn")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new IndirectTiesFunction(pEffectInfo->interactionName1(),							
+			new IndirectTiesFunction(pEffectInfo->interactionName1(),
 							pEffectInfo->internalEffectParameter(), false, true));
 	}
 	else if (effectName == "outOutDist2ActIntn")
@@ -1474,17 +1570,13 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		string networkName = pEffectInfo->interactionName1();
 		string covariateName = pEffectInfo->interactionName2();
+		int parameter = int(round(pEffectInfo->internalEffectParameter()));
 		AlterFunction * pChangeFunction =
 			new SameCovariateInTiesFunction(networkName, covariateName,
-									true, false, false);
+									true, false, parameter, false);
 		AlterFunction * pStatisticFunction =
 			new SameCovariateInTiesFunction(networkName, covariateName,
-									true, false, true);
-		if (pEffectInfo->internalEffectParameter() == 2)
-		{
-			pChangeFunction = new IntSqrtFunction(pChangeFunction);
-			pStatisticFunction = new IntSqrtFunction(pStatisticFunction);
-		}
+									true, false, parameter, true);
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}
@@ -1492,17 +1584,13 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		string networkName = pEffectInfo->interactionName1();
 		string covariateName = pEffectInfo->interactionName2();
+		int parameter = int(round(pEffectInfo->internalEffectParameter()));
 		AlterFunction * pChangeFunction =
 			new EgoFunction(new SameCovariateInTiesFunction(networkName, covariateName,
-									true, false, false));
+									true, false, parameter, false));
 		AlterFunction * pStatisticFunction =
 			new EgoFunction(new SameCovariateInTiesFunction(networkName, covariateName,
-									true, false, true));
-		if (pEffectInfo->internalEffectParameter() == 2)
-		{
-			pChangeFunction = new IntSqrtFunction(pChangeFunction);
-			pStatisticFunction = new IntSqrtFunction(pStatisticFunction);
-		}
+									true, false, parameter, true));
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}
@@ -1558,14 +1646,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		string covariateName = pEffectInfo->interactionName2();
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new ConditionalFunction(new EqualCovariatePredicate(covariateName),
-				new InStarFunction(networkName, false),
+				new InStarFunction(networkName, false, false),
 				0),
 			new ConditionalFunction(
 				new MissingCovariatePredicate(covariateName),
 				0,
 				new ConditionalFunction(
 					new EqualCovariatePredicate(covariateName),
-					new InStarFunction(networkName, false),
+					new InStarFunction(networkName, false, false),
 					0)));
 	}
 	else if (effectName == "homCovNetNet")
@@ -1984,6 +2072,13 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			pEffect = new OutdegreeContinuousEffect(pEffectInfo, true);
 		}
 	}
+    else if (effectName == "outInBalance")
+    {
+        if (pContinuousData)
+        {
+            pEffect = new OutIndegreeBalanceContinuousEffect(pEffectInfo);
+        }
+    }
 	else if (effectName == "isolate")
 	{
 		pEffect = new IsolateEffect(pEffectInfo, true);
@@ -2156,6 +2251,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new AverageSimilarityInDist2Effect(pEffectInfo, false);
 	}
+    else if (effectName == "avSimVarAlt")
+    {
+        pEffect = new VarianceAlterSimilarityEffect(pEffectInfo, true, false, false);
+    }
 	else if (effectName == "avAlt")
 	{
 		if (pContinuousData)
@@ -2164,8 +2263,8 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		}
 		else
 		{
-		pEffect = new AverageAlterEffect(pEffectInfo, true, false);
-	}
+			pEffect = new AverageAlterEffect(pEffectInfo, true, false);
+		}
 	}
 	else if (effectName == "avAlt_gmm")
 	{
@@ -2269,6 +2368,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new AverageAlterInDist2Effect(pEffectInfo, false, true);
 	}
+    else if (effectName == "varAlt")
+    {
+        pEffect = new VarianceAlterEffect(pEffectInfo);
+    }
 	else if (effectName == "behDenseTriads")
 	{
 		pEffect = new DenseTriadsBehaviorEffect(pEffectInfo);

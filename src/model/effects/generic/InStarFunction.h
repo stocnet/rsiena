@@ -38,16 +38,21 @@ class ConfigurationTable;
 class InStarFunction: public NetworkAlterFunction, IntAlterFunction
 {
 public:
-	InStarFunction(std::string networkName, bool root);
+	InStarFunction(std::string networkName, bool root, bool only);
+	InStarFunction(std::string networkName, bool root, bool only, 
+												const bool simulatedState);
 
 	virtual void initialize(const Data * pData,
 		State * pState, int period, Cache * pCache);
+	virtual void initialize(const Data * pData,
+		State * pState, State * pSimulatedState, int period, Cache * pCache);
 
 	virtual double value(int alter) const;
 	virtual int intValue(int alter);
 
 private:
 	ConfigurationTable * lpTable;
+	bool lonly {}; // should the count be truncated?
 	bool lroot {}; // should the square root be taken?
 	// Lookup table for fast square root calculations:
 	SqrtTable * lsqrtTable;
