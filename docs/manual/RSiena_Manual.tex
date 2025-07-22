@@ -199,7 +199,7 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.5.1.
+This version was renewed for \RS version 1.5.2.
 \end{abstract}
 
 
@@ -1167,7 +1167,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.5.1).
+  identified by a version number (e.g.\ 1.5.2).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -10228,11 +10228,11 @@ and
  endowment effect only likelihood-based;
 
 
- \item[{\hspace*{-1ex}$\bigodot$}] 
+ \item[{\hspace*{-1ex}$\bigodot$}]
 The following four effects are meant mainly for interactions.
 Recall that for interaction effects, the internal effect parameters
 should match; see Section~\ref{intint}.
-They are elementary effects (see Section~\ref {S_elementary}), 
+They are elementary effects (see Section~\ref {S_elementary}),
 which means they can be used in interactions
  and in endowment and creation functions.
 
@@ -10253,20 +10253,20 @@ which means they can be used in interactions
  where\\
  $ \bar x_{.+} \,=\,  \frac{1}{Mn} \sum_{m=1}^M \sum_{i,j} x_{ij} \ ;  $ \\
  for internal effect parameter $p=2$, it is defined by\\
- $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{  x_{i+}} -  \sqrt{\bar x_{.+}} $ \ ; \\ 
- 
+ $f^{\rm net,\, el}_{i\vit}(x)  =   \sqrt{  x_{i+}} -  \sqrt{\bar x_{.+}} $ \ ; \\
+
  \item {\em 1 divided by in-degree activity effect} \texttt{(divIn\_ego)},
  the elementary effect defined by 1 divided by the actor's in-degree ,\\
  $ f^{\rm net,\, el}_{i\vit}(x)  =  1/ x_{+i}\,$ ,\\
  where $1/0$ is computed as 0;\\
-  for internal effect parameter $p=2$ the square root is taken;  
+  for internal effect parameter $p=2$ the square root is taken;
 
  \item {\em 1 divided by out-degree activity effect} \texttt{(divOut\_ego)},
  the elementary effect defined by 1 divided by the actor's out-degree ,\\
  $ f^{\rm net,\, el}_{i\vit}(x)  =  1/ x_{i+}\,$ ,\\
  where $1/0$ is computed as 0;\\
  for internal effect parameter $p=2$ the square root is taken;
- 
+
  \item {\em reciprocal degree-related activity effect} \texttt{(reciAct)}
  defined by the degree of $i$ multiplied by $i$'s reciprocal degree,\\
  $s^{\rm net}_{i\vit}(x) =   x_{i+}\, x^{(r)}_{i} $; \\
@@ -17361,12 +17361,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type
-\verb|R CMD check RSiena_1.5.1.tar.gz|\\
+\verb|R CMD check RSiena_1.5.2.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.5.1.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.5.2.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -18500,6 +18500,18 @@ Changes in RSiena:
 \end{itemize}
 
 \fi
+
+\item 2025-07-22 GitHub, package version 1.5.2.
+
+Changes in RSiena:
+\begin{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+    \item Option \texttt{returnChangeContributions=TRUE} added to \sfn{siena07}, allowing users to extract the \texttt{changeContributions} to the \sfn{sienaFit} object.
+    \item \sfn{sienaRIDynamics} reinstated based on the above new option, replacing the original code.
+    \end{itemize}
+\end{itemize}
+
 
 \item 2025-07-12 GitHub, package version 1.5.1.
 

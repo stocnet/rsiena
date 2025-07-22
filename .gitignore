@@ -23,3 +23,17 @@ docs/manual/TexAux/
 *.gz
 *.Rproj
 NEWSnew.md
+
+# Logfiles
+
+*.txt
+
+# VsCode settings
+.vscode/
+
+# Makevars
+Makevars
+Makevars.win
+
+# Mac OS
+.DS_Store

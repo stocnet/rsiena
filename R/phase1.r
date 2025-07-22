@@ -669,6 +669,7 @@ makeZsmall <- function(z)
 	zsmall$nrunMH <- z$nrunMH
 	zsmall$returnDeps <- z$returnDeps
 	zsmall$returnChains <- z$returnChains
+	zsmall$returnChangeContributions <- z$returnChangeContributions
 	zsmall$returnDataFrame <- z$returnDataFrame
 	zsmall$addChainToStore <- z$addChainToStore
 	zsmall$callGrid <- z$callGrid

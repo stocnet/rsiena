@@ -10,16 +10,15 @@
 }
 \usage{
 simstats0c(z, x, data=NULL, effects=NULL, fromFiniteDiff=FALSE,
-           returnDeps=FALSE, returnChains=FALSE, byWave=FALSE,
-           returnDataFrame=FALSE, returnLoglik=FALSE)
+           returnDeps=FALSE, returnChains=FALSE, returnChangeContributions=FALSE,
+           byWave=FALSE, returnDataFrame=FALSE, returnLoglik=FALSE)
 maxlikec(z, x, data=NULL, effects=NULL,
-           returnChains=FALSE, byGroup = FALSE, byWave=FALSE,
-           returnDataFrame=FALSE, returnLoglik=FALSE,
-           onlyLoglik=FALSE)
-initializeFRAN(z, x, data, effects, prevAns = NULL, initC,
-           profileData = FALSE, returnDeps = FALSE, returnChains =
-           FALSE, byGroup = FALSE, returnDataFrame = FALSE,
-           byWave = FALSE, returnLoglik = FALSE,  onlyLoglik = FALSE)
+           returnChains=FALSE, byGroup = FALSE, 
+           byWave=FALSE, returnDataFrame=FALSE, returnLoglik=FALSE, onlyLoglik=FALSE)
+initializeFRAN(z, x, data, effects, prevAns=NULL, initC,
+           profileData=FALSE, returnDeps=FALSE, returnChains=FALSE,
+           returnChangeContributions=FALSE, byGroup=FALSE, returnDataFrame=FALSE,
+           byWave=FALSE, returnLoglik=FALSE, onlyLoglik=FALSE)
 terminateFRAN(z, x)
 }
 \arguments{
@@ -33,6 +32,7 @@ terminateFRAN(z, x)
   \item{returnDeps}{Boolean. Whether to return the simulated networks in
     Phase 3.}
   \item{returnChains}{Boolean. Whether to return the chains.}
+  \item{returnChangeContributions}{Boolean. Whether to return the change contributions.}
   \item{byWave}{Boolean. Whether to return the finite difference or
     maximum likelihood
     derivatives by wave (uses a great deal of memory). Only necessary
@@ -98,7 +98,13 @@ terminateFRAN(z, x)
     a list for each network, each of which consists of a list for each period,
     each component of which is a list or a data frame depending on the
     value of \code{returnDataFrame}.
-    Only if \code{returnChainss} is TRUE.}
+    Only if \code{returnChains} is TRUE.}
+  \item{changeContributions}{A list of sampled chains, one for
+    each period. Each list consists a list for each dependent variable, each 
+    of which consists of a list for each period, each component of which 
+    is a matrix of effects times choices containing the changeContributions 
+    (+- change statistics) for each ministep.
+    Only if \code{returnChangeContributions} is TRUE.}
   \item{accepts}{Number of accepted MH steps by dependent variable
     (permute steps are counted under first dependent variable)}
   \item{rejects}{Number of rejected MH steps by dependent variable
