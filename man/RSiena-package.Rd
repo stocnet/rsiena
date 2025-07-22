@@ -65,7 +65,8 @@ Bug reports can be submitted at
   Contributions by Josh Lospinoso, Charlotte Greenan,
   Johan Koskinen, Mark Ortmann, Natalie Indlekofer, Mark Huisman,
   Christoph Stadtfeld, Per Block, Marion Hoffman, Michael Schweinberger,
-  Robert Hellpap, Alvaro Uzaheta, Robert Krause, James Hollway, and Steffen Triebel.
+  Robert Hellpap, Alvaro Uzaheta, Robert Krause, James Hollway, Steffen Triebel 
+  and Daniel Gotthardt.
 
   Maintainer: Christian Steglich <c.e.g.steglich@rug.nl>
 }
