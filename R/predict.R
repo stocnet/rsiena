@@ -303,27 +303,6 @@ simProbDynamic <- function(ans, data,
   prob_sim
 }
 
-## Simple helper to calculate the utility given contribution and theta values
-calculateUtility <- function(conts, theta){
-  as.matrix(conts) %*% theta
-}
-
-## Recursive softmax formula, see https://rpubs.com/FJRubio/softmax.
-softmax <- function(par = NULL, recursive = TRUE) {
-  if (recursive == TRUE) {
-    n.par <- length(par)
-    par1 <- sort(par, decreasing = TRUE)
-    Lk <- par1[1]
-    for (k in 1:(n.par - 1)) {
-      Lk <- max(par1[k + 1], Lk) + log1p(exp(-abs(par1[k + 1] - Lk)))
-    }
-    val <- exp(par - Lk)
-  } else {
-    val <- exp(par) / sum(exp(par))
-  }
-  val
-}
-
 calculateChoiceProbability <- function(ans, data,
                                        depvar = NULL,
                                        algorithm = NULL, 
@@ -519,3 +498,23 @@ summarizeValue <- function(x, na.rm = TRUE){
   as.list(c("Mean" = mn, "SE" = se, "Median" = qu[2], "q_025" = qu[1], "q_975" = qu[3], "cases" = n))
 }
 
+## Simple helper to calculate the utility given contribution and theta values
+calculateUtility <- function(conts, theta){
+  as.matrix(conts) %*% theta
+}
+
+## Recursive softmax formula, see https://rpubs.com/FJRubio/softmax.
+softmax <- function(par = NULL, recursive = TRUE) {
+  if (recursive == TRUE) {
+    n.par <- length(par)
+    par1 <- sort(par, decreasing = TRUE)
+    Lk <- par1[1]
+    for (k in 1:(n.par - 1)) {
+      Lk <- max(par1[k + 1], Lk) + log1p(exp(-abs(par1[k + 1] - Lk)))
+    }
+    val <- exp(par - Lk)
+  } else {
+    val <- exp(par) / sum(exp(par))
+  }
+  val
+}
