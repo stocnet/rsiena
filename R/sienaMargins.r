@@ -9,287 +9,421 @@
 # * (average) marginal effects
 # *****************************************************************************/
 
-# Currently uses getChangeContribution from sienaRI.R
-# We might try to use RSiena:::getTargets() with returnStaticCHangeContribution = TRUE?
-# See also RSiena:::getTheActorStatistics()
-
-# The following calculations are only correct if the effect statistics are independent of each other
-# Extension for explicit interactions are relatively simple but are missing so far
-
-##@sienaAME Modified from ergmMargins::ergmAME. Use as RSiena:sienaAME.
-# Current implementation is only sensible for alternative-varying effects,
-# i.e. no covariate related acivitiy effects.
-# Effects statistics are also assumed to be independent of each other
-sienaAME<-function(expectedChangeProbabilities,
-                   modelFit,
-                   shortNames,
-                   simSE = FALSE,
-                   simN = 100){
-  probs <- expectedChangeProbabilities
-  theta <- modelFit$theta
-  effects <- modelFit$effects
-  effectnumbers <- which(effects$shortName %in% shortNames)
-  effectnames <- effects$effectName[effectnumbers]
-  vc <- modelFit$covtheta
-
-  ##direct marginal effects with no interaction; 
-  AME.fun <- function(theta) { ## also depends on P?
-    ME.ergm <- directMarginalEffect(theta[effectnumbers], probs)
-    colMeans(ME.ergm, na.rm = TRUE)
-    # A probability weighted average might be more sensible
-    # colMeans(probs * ME.ergm, na.rm = TRUE)
+##@sienaAME
+sienaAME <- function(ans,
+                            sienaData,
+                            effectName1,
+                            diff1 = NULL,
+                            contrast1 = NULL,
+                            interaction1 = FALSE,
+                            int_effectNames1 = NULL,
+                            mod_effectNames1 = NULL,
+                            effectName2 = NULL,
+                            diff2 = NULL,
+                            contrast2 = NULL,
+                            interaction2 = FALSE,
+                            int_effectNames2 = NULL,
+                            mod_effectNames2 = NULL,
+                            effectNames,
+                            effects,
+                            tieProb = TRUE,
+                            depvar = NULL,
+                            second = FALSE,
+                            level = "Period",
+                            condition = NULL,
+                            sum.fun = mean,
+                            na.rm = TRUE,
+                            uncertainty = TRUE,
+                            nsim = 1000,
+                            useCluster = FALSE,
+                            nbrNodes = 1,
+                            clusterType = c("PSOCK", "FORK"),
+                            cluster = NULL,
+                            batch_dir = "temp",
+                            prefix = "simBatch_b",
+                            combine_batch = TRUE,
+                            keep_batch = FALSE,
+                            verbose = TRUE){
+  if(!second){
+    sim_fun <- simFirstDiff
+    sim_args <- list(
+      ans = ans,
+      sienaData = sienaData,
+      effectName = effectName1,
+      diff = diff1,
+      contrast = contrast1,
+      interaction = interaction1,
+      int_effectNames = int_effectNames1,
+      mod_effectNames = mod_effectNames1,
+      effectNames = effectNames,
+      effects = effects,
+      tieProb = tieProb,
+      depvar = depvar,
+      sim_theta = TRUE,
+      level = level,
+      condition = condition,
+      sum.fun = sum.fun,
+      na.rm = na.rm
+    )
+    ME <- "firstDiff"
+  }else{
+    sim_fun <- simSecondDiff
+    sim_args <- list(
+      ans = ans,
+      sienaData = sienaData,
+      effectName1 = effectName1,
+      diff1 = diff1,
+      contrast1 = contrast1,
+      interaction1 = interaction1,
+      int_effectNames1 = int_effectNames1,
+      mod_effectNames1 = mod_effectNames1,
+      effectName2 = effectName2,
+      diff2 = diff2,
+      contrast2 = contrast2,
+      interaction2 = interaction2,
+      int_effectNames2 = int_effectNames2,
+      mod_effectNames2 = mod_effectNames2,
+      effectNames = effectNames,
+      effects = effects,
+      tieProb = tieProb,
+      depvar = depvar,
+      sim_theta = TRUE,
+      level = level,
+      condition = condition,
+      sum.fun = sum.fun,
+      na.rm = na.rm
+    )
+    ME <- "secondDiff"
   }
-# if(simSE == FALSE){
-  ## I am not sure if this captures the uncertainty properly
-  AME <- AME.fun(theta)
-  Jac <- numDeriv::jacobian(AME.fun, theta)
-  variance.ame <- Jac %*% vc %*% t(Jac)
+  
+  if(!useCluster){
+    # not nice, but works since mclapply reduces to lapply for nbrNodes = 1
+    clusterType <- "FORK" 
+    nbrNodes <- 1
+  }
+  
+  # Point estimate
+  sim_args_theta <- sim_args
+  sim_args_theta$sim_theta <- FALSE
+  
+  point_AME <- do.call(sim_fun, sim_args_theta)
 
-  AME.se <- sqrt(diag(variance.ame))
-  AME.z <- AME / AME.se
-  P.AME <- 2 * (stats::pnorm(-abs(AME.z))) # should probably be t_{1-alpha, n} instead of 2
+  if(!uncertainty){
+    return(point_AME)
+  }else{
+    uncert_AME <- drawSim(
+      sim_fun = sim_fun,
+      sim_args = sim_args,
+      nbrNodes = nbrNodes,
+      nsim = nsim,
+      clusterType = clusterType,
+      cluster = cluster,
+      batch_dir = batch_dir,
+      prefix = prefix,
+      combine_batch = combine_batch,
+      keep_batch = keep_batch,
+      verbose = verbose
+    )
+    
+    uncert_AME <- agg(ME, uncert_AME, level = level, condition = condition, sum.fun = summarizeValue)
+    
+    if(is.null(condition)){
+      return(cbind(point_AME, uncert_AME)) # merge would be safer, but does not handle results without id vars well
+    } else {
+      return(merge(point_AME, uncert_AME))
+    }
+  }
+}
 
-  result <- cbind(AME, AME.se, AME.z, P.AME)
-  colnames(result) <- c("AME", "Delta SE", "Z", "probs")
-  rownames(result) <- effectnames
-  result <- signif(result, digits = 5) #should be made more flexible
-  # }else{
-  # ## Draw coefficients from multivariate normal
-  # simCoef <- MASS::mvrnorm(n = simN, theta, vc)
-  # ## loop over each vector of coefficients ... 
-  # sapply(1:lengthof(simCoef), 
+simFirstDiff <- function(ans, sienaData, 
+                         effectName, diff = NULL, contrast = NULL,
+                         interaction = FALSE,
+                         int_effectNames = NULL,
+                         mod_effectNames = NULL,
+                         effectNames, 
+                         effects = NULL, # currently unused
+                         tieProb = TRUE, 
+                         depvar = NULL, # curently unused
+                         sim_theta = TRUE,
+                         aggregateValues = TRUE,
+                         level = "period",
+                         condition = NULL,
+                         sum.fun = mean,
+                         na.rm = TRUE){
+  ## effectNames can just be extracted
+  if(sim_theta){
+    ## might not work with estimated rate effects
+    theta <- MASS::mvrnorm(n=1,
+                           mu = ans$theta,
+                           Sigma = ans$covtheta)
+    ## add option to change algorithm -> number of chains -> 
+  }else{
+    theta <- ans$theta
+  }
+  prob_sim <- calculateChoiceProbability(ans, sienaData, tieProb = tieProb, theta = theta)
+  
+  # density == 0 is only relevant for the normalizing constant, not needed for difference calculation
+  prob_sim <- subset(prob_sim, density != 0)
+
+  firstDiff_sim <- calculateFirstDiff(prob_sim, effectName = effectName, diff = diff, contrast = contrast,
+                                      theta = theta,
+                                      tieProb = tieProb, 
+                                      interaction = interaction,
+                                      int_effectNames = int_effectNames,
+                                      mod_effectNames = mod_effectNames,
+                                      effectNames = effectNames)
+  # Transform contributions to change statistics for aggregation and output
+  prob_sim[prob_sim[, "density"] == -1, setdiff(effectNames, "density")] <- prob_sim[prob_sim[, "density"] == -1, setdiff(effectNames, "density")] * -1
+  firstDiff_sim <- cbind(prob_sim, firstDiff_sim) ## probably inefficient
+  if(aggregateValues) {
+    firstDiff_sim <- agg("firstDiff",
+                           firstDiff_sim,
+                           level = level,
+                           condition = condition,
+                           sum.fun = sum.fun,
+                           na.rm = TRUE)
+  }
+  firstDiff_sim
+}
+
+simSecondDiff <- function(ans, sienaData, 
+                          effectName1, diff1 = NULL, contrast1 = NULL,
+                          interaction1 = FALSE,
+                          int_effectNames1 = NULL,
+                          mod_effectNames1 = NULL,
+                          effectName2, diff2 = NULL, contrast2 = NULL,
+                          interaction2 = FALSE,
+                          int_effectNames2 = NULL,
+                          mod_effectNames2 = NULL,
+                          effectNames, 
+                          effects = NULL, # currently unused
+                          tieProb = TRUE,
+                          depvar = NULL, # currently unused
+                          sim_theta = TRUE,
+                          aggregateValues = TRUE,
+                          level = "period",
+                          condition = NULL,
+                          sum.fun = mean,
+                          na.rm = TRUE){
+  ## effectNames can just be extracted
+  if(sim_theta){
+    ## might not work with estimated rate effects
+    theta <- MASS::mvrnorm(n=1,
+                           mu = ans$theta,
+                           Sigma = ans$covtheta)
+    ## add option to change algorithm -> number of chains -> 
+  }else{
+    theta <- ans$theta
+  }
+  ## add option to provide prob_sim OR combine firstDiff and secondDiff in one call
+  prob_sim <- calculateChoiceProbability(ans, sienaData, tieProb = tieProb, theta = theta)
+  
+  # density == 0 is only relevant for the normalizing constant, not needed for difference calculation
+  prob_sim <- subset(prob_sim, density != 0)
+  
+  secondDiff_sim <- calculateSecondDiff(prob_sim, 
+                                        effectName1 = effectName1, diff1 = diff1, contrast1 = contrast1,
+                                        interaction1 = interaction1,
+                                        int_effectNames1 = int_effectNames1,
+                                        mod_effectNames1 = mod_effectNames1,
+                                        effectName2 = effectName2, diff2 = diff2, contrast2 = contrast2,
+                                        interaction2 = interaction2,
+                                        int_effectNames2 = int_effectNames2,
+                                        mod_effectNames2 = mod_effectNames2,
+                                        theta = theta,
+                                        tieProb = tieProb, 
+                                        effectNames = effectNames)
+  
+  # Transform contributions to change statistics for aggregation and output
+  prob_sim[prob_sim[, "density"] == -1, setdiff(effectNames, "density")] <- prob_sim[prob_sim[, "density"] == -1, setdiff(effectNames, "density")] * -1
+  secondDiff_sim <- cbind(prob_sim, secondDiff_sim)
+  
+  if(aggregateValues) {
+    secondDiff_sim <- agg("secondDiff",
+                            secondDiff_sim,
+                           level = level,
+                           condition = condition,
+                           sum.fun = sum.fun,
+                           na.rm = TRUE)
+  }
+  secondDiff_sim
+}
+
+calculateFirstDiff <- function(df, effectName, 
+                               diff=NULL,
+                               contrast=NULL, 
+                               theta, 
+                               tieProb = TRUE, 
+                               effectNames,
+                               interaction = FALSE,
+                               int_effectNames = NULL, # later it would be nice to detect these automatically
+                               mod_effectNames = NULL){
+  density <- df[, "density"]
+  
+  if (effectName == "density") {
+    if((!is.null(diff))) stop("firstDiff for density must be contrast c(-1,1)")
+    if(!is.null(contrast)){
+      if(any(setdiff(contrast, c(-1,1)))) {stop("firstDiff for density can only be be calculated for c(-1,1)")}
+      if(interaction == TRUE) {stop("Interaction with density is not possible")}
+      old_value <- density
+      new_value <- rep(NA, length(old_value))
+      new_value[old_value == contrast[1]] <- contrast[2]
+      new_value[old_value == contrast[2]] <- contrast[1]
+      util_diff <- ifelse(is.na(new_value), NA, -1 * df[,"changeUtil"] - df[,"changeUtil"])
+      density <- new_value
+    }
+  } else {
+    if(!is.null(contrast)){
+      old_value <- density * df[, effectName]
+      new_value <- rep(NA, length(old_value))
+      new_value[old_value == contrast[1]] <- contrast[2]
+      new_value[old_value == contrast[2]] <- contrast[1]
+      diff <- new_value - old_value
+    }
+    ## is the same for all without interaction except for *density
+    util_diff <- calculateUtilityDiff(df = df, effectName = effectName, diff = diff, 
+                                      theta = theta, density = density,
+                                      interaction = interaction,
+                                      int_effectNames = int_effectNames,
+                                      mod_effectNames = mod_effectNames,
+                                      effectNames = effectNames)
+  }
+  
+  exp_diff <- exp(util_diff)
+  prob <- df[,"changeProb"]
+  prob_cf <- as.vector(prob * exp_diff / (1-prob + prob * exp_diff))
+  if (tieProb == TRUE) {
+    prob_cf[density == -1] <- 1 - prob_cf[density == -1]
+    prob <- df[,"tieProb"]
+  } else {
+    prob <- df[,"changeProb"]
+  }
+  
+  firstDiff <- prob_cf - prob
+  if(!is.null(contrast)){
+    firstDiff[which(new_value == min(contrast))] <- -firstDiff[which(new_value == min(contrast))]
+  }
+  
+  data.frame("utilDiff" = util_diff,
+        "newProb" = prob_cf,
+        "oldProb" = prob,
+        "firstDiff" = firstDiff) # could also return new density values and changeUtil
+}
+
+calculateSecondDiff <- function(df, effectName1, 
+                                diff1 = NULL, 
+                                contrast1 = NULL,
+                                interaction1 = FALSE,
+                                int_effectNames1 = NULL, # later it would be nice to detect these automatically
+                                mod_effectNames1 = NULL,
+                                effectName2, 
+                                diff2 = NULL,
+                                contrast2 = NULL,
+                                interaction2 = FALSE,
+                                int_effectNames2 = NULL, # later it would be nice to detect these automatically
+                                mod_effectNames2 = NULL,
+                                effectNames,
+                                theta, 
+                                tieProb = TRUE){
+  # Calculate firstDiff if it is not already present in dataframe
+  if(!("firstDiff" %in% names(df))) {
+    df[, "firstDiff"] <- calculateFirstDiff(df, effectName = effectName1, 
+                                            diff = diff1,
+                                            contrast = contrast1, 
+                                            theta = theta, 
+                                            tieProb = tieProb,
+                                            effectNames = effectNames,
+                                            interaction = interaction1,
+                                            int_effectNames = int_effectNames1,
+                                            mod_effectNames = mod_effectNames1)[,"firstDiff"]
+  }
+  firstDiff <- df[, "firstDiff"]
+  # might be more efficient to use tieProb when we already have it
+  prob <- df[,"changeProb"]
+  # which ...
+  effectNum1 <- which(effectNames == effectName1)
+  effectNum2 <- which(effectNames == effectName2)
+
+  density <- df[, "density"]
+  
+  
+  if(!is.null(contrast2)){
+    old_value <- density * df[, effectName2]
+    new_value <- rep(NA, length(old_value))
+    new_value[old_value == contrast2[1]] <- contrast2[2]
+    new_value[old_value == contrast2[2]] <- contrast2[1]
+    diff2 <- new_value - old_value
+  }
+  
+  
+  util_diff21 <- calculateUtilityDiff(df = df, effectName = effectName2,
+                                      diff = diff2, theta = theta, 
+                                      density = density,
+                                      interaction = interaction2,
+                                      int_effectNames = int_effectNames2,
+                                      mod_effectNames = mod_effectNames2,
+                                      effectNames = effectNames)
+  
+  exp_diff21 <- exp(util_diff21)
+  prob_cf21 <- as.vector(prob * exp_diff21 / (1-prob + prob * exp_diff21))
+  
+  util_orig <- df[,"changeUtil"]
+  temp <- df
+  temp[,"changeUtil"] <- util_orig + util_diff21
+  temp[, "changeProb"] <- prob_cf21
+  ## dangerous with interactions because other effect values are not "corrected"
+  temp <- calculateFirstDiff(temp, effectName = effectName1, 
+                                          diff = diff1,
+                                          contrast = contrast1, 
+                                          theta = theta, 
+                                          tieProb = tieProb,
+                                          effectNames = effectNames,
+                                          interaction = interaction1,
+                                          int_effectNames = int_effectNames1,
+                                          mod_effectNames = mod_effectNames1)
+  firstDiff2 <- temp[,"firstDiff"]
+  util_diff22 <- temp[,"utilDiff"]
+  prob_cf22 <- temp[,"newProb"]
+  prob21 <- temp[,"oldProb"]
+  
+  ## should not be necessary, since already set in call to calculateFirstDiff
+  
+  ## Check if correct
+  # if (tieProb == TRUE) {
+  #   prob_cf21 <- ifelse(df[, "density"] == -1, 1 - prob_cf1, prob_cf21)
+  #   prob_cf22 <- ifelse(df[, "density"] == -1, 1 - prob_cf2, prob_cf22)
+  #   prob <- ifelse(df[, "density"] == -1, 1 - prob, prob)
   # }
-  result
-}
-
-##@directMarginalEffect Effect of a change in alternative-specific statistic on its own probability. Use as RSiena:::directMarginalEffect
-directMarginalEffect <- function(thetas, expectedChangeProbabilities, interactions = NULL) {
-  probs <- expectedChangeProbabilities
-  sapply(thetas, function(theta) {
-    if (!is.null(interactions)) {
-      d_util <- theta1 + theta2 * cont
-    }else{
-      d_util <- theta
-    }
-    probs * (1 - probs) * theta
-  })
-}
-
-# crossMarginalEffect Effect of a change in alternative-specific statistic on all other alternative's probabilities is not implemented yet
-# The formula is P_ij * -P_ih * beta_ij and leads to n-1 cross-marginal effects for each potential choice i -> j
-
-
-
-## this should be divided in "getChangeStatistics" (maybe include in contributions?) and "calculateChangeProbabilities"
-##@expectedChangeProbabilities. Use as RSiena:::expectedChangeProbabilities
-expectedChangeProbabilities <- function(conts, effects, theta, thedata = NULL,
-                                        getChangeStatistics = FALSE, effectNames = NULL) {
-  waves <- length(conts[[1]])
-  effects <- effects[effects$include == TRUE, ]
-  noRate <- effects$type != "rate"
-  effects <- effects[noRate, ]
-  if (sum(noRate) != length(theta)) {
-    theta <- theta[noRate]
+  
+  secondDiff <- firstDiff2 - firstDiff
+  if(!is.null(contrast2)){
+    secondDiff[which(new_value == min(contrast2))] <- -secondDiff[which(new_value == min(contrast2))]
   }
-  effectNa <- attr(conts, "effectNames")
-  effectTypes <- attr(conts, "effectTypes")
-  networkNames <- attr(conts, "networkNames")
-  networkTypes <- attr(conts, "networkTypes")
-  networkInteraction <- effects$interaction1
-  effectIds <- paste(effectNa, effectTypes, networkInteraction, sep = ".")
-  currentDepName <- ""
-  depNumber <- 0
-  for(eff in 1:length(effectIds)) { # seq_along throws an error?
-    if(networkNames[eff] != currentDepName) {
-      currentDepName <- networkNames[eff]
-      actors <- length(conts[[1]][[1]][[1]])
-      depNumber <- depNumber + 1
-      currentDepEffs <- effects$name == currentDepName
-      depNetwork <- thedata$depvars[[depNumber]]
-      if (networkTypes[eff] == "oneMode") {
-        choices <- actors
-      } else if (networkTypes[eff] == "behavior") {
-        choices <- 3
-      } else if (networkTypes[eff] == "bipartite") {
-        if (dim(depNetwork)[2] >= actors) {
-          stop("does not work for bipartite networks with second mode >= first mode")
-        }
-        choices <- dim(depNetwork)[2] + 1
-      } else {
-        stop("does not work for dependent variables of type 'continuous'")
-      }
-      # impute for wave 1
-      if (networkTypes[eff] %in% c("oneMode", "bipartite")) {
-        depNetwork[, , 1][is.na(depNetwork[, , 1])] <- 0
-      } else {
-        depNetwork[, , 1][is.na(depNetwork[, , 1])] <- attr(depNetwork, "modes")[1]
-      }
-      # impute for next waves;
-      # this may be undesirable for structurals immediately followed by NA...
-      for (m in 2:dim(depNetwork)[3]) {
-        depNetwork[, , m][is.na(depNetwork[, , m])] <- depNetwork[, , m - 1][is.na(depNetwork[, , m])]
-      }
-      # Make sure the diagonals are not treated as structurals
-      if (networkTypes[eff] == "oneMode") {
-        for (m in 1:(dim(depNetwork)[3])) {
-          diag(depNetwork[, , m]) <- 0
-        }
-      }
-      structurals <- (depNetwork >= 10)
-      if (networkTypes[eff] == "oneMode") {
-        if (attr(depNetwork, "symmetric")) {
-          message("\nNote that for symmetric networks, effect sizes are for modelType 2 (forcing).")
-        }
-      }
-      #			currentDepObjEffsNames <- paste(effects$shortName[currentDepEffs],
-      #				effects$type[currentDepEffs],effects$interaction1[currentDepEffs],sep=".")
-      #			otherObjEffsNames <- paste(effects$shortName[!currentDepEffs],
-      #				effects$type[!currentDepEffs],effects$interaction1[!currentDepEffs],sep=".")
-      changeStats <- list()
-      if (networkTypes[eff] == "behavior") {
-        toggleProbabilities <- array(0, dim = c(actors, 3, waves))
-      } else {
-        toggleProbabilities <- array(0, dim = c(actors, choices, waves))
-      }
-      for(w in 1:waves) {
-        currentDepEffectContributions <- conts[[1]][[w]][currentDepEffs]
-        if (networkTypes[eff] == "bipartite") {
-          currentDepEffectContributions <- lapply(
-            currentDepEffectContributions,
-            function(x) lapply(x, function(xx) xx[1:choices])
-          )
-        }
-        # conts[[1]] is periods by effects by actors by actors
-        currentDepEffectContributions <-
-          sapply(lapply(currentDepEffectContributions, unlist),
-                 matrix, nrow = actors, ncol = choices, byrow = TRUE,
-                 simplify = "array")
-        cdec <- apply(currentDepEffectContributions, c(2, 1), as.matrix)
-        # cdec is effects by actors (alters) by actors (egos)
-        if (dim(currentDepEffectContributions)[3] <= 1) { # only one effect
-          cdec <- array(cdec, dim = c(1, dim(cdec)))
-        }
-        rownames(cdec) <- effectNa[currentDepEffs]
-        if (getChangeStatistics) {
-          changeStats[[w]] <- cdec
-        }
-        # replace structural 0s and 1s by NA,
-        # so they are omitted from calculation
-        if (networkTypes[eff] == "oneMode") {
-          #	structuralsw <- structurals[,,w]
-          for (ff in 1:(dim(cdec)[1])) {
-            cdec[ff, , ][t(structurals[, , w])] <- NA
-          }
-        }
-        distributions <- apply(cdec, 3,
-                               calculateChoiceProbability, theta[which(currentDepEffs)])
-        # matrix manipulation should be more efficient solution
-        # distributions is an array of actor by choices
-        if (networkTypes[eff] == "behavior") { #makes no difference here?
-          toggleProbabilities[, , w] <- t(distributions)
-        } else {
-          toggleProbabilities[, , w] <- t(distributions)
-        }
-      }
-    }
-  }
-  # toggleProbabilities is an array of choices by actors by wave
-  attr(toggleProbabilities, "version") <- packageDescription(pkgname, fields = "Version")
-  toggleProbabilities
+  ## what do we actually want to return and how?
+  data.frame("utilDiff21" = util_diff21,
+        "newProb21" = prob_cf21,
+        "utilDiff22" = util_diff22,
+        "newProb22" = prob_cf22,
+        "oldProb" = prob21,
+        "firstDiff2_test" = firstDiff2,
+        "firstDiff_test" = firstDiff,
+        "secondDiff" = secondDiff)
 }
 
-# The following is inefficient but does extract probabilities for chains
-
-## TODo: factor out changeContribution calculation over chains (might be more efficient in one, but less understandable)
-
-##@expectedChangeDynamics. Use as RSiena:::expectedChangeDynamics.
-# Simulates sequences of micro-steps and calculates the predicted probabilities each time
-expectedChangeDynamics <- function(data = NULL, theta = NULL, algorithm = NULL, effects = NULL, depvar = NULL,
-                                   returnActorStatistics = NULL, returnChangeContributions = FALSE) {
-  x <- algorithm
-  currentNetName <- depvar
-  z  <-  NULL
-  z$FRAN <- getFromNamespace(x$FRANname, pkgname)
-  x$cconditional <-  FALSE
-  z$print <- FALSE
-  z$Phase <- 3
-  z <- initializeFRAN(z, x, data, effects, prevAns=NULL, initC=FALSE, returnDeps=FALSE)
-  z$returnChangeContributions <- TRUE
-  z$theta <- theta
-  if (!is.null(x$randomSeed))
-  {
-    set.seed(x$randomSeed, kind="default")
+calculateUtilityDiff <- function(df, effectName, diff, 
+                                 theta, density,
+                                 interaction = FALSE,
+                                 int_effectNames = NULL,
+                                 mod_effectNames = NULL,
+                                 effectNames = NULL){
+  effectNum <- which(effectNames == effectName)
+  if(interaction == TRUE){
+    moderator_values <- density * df[, mod_effectNames]
+    interaction_effectNums <- which(effectNames == int_effectNames)
+    util_diff <- density * (diff * theta[effectNum] + 
+                              diff * moderator_values * theta[interaction_effectNums])
   } else {
-    if (exists(".Random.seed")) {
-      rm(.Random.seed, pos = 1)
-      RNGkind(kind = "default")
-    }
+    util_diff <- density * diff * theta[effectNum]
   }
-  chains <- x$n3
-  periods <- data$observation-1
-  effects <- effects[effects$include == TRUE,]
-  noRate <- effects$type != "rate"
-  thetaNoRate <- theta[noRate]
-  #	networkName <- effects$name[noRate]
-  currentNetObjEffs <- effects$name[noRate] == currentNetName
-  output <- list()
-  for (chain in (1:chains))
-  {
-    # cat("The following line leads to an error\n")
-    # browser()
-    output[[chain]] <- list() #probably superfluous
-    ans <- z$FRAN(z, x)
-    for(period in 1:periods) {
-      output[[chain]][[period]] <- list()
-      microSteps <- length(ans$changeContributions[[1]][[period]])
-      for(microStep in 1:microSteps) {
-        if(attr(ans$changeContributions[[1]][[period]][[microStep]],
-                "networkName")==currentNetName) {
-          cdec <- ans$changeContributions[[1]][[period]][[microStep]]
-          distributions <- calculateChoiceProbability(
-            cdec,
-            thetaNoRate[currentNetObjEffs]
-          )
-          if (returnChangeContributions) {
-            output[[chain]][[period]][[microStep]] <- cbind(t(distributions), t(cdec))
-            ## add colnames
-          } else {
-            output[[chain]][[period]][[microStep]] <- t(distributions)
-            ## add colname
-          }
-        }
-      }
-    }
-  }
-  output
-}
-
-##@calculateChoiceProbability. Use as RSiena:::calculateChoiceProbability (just a simplified calculateDistribution)
-# Calculate the probability of each potential choice for the focal actor
-calculateChoiceProbability <- function(effectContributions = NULL, theta = NULL, diff = NULL) {
-  nchoices <- dim(effectContributions)[2]
-  distributions <- array(NA, dim = c(1, nchoices)) # probably could also work with a simple vector
-  the.choices <- !is.na(colSums(effectContributions))
-  if (sum(the.choices) >= 2) { # should produce an error instead of an empty array?
-    utility <- colSums(theta * effectContributions[, the.choices, drop = FALSE], na.rm = TRUE)
-    # why not theta %*% effectContributions[,the.choices,drop = FALSE] ?
-    distributions[1, the.choices] <- softmax(utility)
-  }
-  distributions # returns the choice probabilitiy for the focal actor
-}
-
-##@softmax Recursive softmax formula, see https://rpubs.com/FJRubio/softmax. Use as RSiena:::softmax
-softmax <- function(par = NULL, recursive = TRUE) {
-  if (recursive == TRUE) {
-    n.par <- length(par)
-    par1 <- sort(par, decreasing = TRUE)
-    Lk <- par1[1]
-    for (k in 1:(n.par - 1)) {
-      Lk <- max(par1[k + 1], Lk) + log1p(exp(-abs(par1[k + 1] - Lk)))
-    }
-    val <- exp(par - Lk)
-  } else {
-    val <- exp(par) / sum(exp(par))
-  }
-  val
+  return(util_diff)
 }
