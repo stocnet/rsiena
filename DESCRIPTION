@@ -28,8 +28,9 @@ Authors@R: c(person("Tom A.B.", "Snijders", role = c("aut", "ctb"), comment = c(
               person("Daniel", "Gotthardt", role = "ctb", comment=c(ORCID = "0000-0002-1294-9913")))
 Maintainer: Christian Steglich <c.e.g.steglich@rug.nl>
 Depends: R (>= 3.5.0)
-Imports: Matrix, lattice, parallel, MASS, xtable, methods
-Suggests: network, tools, codetools, tcltk, testthat (>= 3.0.0)
+Imports: Matrix, lattice, parallel, MASS, xtable, methods, data.table, Rcpp (>= 0.11.0)
+LinkingTo: Rcpp
+Suggests: network, tools, codetools, tcltk, testthat (>= 3.0.0), ggplot2, RColorBrewer
 SystemRequirements: GNU make
 Description: The main purpose of this package is to perform simulation-based
    estimation of stochastic actor-oriented models for longitudinal network

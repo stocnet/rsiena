@@ -1,4 +1,5 @@
 useDynLib(RSiena, .registration = TRUE, .fixes="C_")
+# exportPattern("ˆ[[:alpha:]]+")
 
 export(
 	coCovar, coDyadCovar, getEffects, model.create, print01Report, siena07,
@@ -15,9 +16,15 @@ export(
 	TriadCensus, mixedTriadCensus, dyadicCov, egoAlterCombi,
 	siena.table, xtable, score.Test, Wald.RSiena, Multipar.RSiena, 
    testSame.RSiena, funnelPlot, meta.table,
-   influenceTable, selectionTable
+   influenceTable, selectionTable,
+   calculateContribution, calculateContributionsDynamic
 )
 
+# importFrom("data.table", "rbindlist", "as.data.table", ":=",
+#            "setDTthreads", "dcast", ".N", ".I", ".SD")
+#importClassesFrom("data.table", "data.table")
+import("data.table")
+importFrom("Rcpp", sourceCpp)
 importFrom("Matrix", "Matrix", "sparseMatrix", "spMatrix", "drop0", 
            "rankMatrix", "mat2triplet")
 importFrom("lattice", "xyplot", "trellis.par.get", "trellis.par.set", "bwplot",
@@ -26,7 +33,7 @@ importFrom("lattice", "xyplot", "trellis.par.get", "trellis.par.set", "bwplot",
 importFrom("parallel", "clusterCall", "parLapply", "parRapply",
            "clusterSetRNGStream", "makeCluster", "stopCluster")
 importFrom("xtable", "xtable", "print.xtable")
-importFrom("MASS", "cov.rob", "ginv")
+importFrom("MASS", "cov.rob", "ginv", "mvrnorm")
 importFrom("grDevices", "rgb", "xy.coords")
 importFrom("graphics", "axis", "barplot", "layout", "lines",
            "mtext", "pairs", "panel.smooth", "par", "pie", "plot",
@@ -34,7 +41,7 @@ importFrom("graphics", "axis", "barplot", "layout", "lines",
 importFrom("methods", "as", "is", "hasArg")
 importFrom("stats", ".getXlevels", "acf", "as.formula", "coef",
            "contr.helmert", "cor", "cor.test", "cov", "density",
-           "dnorm", "ecdf", "hatvalues", "lm", "lm.wfit", "mad",
+           "dnorm", "ecdf", "filter", "hatvalues", "lm", "lm.wfit", "mad",
            "mahalanobis", "median", "model.matrix", "model.offset",
            "model.response", "model.weights", "na.omit", "naprint",
            "optim", "optimize", "pchisq", "plot.ts", "pnorm", 
