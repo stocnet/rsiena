@@ -22,7 +22,7 @@ sienaRI <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL,
 	{
 #		stop("sienaRI works only for dependent variables of type 'oneMode' or 'behavior'")
 	}
-	if(!is.null(ans))
+	if(!is.null(ans)) ## add option to read previously calculated changeContributions? not that relevant 
 	{
 		if (!inherits(ans, "sienaFit"))
 		{
@@ -100,79 +100,10 @@ sienaRI <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL,
 	RI
 }
 
-##@getChangeContributions. Use as RSiena:::getChangeContributions
-getChangeContributions <- function(algorithm, data, effects)
-{
-	## Gets the simulated statistics.
-	## The following initializations data, effects, and model
-	## for calling "getTargets" in "siena07.setup.h"
-	## is more or less copied from "getTargets" in "getTargets.r".
-	## However, some modifications have been necessary to get it to work.
-	f <- unpackData(data,algorithm)
-
-	effects <- effects[effects$include,]
-	if (!is.null(algorithm$settings))
-	{
-		stop('not implemented: RI together with settings')
-		# effects <- addSettingsEffects(effects, algorithm)
-	}
-	else
-	{
-		effects$setting <- rep("", nrow(effects))
-	}
-	pData <- .Call(C_setupData, PACKAGE=pkgname,
-		list(as.integer(f$observations)),
-		list(f$nodeSets))
-	## register a finalizer
-	ans <- reg.finalizer(pData, clearData, onexit = FALSE)
-	ans<- .Call(C_OneMode, PACKAGE=pkgname,
-		pData, list(f$nets))
-	ans <- .Call(C_Bipartite, PACKAGE=pkgname, # added 1.1-299
-		pData, list(f$bipartites))
-	ans<- .Call(C_Behavior, PACKAGE=pkgname, pData,
-		list(f$behavs))
-	ans<-.Call(C_ConstantCovariates, PACKAGE=pkgname,
-		pData, list(f$cCovars))
-	ans<-.Call(C_ChangingCovariates,PACKAGE=pkgname,
-		pData,list(f$vCovars))
-	ans<-.Call(C_DyadicCovariates,PACKAGE=pkgname,
-		pData,list(f$dycCovars))
-	ans<-.Call(C_ChangingDyadicCovariates,PACKAGE=pkgname,
-		pData, list(f$dyvCovars))
-
-	storage.mode(effects$parm) <- 'integer'
-	storage.mode(effects$group) <- 'integer'
-	storage.mode(effects$period) <- 'integer'
-
-	effects$effectPtr <- rep(NA, nrow(effects))
-	depvarnames <- names(data$depvars)
-	tmpeffects <- split(effects, effects$name)
-	myeffectsOrder <- match(depvarnames, names(tmpeffects))
-	ans <- .Call(C_effects, PACKAGE=pkgname, pData, tmpeffects)
-	pModel <- ans[[1]][[1]]
-	for (i in 1:length(ans[[2]]))
-	{
-		effectPtr <- ans[[2]][[i]]
-		tmpeffects[[i]]$effectPtr <- effectPtr
-	}
-	myeffects <- tmpeffects
-	for(i in 1:length(myeffectsOrder)){
-		myeffects[[i]]<-tmpeffects[[myeffectsOrder[i]]]
-	}
-#cat("e\n") #Hier gaat hij fout. 
-# Voor returnStaticChangeContributions=TRUE gaat het wel goed.
-#browser()
-	ans <- .Call(C_getTargets, PACKAGE=pkgname, pData, pModel, myeffects,
-		parallelrun=TRUE, returnActorStatistics=FALSE,
-		returnStaticChangeContributions=TRUE)
-	# See getTargets in siena07setup.cpp; also see rTargets in StatisticsSimulation.cpp
-	ans
-}
-
 expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 	getChangeStatistics=FALSE, effectNames = NULL)
 {
-	rms <- function(xx){sqrt((1/dim(xx)[2])*rowSums(xx^2,na.rm=TRUE))}
+	rms <- function(xx){sqrt((1/dim(xx)[2])*rowSums(xx^2,na.rm=TRUE))} # should be extracted as helper function
 	waves <- length(conts[[1]])
 	effects <- effects[effects$include == TRUE,]
 	noRate <- effects$type != "rate"
@@ -412,14 +343,14 @@ calculateDistributions <- function(effectContributions = NULL, theta = NULL)
 	the.choices <- !is.na(colSums(effectContributions))
 	if (sum(the.choices) >= 2)
 	{
-		distributions[1,the.choices] <-
+		distributions[1,the.choices] <- # could be softmax()
 			exp(colSums(theta*effectContributions[,the.choices,drop=FALSE], na.rm=TRUE))/
 			sum(exp(colSums(theta*effectContributions[,the.choices,drop=FALSE], na.rm=TRUE)))
 		for(eff in 1:neffects)
 		{
 			th <- theta
 			th[eff] <- 0
-			distributions[eff+1,the.choices] <-
+			distributions[eff+1,the.choices] <- # could be softmax()
 				exp(colSums(th*effectContributions[,the.choices,drop=FALSE], na.rm=TRUE))/
 				sum(exp(colSums(th*effectContributions[,the.choices,drop=FALSE], na.rm=TRUE)))
 		}

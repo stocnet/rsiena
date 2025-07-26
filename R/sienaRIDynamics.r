@@ -104,40 +104,11 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 	RIValues
 }
 
-##@calculateRIDynamics calculateRIDynamics simulates sequences ministeps, and aggregates the relative importances of effects over ministeps of same time intervals
-calculateRIDynamics <- function(data, ans, theta, algorithm, effects, depvar, intervalsPerPeriod=10, returnActorStatistics=NULL, n3 = NULL, useChangeContributions = FALSE)
+##@calculateRIDynamics calculateRIDynamics simulates sequences ministeps or, and aggregates the relative importances of effects over ministeps of same time intervals
+calculateRIDynamics <- function(data, ans, theta, algorithm, effects, depvar, intervalsPerPeriod=10, n3 = NULL, useChangeContributions = FALSE)
 {
-    x <- algorithm # why not use algorithm directly?
-	if (!is.null(n3)) {
-    	x$n3 <- as.integer(n3)
-	}
-	if (useChangeContributions) 
-	{
-        if (is.null(ans) || is.null(ans$changeContributions)) 
-		{
-            warning("useChangeContributions=TRUE, but 'ans' does not contain 'changeContributions'. Will rerun siena07 to generate them.")
-            useChangeContributions <- FALSE
-        }
-		if (!is.null(n3)) 
-		{
-		    warning("n3 cannot be changed when useChangeContributions=TRUE; using the number of chains stored in 'ans'.")
-    		n3 <- NULL
-		}
-    }
-    if (!useChangeContributions) 
-	{
-		x$nsub <- 0
-        if (!is.null(ans)) 
-		{
-			prevAns <- ans
-		} else {
-			prevAns <- NULL
-			effects$initialValue[effects$include] <- theta
-		}
-        ans <- siena07(x, data=data, effects=effects,
-                       prevAns=prevAns, initC=FALSE, returnDeps=FALSE, returnChangeContributions=TRUE)
-    }
-	chains <- x$n3
+    changeContributions <- getChangeContributionsDynamic(data = data, ans = ans, theta = theta, algorithm = algorithm, effects = effects, n3 = NULL, useChangeContributions = FALSE)
+	chains <- algorithm$n3
 	periods <- data$observation-1
 	effects <- effects[effects$include==TRUE,]
 	noRate <- effects$type != "rate"
@@ -163,7 +134,7 @@ calculateRIDynamics <- function(data, ans, theta, algorithm, effects, depvar, in
 #browser()
 		for(period in 1:periods)
 		{
-			ministeps <- length(ans$changeContributions[[chain]][[1]][[period]])
+			ministeps <- length(changeContributions[[chain]][[1]][[period]])
 			stepsPerInterval <- ministeps/intervalsPerPeriod
 # Tom's new code TS (7 lines).... Natalie slightly modified the next 4 lines
 # and moved them one loop higher (out of the "chains"-loop)
@@ -178,8 +149,8 @@ calculateRIDynamics <- function(data, ans, theta, algorithm, effects, depvar, in
 			stepsInIntervalCounter <- 0
 			for(ministep in 1:ministeps)
 			{
-				#depvar <- attr(ans$changeContributions[[1]][[period]][[ministep]],"networkName")
-				if(attr(ans$changeContributions[[chain]][[1]][[period]][[ministep]],
+				#depvar <- attr(changeContributions[[1]][[period]][[ministep]],"networkName")
+				if(attr(changeContributions[[chain]][[1]][[period]][[ministep]],
 												"networkName")==depvar)
 				{
 					stepsInIntervalCounter <- stepsInIntervalCounter + 1
@@ -189,7 +160,7 @@ calculateRIDynamics <- function(data, ans, theta, algorithm, effects, depvar, in
 					## the probabilities of the available choices
 					## if the parameter of the first, second, third ... effects is set to zero.
 					distributions <- calculateDistributions(
-						ans$changeContributions[[chain]][[1]][[period]][[ministep]],
+						changeContributions[[chain]][[1]][[period]][[ministep]],
 						thetaNoRate[currentNetObjEffs])
 					## If one wishes another measure
 					## than the L^1-difference between distributions,
@@ -252,7 +223,7 @@ print.sienaRIDynamics <- function(x, ...)
 	cat(paste("  Periods between observations are devided into ", intervals, " intervals. \n \n",sep=""))
 	cat(paste("  Displayed results are aggregations over intervals:\n", sep=""))
 	for(p in 1:periods){
-		cat(paste("\n\nPeriod ",p,":\n", sep=""))
+		cat(paste("\n\nPeriod ",p,":\n", sep="")) # nolint: indentation_linter.
 		colNames = paste("int ", 1:intervals, sep="")
 		line1 <- paste(format("", width =52), sep="")
 		line2 <- paste(format(1:effs,width=3), '. ', format(x$effectNames, width = 45),sep="")
