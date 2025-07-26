@@ -803,6 +803,7 @@ doPhase1or3Iterations <- function(phase, z, x, zsmall, xsmall, nits, nits6=0,
 			z$sims[[z$nit]] <- zz$sims
 			z$chain[[z$nit]] <- zz$chain
 			z$changeContributions[[z$nit]] <- zz$changeContributions
+			z$changeContributions_df[[z$nit]] <- zz$changeContributions_df
 
 			fra <- fra + z$targets
 			if (z$thetaFromFile)
@@ -829,6 +830,8 @@ doPhase1or3Iterations <- function(phase, z, x, zsmall, xsmall, nits, nits6=0,
 				## To allow returning chains and changeContributions in parallel?
 				# z$chain[[z$nit + (i - 1)]] <- zz[[i]]$chain
 				# z$changeContributions[[z$nit + (i - 1)]] <- zz[[i]]$changeContributions
+				# z$changeContributions_df[[z$nit]] <- zz$changeContributions_df
+
 				if (z$thetaFromFile)
 				{
 					z$thetaUsed[z$nit + (i - 1), ] <- zsmall$theta

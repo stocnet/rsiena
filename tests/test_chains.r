@@ -114,3 +114,6 @@ RIDynamics6
 RI6 <- sienaRI(mydata3, ans=ans4)
 plot(RIDynamics6, staticRI=RI6[[1]])
 
+if (file.exists('Siena.txt')){unlink('Siena.txt')}
+if (file.exists('test.txt')){unlink('test.txt')}
+

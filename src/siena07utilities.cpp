@@ -1133,4 +1133,91 @@ Chain * makeChainFromList(Data * pData, SEXP CHAIN, int period)
 	return pChain;
 }
 
+SEXP flattenChangeContributionsList(SEXP changeContributionChains)
+{
+    std::vector<int> group_col, period_col, ministep_col, effect_col, choice_col;
+    std::vector<std::string> network_name_col, effectname_col, effecttype_col;
+    std::vector<double> value_col;
+    int nGroups = Rf_length(changeContributionChains);
+    for (int g = 0; g < nGroups; ++g) {
+        SEXP groupList = VECTOR_ELT(changeContributionChains, g);
+        int nPeriods = Rf_length(groupList);
+        for (int p = 0; p < nPeriods; ++p) {
+            SEXP periodList = VECTOR_ELT(groupList, p);
+            int nMinisteps = Rf_length(periodList);
+            for (int m = 0; m < nMinisteps; ++m) {
+                SEXP mat = VECTOR_ELT(periodList, m);
+                if (Rf_isNull(mat)) continue;
+                int nEff = Rf_nrows(mat);
+                int nChoice = Rf_ncols(mat);
+                SEXP effNames = Rf_getAttrib(mat, Rf_install("effectNames"));
+                SEXP effTypes = Rf_getAttrib(mat, Rf_install("effectTypes"));
+                for (int e = 0; e < nEff; ++e) {
+                    for (int c = 0; c < nChoice; ++c) {
+                        group_col.push_back(g+1);
+                        period_col.push_back(p+1);
+                        ministep_col.push_back(m+1);
+                        effect_col.push_back(e+1);
+                        choice_col.push_back(c+1);
+                        network_name_col.push_back(""); // optionally: fill, or skip if not in attribute
+                        effectname_col.push_back(effNames ? CHAR(STRING_ELT(effNames, e)) : "");
+                        effecttype_col.push_back(effTypes ? CHAR(STRING_ELT(effTypes, e)) : "");
+                        value_col.push_back(REAL(mat)[e + nEff * c]);
+                    }
+                }
+            }
+        }
+    }
+    // Build the SEXP data.frame (as in earlier code)
+    int nrow = value_col.size();
+    SEXP group_sxp = PROTECT(Rf_allocVector(INTSXP, nrow));
+    SEXP period_sxp = PROTECT(Rf_allocVector(INTSXP, nrow));
+    SEXP ministep_sxp = PROTECT(Rf_allocVector(INTSXP, nrow));
+    SEXP effect_sxp = PROTECT(Rf_allocVector(INTSXP, nrow));
+    SEXP choice_sxp = PROTECT(Rf_allocVector(INTSXP, nrow));
+    SEXP effectname_sxp = PROTECT(Rf_allocVector(STRSXP, nrow));
+    SEXP effecttype_sxp = PROTECT(Rf_allocVector(STRSXP, nrow));
+    SEXP value_sxp = PROTECT(Rf_allocVector(REALSXP, nrow));
+    for (int i=0; i<nrow; ++i) {
+        INTEGER(group_sxp)[i] = group_col[i];
+        INTEGER(period_sxp)[i] = period_col[i];
+        INTEGER(ministep_sxp)[i] = ministep_col[i];
+        INTEGER(effect_sxp)[i] = effect_col[i];
+        INTEGER(choice_sxp)[i] = choice_col[i];
+        SET_STRING_ELT(effectname_sxp, i, Rf_mkChar(effectname_col[i].c_str()));
+        SET_STRING_ELT(effecttype_sxp, i, Rf_mkChar(effecttype_col[i].c_str()));
+        REAL(value_sxp)[i] = value_col[i];
+    }
+    // (add more columns as wanted!)
+    int ncol = 8;
+    SEXP df = PROTECT(Rf_allocVector(VECSXP, ncol));
+    SET_VECTOR_ELT(df, 0, group_sxp);
+    SET_VECTOR_ELT(df, 1, period_sxp);
+    SET_VECTOR_ELT(df, 2, ministep_sxp);
+    SET_VECTOR_ELT(df, 3, effect_sxp);
+    SET_VECTOR_ELT(df, 4, choice_sxp);
+    SET_VECTOR_ELT(df, 5, effectname_sxp);
+    SET_VECTOR_ELT(df, 6, effecttype_sxp);
+    SET_VECTOR_ELT(df, 7, value_sxp);
+    SEXP names = PROTECT(Rf_allocVector(STRSXP, ncol));
+    SET_STRING_ELT(names, 0, Rf_mkChar("group"));
+    SET_STRING_ELT(names, 1, Rf_mkChar("period"));
+    SET_STRING_ELT(names, 2, Rf_mkChar("ministep"));
+    SET_STRING_ELT(names, 3, Rf_mkChar("effect_idx"));
+    SET_STRING_ELT(names, 4, Rf_mkChar("choice"));
+    SET_STRING_ELT(names, 5, Rf_mkChar("effectname"));
+    SET_STRING_ELT(names, 6, Rf_mkChar("effecttype"));
+    SET_STRING_ELT(names, 7, Rf_mkChar("contribution"));
+    Rf_setAttrib(df, R_NamesSymbol, names);
+    SEXP rownames = PROTECT(Rf_allocVector(INTSXP, 2));
+    INTEGER(rownames)[0] = NA_INTEGER;
+    INTEGER(rownames)[1] = -nrow;
+    Rf_setAttrib(df, R_RowNamesSymbol, rownames);
+    SEXP classdf = PROTECT(Rf_allocVector(STRSXP, 1));
+    SET_STRING_ELT(classdf, 0, Rf_mkChar("data.frame"));
+    Rf_setAttrib(df, R_ClassSymbol, classdf);
+    UNPROTECT(12);
+    return df;
+}
+
 } // namespace siena

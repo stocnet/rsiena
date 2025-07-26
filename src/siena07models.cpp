@@ -109,7 +109,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 	updateParameters(EFFECTSLIST, THETA, pGroupData, pModel);
 
 	/* ans will be the return value */
-	SEXP ans = PROTECT(Rf_allocVector(VECSXP, 10));
+	SEXP ans = PROTECT(Rf_allocVector(VECSXP, 11));
 
 	/* count up the total number of parameters */
 	int dim = 0;
@@ -475,7 +475,13 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 	SET_VECTOR_ELT(ans, 7, logliks);
 	SET_VECTOR_ELT(ans, 8, changeContributionChains);
 	SET_VECTOR_ELT(ans, 9, actorStats);
-	UNPROTECT(12);
+	if (returnChangeContributions) {
+		// would be more efficient to never create a list but directly a data.frame
+		SEXP flatdf;
+		PROTECT(flatdf = flattenChangeContributionsList(changeContributionChains)); 
+		SET_VECTOR_ELT(ans, 10, flatdf);  // add as new slot [[11]] for testing
+	}
+	UNPROTECT(13);
 	return(ans);
 }
 
