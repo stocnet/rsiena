@@ -206,7 +206,6 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 		z$thetaValues <- thetaValues
 		z$thetaFromFile <- TRUE
 	}
-
 	z <- robmon(z, x, useCluster, nbrNodes, initC, clusterString,
 		clusterIter, clusterType, cl, ...)
 

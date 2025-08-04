@@ -41,6 +41,10 @@ simstats0c <- function(z, x, data=NULL, effects=NULL, fromFiniteDiff=FALSE,
 	{
 		z$returnChangeContributions <- FALSE
 	}
+    	if (is.null(z$returnDataFrame))
+	{
+		z$returnDataFrame <- FALSE
+	}
     if (is.null(f$seeds))
     {
         seeds <- NULL
@@ -86,7 +90,7 @@ simstats0c <- function(z, x, data=NULL, effects=NULL, fromFiniteDiff=FALSE,
 				 randomseed2, returnDeps, z$FinDiff.method,
 				 !is.null(z$cl) && useStreams, z$addChainToStore,
 				  z$returnChains, returnLoglik, 
-				  z$returnActorStatistics, z$returnChangeContributions)
+				  z$returnActorStatistics, z$returnChangeContributions, z$returnDataFrame)
     if (!fromFiniteDiff)
     {
         if (z$FinDiff.method)
@@ -132,12 +136,12 @@ simstats0c <- function(z, x, data=NULL, effects=NULL, fromFiniteDiff=FALSE,
 	{	
         ## these should potentially be changeContributionsChain to be distinguished from changeContributions from static
 		changeContributions <- ans[[9]]
-        changeContributions_df <- ans[[11]]
+        #changeContributions_df <- ans[[11]]
 	}
 	else
 	{
 		changeContributions <- NULL
-        changeContributions_df <- NULL
+        # changeContributions_df <- NULL
 	}
 	if(z$returnActorStatistics)
 	{
@@ -166,8 +170,7 @@ simstats0c <- function(z, x, data=NULL, effects=NULL, fromFiniteDiff=FALSE,
 		 ## browser()
     list(sc = sc, fra = fra, ntim0 = ntim, feasible = TRUE, OK = TRUE,
          sims=sims, f$seeds, chain=chain, loglik=loglik,
-		 actorStatistics = actorStatistics, changeContributions = changeContributions,
-         changeContributions_df =  changeContributions_df)
+		 actorStatistics = actorStatistics, changeContributions = changeContributions)
 }
 
 ##@clearData siena07 Finalizer to clear Data object in C++

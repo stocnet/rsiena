@@ -92,7 +92,6 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		}
 		xx
 	}
-
 	# start of initializeFRAN proper
 	z$effectsName <- deparse(substitute(effects))
 	## fix up the interface so can call from outside robmon framework

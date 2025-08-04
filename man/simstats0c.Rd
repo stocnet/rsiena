@@ -39,8 +39,8 @@ terminateFRAN(z, x)
     for \code{\link{sienaTimeTest}}}
   \item{byGroup}{Boolean. For internal use: allows different thetas for each
     group to be used in \code{sienaBayes}.}
-  \item{returnDataFrame}{Boolean. Whether to return the chains as
-    lists or data frames.}
+  \item{returnDataFrame}{Boolean. Whether to return the chains and changeContributions as
+    data frames or lists.}
   \item{returnLoglik}{Boolean. Whether to return the log likelihood of
     the simulated chain.}
    \item{onlyLoglik}{Boolean: whether to return just the likelihood for
@@ -99,11 +99,11 @@ terminateFRAN(z, x)
     each component of which is a list or a data frame depending on the
     value of \code{returnDataFrame}.
     Only if \code{returnChains} is TRUE.}
-  \item{changeContributions}{A list of sampled chains, one for
-    each period. Each list consists a list for each dependent variable, each 
-    of which consists of a list for each period, each component of which 
-    is a matrix of effects times choices containing the changeContributions 
-    (+- change statistics) for each ministep.
+  \item{changeContributions}{A list (or dataframe if \code{returnDataFrame} is TRUE) 
+    of sampled chains, one for each period. Each list consists a list for 
+    each dependent variable, each of which consists of a list for each period, 
+    each component of which is a matrix of effects times choices 
+    containing the changeContributions  (+- change statistics) for each ministep.
     Only if \code{returnChangeContributions} is TRUE.}
   \item{accepts}{Number of accepted MH steps by dependent variable
     (permute steps are counted under first dependent variable)}

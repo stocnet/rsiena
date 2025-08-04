@@ -1,7 +1,7 @@
-
 #include <stdlib.h> // for NULL
 #include "siena07setup.h"
 #include "siena07models.h"
+#include "siena07utilities.h"
 
 // R stuff last redefine length macro
 #include <R.h>
@@ -10,14 +10,19 @@
 
 extern "C"
 {
+/* 
+  Declare the Rcpp-exported wrappers manually
+*/
+ SEXP _RSiena_softmax_arma(SEXP);
+ SEXP _RSiena_softmax_arma_by_group(SEXP, SEXP);
 
-/*
+  /*
   From tools::package_native_routine_registration_skeleton.
 
   And I looked at how it is done in base package methods.
 */
 
-#define CALLDEF(name, n)  {#name, (DL_FUNC) &name, n}
+#define CALLDEF(name, n)  {"C_"#name, (DL_FUNC) &name, n}
 
 static const R_CallMethodDef CallEntries[] = {
    CALLDEF(Behavior, 2),
@@ -33,7 +38,7 @@ static const R_CallMethodDef CallEntries[] = {
    CALLDEF(DyadicCovariates, 2),
    CALLDEF(effects, 2),
    CALLDEF(ExogEvent, 2),
-   CALLDEF(forwardModel, 16),
+   CALLDEF(forwardModel, 17),
    CALLDEF(getChainProbabilities, 8),
    CALLDEF(getTargets, 6),
    CALLDEF(interactionEffects, 2),
@@ -43,7 +48,10 @@ static const R_CallMethodDef CallEntries[] = {
    CALLDEF(OneMode, 2),
    CALLDEF(setupData, 2),
    CALLDEF(setupModelOptions, 12),
-    {NULL, NULL, 0}
+   CALLDEF(flattenChangeContributionsList, 1),
+   {"_RSiena_softmax_arma",            (DL_FUNC) &_RSiena_softmax_arma,            1},
+   {"_RSiena_softmax_arma_by_group",   (DL_FUNC) &_RSiena_softmax_arma_by_group,   2},
+   {NULL, NULL, 0}
 };
 
 void R_init_RSiena(DllInfo *dll)

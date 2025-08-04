@@ -13,7 +13,7 @@ mymodel <- includeEffects(mymodel, transTrip, name = "mynet")
 
 # Test returnChangeContributions when running siena07 directly ----
 
-mycontrols <- sienaAlgorithmCreate(projname="test", n3 = 500, cond = FALSE)
+mycontrols <- sienaAlgorithmCreate(projname=NULL, n3 = 500, cond = FALSE)
 ans <- siena07(
   mycontrols,
   data = mydata,

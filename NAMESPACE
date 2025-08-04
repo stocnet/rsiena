@@ -1,5 +1,5 @@
-useDynLib(RSiena, .registration = TRUE, .fixes="C_")
-# exportPattern("ˆ[[:alpha:]]+")
+useDynLib(RSiena, .registration = TRUE)
+#exportPattern("ˆ[[:alpha:]]+")
 
 export(
 	coCovar, coDyadCovar, getEffects, model.create, print01Report, siena07,
@@ -17,14 +17,14 @@ export(
 	siena.table, xtable, score.Test, Wald.RSiena, Multipar.RSiena, 
    testSame.RSiena, funnelPlot, meta.table,
    influenceTable, selectionTable,
-   calculateContribution, calculateContributionsDynamic
+   sienaAME, sienaAMEDynamic, sienaPredict
 )
 
 # importFrom("data.table", "rbindlist", "as.data.table", ":=",
 #            "setDTthreads", "dcast", ".N", ".I", ".SD")
 #importClassesFrom("data.table", "data.table")
 import("data.table")
-importFrom("Rcpp", sourceCpp)
+importFrom("Rcpp", sourceCpp, evalCpp)
 importFrom("Matrix", "Matrix", "sparseMatrix", "spMatrix", "drop0", 
            "rankMatrix", "mat2triplet")
 importFrom("lattice", "xyplot", "trellis.par.get", "trellis.par.set", "bwplot",

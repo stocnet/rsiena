@@ -76,11 +76,11 @@ namespace siena
 	SEXP getMiniStepList(const MiniStep & miniStep, int period);
 	SEXP getChainList(const Chain & chain);
 	SEXP getChangeContributionsList(const Chain & chain, SEXP EFFECTSLIST);
+	SEXP flattenChangeContributionsList(SEXP changeContributionChains);
 	SEXP createRObjectAttributes(SEXP EFFECTSLIST, SEXP & stats);
 	Chain * makeChainFromList(Data * pData, SEXP CHAIN, int period);
 	MiniStep * makeMiniStepFromList(Data * pData, SEXP MINISTEP);
 	Chain * createMissingChain(int period, Data * data, const State& initialState);
-	SEXP flattenChangeContributionsList(SEXP changeContributionChains);
 }
 
 #endif // SIENA07UTILITIES_H_

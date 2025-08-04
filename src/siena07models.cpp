@@ -66,7 +66,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 	SEXP FROMFINITEDIFF, SEXP MODELPTR, SEXP EFFECTSLIST,
 	SEXP THETA, SEXP RANDOMSEED2, SEXP RETURNDEPS, SEXP NEEDSEEDS,
 	SEXP USESTREAMS, SEXP ADDCHAINTOSTORE, SEXP RETURNCHAINS, SEXP RETURNLOGLIK,
-	SEXP RETURNACTORSTATISTICS, SEXP RETURNCHANGECONTRIBUTIONS)
+	SEXP RETURNACTORSTATISTICS, SEXP RETURNCHANGECONTRIBUTIONS, SEXP RETURNDATAFRAME)
 {
 	SEXP NEWRANDOMSEED = PROTECT(Rf_duplicate(RANDOMSEED2)); // for parallel testing only
 
@@ -90,6 +90,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 	int returnLoglik = sexp_to_int(RETURNLOGLIK, 0);
 	int returnActorStatistics = sexp_to_int(RETURNACTORSTATISTICS, 0);
 	int returnChangeContributions = sexp_to_int(RETURNCHANGECONTRIBUTIONS, 0);
+	int returnDataFrame = sexp_to_int(RETURNDATAFRAME, 0);
 	int deriv = Rf_asInteger(DERIV);
 	int needSeeds = Rf_asInteger(NEEDSEEDS);
 
@@ -405,7 +406,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
                     ContinuousVariable * pContinuousVariable =
                         rContinuousVariables[i];
                     SEXP theseValues = getContinuousValues(*pContinuousVariable);
-                        SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(sims,
+                        SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(sims, 
                                     group), i + rVariables.size()),
                                     period, theseValues);
                 }
@@ -473,15 +474,14 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 	}
 	SET_VECTOR_ELT(ans, 6, chains);
 	SET_VECTOR_ELT(ans, 7, logliks);
+	if (returnDataFrame) 
+	{
+	// would be more efficient to never create a list but directly a data.frame
+		changeContributionChains = flattenChangeContributionsList(changeContributionChains);
+	}
 	SET_VECTOR_ELT(ans, 8, changeContributionChains);
 	SET_VECTOR_ELT(ans, 9, actorStats);
-	if (returnChangeContributions) {
-		// would be more efficient to never create a list but directly a data.frame
-		SEXP flatdf;
-		PROTECT(flatdf = flattenChangeContributionsList(changeContributionChains)); 
-		SET_VECTOR_ELT(ans, 10, flatdf);  // add as new slot [[11]] for testing
-	}
-	UNPROTECT(13);
+	UNPROTECT(12);
 	return(ans);
 }
 

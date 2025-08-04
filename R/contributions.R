@@ -19,7 +19,7 @@ calculateContribution <- function(ans, data,
   noRate <- effects$type != "rate"
   effects <- effects[noRate, ]
   effectNames <- effects[effects$include == TRUE,"shortName"]
-  
+
   if(is.null(depvar)){
     depvar <- names(data$depvars)[1]
   }
@@ -30,13 +30,13 @@ calculateContribution <- function(ans, data,
   
   ## should be possible to use counterfactual data here
   
-  contributions <- getChangeContributions(
+  staticChangeContributions <- getChangeContributions(
     algorithm,
     data,
     effects
   )
   
-  n_periods <- length(contributions[[1]])
+  n_periods <- length(staticChangeContributions[[1]])
   n_effects <- length(effectNames)
   n_egos <- dim(data[["depvars"]][[depvar]])[1]
   n_choices <- dim(data[["depvars"]][[depvar]])[2]
@@ -50,129 +50,85 @@ calculateContribution <- function(ans, data,
                                choice = seq_len(n_choices)))
   for (p in seq_len(n_periods)) {
     for (e in seq_len(n_effects)) {
-      # contributions[[1]][[p]][[e]] is a list of ego -> choice vector
-      mat <- do.call(rbind, contributions[[1]][[p]][[e]]) # [n_egos, n_choices]
+      # staticChangeContributions[[1]][[p]][[e]] is a list of ego -> choice vector
+      mat <- do.call(rbind, staticChangeContributions[[1]][[p]][[e]]) # [n_egos, n_choices]
       result[p, e, , ] <- mat
     }
   }
   
-  # indices <- expand.grid(
-  #   choice = 1:n_choices,
-  #   ego = 1:n_egos,
-  #   effect = effectNames,
-  #   period = seq_along(contributions[[1]])
-  # )
-  # 
-  # df <- data.frame(
-  #   period = indices$period,
-  #   ego = indices$ego,
-  #   choice = indices$choice,
-  #   effect = indices$effect,
-  #   # quite slow
-  #   cont = mapply(function(x, y, z, w) contributions[[1]][[x]][[y]][[z]][w], 
-  #                 indices$period, indices$effect, indices$ego, indices$choice)
-  # )
-  # # very inefficient! especially "interaction"?
-  # df <- reshape(df, idvar = c("period", "ego", "choice"), 
-  #               timevar = "effect", direction = "wide")
-  # df <- setNames(df,
-  #                gsub("(.*)\\.","",names(df)))
-  
-  ## base R solution is much more inefficient
-  result <- data.table::as.data.table(as.table(result))
-  data.table::setnames(result, c("period", "effect", "ego", "choice", "cont"))
-  ## only works when [ from data.dable is imported?
-  result[, ego := as.integer(ego)]
-  result[, choice := as.integer(choice)]
-  result[, period := as.integer(period)]
-  # Now dcast to wide, as in your function:
-  result <- data.table::dcast(
-    result,
-    period + ego + choice ~ effect, 
-    value.var = "cont"
-  )
-  data.table::setDF(result)
-  result
-  # df <- as.data.frame.table(arr, responseName = "cont")
-  # 
-  # # Reshape to wide
-  # df_wide <- reshape(df,
-  #                    idvar = c("period", "ego", "choice"),
-  #                    timevar = "effect",
-  #                    direction = "wide")
-  # # Optionally fix column names
-  # colnames(df_wide) <- sub("^cont\\.", "", colnames(df_wide))
-  # 
-  # df_wide
+  if (requireNamespace("data.table", quietly = TRUE)) {
+    DT <- data.table::as.data.table(as.table(result))
+    data.table::setnames(DT, c("period", "effect", "ego", "choice", "cont"))
+    DT[, ego := as.integer(ego)]
+    DT[, choice := as.integer(choice)]
+    DT[, period := as.integer(period)]
+    DT <- data.table::dcast(DT, period + ego + choice ~ effect, value.var = "cont")
+    # data.table::setDF(DT) only if we want to use pure data.frame later!
+    DT
+  } else {
+    df <- as.data.frame(as.table(result))
+    names(df) <- c("period","effect","ego","choice","cont")
+    df$period <- as.integer(df$period)
+    df$ego <- as.integer(df$ego)
+    df$choice <- as.integer(df$choice)
+
+    df_wide <- reshape(df, idvar = c("period", "ego", "choice"), timevar = "effect",
+                       direction = "wide")
+    colnames(df_wide) <- sub("^cont\\.", "", colnames(df_wide))
+    df_wide
+  }
 }
 
-##@calculateContributionsDynamic sienaRIDynamics (this is more transforming then calculating)
-calculateContributionsDynamic <- function(ans,
-                                         data,
-                                         theta,
-                                         algorithm,
-                                         effects,
-                                         depvar,
-                                         n3 = NULL, 
-                                         useChangeContributions = FALSE) {
-  changeContributions <- getChangeContributionsDynamic(
-        data = data,
-        ans = ans,
-        theta = theta,
-        algorithm = algorithm,
-        effects = effects,
-        n3 = n3, 
-        useChangeContributions = useChangeContributions)                                     
-  chains <- algorithm$n3
-	periods <- data$observation-1
-	effects <- effects[effects$include==TRUE,]
-    # really restrict to noRate here?
-	noRate <- effects$type != "rate"
-	effectNames <- effects[noRate,"shortName"]
-	depvar <- depvar
-#	effectTypes <- effects$type[noRate]
-#	networkName <- effects$name[noRate]
-#	networkInteraction <- effects$interaction1[noRate]
-#	effectIds <- paste(effectNames,effectTypes,networkInteraction, sep = ".")
-	currentNetObjEffs <- effects$name[noRate] == depvar
-    all_rows <- list()
-    row_idx <- 1L
-	for (chain in (1:chains))
-	{
-		for(period in 1:periods)
-		{
-			ministeps <- length(changeContributions[[chain]][[1]][[period]])
-			for(ministep in 1:ministeps)
-			{
-				#depvar <- attr(changeContributions[[1]][[period]][[ministep]],"networkName")
-				if(attr(changeContributions[[chain]][[1]][[period]][[ministep]],
-												"networkName")==depvar)
-				{
-					cdec <- ans$changeContributions[[1]][[period]][[ministep]]
-                    # cdec is a contributions x choices matrix
-                    n_choices <- ncol(cdec)
-                    for(choice in seq_len(n_choices)) {
-                        all_rows[[row_idx]] <- c(chain, 
-                                                period, 
-                                                ministep, 
-                                                choice,
-                                                cdec[, choice, drop = TRUE])
-                    row_idx <- row_idx + 1L
-				    }
-			    }
-		    }
-    	}
-    }
-  # combine rows into one matrix (inefficient?)
-  outmat <- do.call(rbind, all_rows)
-  colnames(outmat) <- c("chain","period","ministep","choice", effectNames)
-  outmat
-}
+# ##@calculateContributionsDynamic sienaRIDynamics (this is more transforming then calculating)
+# calculateContributionsDynamic <- function(ans,
+#                                          data,
+#                                          theta,
+#                                          algorithm,
+#                                          effects, #effects object from ans$effects can not be used?!
+#                                          depvar,
+#                                          n3 = NULL, 
+#                                          useChangeContributions = TRUE) {
+
+#   ## should add some checks, that effects is a real effects object
+#   changeContributions <- getChangeContributionsDynamic(
+#         data = data,
+#         ans = ans,
+#         theta = theta,
+#         algorithm = algorithm,
+#         effects = effects,
+#         n3 = n3, 
+#         useChangeContributions = useChangeContributions,
+#         returnDataFrame = TRUE)                         
+#   chains <- algorithm$n3
+# 	periods <- data$observation-1
+# 	effects <- effects[effects$include==TRUE,]
+#     # really restrict to noRate here?
+# 	noRate <- effects$type != "rate"
+# 	effectNames <- effects[noRate,"shortName"]
+# 	depvar <- depvar
+
+#   # changeContributions <- contrib_to_matrix(changeContributions, chains, periods, depvar, effectNames)
+  
+#   if(requireNamespace("data.table", quietly = TRUE)) {
+#     DT <- rbindlist(
+#       lapply(seq_along(changeContributions), function(i) {
+#         DT <- as.data.table(changeContributions[[i]])
+#         DT[, chain := i]
+#         DT
+#       })
+#     )
+#     DT <- dcast(DT, chain + group + period + ministep + choice ~ effectname, value.var="contribution")
+#     return(DT)
+#   } else {
+#     outmat <- changeContributions
+#     return(outmat)
+#   }
+# }
 
 ##@getChangeContributions. Use as RSiena:::getChangeContributions - copied from sienaRI
 getChangeContributions <- function(algorithm, data, effects)
 {
-    ## Daniel: Probably should be changed similarily to the dynamic contributions
+  ## Daniel: Probably should be changed similarily to the dynamic contributions
 
 	## Gets the simulated statistics.
 	## The following initializations data, effects, and model
@@ -181,7 +137,7 @@ getChangeContributions <- function(algorithm, data, effects)
 	## However, some modifications have been necessary to get it to work.
 	f <- unpackData(data,algorithm)
 
-	effects <- effects[effects$include,]
+	effects <- effects[effects$include,] # unnecessary?
 	if (!is.null(algorithm$settings))
 	{
 		stop('not implemented: RI together with settings')
@@ -195,6 +151,7 @@ getChangeContributions <- function(algorithm, data, effects)
 		list(as.integer(f$observations)),
 		list(f$nodeSets))
 	## register a finalizer
+  ## is this really all the same ans?
 	ans <- reg.finalizer(pData, clearData, onexit = FALSE)
 	ans<- .Call(C_OneMode, PACKAGE=pkgname,
 		pData, list(f$nets))
@@ -237,11 +194,18 @@ getChangeContributions <- function(algorithm, data, effects)
 		parallelrun=TRUE, returnActorStatistics=FALSE,
 		returnStaticChangeContributions=TRUE)
 	# See getTargets in siena07setup.cpp; also see rTargets in StatisticsSimulation.cpp
-	ans # why call this ans?
+	staticChangeContributions <- ans
+  staticChangeContributions # why call this ans?
 }
 
 ## extracts dynamic contributions from ans or simulates sequences ministeps to generate them. Changed and extracted from sienaRIDynamics
-getChangeContributionsDynamic <- function(data=NULL, ans = NULL, theta=NULL, algorithm, effects, n3 = NULL, useChangeContributions = FALSE){
+getChangeContributionsDynamic <- function(data=NULL, ans = NULL, theta=NULL, 
+                                          algorithm, 
+                                          effects,
+                                          depvar = NULL,
+                                          n3 = NULL, 
+                                          useChangeContributions = FALSE, 
+                                          returnDataFrame = FALSE){
 	if (!is.null(n3)) 
   {
    	algorithm$n3 <- as.integer(n3)
@@ -262,16 +226,84 @@ getChangeContributionsDynamic <- function(data=NULL, ans = NULL, theta=NULL, alg
   if (!useChangeContributions)
 	{
 		algorithm$nsub <- 0
+
     if (!is.null(ans))
 		{
 		  prevAns <- ans
 		} else {
+      stopifnot(!is.null(theta))
 		  prevAns <- NULL
 		  effects$initialValue[effects$include] <- theta # somewhat unsafe, it theta is not in the correct order
+      # thetaValues <- t(theta)
 		}
     ans <- siena07(algorithm, data=data, effects=effects,
                        prevAns=prevAns, initC=FALSE, returnDeps=FALSE, 
-                       returnChangeContributions=TRUE)
+                       returnChangeContributions=TRUE, returnDataFrame = returnDataFrame)
   }
-	changeContributions <- ans$changeContributions
+  changeContributions <- ans$changeContributions
+
+  if (returnDataFrame) {
+    if (is.list(changeContributions) && !is.data.frame(changeContributions[[1]])) 
+    {
+      warning("SIENA backend returned nested lists, not data.frames; auto-flattening each chain.")
+      changeContributions <- lapply(changeContributions, flattenChangeContributionsList)
+    }
+  # filtering before binding proofed to be quite slow
+    if (requireNamespace("data.table", quietly = TRUE)) {
+      changeContributions <- data.table::rbindlist(
+        lapply(seq_along(changeContributions), function(i) {
+          df <- changeContributions[[i]]
+          df$chain <- i
+          df
+        }),
+        use.names = TRUE, fill = TRUE
+      )
+      if (!is.null(depvar))
+      {
+        changeContributions <- changeContributions[changeContributions[["networkName"]] %in% depvar, , drop=FALSE]
+      }
+    } else {
+      changeContributions <- do.call(rbind, lapply(seq_along(changeContributions), function(i) {
+        df <- changeContributions[[i]]
+        df$chain <- i
+        df
+      }))
+      rownames(changeContributions) <- NULL
+      if (!is.null(depvar))
+      {
+        changeContributions <- changeContributions[changeContributions[["networkName"]] %in% depvar, , drop=FALSE]
+      }
+    }
+    return(changeContributions)
+  }
+  changeContributions
+}
+
+## Not doing this might reduce run time quite a bit! -> code would need to be adjusted though
+widenContribution <- function(changeContributions){
+  ## currently only works for dynamic case and data has to be pre filtered to only one depvar
+  if (all(c("effectname", "contribution") %in% names(changeContributions))) {
+    if (requireNamespace("data.table", quietly = TRUE)) {
+        changeContributions <- data.table::dcast(
+          changeContributions, chain + group + period + ministep + choice ~ effectname,
+          value.var = "contribution"
+        )
+      }
+    } else {
+      if (all(c("effectname", "contribution") %in% names(changeContributions))) {
+        changeContributions <- reshape(
+          changeContributions,
+          idvar = c("chain", "group", "period", "ministep", "choice"),
+          timevar = "effectname", v.names = "contribution",
+          direction = "wide"
+        )
+        colnames(changeContributions) <- sub("^contribution\\.", "", colnames(changeContributions))
+      }
+    }
+  changeContributions
+}
+
+# Wrapper to use in R code (RCPP style)
+flattenChangeContributionsList <- function(x) {
+  .Call("C_flattenChangeContributionsList", x)
 }
