@@ -59,14 +59,14 @@ predictProbability <- function(ans, staticContributions, theta, useTieProb = TRU
     effects <- ans[["effects"]] # provide effects instead?
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
+    noRateIncluded <- includedEffects[["type"]] != "rate"
     if(length(theta) > length(includedEffects)) {
-        noRateIncluded <- includedEffects[["type"]] != "rate"
         thetaNoRate <- theta[noRateIncluded]
-        effectNames  <- includedEffects[["shortName"]][noRateIncluded]
     } else {
         thetaNoRate <- theta
-        effectNames  <- includedEffects[["shortName"]]
     }
+    effectNames  <- includedEffects[["shortName"]][noRateIncluded]
+
 
     df <- staticContributions
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
@@ -144,14 +144,14 @@ predictProbabilityDynamic <- function(ans, data, theta, algorithm, effects,
     useTieProb = TRUE, depvar, n3 = NULL, useChangeContributions = FALSE) {
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
+    noRateIncluded <- includedEffects[["type"]] != "rate"
     if(length(theta) > length(includedEffects)) {
-        noRateIncluded <- includedEffects[["type"]] != "rate"
         thetaNoRate <- theta[noRateIncluded]
-        effectNames  <- includedEffects[["shortName"]][noRateIncluded]
     } else {
         thetaNoRate <- theta
-        effectNames  <- includedEffects[["shortName"]]
     }
+    effectNames  <- includedEffects[["shortName"]][noRateIncluded]
+
 
     df <- getChangeContributionsDynamic(
         ans = ans, 
