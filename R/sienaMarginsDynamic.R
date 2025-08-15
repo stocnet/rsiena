@@ -101,7 +101,8 @@ sienaAMEDynamic <- function(
         combine_batch = combine_batch,
         batch_size = batch_size,
         keep_batch = keep_batch,
-        verbose = verbose
+        verbose = verbose,
+        useChangeContributions = useChangeContributions
     )
 }
 

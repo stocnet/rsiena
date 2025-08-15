@@ -234,7 +234,7 @@ sienaPostestimate <- function(
 makeEstimator <- function(predictFun, predictArgs, outcome,
     level = "period", condition = NULL, sum.fun = mean, na.rm = TRUE) {
     function(theta, useChangeContributions = FALSE) {
-        callArgs <- c(list(theta = theta), predictArgs)
+        callArgs <- c(list(theta = theta, useChangeContributions = useChangeContributions), predictArgs)
         unit_pred <- do.call(predictFun, callArgs)
         agg(
             ME = outcome,
