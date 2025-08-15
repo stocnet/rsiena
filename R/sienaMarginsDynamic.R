@@ -53,7 +53,8 @@ sienaAMEDynamic <- function(
             int_effectNames = int_effectNames1,
             mod_effectNames = mod_effectNames1,
             useTieProb = useTieProb,
-            depvar = depvar
+            depvar = depvar,
+            useChangeContributions = FALSE
         )
     }else{
         diffName <- "secondDiff"
@@ -76,7 +77,8 @@ sienaAMEDynamic <- function(
             int_effectNames2 = int_effectNames2,
             mod_effectNames2 = mod_effectNames2,
             useTieProb = useTieProb,
-            depvar = depvar
+            depvar = depvar,
+            useChangeContributions = FALSE
         )
         ME <- "secondDiff"
     }
@@ -118,9 +120,14 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
     if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
-    noRateIncluded <- includedEffects[["type"]] != "rate"
-    thetaNoRate <- theta[noRateIncluded]
-    effectNames  <- includedEffects[["shortName"]][noRateIncluded]
+    if(length(theta) > length(includedEffects)) {
+        noRateIncluded <- includedEffects[["type"]] != "rate"
+        thetaNoRate <- theta[noRateIncluded]
+        effectNames  <- includedEffects[["shortName"]][noRateIncluded]
+    } else {
+        thetaNoRate <- theta
+        effectNames  <- includedEffects[["shortName"]]
+    }
 
     df <- getChangeContributionsDynamic(
         ans = ans,
@@ -176,9 +183,14 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
     if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
-    noRateIncluded <- includedEffects[["type"]] != "rate"
-    thetaNoRate <- theta[noRateIncluded]
-    effectNames  <- includedEffects[["shortName"]][noRateIncluded]
+    if(length(theta) > length(includedEffects)) {
+        noRateIncluded <- includedEffects[["type"]] != "rate"
+        thetaNoRate <- theta[noRateIncluded]
+        effectNames  <- includedEffects[["shortName"]][noRateIncluded]
+    } else {
+        thetaNoRate <- theta
+        effectNames  <- includedEffects[["shortName"]]
+    }
 
     df <- getChangeContributionsDynamic(
         ans = ans,

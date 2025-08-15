@@ -59,9 +59,14 @@ predictProbability <- function(ans, staticContributions, theta, useTieProb = TRU
     effects <- ans[["effects"]] # provide effects instead?
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
-    noRateIncluded <- includedEffects[["type"]] != "rate"
-    thetaNoRate <- theta[noRateIncluded]
-    effectNames  <- includedEffects[["shortName"]][noRateIncluded]
+    if(length(theta) > length(includedEffects)) {
+        noRateIncluded <- includedEffects[["type"]] != "rate"
+        thetaNoRate <- theta[noRateIncluded]
+        effectNames  <- includedEffects[["shortName"]][noRateIncluded]
+    } else {
+        thetaNoRate <- theta
+        effectNames  <- includedEffects[["shortName"]]
+    }
 
     df <- staticContributions
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
@@ -106,7 +111,8 @@ sienaPredictDynamic <- function(
             algorithm = algorithm,
             useTieProb = useTieProb,
             depvar = depvar,
-            n3 = n3
+            n3 = n3,
+            useChangeContributions = FALSE
         )
         sienaPostestimate(
             predictFun = predictProbabilityDynamic,
@@ -138,9 +144,14 @@ predictProbabilityDynamic <- function(ans, data, theta, algorithm, effects,
     useTieProb = TRUE, depvar, n3 = NULL, useChangeContributions = FALSE) {
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
-    noRateIncluded <- includedEffects[["type"]] != "rate"
-    thetaNoRate <- theta[noRateIncluded]
-    effectNames  <- includedEffects[["shortName"]][noRateIncluded]
+    if(length(theta) > length(includedEffects)) {
+        noRateIncluded <- includedEffects[["type"]] != "rate"
+        thetaNoRate <- theta[noRateIncluded]
+        effectNames  <- includedEffects[["shortName"]][noRateIncluded]
+    } else {
+        thetaNoRate <- theta
+        effectNames  <- includedEffects[["shortName"]]
+    }
 
     df <- getChangeContributionsDynamic(
         ans = ans, 
@@ -234,7 +245,10 @@ sienaPostestimate <- function(
 makeEstimator <- function(predictFun, predictArgs, outcome,
     level = "period", condition = NULL, sum.fun = mean, na.rm = TRUE) {
     function(theta, useChangeContributions = FALSE) {
-        callArgs <- c(list(theta = theta, useChangeContributions = useChangeContributions), predictArgs)
+        if(!is.null(predictArgs[["useChangeContributions"]])){
+          predictArgs[["useChangeContributions"]] <- useChangeContributions
+        }
+        callArgs <- c(list(theta = theta), predictArgs)
         unit_pred <- do.call(predictFun, callArgs)
         agg(
             ME = outcome,
