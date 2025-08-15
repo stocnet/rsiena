@@ -51,10 +51,15 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 		{
 			stop("ans is not a legitimate Siena fit object")
 		}
-		paras <- c(ans$rate, ans$theta)
-		algo <- ans$x
-		effs <- ans$effects # will be overwritten if conditional
-		# could data also be taken from ans?
+		if(is.nul(theta)){
+			theta <- ans$theta
+		}
+		if(is.null(algorithm)){
+			algorithm <- ans$x
+		}
+		if(is.null(effects)){
+			effects <- ans$effects
+		}
 		if(ans$cconditional)
 		{
 			if(is.null(effects))
@@ -65,18 +70,7 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 			{
 				stop("effects is not a legitimate Siena effects object")
 			}
-			effs <- effects
-			if(!is.null(algorithm)||!is.null(theta))
-			{
-				warning("some information are multiply defined \n results will be based on 'theta' and 'algorithm' stored in 'ans' (as 'ans$theta', 'ans$x')")
-			}
-		} else {
-			if(!is.null(algorithm)||!is.null(theta)||!is.null(effects))
-			{
-				warning("some information are multiply defined \n results will be based on 'theta', 'algorithm', and 'effects' stored in 'ans' (as 'ans$theta', 'ans$x', 'ans$effects')")
-			}
 		}
-		RIValues <- calculateRIDynamics(data = data, ans=ans, theta = paras, algorithm = algo, effects = effs, depvar = depvar, intervalsPerPeriod=intervalsPerPeriod, n3 = n3, useChangeContributions = useChangeContributions)
 	} else {
 		## Use theta, algorithm, and effects given in the function call
 		if (!inherits(algorithm, "sienaAlgorithm"))
@@ -99,9 +93,8 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 			}
 			stop("theta is not a legitimate parameter vector \n number of parameters has to match number of effects")
 		}
-		RIValues <- calculateRIDynamics(data = data, ans= NULL, theta = theta, algorithm = algorithm,  effects = effects, depvar = depvar, intervalsPerPeriod=intervalsPerPeriod, n3 = n3, useChangeContributions = useChangeContributions)
 	}
-	RIValues
+	calculateRIDynamics(data = data, ans= NULL, theta = theta, algorithm = algorithm,  effects = effects, depvar = depvar, intervalsPerPeriod=intervalsPerPeriod, n3 = n3, useChangeContributions = useChangeContributions)
 }
 
 ##@calculateRIDynamics calculateRIDynamics simulates sequences ministeps or, and aggregates the relative importances of effects over ministeps of same time intervals

@@ -225,18 +225,23 @@ getChangeContributionsDynamic <- function(ans = NULL, theta=NULL, data=NULL,
   }
   if (!useChangeContributions)
 	{
-		algorithm$nsub <- 0
-    if (!is.null(ans))
+    # you should only use ans, if theta is not NULL!
+    if (is.null(theta))
 		{
-		  prevAns <- ans
-		} else {
-      stopifnot(!is.null(theta))
-		  prevAns <- NULL
-		  effects$initialValue[effects$include] <- theta # somewhat unsafe, it theta is not in the correct order
-      # thetaValues <- t(theta)
+		  theta <- ans$theta
 		}
-    ans <- siena07(algorithm, data=data, effects=effects,
-                       prevAns=prevAns, initC=FALSE, returnDeps=FALSE, 
+    include <- effects[["include"]]
+    includedEffects <- effects[include, ]
+    noRateIncluded <- includedEffects[["type"]] != "rate"
+    if(length(theta) > length(effects$initialValue[effects$include])) {
+        theta <- theta[noRateIncluded] # if conditional estimation?
+    } else if(length(theta) < length(effects$initialValue[effects$include])) {
+        theta <- c(ans$rate, theta) # if unconditional estimation?
+    }
+		algorithm$nsub <- 0
+	  effects$initialValue[effects$include] <- theta
+
+    ans <- siena07(algorithm, data=data, effects=effects, initC=FALSE, returnDeps=FALSE, 
                        returnChangeContributions=TRUE, returnDataFrame = returnDataFrame)
   }
   changeContributions <- ans$changeContributions
