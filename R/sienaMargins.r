@@ -117,12 +117,13 @@ predictFirstDiff <- function(ans, theta, staticContributions,
     df[["firstDiff"]] <- calculateFirstDiff(
         densityValue = df[["density"]],
         changeProb = df[["changeProb"]],
+        changeUtil = df[["changeUtil"]],
         effectName = effectName, 
         effectContribution = df[[effectName]],
         diff = diff, contrast = contrast,
         interaction = interaction,
         int_effectNames = int_effectNames,
-        mod_effectNames = mod_effectNames,
+        mod_effectNames = mod_effectNames, 
         modContribution = df[[mod_effectNames]],
         effectNames = effectNames,
         theta = thetaNoRate,
@@ -197,8 +198,6 @@ calculateFirstDiff <- function(densityValue,
                                useTieProb = TRUE,
                                tieProb = NULL,
                                details = FALSE){
-  # density <- df[[ "density"]]
-  
   if (effectName == "density") {
     if((!is.null(diff))) stop("firstDiff for density must be contrast c(-1,1)")
     if(!is.null(contrast)){
@@ -208,13 +207,11 @@ calculateFirstDiff <- function(densityValue,
       newChangeStatistic <- rep(NA, length(oldChangeStatistic))
       newChangeStatistic[oldChangeStatistic == contrast[1]] <- contrast[2]
       newChangeStatistic[oldChangeStatistic == contrast[2]] <- contrast[1]
-      # changeUtils <- df[["changeUitil"]]
-      utilDiff <- ifelse(is.na(newChangeStatistic), NA, -2 * changeUtils)
+      utilDiff <- ifelse(is.na(newChangeStatistic), NA, -2 * changeUtil)
       densityValue <- newChangeStatistic
     }
   } else {
     if(!is.null(contrast)){
-      # effectContributions <- df[["effectName"]]
       oldChangeStatistic <- densityValue * effectContribution
       newChangeStatistic <- rep(NA, length(oldChangeStatistic))
       newChangeStatistic[oldChangeStatistic == contrast[1]] <- contrast[2]
@@ -231,7 +228,6 @@ calculateFirstDiff <- function(densityValue,
                                       effectNames = effectNames)
   }
   expDiff <- exp(utilDiff)
-  # changeProb <- df[["changeProb"]]
   changeProb_cf <- as.vector(changeProb * expDiff / (1 - changeProb + changeProb * expDiff))
   if (useTieProb == TRUE) {
     tieProb_cf <- changeProb_cf
@@ -305,13 +301,6 @@ calculateSecondDiff <- function(densityValue,
     tieProb = tieProb
   )
 
-  # which ... not used anymore?
-  # effectNum1 <- which(effectNames == effectName1)
-  # effectNum2 <- which(effectNames == effectName2)
-
-  # density <- df[["density"]]
-  
-  # Calculate Probabilitiy if only effect2 has been changed
   if(!is.null(contrast2)){
     oldChangeStatistic2 <- densityValue * effectContribution2
     newChangeStatistic2 <- rep(NA, length(oldChangeStatistic2))
@@ -328,13 +317,11 @@ calculateSecondDiff <- function(densityValue,
                                       modContribution = modContribution2,
                                       effectNames = effectNames)
   expDiff21 <- exp(utilDiff21)
-  # changeProb <- df[["changeProb"]]
   changeProb_cf21 <- as.vector(changeProb * expDiff21 / (1-changeProb + changeProb * expDiff21))
   if (useTieProb == TRUE) {
     tieProb_cf21 <- changeProb_cf21
     tieProb_cf21[densityValue == -1] <- 1 - changeProb_cf21[densityValue == -1]
   }
-  # changeUtil <- df[["changeUtil"]]
   changeUtil21 <- changeUtil + utilDiff21
   ## dangerous with interactions because other effect values are not "corrected"
 
