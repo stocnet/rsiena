@@ -1,3 +1,8 @@
+# testthat::skip_on_cran()
+
+library(RSiena)
+
+
 test_predict <- function() {
   cat("\n== Testing Prediction Pipeline ==\n")
   # Setup
@@ -13,15 +18,15 @@ test_predict <- function() {
     returnChangeContributions = TRUE,
     returnDataFrame = TRUE
   )
-  effectNames <- mymodel$shortName[mymodel$include & (mymodel$type != "rate")]
 
   # --- Test sienaPredict and downstream simProb and softmax/agg (base R fallback)
 #   suppressPackageStartupMessages(detach("package:data.table", unload = TRUE))
 #   pred <- sienaPredict(
 #     ans = ans,
 #     data = mydata,
-#      useTieProb = TRUE,
-#      condition = effectNames,
+#      useuseTieProb = TRUE,
+#      condition = "transTrip",
+#      level = "period"
 #   )
 #   print(head(pred))
 #   stopifnot(is.data.frame(pred) || "data.table" %in% class(pred))
@@ -38,10 +43,11 @@ test_predict <- function() {
     pred_dt <- sienaPredict(
       ans = ans,
       data = mydata,
-      tieProb = TRUE,
+      useTieProb = TRUE,
       nsim = 50,
       condition = "transTrip",
-      level = "period"
+      level = "period",
+      uncertainty = TRUE
     )
     print(head(pred_dt))
     stopifnot("data.table" %in% class(pred_dt) || is.data.frame(pred_dt))
@@ -53,10 +59,10 @@ test_predict <- function() {
 #   pred <- sienaPredictDynamic(
 #     ans = ans,
 #     data = mydata,
-#     useTieProb = TRUE,
+#     useuseTieProb = TRUE,
 #      n3 = 50,
 #      nsim = 50,
-#     condition = effectNames,
+#      condition = "density"
 #   )
 #   print(head(pred))
 #   stopifnot(is.data.frame(pred) || "data.table" %in% class(pred))
@@ -78,7 +84,8 @@ test_predict <- function() {
       useTieProb = TRUE,
       n3 = 50,
       nsim = 20,
-      condition = "density"
+      condition = "density",
+      uncertainty = FALSE
     )
     print(head(pred_dt))
     stopifnot("data.table" %in% class(pred_dt) || is.data.frame(pred_dt))

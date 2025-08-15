@@ -1,8 +1,10 @@
+# testthat::skip_on_cran()
+
 library(Rcpp)
 library(RcppArmadillo)
 library(microbenchmark)
 library(data.table)
-sourceCpp("src/rcpp_utilities.cpp")
+sourceCpp("src/rcppUtilities.cpp")
 
 ## Recursive softmax formula, adjusted from https://rpubs.com/FJRubio/softmax.
 softmax <- function(par = NULL, recursive = TRUE) {

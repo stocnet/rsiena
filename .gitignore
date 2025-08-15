@@ -33,7 +33,12 @@ NEWSnew.md
 
 # Makevars
 Makevars
-Makevars.win
+src/Makevars
 
 # Mac OS
 .DS_Store
+
+# Config script intermediate files
+autom4te.cache
+config.log
+config.status

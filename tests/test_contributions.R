@@ -1,3 +1,7 @@
+# testthat::skip_on_cran()
+
+library(RSiena)
+
 test_contributions <- function() {
   cat("\n== Testing Contribution Extraction ==\n")
   # Minimal RSiena setup for reproducible test
@@ -26,7 +30,7 @@ test_contributions <- function() {
   if (requireNamespace("data.table", quietly = TRUE)) {
     library(data.table)
     cat("* Static contributions (data.table):\n")
-    stat_dt <- calculateContribution(ans, mydata)
+    stat_dt <- RSiena:::calculateContribution(ans, mydata)
     print(head(stat_dt))
     stopifnot("data.table" %in% class(stat_dt))
 
@@ -50,7 +54,7 @@ test_contributions <- function() {
   if (requireNamespace("data.table", quietly = TRUE)) {
     library(data.table)
     cat("* Dynamic contributions (data.table):\n")
-    dyn_dt <- getChangeContributionsDynamic(
+    dyn_dt <- RSiena:::getChangeContributionsDynamic(
       ans = ans,
       data = mydata,
       theta = c(ans$rate,ans$theta),
@@ -62,7 +66,7 @@ test_contributions <- function() {
     print(head(dyn_dt))
     stopifnot("data.table" %in% class(dyn_dt))
     cat("* Dynamic contributions (data.table) with useChangeContributions = FALSE:\n")
-    dyn_dt <- getChangeContributionsDynamic(
+    dyn_dt <- RSiena:::getChangeContributionsDynamic(
       ans = ans,
       data = mydata,
       theta = c(ans$rate, ans$theta),
@@ -79,7 +83,7 @@ test_contributions <- function() {
     new_theta <- MASS::mvrnorm(n=1,
                            mu = ans$theta,
                            Sigma = ans$covtheta)
-    dyn_dt <- getChangeContributionsDynamic(
+    dyn_dt <- RSiena:::getChangeContributionsDynamic(
       ans = NULL,
       data = mydata,
       theta = c(ans$rate, new_theta),

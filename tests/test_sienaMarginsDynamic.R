@@ -1,22 +1,7 @@
-ameDynamic <- sienaAMEDynamic(ans, mydata, "transTrip", 1,
-                            effects = mymodel,
-                            algorithm = mycontrols,
-                            useTieProb = TRUE,
-                            second = FALSE,
-                            n3 = 50,
-                            nsim = 10,
-                            level = "period",
-                            condition = "density")
+# testthat::skip_on_cran()
 
-ameDynamicSecond <- sienaAMEDynamic(ans, mydata,
-                             effectName1 = "transTrip", diff1 = 1,
-                             effectName2 = "recip", contrast2 = c(0,1),
-                             second = TRUE,
-                             effects = mymodel,
-                             algorithm = mycontrols,
-                             useTieProb = TRUE,
-                             n3 = 50,
-                             nsim = 10)
+library(RSiena)
+
 
 test_sienaAMEDynamic_all_cases <- function(ans, mydata, mymodel, mycontrols) {
   # Setup
@@ -109,9 +94,8 @@ test_sienaAMEDynamic_all_cases <- function(ans, mydata, mymodel, mycontrols) {
     cat(nm, ": Rows=", nrow(results[[nm]]), if (is.data.frame(results[[nm]])) paste("Cols=", ncol(results[[nm]])), "\n")
   }
   invisible(results)
-}
 
-ame_dynamic_interaction <- sienaAMEDynamic(
+  ame_dynamic_interaction <- sienaAMEDynamic(
     ans = ans2,
     data = mydata2,
     effectName1 = "transTrip",
@@ -129,100 +113,105 @@ ame_dynamic_interaction <- sienaAMEDynamic(
     nsim = 10,  # keep small for speed
     uncertainty = TRUE,
     verbose = TRUE
-)
-ame_dynamic_interaction
+  )
+  ame_dynamic_interaction
 
-ame_dynamic_moderator <- sienaAMEDynamic(
-    ans = ans2,
-    data = mydata2,
-    effectName1 = "transTrip",
-    diff1 = 1,
-    interaction1 = TRUE,
-    int_effectNames1 = "transRecTrip",
-    mod_effectNames1 = "recip",
-    second = TRUE,
-    effectName2 = "recip",
-    contrast2 = c(0,1),
-    interaction2 = TRUE,
-    int_effectNames2 = "transRecTrip",
-    mod_effectNames2 = "transTrip",
-    effects = mymodel2,
-    algorithm = mycontrols2,
-    useTieProb = TRUE,
-    depvar = "mynet2", # add check that this is ANY of the depvars/netnames!
-    level = "period",
-    n3 = 50,
-    nsim = 10,  # keep small for speed
-    batch_size = 5,
-    uncertainty = TRUE,
-    verbose = TRUE
-)
+  ame_dynamic_moderator <- sienaAMEDynamic(
+      ans = ans2,
+      data = mydata2,
+      effectName1 = "transTrip",
+      diff1 = 1,
+      interaction1 = TRUE,
+      int_effectNames1 = "transRecTrip",
+      mod_effectNames1 = "recip",
+      second = TRUE,
+      effectName2 = "recip",
+      contrast2 = c(0,1),
+      interaction2 = TRUE,
+      int_effectNames2 = "transRecTrip",
+      mod_effectNames2 = "transTrip",
+      effects = mymodel2,
+      algorithm = mycontrols2,
+      useTieProb = TRUE,
+      depvar = "mynet2", # add check that this is ANY of the depvars/netnames!
+      level = "period",
+      n3 = 50,
+      nsim = 10,  # keep small for speed
+      batch_size = 5,
+      uncertainty = TRUE,
+      verbose = TRUE
+  )
 
-ame_dynamic_moderator
+  ame_dynamic_moderator
 
-ame_dynamic_moderator2 <- sienaAMEDynamic(
-    ans = ans2,
-    data = mydata2,
-    effectName1 = "recip",
-    contrast1 = c(0,1), #be more explicit about lower and hihger?
-    interaction1 = TRUE,
-    int_effectNames1 = "transRecTrip",
-    mod_effectNames1 = "transTrip",
-    second = TRUE,
-    effectName2 = "transTrip",
-    diff2 = 1,
-    interaction2 = TRUE,
-    int_effectNames2 = "transRecTrip",
-    mod_effectNames2 = "recip",
-    effects = mymodel2,
-    algorithm = mycontrols2,
-    useTieProb = TRUE,
-    depvar = "mynet2",
-    level = "period",
-    condition = "density",
-    n3 = 50,
-    nsim = 10,  # keep small for speed
-    batch_size = 5,
-    uncertainty = TRUE,
-    verbose = TRUE
-)
+  ame_dynamic_moderator2 <- sienaAMEDynamic(
+      ans = ans2,
+      data = mydata2,
+      effectName1 = "recip",
+      contrast1 = c(0,1), #be more explicit about lower and hihger?
+      interaction1 = TRUE,
+      int_effectNames1 = "transRecTrip",
+      mod_effectNames1 = "transTrip",
+      second = TRUE,
+      effectName2 = "transTrip",
+      diff2 = 1,
+      interaction2 = TRUE,
+      int_effectNames2 = "transRecTrip",
+      mod_effectNames2 = "recip",
+      effects = mymodel2,
+      algorithm = mycontrols2,
+      useTieProb = TRUE,
+      depvar = "mynet2",
+      level = "period",
+      condition = "density",
+      n3 = 50,
+      nsim = 10,  # keep small for speed
+      batch_size = 5,
+      uncertainty = TRUE,
+      verbose = TRUE
+  )
 
-ame_dynamic_moderator2
+  ame_dynamic_moderator2
 
-mynet3 <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
-mydata3 <- sienaDataCreate(mynet3)
-mymodel3 <- getEffects(mydata3)
-## outdegree recip model
-mymodel3 <- includeEffects(mymodel3, transTrip, name = "mynet3")
-mymodel3 <- includeEffects(mymodel3, outPop, name = "mynet3")
-mymodel3 <- includeInteraction(mymodel3, recip, outPop, name = "mynet3")
+  mynet3 <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
+  mydata3 <- sienaDataCreate(mynet3)
+  mymodel3 <- getEffects(mydata3)
+  ## outdegree recip model
+  mymodel3 <- includeEffects(mymodel3, transTrip, name = "mynet3")
+  mymodel3 <- includeEffects(mymodel3, outPop, name = "mynet3")
+  mymodel3 <- includeInteraction(mymodel3, recip, outPop, name = "mynet3")
 
-mycontrols3 <- sienaAlgorithmCreate(projname=NULL, n3 = 500, cond = FALSE)
-ans3 <- siena07(
-  mycontrols3,
-  data = mydata3,
-  effects = mymodel3,
-  returnChangeContributions = TRUE,
-  returnDataFrame = TRUE
-)
-
-ame_dynamic_moderator <- sienaAMEDynamic(
-    ans = ans3,
+  mycontrols3 <- sienaAlgorithmCreate(projname=NULL, n3 = 500, cond = FALSE)
+  ans3 <- siena07(
+    mycontrols3,
     data = mydata3,
-    effectName1 = "transTrip",
-    diff1 = 1,
-    second = TRUE,
-    effectName2 = "outPop",
-    diff2 = 1,
     effects = mymodel3,
-    algorithm = mycontrols3,
-    useTieProb = TRUE,
-    depvar = "mynet3",
-    level = "period",
-    n3 = 500,
-    nsim = 100,  # keep small for speed
-    uncertainty = TRUE,
-    verbose = TRUE
-)
+    returnChangeContributions = TRUE,
+    returnDataFrame = TRUE,
+    useCluster = TRUE, nbrNodes = 10, clusterType = "FORK"
+  )
 
-ame_dynamic_moderator
+  ame_dynamic_moderator3 <- sienaAMEDynamic(
+      ans = ans3,
+      data = mydata3,
+      effectName1 = "transTrip",
+      diff1 = 1,
+      second = TRUE,
+      effectName2 = "outPop",
+      diff2 = 1,
+      effects = mymodel3,
+      algorithm = mycontrols3,
+      useTieProb = TRUE,
+      depvar = "mynet3",
+      level = "period",
+      n3 = 500,
+      uncertainty = TRUE,
+      nsim = 100,  # keep small for speed
+      useCluster = TRUE, nbrNodes = 10, clusterType = "FORK",
+      batch_size = 10,
+      verbose = TRUE
+  )
+
+  ame_dynamic_moderator3
+
+}

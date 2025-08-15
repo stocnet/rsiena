@@ -17,7 +17,8 @@ export(
 	siena.table, xtable, score.Test, Wald.RSiena, Multipar.RSiena, 
    testSame.RSiena, funnelPlot, meta.table,
    influenceTable, selectionTable,
-   sienaAME, sienaAMEDynamic, sienaPredict
+   sienaAME, sienaAMEDynamic, sienaPredict, sienaPredictDynamic, calculateContribution,
+   getChangeContributions, getChangeContributionsDynamic
 )
 
 # importFrom("data.table", "rbindlist", "as.data.table", ":=",

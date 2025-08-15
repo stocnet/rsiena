@@ -580,22 +580,23 @@ SEXP getChainDF(const Chain& chain, bool sort)
 	SET_STRING_ELT(classname, 0, Rf_mkChar("data.frame"));
 	Rf_classgets(ans, classname);
 
-	// try to sort it by variable, ego and alter
-	SEXP R_fcall1, ordering, R_fcall2, ansnew;
-	PROTECT(R_fcall1 = Rf_lang4(Rf_install("order"), col1, col3, col4));
-	PROTECT(ordering = Rf_eval(R_fcall1, R_GlobalEnv));
-	// now sort the data frame using [.data.frame and ordering
-	PROTECT(R_fcall2 = Rf_lang4(Rf_install("[.data.frame"),
-			ans, ordering, R_MissingArg));
-	PROTECT(ansnew = Rf_eval(R_fcall2, R_GlobalEnv));
-
-	UNPROTECT(18);
+	// only sort if you want to return the sorted data frame?
 	if (sort)
 	{
+		// try to sort it by variable, ego and alter
+		SEXP R_fcall1, ordering, R_fcall2, ansnew;
+		PROTECT(R_fcall1 = Rf_lang4(Rf_install("order"), col1, col3, col4));
+		PROTECT(ordering = Rf_eval(R_fcall1, R_GlobalEnv));
+		// now sort the data frame using [.data.frame and ordering
+		PROTECT(R_fcall2 = Rf_lang4(Rf_install("[.data.frame"),
+		ans, ordering, R_MissingArg));
+		PROTECT(ansnew = Rf_eval(R_fcall2, R_GlobalEnv));
+		UNPROTECT(18);
 		return ansnew;
 	}
 	else
 	{
+		UNPROTECT(14);
 		return ans;
 	}
 }
@@ -681,23 +682,24 @@ SEXP getDFFromVector(const vector< MiniStep *>& rMiniSteps, bool sort)
 	SET_STRING_ELT(classname, 0, Rf_mkChar("data.frame"));
 	Rf_classgets(ans, classname);
 
-	// sort it by variable, ego and alter
-	SEXP R_fcall1, ordering, R_fcall2, ansnew;
-	PROTECT(R_fcall1 = Rf_lang4(Rf_install("order"), col1, col3, col4));
-	PROTECT(ordering = Rf_eval(R_fcall1, R_GlobalEnv));
-	// now sort the data frame using [.data.frame and ordering
-	PROTECT(R_fcall2 = Rf_lang4(Rf_install("[.data.frame"),
-			ans, ordering, R_MissingArg));
-	PROTECT(ansnew = Rf_eval(R_fcall2, R_GlobalEnv));
-
-	UNPROTECT(18);
-
+	// only sort if you want to return the sorted data frame?
 	if (sort)
 	{
+		// sort it by variable, ego and alter
+		SEXP R_fcall1, ordering, R_fcall2, ansnew;
+		PROTECT(R_fcall1 = Rf_lang4(Rf_install("order"), col1, col3, col4));
+		PROTECT(ordering = Rf_eval(R_fcall1, R_GlobalEnv));
+		// now sort the data frame using [.data.frame and ordering
+		PROTECT(R_fcall2 = Rf_lang4(Rf_install("[.data.frame"),
+				ans, ordering, R_MissingArg));
+		PROTECT(ansnew = Rf_eval(R_fcall2, R_GlobalEnv));
+
+		UNPROTECT(18);
 		return ansnew;
 	}
 	else
 	{
+		UNPROTECT(14);
 		return ans;
 	}
 }
@@ -1133,80 +1135,93 @@ Chain * makeChainFromList(Data * pData, SEXP CHAIN, int period)
 	return pChain;
 }
 
+/**
+ * Transforms change contribution chains into a data frame. 
+ * (Might be better to do generate data.frame directly instead of flattening afterwards.)
+ */
 SEXP flattenChangeContributionsList(SEXP changeContributionChains)
 {
-    std::vector<int> group_col, period_col, ministep_col, effect_col, choice_col;
-    std::vector<std::string> networkName_col, effectname_col, effecttype_col;
-    std::vector<double> value_col;
+	/* First pass: count */
+    int totalRows = 0;
     int nGroups = Rf_length(changeContributionChains);
-    for (int g = 0; g < nGroups; ++g) 
-	{
+    for (int g = 0; g < nGroups; ++g) {
         SEXP groupList = VECTOR_ELT(changeContributionChains, g);
         int nPeriods = Rf_length(groupList);
-        for (int p = 0; p < nPeriods; ++p) 
-		{
+        for (int p = 0; p < nPeriods; ++p) {
             SEXP periodList = VECTOR_ELT(groupList, p);
             int nMinisteps = Rf_length(periodList);
-            for (int m = 0; m < nMinisteps; ++m) 
-			{
+            for (int m = 0; m < nMinisteps; ++m) {
                 SEXP mat = VECTOR_ELT(periodList, m);
                 if (Rf_isNull(mat)) continue;
-				SEXP netNameAttr = Rf_getAttrib(mat, Rf_install("networkName"));
-				std::string networkName_val = "";
-				if (netNameAttr != R_NilValue && TYPEOF(netNameAttr) == STRSXP && Rf_length(netNameAttr) > 0) 
-				{
-				    networkName_val = CHAR(STRING_ELT(netNameAttr, 0));
-				}
                 int nEff = Rf_nrows(mat);
                 int nChoice = Rf_ncols(mat);
+                totalRows += nEff * nChoice;
+            }
+        }
+    }
+
+    // * Allocate output vectors directly *
+    SEXP group_sxp       = PROTECT(Rf_allocVector(INTSXP, totalRows));
+    SEXP period_sxp      = PROTECT(Rf_allocVector(INTSXP, totalRows));
+    SEXP ministep_sxp    = PROTECT(Rf_allocVector(INTSXP, totalRows));
+    SEXP effect_sxp      = PROTECT(Rf_allocVector(INTSXP, totalRows));
+    SEXP choice_sxp      = PROTECT(Rf_allocVector(INTSXP, totalRows));
+    SEXP networkname_sxp = PROTECT(Rf_allocVector(STRSXP, totalRows));
+    SEXP effectname_sxp  = PROTECT(Rf_allocVector(STRSXP, totalRows));
+    SEXP effecttype_sxp  = PROTECT(Rf_allocVector(STRSXP, totalRows));
+    SEXP value_sxp       = PROTECT(Rf_allocVector(REALSXP, totalRows));
+
+    // * Second pass: fill *
+    int idx = 0;
+    for (int g = 0; g < nGroups; ++g) {
+        SEXP groupList = VECTOR_ELT(changeContributionChains, g);
+        int nPeriods = Rf_length(groupList);
+        for (int p = 0; p < nPeriods; ++p) {
+            SEXP periodList = VECTOR_ELT(groupList, p);
+            int nMinisteps = Rf_length(periodList);
+            for (int m = 0; m < nMinisteps; ++m) {
+                SEXP mat = VECTOR_ELT(periodList, m);
+                if (Rf_isNull(mat)) continue;
+                SEXP netNameAttr = Rf_getAttrib(mat, Rf_install("networkName"));
                 SEXP effNames = Rf_getAttrib(mat, Rf_install("effectNames"));
                 SEXP effTypes = Rf_getAttrib(mat, Rf_install("effectTypes"));
-                for (int e = 0; e < nEff; ++e) 
-				{
-                    for (int c = 0; c < nChoice; ++c) 
-					{
-                        group_col.push_back(g+1);
-                        period_col.push_back(p+1);
-                        ministep_col.push_back(m+1);
-                        effect_col.push_back(e+1);
-                        choice_col.push_back(c+1);
-                        networkName_col.push_back(networkName_val);
-                        effectname_col.push_back(effNames ? CHAR(STRING_ELT(effNames, e)) : "");
-                        effecttype_col.push_back(effTypes ? CHAR(STRING_ELT(effTypes, e)) : "");
-                        value_col.push_back(REAL(mat)[e + nEff * c]);
+                int nEff = Rf_nrows(mat);
+                int nChoice = Rf_ncols(mat);
+                SEXP networkNameChar = (netNameAttr != R_NilValue && TYPEOF(netNameAttr)==STRSXP && Rf_length(netNameAttr)>0)
+                                        ? STRING_ELT(netNameAttr, 0)
+                                        : Rf_mkChar("");
+                // Precache effect names/types as R string (CHARSXP) to avoid reallocation
+                std::vector<SEXP> effNameChars(nEff), effTypeChars(nEff);
+                for (int e = 0; e < nEff; ++e) {
+                    effNameChars[e] = (effNames && Rf_length(effNames) == nEff)
+                                      ? STRING_ELT(effNames, e) : Rf_mkChar("");
+                    effTypeChars[e] = (effTypes && Rf_length(effTypes) == nEff)
+                                      ? STRING_ELT(effTypes, e) : Rf_mkChar("");
+                }
+                for (int e = 0; e < nEff; ++e) {
+                    for (int c = 0; c < nChoice; ++c) {
+                        INTEGER(group_sxp)[idx]       = g+1;
+                        INTEGER(period_sxp)[idx]      = p+1;
+                        INTEGER(ministep_sxp)[idx]    = m+1;
+                        INTEGER(effect_sxp)[idx]      = e+1;
+                        INTEGER(choice_sxp)[idx]      = c+1;
+                        SET_STRING_ELT(networkname_sxp, idx, networkNameChar);
+                        SET_STRING_ELT(effectname_sxp, idx, effNameChars[e]);
+                        SET_STRING_ELT(effecttype_sxp, idx, effTypeChars[e]);
+                        REAL(value_sxp)[idx]          = REAL(mat)[e + nEff*c];
+                        ++idx;
                     }
                 }
             }
         }
     }
-    int nrow = value_col.size();
-    SEXP group_sxp = PROTECT(Rf_allocVector(INTSXP, nrow));
-    SEXP period_sxp = PROTECT(Rf_allocVector(INTSXP, nrow));
-    SEXP ministep_sxp = PROTECT(Rf_allocVector(INTSXP, nrow));
-    SEXP effect_sxp = PROTECT(Rf_allocVector(INTSXP, nrow));
-    SEXP choice_sxp = PROTECT(Rf_allocVector(INTSXP, nrow));
-	SEXP networkname_sxp = PROTECT(Rf_allocVector(STRSXP, nrow));
-    SEXP effectname_sxp = PROTECT(Rf_allocVector(STRSXP, nrow));
-    SEXP effecttype_sxp = PROTECT(Rf_allocVector(STRSXP, nrow));
-    SEXP value_sxp = PROTECT(Rf_allocVector(REALSXP, nrow));
-    for (int i=0; i<nrow; ++i) 
-	{
-        INTEGER(group_sxp)[i] = group_col[i];
-        INTEGER(period_sxp)[i] = period_col[i];
-        INTEGER(ministep_sxp)[i] = ministep_col[i];
-        INTEGER(effect_sxp)[i] = effect_col[i];
-        INTEGER(choice_sxp)[i] = choice_col[i];
-	    SET_STRING_ELT(networkname_sxp, i, Rf_mkChar(networkName_col[i].c_str()));
-        SET_STRING_ELT(effectname_sxp, i, Rf_mkChar(effectname_col[i].c_str()));
-        SET_STRING_ELT(effecttype_sxp, i, Rf_mkChar(effecttype_col[i].c_str()));
-        REAL(value_sxp)[i] = value_col[i];
-    }
+    // Build data.frame as before
     int ncol = 9;
     SEXP df = PROTECT(Rf_allocVector(VECSXP, ncol));
     SET_VECTOR_ELT(df, 0, group_sxp);
     SET_VECTOR_ELT(df, 1, period_sxp);
     SET_VECTOR_ELT(df, 2, ministep_sxp);
-	SET_VECTOR_ELT(df, 3, networkname_sxp);
+    SET_VECTOR_ELT(df, 3, networkname_sxp);
     SET_VECTOR_ELT(df, 4, effect_sxp);
     SET_VECTOR_ELT(df, 5, choice_sxp);
     SET_VECTOR_ELT(df, 6, effectname_sxp);
@@ -1216,7 +1231,7 @@ SEXP flattenChangeContributionsList(SEXP changeContributionChains)
     SET_STRING_ELT(names, 0, Rf_mkChar("group"));
     SET_STRING_ELT(names, 1, Rf_mkChar("period"));
     SET_STRING_ELT(names, 2, Rf_mkChar("ministep"));
-	SET_STRING_ELT(names, 3, Rf_mkChar("networkName"));
+    SET_STRING_ELT(names, 3, Rf_mkChar("networkName"));
     SET_STRING_ELT(names, 4, Rf_mkChar("effect_idx"));
     SET_STRING_ELT(names, 5, Rf_mkChar("choice"));
     SET_STRING_ELT(names, 6, Rf_mkChar("effectname"));
@@ -1225,7 +1240,7 @@ SEXP flattenChangeContributionsList(SEXP changeContributionChains)
     Rf_setAttrib(df, R_NamesSymbol, names);
     SEXP rownames = PROTECT(Rf_allocVector(INTSXP, 2));
     INTEGER(rownames)[0] = NA_INTEGER;
-    INTEGER(rownames)[1] = -nrow;
+    INTEGER(rownames)[1] = -totalRows;
     Rf_setAttrib(df, R_RowNamesSymbol, rownames);
     SEXP classdf = PROTECT(Rf_allocVector(STRSXP, 1));
     SET_STRING_ELT(classdf, 0, Rf_mkChar("data.frame"));

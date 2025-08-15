@@ -1,4 +1,4 @@
-# probably should devtools::skip_on_cran()
+#testthat::skip_on_cran()
 # for interactive testing use
 # devtools::load_all()
 library(RSiena)

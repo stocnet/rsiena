@@ -199,7 +199,7 @@ getChangeContributions <- function(algorithm, data, effects)
 }
 
 ## extracts dynamic contributions from ans or simulates sequences ministeps to generate them. Changed and extracted from sienaRIDynamics
-getChangeContributionsDynamic <- function(data=NULL, ans = NULL, theta=NULL, 
+getChangeContributionsDynamic <- function(ans = NULL, theta=NULL, data=NULL, 
                                           algorithm, 
                                           effects,
                                           depvar = NULL,
@@ -226,7 +226,6 @@ getChangeContributionsDynamic <- function(data=NULL, ans = NULL, theta=NULL,
   if (!useChangeContributions)
 	{
 		algorithm$nsub <- 0
-
     if (!is.null(ans))
 		{
 		  prevAns <- ans

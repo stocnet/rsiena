@@ -1,3 +1,8 @@
+# testthat::skip_on_cran()
+
+library(RSiena)
+
+
 mynet <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
 mydata <- sienaDataCreate(mynet)
 mymodel <- getEffects(mydata)
@@ -10,7 +15,6 @@ ans <- siena07(
   returnChangeContributions = TRUE,
   returnDataFrame = TRUE
 )
-effectNames <- mymodel$shortName[mymodel$include & (mymodel$type != "rate")]
 
 # Basic one-diff AME, point estimate only
 cat("\nTesting sienaAME (static) ...\n")
@@ -20,8 +24,6 @@ try({
     data = mydata,
     effectName1 = "transTrip",
     diff1 = 1,
-    effectNames = effectNames,
-    effects = mymodel,
     useTieProb = TRUE,
     depvar = "mynet",
     uncertainty = FALSE,  # no sims for quick check
@@ -42,8 +44,6 @@ try({
     data = mydata,
     effectName1 = "recip",
     contrast1 = c(0, 1),
-    effectNames = effectNames,
-    effects = mymodel,
     useTieProb = TRUE,
     depvar = "mynet",
     level = "period",
@@ -58,8 +58,6 @@ try({
     data = mydata,
     effectName1 = "transTrip",
     diff1 = 1,
-    effectNames = effectNames,
-    effects = mymodel,
     useTieProb = TRUE,
     depvar = "mynet",
     level = "period",
@@ -98,8 +96,6 @@ ame_static_interaction <- sienaAME(
     interaction1 = TRUE,
     int_effectNames1 = "transRecTrip",
     mod_effectNames1 = "recip",
-    effectNames = effectNames2,
-    effects = mymodel2,
     useTieProb = FALSE,
     depvar = "mynet2",
     level = "period",
@@ -118,8 +114,6 @@ ame_static_interaction2 <- sienaAME(
     interaction1 = TRUE,
     int_effectNames1 = "transRecTrip",
     mod_effectNames1 = "transTrip",
-    effectNames = effectNames2,
-    effects = mymodel2,
     useTieProb = TRUE,
     depvar = "mynet2",
     level = "period",
@@ -143,12 +137,10 @@ ame_static_moderator <- sienaAME(
     interaction2 = TRUE,
     int_effectNames2 = "transRecTrip",
     mod_effectNames2 = "transTrip",
-    effectNames = effectNames2,
-    effects = mymodel2,
     useTieProb = TRUE,
     depvar = "mynet2",
     level = "period",
-    nsim = 100,  # keep small for speed
+    nsim = 5000,  # keep small for speed
     uncertainty = TRUE,
     verbose = TRUE
 )
@@ -169,8 +161,6 @@ ame_static_moderator2 <- sienaAME(
     interaction2 = TRUE,
     int_effectNames2 = "transRecTrip",
     mod_effectNames2 = "recip",
-    effectNames = effectNames2,
-    effects = mymodel2,
     useTieProb = TRUE,
     depvar = "mynet2",
     level = "period",
@@ -182,78 +172,73 @@ ame_static_moderator2 <- sienaAME(
 
 ame_static_moderator2
 
-mynet3 <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
-mydata3 <- sienaDataCreate(mynet3)
-mymodel3 <- getEffects(mydata3)
-## outdegree recip model
-mymodel3 <- includeEffects(mymodel3, transTrip, name = "mynet3")
-mymodel3 <- includeEffects(mymodel3, outPop, name = "mynet3")
-mymodel3 <- includeInteraction(mymodel3, recip, outPop, name = "mynet3")
-effectNames3 <- mymodel3$shortName[mymodel3$include & (mymodel3$type != "rate")]
+# Currently static AME does not support user interactions
 
-mycontrols3 <- sienaAlgorithmCreate(projname=NULL, n3 = 500, cond = FALSE)
-ans3 <- siena07(
-  mycontrols3,
-  data = mydata3,
-  effects = mymodel3,
-  returnChangeContributions = TRUE,
-  returnDataFrame = TRUE
-)
+# mynet3 <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
+# mydata3 <- sienaDataCreate(mynet3)
+# mymodel3 <- getEffects(mydata3)
+# ## outdegree recip model
+# mymodel3 <- includeEffects(mymodel3, transTrip, name = "mynet3")
+# mymodel3 <- includeEffects(mymodel3, outPop, name = "mynet3")
+# mymodel3 <- includeInteraction(mymodel3, recip, outPop, name = "mynet3")
 
-ame_static_moderator <- sienaAME(
-    ans = ans3,
-    data = mydata3,
-    effectName1 = "transTrip",
-    diff1 = 1,
-    second = TRUE,
-    effectName2 = "outPop",
-    diff2 = 1,
-    effectNames = effectNames3,
-    effects = mymodel3,
-    algorithm = mycontrols3,
-    useTieProb = TRUE,
-    depvar = "mynet3",
-    level = "period",
-    n3 = 500,
-    nsim = 100,  # keep small for speed
-    uncertainty = TRUE,
-    verbose = TRUE
-)
+# mycontrols3 <- sienaAlgorithmCreate(projname=NULL, n3 = 500, cond = FALSE)
+# ans3 <- siena07(
+#   mycontrols3,
+#   data = mydata3,
+#   effects = mymodel3,
+#   returnChangeContributions = TRUE,
+#   returnDataFrame = TRUE
+# )
 
-ame_dynamic_moderator
+# ame_static_moderator <- sienaAME(
+#     ans = ans3,
+#     data = mydata3,
+#     effectName1 = "transTrip",
+#     diff1 = 1,
+#     second = TRUE,
+#     effectName2 = "outPop",
+#     diff2 = 1,
+#     useTieProb = TRUE,
+#     depvar = "mynet3",
+#     level = "period",
+#     nsim = 100,  # keep small for speed
+#     uncertainty = TRUE,
+#     verbose = TRUE
+# )
 
-test1 <- sienaAME(
-    ans = ans,
-    data = mydata,
-    effectName1 = "recip",
-    contrast1 = c(0,1), #be more explicit about lower and hihger?
-    second = TRUE,
-    effectName2 = "transTrip",
-    diff2 = 1,
-    effectNames = effectNames,
-    effects = mymodel,
-    useTieProb = TRUE,
-    depvar = "mynet1",
-    level = "period",
-    nsim = 100,  # keep small for speed
-    uncertainty = FALSE,
-    verbose = TRUE
-)
+# ame_dynamic_moderator
 
-test2 <- sienaAME(
-    ans = ans,
-    data = mydata,
-    effectName1 = "transTrip",
-    diff1 = 1,
-    second = TRUE,
-    effectName2 = "recip",
-    contrast2 = c(0,1), #be more explicit about lower and hihger?
-    effectNames = effectNames,
-    effects = mymodel,
-    useTieProb = TRUE,
-    depvar = "mynet1",
-    level = "period",
-    nsim = 100,  # keep small for speed
-    uncertainty = TRUE,
-    verbose = TRUE
-)
+# test1 <- sienaAME(
+#     ans = ans,
+#     data = mydata,
+#     effectName1 = "recip",
+#     contrast1 = c(0,1), #be more explicit about lower and hihger?
+#     second = TRUE,
+#     effectName2 = "transTrip",
+#     diff2 = 1,
+#     effects = mymodel,
+#     useTieProb = TRUE,
+#     depvar = "mynet1",
+#     level = "period",
+#     nsim = 100,  # keep small for speed
+#     uncertainty = FALSE,
+#     verbose = TRUE
+# )
+
+# test2 <- sienaAME(
+#     ans = ans,
+#     data = mydata,
+#     effectName1 = "transTrip",
+#     diff1 = 1,
+#     second = TRUE,
+#     effectName2 = "recip",
+#     contrast2 = c(0,1), #be more explicit about lower and hihger?
+#     effects = mymodel,
+#     useTieProb = TRUE,
+#     depvar = "mynet1",
+#     level = "period",
+#     nsim = 100,  # keep small for speed
+#     uncertainty = TRUE,
+#     verbose = TRUE
+# )
