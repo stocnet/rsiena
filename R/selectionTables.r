@@ -13,7 +13,7 @@
 ########################################################################
 # R script SelectionTables.r                                           #
 # written by Tom A.B. Snijders                                         #
-# August 1, 2024                                                       #
+# September 5, 2025                                                    #
 ########################################################################
 ########################################################################
 
@@ -201,7 +201,11 @@ selectionTable.basis <- function(x, xd, name, vname,
         }
     }
     Delta  <- attr(thevar, 'range')
-    Delta12  <- attr(thevar, 'range2')
+	Delta12  <- attr(thevar, 'range2')
+	if (is.null(Delta12))
+	{
+		Delta12  <- range(attr(thevar, 'rangep'))
+	}
     if (is.null(levls))
     {
         levls <- floor(Delta12[1]) : ceiling(Delta12[2])
@@ -298,10 +302,11 @@ selectionTable.basis <- function(x, xd, name, vname,
     ego <- factor(rep(fact,each=KA), ordered=TRUE)
     vego <- multiplier*vego
     valter <- multiplier*valter
+	quad <- (sum(abs(vtheta[c(6,9,10)]))==0) # Then it is a quadratic function
     df <- data.frame(ego,vego,valter,select)
     list(df=df, veff.eval=veff.eval, veff.endow=veff.endow,
          veff.creation=veff.creation, vtheta=vtheta, vmean=vmean, vsmean=vsmean,
-         Delta=Delta, coeffs=coeffs, levls=levls, levls.alt=levls.alt)
+         Delta=Delta, coeffs=coeffs, levls=levls, levls.alt=levls.alt, quad=quad)
 }
 
 
@@ -334,6 +339,7 @@ selectionTable <- function(x, xd, name, vname,
 	attr(df, "multiplier") <- multiplier
 	attr(df, "levls") <- sel.t$levls
 	attr(df, "levls.alt") <- sel.t$levls.alt
+	attr(df, "quad") <- sel.t$quad
 	if (as.matrix)
 	{
 		mat <- matrix(as.numeric(as.character(df$select)),
@@ -352,7 +358,7 @@ selectionTable <- function(x, xd, name, vname,
 
 selectionTableWithMax <- function(x, xd, name, vname,
                 levls=NULL, levls.alt=levls, nfirst=x$nwarm+1,
-                multiplier=1, discrete=TRUE, 
+                multiplier=1, discrete=TRUE,
                 include.endow=FALSE, include.creation=FALSE,
                 silent=FALSE){
 # Creates a data frame including the selection table for
@@ -431,6 +437,12 @@ selectionTableWithMax <- function(x, xd, name, vname,
     df2 <- data.frame(ego=egom,vego=egom,valter=altm,select=maxm,kind=2)
     df <- rbind(df1,df2)
     df$ego <- as.character(df$vego)
+	attr(df, "name") <- name
+	attr(df, "vname") <- vname
+	attr(df, "multiplier") <- multiplier
+	attr(df, "levls") <- sel.t$levls
+	attr(df, "levls.alt") <- sel.t$levls.alt
+	attr(df, "quad")<- sel.t$quad
 #   df$valter <- as.numeric(as.character(df$valter)) # superfluous
 #   df$select <- as.numeric(as.character(df$select)) # superfluous
     df
@@ -531,10 +543,9 @@ print.selectionTable <- function(x, ...)
             length(unique(x$vego)),
             length(unique(x$valter)), byrow=TRUE)
 		colnames(mat) <- attr(x, "levls.alt")
-		rownames(mat) <- attr(x, "levls") 
+		rownames(mat) <- attr(x, "levls")
 		print(mat)
 	}
 	invisible(x)
 }
-	
-	
+
