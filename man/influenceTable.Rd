@@ -69,7 +69,8 @@ influenceTable(x, xd, netname, behname,
  The data set \code{xd} is only used to get means and ranges
  which are used somewhere in the effects.
  
- This function has its own print method.
+ This function has its own print method.\cr
+ It can be plotted by package \code{autograph}.
 }
 
 \value{
@@ -85,7 +86,9 @@ influenceTable(x, xd, netname, behname,
   \item{alter}{alter's values as a factor;}
   \item{zalter}{the values \code{levls.alt}}
   \item{zego}{the values \code{levls}}
-  \item{select}{the value of the influence table.}
+  \item{select}{the value of the influence table.}\cr
+  This object has an attribute \code{quad}, which specifies whether the plot
+  will be a quadratic function.  
 }
 
 \references{
