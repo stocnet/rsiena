@@ -18,21 +18,42 @@
 #include "data/NetworkLongitudinalData.h"
 #include "model/EffectInfo.h"
 #include "data/Data.h"
+#include "utils/Utils.h"
+
 
 namespace siena
 {
 
 /**
  * Constructor.
+ * The use of ltrunc is only for clarity in programming.
  */
 OutdegreePopularityEffect::OutdegreePopularityEffect(
-		const EffectInfo * pEffectInfo, bool root, bool centered) :
-	NetworkEffect(pEffectInfo)
+		const EffectInfo * pEffectInfo, bool root, bool centered, 
+					bool threshold, bool trunc) : NetworkEffect(pEffectInfo)
 {
 	this->lroot = root;
 	this->lsqrtTable = SqrtTable::instance();
 	this->lcentered = centered;
 	this->lcentering = 0.0;
+	this->lthreshold = threshold;
+	this->ltrunc = trunc;
+	if (this->ltrunc)
+	{
+		int p = pEffectInfo->internalEffectParameter();
+		if (this->lroot)
+		{
+			this->lp = this->lsqrtTable->sqrt(p);
+		}
+		else
+		{
+			this->lp = p;
+		}
+	}
+	else
+	{
+		this->lp = 0;
+	}
 	this->lvariableName = pEffectInfo->variableName();
 // centering and root cannot occur simultaneously
 }
@@ -65,13 +86,33 @@ void OutdegreePopularityEffect::initialize(const Data * pData,
 double OutdegreePopularityEffect::calculateContribution(int alter) const
 {
 	int degree = this->pNetwork()->outDegree(alter);
-	double change = degree - this->lcentering;
+	double change = degree;
 
 	if (this->lroot)
 	{
 		change = this->lsqrtTable->sqrt(degree);
 	}
-
+		
+	if (this->ltrunc)
+	{
+		if (change <= this->lp + EPSILON)
+		{
+			change = 0;
+		}
+		else
+		{
+			change = change - this->lp;
+		}
+		if ((this->lthreshold) && (change > 0.0001))
+		{
+			change = 1;
+		}
+	}
+	else	
+	{
+		change = change - this->lcentering;
+	}
+	
 	return change;
 }
 
@@ -83,21 +124,7 @@ double OutdegreePopularityEffect::calculateContribution(int alter) const
  */
 double OutdegreePopularityEffect::tieStatistic(int alter)
 {
-	double statistic;
-	const Network * pNetwork = this->pNetwork();
-	int degree = pNetwork->outDegree(alter);
-
-	if (this->lroot)
-	{
-		statistic = this->lsqrtTable->sqrt(degree);
-	}
-	else
-	{
-		// There was a bug here until version 1.1-219
-		statistic = degree - this->lcentering;
-	}
-
-	return statistic;
+	return this->calculateContribution(alter);
 }
 
 }
