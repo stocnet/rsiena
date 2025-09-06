@@ -527,7 +527,7 @@ z$gmmEffects <- ((requestedEffects$type=="gmm") & requestedEffects$fix) # hhoho
 				# from phase1.r.
 				# Partial diagonalization of derivative matrix
 				# for use if 0 < x$diagonalize < 1.
-				if (!z$gmm)
+				if (any(!z$gmm))
 				{
 				  temp <- (1-x$diagonalize)*z$dfra +
 				    x$diagonalize*diag(diag(z$dfra), nrow=dim(z$dfra)[1])

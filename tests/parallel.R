@@ -1,5 +1,8 @@
 library(RSiena)
 
+# When new effects are added, the numbering of effects changes.
+# This will have consequences for the output of includeInteraction,
+# and will require adaptation of parrallel.Rout.save.
 
 ##test3
 mynet1 <- sienaDependent(array(c(tmp3, tmp4),dim=c(32, 32, 2)))

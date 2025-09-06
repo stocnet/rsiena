@@ -1,3 +1,18 @@
+2025-09-06
+
+# RSiena 1.5.2
+
+## Changes in RSiena:
+### Functionality:
+  * `selectionTable` got an attribute `quad` indicating whether the plot
+    is a quadratic function.
+### Effects
+  * New effects `outActMore_ego`, `outActSqrtMore_ego`, `outMore_ego`,
+    `outPopMore`, `outPopSqrtMore`, `outPopThreshold`.
+### Coding
+  * Use `(any(!gmm))` in  `initializeFRAN` to allow the use of a `prevAns` 
+    object with a different estimation method for a multigroup estimation.
+
 2025-07-12
 
 # RSiena 1.5.1
