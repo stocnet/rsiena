@@ -10193,10 +10193,10 @@ and
  \item {\em out-degree related popularity more than $p$ effect} \texttt{(outPopMore)}, defined by
   the sum of the difference between the out-degrees  of the others to whom $i$ is tied,
   and the internal effect parameter $p$, truncated to positive values: \\
- $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \max\{ x_{j+} - p, 0 \}  $; 
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \max\{ x_{j+} - p, 0 \}  $;
 
 
- \item {\em out-degree related popularity (sqrt) more than $p$ effect} 
+ \item {\em out-degree related popularity (sqrt) more than $p$ effect}
  \texttt{(outPopSqrtMore)}, defined by
   the sum of the difference between the square roots of the
   out-degrees  of the others to whom $i$ is tied,
@@ -10269,7 +10269,7 @@ and
 The following effects indicated by the suffix \texttt{\_ego} are meant mainly for interactions.
 Recall that for interaction effects, the internal effect parameters
 should match; see Section~\ref{intint}.
-They are elementary effects (see Section~\ref {S_elementary}) and have 
+They are elementary effects (see Section~\ref {S_elementary}) and have
 \texttt{interactionType="ego"},
 which means they can be used in interactions  and in endowment and creation functions.
 
@@ -10301,7 +10301,7 @@ which means they can be used in interactions  and in endowment and creation func
  the elementary effect defined by 1 divided by the actor's out-degree ,\\
  $ f^{\rm net,\, el}_{i\vit}(x)  =  1/ x_{i+}\,$ ,\\
  where $1/0$ is computed as 0;\\
- for internal effect parameter $p=2$ the square root is taken; 
+ for internal effect parameter $p=2$ the square root is taken;
 
  \item {\em out-degree related activity more than $p$ ego effect} \texttt{(outActMore\_ego)},
  	 defined as the elementary effect of outdegree activity
@@ -10318,7 +10318,7 @@ which means they can be used in interactions  and in endowment and creation func
  for  outdegrees larger than the internal effect parameter $p$:\\
  $ f^{\rm net,\, el}_{i\vit}(x)  =  I \{  x_{i+} > p \} $ ;\\
  this is the elementary-effect version of \texttt{outMore};
- 
+
  \item {\em reciprocal degree-related activity effect} \texttt{(reciAct)}
  defined by the degree of $i$ multiplied by $i$'s reciprocal degree,\\
  $s^{\rm net}_{i\vit}(x) =   x_{i+}\, x^{(r)}_{i} $; \\
@@ -18544,14 +18544,30 @@ Changes in RSiena:
 
 \fi
 
-\item 2025-07-22 GitHub, package version 1.5.2.
+\item 2025-09-06 GitHub, package version 1.5.2.
 
 Changes in RSiena:
 \begin{itemize}
 \item Improvements of functionality:
    \begin{itemize}
-    \item Option \texttt{returnChangeContributions=TRUE} added to \sfn{siena07}, allowing users to extract the \texttt{changeContributions} to the \sfn{sienaFit} object.
-    \item \sfn{sienaRIDynamics} reinstated based on the above new option, replacing the original code.
+    \item Option \texttt{returnChangeContributions=TRUE} added to 
+        \sfn{siena07}, allowing users to extract the 
+        \texttt{changeContributions} to the \sfn{sienaFit} object.
+    \item \sfn{sienaRIDynamics} reinstated based on the above new option, 
+        replacing the original code.
+  \item \sfn{selectionTable} got an attribute \texttt{quad} indicating 
+    whether the plot is a quadratic function.
+  \item Users can now extract now extract the changeContributions when running
+    \sfn{siena07} by setting an argument \texttt{returnChangeContributions=TRUE}.
+    If used together with \texttt{nsub=0} and \texttt{prevAns} or modified initial
+    values in the effects object, especially useful for post-estimation,
+    e.g. in \sfn{sienaRIDynamics}.
+    \end{itemize}
+\item New effects:
+   \begin{itemize}
+    \item \texttt{outActMore\_ego}, \texttt{outActSqrtMore\_ego}, \texttt{outMore\_ego},
+        \texttt{outPopMore}, \\
+        \texttt{outPopSqrtMore}, \texttt{outPopThreshold}.
     \end{itemize}
 \end{itemize}
 
