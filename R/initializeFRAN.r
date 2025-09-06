@@ -12,7 +12,8 @@
 ##@initializeFRAN siena07 reformat data and send to C. get targets.
 initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 	profileData=FALSE, returnDeps=FALSE,
-	returnChains=FALSE, byGroup=FALSE,
+	returnChains=FALSE, returnChangeContributions=FALSE,
+	byGroup=FALSE, 
 	returnDataFrame=FALSE, byWave=FALSE,
 	returnLoglik=FALSE, onlyLoglik=FALSE)
 {
@@ -334,9 +335,10 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		z$posj <- rep(FALSE, z$pp)
 		z$posj[requestedEffects$basicRate] <- TRUE
 		z$BasicRateFunction <- z$posj
-z$gmmEffects <- ((requestedEffects$type=="gmm") & requestedEffects$fix) # hhoho
+		z$gmmEffects <- ((requestedEffects$type=="gmm") & requestedEffects$fix) # hhoho
 #browser()
-		
+		## bugfix to allow use of intitializeFran without siena07
+		if(is.null(z$thetaBound)) z$thetaBound <- 50
 		if (any(!z$fixed))
 		{
 			if (max(abs(z$theta[!z$fixed])) > z$thetaBound)
@@ -966,6 +968,7 @@ z$gmmEffects <- ((requestedEffects$type=="gmm") & requestedEffects$fix) # hhoho
 	z$returnDepsStored <- returnDeps
 	z$observations <- f$observations
 	z$returnChains <- returnChains
+	z$returnChangeContributions <- returnChangeContributions
 	z$byGroup <- byGroup
 	z$byWave <- byWave
 	z$returnDataFrame <- returnDataFrame

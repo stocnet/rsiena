@@ -24,7 +24,8 @@ Authors@R: c(person("Tom A.B.", "Snijders", role = c("aut", "ctb"), comment = c(
               person("Marion", "Hoffman", role = "ctb", comment=c(ORCID = "0000-0002-0741-7760")),
               person("Robert", "Hellpap", role = "ctb"),
               person("Alvaro", "Uzaheta", role = "ctb", comment=c(ORCID = "0000-0003-4367-3670")),
-              person("Steffen", "Triebel", role = "ctb"))
+              person("Steffen", "Triebel", role = "ctb"),
+              person("Daniel", "Gotthardt", role = "ctb", comment=c(ORCID = "0000-0002-1294-9913")))
 Maintainer: Christian Steglich <c.e.g.steglich@rug.nl>
 Depends: R (>= 3.5.0)
 Imports: Matrix, lattice, parallel, MASS, xtable, methods

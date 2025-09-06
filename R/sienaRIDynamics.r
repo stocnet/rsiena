@@ -10,7 +10,7 @@
 # *****************************************************************************/
 
 ##@sienaRIDynamics
-sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL, depvar=NULL, intervalsPerPeriod=NULL)
+sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL, depvar=NULL, intervalsPerPeriod=NULL, n3 = NULL, useChangeContributions = FALSE)
 {
 	if(length(data$depvars)>1){
 		if(is.null(depvar)){
@@ -66,7 +66,7 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 		{
 			intervalsPerPeriod <- 10
 		}
-		RIValues <- calculateRIDynamics(data = data, theta= c(ans$rate,ans$theta), algorithm = ans$x,  effects = effs, depvar = currentNetName, intervalsPerPeriod=intervalsPerPeriod)
+		RIValues <- calculateRIDynamics(data = data, ans=ans, theta = c(ans$rate, ans$theta), algorithm = ans$x,  effects = effs, depvar = currentNetName, intervalsPerPeriod=intervalsPerPeriod, n3 = n3, useChangeContributions = useChangeContributions)
 	}else{
 		if (!inherits(algorithm, "sienaAlgorithm"))
 		{
@@ -106,36 +106,39 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 			intervalsPerPeriod <- 10
 		}
 		## all necessary information available
-		RIValues <- calculateRIDynamics(data = data, theta= paras, algorithm = algo,  effects = effs, depvar = currentNetName, intervalsPerPeriod=intervalsPerPeriod)
+		RIValues <- calculateRIDynamics(data = data, ans= ans, theta = paras, algorithm = algo,  effects = effs, depvar = currentNetName, intervalsPerPeriod=intervalsPerPeriod, n3 = n3, useChangeContributions = useChangeContributions)
 	}
 	RIValues
 }
 
 ##@calculateRIDynamics calculateRIDynamics simulates sequences of micro-steps, and aggregates the relative importances of effects over micro-steps of same time intervals
-calculateRIDynamics <- function(data=NULL, theta=NULL, algorithm=NULL, effects=NULL, depvar=NULL, intervalsPerPeriod=10, returnActorStatistics=NULL)
+calculateRIDynamics <- function(data=NULL, ans=NULL, theta=theta, algorithm=NULL, effects=NULL, depvar=NULL, intervalsPerPeriod=10, returnActorStatistics=NULL, n3 = n3, useChangeContributions = useChangeContributions)
 {
-	x <- algorithm
-	currentNetName <- depvar
-	z  <-  NULL
-	z$FRAN <- getFromNamespace(x$FRANname, pkgname)
-	x$cconditional <-  FALSE
-	z$print <- FALSE
-	z$Phase <- 3
-	z <- initializeFRAN(z, x, data, effects, prevAns=NULL, initC=FALSE, returnDeps=FALSE)
-	z$returnChangeContributions <- TRUE
-	z$theta <- theta
-	if (!is.null(x$randomSeed))
-	{
-		set.seed(x$randomSeed, kind="default")
+    x <- algorithm # why not use algorithm directly?
+	if (!is.null(n3)) {
+    	x$n3 <- as.integer(n3)
 	}
-	else
-	{
-		if (exists(".Random.seed"))
-		{
-			rm(.Random.seed, pos=1)
-			RNGkind(kind="default")
+	if (useChangeContributions) {
+        if (is.null(ans) || is.null(ans$changeContributions)) {
+            warning("useChangeContributions=TRUE, but 'ans' does not contain 'changeContributions'. Will rerun siena07 to generate them.")
+            useChangeContributions <- FALSE
+        }
+		if (!is.null(n3)) {
+		    warning("n3 cannot be changed when useChangeContributions=TRUE; using the number of chains stored in 'ans'.")
+    		n3 <- NULL
 		}
-	}
+    }
+    if (!useChangeContributions) {
+		x$nsub <- 0
+        if (!is.null(ans)) {
+			prevAns <- ans
+		} else {
+			prevAns <- NULL
+			effects$initialValue[effects$include] <- theta
+		}
+        ans <- siena07(x, data=data, effects=effects,
+                       prevAns=prevAns, initC=FALSE, returnDeps=FALSE, returnChangeContributions=TRUE)
+    }
 	chains <- x$n3
 	periods <- data$observation-1
 	effects <- effects[effects$include==TRUE,]
@@ -143,6 +146,7 @@ calculateRIDynamics <- function(data=NULL, theta=NULL, algorithm=NULL, effects=N
 	thetaNoRate <- theta[noRate]
 	effectNames <- effects$shortName[noRate]
 	effectTypes <- effects$type[noRate]
+	currentNetName <- depvar
 #	networkName <- effects$name[noRate]
 	networkInteraction <- effects$interaction1[noRate]
 	effectIds <- paste(effectNames,effectTypes,networkInteraction, sep = ".")
@@ -159,10 +163,9 @@ calculateRIDynamics <- function(data=NULL, theta=NULL, algorithm=NULL, effects=N
 	{
 #cat("The following line leads to an error\n")
 #browser()
-		ans <- z$FRAN(z, x)
 		for(period in 1:periods)
 		{
-			microSteps <- length(ans$changeContributions[[1]][[period]])
+			microSteps <- length(ans$changeContributions[[chain]][[1]][[period]])
 			stepsPerInterval <- microSteps/intervalsPerPeriod
 # Tom's new code TS (7 lines).... Natalie slightly modified the next 4 lines
 # and moved them one loop higher (out of the "chains"-loop)
@@ -178,7 +181,7 @@ calculateRIDynamics <- function(data=NULL, theta=NULL, algorithm=NULL, effects=N
 			for(microStep in 1:microSteps)
 			{
 				#currentNetName <- attr(ans$changeContributions[[1]][[period]][[microStep]],"networkName")
-				if(attr(ans$changeContributions[[1]][[period]][[microStep]],
+				if(attr(ans$changeContributions[[chain]][[1]][[period]][[microStep]],
 												"networkName")==currentNetName)
 				{
 					stepsInIntervalCounter <- stepsInIntervalCounter + 1
@@ -188,7 +191,7 @@ calculateRIDynamics <- function(data=NULL, theta=NULL, algorithm=NULL, effects=N
 					## the probabilities of the available choices
 					## if the parameter of the first, second, third ... effects is set to zero.
 					distributions <- calculateDistributions(
-						ans$changeContributions[[1]][[period]][[microStep]],
+						ans$changeContributions[[chain]][[1]][[period]][[microStep]],
 						thetaNoRate[currentNetObjEffs])
 					## If one wishes another measure
 					## than the L^1-difference between distributions,
@@ -522,5 +525,3 @@ plot.sienaRIDynamics <- function(x, staticRI = NULL, col = NULL,
 	}
 	invisible(cl)
 }
-
-
