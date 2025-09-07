@@ -99,7 +99,7 @@ Bug reports can be submitted at
     \emph{Sociological Methodology} \bold{31}, 361--395.
     
     Snijders, T.A.B. (2017), Stochastic Actor-Oriented Models for Network
-   Dynamics. \emph{Annual Review of Statistics and Its Application}
+    Dynamics. \emph{Annual Review of Statistics and Its Application}
     \bold{4}, 343--363.
     
     Snijders, T.A.B., Koskinen, J., and Schweinberger, M. (2010).
