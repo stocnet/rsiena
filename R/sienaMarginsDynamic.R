@@ -147,6 +147,7 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
     df[["firstDiff"]] <- calculateFirstDiff(
         densityValue = df[["density"]],
         changeProb = df[["changeProb"]],
+        changeUtil = df[["changeUtil"]],
         effectName = effectName,
         effectContribution = df[[effectName]],
         diff = diff, contrast = contrast,
