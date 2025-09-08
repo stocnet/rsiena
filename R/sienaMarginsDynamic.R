@@ -142,7 +142,10 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
         returnDataFrame = TRUE
     )
 
+    cat("After getChangeContributionsDynamic: NAs in density:", sum(is.na(df[["density"]])), "\n")
+
     df <- widenContribution(df)
+    cat("After widenContribution: NAs in density:", sum(is.na(df[["density"]])), "\n")
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
     df <- addProbabilityColumn(df, group_vars=c("chain", "period", "ministep"), useTieProb = useTieProb)
 

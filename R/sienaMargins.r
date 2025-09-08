@@ -211,6 +211,9 @@ calculateFirstDiff <- function(densityValue,
                                useTieProb = TRUE,
                                tieProb = NULL,
                                details = FALSE){
+  cat("densityValue class:", class(densityValue), "\n")
+  cat("densityValue unique values:", paste(unique(densityValue), collapse = ", "), "\n")
+
   if (effectName == "density") {
     if((!is.null(diff))) stop("firstDiff for density must be contrast c(-1,1)")
     if(!is.null(contrast)){
@@ -240,11 +243,15 @@ calculateFirstDiff <- function(densityValue,
                                       modContribution = modContribution,
                                       effectNames = effectNames)
   }
+  cat("densityValue class:", class(densityValue), "\n")
+  cat("densityValue unique values:", paste(unique(densityValue), collapse = ", "), "\n")
+
   expDiff <- exp(utilDiff)
   changeProb_cf <- as.vector(changeProb * expDiff / (1 - changeProb + changeProb * expDiff))
   if (useTieProb == TRUE) {
     tieProb_cf <- changeProb_cf
-    tieProb_cf[densityValue == -1] <- 1 - changeProb_cf[densityValue == -1]
+    idx <- which(!is.na(densityValue) & densityValue == -1)
+    if (length(idx) > 0) tieProb_cf[idx] <- 1 - changeProb_cf[idx]
     firstDiff <- tieProb_cf - tieProb
   } else {
      firstDiff <- changeProb_cf - changeProb
@@ -333,7 +340,9 @@ calculateSecondDiff <- function(densityValue,
   changeProb_cf21 <- as.vector(changeProb * expDiff21 / (1-changeProb + changeProb * expDiff21))
   if (useTieProb == TRUE) {
     tieProb_cf21 <- changeProb_cf21
-    tieProb_cf21[densityValue == -1] <- 1 - changeProb_cf21[densityValue == -1]
+    idx <- which(!is.na(densityValue) & densityValue == -1)
+    if (length(idx) > 0) tieProb_cf21[idx] <- 1 - changeProb_cf21[idx]
+    firstDiff <- tieProb_cf21 - tieProb
   }
   changeUtil21 <- changeUtil + utilDiff21
   ## dangerous with interactions because other effect values are not "corrected"
