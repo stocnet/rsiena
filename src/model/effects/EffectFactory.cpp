@@ -25,6 +25,7 @@
 #include "model/effects/generic/ConstantFunction.h"
 #include "model/effects/generic/InDegreeFunction.h"
 #include "model/effects/generic/IntSqrtFunction.h"
+#include "model/effects/generic/EqualsZeroFunction.h"
 #include "model/effects/generic/IntLogFunction.h"
 #include "model/effects/generic/DifferenceFunction.h"
 #include "model/effects/generic/AbsDiffFunction.h"
@@ -33,6 +34,7 @@
 #include "model/effects/generic/EgoInDegreeFunction.h"
 #include "model/effects/generic/OutDegreeFunction.h"
 #include "model/effects/generic/EgoOutDegreeFunction.h"
+#include "model/effects/generic/EgoTruncOutDegreeFunction.h"
 #include "model/effects/generic/EgoRecipDegreeFunction.h"
 #include "model/effects/generic/DegreeFunction.h"
 #include "model/effects/generic/ReciprocalFunction.h"
@@ -336,15 +338,33 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "outPop")
 	{
-		pEffect = new OutdegreePopularityEffect(pEffectInfo, false, false);
+		pEffect = new OutdegreePopularityEffect(pEffectInfo, false, false,
+												false, false);
 	}
 	else if (effectName == "outPop.c")
 	{
-		pEffect = new OutdegreePopularityEffect(pEffectInfo, false, true);
+		pEffect = new OutdegreePopularityEffect(pEffectInfo, false, true,
+												false, false);
 	}
 	else if (effectName == "outPopSqrt")
 	{
-		pEffect = new OutdegreePopularityEffect(pEffectInfo, true, false);
+		pEffect = new OutdegreePopularityEffect(pEffectInfo, true, false,
+												false, false);
+	}
+	else if (effectName == "outPopMore")
+	{
+		pEffect = new OutdegreePopularityEffect(pEffectInfo, false, false,
+												false, true);
+	}
+	else if (effectName == "outPopSqrtMore")
+	{
+		pEffect = new OutdegreePopularityEffect(pEffectInfo, true, false,
+												false, true);
+	}
+	else if (effectName == "outPopThreshold")
+	{
+		pEffect = new OutdegreePopularityEffect(pEffectInfo, false, false,
+												true, true);
 	}
 	else if (effectName == "reciPop")
 	{
@@ -465,6 +485,30 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		}
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			new DifferenceFunction(pFirstFunction, pSecondFunction));
+	}
+	else if (effectName == "outActMore_ego")
+	{
+		string networkName = pEffectInfo->variableName();
+		int p = int(round(pEffectInfo->internalEffectParameter()));
+		AlterFunction * pFunction =
+			new EgoTruncOutDegreeFunction(networkName, false, false, p);
+		pEffect = new GenericNetworkEffect(pEffectInfo,	pFunction);
+	}
+	else if (effectName == "outActSqrtMore_ego")
+	{
+		string networkName = pEffectInfo->variableName();
+		int p = int(round(pEffectInfo->internalEffectParameter()));
+		AlterFunction * pFunction =
+			new EgoTruncOutDegreeFunction(networkName, true, false, p);
+		pEffect = new GenericNetworkEffect(pEffectInfo,	pFunction);
+	}
+	else if (effectName == "outMore_ego")
+	{
+		string networkName = pEffectInfo->variableName();
+		int p = int(round(pEffectInfo->internalEffectParameter()));
+		AlterFunction * pFunction =
+			new EgoTruncOutDegreeFunction(networkName, false, true, p);
+		pEffect = new GenericNetworkEffect(pEffectInfo,	pFunction);
 	}
 	else if (effectName == "inAct_ego")
 	{
@@ -796,10 +840,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		string covariateName = pEffectInfo->interactionName1();
 		int parameter = int(round(pEffectInfo->internalEffectParameter()));
 		AlterFunction * pChangeFunction =
-			new SameCovariateInTiesFunction(networkName, covariateName, 
+			new SameCovariateInTiesFunction(networkName, covariateName,
 													true, true, parameter, false);
 		AlterFunction * pStatisticFunction =
-			new SameCovariateInTiesFunction(networkName, covariateName, 
+			new SameCovariateInTiesFunction(networkName, covariateName,
 													true, true, parameter, true);
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
@@ -810,10 +854,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		string covariateName = pEffectInfo->interactionName1();
 		int parameter = int(round(pEffectInfo->internalEffectParameter()));
 		AlterFunction * pChangeFunction =
-			new SameCovariateInTiesFunction(networkName, covariateName, 
-												false, true, parameter, false);	
+			new SameCovariateInTiesFunction(networkName, covariateName,
+												false, true, parameter, false);
 		AlterFunction * pStatisticFunction =
-			new SameCovariateInTiesFunction(networkName, covariateName, 
+			new SameCovariateInTiesFunction(networkName, covariateName,
 												false, true, parameter, true);
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
@@ -895,7 +939,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new FourCyclesEffect(pEffectInfo);
 	}
 	else if (effectName == "cycle4ND")
-	{		
+	{
 		throw domain_error(
 	"effect shortName cycle4ND replaced by cycle4; please change your code");
 	}
