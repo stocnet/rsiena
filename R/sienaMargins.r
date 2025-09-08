@@ -211,8 +211,6 @@ calculateFirstDiff <- function(densityValue,
                                useTieProb = TRUE,
                                tieProb = NULL,
                                details = FALSE){
-  cat("densityValue class:", class(densityValue), "\n")
-  cat("densityValue unique values:", paste(unique(densityValue), collapse = ", "), "\n")
 
   if (effectName == "density") {
     if((!is.null(diff))) stop("firstDiff for density must be contrast c(-1,1)")
@@ -243,8 +241,6 @@ calculateFirstDiff <- function(densityValue,
                                       modContribution = modContribution,
                                       effectNames = effectNames)
   }
-  cat("densityValue class:", class(densityValue), "\n")
-  cat("densityValue unique values:", paste(unique(densityValue), collapse = ", "), "\n")
 
   expDiff <- exp(utilDiff)
   changeProb_cf <- as.vector(changeProb * expDiff / (1 - changeProb + changeProb * expDiff))
