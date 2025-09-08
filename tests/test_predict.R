@@ -39,7 +39,6 @@ test_predict <- function() {
   if (requireNamespace("data.table", quietly = TRUE)) {
     library(data.table)
     cat("* Prediction pipeline (data.table):\n")
-    ### should only test exported functions?
     pred_dt <- sienaPredict(
       ans = ans,
       data = mydata,
@@ -75,7 +74,6 @@ test_predict <- function() {
   if (requireNamespace("data.table", quietly = TRUE)) {
     library(data.table)
     cat("* Prediction pipeline (data.table):\n")
-    ### should only test exported functions?
     pred_dt <- sienaPredictDynamic(
       ans = ans,
       data = mydata,

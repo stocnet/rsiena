@@ -108,12 +108,14 @@ predictFirstDiff <- function(ans, theta, staticContributions,
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
     noRateIncluded <- includedEffects[["type"]] != "rate"
-    if(length(theta) > length(includedEffects)) {
-        thetaNoRate <- theta[noRateIncluded]
-    } else {
-        thetaNoRate <- theta
-    }
     effectNames  <- includedEffects[["shortName"]][noRateIncluded]
+
+    # Align theta by name
+    if (!is.null(names(theta))) {
+        thetaNoRate <- theta[effectNames]
+    } else {
+        thetaNoRate <- theta[seq_along(effectNames)]
+    }
 
 
     df <- staticContributions
@@ -155,13 +157,14 @@ predictSecondDiff <- function(ans, theta, staticContributions,
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
     noRateIncluded <- includedEffects[["type"]] != "rate"
-    if(length(theta) > length(includedEffects)) {
-        thetaNoRate <- theta[noRateIncluded]
-    } else {
-        thetaNoRate <- theta
-    }
     effectNames  <- includedEffects[["shortName"]][noRateIncluded]
 
+    # Align theta by name
+    if (!is.null(names(theta))) {
+        thetaNoRate <- theta[effectNames]
+    } else {
+        thetaNoRate <- theta[seq_along(effectNames)]
+    }
 
     df <- staticContributions
     df <- addUtilityColumn(df, effectNames, thetaNoRate)

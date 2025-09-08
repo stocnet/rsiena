@@ -60,12 +60,14 @@ predictProbability <- function(ans, staticContributions, theta, useTieProb = TRU
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
     noRateIncluded <- includedEffects[["type"]] != "rate"
-    if(length(theta) > length(includedEffects)) {
-        thetaNoRate <- theta[noRateIncluded]
-    } else {
-        thetaNoRate <- theta
-    }
     effectNames  <- includedEffects[["shortName"]][noRateIncluded]
+
+    # Align theta by name
+    if (!is.null(names(theta))) {
+        thetaNoRate <- theta[effectNames]
+    } else {
+        thetaNoRate <- theta[seq_along(effectNames)]
+    }
 
 
     df <- staticContributions
@@ -145,13 +147,14 @@ predictProbabilityDynamic <- function(ans, data, theta, algorithm, effects,
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
     noRateIncluded <- includedEffects[["type"]] != "rate"
-    if(length(theta) > length(includedEffects)) {
-        thetaNoRate <- theta[noRateIncluded]
-    } else {
-        thetaNoRate <- theta
-    }
     effectNames  <- includedEffects[["shortName"]][noRateIncluded]
 
+    # Align theta by name
+    if (!is.null(names(theta))) {
+        thetaNoRate <- theta[effectNames]
+    } else {
+        thetaNoRate <- theta[seq_along(effectNames)]
+    }
 
     df <- getChangeContributionsDynamic(
         ans = ans, 

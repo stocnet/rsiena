@@ -34,7 +34,6 @@ test_sienaAMEDynamic_all_cases <- function(ans, mydata, mymodel, mycontrols) {
   print(head(results[["first_diff"]]))
 
   cat("=== First Difference with Interaction ===\n")
-  # Replace "someInteractEffect" and "someModeratorEffect" below with valid colnames/effectnames from your model
   mynet2 <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
   mydata2 <- sienaDataCreate(mynet2)
   mymodel2 <- getEffects(mydata2)

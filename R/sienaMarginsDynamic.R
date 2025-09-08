@@ -121,12 +121,14 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
     noRateIncluded <- includedEffects[["type"]] != "rate"
-    if(length(theta) > length(includedEffects)) {
-        thetaNoRate <- theta[noRateIncluded]
-    } else {
-        thetaNoRate <- theta
-    }
     effectNames  <- includedEffects[["shortName"]][noRateIncluded]
+
+    # Align theta by name
+    if (!is.null(names(theta))) {
+        thetaNoRate <- theta[effectNames]
+    } else {
+        thetaNoRate <- theta[seq_along(effectNames)]
+    }
 
     df <- getChangeContributionsDynamic(
         ans = ans,
@@ -184,12 +186,14 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
     noRateIncluded <- includedEffects[["type"]] != "rate"
-    if(length(theta) > length(includedEffects)) {
-        thetaNoRate <- theta[noRateIncluded]
-    } else {
-        thetaNoRate <- theta
-    }
     effectNames  <- includedEffects[["shortName"]][noRateIncluded]
+
+    # Align theta by name
+    if (!is.null(names(theta))) {
+        thetaNoRate <- theta[effectNames]
+    } else {
+        thetaNoRate <- theta[seq_along(effectNames)]
+    }
 
 
     df <- getChangeContributionsDynamic(
