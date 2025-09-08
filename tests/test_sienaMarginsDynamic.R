@@ -215,3 +215,5 @@ test_sienaAMEDynamic_all_cases <- function(ans, mydata, mymodel, mycontrols) {
   ame_dynamic_moderator3
 
 }
+
+test_sienaAMEDynamic_all_cases()
