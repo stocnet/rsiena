@@ -1,12 +1,23 @@
-2025-07-22
+2025-09-06
 
 # RSiena 1.5.2
 
 ## Changes in RSiena:
 ### Functionality:
-  * Users can now extract now extract the changeContributions when running `siena07` by setting an argument `returnChangeContributions=TRUE`. If used together with `nsub=0` and `prevAns` or modified initial values in the effects object, especially useful for post-estimation e.g. in `sienaRIDynamics`.
+  * `selectionTable` got an attribute `quad` indicating whether the plot
+    is a quadratic function.
+  * Users can now extract now extract the changeContributions when running
+    `siena07` by setting an argument `returnChangeContributions=TRUE`. 
+    If used together with `nsub=0` and `prevAns` or modified initial 
+    values in the effects object, especially useful for post-estimation,
+    e.g. in `sienaRIDynamics`.
   * `sienaRIDynamics` uses siena07 directly now and is reinstated.
-
+### Effects
+  * New effects `outActMore_ego`, `outActSqrtMore_ego`, `outMore_ego`,
+    `outPopMore`, `outPopSqrtMore`, `outPopThreshold`.
+### Coding
+  * Use `(any(!gmm))` in  `initializeFRAN` to allow the use of a `prevAns` 
+    object with a different estimation method for a multigroup estimation.
 
 2025-07-12
 

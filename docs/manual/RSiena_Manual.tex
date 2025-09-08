@@ -43,6 +43,23 @@
 
 %\setlength{\oddsidemargin}{15mm}
 
+% We may change the following; now: table of contents lists up to subsection level
+\setcounter{tocdepth}{4}
+
+% To allow \paragraph as a level below \section
+\setcounter{secnumdepth}{4}
+
+% for the following: latex.ltx says
+%   \newdimen\z@ \z@=0pt % can be used both for 0pt and 0
+
+
+\makeatletter
+\renewcommand\paragraph{\@startsection
+   {paragraph}{4}{\z@}               % name, level, indent
+   {3ex \@plus1ex \@minus.2ex}       % beforeskip
+   {2ex \@plus1ex \@minus.2ex}       % afterskip
+   {\normalfont\normalsize\bfseries\itshape}}   % style
+\makeatother
 
 %\usepackage[pdftex]{graphicx}
 %\usepackage[pdftex,dvipsnames]{color}
@@ -3914,6 +3931,8 @@ The change statistic of a standard interaction effect is the product of the
 change statistics of the interacting effects.
 This does not always make sense; whether it is permitted
 is defined by the `\texttt{interactionType}' of the effects.
+This is elaborated for network effects in Section~\ref{S_intnet}
+and for behavior effects in Section~\ref{S_beh_infl}.
 
 Interactions can be specified by the function \sfn{includeInteraction}.
 The basis of the implementation is provided by the definition,
@@ -4024,6 +4043,7 @@ for behaviour effects, it is \texttt{"OK"} or \texttt{""}.
 
 
 \subsubsection{Interaction effects for network dynamics}
+\label{S_intnet}
 
 The following kinds of user-defined interactions are possible
 for network dynamics of directed one-mode networks
@@ -9549,11 +9569,8 @@ they are not meaningful; and some of the names differ in the
 non-directed case.
 Section~\ref{S_NonDirEff} gives some effects that are specific
 to non-directed networks.
-\medskip
 
-\noindent
-\textbf{\emph{Structural effects}}
-\medskip
+\paragraph{Structural effects}
 
 \noindent
 Structural effects are the effects depending on the network only.
@@ -10173,12 +10190,32 @@ and
  this often works better in practice than the raw activity effect
  for the same reasons as mentioned above for the sqrt measure of the popularity effect;
 
+ \item {\em out-degree related popularity more than $p$ effect} \texttt{(outPopMore)}, defined by
+  the sum of the difference between the out-degrees  of the others to whom $i$ is tied,
+  and the internal effect parameter $p$, truncated to positive values: \\
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \max\{ x_{j+} - p, 0 \}  $;
+
+
+ \item {\em out-degree related popularity (sqrt) more than $p$ effect}
+ \texttt{(outPopSqrtMore)}, defined by
+  the sum of the difference between the square roots of the
+  out-degrees  of the others to whom $i$ is tied,
+  and the internal effect parameter $p$, truncated to positive values: \\
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \max\{ \sqrt{x_{j+}} - \sqrt{p}, 0 \}  $;
+
+
+ \item {\em out-degree related popularity more than $p$ effect} \texttt{(outPopThreshold)}, defined by
+  the number of others to whom $i$ is tied who have outdegree larger than the
+  internal effect parameter $p$: \\
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, I\{ x_{j+} > p \}  $;
+
+
  \item {\em reciprocal degree-related popularity effect} \texttt{(reciPop)}
  defined by the sum of the reciprocal degrees
  of the others to whom $i$ is tied,\\
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, x^{(r)}_{j} $, \\
  where the reciprocal degree is defined by\\
- $ x^{(r)}_{j} = \sum_h x_{jh}x_{hj} $.
+ $ x^{(r)}_{j} = \sum_h x_{jh}\, x_{hj} $.
 
  \item {\em reciprocal degree-related popularity (sqrt) effect } \texttt{(reciPopSqrt)}
  defined by the sum of the square roots of the reciprocal degrees
@@ -10229,13 +10266,12 @@ and
 
 
  \item[{\hspace*{-1ex}$\bigodot$}]
-The following four effects are meant mainly for interactions.
+The following effects indicated by the suffix \texttt{\_ego} are meant mainly for interactions.
 Recall that for interaction effects, the internal effect parameters
 should match; see Section~\ref{intint}.
-They are elementary effects (see Section~\ref {S_elementary}),
-which means they can be used in interactions
- and in endowment and creation functions.
-
+They are elementary effects (see Section~\ref {S_elementary}) and have
+\texttt{interactionType="ego"},
+which means they can be used in interactions  and in endowment and creation functions.
 
  \item {\em in-degree related activity ego effect} \texttt{(inAct\_ego)},
  	 defined as the elementary effect version of the  half-centered  cross-product
@@ -10266,6 +10302,22 @@ which means they can be used in interactions
  $ f^{\rm net,\, el}_{i\vit}(x)  =  1/ x_{i+}\,$ ,\\
  where $1/0$ is computed as 0;\\
  for internal effect parameter $p=2$ the square root is taken;
+
+ \item {\em out-degree related activity more than $p$ ego effect} \texttt{(outActMore\_ego)},
+ 	 defined as the elementary effect of outdegree activity
+ for the positive difference of outdegrees and the internal effect parameter $p$:\\
+ $ f^{\rm net,\, el}_{i\vit}(x)  =  \max \{  x_{i+} - p, \, 0 \} $ ;\\
+
+ \item {\em out-degree related activity more than $p$ (sqrt) ego effect} \texttt{(outActSqrtMore\_ego)},
+ 	 defined as the elementary effect of outdegree activity
+ for the positive difference of the square roots of the outdegrees and the internal effect parameter $p$:\\
+ $ f^{\rm net,\, el}_{i\vit}(x)  =  \max \{  \sqrt{x_{i+}} -\sqrt{p} ,\, 0 \} $ ;\\
+
+ \item {\em out-degree related activity with threshold $p$ ego effect} \texttt{(outMore\_ego)},
+ 	 defined as the elementary effect of outdegree activity
+ for  outdegrees larger than the internal effect parameter $p$:\\
+ $ f^{\rm net,\, el}_{i\vit}(x)  =  I \{  x_{i+} > p \} $ ;\\
+ this is the elementary-effect version of \texttt{outMore};
 
  \item {\em reciprocal degree-related activity effect} \texttt{(reciAct)}
  defined by the degree of $i$ multiplied by $i$'s reciprocal degree,\\
@@ -10539,11 +10591,8 @@ $s^{\rm net}_{i\vit}(x ) = \sum_j  x^{\rm{simm}}_{ij} $ .\\
 
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
-\medskip
 
-\noindent
-\textbf{\emph{Dyadic covariate effects}}
-\medskip
+\paragraph{Dyadic covariate effects}
 
 \noindent
 The effects for a dyadic covariate $w_{ij}$ are
@@ -10884,11 +10933,8 @@ by Maximum Likelihood and Bayesian estimation.
 
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
-\medskip
 
-\noindent
-\textbf{\emph{Monadic covariate effects}}
-\medskip
+\paragraph{Monadic covariate effects}
 
 \noindent
 For actor-dependent covariates $v_j$ (recall that these are
@@ -11682,9 +11728,7 @@ with $v_h = v_i\,$:
 \end{enumerate}
 
 
-\noindent
-\textbf{\emph{Monadic double covariate effects}}
-\medskip
+\paragraph{Monadic double covariate effects}
 
 
 \noindent
@@ -13012,6 +13056,84 @@ $\\[0.4em]
 
  \item
 \begin{minipage}[t]{.6\textwidth}
+ {\em indegree-popularity weighted by W-outdegree},
+ ($X$: ind.\ pop.\ by outd.\ $W$) \texttt{(inPopOutW)} \\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j,k; k \neq i} x_{ij}\, x_{kj}\,
+                  \big(  w_{k+} - c\big ) \,$;\\[0.2em]
+ this refers to  mixed $X-X-W$ three-paths;
+ the contribution of the tie $i \stackrel{X}{\rightarrow} j$
+ is proportional to
+ the number of mixed $X-W$ three-paths
+ $ j  \stackrel{X}{\leftarrow} k  \stackrel{W}{\rightarrow} h$.
+
+ This can be regarded also as a mixed 3-path effect.
+      \end{minipage}
+\hfill
+\begin{minipage}[t]{.25\textwidth}
+\linethickness{0.3pt}
+\vfill
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <1.4cm,1.4cm> point at 4 3
+\setplotarea x from 1 to 4, y from 0.5 to 1.5
+\put{\large$\bullet$} at  1 1
+\put{\small$\blacksquare$} at  2 1
+\put{\large$\bullet$} at  3 1
+\put{\small$\blacklozenge$} at  4 1
+\put{$i$} at 1 0.7
+\put{$k$} at 3 0.7
+\put{$j$} at 2 0.7
+\put{$h$} at 4 0.7
+\put{{\small $W$}} at 3.5 1.3
+\put{{\small $X$}} at 1.5 1.3
+\put{{\small $X$}} at 2.5 1.3
+\arrow <2mm> [.2,.6]  from 2.8 1 to 2.2 1
+\arrow <2mm> [.2,.6]  from 1.2 1 to 1.8 1
+\arrow <2mm> [.2,.6]  from 3.2 1 to 3.8 1
+\endpicture
+\end{center}
+\vfill
+\end{minipage}
+
+ The effect parameter $p$ can take the values 1, 2, 3 and 4.
+  For $p=1,2$,  there is no centering: $c=0$.
+  For $p=3,4$, the value $c$, a constant for centering,
+   is the average of the $W$-outdegrees over all waves.
+
+ For $p=2$ and $p=4$, the square root is taken: \\[0.3em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j,k; k \neq i} x_{ij}\, x_{kj}\,
+ \big(  \sqrt{w_{k+}}  \,-\, \sqrt{c} \big)\,$.
+
+ Note that since this is the evaluation function for actor $i$ with
+ respect to network $X$, only the $x_{ij}$ tie indicator in the formula,
+ corresponding to  the tie $i \stackrel{X}{\rightarrow} j$,
+ is the dependent variable here.\\
+ The interpretation is that actors have the tendency to make more
+ outgoing $X$-choices to those ($j$) who have many outgoing $W$-ties.
+
+ This can be regarded as a higher-order effect related to indegree-popularity.
+ The differences between the centered and non-centered versions amount to
+ a multiple of the indegree-popularity (without $\sqrt{}$) \texttt{inPop} effect.
+ Therefore, when the \texttt{inPopOutW} effect is used, it is advisable
+ also to include the \texttt{inPop} effect, so as to avoid misinterpretations.
+
+
+\setcounter{savenumi}{\value{enumi}}
+\end{enumerate}
+
+\paragraph{Dyadic covariate effects}
+
+\noindent
+The effects for a dependent network $X$, with a co-evolving
+network $W$, and a dyadic covariate $U_{ij}$ are the following.
+
+For these effects the other network $W$ is given as \texttt{interaction1},
+and the dyadic covariate $U$ as \texttt{interaction2}.
+
+\begin{enumerate}
+\setcounter{enumi}{\value{savenumi}}
+ \item
+\begin{minipage}[t]{.6\textwidth}
  {\em shared W weighted by U leading to agreement along X},
  ($X$: shared $W$ wghtd by $U$ $\Rightarrow$  agrmnt along X) \texttt{(sharedToU)}.\\[0.2em]
  This is an elementary effect.  It is defined by \\[0.4em]
@@ -13096,77 +13218,12 @@ $\\[0.4em]
                   {   \sum_{k; k \neq i} \sqrt{ \sum_{h}  \big( w_{ih}\, w_{kh} [u_{ih}]\, [u_{kh}] \big )}}
                 \,$.\\[0.2em]
 
- \item
-\begin{minipage}[t]{.6\textwidth}
- {\em indegree-popularity weighted by W-outdegree},
- ($X$: ind.\ pop.\ by outd.\ $W$) \texttt{(inPopOutW)} \\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j,k; k \neq i} x_{ij}\, x_{kj}\,
-                  \big(  w_{k+} - c\big ) \,$;\\[0.2em]
- this refers to  mixed $X-X-W$ three-paths;
- the contribution of the tie $i \stackrel{X}{\rightarrow} j$
- is proportional to
- the number of mixed $X-W$ three-paths
- $ j  \stackrel{X}{\leftarrow} k  \stackrel{W}{\rightarrow} h$.
-
- This can be regarded also as a mixed 3-path effect.
-      \end{minipage}
-\hfill
-\begin{minipage}[t]{.25\textwidth}
-\linethickness{0.3pt}
-\vfill
-\begin{center}
-\beginpicture
-\setcoordinatesystem units <1.4cm,1.4cm> point at 4 3
-\setplotarea x from 1 to 4, y from 0.5 to 1.5
-\put{\large$\bullet$} at  1 1
-\put{\small$\blacksquare$} at  2 1
-\put{\large$\bullet$} at  3 1
-\put{\small$\blacklozenge$} at  4 1
-\put{$i$} at 1 0.7
-\put{$k$} at 3 0.7
-\put{$j$} at 2 0.7
-\put{$h$} at 4 0.7
-\put{{\small $W$}} at 3.5 1.3
-\put{{\small $X$}} at 1.5 1.3
-\put{{\small $X$}} at 2.5 1.3
-\arrow <2mm> [.2,.6]  from 2.8 1 to 2.2 1
-\arrow <2mm> [.2,.6]  from 1.2 1 to 1.8 1
-\arrow <2mm> [.2,.6]  from 3.2 1 to 3.8 1
-\endpicture
-\end{center}
-\vfill
-\end{minipage}
-
- The effect parameter $p$ can take the values 1, 2, 3 and 4.
-  For $p=1,2$,  there is no centering: $c=0$.
-  For $p=3,4$, the value $c$, a constant for centering,
-   is the average of the $W$-outdegrees over all waves.
-
- For $p=2$ and $p=4$, the square root is taken: \\[0.3em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j,k; k \neq i} x_{ij}\, x_{kj}\,
- \big(  \sqrt{w_{k+}}  \,-\, \sqrt{c} \big)\,$.
-
- Note that since this is the evaluation function for actor $i$ with
- respect to network $X$, only the $x_{ij}$ tie indicator in the formula,
- corresponding to  the tie $i \stackrel{X}{\rightarrow} j$,
- is the dependent variable here.\\
- The interpretation is that actors have the tendency to make more
- outgoing $X$-choices to those ($j$) who have many outgoing $W$-ties.
-
- This can be regarded as a higher-order effect related to indegree-popularity.
- The differences between the centered and non-centered versions amount to
- a multiple of the indegree-popularity (without $\sqrt{}$) \texttt{inPop} effect.
- Therefore, when the \texttt{inPopOutW} effect is used, it is advisable
- also to include the \texttt{inPop} effect, so as to avoid misinterpretations.
-
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
 
 \iffalse
 
-\noindent
-\textbf{\emph{Dyadic covariate effects}}
-\medskip
+\paragraph{Dyadic covariate effects}
 
 For dyadic covariate effects in models for evolution of multiple networks,
 the convention with respect to letters has to be adapted.
@@ -13233,10 +13290,7 @@ the other network, having the role of explanatory variable.
 
 \fi
 
-
-\noindent
-\textbf{\emph{Monadic covariate effects}}
-\medskip
+\paragraph{Monadic covariate effects}
 
 \noindent
 The mixed degree-related effects can be weighted with monadic covariates $V$,
@@ -15166,12 +15220,9 @@ in all but the final wave; \\
   average similarity $\times$ popularity alter effect;
 
 \end{followenum}
-\medskip
 
 
-\noindent
-\textbf{\emph{Effects of multiple networks}}
-\medskip
+\paragraph{Effects of multiple networks}
 
 \noindent
 If there are more than one dependent network variables,
@@ -15235,9 +15286,8 @@ For the combined degree-effects, mentioned first, \texttt{F} means `Forward',
 % $s^{\rm beh}_{i\vit}(x, z) = z_i \sum_j x_{1ij}\,x_{1ji}\,x_{2ij}\,x_{2ji} \,$.
 \end{followenum}
 
-\noindent
-\textbf{\emph{Monadic covariate effects}}
-\medskip
+
+\paragraph{Monadic covariate effects}
 
 \noindent
 For each actor-dependent covariate $v_j$ (recall that by default these are
@@ -15525,11 +15575,9 @@ the latter of which is a choice among three, dependent on the
 \fi
 
 
+\paragraph{Dyadic covariate effects}
 
 \noindent
-\textbf{\emph{Dyadic covariate effects}}
-\medskip
-
 For each dyadic covariate $W$ there are the following effects.
 Recall that the default is to center dyadic covariates; however, it often
 will be preferable here to use non-centered covariates.
@@ -15645,14 +15693,9 @@ It is then important how to define the zero point of the covariate!
 
 
 
-\medskip
+\paragraph{User-defined interaction effects}
 
 \noindent
-\textbf{\emph{User-defined interaction effects}}
-\medskip
-
-\noindent
-
 The \emph{user-defined interaction effects} of Section~\ref{S_beh_infl}
 are defined as follows.
 Suppose we consider two effects $s^{\rm beh}_{ia}(x, z)$ and
@@ -18501,14 +18544,30 @@ Changes in RSiena:
 
 \fi
 
-\item 2025-07-22 GitHub, package version 1.5.2.
+\item 2025-09-06 GitHub, package version 1.5.2.
 
 Changes in RSiena:
 \begin{itemize}
 \item Improvements of functionality:
    \begin{itemize}
-    \item Option \texttt{returnChangeContributions=TRUE} added to \sfn{siena07}, allowing users to extract the \texttt{changeContributions} to the \sfn{sienaFit} object.
-    \item \sfn{sienaRIDynamics} reinstated based on the above new option, replacing the original code.
+    \item Option \texttt{returnChangeContributions=TRUE} added to 
+        \sfn{siena07}, allowing users to extract the 
+        \texttt{changeContributions} to the \sfn{sienaFit} object.
+    \item \sfn{sienaRIDynamics} reinstated based on the above new option, 
+        replacing the original code.
+  \item \sfn{selectionTable} got an attribute \texttt{quad} indicating 
+    whether the plot is a quadratic function.
+  \item Users can now extract now extract the changeContributions when running
+    \sfn{siena07} by setting an argument \texttt{returnChangeContributions=TRUE}.
+    If used together with \texttt{nsub=0} and \texttt{prevAns} or modified initial
+    values in the effects object, especially useful for post-estimation,
+    e.g. in \sfn{sienaRIDynamics}.
+    \end{itemize}
+\item New effects:
+   \begin{itemize}
+    \item \texttt{outActMore\_ego}, \texttt{outActSqrtMore\_ego}, \texttt{outMore\_ego},
+        \texttt{outPopMore}, \\
+        \texttt{outPopSqrtMore}, \texttt{outPopThreshold}.
     \end{itemize}
 \end{itemize}
 

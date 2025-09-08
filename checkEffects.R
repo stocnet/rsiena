@@ -3213,9 +3213,6 @@ myeff
 ans$targets #   115 116  70  62 111 133 113  78
 sum(rowSums(s502) * rowSums(s503 * mat)) # 111 OK
 
-
-
-
 ################################################################################
 ### check from, fromAny
 ################################################################################
@@ -3251,3 +3248,69 @@ myans$targets # 115 113  78 133 113  78  48
 sum((1.0*(WW > 0)) * s501) # 48 OK
 
 
+################################################################################
+### check  outActMore_ego, outActSqrtMore_ego, outMore_ego,
+###    outPopMore, outPopSqrtMore, outPopThreshold
+################################################################################
+
+
+mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+
+mydata <- sienaDataCreate(mynet)
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel, outAct)
+mymodel <- setEffect(mymodel, outActMore_ego, parameter=3)
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+sum(rowSums(s502)^2) #  OK
+sum((rowSums(s502))*(pmax(rowSums(s502) -3, 0))) # 50 OK
+
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel, outActSqrt)
+mymodel <- setEffect(mymodel, outActSqrtMore_ego, parameter=3)
+mymodel
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+sum(rowSums(s502)* sqrt(rowSums(s502))) # 197.4244 OK
+sum(rowSums(s502)*(pmax(sqrt(rowSums(s502)) - sqrt(3), 0))) # 12.91924 OK
+
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel, outAct)
+mymodel <- setEffect(mymodel, outMore_ego, parameter=3)
+mymodel
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+sum(rowSums(s502)* (rowSums(s502))) #  350 OK
+sum(rowSums(s502)*(rowSums(s502)> 3)) # 35 OK
+
+
+mydata <- sienaDataCreate(mynet)
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel, outPop)
+mymodel <- setEffect(mymodel, outPopMore, parameter=3)
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+sum(rowSums(s502)*colSums(s502)) # 306 OK
+sum((colSums(s502))*(pmax(rowSums(s502) -3, 0))) # 28 OK
+
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel, outPopSqrt)
+mymodel <- setEffect(mymodel, outPopSqrtMore, parameter=3)
+mymodel
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+sum(colSums(s502)* sqrt(rowSums(s502))) #  182.625 OK
+sum(colSums(s502)*(pmax(sqrt(rowSums(s502)) - sqrt(3), 0))) # 7.247528 OK
+
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel, outPop)
+mymodel <- setEffect(mymodel, outPopThreshold, parameter=3)
+mymodel
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+sum(colSums(s502)* (rowSums(s502))) #  360 OK
+sum(colSums(s502)*(rowSums(s502)> 3)) # 20 OK

@@ -3,12 +3,12 @@ Package: RSiena
 Type: Package
 Title: Siena - Simulation Investigation for Empirical Network Analysis
 Version: 1.5.2
-Date: 2025-07-22
+Date: 2025-09-06
 Authors@R: c(person("Tom A.B.", "Snijders", role = c("aut", "ctb"), comment = c(ORCID = "0000-0003-3157-4157")),
               person("Ruth M.", "Ripley", role = "aut"),
               person("Krists", "Boitmanis", role = c( "aut","ctb")),
               person("Christian", "Steglich", email = "c.e.g.steglich@rug.nl", role = c("cre", "aut"), comment = c(ORCID = "0000-0002-9097-0873")),
-			  person("Johan", "Koskinen", role = c("ctb"), comment = c(ORCID = "0000-0002-6860-325X")),
+			     person("Johan", "Koskinen", role = c("ctb"), comment = c(ORCID = "0000-0002-6860-325X")),
               person("Nynke M.D.", "Niezink", role = c("aut","ctb"), comment = c(ORCID = "0000-0003-4199-4841")),
               person("Viviana", "Amati", role = c("aut","ctb"), comment = c(ORCID = "0000-0003-1190-1237")),
               person("Christoph", "Stadtfeld", role = "ctb", comment = c(ORCID = "0000-0002-2704-2134")),

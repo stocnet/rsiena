@@ -233,7 +233,8 @@ We recommend the following heuristic approach to model checking:
     confidence bands, for the simulated distributions of all elements
     of the \code{auxiliaryFunction},
     with the observed values indicated by red dots;
-    but statistics with variance 0 are dropped.
+    but statistics with variance 0 are dropped.\cr
+    \code{sienaGOF} objects can also be plotted by package \code{autograph}.
 
     \code{descriptives.sienaGOF} returns a matrix giving numerical
     information about what is plotted in the \code{plot} method:

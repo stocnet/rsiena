@@ -80,7 +80,9 @@ selectionTable(x, xd, name, vname,
  The data set \code{xd} is only used to get the means and similarity means
  which are subtracted somewhere in the effects.
 
- This function has its own print method.
+ This function has its own print method.\cr
+ It can be plotted by package \code{autograph}.
+ 
 }
 
 \value{
@@ -91,7 +93,9 @@ selectionTable(x, xd, name, vname,
   \item{ego}{ego's values as a factor;}
   \item{vego}{the values \code{levls}}
   \item{valter}{the values \code{levls.alt}}
-  \item{select}{the value of the selection table.}
+  \item{select}{the value of the selection table.}\cr
+  This object has an attribute \code{quad}, which specifies whether the plot
+  will be a quadratic function.  
 }
 
 \references{
