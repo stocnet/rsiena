@@ -54,6 +54,7 @@ sienaAMEDynamic <- function(
             mod_effectNames = mod_effectNames1,
             useTieProb = useTieProb,
             depvar = depvar,
+            n3 = n3,
             useChangeContributions = FALSE
         )
     }else{
@@ -78,6 +79,7 @@ sienaAMEDynamic <- function(
             mod_effectNames2 = mod_effectNames2,
             useTieProb = useTieProb,
             depvar = depvar,
+            n3 = n3,
             useChangeContributions = FALSE
         )
         ME <- "secondDiff"
@@ -142,10 +144,7 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
         returnDataFrame = TRUE
     )
 
-    cat("After getChangeContributionsDynamic: NAs in density:", sum(is.na(df[["density"]])), "\n")
-
     df <- widenContribution(df)
-    cat("After widenContribution: NAs in density:", sum(is.na(df[["density"]])), "\n")
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
     df <- addProbabilityColumn(df, group_vars=c("chain", "period", "ministep"), useTieProb = useTieProb)
 

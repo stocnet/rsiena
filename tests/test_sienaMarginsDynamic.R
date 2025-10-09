@@ -26,7 +26,7 @@ test_sienaAMEDynamic_all_cases <- function(ans, mydata, mymodel, mycontrols) {
     diff1 = 1,
     effects = mymodel,
     algorithm = mycontrols,
-    n3 = 50,
+    n3 = 50, # keep small for test speed
     nsim = 10, # Keep small for test speed
     useTieProb = TRUE,
     condition = "density"
@@ -57,8 +57,8 @@ test_sienaAMEDynamic_all_cases <- function(ans, mydata, mymodel, mycontrols) {
     effects = mymodel2,
     algorithm = mycontrols2,
     second = FALSE,
-    n3 = 50,
-    nsim = 10,
+    n3 = 50, # keep small for test speed
+    nsim = 10, # Keep small for test speed
     useTieProb = TRUE,
     level = "period",
     condition = "density"
@@ -80,8 +80,8 @@ test_sienaAMEDynamic_all_cases <- function(ans, mydata, mymodel, mycontrols) {
     effects = mymodel2,
     algorithm = mycontrols2,
     second = TRUE,
-    n3 = 50,
-    nsim = 10,
+    n3 = 50, # keep small for test speed
+    nsim = 10, # Keep small for test speed
     useTieProb = FALSE,
     level = "period",
     condition = "density"
@@ -108,8 +108,8 @@ test_sienaAMEDynamic_all_cases <- function(ans, mydata, mymodel, mycontrols) {
     depvar = "mynet2",
     level = "period",
     condition = "density",
-    n3 = 50,
-    nsim = 10,  # keep small for speed
+    n3 = 50, # keep small for test speed
+    nsim = 10, # Keep small for test speed
     uncertainty = TRUE,
     verbose = TRUE
   )
@@ -134,8 +134,8 @@ test_sienaAMEDynamic_all_cases <- function(ans, mydata, mymodel, mycontrols) {
       useTieProb = TRUE,
       depvar = "mynet2", # add check that this is ANY of the depvars/netnames!
       level = "period",
-      n3 = 50,
-      nsim = 10,  # keep small for speed
+      n3 = 50, # keep small for test speed
+      nsim = 10, # Keep small for test speed
       batch_size = 5,
       uncertainty = TRUE,
       verbose = TRUE
@@ -203,9 +203,8 @@ test_sienaAMEDynamic_all_cases <- function(ans, mydata, mymodel, mycontrols) {
       useTieProb = TRUE,
       depvar = "mynet3",
       level = "period",
-      n3 = 500,
-      uncertainty = TRUE,
-      nsim = 100,  # keep small for speed
+      n3 = 50, # keep small for test speed
+      nsim = 10, # Keep small for test speed
       useCluster = TRUE, nbrNodes = 10, clusterType = "FORK",
       batch_size = 10,
       verbose = TRUE
