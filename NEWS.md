@@ -1,3 +1,10 @@
+2025-10-17
+
+# RSiena 1.5.3
+
+### Effects
+  * New effects `quad_cc`, `avAlt_cc`, `totAlt_cc`.
+
 2025-09-06
 
 # RSiena 1.5.2

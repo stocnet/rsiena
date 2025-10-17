@@ -842,7 +842,8 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 		if (attr(depvar, "range") >= 2)
 		{
 			objEffects[grepl("quadratic shape", objEffects$effectName) &
-				objEffects$type == 'eval','include'] <- TRUE
+				objEffects$type == 'eval' &
+				objEffects$shortName != 'quad_cc','include'] <- TRUE
 			## no starting value for quadratic effect
 		}
 
