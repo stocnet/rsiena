@@ -2027,6 +2027,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new QuadraticShapeEffect(pEffectInfo);
 	}
+	else if (effectName == "quad_cc")
+	{
+		pEffect = new QuadraticShapeCcEffect(pEffectInfo);
+	}
 	else if (effectName == "constant")
 	{
 		pEffect = new ConstantEffect(pEffectInfo);
@@ -2310,6 +2314,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			pEffect = new AverageAlterEffect(pEffectInfo, true, false);
 		}
 	}
+	else if (effectName == "avAlt_cc")
+	{
+		pEffect = new AverageAlterCcEffect(pEffectInfo, true);
+	}
 	else if (effectName == "avAlt_gmm")
 	{
 		pEffect = new AverageAlterEffect(pEffectInfo, true, false, true);
@@ -2321,6 +2329,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "totAlt")
 	{
 		pEffect = new AverageAlterEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "totAlt_cc")
+	{
+		pEffect = new AverageAlterCcEffect(pEffectInfo, false);
 	}
 	else if (effectName == "totAlt_gmm")
 	{

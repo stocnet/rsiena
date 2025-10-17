@@ -3314,3 +3314,55 @@ mymodel
 ans$targets
 sum(colSums(s502)* (rowSums(s502))) #  360 OK
 sum(colSums(s502)*(rowSums(s502)> 3)) # 20 OK
+
+################################################################################
+### check  avAlt_cc, quad_cc and their counterparts avAlt, quad  
+################################################################################
+
+# make example analysis w/ s50 data:
+thedata <- sienaDataCreate(
+	net = sienaDependent(array(c(s501, s502), dim=c(50, 50, 2))),
+	beh = sienaDependent(s50a[,1:2], type='behavior')
+)
+
+# specify w/ contemporaneously centered effects alongside grand-mean centered ones:
+model <- getEffects(thedata)
+model <- includeEffects(model, quad_cc, name='beh')
+model <- includeEffects(model, avAlt, avAlt_cc, name='beh', interaction1='net')
+modelsum((s50a[,2]-gm) * (avAlt(s501, s50a[,2])-gm), na.rm=TRUE) # is okay
+ <- includeEffects(model, quad, quad_cc, name='beh')
+model <- includeEffects(model, egoX, egoX_cc, altX, altX_cc, name='net', interaction1='beh')
+# fix grand-mean centered old veriants to avoid collinearity in estimation:
+model <- setEffect(model, avAlt, fix=TRUE, test=TRUE,
+	type='eval', name='beh', interaction1='net'
+)
+model <- setEffect(model, quad, fix=TRUE, test=TRUE,
+	type='eval', name='beh'
+)
+
+# estimate and get target statistics of all effects:
+thecontrols <- sienaAlgorithmCreate(seed=1234)
+(results <- siena07(thecontrols, data=thedata, effects=model))
+(daf <- data.frame(
+	shortNames = results$effects$shortName,
+	targets = results$targets
+))
+
+# control calculations for targets:
+cc <- mean(s50a[,2]) # contemporaneous mean at end of period
+gm <- mean(s50a[,1:2]) # grand mean over both observations
+
+avAlt <- function(n, b){
+# calculates peers' average behavior;
+# n = adjacency matrix senders (rows) by receivers (cols)
+# b = behavior vector 	
+	n %*% b / rowSums(n)
+}
+
+# calculate targets avAlt and avAlt_cc manually:
+sum((s50a[,2]-gm) * (avAlt(s501, s50a[,2])-gm), na.rm=TRUE) # 33.5746 ok
+sum((s50a[,2]-cc) * (avAlt(s501, s50a[,2])-cc), na.rm=TRUE) # 31.97667 ok
+
+# calculate targets quad and quad_cc manually:
+sum((s50a[,2]-gm)^2) # 71.105 ok
+sum((s50a[,2]-cc)^2) # 70.5 ok
