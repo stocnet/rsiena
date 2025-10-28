@@ -36,6 +36,8 @@ public:
 		
 	virtual void initialize(const Data * pData,
 		State * pState, State * pSimulatedState, int period, Cache * pCache);
+		
+	virtual void preprocessEgo(int ego);
 
 protected:
 	bool inTieExists(int alter) const;
