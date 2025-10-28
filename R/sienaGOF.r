@@ -1590,6 +1590,8 @@ egoAlterCombi <- function (i, obsData, sims, period, groupName, varName,
 		varName1)
 	x <- behaviorExtraction(i, obsData, sims, period, groupName, 
 		varName2)
+	m <- m[!is.na(x), !is.na(x)]
+	x <- x[!is.na(x)]
 	brange <- attr(obsData[[groupName]]$depvars[[varName2]], 
 			"behRange")[1]:attr(obsData[[groupName]]$depvars[[varName2]], 
 			"behRange")[2]
