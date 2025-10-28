@@ -23,6 +23,7 @@ docs/manual/TexAux/
 *.gz
 *.Rproj
 NEWSnew.md
+man/Show.*
 
 # Logfiles
 
