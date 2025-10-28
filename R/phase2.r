@@ -53,18 +53,20 @@ phase2.1<- function(z, x, ...)
 # Instead of the preceding line,
 # the following is used for equality with earlier versions.
 	z$sd <- sqrt(pmax(apply(z$sf, 2, function(x) sum(x^2) / nrow(z$sf) - mean(x)^2),0))
+    Report("standardization : \n", cf)
 	if (!z$gmm) 
 	{
    	z$sd[z$fixed] <- 0
 	  z$standardization <-
 						1/sqrt(pmax(diag(as.matrix(z$dinvv %*% msf %*% t(z$dinvv))),0))
+	PrtOutMat( cbind(z$requestedEffects[,"effectName"], round(z$standardization,4)), cf)
 	}
 	else
 	{
 	  z$sd[which(z$fixed & !z$gmmEffects)] <- 0
 	  z$standardization <- 1/sqrt(pmax(diag(as.matrix(z$dinvv %*% msf %*% t(z$dinvv))),0))
+	  Report(round(z$standardization,4), cf)
 	}
-    Report(paste("standardization = ", round(z$standardization,4)), cf)
 	if (sum(z$fixed) < z$pp)
 	{
 		z$sf.invcov <-

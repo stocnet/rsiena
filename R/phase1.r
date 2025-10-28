@@ -410,7 +410,7 @@ CalculateDerivative <- function(z, x)
 					##browser()
 					z$jacobianwarn1[i] <- TRUE
 					Report(c('Warning: diagonal value', i,
-							'is non-positive.\n\n'), cf)
+							'is non-positive: ', round(dfra[i, i],8),'  \n\n'), cf)
 				}
 			}
 			if (z$n1 < 200)
