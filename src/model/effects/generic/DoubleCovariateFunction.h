@@ -40,6 +40,7 @@ public:
 	DoubleCovariateFunction(std::string covariateName1, std::string covariateName2);
 	virtual void initialize(const Data * pData, State * pState, int period,
 			Cache * pCache);
+	virtual void preprocessEgo(int ego);
 
 protected:
 	double firstCovariateValue(int i) const;

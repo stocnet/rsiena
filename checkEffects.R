@@ -1187,7 +1187,7 @@ sum((colSums(s502))^2) # 386 OK
 # check target statistics: sameXInPop
 samef <- 1*outer(five,five,FUN="==")
 sum(diag(t(s502) %*% samef %*% s502))
-sum(s502 * (samef %*% s502))
+sum(s502 * (samef %*% s502)) # OK
 
 mymodel <- getEffects(mydata)
 mymodel <- setEffect(mymodel,sameXInPop,interaction1='five', parameter=2)
