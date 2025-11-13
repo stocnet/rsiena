@@ -30,8 +30,8 @@ public:
 	DiffusionEffectValueTable(int numeratorRange, int denominatorRange);
 	virtual ~DiffusionEffectValueTable();
 
-	double getParameter() const;
-	void setParameter(double value);
+	double parameter() const;
+	void parameter(double value);
 	/* Is not defined: double value(int i);*/
 	double value(int numerator, int denominator);
 

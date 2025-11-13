@@ -938,17 +938,7 @@ double EpochSimulation::lnFactorial(int a) const {
 		return z;
 	}
 }
-/**
- * Updates parameters. Probably legacy code and not used.
- */
-void EpochSimulation::updateParameters(int period) {
-	Rprintf("ever used?\n");
-	for (unsigned i = 0; i < this->lvariables.size(); i++) {
-		this->lvariables[i]->updateBasicRate(period);
-		this->lvariables[i]->updateEffectParameters();
-	}
 
-}
 /**
  * Returns the current map of derivatives for the given effect.
  * The derivatives are updated for each ministep of a chain.

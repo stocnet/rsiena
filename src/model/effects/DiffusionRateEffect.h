@@ -13,6 +13,8 @@
 #define DIFFUSIONRATEEFFECT_H_
 
 #include <string>
+#include "NetworkEffect.h"
+
 
 namespace siena
 {
@@ -21,12 +23,13 @@ namespace siena
 // Section: Forward declarations
 // ----------------------------------------------------------------------------
 
-class NetworkVariable;
+class Network;
 class BehaviorVariable;
-class DiffusionEffectValueTable;
 class ConstantCovariate;
 class ChangingCovariate;
-class Network;
+class NetworkVariable;
+
+// Remove: class DiffusionEffectValueTable;
 
 // ----------------------------------------------------------------------------
 // Section: Class definition
@@ -38,51 +41,57 @@ class Network;
  * the network variable and the behavior variable
  * the effect depends on, and the statistical parameter of the effect.
  */
-class DiffusionRateEffect
+class DiffusionRateEffect : public Effect
 {
 public:
-	DiffusionRateEffect(const NetworkVariable * pVariable,
-		const BehaviorVariable * pBehaviorVariable,
-		std::string effectName,
-		double parameter,
-		double internalEffectParameter);
-	DiffusionRateEffect(const NetworkVariable * pVariable,
-		const BehaviorVariable * pBehaviorVariable,
-		const ConstantCovariate * pCovariate,
-		const ChangingCovariate * pChangingCovariate,
-		std::string effectName,
-		double parameter,
-		double internalEffectParameter);
+    DiffusionRateEffect(const EffectInfo* pEffectInfo,
+                        const Network* pNetwork,
+                        const BehaviorVariable* pBehaviorVariable,
+                        std::string effectName,
+                        double parameter,
+                        double internalEffectParameter);
+    DiffusionRateEffect(const EffectInfo* pEffectInfo,
+        const Network * pNetwork,
+        const BehaviorVariable * pBehaviorVariable,
+        const ConstantCovariate * pCovariate,
+        const ChangingCovariate * pChangingCovariate,
+        std::string effectName,
+        double parameter,
+        double internalEffectParameter);
 
-	virtual ~DiffusionRateEffect();
-	double proximityValue(Network * pNetwork, int i, int egoNumer,
-			int egoDenom) const;
-	double value(int i, int period) const;
-	void setParameter(double parameterValue) const;
-	double getParameter() const;
-	void setInternalEffectParameter(int parValue);
-	int getInternalEffectParameter() const;
+    virtual ~DiffusionRateEffect();
+    
+    // Returns the raw statistic (for scores and statistics)
+    double value(int i, int period) const;
+    
+    // Returns the exponentiated rate contribution (for rate calculations)
+    double rateContribution(int i, int period) const;
+    
+    void parameter(double parameterValue) const;
+    double parameter() const;
+    void setInternalEffectParameter(int parValue);
+    int getInternalEffectParameter() const;
 
-	private:
-	// The network variable this effect depends on
-	const NetworkVariable * lpVariable;
+private:
+    // Helper method that calculates raw proximity/exposure statistic
+    // Contains all effect-specific conditional logic
+    double proximityValue(const Network* pNetwork, int i, int period) const;
 
-	// The behavior variable this effect depends on
-	const BehaviorVariable * lpBehaviorVariable;
+    // The network variable this effect depends on
+    const Network * lpNetwork;
 
-	// The covariates some effects depend on
-	const ConstantCovariate * lpConstantCovariate;
-	const ChangingCovariate * lpChangingCovariate;
+    // The behavior variable this effect depends on
+    const BehaviorVariable * lpBehaviorVariable;
 
-	// A table for efficient calculation of contributions. If two actors have
-	// the same effect value, then the table ensures that we don't
-	// calculate the same contribution twice.
+    // The covariates some effects depend on
+    const ConstantCovariate * lpConstantCovariate;
+    const ChangingCovariate * lpChangingCovariate;
 
-	DiffusionEffectValueTable * lpTable;
-	std::string leffectName {};
-	int linternalEffectParameter {};
-	int labsInternalEffectParameter {};
-	bool linternalNonZero {};
+    std::string leffectName {};
+    mutable double lparameter {}; // Made mutable for parameter() const method
+    int linternalEffectParameter {};
+    int labsInternalEffectParameter {};
+    bool linternalNonZero {};
 };
 
 }

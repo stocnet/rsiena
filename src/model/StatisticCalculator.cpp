@@ -39,12 +39,13 @@
 #include "model/effects/BehaviorEffect.h"
 #include "model/effects/ContinuousEffect.h"
 #include "model/EpochSimulation.h"
-#include "model/variables/NetworkVariable.h"
-#include "model/variables/BehaviorVariable.h"
+#include "model/variables/NetworkVariable.h" // not used?
+#include "model/variables/BehaviorVariable.h" // not used?
 #include "model/tables/Cache.h"
 #include "network/IncidentTieIterator.h"
 #include "network/layers/DistanceTwoLayer.h"
 #include "network/iterators/UnionTieIterator.h"
+#include "model/effects/DiffusionRateEffect.h"
 
 using namespace std;
 
@@ -1419,18 +1420,18 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 	// Loop through the rate effects, calculate the statistics,
 	// and store them.
 
-	const vector<EffectInfo *> & rEffects =
+	const vector<EffectInfo *> & rRateEffects =
 		this->lpModel->rRateEffects(pBehaviorData->name());
 
-	for (unsigned i = 0; i < rEffects.size(); i++)
+	for (unsigned i = 0; i < rRateEffects.size(); i++)
 	{
-		EffectInfo * pInfo = rEffects[i];
-		//	double parameter = pInfo->parameter();
-		string effectName = pInfo->effectName();
-		string interactionName = pInfo->interactionName1();
-		string interactionName2 = pInfo->interactionName2();
-		string rateType = pInfo->rateType();
-		int internalEffectParameter = pInfo->internalEffectParameter();
+		EffectInfo *pEffectInfo = rRateEffects[i];
+		double parameter = pEffectInfo->parameter();
+		string effectName = pEffectInfo->effectName();
+		string interactionName = pEffectInfo->interactionName1();
+		string interactionName2 = pEffectInfo->interactionName2();
+		string rateType = pEffectInfo->rateType();
+		int internalEffectParameter = pEffectInfo->internalEffectParameter();
 
 		if (rateType == "covariate")
 		{
@@ -1454,7 +1455,7 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 							difference[i];
 					}
 
-					this->lstatistics[pInfo] = statistic;
+					this->lstatistics[pEffectInfo] = statistic;
 				}
 				else if (pChangingCovariate)
 				{
@@ -1468,7 +1469,7 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 							difference[i];
 					}
 
-					this->lstatistics[pInfo] = statistic;
+					this->lstatistics[pEffectInfo] = statistic;
 				}
 				else if (pBehavior)
 				{
@@ -1481,7 +1482,7 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 							difference[i];
 					}
 
-					this->lstatistics[pInfo] = statistic;
+					this->lstatistics[pEffectInfo] = statistic;
 				}
 				else
 				{
@@ -1568,7 +1569,7 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 				}
 			}
 
-			this->lstatistics[pInfo] = statistic;
+			this->lstatistics[pEffectInfo] = statistic;
 		}
 		else if (rateType == "diffusion")
 		{
@@ -1576,12 +1577,16 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 		        pNetworkData(interactionName);
 		    const Network * pStructural =
 		        pNetworkData->pNetworkLessMissingStart(this->lperiod);
+			BehaviorLongitudinalData * pBehavior =
+					this->lpData->pBehaviorData(interactionName);
+			// initialize BehaviorVariable pointer BUT SHOULD BE DONE DIFFERENTLY (DG)
+			EpochSimulation dummySimulation(const_cast<Data*>(this->lpData), const_cast<Model*>(this->lpModel));
+			BehaviorVariable * pBehaviorVariable = new BehaviorVariable(pBehaviorData, &dummySimulation);
+			pBehaviorVariable->initialize(this->lperiod);
 			double statistic = 0;
 			if (interactionName2 == "")
 			{
-				for (int i = 0; i < pBehaviorData->n(); i++)
-				{
-					if (effectName == "avExposure" ||
+				if (effectName == "avExposure" ||
 						effectName == "susceptAvIn" ||
 						effectName == "totExposure" ||
 						effectName == "infectDeg" ||
@@ -1592,18 +1597,27 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 						effectName == "avTinExposureDist2" ||
 						effectName == "totAInExposureDist2")
 					{
-						statistic +=
-							this->calculateDiffusionRateEffect(pBehaviorData,
-								pStructural, i, effectName,
-								internalEffectParameter) *
-													difference[i];
+						DiffusionRateEffect * pEffect = new DiffusionRateEffect(pEffectInfo,
+													pStructural,
+													pBehaviorVariable,
+													effectName,
+													parameter,
+													internalEffectParameter);
+
+						for (int i = 0; i < pBehaviorData->n(); i++)
+							{
+								statistic += pEffect->value(i, this->lperiod) *
+																difference[i];
+							}
+
+						delete pEffect;
+						this->lstatistics[pEffectInfo] = statistic;
 					}
 					else
 					{
 						throw domain_error("Unexpected rate effect " +
 							effectName);
 					}
-				}
 			}
 			else
 			{
@@ -1611,28 +1625,34 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 					this->lpData->pConstantCovariate(interactionName2);
 				ChangingCovariate * pChangingCovariate =
 					this->lpData->pChangingCovariate(interactionName2);
-
-				for (int i = 0; i < pBehaviorData->n(); i++)
-				{
-					if (effectName == "susceptAvCovar" ||
+	
+				if (effectName == "susceptAvCovar" ||
 						effectName == "infectCovar")
-					{
-						statistic +=
-							this->calculateDiffusionRateEffect(pBehaviorData,
-								pStructural,
-								pConstantCovariate,
-								pChangingCovariate, i, effectName,
-								internalEffectParameter) *
-													difference[i];
-					}
-					else
-					{
-						throw domain_error("Unexpected rate effect " +
-							effectName);
-					}
+				{
+					DiffusionRateEffect * pEffect = new DiffusionRateEffect(pEffectInfo,
+												pStructural,
+												pBehaviorVariable,
+												pConstantCovariate,
+												pChangingCovariate,
+												effectName,
+												parameter,
+												internalEffectParameter);
+
+					for (int i = 0; i < pBehaviorData->n(); i++)
+						{
+							statistic += pEffect->value(i, this->lperiod) *
+															difference[i];
+						}
+
+					delete pEffect;
+					this->lstatistics[pEffectInfo] = statistic;
+				}
+				else
+				{
+					throw domain_error("Unexpected rate effect " +
+						effectName);
 				}
 			}
-			this->lstatistics[pInfo] = statistic;
 		}
 	}
 
@@ -1699,187 +1719,6 @@ void StatisticCalculator::calculateContinuousRateStatistics(
 
 	delete[] difference;
 	delete[] currentValues;
-}
-
-
-/**
- * Calculates the value of the diffusion rate effect for the given actor.
- */
- // note: calculateDiffusionRateEffect is also a function in DependentVariable
- // (almost the same...)
-double StatisticCalculator::calculateDiffusionRateEffect(
-	BehaviorLongitudinalData * pBehaviorData, const Network * pStructural,
-	int i, string effectName, int internalEffectParameter)
-{
-	double totalAlterValue = 0;
-	int numInfectedAlter = 0;
-	double response = 1;
-	if (pStructural->outDegree(i) > 0)
-	{
-		if (effectName == "avExposure" || effectName == "avTinExposureDist2")
-		{
-			response /= double(pStructural->outDegree(i));
-		}
-		else if (effectName == "susceptAvIn")
-		{
-			response = double(pStructural->inDegree(i)) /
-				double(pStructural->outDegree(i));
-		}
-		for (IncidentTieIterator iter = pStructural->outTies(i);
-			 iter.valid();
-			 iter.next())
-		{
-			if (effectName == "anyInExposureDist2" || effectName == "totInExposureDist2" || effectName == "avTinExposureDist2" || effectName == "totAInExposureDist2")
-			{
-				int j = iter.actor();
-				double totalAlterInDist2Value = 0; // count values of j's in-alters
-				for (IncidentTieIterator iterH = pStructural->inTies(j);
-					iterH.valid();
-					iterH.next())
-				{	
-					if (i != iterH.actor())
-					{
-						double alterInDist2Value = pBehaviorData->
-						value(this->lperiod,iterH.actor());  // this is the value at the start of the period
-						if(alterInDist2Value >= 0.5)
-						{
-							numInfectedAlter++;
-						}
-						totalAlterInDist2Value += alterInDist2Value;
-					}
-				}
-				if((effectName == "totAInExposureDist2") && ((pStructural->inDegree(j)-1) > 0))
-				{
-					totalAlterInDist2Value /= (pStructural->inDegree(j) - 1);
-				}
-				if((effectName == "anyInExposureDist2")) // only correct for binary behavior variable!
-				{
-					totalAlterInDist2Value = std::min(totalAlterInDist2Value, 1.0);
-				}
-				totalAlterValue += totalAlterInDist2Value;
-			}
-			else 
-			{
-				double alterValue = pBehaviorData->
-					value(this->lperiod,iter.actor());  // this is the value at the start of the period
-
-				if (alterValue >= 0.5)
-				{
-					numInfectedAlter++;
-				}
-
-				if (effectName == "infectIn")
-				{
-					alterValue *= pStructural->inDegree(iter.actor());
-				}
-				else if ((effectName == "infectOut") || (effectName == "infectDeg"))
-				{
-					alterValue *= pStructural->outDegree(iter.actor());
-				}
-			totalAlterValue += alterValue;
-			}
-		}
-
-		if (internalEffectParameter != 0)
-		{
-			if (numInfectedAlter < std::abs(internalEffectParameter))
-			{
-				totalAlterValue = 0;
-			}
-			else if (internalEffectParameter < 0)
-			{
-				if (totalAlterValue + internalEffectParameter > 0)
-				{
-					totalAlterValue = - internalEffectParameter;
-				}
-			}
-		}
-		totalAlterValue *= response;
-	}
-	return totalAlterValue;
-}
-/**
- * Calculates the value of the covariate dependent diffusion rate effect for
- * the given actor.
- */
-double StatisticCalculator::calculateDiffusionRateEffect(
-	BehaviorLongitudinalData * pBehaviorData, const Network * pStructural,
-	const ConstantCovariate * pConstantCovariate,
-	const ChangingCovariate * pChangingCovariate,
-	int i, string effectName, int internalEffectParameter)
-{
-	double totalAlterValue = 0;
-	double response = 1;
-	int numInfectedAlter = 0;
-
-	if (pStructural->outDegree(i) > 0)
-	{
-		if (effectName == "susceptAvCovar")
-		{
-			if (pConstantCovariate)
-			{
-				response = pConstantCovariate->value(i);
-			}
-			else if (pChangingCovariate)
-			{
-				response = pChangingCovariate->value(i, this->lperiod);
-			}
-			else
-			{
-				throw logic_error(
-					"No individual covariate.");
-			}
-			response /= double(pStructural->outDegree(i));
-		}
-
-		for (IncidentTieIterator iter = pStructural->outTies(i);
-			 iter.valid();
-			 iter.next())
-		{
-			double alterValue = pBehaviorData->
-				value(this->lperiod,iter.actor());
-
-			if (alterValue >= 0.5)
-			{
-				numInfectedAlter++;
-			}
-
-			if (effectName == "infectCovar")
-			{
-				if (pConstantCovariate)
-				{
-					alterValue *= pConstantCovariate->value(iter.actor());
-				}
-				else if (pChangingCovariate)
-				{
-					alterValue *= pChangingCovariate->value(iter.actor(),
-						this->lperiod);
-				}
-				else
-				{
-					throw logic_error("No individual covariate.");
-				}
-			}
-			totalAlterValue += alterValue;
-		}
-
-		if (internalEffectParameter != 0)
-		{
-			if (numInfectedAlter < std::abs(internalEffectParameter))
-			{
-				totalAlterValue = 0;
-			}
-			else if (internalEffectParameter < 0)
-			{
-				if (totalAlterValue + internalEffectParameter > 0)
-				{
-					totalAlterValue = - internalEffectParameter;
-				}
-			}
-		}
-		totalAlterValue *= response;
-	}
-	return totalAlterValue;
 }
 
 void StatisticCalculator::calcDifferences(

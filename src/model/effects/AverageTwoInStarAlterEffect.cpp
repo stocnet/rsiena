@@ -39,9 +39,9 @@ AverageTwoInStarAlterEffect::AverageTwoInStarAlterEffect(
 		NetworkDependentBehaviorEffect(pEffectInfo)
 {
 	this->ldivide1 = divide1;
-	// Indicates whether there will be division by the outdegree of ego (not used)
+	// Indicates whether there will be division by the outdegree of ego
 	this->ldivide2 = divide2;
-	// Indicates whether there will be division by the indegree of alter (not used)
+	// Indicates whether there will be division by the indegree of alter
 	// this->lcentered = centered;
 }
 
@@ -71,7 +71,6 @@ double AverageTwoInStarAlterEffect::calculateChangeContribution(int actor,
 		// weighted by the number of common two-in-stars divided
 		// We need to calculate the change delta in s_i(x), if we changed
 		// v_i to v_i + d (d being the given amount of change in v_i).
-		// divide1 and divide2 are not used for now
 
 		double sumAlterValue = 0;
 		// double denom = 0;

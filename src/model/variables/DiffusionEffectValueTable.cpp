@@ -50,14 +50,14 @@ DiffusionEffectValueTable::~DiffusionEffectValueTable() {
 /**
  * Returns the current value of the effect parameter.
  */
-double DiffusionEffectValueTable::getParameter() const {
+double DiffusionEffectValueTable::parameter() const {
 	return this->lparameter;
 }
 
 /**
  * Stores the effect parameter.
  */
-void DiffusionEffectValueTable::setParameter(double value) {
+void DiffusionEffectValueTable::parameter(double value) {
 	this->lparameter = value;
 }
 

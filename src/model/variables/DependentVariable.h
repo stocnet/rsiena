@@ -118,7 +118,6 @@ public:
 	double nonSettingsRate() const;
 	double rate(int actor) const;
 	inline double basicRate() const;
-	void updateBasicRate(int period);
 
 	int simulatedDistance() const;
 
@@ -158,8 +157,6 @@ public:
 
 	virtual bool validMiniStep(const MiniStep * pMiniStep,
 		bool checkUpOnlyDownOnlyConditions = true) const;
-
-	void updateEffectParameters();
 
 	/**
 	 * Returns if the observed value for the option of the given ministep
