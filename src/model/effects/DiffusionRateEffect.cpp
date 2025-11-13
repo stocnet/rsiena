@@ -101,6 +101,10 @@ DiffusionRateEffect::~DiffusionRateEffect()
     // Nothing to clean up
 }
 
+double DiffusionRateEffect::proximityValue(const Network* pNetwork, int i, int period) const
+{
+    throw std::logic_error("proximityValue not implemented for this effect type.");
+}
 /**
  * Returns the raw social proximity/exposure statistic for actor i.
  * This calculates the statistic according to the formula:
@@ -110,7 +114,7 @@ DiffusionRateEffect::~DiffusionRateEffect()
  * 
  * ALL conditional logic for different effect types is contained here.
  */
-double DiffusionRateEffect::proximityValue(const Network * pNetwork, int i,
+/* double DiffusionRateEffect::proximityValue(const Network * pNetwork, int i,
         int period) const
 {
     int egoNumer = 1;
@@ -275,6 +279,25 @@ double DiffusionRateEffect::proximityValue(const Network * pNetwork, int i,
     }
     
     return rawStatistic;
+} */
+
+double DiffusionRateEffect::applyInternalEffectParameter(double value, int numInfectedAlter) const
+{
+    if (this->linternalNonZero)
+    {
+        if (numInfectedAlter < this->labsInternalEffectParameter)
+        {
+            value = 0;
+        }
+        else if (this->linternalEffectParameter < 0)
+        {
+            if (value > this->labsInternalEffectParameter)
+            {
+                value = this->labsInternalEffectParameter;
+            }
+        }
+    }
+    return value;
 }
 
 /**
@@ -290,18 +313,16 @@ double DiffusionRateEffect::value(int i, int period) const
  * Returns the exponentiated rate contribution (for rate calculations).
  * Exponentiates the raw statistic: exp(parameter * rawStatistic)
  */
-double DiffusionRateEffect::rateContribution(int i, int period) const
+double DiffusionRateEffect::logRate(int i, int period) const
 {
-    double rawStatistic = this->proximityValue(this->lpNetwork, i, period);
-    
-    // Simply exponentiate
-    return exp(this->lparameter * rawStatistic);
+    double rawStatistic = this->proximityValue(this->lpNetwork, i, period);    
+    return this->lparameter * rawStatistic;
 }
 
 /**
  * Stores the parameter for the diffusion rate effect.
  */
-void DiffusionRateEffect::parameter(double parameterValue) const
+void DiffusionRateEffect::parameter(double parameterValue)
 {
     this->lparameter = parameterValue;
 }

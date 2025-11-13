@@ -46,6 +46,10 @@
 #include "network/layers/DistanceTwoLayer.h"
 #include "network/iterators/UnionTieIterator.h"
 #include "model/effects/DiffusionRateEffect.h"
+#include "model/effects/ExposureEffect.h"
+#include "model/effects/InfectEffect.h"
+#include "model/effects/Distance2ExposureEffect.h"
+#include "model/effects/SusceptibilityEffect.h"
 
 using namespace std;
 
@@ -1573,51 +1577,54 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 		}
 		else if (rateType == "diffusion")
 		{
+			DiffusionRateEffect * pEffect = 0;
 		    NetworkLongitudinalData *pNetworkData = this->lpData->
 		        pNetworkData(interactionName);
 		    const Network * pStructural =
 		        pNetworkData->pNetworkLessMissingStart(this->lperiod);
-			BehaviorLongitudinalData * pBehavior =
-					this->lpData->pBehaviorData(interactionName);
+			// unused:
+			// BehaviorLongitudinalData * pBehavior =
+			//		this->lpData->pBehaviorData(interactionName);
 			// initialize BehaviorVariable pointer BUT SHOULD BE DONE DIFFERENTLY (DG)
 			EpochSimulation dummySimulation(const_cast<Data*>(this->lpData), const_cast<Model*>(this->lpModel));
 			BehaviorVariable * pBehaviorVariable = new BehaviorVariable(pBehaviorData, &dummySimulation);
 			pBehaviorVariable->initialize(this->lperiod);
-			double statistic = 0;
 			if (interactionName2 == "")
 			{
-				if (effectName == "avExposure" ||
-						effectName == "susceptAvIn" ||
-						effectName == "totExposure" ||
-						effectName == "infectDeg" ||
-						effectName == "infectIn" ||
-						effectName == "infectOut" ||												
-						effectName == "anyInExposureDist2" ||
-						effectName == "totInExposureDist2" ||
-						effectName == "avTinExposureDist2" ||
-						effectName == "totAInExposureDist2")
-					{
-						DiffusionRateEffect * pEffect = new DiffusionRateEffect(pEffectInfo,
-													pStructural,
-													pBehaviorVariable,
-													effectName,
-													parameter,
-													internalEffectParameter);
-
-						for (int i = 0; i < pBehaviorData->n(); i++)
-							{
-								statistic += pEffect->value(i, this->lperiod) *
-																difference[i];
-							}
-
-						delete pEffect;
-						this->lstatistics[pEffectInfo] = statistic;
-					}
-					else
-					{
-						throw domain_error("Unexpected rate effect " +
-							effectName);
-					}
+				if (effectName == "avExposure" || effectName == "totExposure")
+				{
+					pEffect = new ExposureEffect(pEffectInfo, pStructural, pBehaviorVariable, effectName, parameter, internalEffectParameter);
+				}
+				else if (effectName == "infectIn" || effectName == "infectDeg" || effectName == "infectOut")
+				{
+					pEffect = new InfectEffect(pEffectInfo, pStructural, pBehaviorVariable, effectName, parameter, internalEffectParameter);
+				}
+				else if(effectName == "susceptAvIn")
+				{
+					pEffect = new SusceptibilityEffect(pEffectInfo,
+												pStructural,
+												pBehaviorVariable,
+												effectName,
+												parameter,
+												internalEffectParameter);
+				}
+				else if(effectName == "anyInExposureDist2" ||
+					effectName == "totInExposureDist2" ||
+					effectName == "avTinExposureDist2" ||
+					effectName == "totAInExposureDist2")
+				{
+					pEffect = new Distance2ExposureEffect(pEffectInfo,
+												pStructural,
+												pBehaviorVariable,
+												effectName,
+												parameter,
+												internalEffectParameter);
+				}
+				else
+				{
+					throw domain_error("Unexpected rate effect " +
+						effectName);
+				}
 			}
 			else
 			{
@@ -1626,10 +1633,9 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 				ChangingCovariate * pChangingCovariate =
 					this->lpData->pChangingCovariate(interactionName2);
 	
-				if (effectName == "susceptAvCovar" ||
-						effectName == "infectCovar")
+				if (effectName == "infectCovar")
 				{
-					DiffusionRateEffect * pEffect = new DiffusionRateEffect(pEffectInfo,
+					pEffect = new InfectEffect(pEffectInfo,
 												pStructural,
 												pBehaviorVariable,
 												pConstantCovariate,
@@ -1637,15 +1643,17 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 												effectName,
 												parameter,
 												internalEffectParameter);
-
-					for (int i = 0; i < pBehaviorData->n(); i++)
-						{
-							statistic += pEffect->value(i, this->lperiod) *
-															difference[i];
-						}
-
-					delete pEffect;
-					this->lstatistics[pEffectInfo] = statistic;
+				}
+				else if(effectName == "susceptAvCovar")
+				{
+					pEffect = new SusceptibilityEffect(pEffectInfo,
+												pStructural,
+												pBehaviorVariable,
+												pConstantCovariate,
+												pChangingCovariate,
+												effectName,
+												parameter,
+												internalEffectParameter);
 				}
 				else
 				{
@@ -1653,6 +1661,13 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 						effectName);
 				}
 			}
+			double statistic = 0;
+			for (int i = 0; i < pBehaviorData->n(); i++)
+			{
+				statistic += pEffect->value(i, this->lperiod) * difference[i];
+			}
+			delete pEffect;
+			this->lstatistics[pEffectInfo] = statistic;
 		}
 	}
 

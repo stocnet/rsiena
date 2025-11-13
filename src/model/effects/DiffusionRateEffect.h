@@ -65,17 +65,21 @@ public:
     double value(int i, int period) const;
     
     // Returns the exponentiated rate contribution (for rate calculations)
-    double rateContribution(int i, int period) const;
+    double logRate(int i, int period) const;
     
-    void parameter(double parameterValue) const;
+    void parameter(double parameterValue);
     double parameter() const;
+
     void setInternalEffectParameter(int parValue);
     int getInternalEffectParameter() const;
-
-private:
+protected:
     // Helper method that calculates raw proximity/exposure statistic
     // Contains all effect-specific conditional logic
-    double proximityValue(const Network* pNetwork, int i, int period) const;
+    // double proximityValue(const Network* pNetwork, int i, int period) const;
+    // Only declare as pure virtual, do not implement here:
+    virtual double proximityValue(const Network* pNetwork, int i, int period) const;
+
+	double applyInternalEffectParameter(double value, int numInfectedAlter) const;
 
     // The network variable this effect depends on
     const Network * lpNetwork;
@@ -88,7 +92,8 @@ private:
     const ChangingCovariate * lpChangingCovariate;
 
     std::string leffectName {};
-    mutable double lparameter {}; // Made mutable for parameter() const method
+private:
+    double lparameter {};
     int linternalEffectParameter {};
     int labsInternalEffectParameter {};
     bool linternalNonZero {};

@@ -33,6 +33,10 @@
 #include "model/effects/EffectFactory.h"
 #include "model/effects/StructuralRateEffect.h"
 #include "model/effects/DiffusionRateEffect.h"
+#include "model/effects/ExposureEffect.h"
+#include "model/effects/InfectEffect.h"
+#include "model/effects/Distance2ExposureEffect.h"
+#include "model/effects/SusceptibilityEffect.h"
 #include "model/variables/NetworkVariable.h"
 #include "model/variables/EffectValueTable.h"
 #include "model/settings/Setting.h"
@@ -389,26 +393,39 @@ namespace siena
 									  " refers to a non-existing network variable " +
 									  interactionName);
 				}
+				if (this->lpActorSet != pVariable->pSenders())
+				{
+					throw std::invalid_argument("Mismatch of actor sets");
+				}
 				if (interactionName2 == "")
 				{
-					if (effectName == "avExposure" ||
-						effectName == "totExposure" ||
-						effectName == "susceptAvIn" ||
-						effectName == "infectIn" ||
-						effectName == "infectDeg" ||
-						effectName == "infectOut" ||
-						effectName == "anyInExposureDist2" ||
+					if (effectName == "avExposure" || effectName == "totExposure")
+					{
+						this->ldiffusionRateEffects.push_back(
+							new ExposureEffect(pEffectInfo, pNetwork, pBehaviorVariable, effectName, parameter, internalEffectParameter));
+					}
+					else if (effectName == "infectIn" || effectName == "infectDeg" || effectName == "infectOut")
+					{
+						this->ldiffusionRateEffects.push_back(
+							new InfectEffect(pEffectInfo, pNetwork, pBehaviorVariable, effectName, parameter, internalEffectParameter));
+					}
+					else if(effectName == "susceptAvIn")
+					{
+						this->ldiffusionRateEffects.push_back(
+							new SusceptibilityEffect(pEffectInfo,
+													pNetwork,
+													pBehaviorVariable,
+													effectName,
+													parameter,
+													internalEffectParameter));
+					}
+					else if(effectName == "anyInExposureDist2" ||
 						effectName == "totInExposureDist2" ||
 						effectName == "avTinExposureDist2" ||
 						effectName == "totAInExposureDist2")
 					{
-						if (this->lpActorSet != pVariable->pSenders())
-						{
-							throw std::invalid_argument("Mismatch of actor sets");
-						}
-
 						this->ldiffusionRateEffects.push_back(
-							new DiffusionRateEffect(pEffectInfo,
+							new Distance2ExposureEffect(pEffectInfo,
 													pNetwork,
 													pBehaviorVariable,
 													effectName,
@@ -429,16 +446,22 @@ namespace siena
 					const ChangingCovariate *pChangingCovariate =
 						this->lpSimulation->pData()->pChangingCovariate(interactionName2);
 
-					if (effectName == "susceptAvCovar" ||
-						effectName == "infectCovar")
+					if (effectName == "infectCovar")
 					{
-						if (this->lpActorSet != pVariable->pSenders())
-						{
-							throw std::invalid_argument("Mismatch of actor sets");
-						}
-
 						this->ldiffusionRateEffects.push_back(
-							new DiffusionRateEffect(pEffectInfo,
+							new InfectEffect(pEffectInfo,
+													pNetwork,
+													pBehaviorVariable,
+													pConstantCovariate,
+													pChangingCovariate,
+													effectName,
+													parameter,
+													internalEffectParameter));
+					}
+					else if (effectName == "susceptCovar" || effectName == "susceptAvCovar")
+					{
+						this->ldiffusionRateEffects.push_back(
+							new SusceptibilityEffect(pEffectInfo,
 													pNetwork,
 													pBehaviorVariable,
 													pConstantCovariate,
@@ -900,15 +923,13 @@ namespace siena
 	 */
 	double DependentVariable::diffusionRate(int i) const
 	{
-		double rate = 1;
+		double rate = 0;
 		int effectCount = this->ldiffusionRateEffects.size();
-
-	for (int effectIndex = 0; effectIndex < effectCount; effectIndex++)
-    {
-        rate *= this->ldiffusionRateEffects[effectIndex]->rateContribution(i, this->lperiod);
-    }
-
-		return rate;
+		for (int effectIndex = 0; effectIndex < effectCount; effectIndex++)
+		{
+			rate += this->ldiffusionRateEffects[effectIndex]->logRate(i, this->lperiod);
+		}
+		return exp(rate);
 	}
 	/**
 	 * Returns the component of the rate function of actor i depending
@@ -1209,8 +1230,8 @@ namespace siena
 			// string interactionName = pInfo->interactionName1();
 			//  string interactionName2 = pInfo->interactionName2();
 			// int internalEffectParameter = pInfo->internalEffectParameter(); unused?
-			const BehaviorVariable *pBehaviorVariable =
-				dynamic_cast<const BehaviorVariable *>(this);
+			// const BehaviorVariable *pBehaviorVariable =
+			//	dynamic_cast<const BehaviorVariable *>(this);
 			if (rateType == "diffusion")
 			{
 				// Find the corresponding DiffusionRateEffect

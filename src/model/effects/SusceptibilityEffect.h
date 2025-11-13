@@ -1,0 +1,23 @@
+#ifndef SUSCEPTIBILITYEFFECT_H_
+#define SUSCEPTIBILITYEFFECT_H_
+
+#include "DiffusionRateEffect.h"
+
+namespace siena
+{
+
+/**
+ * Handles all susceptibility-based diffusion rate effects (e.g., susceptAvIn, susceptAvCovar).
+ */
+class SusceptibilityEffect : public DiffusionRateEffect
+{
+public:
+    using DiffusionRateEffect::DiffusionRateEffect; // Inherit constructors etc.
+
+protected:
+    double proximityValue(const Network* pNetwork, int i, int period) const;
+};
+
+}
+
+#endif /* SUSCEPTIBILITYEFFECT_H_ */

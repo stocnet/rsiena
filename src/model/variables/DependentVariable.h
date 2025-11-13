@@ -52,7 +52,7 @@ class NetworkLongitudinalData;
 class Network;
 class EffectInfo;
 class StructuralRateEffect;
-class DiffusionRateEffect;
+class DiffusionRateEffect; // necessary to forward declare?
 class MiniStep;
 class Setting;
 

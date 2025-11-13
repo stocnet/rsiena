@@ -112,7 +112,7 @@ double TotalGwdspAlterEffect::calculateChangeContribution(int actor,
 					twoc = this->lpInitialisedTable->get(j);
 				else 
 					twoc = this->lpInitialisedTable->get(j);
-				double alterValue = this->value(j) * this->lcumulativeWeight[twoc];
+				alterValue = this->value(j) * this->lcumulativeWeight[twoc];
 				// int tieValue =  this->pNetwork()->tieValue(actor, j);
 				// if (((pNetwork->inDegree(j) - tieValue)> 0) && (this->ldivide2))
 				// {
