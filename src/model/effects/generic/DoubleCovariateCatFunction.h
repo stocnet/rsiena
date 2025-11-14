@@ -56,11 +56,11 @@ protected:
 	inline const Network * pNetwork() const;
 	int firstCovariateNumbers(int a) const;
 	int secondCovariateNumbers(int b) const;
+	int numberCovariateTies(int b) const;
 
 private:
 	const Network * lpNetwork;
 	std::string lnetworkName {};
-	int numberCovariateTies(int b) const;
 
 //	std::string lFirstCovariateName {};
 //	std::string lSecondCovariateName {};

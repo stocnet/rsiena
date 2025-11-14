@@ -21,7 +21,7 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
         sink(fileName, split=TRUE)
     }
 
-    interactions <- x[x$shortName %in% c("unspInt", "behUnspInt") & x$include &
+    interactions <- x[x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt") & x$include &
         x$effect1 > 0, ]
     if (expandDummies)
     {
@@ -43,15 +43,16 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
     {
         nDependents <- length(unique(x$name))
         userSpecifieds <- x$shortName[x$include] %in%
-            c("unspInt", "behUnspInt")
+            c("unspInt", "behUnspInt", "contUnspInt")
         endowments <- !x$type[x$include] %in% c("rate", "eval", "gmm")
         # includes creations and gmm
         gmm <- any(x$type[x$include] %in% "gmm")
         timeDummies <- !x$timeDummy[x$include] == ","
 		if (includeShortNames)
 		{
-			specs <- as.data.frame(x[, c("name", "effectName", "shortName", "include", "fix",
-                "test", "initialValue", "parm")])		
+			specs <- as.data.frame(x[, c("effectNumber", "name", "effectName", 
+				"shortName", "include", "fix",
+                "test", "initialValue", "parm")])	
 		}
 		else
 		{
@@ -77,7 +78,8 @@ print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE,
         }
         if (nDependents == 1)
         {
-            specs <- specs[, -1]  # drop name of dependent variable
+			whichname <- which(names(specs)=="name")
+            specs <- specs[, -whichname]  # drop name of dependent variable
         }
         if (any(endowments))
         {
@@ -322,7 +324,7 @@ updateSpecification <- function(effects.to, effects.from,
 # the above does not transfer interaction effects.
 # A lot of work is needed to get the information about the interacting effects.
     inter <- which(prevEffects$include &
-						(prevEffects$shortName %in% c("unspInt","behUnspInt")))
+						(prevEffects$shortName %in% c("unspInt","behUnspInt","contUnspInt")))
     if (length(inter) >= 1)
 	{
 	# look up the interacting main effects, and try to get information

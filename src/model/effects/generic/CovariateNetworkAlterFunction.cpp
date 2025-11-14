@@ -11,6 +11,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <cmath>
 
 #include "CovariateNetworkAlterFunction.h"
 #include "data/ConstantCovariate.h"
@@ -81,6 +82,16 @@ void CovariateNetworkAlterFunction::initialize(const Data * pData,
 }
 
 /**
+ * Does the necessary preprocessing work for calculating the alter
+ * function for a specific ego. This method must be invoked before
+ * calling CovariateNetworkAlterFunction::value(...).
+ */
+void CovariateNetworkAlterFunction::preprocessEgo(int ego)
+{
+	NetworkAlterFunction::preprocessEgo(ego);
+}
+
+/**
  * Returns the overall mean of covvalue
  */
 double CovariateNetworkAlterFunction::covmean() const
@@ -104,6 +115,7 @@ double CovariateNetworkAlterFunction::covmean() const
 
 /**
  * Returns the covariate value for the given actor.
+ * For behavior, returns the centered value.
  */
 double CovariateNetworkAlterFunction::covvalue(int alter) const
 {
@@ -117,6 +129,23 @@ double CovariateNetworkAlterFunction::covvalue(int alter) const
 	}
 	return this->lvalues[alter] - this->lpBehaviorData->overallMean();
 }
+
+/**
+ * Returns the covariate value for the given actor, rounded to integer.
+ * For behavior, this is the non-centered value.
+ */
+int CovariateNetworkAlterFunction::covIntValue(int i) const
+{
+	if (this->lpBehaviorData)
+	{
+		return this->lvalues[i] ;
+	}
+	else
+	{
+		return int(round(this->covvalue(i)));
+	}
+}
+
 
 /**
  * Returns if the covariate value for the given actor is missing.
@@ -139,6 +168,81 @@ bool CovariateNetworkAlterFunction::missing(int i) const
 	}
 
 	return missing;
+}
+
+/**
+ * Returns the covariate number of cases.
+ */
+int CovariateNetworkAlterFunction::covariateN() const
+{
+	int ncov = 0;
+
+	if (this->lpConstantCovariate)
+	{
+		ncov = this->lpConstantCovariate->covariateN();
+
+	}
+	else if (this->lpChangingCovariate)
+	{
+		ncov = this->lpChangingCovariate->covariateN();
+	}
+	else
+	{
+		ncov = this->lpBehaviorData->observationCount();
+	}
+	
+	return ncov;
+}
+
+/**
+ * Returns the first covariate minimum value.
+ * For behavior, this is the minimum non-centered value.
+ */
+double CovariateNetworkAlterFunction::covariateMinimum() const
+{
+	double mini = 0;
+
+	if (this->lpConstantCovariate)
+	{
+		mini = this->lpConstantCovariate->min();
+
+	}
+	else if (this->lpChangingCovariate)
+	{
+		mini = this->lpChangingCovariate->min();
+	}
+	else
+	{
+		mini = this->lpBehaviorData->min();
+	}
+	
+	return mini;
+}
+
+
+/**
+ * Returns the first covariate maximum value.
+ * For behavior, this is the maximum non-centered value.
+ */
+double CovariateNetworkAlterFunction::covariateMaximum() const
+{
+	double maxi = 0;
+
+	if (this->lpConstantCovariate)
+	{
+		maxi = this->lpConstantCovariate->max();
+
+	}
+	else if (this->lpChangingCovariate)
+	{
+		maxi = this->lpChangingCovariate->max();
+	}
+	else
+	{
+		maxi = this->lpBehaviorData->max();
+	}
+	
+	return maxi;
 }
 
 

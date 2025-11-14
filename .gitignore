@@ -15,11 +15,13 @@ inst/doc
 autom4te.cache
 config.log
 config.status
-docs/
+docs/*
+!docs/manual/
+docs/manual/Older/
+docs/manual/TexAux/
 *.code-workspace
 *.gz
 *.Rproj
-docs/
 NEWSnew.md
 
 # Output files from R CMD build
@@ -57,4 +59,18 @@ RSiena-test/
 # Ignore Doxygen output
 doxyconfig
 /html/*
-/latex/*
+/latex/*man/Show.*
+
+# Logfiles
+
+*.txt
+
+# VsCode settings
+.vscode/
+
+# Makevars
+Makevars
+Makevars.win
+
+# Mac OS
+.DS_Store

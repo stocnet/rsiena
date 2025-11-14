@@ -1272,6 +1272,7 @@ namespace siena
 		case DOUBLESTEP50:
 		case DOUBLESTEP75:
 		case DOUBLESTEP100:
+		case NETCONTEMP:
 		case AAGREE:
 			break;
 		case BFORCE:
@@ -2046,14 +2047,15 @@ namespace siena
 		return false;
 	}
 
-	/**
-	 * Returns whether the model type is one of the DOUBLESTEP models.
-	 */
-	bool DependentVariable::networkModelTypeDoubleStep() const
-	{
-		// This method is overridden in NetworkVariable. Here we return false.
-		return false;
-	}
+/**
+ * Returns whether the model type is one of the DOUBLESTEP models.
+ */
+bool DependentVariable::networkModelTypeDoubleStep() const
+{
+	// This method is overridden in NetworkVariable. Here we return false.
+	return false;
+}
+
 
 	/**
 	 * Returns the probability for the DOUBLESTEP model.
@@ -2063,6 +2065,7 @@ namespace siena
 		// This method is overridden in NetworkVariable. Here we return 0.
 		return 0;
 	}
+
 
 	/**
 	 * Returns if there are any constraints on the permitted changes of this

@@ -39,6 +39,8 @@ public:
 
 	virtual void initialize(const Data * pData,
 		State * pState, int period, Cache * pCache);
+		
+	virtual void preprocessEgo(int ego);
 
 protected:
 
@@ -46,10 +48,13 @@ protected:
 	// except for centered actor covariates (not dependent behavior variables),
 	// for which it is 0.
 	double covmean() const;
-
 // value of the covariate:
 	double covvalue(int alter) const;
+	int covIntValue(int i) const;
 	bool missing(int i) const;
+	int covariateN() const;
+	double covariateMinimum() const;
+	double covariateMaximum() const;
 	double actor_similarity(int i, int j) const;
 	ConstantCovariate * pConstantCovariate() const;
 	ChangingCovariate * pChangingCovariate() const;

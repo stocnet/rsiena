@@ -1,3 +1,234 @@
+2025-10-28
+
+# RSiena 1.5.6
+
+## Changes in RSiena:
+### Coding
+  * The virtual function `preprocessEgo` now is defined properly for 
+    the function classes `NetworkAlterFunction`, 
+   `CovariateNetworkAlterFunction`, `DoubleCovariateFunction`, 
+   `SameCovariateInTiesFunction`. 
+   This was done to correct a bug that appeared for effect `sameXInPop`
+   for a two-mode network; perhaps there was a similar bug for `diffXInPop`,
+   `sameXOutAct`, `diffXOutAct`, and `sameXVInPop`. 
+### Functionality:
+  * Auxiliary function `egoAlterCombi` for GoF now omits values 
+    where the behavioral variable is `NA`.
+  * Various small additions to output of `siena07` for `verbose=TRUE` 
+    (`phase1.r` and `phase2.r`). 
+
+2025-10-17
+
+# RSiena 1.5.3
+
+### Effects
+  * New effects `quad_cc`, `avAlt_cc`, `totAlt_cc`.
+
+2025-09-06
+
+# RSiena 1.5.2
+
+## Changes in RSiena:
+### Functionality:
+  * `selectionTable` got an attribute `quad` indicating whether the plot
+    is a quadratic function.
+  * Users can now extract now extract the changeContributions when running
+    `siena07` by setting an argument `returnChangeContributions=TRUE`. 
+    If used together with `nsub=0` and `prevAns` or modified initial 
+    values in the effects object, especially useful for post-estimation,
+    e.g. in `sienaRIDynamics`.
+  * `sienaRIDynamics` uses siena07 directly now and is reinstated.
+### Effects
+  * New effects `outActMore_ego`, `outActSqrtMore_ego`, `outMore_ego`,
+    `outPopMore`, `outPopSqrtMore`, `outPopThreshold`.
+### Coding
+  * Use `(any(!gmm))` in  `initializeFRAN` to allow the use of a `prevAns` 
+    object with a different estimation method for a multigroup estimation.
+
+2025-07-12
+
+# RSiena 1.5.1
+
+## Changes in RSiena:
+### Functionality:
+  * `sienaRI` reinstated.
+  * Option `prML=2` for maximum likelihood estimation 
+    using the `move` proposal step reinstated (`sienaAlgorithmCreate`).
+### Effects
+  * New effects `divOut_ego`, `divIn_ego`. 
+### Coding
+  * Imported functions from packages `Matrix`, `lattice`, `parallel`, `MASS`, 
+    and `xtable` mentioned specifically in the `Namespace`
+    instead of importing these entire packages.
+
+
+# RSiena 1.5.0
+
+2025-07-05
+
+## New CRAN version
+
+## Changes in RSiena:
+### Maintainer
+  * Christian Steglich now is maintainer.
+
+# RSiena 1.4.25
+
+2025-07-05
+
+## Changes in RSiena:
+### Coding
+  * Undid other changes in version 1.4.23 to
+    `getTargetsChangeContributions` in `siena07setup.cpp`.
+
+# RSiena 1.4.24
+
+2025-07-04
+
+## Changes in RSiena:
+### Effects
+  * Error for creating effects in effects group `dyadSecondBipartiteObjective` 
+    was corrected in file `effects.r`, 
+    so they now are included also for changing dyadic covariates.
+    This affected effects `XWX`, `XWX1`, and `XWX2`.
+### Coding
+  * Function `Chains:printConsecutiveCancelingPairs` deleted from `model\ml`,
+    because it was not used and led to a protection error.
+  * Undid changes in version 1.4.23 to `getTargetActorStatistics` and 
+    `getTargetsChangeContributions` in `siena07setup.cpp`.
+
+# RSiena 1.4.23
+
+2025-05-03
+
+## Changes in RSiena:
+### Bug corrections
+  * Repaired (hopefully) memory leak in `getTargetActorStatistics` and 
+    `getTargetsChangeContributions` in `siena07setup.cpp`. 
+  * Repaired (hopefully) memory leak in `move` in `MLSimulation.cpp`. 
+  * Repaired memory leak  in `DoubleCovariateCatFunction`. 
+### Effects
+  * New effects `fromAny`, `sameInXCycle4`. 
+  * Effect shortName `cycle4ND` replaced by `cycle4`.
+  * Better treatment of missing covariate values in effect `sameXCycle4`. 
+  * Internal effect parameter values 3 and 4 for `sameXInPop`,`diffXInPop`,
+    `sameXInPopIntn`,  `sameXInActIntn`, `homXOutAct2`. 
+  * New C++ class `CatCovariateDependentNetworkEffect` (for `homXOutAct2`). 
+  * Added `(#)` to the `effectName` of `from`, `sameXInPop`, `diffXInPop`, 
+	`sameXVInPop`, `sameXVInPop2`.
+### New functionality
+  * In `print.sienaEffects(..., includeShortNames=TRUE)`, the `effectNumber`
+    is also printed.
+### Coding
+  * Class `Covariate` has new variable `covariateN`, which then is transferred
+    as `covarN` to `CovariateDependentNetworkEffect` and 
+    `DoubleCovariateFunction`. 
+### Changes in documentation:
+  * Definition of effects `outRateLog`, `inRateLog`, and `recipRateLog`
+    corrected in the manual.
+
+# RSiena 1.4.22
+
+2025-02-08
+
+## Changes in RSiena:
+### New functionality
+  * New auxiliary GOF function `egoAlterCombi`. 
+  * Parameter `showAll` added to `plot.sienaGOF`.
+### New src functionality
+  * New table `IntLogTable` and new generic function`IntLogFunction`. 
+### Effects
+  * Internal parameter 0 (for log(x)) added for `outActIntn`.
+    (It would be trivial to implement this also for the other
+    mixed degree effects, but currently there seems no need.)
+### Bug correction.
+  * In `sienaGOF`,  if the auxiliaryFunction does not always 
+    give vectors of the same length, the error message gives properly
+    the name of the auxiliaryFunction.
+
+# RSiena 1.4.21
+
+2024-12-18
+
+## Changes in RSiena:
+### New functionality
+  * New functions `selectionTable` and `influenceTable`, 
+    with `print` methods. 
+### Effects
+  * New effect `altHigherEgoX`.
+  * Effect `higher` also implemented for symmetric networks.
+  * Used # in name of threshold effects.
+### Bug corrections
+  * In `siena.table`,  fixed parameter values are not reported as NA,
+    but as their fixed values.
+### Messages
+  * If `includeInteraction` is called with argument `parameter`, 
+    an error message appears that this keyword should not be given. 
+  * Extension of message in `sienaTimeTest` given in the case of
+    collinearities. 
+### Help pages
+  * Improved explanation of the use of `interaction1` and `interaction2`
+    in the help page for `includeInteraction`. 
+
+# RSiena 1.4.20
+
+2024-11-10
+
+## Changes in RSiena:
+### Effects
+  * New effects `varAlt` and `avSimVarAlt`.
+### Bug corrections
+  * Interaction effects for continuous behavior now turned off. The R side of
+    `includeInteraction` for continuous behavior had been implemented but 
+    not the C++ side, so now an error message is given.
+### Error messages
+  * If `includeInteraction' is called for a continuous behavior effect, an
+    error message is given that interaction effects are not yet implemented
+    for continuous behavior.
+### Coding
+  * For the new effects, `lvariance`, the behavior variance over all but the 
+    last wave, was included as member data of `BehaviorLongitudinalData` 
+    together with the corresponding member functions. 
+
+# RSiena 1.4.19
+
+2024-09-03
+
+## Changes in RSiena:
+
+### Effects
+  * New effects `outThreshold` and `outThreshold2`.
+  * `outActIntn` is an ego effect (`allEffects.csv`).
+### New functionality:
+  * Network option 11 = `NETCONTEMP` for use of contemporaneous statistics
+    for estimating all evaluation effects of the network variable.
+### Bug corrections
+  * Error corrected that occurred for estimation by the GMoM if
+    some effects are fixed.
+  * List of effect names when `thetaBound` is exceeded corrected (`phase2.r`).
+### Error messages
+  * If `setEffect` is called for an effect with `type=gmm`, an error message
+    is given that the function called should be `includeGMoMStatistics`. 
+
+# RSiena 1.4.18
+
+2024-07-31
+
+## Changes in RSiena:
+
+### Effects
+  * New gmm effects for co-evolution of multiple networks: 
+    `crprod_gmm`, `to_gmm`, `from_gmm`.
+### Bug corrections
+  * Bug corrected in `sienaGOF` which occurred for models with tested effects
+    if `iterations` is less than `sienaFitObject$n3`. 
+### Coding
+  * The new gmm effects required the extension of the function classes
+    `AlterFunction`, `NetworkAlterFunction`, and `MixedNetworkAlterFunction`
+    to allow making estimation statistics depend totally on the simulated state.
+  * Function `fixUpEffectNames(effects, defaultEffects)`
+    moved from `initializeFRAN.r` to `sienaEffects.r`. 
+
 # RSiena 1.4.13
 
 2024-06-06
@@ -113,8 +344,9 @@
 
 # RSiena 1.4.7
 
-2024-02-20
+2024-02-21
 
+## New CRAN version
 
 ## Changes in RSiena:
 

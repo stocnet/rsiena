@@ -17,7 +17,6 @@
 #include "network/IncidentTieIterator.h"
 #include "model/EffectInfo.h"
 
-
 using namespace std;
 
 namespace siena
@@ -28,11 +27,13 @@ namespace siena
  */
 CatCovariateActivityEffect::CatCovariateActivityEffect(
 		const EffectInfo * pEffectInfo) :
-		CovariateDependentNetworkEffect(pEffectInfo)
+		CatCovariateDependentNetworkEffect(pEffectInfo)
 {
 	this->lpNumberTieValues = 0;
 	this->lsqrtTable = SqrtTable::instance();
-	this->lroot = (pEffectInfo->internalEffectParameter() >= 2);
+	this->lroot = ((int(round(pEffectInfo->internalEffectParameter())) == 2)||
+				(int(round(pEffectInfo->internalEffectParameter() == 4))));
+	this->laverage = (int(round(pEffectInfo->internalEffectParameter())) >= 3);
 }
 
 
@@ -41,6 +42,8 @@ CatCovariateActivityEffect::CatCovariateActivityEffect(
  */
 CatCovariateActivityEffect::~CatCovariateActivityEffect()
 {
+	delete[] this->lpAllCovariateTies;
+	this->lpAllCovariateTies = 0;
 	delete[] this->lpNumberTieValues;
 	this->lpNumberTieValues = 0;
 }
@@ -57,16 +60,16 @@ void CatCovariateActivityEffect::initialize(const Data * pData,
 	int period,
 	Cache * pCache)
 {
-	CovariateDependentNetworkEffect::initialize(pData, pState, period, pCache);
+	CatCovariateDependentNetworkEffect::initialize(pData, pState, period, pCache);
 	int min = int(round(this->covariateMinimum()));
 	int max = int(round(this->covariateMaximum()));
 	if (min < 0)
 	{
-		throw logic_error("homXOutAct2: minimum of first covariate is negative");
+		throw logic_error("homXOutAct2: minimum of covariate is negative");
 	}
 	if (max > 20)
 	{
-		throw logic_error("homXOutAct2: first covariate has a maximum which is too large");
+		throw logic_error("homXOutAct2: covariate has a maximum which is too large");
 	}
 	if ((this->pBehaviorData()) || (this->pContinuousData()))
 	{
@@ -75,6 +78,19 @@ void CatCovariateActivityEffect::initialize(const Data * pData,
 	this->lcovMax = max;
 	this->lcovMax++;
 	this->lpNumberTieValues = new int[this->lcovMax] {};
+	this->lpAllCovariateTies  = new double[this->lcovMax] {};
+	for (int b = 0; b < this->lcovMax; b++)
+	{
+		if (this->lroot)
+		{
+			this->lpAllCovariateTies[b] =
+					this->lsqrtTable->sqrt(this->numberCovariateTies(b));
+		}
+		else
+		{
+			this->lpAllCovariateTies[b] = this->numberCovariateTies(b);
+		}
+	}
 }
 
 
@@ -85,7 +101,7 @@ void CatCovariateActivityEffect::initialize(const Data * pData,
  */
 void CatCovariateActivityEffect::preprocessEgo(int ego)
 {
-	CovariateDependentNetworkEffect::preprocessEgo(ego);
+	CatCovariateDependentNetworkEffect::preprocessEgo(ego);
 	const Network * pNetwork = this->pNetwork();
 	for (int b = 0; b < this->lcovMax; b++)
 	{
@@ -96,7 +112,7 @@ void CatCovariateActivityEffect::preprocessEgo(int ego)
 		 iter.next())
 	{
 		int j = iter.actor();
-		this->lpNumberTieValues[int(round(this->value(j)))]++;
+		this->lpNumberTieValues[this->covariateIntValue(j)]++;
 	}
 }
 
@@ -104,7 +120,8 @@ double CatCovariateActivityEffect::changeStat(double d, bool diffSqrt) const
 {
 	if (diffSqrt)
 	{
-		return(((d+1)*this->lsqrtTable->sqrt(d+1)) - (d * this->lsqrtTable->sqrt(d)));
+		return(((d+1)*this->lsqrtTable->sqrt(d+1)) -
+							(d * this->lsqrtTable->sqrt(d)));
 	}
 	else
 	{
@@ -119,7 +136,7 @@ double CatCovariateActivityEffect::changeStat(double d, bool diffSqrt) const
 double CatCovariateActivityEffect::calculateContribution(int alter) const
 {
 	double contribution = 0;
-	int altervalue = int(round(this->value(alter)));
+	int altervalue = this->covariateIntValue(alter);
 	if (altervalue >= 1)
 	{
 		contribution = this->lpNumberTieValues[altervalue];
@@ -128,6 +145,10 @@ double CatCovariateActivityEffect::calculateContribution(int alter) const
 			contribution -=2;
 		}
 		contribution = changeStat(contribution, this->lroot);
+		if (this->laverage)
+		{
+			contribution /= this->lpAllCovariateTies[altervalue];
+		}
 	}
 	return contribution;
 }
@@ -143,14 +164,18 @@ double CatCovariateActivityEffect::tieStatistic(int alter)
 	double contribution = 0;
 	if (!(this->missing(alter)))
 	{
-		int altervalue = int(round(this->value(alter)));
+		int altervalue = this->covariateIntValue(alter);
 		if (altervalue >= 1)
 		{
-			contribution = this->lpNumberTieValues[int(round(this->value(alter)))];
-		}
-		if (this->lroot)
-		{
-			contribution = this->lsqrtTable->sqrt(contribution);
+			contribution = this->lpNumberTieValues[altervalue];
+			if (this->lroot)
+			{
+				contribution = this->lsqrtTable->sqrt(contribution);
+			}
+			if (this->laverage)
+			{
+				contribution /= this->lpAllCovariateTies[altervalue];
+			}
 		}
 	}
 	return contribution;

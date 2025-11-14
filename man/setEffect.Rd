@@ -9,7 +9,8 @@
 }
 \usage{
 setEffect(myeff, shortName, parameter = NULL,
-fix = FALSE, test = FALSE, random=FALSE, initialValue = 0, timeDummy = ",", include = TRUE,
+fix = FALSE, test = FALSE, random=FALSE, initialValue = 0,
+timeDummy = ",", include = TRUE,
 name = myeff$name[1], type = "eval", interaction1 = "",
 interaction2 = "", effect1=0, effect2=0, effect3=0,
 period=1, group=1, character=FALSE, verbose = TRUE)
@@ -42,11 +43,12 @@ dummy. Alternatively, use \code{\link{includeTimeDummy}}.
   \item{include}{Boolean. default \code{TRUE}, but can be switched to
     \code{FALSE} to turn off an effect.}
   \item{name}{Name of dependent variable (network or behavior)
-    for which effects are being modified.
-    Defaults to the first in the effects object.
+    for which the effect is being modified.
+    Defaults to the first in the effects object, which is the
+   first dependent variable specified in \code{\link{sienaDataCreate}}.
 }
   \item{type}{Character string indicating the
-  type of the effect to be changed : currently "rate", "eval",
+  type of the effect to be changed : "rate", "eval",
   "endow", or "creation". Default "eval".
 }
   \item{interaction1}{

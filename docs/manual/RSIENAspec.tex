@@ -1,0 +1,1676 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[pdftex,dvipsnames]{color}
+\usepackage[noend]{algorithmic}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage[pdfstartview={}]{hyperref}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\abso}[1]{\;\mid#1\mid\;}
+\renewcommand{\=}{\,=\,}
+\newcommand{\+}{\,+\,}
+% ----------------------------------------------------------------
+\newcommand{\remark}[1]{\par\noindent{\color[named]{ProcessBlue}#1}\par}
+\newcommand{\mcc}[2]{\multicolumn{#1}{c}{#2}}
+\newcommand{\mcp}[2]{\multicolumn{#1}{c|}{#2}}
+\newcommand{\nm}[1]{\textsf{ #1}}
+\newcommand{\nnm}[1]{\textsf{\textit{#1}}}
+\newcommand{\nmm}[1]{\nnm{#1}}
+\newcommand{\ts}[1]{\par{\color[named]{Red}TS: #1}\par}
+
+% no labels in list of references:
+\makeatletter
+\renewcommand\@biblabel{}
+\makeatother
+
+\hyphenation{Snij-ders Duijn DataSpecification dataspecification dependentvariable ModelSpecification}
+
+% centered section headings with a period after the number;
+% sans serif fonts for section and subsection headings
+\renewcommand{\thesection}{\arabic{section}.}
+\renewcommand{\thesubsection}{\thesection\arabic{subsection}}
+\makeatletter
+ \renewcommand{\section}{\@startsection{section}{1}
+                {0pt}{\baselineskip}{0.5\baselineskip}
+                {\centering\sffamily} }
+ \renewcommand{\subsection}{\@startsection{subsection}{2}
+                {0pt}{0.7\baselineskip}{0.3\baselineskip}
+                {\sffamily} }
+ \renewcommand{\subsubsection}{\@startsection{subsubsection}{3}
+                {0pt}{0.5\baselineskip}{0.3\baselineskip}
+                {\it\sffamily} }
+\makeatother
+
+
+\renewcommand{\baselinestretch}{1.0} %% For line spacing.
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1ex plus1ex}
+\raggedright
+\newcommand{\sfn}[1]{\textbf{\texttt{#1}}}
+\newcommand{\R}{{\sf R }}
+\newcommand{\Rn}{{\sf R}}
+\newcommand{\rs}{{\sf RSiena}}
+\newcommand{\RS}{{\sf RSiena }}
+\newcommand{\SI}{{\sf Siena3 }}
+\newcommand{\Sn}{{\sf Siena3}}
+\begin{document}
+\algsetup{indent=2em}
+
+\title{RSiena}
+\author{Ruth M.\ Ripley\footnote{University of Oxford}\\
+modified by Tom A.B.\ Snijders\footnote{Universities of Oxford and Groningen}}
+\maketitle
+\date{}
+
+
+\section{Grand overview of  RSiena}
+
+This overview of \RS sometimes refers to the earlier version \SI to
+facilitate understanding by those who have a knowledge
+of the code of \Sn. Readers who have no such knowledge
+can happily ignore these references.
+
+Two special features of the \RS package are that it uses C++ code for
+time-consuming parts, and that a wrapper is available to use the package
+seemingly independently of \Rn.
+
+The script file \nnm{sienascript} starts up \R in such a way that it launches a
+tcl/tk graphical user interface (gui) resembling the Stocnet interface for \Sn,
+and controls all processing thereafter. This interface is accessible on Windows
+via the command \nnm{siena01Gui}. (Prior to R 2.12.0 the funciton
+\sfn{siena.exe} was provided as an equivalent to \sfn{sienascript}: it has been
+removed as it was rarely used and proved difficult to maintain.)
+
+The high-level functions called by the gui, such as \nnm{siena07} described
+below, are also accessible within \R with the usual \Rn-type user interface
+along the lines of model-fitting functions such as \verb|lm()|. (A formula
+interface is still on the wish list, but already now it is relatively
+straightforward to use the package without the gui.)
+
+The \R functions call C++ only where speed is critical. From my profiling of
+\nnm{siena07}, the estimation function, I think that only the simulation
+function (which simply performs one simulation of the complete model for a given
+set of parameters and returns the statistics from the simulated networks) needs
+to be in C++. The bulk of the time is spent in calculating the contributions to
+the effects when simulating.
+
+In \Sn, this simulation function is \nm{FRAN} which, for method of moments
+estimation, simply calls \nm{simstats}: in \rs, it is the C++ function
+\nnm{model} called by one of the \R functions \nnm{simstats0c} or
+\nnm{maxlikec}, which are the two candidates currently available for the element
+of the \RS model object named \nnm{FRAN}. In this document I have used the name
+\nm{FRAN} to refer to the simulation routine.
+
+\nnm{siena07} is intended to be written in such a way that different simulation
+functions could be used within the same Robbins Monro algorithm. In practice the
+separation is not quite complete, but it is nearly so.
+
+It would be feasible within a C++ \nm{FRAN} to call \R functions for some
+effects or functions if desired, to facilitate adding new ones, although they
+would be slow to run!
+
+We use functions from the C part of \R, to provide random numbers within the
+C++.1 \nnm{simstats0c} and \nnm{maxlikec} have three types of calls: a initial
+one which calls various C++ routines to setup the data, a final one which sets
+the C++ data pointers to null to clean up the C++ memory, and multiple
+``normal'' ones which call the function \nnm{model} to perform one complete
+simulation. (In this it does not correspond exactly to \nm{simstats} in Siena3!)
+
+With this design, we have introduced parallel processing by using multiple \R
+processes. In \nnm{simstats0c} we run some of the simulations in each process:
+this was trivial to introduce into Phase 1 and Phase 3, but to use it in Phase2
+we have altered the algorithm to use the average of more than one simulation at
+a time.
+
+For \nnm{maxlikec} we use different processes for each wave.
+This is because the chains are carried from one simulation to the next,
+and organizing the parallel processes by simulations (update steps of the Robbins
+Monro algorithm) would require too much passing of information.
+
+We use the
+\R package \verb|parallel| to create and control the multiple processes, and
+to provide multiple random number streams.  The term
+`cluster' below refers to the cluster of multiple processors. (I vary between
+using \emph{processors} and \emph{processes} as it is possible to run \RS with
+multiple \emph{processes} on a machine with only one processor.)
+
+
+\section{Data types}
+
+\RS provides various classes of data objects, designed to interface with the
+functions \nnm{robmon} and \nm{simstats}. A brief list:
+
+\begin{description}
+\item[\nnm{siena}] Data for a single project
+\item[\nnm{sienaGroup}] A list of \nnm{siena} objects, with global attributes,
+  used for multi-group projects
+\item[\nnm{sienaEffects}] Data frame of effects.
+\item[\nnm{sienaGroupEffects}] Data frame of effects for a group object.
+\item[\nnm{sienaModel}] Contains the fitting options.
+\item[\nnm{sienaNodeSet}] Actor set, used to distinguish nodes in data sets with
+  multiple or two-mode networks.
+\item[\nnm{sienaDependent}] A single dependent variable, (i.e.\ network or behavior
+  variable, all waves)
+\item[\nnm{coCovar}] Constant covariate
+\item[\nnm{coDyadCovar}] Constant dyadic covariate
+\item[\nnm{varCovar}] Varying covariate
+\item[\nnm{varDyadCovar}] Varying dyadic covariate
+\item[\nnm{sienaCompositionChange}] List of changes, entry for each node.
+\item[\nnm{sienaFit}] Currently contains (almost) everything from the
+  estimation.
+\end{description}
+
+The structure of each is documented in the corresponding \R help file:
+\sfn{?classname}.
+
+Data objects of class \nnm{siena} are created by the function
+\nnm{sienaDataCreate}.
+
+Effect objects of class \nnm{sienaEffects} are created by the function
+\nnm{getEffects}.
+
+The creation functions can be called directly by the user or from the Gui or via
+\nnm{sienaDataCreateFromSession}, depending on whether the data is alrady in \R
+objects or still on files.
+
+The function \nnm{robmon} requires a \nnm{sienaModel} object
+as an argument. One element of this object is named \nm{FRAN} and contains the
+name of the required simulation function.
+
+The functions\nnm{simstats0c} or \nnm{maxlikec}, used as an instance of
+\nm{FRAN}, require a \nnm{siena} (or \nnm{sienaGroup}) object and a
+\nnm{sienaEffects} (or \nnm{sienaGroupEffects}) object as arguments.
+
+\section{sienaDataCreate}
+
+This function has only one named argument: a list of actor (node) sets. The
+default is a single set of the required size named \sfn{Actors}. All other
+arguments are unnamed and correspond to networks, covariates or composition
+change files. The objects are validated and have various attributes
+added. For covariates the attributes are added using a \emph{method} for their
+class.
+
+\begin{algorithmic}
+\STATE Check that objects have names, using the object name if none is given in
+the function call.
+\IF{no objects}
+\STATE stop
+\ENDIF
+\IF{any duplicate names}
+\STATE stop
+\ENDIF
+\STATE create a list of each type of object, checking that all dependent
+variables have the same number of observations. (Stop if not).
+\IF{no dependent variables}
+\STATE stop
+\ENDIF
+\IF{no node set argument}
+\STATE create a list of nodesets containing a single
+nodeset named Actors, with the number of nodes equal to the number of senders of
+the first dependent variable
+\ENDIF
+\FORALL{covariates}
+\STATE Appropriate validation and processing (see below).
+\ENDFOR
+\STATE Process any composition change objects (see section
+\ref{sec:compositionChange}) \\
+\STATE Process the dependent variables (see section \ref{sec:dependent})
+\STATE Check constraints if there are multiple networks. (section
+\ref{sec:constraints}).
+\STATE Calculate similarity means for alters for each covariate and dependent
+network (see section \ref{sec:covarDist2}): dropped in version 1.1-285.
+\end{algorithmic}
+\subsection{ Covariates}
+\subsubsection{Constant Covariate}
+\begin{algorithmic}
+\STATE Check the nodeset (section \ref{sec:nodeset})
+\STATE Create attributes: (a class method)\\
+\sfn{ }\nnm{mean} ignore missings\\
+\sfn{ }\nnm{range} Extent of range, ignore missings. Make sure is a double.\\
+\sfn{ }\nnm{range2} Ends of range, ignore missings\\
+\sfn{ }\nnm{moreThan2} TRUE if more than 2 distinct values, ignoring missings\\
+\sfn{ }\nnm{vartotal} sum of non-missing values\\
+\sfn{ }\nnm{poszvar} TRUE if more than 1 distinct value in the centered values
+or any missing\\
+\sfn{ }\nnm{simMean} See section \ref{sec:similarityMean}\\
+\sfn{ }\nnm{nonMissingCount} count of non missing values\\
+\sfn{ }\nnm{name} name of object
+\STATE Subtract the mean from the values
+\end{algorithmic}
+\subsubsection{Changing covariate}
+\begin{algorithmic}
+\IF{less than 3 waves}
+\STATE Stop: changing covariate inappropriate (to reduce confusion among users!)
+\ENDIF
+\STATE Check the nodeset (section \ref{sec:nodeset})
+\IF{less than (number of waves - 1) columns}
+\STATE Stop: not enough values
+\ENDIF
+\IF{more than (number of waves - 1) columns}
+\STATE remove the excess, carefully preserving the attributes apart from the
+dimensions.
+\ENDIF
+\STATE Create attributes: (a class method)\\
+\sfn{ }\nnm{mean} ignore missings\\
+\sfn{ }\nnm{meanp}  mean for each wave, ignore missings\\
+\sfn{ }\nnm{range} Extent of range, ignore missings. Make sure a double.\\
+\sfn{ }\nnm{rangep} Extent of range for each wave, ignore missings.
+Make sure is a double.\\
+\sfn{ }\nnm{range2} Ends of range, ignore missings\\
+\sfn{ }\nnm{moreThan2} TRUE if more than 2 distinct values, ignoring missings\\
+\sfn{ }\nnm{vartotal} sum of non-missing values\\
+\sfn{ }\nnm{poszvar} TRUE if more than 1 distinct value in the centered values
+or any missing\\
+\sfn{ }\nnm{simMean} See section \ref{sec:similarityMean}\\
+\sfn{ }\nnm{nonMissingCount} count of non missing values\\
+\sfn{ }\nnm{name} name of object
+\STATE Subtract the mean from the values
+\end{algorithmic}
+\subsubsection{Constant dyadic covariate}
+\begin{algorithmic}
+\STATE Check the nodesets (section \ref{sec:nodeset})
+\IF{attribute type is oneMode}
+\STATE set diagonal to \emph{missing} so is ignored in mean and range
+\ENDIF
+\STATE Create attributes: (a class method) \\
+\sfn{ }\nnm{mean} ignore missings\\
+\sfn{ }\nnm{range} Extent of range, ignore missings. Make sure a double.\\
+\sfn{ }\nnm{range2} Ends of range, ignore missings\\
+\sfn{ }\nnm{name} name of object
+\IF{attribute type is oneMode}
+\STATE set diagonal to \emph{zero}
+\ENDIF
+\end{algorithmic}
+\subsubsection{Changing dyadic covariate}
+\begin{algorithmic}
+\IF{less than 3 waves}
+\STATE Stop: changing covariate inappropriate (to reduce confusion among users!)
+\ENDIF
+\STATE Check the nodesets (section \ref{sec:nodeset})
+\IF{less than (number of waves - 1) columns}
+\STATE Stop: not enough values
+\ENDIF
+\IF{more than (number of waves - 1) columns}
+\STATE remove the excess, carefully preserving the attributes apart from the
+dimensions.
+\ENDIF
+\IF{attribute type is oneMode}
+\STATE set all diagonals to \emph{missing} so are ignored in mean and range
+\ENDIF
+\STATE Create attributes: (a class method) \\
+\sfn{ }\nnm{mean} ignore missings\\
+\sfn{ }\nnm{range} Extent of range, ignore missings. Make sure a double.\\
+\sfn{ }\nnm{name} name of object
+\IF{attribute type is oneMode}
+\STATE set all diagonals to \emph{zero}
+\ENDIF
+\end{algorithmic}
+\subsection{Composition change objects}
+\label{sec:compositionChange}
+\begin{algorithmic}
+\STATE Check there are no duplicates in the nodesets: only one change object
+per nodeset is allowed.
+\FORALL{composition change objects}
+\STATE Check the nodeset (section \ref{sec:nodeset})
+\STATE Check that the ends of each interval in each object are not less than 1
+or greater than the number of waves and that each line has an even number of
+digits.
+\STATE Generate a data frame of events(section \ref{sec:events}),
+a matrix of activeStart flags(section \ref{sec:active}) and a matrix
+of actions(section \ref{sec:actions})\\
+\STATE Add these to the object as attributes
+\ENDFOR
+\end{algorithmic}
+
+\subsubsection{Events}
+\label{sec:events}
+\begin{algorithmic}
+\STATE Data frame with columns: \\
+\sfn{ }\nnm{event} ``join'' or ``leave'' (a factor)\\
+\sfn{ }\nnm{period}\\
+\sfn{ }\nnm{actor}\\
+\sfn{ }\nnm{time} between 0 and 1
+\end{algorithmic}
+\subsubsection{ActiveStart Flags}
+\label{sec:active}
+\begin{algorithmic}
+\STATE activeStart matrix has a row per actor and a column per period\\
+\sfn{ }TRUE if the actor is active at the start of the period, otherwise FALSE
+\end{algorithmic}
+\subsubsection{Action}
+\label{sec:actions}
+\begin{algorithmic}
+\STATE Action matrix is same shape as Active flag matrix, with entries \\
+\sfn{ }0 Active at start\\
+\sfn{ }1 Inactive at start, never previously active\\
+\sfn{ }2 Inactive at start, previously active but never active again\\
+\sfn{ }3 Inactive at start, previously active and active again\\
+\end{algorithmic}
+\subsection{Check NodeSet}
+\label{sec:nodeset}
+\begin{algorithmic}
+\IF {Nodeset name in the list and lengths match}
+\STATE Valid
+\ELSE
+\STATE Invalid
+\ENDIF
+\end{algorithmic}
+\subsection{Dependent variables}
+\label{sec:dependent}
+NB The attributes list tends to change rather quickly and some items may no
+longer be required. Some should be used in the C, but are not...
+\begin{algorithmic}
+\STATE Validate the nodeset(s)
+\STATE Create an attribute \nnm{name} with name of the object
+\IF{behavior variable}
+\STATE Create attributes:\\
+\sfn{ }\nnm{distance} sum of absolute differences by period, ignoring missings\\
+\sfn{ }\nnm{vals} table of values by period, NA included as a value\\
+\sfn{ }\nnm{nval} vector of non-missing counts by period\\
+\sfn{ }\nnm{noMissing} vector of missing counts be period\\
+\sfn{ }\nnm{range} overall range\\
+\sfn{ }\nnm{range2} overall min and max\\
+\sfn{ }\nnm{moreThan2} TRUE if number of distinct values more than 2 (includes
+missings as a value) ??? inconsistent with covariates?\\
+\sfn{ }\nnm{poszvar} TRUE if more than one distinct value or any missing
+values.\\
+\sfn{ }\nnm{modes} vector of modes of rounded values per period. Might give
+multiple results?\\
+\sfn{ }\nnm{missing} TRUE if any missing\\
+\sfn{ }\nnm{simMean} value of similarity mean (see section
+\ref{sec:similarityMean})\\
+\sfn{ }\nnm{structural} FALSE Not allowed!\\
+\sfn{ }\nnm{balmean} NA\\
+\sfn{ }\nnm{structMean} NA\\
+\sfn{ }\nnm{uponly} TRUE if all changes increase, ignoring missings\\
+\sfn{ }\nnm{downonly} TRUE if all changes decrease, ignoring missings
+\ELSE[bipartite or onemode]
+\STATE create attributes:\\
+\sfn{ }\nnm{distance} count of changes, ignoring missing and structural values
+and diagonals if not bipartite.\\
+\sfn{ }\nnm{uponly} TRUE if ties are only ever created, never lost\\
+\sfn{ }\nnm{downonly} TRUE if ties are only ever lost, never created\\
+\IF{one-mode}
+\STATE Create attributes:\\
+\sfn{ }\nnm{balMean} see section(\ref{sec:balmean})\\
+\sfn{ }\nnm{structMean} see section(\ref{sec:structmean})\\
+\sfn{ }\nnm{symmetric} TRUE if all waves are symmetric\\
+\sfn{ }\nnm{missing} TRUE if any missing values (except on diagonal)\\
+\sfn{ }\nnm{structural} TRUE if any 10 or 11\\
+\sfn{ }\nnm{vals} table of counts of values by period\\
+\sfn{ }\nnm{nval} Counts of non-missing values by period, excluding diagonal\\
+\sfn{ }\nnm{range2} Min and max of non-structural values\\
+\sfn{ }\nnm{noMissing} Number of missing values by period\\
+\sfn{ }\nnm{noMissingEither} Number of missing values at start or finish of
+period (excludes final).\\
+\sfn{ }\nnm{nonMissingEither} Number of non missing values at start or finish of
+period (excludes final).\\
+\sfn{ }\nnm{simMean} NA\\
+\sfn{ }\nnm{ones} Count of values equal to 1 by period\\
+\sfn{ }\nnm{density} Density of network by period\\
+\sfn{ }\nnm{degree} Average degree by period\\
+\sfn{ }\nnm{averageOutDegree} overall average degree\\
+\sfn{ }\nnm{averageInDegree} overall average degree\\
+\sfn{ }\nnm{maxObsOutDegree} Maximum observed outdegree by period\\
+\sfn{ }\nnm{missings} count of missings by period\\
+\ELSIF{bipartite}
+\STATE Create attributes:\\
+\sfn{ }\nnm{balMean} NA\\
+\sfn{ }\nnm{structMean} NA\\
+\sfn{ }\nnm{symmetric} FALSE\\
+\sfn{ }\nnm{missing} TRUE if any missing values\\
+\sfn{ }\nnm{structural} TRUE if any 10 or 11\\
+\sfn{ }\nnm{vals} table of counts of values by period\\
+\sfn{ }\nnm{nval} Counts of non-missing values by period\\
+\sfn{ }\nnm{range2} Min and max of non-structural values\\
+\sfn{ }\nnm{noMissing} Number of missing values by period\\
+\sfn{ }\nnm{noMissingEither} Number of missing values at start or finish of
+period (excludes final).\\
+\sfn{ }\nnm{nonMissingEither} Number of non missing values at start or finish of
+period (excludes final).\\
+\sfn{ }\nnm{simMean} NA\\
+\sfn{ }\nnm{ones} Count of values equal to 1 by period\\
+\sfn{ }\nnm{density} Density of network by period\\
+\sfn{ }\nnm{degree} Average degree by period\\
+\sfn{ }\nnm{averageOutDegree} overall average degree\\
+\sfn{ }\nnm{averageInDegree} overall average degree\\
+\sfn{ }\nnm{missings} count of missings by period\\
+\ENDIF
+\ENDIF
+\end{algorithmic}
+\subsection{Similarity mean}
+\label{sec:similarityMean}
+\begin{algorithmic}
+\FORALL[waves]{columns of matrix}
+\FORALL[actors]{entries in column}
+\STATE in a copy of the column set this entry to NA
+\STATE Calculate 1 - abs(this entry - copy column)/ range
+\STATE Sum this over the nonmissing entries in this vector
+\STATE Count the nonmissing entries in this vector
+\ENDFOR
+\ENDFOR
+\STATE Sum nonmissing entries and counts over the columns
+\STATE Calculate the similarity mean as this total sum divided by total count.
+\STATE For possible later use, also return the total sum and total count.
+\end{algorithmic}
+\subsection{Balance mean}
+\label{sec:balmean}
+\begin{algorithmic}
+\STATE In calculations, remove diagonal and replace structural values by the
+values represented.\\
+\STATE Numerator = sum over all columns of\\
+2 * count of non-zero entries * count of non-missing non-nonzero entries\\
+\STATE Denominator = sum over all columns of \\
+count of non-missing entries times one less than this.
+\STATE Mean is numerator divided by denominator.
+\end{algorithmic}
+\subsection{Structural  mean}
+\label{sec:structmean}
+\begin{algorithmic}
+\STATE In calculations, remove diagonal and replace structural values by the
+values represented.\\
+\STATE Numerator = sum over all rows of\\
+2 * count of non-zero entries * count of non-missing non-nonzero entries\\
+\STATE Denominator = sum over all rows of \\
+count of non-missing entries times one less than this.
+\STATE Mean is numerator divided by denominator.
+\end{algorithmic}
+\subsection{Constraints between networks}
+\label{sec:constraints}
+\begin{algorithmic}
+\STATE Make a two column matrix containing the names of all possible pairs of
+dependent variables, including pairs with themselves.
+\STATE Identify any dependent variables that can relate: same type and have the
+same node sets.
+\STATE Create a list of these possibly relating dependent variables for each of
+access later.
+\FORALL{row in the matrix of pairs where the two columns are not the same}
+\IF{nodeset(s) match and type matches and not behavior and either both networks
+ are symmetric or neither is}
+\STATE In checks, replaces structurals by 0/1 first, and ignore missings
+\STATE Check \emph{higher}: first network always greater than or equal to second
+network.
+\STATE Check \emph{disjoint}: sum of product of two networks not greater than 0.
+\STATE Check \emph{atLeastOne}: sum of two networks never equal 0.
+\ENDIF
+\ENDFOR
+\end{algorithmic}
+\subsection{Similarity means at distance 2}
+\label{sec:covarDist2}
+\begin{algorithmic}
+\FORALL{constant covariates, varying covariates}
+\FORALL{dependent networks which have the node set of the constant covariate as
+  their receivers (not behavior variables)}
+\STATE Calculate the corresponding similarity mean: see section
+\ref{sec:simdist2}).
+\ENDFOR
+\ENDFOR
+\FORALL{behavior variables}
+\FORALL{dependent networks which have the node set of the constant covariate as
+  their receivers (not behavior variables)}
+\STATE Substract the mean from the behavior variable
+\STATE Find the range of the behavior variable
+\STATE Calculate the corresponding similarity mean using the centered behavior
+variable values (omitting final column) and the calculated range: see section
+\ref{sec:simdist2}).
+(i.e.\ centering and range are done on complete variable)
+\ENDFOR
+\ENDFOR
+\end{algorithmic}
+\subsubsection{Alter similarity calculation}
+\label{sec:simdist2}
+\begin{algorithmic}
+\FORALL{observations except the last}
+\STATE Replace structurals by 0/1
+\FORALL{rows of network matrix}
+\IF{sum of nonmissing entries is 0}
+\STATE Set vi for row to 0
+\ELSIF{all covariate values corresponding to non zero network entries are
+  missing}
+\STATE Set vi for row to NA
+\ELSE
+\STATE Set vi for row to sum of covariate times network row divided by the sum
+of the network row, ignoring missings in both cases.
+\ENDIF
+\ENDFOR
+\STATE Call rangeAndSimilarity using vi and the range if passed in (behavior
+variables) to obtain the values \nnm{simTotal} and \nnm{simCnt} for this
+overvation.
+\STATE Accumulate these two values
+\ENDFOR
+Divide sum of \nnm{simTotal} by sum of \nnm{simCnt} over observations (excluding
+the final one).
+\end{algorithmic}
+\section{getEffects}
+
+This function generates an effects data object corresponding to a Siena Data
+object or a Siena Group Object.
+
+In general, effects are driven by selecting rows in the \sfn{allEffects} data
+frame for some effect group and then substituting variable names into the spaces
+marked by \sfn{xxxxxx} and similar.
+
+For a group object, the effects are created using the first data object plus the
+total number of observations. Attributes are first copied from the group level
+to the first data object. The only changes required are to fill in the starting
+values for the rate effects for the later objects and to adjust the starting
+values for density, reciprocity, linear effects.
+
+The function \sfn{networkRateEffects} creates the required number of rate
+effects for networks.  \sfn{createEffects} extracts the rows from the effects
+data frame for an effect group and calls the function \sfn{substituteNames} to
+replace the variable fields by the current variable name. It now creates the
+complete effect rows including endowment effect copies.
+
+\subsection{Siena Data Object}
+\begin{algorithmic}
+\FORALL{dependent variables}
+\STATE Create appropriate effects
+\STATE Set \nnm{netType} to the value \nnm{oneMode},
+      \nnm{bipartite},  \nnm{behavior}, or \nnm{continuous}.
+\ENDFOR
+\end{algorithmic}
+\subsection{OneMode Network Effects}
+\begin{algorithmic}
+  \STATE Call \sfn{networkRateEffects} to get the rate effects
+  \STATE Use \sfn{symmetricObjective} or \sfn{nonSymmetricObjective} effect
+  groups to create the basic objective function effects.
+  \FORALL{dyadic covariates with first node set matching}
+  \STATE Use \sfn{dyadObjective} effect group to add appropriate objective
+  function effects
+  \ENDFOR
+  \FORALL{constant covariates, behavior variables, changing covariates with the
+    same node set}
+  \STATE Call function \sfn{covarOneModeEff} to add the appropriate effects.\\
+  Note \nnm{poszvar} is always TRUE for behavior variables.
+  \ENDFOR
+  \IF{any covariates or behavior variables}
+  \STATE Add \nnm{nintn} rows for user specified interaction effects
+  \ENDIF
+  \FORALL{distinct dependent network variables with the same node set}
+  \IF{oneMode}
+  \STATE Use \sfn{nonSymmetricSymmetricObjective} or
+  \sfn{nonSymmetricNonSymmetricObjective} effect groups to add appropriate
+    effects
+  \STATE Use \sfn{tripleNetworkObjective} effect group to add appropriate
+    effects for pairs of other dependent networks
+    (`other' meaning that they have the role of explanatory variables)
+    that either are both one-mode,
+    or both are bipartite with the same second node sets
+  \ELSIF{bipartite which matches on nodeset 1}
+  \STATE Use \sfn{nonSymmetricBipartiteObjective} effect group to add
+  appropriate effects
+  \ENDIF
+  \FORALL{actor covariates or behavior variables with the same node set}
+  \STATE Use \sfn{covarNetNetObjective} effect group to add appropriate effects.
+  \ENDFOR
+  \ENDFOR
+  \IF{more than one network}
+  \STATE paste the network name at the front of all the objective function
+  effects
+  \ENDIF
+  \STATE Alter the text for endowment effects to start "Lost ties:"
+  \STATE Calculate the starting values for the default effects
+  (see section \ref{sec:onemodestart})
+  \STATE Select the default rate effects by setting \nnm{include} to TRUE for
+  the \sfn{basic rate} effects.
+  \STATE Add the starting value for the rate to the \nnm{initialValue} column
+  of the basic rate effects
+  \IF {symmetric}
+  \STATE Set \nnm{include} to TRUE for the degree (density) evaluation effect
+  and transitive triads evaluation effect.
+  \ELSE
+  \IF{no period is uponly or downonly}
+  \STATE  Set \nnm{include} to TRUE for the degree (density) evaluation effect
+  \STATE Add the starting values for the degree(density) evaluation effect
+  calculated by \sfn{getNetworkStartingVals} to the \nnm{initialValue}.
+  \ELSE
+  \STATE Remove both degree (density) effects from the data frame.
+  \ENDIF
+  \STATE Set \nnm{include} to TRUE for the reciprocity evaluation effect.
+  \ENDIF
+\end{algorithmic}
+\subsection{Behavior Variable Effects}
+\begin{algorithmic}
+\STATE Use \sfn{behaviorRate} effect group to get the rate effects. Either
+remove the second one or duplicate the second and remove the first to match the
+number of observations.
+\STATE Use \sfn{behaviorObjective} effect group to create the basic objective
+function effects.
+\FORALL{other dependent variables which match on first node set}
+\STATE Use \sfn{behaviorOneModeObjective} or \sfn{behaviorBipartiteObjective} to
+add the objective function effects with respect to this network.
+\STATE Use \sfn{behaviorOneModeRate} or \sfn{behaviorBipartiteRate} to add
+the rate effects with respect to this network.
+\ENDFOR
+\FORALL{constant covariates, other behavior variables or changing covariates}
+\STATE Call \sfn{covBehEff} and \sfn{covBBehEff}to add the interaction effects
+\ENDFOR
+\FORALL{networks with same node set (first for bipartite)}
+\STATE Use \sfn{behaviorOneModeObjective2} or \sfn{behaviorBipartiteObjective2}
+effect group to create a second set of objective function effects.
+\ENDFOR
+\STATE Add  \nnm{behNintn} unspecified behavior interaction effects
+  \STATE Create the effects data frame by calling \sfn{createObjEffectList} and
+  \sfn{createRateEffectList}.  This creates e.g.\ the evaluation and endowment
+  effect copies.
+  \STATE Select the default effects by setting \nnm{include} to TRUE for
+  \sfn{basic rate} and \sfn{linear shape}
+  (if not any period uponly or downonly)
+  and \sfn{quadratic shape}
+  (if the range of the variable is greater than or equal to 2)
+  evaluation effects.
+  \IF {any period uponly or downonly}
+  \STATE remove the linear effects (evaluation and endowment)
+  from the data frame.
+  \ENDIF
+  \STATE Add the starting values for the default effects calculated by
+  \sfn{getBehaviorStartingVals}  (see section \ref{sec:behaviorstart})
+ to the \nnm{initialValue} column of the data
+  frame.
+\STATE Alter the text for endowment effects to start with "dec. beh."
+\end{algorithmic}
+\subsection{Bipartite Network Effects}
+\begin{algorithmic}
+  \STATE Call \sfn{networkRateEffects} to get the rate effects
+  \STATE Use \sfn{bipartiteObjective} effect group to create the objective
+  function effects.
+  \FORALL{dyadic covariates with both node sets matching}
+  \STATE Use \sfn{dyadObjective} effect group to create the appropriate effects
+  \ENDFOR
+  \FORALL{constant covariates, behavior variables, changing covariates}
+  \STATE Call function \sfn{covarBipartiteEff} to add the appropriate effects\\
+  poszvar is always TRUE for behavior variables.
+  \ENDFOR
+  \IF{any covariates or behavior variables}
+  \STATE Add \nnm{nintn} rows for user specified interaction effects
+  \ENDIF
+  \FORALL{distinct dependent network variables with the same node set}
+  \IF{oneMode}
+  \STATE Use \sfn{bipartiteSymmetricObjective} or
+  \sfn{bipartiteNonSymmetricObjective} effect groups to add the appropriate
+the effects
+  \ELSIF{bipartite and matches first node set)}
+  \STATE Use \sfn{bipartiteBipartiteObjective} effect group to add the
+  appropriate  effects
+  \ENDIF
+  \STATE NB no \sfn{covarNetNetObjective} here?
+  \ENDFOR
+  \IF{more than one network}
+  \STATE paste the network name at the front of all the objective function
+  effects
+  \ENDIF
+  \STATE Create the effects data frame by calling \sfn{createObjEffectList} and
+  \sfn{createRateEffectList}.  This creates e.g.\ the evaluation and endowment
+  effect copies.
+  \STATE Alter the text for endowment effects to start "Lost ties:"
+  \STATE Calculate the starting values for the default effects
+  (see section \ref{sec:bipartitestart})
+  \STATE Select the default rate effects by setting \nnm{include} to TRUE for
+  the \sfn{basic rate} effects.
+  \STATE Add the starting value for the rate to the \nnm{initialValue} column
+  of the basic rate effects
+  \IF{no period is uponly or downonly}
+  \STATE  Set \nnm{include} to TRUE for the degree (density) evaluation effect
+  \STATE Add the starting values for the degree(density) evaluation effect
+  calculated by \sfn{getBipartiteStartingVals} to the \nnm{initialValue}.
+  \ELSE
+  \STATE Remove both degree (density) effects from the data frame.
+  \ENDIF
+\end{algorithmic}
+\subsection{covarOneModeEff}
+\begin{algorithmic}
+\STATE Use \sfn{covarSymmetricObjective} or \sfn{covarNonSymmetricObjective}
+effect group to create the objective function effects
+\STATE Use \sfn{covarSymmetricRate} or \sfn{covarNonSymmetricRate} to create the
+rate effects
+\IF {not poszvar}
+\STATE Reduce the new objective function effects to just ``altX'' and ``altSqX'' (symmetric)
+or ``egoX'' (non symmetric)
+\ENDIF
+\IF{ not morethan2}
+\STATE Remove the ``altSqX'' effect.
+\ENDIF
+\end{algorithmic}
+\subsection{covarBipartiteEff}
+\begin{algorithmic}
+\IF {first node set matches}
+\STATE Use \sfn{covarBipartiteRate} effect group to create the
+rate effects
+\ENDIF
+\STATE Use \sfn{covarBipartiteObjective} effect group to create the objective
+function effects
+\IF{first node set matches}
+\STATE reduce the objective function effects to ``egoX'', ``altDist2'', and ``totDist2''
+\ELSIF {poszvar}
+\STATE reduce the new objective function effects to the rows ``altX'' and
+``altSqX''
+\IF{ not morethan2}
+\STATE remove the ``altSqX'' effect
+\ENDIF
+\ELSE
+\STATE no objective function effects
+\ENDIF
+\end{algorithmic}
+\subsection{covBehEff}
+\begin{algorithmic}
+\STATE Use \sfn{covarBehaviorObjective} effect group to create a potential set
+of objective function effects
+\IF {covariate and behavior variable are different}
+\STATE  Create objective function effects as the first row of potential set
+\ENDIF
+\FORALL{oneMode dependent variables with the same node set}
+\STATE Add an objective function effect from the second row of the potential
+set.
+\ENDFOR
+\IF {any objective function effects}
+\STATE Set \nnm{shortName} to \sfn{effFrom}
+\ENDIF
+\STATE Use \sfn{covarBehaviorRate} effect group to create the
+rate effects
+\STATE Use \sfn{covarABehaviorBipartiteObjective} effect group to create
+objective function effects for bipartite dependent networks combined
+with covariates on the first node set
+ \end{algorithmic}
+\subsection{covBBehEff}
+\begin{algorithmic}
+\STATE Use \sfn{covarBBehaviorBipartiteObjective} effect group to create
+objective function effects for bipartite dependent networks combined
+with covariates on the second node set
+ \end{algorithmic}
+\subsection{covarNetNetEff}
+\begin{algorithmic}
+\IF {\nnm{poszvar} }
+\STATE  Use \sfn{covarNetNetObjective} effect group to create additional
+objective function effects if the second network is one-mode;
+\STATE  Use \sfn{covarABNetNetObjective} effect group to create additional
+objective function effects if the second network is one-mode or two-mode;
+\STATE  Use \sfn{covarANetNetObjective} effect group to create additional
+objective function effects if the second network is one-mode or
+\{two-mode while the covariate is defined for the first mode\};
+\STATE  Use \sfn{covarBNetNetObjective} effect group to create additional
+objective function effects if the second network is one-mode or
+\{two-mode while the covariate is defined for the second mode\}.
+\ENDIF
+\end{algorithmic}
+\subsection{CreateRateEffectList}
+Add the \nnm{name} column by duplicating the dependent variable name, and
+\nnm{effectFn} and \sfn{statisticFn} as empty lists.
+\subsection{CreateObjectEffectList}
+\begin{algorithmic}
+\STATE
+Add the \nnm{name} column by duplicating the dependent variable name, and
+\nnm{effectFn} and \sfn{statisticFn} as empty lists.
+\STATE Add an endowment effect row if required for each objective function
+effect.
+\end{algorithmic}
+ \subsection{SienaGroupObject}
+ \begin{algorithmic}
+ \STATE First create the effects for the first data object, but inserting the
+ correct number of basic rate effects for the whole group.
+\FORALL{other data objects}
+ \FORALL{dependent variables}
+ \STATE Create the starting values for this dependent variable
+ \STATE Insert the rate starting values in the \nnm{initialValue} field of the
+ correct effects
+ \STATE Combine the starting values to create an overall one for the objective
+ function effects:
+ \IF{behavior}
+ \STATE Add new $d_i, i=1,\ldots,n-1$ to make one long vector of
+ difference vectors between $n$ observations
+ \IF {rounded range of variable (max-min) is 2 (what happens with range 1)}
+ \STATE Add to $n_{min+} = \sum_i n_{i,min+}$ and the others
+ \STATE Tendency is
+ $$  \log(\frac{(n_{min+} + 2 ) * (n_{max+} + n_{max0} + 4)))}
+ {(n_{max-} + 2 ) * (n_{min+} + n_{min0} + 4)))}
+ $$
+ \IF {abs(tendency) $>2$}
+ \STATE trim to $\pm 2$
+ \ENDIF
+ \ELSE[range less than 2 or greater than 2]
+ \STATE Let $\bar{d} = \mathrm{mean}(d_i)$, ignoring missing values
+ \STATE Let $\sigma_d^2 = \mathrm{var} (d_i)$, ignoring missing values
+ \IF{$\bar{d} < 0.9 * \sigma_d^2$}
+ \STATE tendency = $0.5 * \log((\bar{d} + \sigma_d^2)/(\bar{d} - \sigma_d^2))$
+ \ELSE
+ \STATE tendency = $\bar{d} /(\sigma_d^2+ 1)$
+ \ENDIF
+ \IF {abs(tendency) greater than 3)}
+ \STATE Trim to $\pm 3$
+ \ENDIF
+ \ENDIF
+\ELSIF{onemode}
+\STATE
+\ELSE[bipartite]
+\STATE
+\ENDIF
+ \ENDFOR
+ \ENDFOR
+\end{algorithmic}
+\subsection{Behavior Starting Values}
+\label{sec:behaviorstart}
+\begin{algorithmic}
+  \STATE Calculate $d_i, i=1,\ldots,n-1$
+  difference vectors between $n$ observations
+  \IF {rounded range of variable (max-min) is 2 (what happens with range 1)}
+  \FORALL{intervals $i$}
+  \STATE Let $n_{i,min+} =$ number who start at minimum and go up
+  \STATE Let $n_{i,min0} =$ number who start at minimum and stay there
+  \STATE Let $n_{i,max-} =$ number who start at maximum and go down
+  \STATE Let $n_{i,max0} =$ number who start at maximum and stay there
+  \STATE Calculate $$ v = \frac{n_{i, min+} +1}{n_{i, min+} + n_{i,min0} + 2} +
+  \frac{n_{max-} +1}{n_{i,max0} + n_{i,max-} + 2}$$
+  \IF {$v>0.9$}
+  \STATE$v=0.5$
+  \ENDIF
+  \ENDFOR
+  \STATE Starting rate is $-\log(1-v)$
+  \STATE Let $n_{min+} = \sum_i n_{i,min+}$ total number who start at minimum
+  and go up
+  \STATE Let $n_{min0} = \sum_i n_{i,min0}$ total number who start at minimum and
+  stay there
+  \STATE Let $n_{max-} = \sum_i n_{i,max-}$ total number who start at maximum
+  and go down
+  \STATE Let $n_{max0} = \sum_i n_{i,max0}$ total number who start at maximum
+  and stay there
+  \STATE Tendency is
+  $$  \log(\frac{(n_{min+} + 2 ) * (n_{max+} + n_{max0} + 4)))}
+  {(n_{max-} + 2 ) * (n_{min+} + n_{min0} + 4)))}
+  $$
+  \IF {abs(tendency) $>2$}
+  \STATE trim to $\pm 2$
+  \ENDIF
+  \ELSE[range less than 2 or greater than 2]
+  \FORALL{intervals i}
+  \STATE starting rate is $\max(\mathrm{var}(d_i),
+  0.1 * \sum_i \mathrm{abs}(d_i)/\mathrm{nactors} $
+  \ENDFOR
+  \STATE Let $\bar{d} = \mathrm{mean}(d_i)$, ignoring missing values
+  \STATE Let $\sigma_d^2 = \mathrm{var} (d_i)$, ignoring missing values
+  \IF{$\bar{d} < 0.9 * \sigma_d^2$}
+  \STATE tendency = $0.5 * \log((\bar{d} + \sigma_d^2)/(\bar{d} - \sigma_d^2))$
+  \ELSE
+  \STATE tendency = $\bar{d} /(\sigma_d^2+ 1)$
+  \ENDIF
+  \IF {abs(tendency) greater than 3)}
+  \STATE Trim to $\pm 3$
+  \ENDIF
+  \ENDIF
+\end{algorithmic}
+\subsection{One mode network Starting Values}
+\label{sec:onemodestart}
+\begin{algorithmic}
+\STATE Temporarily subtract 10 from structural values
+\STATE Let $dif_i$ be the number of differences between start and end of
+interval $i$, ignoring missings
+\STATE Let $n_{ijk}, j, k = 0,1$ be counts of cells with value $j$ at start
+and $k$ at end of interval $i$, ignoring missings
+\STATE Let $n_i$ be the number of cells which are not missing at both start
+and end of interval $i$.
+\STATE Let $d_i$ be the sum of absolute differences by period, ignoring missings
+(already calculated and stored in the attribute \nnm{distance}).
+\STATE Let $\lambda_i$ be the starting value of basic rate parameter for
+interval $i$
+\IF{symmetric}
+\STATE
+$$\lambda_i = \mathrm{nactors} * (0.2 + d_i)/(n_i \%/\% 2 + 1)$$
+\ELSE
+\STATE
+$$\lambda_i = \mathrm{nactors} * (0.2 + 2 * d_i)/(n_i + 1)$$
+\ENDIF
+\STATE Trim $\lambda_i$ to be between 0.1 and 100.
+\IF{symmetric}
+\STATE Divide $n_{ijk}$ by 2
+\ENDIF
+\STATE starting value for degree parameter:
+\begin{align*}
+\mathrm{Define } \qquad  p_{i01} &=& \begin{cases}
+n_{i01}/ (n_{i01} + n_{i00}) &n_{i01} + n_{i00} >= 1  \\
+0.5& \mathrm{otherwise}
+\end{cases}\\
+p_{i10} &=& \begin{cases}
+n_{i10}/ (n_{i10} + n_{i11}) &n_{i10} + n_{i11} >= 1  \\
+0.5& \mathrm{otherwise}
+\end{cases}\\
+  p_{i00} &=& \begin{cases}
+n_{i00}/ (n_{i01} + n_{i00}) &n_{i01} + n_{i00} >= 1  \\
+0.5& \mathrm{otherwise}
+\end{cases}\\
+p_{i11} &=& \begin{cases}
+n_{i11}/ (n_{i10} + n_{i11}) &n_{i10} + n_{i11} >= 1  \\
+0.5& \mathrm{otherwise}
+\end{cases}
+\end{align*}
+\STATE Trim $p_{ijk}$ to lie between 0.02 and 0.98
+\STATE Calculate $p_i$
+\begin{align*}
+p_i &=& \begin{cases}
+4 / (p_{i00} / n_{i01} + p_{i11} / n_{i10})& n_{i10} * n_{i01} >= 1  \\
+1e-6& \mathrm{otherwise}
+\end{cases}
+\end{align*}
+\STATE Starting value for degree parameter is\\
+$$ \sum_i 0.5 * \log(p_{i01} / p_{i10}) * p_i / \sum_i p_i $$
+\end{algorithmic}
+
+\subsection{Bipartite Starting Values}
+\label{sec:bipartitestart}
+\begin{algorithmic}
+\STATE Temporarily subtract 10 from structural values
+\STATE Let $dif_i$ be the number of differences between start and end of
+interval $i$, ignoring missings
+\STATE Let $n_{ijk}, j, k = 0,1$ be counts of cells with value $j$ at start
+and $k$ at end of interval $i$, ignoring missings
+\STATE Let $n_i$ be the number of cells which are not missing at both start
+and end of interval $i$. (Diagonal included here.)
+\STATE Let $d_i$ be the sum of absolute differences by period, ignoring missings
+(already calculated and stored in the attribute \nnm{distance}).
+\STATE Let $\lambda_i$ be the starting value of basic rate parameter for
+interval $i$
+\STATE
+$$\lambda_i = \mathrm{nsenders} * (0.2 + 2 * d_i)/(n_i + 1)$$
+\STATE Trim $\lambda_i$ to be between 0.1 and 100.
+\STATE starting value for degree parameter:
+\begin{align*}
+\mathrm{Define } \qquad  p_{i01} &=& \begin{cases}
+n_{i01}/ (n_{i01} + n_{i00}) &n_{i01} + n_{i00} >= 1  \\
+0.5& \mathrm{otherwise}
+\end{cases}\\
+p_{i10} &=& \begin{cases}
+n_{i10}/ (n_{i10} + n_{i11}) &n_{i10} + n_{i11} >= 1  \\
+0.5& \mathrm{otherwise}
+\end{cases}\\
+  p_{i00} &=& \begin{cases}
+n_{i00}/ (n_{i01} + n_{i00}) &n_{i01} + n_{i00} >= 1  \\
+0.5& \mathrm{otherwise}
+\end{cases}\\
+p_{i11} &=& \begin{cases}
+n_{i11}/ (n_{i10} + n_{i11}) &n_{i10} + n_{i11} >= 1  \\
+0.5& \mathrm{otherwise}
+\end{cases}
+\end{align*}
+\STATE Trim $p_{ijk}$ to lie between 0.02 and 0.98
+\STATE Calculate $p_i$
+\begin{align*}
+p_i &=& \begin{cases}
+4 / (p_{i00} / n_{i01} + p_{i11} / n_{i10})& n_{i10} * n_{i01} >= 1  \\
+1e-6& \mathrm{otherwise}
+\end{cases}
+\end{align*}
+\STATE Starting value for degree parameter is\\
+$$ \sum_i 0.5 * \log(p_{i01} / p_{i10}) * p_i / \sum_i p_i $$
+\end{algorithmic}
+
+\section{sienaGroupCreate}
+
+This function combines a list of siena data objects for common processing.
+It is also used in \sfn{initializeFRAN} to convert a single data object to a group one so that all later
+processing can have a common argument.
+
+Some validation is performed to check that all the data objects match in terms
+of the dependent variables (name, type, nodesets) and covariates (names and
+nodesets).
+
+If there is more than one data object, the constant covariates and constant
+dyadic covariates must be changed into changing ones. New covariates are created
+and the old ones removed from the lists. The attributes are copied over rather
+than recalculated (although they are mostly changed later).
+
+Overall values are calculated for the balance mean, and network ranges. For
+behavior variables and covariates overall ranges, means and similarity mean
+values are calculated.
+
+The following overall values are copied down to the individual objects:
+\begin{description}
+
+\item[dependent variables] symmetric, missing, structural, poszvar, range,
+moreThan2 (some only if behavior)
+\item[changing covariates] range,  poszvar, moreThan2
+\item[changing dyadic covariates] range, range2
+
+\end{description}
+\subsection{Group attributes}
+
+The group object has various attributes, copied from or combinations of the
+attributes on the individual objects.
+
+\begin{description}
+\item[netnames] the names of the dependent variables (these must be the same in
+  each data object)
+\item[symmetric] logical vector indicating whether the corresponding independent
+  variable is symmetric (set to FALSE for behavior variables and bipartite
+  networks.
+\item[structural] logical vector indicating presence or absence of any
+  structural values
+\item[numberNonMissingNetwork] vector of count of non missing values for non
+  behavior variables
+\item[numberMissingNetwork] vector of count of missing values for non
+  behavior variables
+\item[numberNonMissingBehavior] vector of count of non missing values for
+  behavior variables
+\item[numberMissingBehavior] vector of count of missing values for
+  behavior variables
+\item[allUpOnly] logical vector indicating that the values for this
+  independent variable never decrease over time
+\item[allDownOnly] logical vector indicating that the values for this
+  independent variable never increase over time
+\item[anyUpOnly] logical vector indicating that for one or more of the intervals
+  the values for this independent variable do not decrease
+\item[anyDownOnly] logical vector indicating that for one or more of the
+  intervals the values for this independent variable do not increase.
+\item[allHigher] Table of logicals indicating whether \emph{higher} attribute is
+  true for each pair of networks in every data object
+\item[allDisjoint] Table of logicals indicating whether \emph{disjoint}
+  attribute is true for each pair of networks in every data object
+\item[allAtLeastOne] Table of logicals indicating whether \emph{atLeastOne}
+  attribute is true for each pair of networks in every data object
+\item[anyHigher] Table of logicals indicating whether \emph{higher} attribute is
+  true for each pair of networks in any data object
+\item[anyDisjoint] Table of logicals indicating whether \emph{disjoint}
+  attribute is true for each pair of networks in any data object
+\item[anyAtLeastOne] Table of logicals indicating whether \emph{atLeastOne}
+  attribute is true for each pair of networks in any data object
+\item[types] types of the independent variables
+\item[observations] A single integer with the total number of periods to
+  process.
+\item[periodNos] A list of the period numbers (misses out the final one for each
+  data object)
+\item[groupPeriods] Vector of the number of total number of periods for each
+  data object.
+\item[netnodesets] A list containing the nodeset(s) for each dependent
+  variable
+\item[cCovars] Vector of names of constant covariates
+\item[vCovars] Vector of names of changing covariates
+\item[dycCovars] Vector of names of constant dyadic covariates
+\item[dyvCovars] Vector of names of changing dyadic covariates
+\item[ccnodesets] A vector containing the nodeset(s) for each constant covariate
+\item[cvnodesets] A vector containing the nodeset(s) for each changing covariate
+\item[dycnodesets] A list containing the nodeset(s) for each constant dyadic
+  covariate
+\item[dyvnodesets] A list containing the nodeset(s) for each changing dyadic
+  covariate
+\item[compositionChange] Logical vector indicating the presence of composition
+  change data for any of the data objects
+\item[exooptions] Named vector of composition change file options for the named
+  node sets. Read from the first data object: assumed all the same
+\item[names] Vector of names of the data objects
+\item[class] ("sienaGroup", "siena")
+\item[balmean] Vector of overall balance means, one for each dependent variable,
+  NA for behavior variables and bipartites.
+\item[structmean] Vector of overall structural means, one for each dependent
+  variable, NA for behavior variables and bipartites.
+\item[averageOutDegree] Vector of overall average outdegrees. NA for behavior
+  variables.
+\item[averageInDegree] Vector of overall average indegrees. NA for behavior
+  variables and bipartites.
+\item[bRange] Vector of overall ranges for behavior variables: entries
+  corresponding to networks are NA
+\item[behRange] Matrix with two rows, and column for each independent
+  variable. Set to the overall min and max for behavior variables, NA for others
+\item[bSim] Overall similarity mean for behavior variables, NA for networks
+\item[bPoszvar] logical vector, NA for networks. For behavior variables TRUE if
+  more than 1 distinct value in the overall values or any missing (always?)
+\item[bMorethan2] logical vector. NA for networks. For behavior variables
+  TRUE if more than 2 distinct values in overall variable, ignoring missings
+\item[cCovarPoszvar] logical vector for constant covariates indicating presence
+  if more than one distinct value or any missing (overall). NB only exist if
+  there is only one data object.
+\item[cCovarMoreThan2] logical vector for constant covariates indicating
+  presence of more than 2 distinct values (missing is counted as a value)
+\item[cCovarRange] vector of ranges for constant covariates
+\item[cCovarRange2] matrix of min and max for constant covariates
+\item[cCovarSim] vector of overall similarity means for constant covariates
+\item[cCovarMean] vector of means for constant covariates
+\item[vCovarPoszvar] logical vector for changing covariates indicating presence
+  if more than one distinct value or any missing (overall).
+\item[vCovarMoreThan2] logical vector for changing covariates indicating
+  presence of more than 2 distinct values (missing is counted as a value)
+\item[vCovarRange] vector of ranges for changing covariates
+\item[vCovarSim] vector of overall similarity means for changing covariates
+\item[vCovarMean] vector of means for changing covariates
+\item[dycCovarRange] vector of ranges for constant dyadic covariates
+\item[dycCovarRange2] matrix of min and max for constant dyadic covariates
+\item[dycCovarMean] vector of means for constant dyadic covariates
+\item[dyvCovarRange] vector of ranges for changing dyadic covariates
+\item[dyvCovarRange2] matrix of min and max for constant dyadic covariates
+\item[dyvCovarMean] vector of means for changing dyadic covariates
+\item[anyMissing] logical vector indicating any missing values in the each
+  dependent variable
+\item[netRanges] Matrix with two rows and a column for each dependent
+  variable. Overall min and max for networks, NA for behavior variables
+\end{description}
+
+
+\section{siena07}
+
+This is a wrapper for the function \nmm{robmon} which performs the processing
+that used to be in \nm{polrup} in \Sn.  An optional tck/tk gui is provided,
+or progress messages are provided on the console. The choice between these is
+made by using \sfn{batch=FALSE} or \sfn{batch=TRUE} respectively.
+
+Details of input and output are on the \R help page. Required input is an object
+containing control information for the Robbins-Monro algorithm, and any extra
+parameters required by the \nm{FRAN} to be used. As the distinction between the
+two parts is not complete, flags \nm{maxlike} and \nm{cconditional} are on the
+input object, although not logically relevant to the algorithm.
+
+There is user output written to a file (.txt), together with optional additional
+output to the console (suppressed unless \sfn{verbose=TRUE}), which can be
+redirected using the \verb|sink()| command.
+
+\nnm{robmon} attempts to duplicate the output of
+the \SI procedure \nm{polrup}. It uses
+a special function, \nnm{Report} for all output.
+This function knows about four files:
+\nm{outf}, \nm{lf}, \nm{cf}, \nm{bof}, and can also write to the console.
+Currently, all files except \nm{outf} are null, with any other output suppressed
+or written to the console. Only \nm{Report} would need altering to alter this
+behaviour.  No file connections need to be passed around as parameters.
+
+The object returned from \nnm{siena07} is an object containing everything of
+interest from the run, including the estimates of the parameters and the
+covariance matrix.  Details of the more useful parts are in the \R
+documentation.
+
+\section{User Interrupts}
+These are set in callbacks from the \nnm{siena07} tcl/tk gui. When they are
+read, a parallel set of flags is used to store the states, so that interrupts
+can be processed reliably. All is done using functions, to avoid global
+variables, or passing variables around. There are 3 interrupts:
+\begin{description}
+\item[UserInterrupt] Stop everything, but return the values so far, with (I
+hope) some flag to indicate we did not finish.
+\item[UserRestart] Go back to the beginning of phase 1 with the current
+  parameters
+\item[EarlyEndPhase2] Stop the estimation routine and proceed to phase 3 using
+  the current parameters.
+\end{description}
+All six functions, if called with an argument, store the argument as the current
+value and if called with no argument, return the value. All values are
+booleans. The functions are not exported from the namespace, to avoid burdening
+the user with the details of their existence.
+
+\section{Robbins Monro Algorithm---\nnm{robmon}}
+
+The routine \nmm{robmon} contains the Robbins Monro
+(stochastic approximation) algorithm. It is the replacement for the
+\SI procedure \nm{polrup}. It is not
+designed to be called directly by the user, so there will not be an \R
+help page for it.
+
+The outline of the algorithm is given in the text \emph{Siena algorithms},
+and to understand the description of the code given here
+it may be helpful to have read that outline.
+
+
+\section{ \nnm{robmon}}
+\subsection{Input (from \nm{siena07})}
+\begin{description}
+\item[\nnm{z}] Model fitting object.
+\item[\nnm{x}] Input model object, as described in the help page for
+ \nnm{sienaModelCreate}.
+\item[...] Extra parameters for \nm{FRAN} (including the data!).
+\end{description}
+
+It may seem surprising that the data is simply a parameter passed unchanged to
+\nm{FRAN}. But this is the point of the separation of the simulation and
+estimation routines: \nnm{robmon} could be used to solve the moment equation for
+any data: it does not matter whether the data is a network or something else
+entirely, as long as a matching \nm{FRAN} is used.
+
+\subsection{Output}
+\begin{description}
+\item[\nnm{z}]. More or less everything used in the processing.
+Details in the help page for \nnm{siena07}.
+\end{description}
+
+\subsection{Details}
+
+\subsubsection{Initialize}
+ Copy from \nnm{x} everything that we may change
+  during the run. Initialize number of iterations, restarted flag,
+  force finite difference flag, etc.
+
+\subsubsection{Initial call to \nm{FRAN}}
+This call is used to set up the parameters for conditional estimation, and to
+set up data in a call to C. The values of the statistics in the observed data
+(targets) are returned, along with the addresses of the data objects in C. The
+processed data and selected effects is written to a hidden data object within
+the function \nnm{FRANstore} from where it can be accessed on later calls, or
+passed to other processes.
+
+\subsubsection{Initialise cluster of processes, if required}
+This needs to access (but not understand!) the data object created in the call
+to \nm{FRAN}. It sets up the processes and random number streams and passes the
+data object across. It then does a special call to \nm{FRAN} to create the data
+objects in C++ for each process. Later calls to the processes only need minimal
+communication, done using cut-down versions of \nnm{x} and \nnm{z}.
+
+\subsubsection{Calculate epsilon}
+Used only for MoM estimation in the finite differences option.
+Currently 0.1, except for parameters which
+must be positive, where it is 0.1 times the parameter starting values.
+\ts{Here I would prefer min\{0.1, 0.1 $\times$ starting value\}.
+\\Ruth: Easily changed, but we are using typically much bigger values than this:
+will it work? Are you sure you don't want max?}
+
+To be
+improved, to use prior information on standard error of parameter if available.
+  \newpage
+\subsubsection{Main loop}
+Note \R has no GOTO statement. I use the term \emph{break} to indicate
+exit from the current loop only. Interrupts are checked after every iteration
+except the first few of phase 3. This documentation does not include all the
+details, or it would duplicate the code.
+
+\vspace{1em}
+
+{\small
+\begin{algorithmic}
+  \REPEAT
+  \REPEAT [this one is just to jump out of, only executed once]
+  \IF{ all parameters now fixed (2 opportunities to do this in previous loop!)}
+      \STATE set a flag to just do Phase 3.\\
+  \ENDIF
+  \STATE initialize interrupts\\
+  announce phase 0 (set up progress bar, calculate iteration min
+  and max for phase 2 subphases.)\\
+  reset fixed flags\\
+  \IF {not just-phase-3 flag set}
+      \IF {need to do phase 1}
+          \STATE initialize phase 1\\
+          run phase 1 iterations 1 to 10\\
+          \IF{using finite diffs}
+               \STATE check number of changes and
+                  change epsilon if necessary
+          \ENDIF
+          \IF{ user stop or user restart or error or (using finite difference
+            and need to repeat with new epsilon)}
+               \STATE break
+          \ENDIF
+          \IF{using finite diffs}
+          \STATE fix PARAMETERS with 0 or 1 changes, if any exist\\
+          \ENDIF
+          \STATE run rest of phase 1 iterations\\
+          \IF {user stop or user restart or error}
+              \STATE break
+          \ENDIF
+           \STATE calculate derivative matrix
+          \IF {necessary}
+              \STATE change the length of phase 1 or force the use of
+              finite differences
+          \ENDIF
+          \IF{ user stop or error or user restart}
+              \STATE break
+          \ENDIF
+          \IF{ necessary}
+              \STATE fix some parameters.
+          \ENDIF
+      \ENDIF
+       \STATE Initialise phase 2\\
+       run phase 2 subphase 1\\
+       \IF{ error or user stop or user restart}
+           \STATE break
+       \ENDIF
+       \STATE run phase 2 subphase 2
+       \IF {error or user stop or user restart or we have restarted because of
+         epsilon change in phase 1 and not restarted from here
+         before!}
+       \STATE break
+       \ENDIF
+       \STATE    run rest of phase 2 subphases
+       \IF {error or user stop or user restart}
+       \STATE break
+       \ENDIF
+\ENDIF
+      \STATE run phase3
+      \IF {not user restart}
+      \STATE break
+      \ENDIF
+    \UNTIL{for ever}
+    \IF{do not need to restart because of epsilon or user restart}
+\STATE break
+\ENDIF
+\UNTIL{for ever}
+\end{algorithmic}}
+
+\subsubsection{Final processing}
+\begin{itemize}
+\item
+Do a final call to \nm{FRAN}. In conditional estimation, the rescaling
+of basic rate parameters will be done here.
+\item reset the covariance matrix to 33, 999 as in phase3.
+
+\end{itemize}
+\section{Phase 1}
+\subsection{Input}
+As for \nnm{robmon}.
+\subsection{Output}
+As for \nnm{robmon}.
+\subsection{Details}
+\subsubsection{Initialise}
+\begin{itemize}
+\item
+Reset \nnm{SomeFixed} flag (have we fixed any parameters in this
+run).
+\item Announce phase 1
+\item Create arrays to store simulated statistics,
+scores and contributions to the derivative matrix from either the
+finite difference or maximum likelihood routines. These arrays are
+currently redefined in Phase 3, so lost.
+\end{itemize}
+\subsubsection{Timing}
+Timings are calculated between the start of the 2nd iteration and the start of
+the 6th iteration.  This is just for determining the frequency of writing
+information to the gui.  Write frequency is set to a prettified version of
+20/time for 5 iterations, or 5 if elapsed time is very small. For batch mode
+this is multiplied by 10, which seems unnecessary in phase 1. If using multiple
+clusters the total number of iterations are adjusted to be a multiple of the
+number of processes, and the 6th is replaced by the first one greater than or
+equal to 6 in the iteration sequence advancing in steps of the number of
+processes. I think this is wrong: it should be from 2 to 6 steps... but not very
+important!  (I have made some adjustments for those users who have more than 9
+processors: we do at least 10 simulations in the first part, and ignore timing
+if we do them in too few steps. If there are enough steps in the second part the
+timing is done there.)
+\subsubsection{An iteration}
+\begin{itemize}
+\item call \nm{FRAN}. If not OK, return
+\item store simulated statistics, scores if present, derivatives if
+  present, simulated networks (part!) if present.
+\item if required, call finite differences routine and store result
+\item check for user interrupts and return if requested
+\item Report progress via progress bar or to console
+\end{itemize}
+\subsubsection{Check epsilons (only for finite differences option)}
+\begin{itemize}
+\item
+If derivatives are being calculated by finite differences, check after
+10 iterations that enough different values of the statistics have
+occurred. Ideally 5 or more. (The check may not be done immediately after 10
+iterations if we have 4 processors, say, but I do only look at 10 of the
+results.)
+\item
+If there are less than 3, \nm{epsilon} is
+multiplied by 3 for parameters which must be positive, and by 10
+otherwise.
+\item
+If there are 3 or 4, the multipliers are 2 and $\sqrt{10}$.
+\item
+If any new values are less than 0.1 times the scale factor, or more
+than 100 times it, replace by the bound.
+\item
+If any are less than 5, we will restart with the new epsilons, unless
+we have already done so 4 times.
+\item
+If we have already restarted 4 times then we continue, after fixing
+ the last parameter with only 0 or 1 changes, if there are any such.
+\end{itemize}
+\subsubsection{End of phase processing}
+\begin{itemize}
+\item Calculate derivative estimate.
+\begin{itemize}
+\item
+For finite differences or maximum likelihood: the mean of the arrays
+returned at each iteration.
+\item For the score based method, we need a little notation:\\
+  Let $\mathbf{f}_i$ be the simulated deviations from the targets in
+  iteration $i$, and $\mathbf{s}_i$ the score function in iteration
+  $i$, $N$ be the number of iterations. Then the estimated derivative
+  matrix $d_{ij}$ is given by:
+$$
+D = \sum_i \mathrm{outer}(\mathbf{f}_i,\mathbf{s}_i)/ N -
+\mathrm{outer}(\bar{\mathbf{f}}, \bar{\mathbf{s}})/N^2
+$$
+\item For the score based method, if any of the diagonal values is
+  non-positive, we do not continue. First we double the number of
+  iterations in phase 1 and start again. Once this number exceeds 200,
+  we stop increasing it and force the use of Finite differences. Then
+  we don't come through this check!
+\item
+For either method, if still processing, set the rows and columns related to fixed
+parameters to 0's with 1 on the diagonal.
+\item
+If any diagonal values for non-fixed parameters are not positive, make
+them fixed, and set \nnm{newfixed} flags to record which ones have
+been fixed.
+\item
+Calculate the standard deviations of the deviations.
+\end{itemize}
+\item Invert the derivative matrix:
+\begin{itemize}
+\item
+  Set the rows and columns related to fixed parameters to 0's with 1 on the diagonal.
+\item
+  Replace any diagonal values less than 1e-8 by 1e-3.
+\item
+ Do the inversion
+\item
+If it fails, add 1 to the diagonal and try again
+\end{itemize}
+
+\item Quasi-Newton step
+\begin{itemize}
+\item If inversion of matrix was successful, set \nm{fchange} to 0.5
+  times the gain parameter times the matrix product of inverse with
+  the mean deviations from targets, otherwise to zero.
+\item
+Zero the change for any fixed parameters.
+\item
+Check the jump is not too large: if the maximum absolute value of the
+change divided by the corresponding input gain parameter is greater
+than 10, divide the changes by this value and multiply them by
+10. This caps the maximum ratio to the scale at 10.
+\item Check that positive parameters will stay positive. If not, replace the
+  change for that parameter by half the current value of the parameter.
+\item
+If the requested number of subphases in phase 2 is greater than 0, make
+the change by subtracting the changes
+from the current value of the parameters.
+\end{itemize}
+\end{itemize}
+\section{Phase2}
+\subsection{Input}
+as for \nnm{robmon}
+\subsection{Output}
+as for \nnm{robmon}
+\subsection{Details}
+\subsubsection{Initialize Phase}
+Turn off calculation of derivatives. Multiply the gain parameter by 2.
+\subsubsection{Process subphase}
+\begin{itemize}
+\item Initialize
+  \begin{itemize}
+  \item
+    Announce subphase
+  \item Extract max and min number of iterations from values stored
+    from start. (They are calculated at the start to find the length
+    of the progress bar, and it seemed better not to repeat it here!).
+  \item Divide the gain parameter by 2
+  \item Initialize the sum (which will become the mean) of thetas with
+    the current value.
+  \item
+    Create arrays to store products of successive thetas.
+  \end{itemize}
+\item
+  Perform iterations
+  \begin{itemize}
+  \item Timing is calculated over the ten iterations 2 to 11. Write frequency is
+    set to 20/(time for these 10 iterations) or 20 if time is too small.  It is
+    then prettified. Reporting using progress bar or console is done for each of
+    the first 10 iterations and then at write frequency.
+\item
+  Call \nm{FRAN} and store the deviations returned.
+  \item The update:
+    \begin{itemize}
+    \item if only the diagonal of the derivative matrix is to be used
+      in the update step (flag \nnm{x\$diag}), calculate \nm{maxrat},
+      the maximum ratio of the absolute deviations to their standard
+      deviation (as estimated in Phase 1). If this is greater than the
+      parameter \nm{maxmaxrat}, set \nm{maxrat} to
+      \nm{maxmaxrat}/\nm{maxrat}, and record that the values were
+      truncated. \label{sec:maxrat}
+    \item
+      if \nmm{x\$diag},
+      update is current gain * current deviations * \nm{maxrat} /
+      diagonal of derivative
+    \item otherwise, update is current gain * matrix product of
+      current deviations with inverse of derivative matrix.
+    \item For parameters which must be positive and would not remain
+      so, replace change by 0.5 times current value of parameter,
+    \item Zero the change for any fixed parameters.
+    \item update theta by subtracting the change.
+    \item Add new value of theta to sum of thetas.
+    \end{itemize}
+  \item
+    After each pair of iterations, add the product of the two deviations
+  and the square of the most recent to accumulators, and calculate the
+  ratio of the former to the latter, \nm{ac}.
+  \item
+    Check for user interrupts
+  \item
+    Stop the subphase when either the minimum number of iterations has
+    been reached, and the maximum of \nm{ac} is less then 1e-10 or the
+    maximum number of iterations has been reached;\\
+    or (the next condition is a rare occurrence but
+    helps a lot when it occurs) at least 50 iterations have
+    been done and the minimum \nm{ac} is $< -0.8$ and we have not done the
+    maximum number of subphase repeats already (or user interrupt
+    or error)
+\item Repeat the subphase if we stopped because of the minimum value of \nm{ac},
+  unless we have already done the maximum number (set to 4).
+  \end{itemize}
+\item
+End of subphase. Replace parameters by the average in the subphase. Report details.
+\end{itemize}
+\section{Phase3}
+\subsection{Input}
+as for \nnm{robmon}
+\subsection{Output}
+as for \nnm{robmon}
+\subsection{Details}
+\subsubsection{Initialize}
+\begin{itemize}
+\item
+Initialize arrays for deviations, scores, derivatives.
+\item Divide write frequency by the number of parameters for finite differences,
+  2 for score derivatives. Leave unchanged for maximum likelihood. Then
+  re-prettify.
+\item
+ Announce Phase
+\end{itemize}
+\subsubsection{Iterations}
+\begin{itemize}
+\item Update progress via console or progress bar for each of first 5
+  iterations, then at the 10th and then at the write frequency.
+\item Call \nm{FRAN} and store the deviations, scores, derivative
+  contributions, and simulation values returned.
+\item If using finite differences (we revert to the method requested by the user
+  here, even if we altered it in phase 1 because the score method did not work),
+  call FiniteDifferences routine and store the resulting differences.
+\item After the 10th iteration check for user interrupts each time.
+\end{itemize}
+
+\subsubsection{End of Phase 3}
+\begin{itemize}
+\item
+Calculate derivative matrix \nm{dfra}. Formulae as in Phase 1.
+\item
+Create a flag \nm{diver} for each parameter, set to true if all the
+parameter values are fixed and the absolute value of the corresponding
+diagonal of the derivative matrix is less than 1e-6. \label{sec:diver}.
+\item
+Calculate the covariance matrix of the simulated deviations, and
+the autocorrelations between them. (Done in the CalculateDerivative3
+routine).
+\item
+Report\ldots
+\item Calculate $t$-values for deviations from targets, as mean
+  deviation divided by sqrt of diagonal entry of covariance
+  matrix. Use 0 for small values of deviations and 999 for small
+  values of variance.
+\item
+Report $t$-values, and comments on their values.
+\item For maximum likelihood, report autocorrelations
+\item Calculate \nm{cov}, the covariance matrix of the estimates:
+\begin{itemize}
+\item For maximum likelihood, inverse of \nm[dfra] - variance matrix of
+  deviations (here=scores!). (0 the rows and columns coresponding to
+  fixed parameters, and put 1 on the diagonal, first.)
+\item For others, matrix product of \nm{dinv}, the adjusted covariance
+  matrix of the deviations and the transpose of \nm{dinv}.
+\item Try to invert \nm{cov}. Report\ldots
+\item Update the flag \nm{diver} to mean: Not all parameters are fixed
+  and this one is fixed or \nm{diver} was true before (section
+  \ref{sec:diver}) or the corresponding entry in the diagonal of the
+  covariance matrix of the estimates is less than 1e-9. \label{sec:diver2}
+\item
+  set entries in \nm{cov} to 33* sqrt(diagonal) off diagonal and 999
+  on diagonal for parameters with \nm{diver} true.
+\end{itemize}
+\item Do ScoreTests if any have been requested.
+\end{itemize}
+\section{FiniteDifferences}
+\subsection{Input}
+as for \nnm{robmon} plus \nnm{fra}, the simulated value of the
+targets.
+\subsection{Output}
+as for \nnm{robmon}
+\subsection{Details}
+For each parameter,
+\begin{itemize}
+\item Call \nm{FRAN} with epsilon added to this parameter only
+\item Calculate the deviations from the simulated statistics with no epsilon.
+\item In first 10 iterations of phase 1: Record if difference is
+  greater than 1e-06
+\item Store and return these deviations divided by epsilon.
+\end{itemize}.
+\section{Score Tests}
+\subsection{Control}
+\begin{itemize}
+\item Do general test: call \nm{EvaluateTestStatistic} with the complete
+  arrays \nm{dfra}, \nm{msf}, the covariance matrix of the deviations,
+  and \nm{fra} the mean deviations.
+\item The values returned are a chi-squared test and, if the degrees of
+  freedom are 1, a one-sided test.
+\item If only one test was requested, the two values returned
+  correspond to the results required.
+\item If more than one test was requested, call \nm{EvaluateTestStatistic}
+  with data from which all but one of the parameters for which tests
+  are required have been removed. Repeat for each parameter for which
+  tests were requested.
+\end{itemize}
+\subsection{EvaluateTestStatistic}
+\begin{itemize}
+\item
+Partition \nm{dfra} into four: \R code is clear enough, I hope
+(\nm{drop=FALSE} just retains the matrix class even if one of the
+dimensions is 1)
+\begin{verbatim}
+d11 <- dfra[!test,!test,drop=FALSE]
+d22 <- dfra[test,test,drop=FALSE]
+d21 <- dfra[test,!test,drop=FALSE]
+d12 <- t(d21)
+\end{verbatim}
+\item
+Similarly create $\Sigma 11$,  $\Sigma 22$, $\Sigma 12$ and $\Sigma 21$
+ from \nm{msf}, and \texttt{z1} and \texttt{z2} from
+\nm{fra}. Then
+\begin{align*}
+\intertext{For maximum likelihood}
+\mathtt{ov} &= -\mathtt{z2}\\
+ \mathtt{vav} &= \left(\mathtt{d22} - \mathtt{d21} \
+   \mathtt{d11}^{-1}\ \mathtt{d12}\right) ^{-1}
+\intertext{Otherwise}
+\mathtt{ov} &= \mathtt{z2} - \mathtt{d21}  \ \mathtt{d11}^{-1} \ \mathtt{z1}\\
+\mathtt{vav} &= \left(\Sigma22 -\mathtt{d21}  \  \mathtt{d11}^{-1} \Sigma12 -
+(\Sigma21 - \mathtt{d21}  \  \mathtt{d11}^{-1} \Sigma11)\
+\mathtt{d11}^{-T} \ \mathtt{d21}^T\right )^{-1}
+\intertext{then}
+\text{test statistic} &= \mathtt{ov}^T  \ \mathtt{vav}\  \mathtt{ov}\\
+\intertext{ and the one-sided one, if appropriate,}
+&\mathtt{ov} \sqrt{\mathtt{vav}}
+\end{align*}
+as \texttt{vav} is then a scalar.
+\end{itemize}
+\end{document}

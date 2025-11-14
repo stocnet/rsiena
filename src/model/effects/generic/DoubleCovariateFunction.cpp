@@ -16,6 +16,7 @@
 #include "data/ConstantCovariate.h"
 #include "data/ChangingCovariate.h"
 #include "data/BehaviorLongitudinalData.h"
+#include "data/LongitudinalData.h"
 #include "model/State.h"
 
 using namespace std;
@@ -96,6 +97,17 @@ void DoubleCovariateFunction::initialize(const Data * pData,
 
 
 /**
+ * Does the necessary preprocessing work for calculating the alter
+ * function for a specific ego. This method must be invoked before
+ * calling DoubleCovariateFunction::value(...).
+ */
+void DoubleCovariateFunction::preprocessEgo(int ego)
+{
+	AlterFunction::preprocessEgo(ego);
+}
+
+
+/**
  * Returns the first covariate value for the given actor.
  * For behavior, this is the non-centered value.
  */
@@ -141,6 +153,50 @@ double DoubleCovariateFunction::secondCovariateValue(int i) const
 	return value;
 }
 
+
+/**
+ * Returns the first covariate number of cases.
+ */
+int DoubleCovariateFunction::firstCovariateN() const
+{
+	int ncov = 0;
+
+	if (this->lpFirstConstantCovariate)
+	{
+		ncov = this->lpFirstConstantCovariate->covariateN();
+	}
+	else if (this->lpFirstChangingCovariate)
+	{
+		ncov = this->lpFirstChangingCovariate->covariateN();
+	}
+	else
+	{
+		ncov = this->lpFirstBehaviorData->observationCount();
+	}
+	return ncov;
+}
+
+/**
+ * Returns the second covariate number of cases.
+ */
+int DoubleCovariateFunction::secondCovariateN() const
+{
+	int ncov = 0;
+
+	if (this->lpSecondConstantCovariate)
+	{
+		ncov = this->lpSecondConstantCovariate->covariateN();
+	}
+	else if (this->lpSecondChangingCovariate)
+	{
+		ncov = this->lpSecondChangingCovariate->covariateN();
+	}
+	else
+	{
+		ncov = this->lpSecondBehaviorData->observationCount();
+	}
+	return ncov;
+}
 
 /**
  * Returns the first covariate value for the given actor, rounded to integer.

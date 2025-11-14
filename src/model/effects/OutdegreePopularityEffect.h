@@ -17,6 +17,12 @@
 #include <string>
 using namespace std;
 
+// ----------------------------------------------------------------------------
+// Section: Forward declarations
+// ----------------------------------------------------------------------------
+
+class SqrtTable;
+
 namespace siena
 {
 
@@ -43,7 +49,7 @@ class OutdegreePopularityEffect : public NetworkEffect
 {
 public:
 	OutdegreePopularityEffect(const EffectInfo * pEffectInfo,
-		bool root, bool centered);
+		bool root, bool centered, bool threshold, bool trunc);
 
 	virtual void initialize(const Data * pData, State * pState,	int period,
 			Cache * pCache);
@@ -59,6 +65,9 @@ private:
 	// Lookup table for fast square root calculations
 	SqrtTable * lsqrtTable;
 	bool lcentered {};
+	bool lthreshold {};
+	bool ltrunc {};
+	double lp {};
 	double lcentering {};
 	string lvariableName {};
 };

@@ -47,8 +47,8 @@ Bug reports can be submitted at
   \tabular{ll}{
     Package: \tab RSiena\cr
     Type: \tab Package\cr
-    Version: \tab 1.4.13\cr
-    Date: \tab 2024-06-06\cr
+    Version: \tab 1.5.6\cr
+    Date: \tab 2025-10-28\cr
     Depends: \tab R (>= 3.5.0)\cr
     Imports: \tab Matrix, lattice, parallel, MASS, methods, xtable\cr
     Suggests: \tab network, tools, codetools, tcltk\cr
@@ -65,9 +65,10 @@ Bug reports can be submitted at
   Contributions by Josh Lospinoso, Charlotte Greenan,
   Johan Koskinen, Mark Ortmann, Natalie Indlekofer, Mark Huisman,
   Christoph Stadtfeld, Per Block, Marion Hoffman, Michael Schweinberger,
-  Robert Hellpap, Alvaro Uzaheta, Robert Krause, James Hollway, and Steffen Triebel.
+  Robert Hellpap, Alvaro Uzaheta, Robert Krause, James Hollway, 
+  Daniel Gotthardt, and Steffen Triebel.
 
-  Maintainer: Tom A.B. Snijders <tom.snijders@nuffield.ox.ac.uk>
+  Maintainer: Christian Steglich <c.e.g.steglich@rug.nl>
 }
 \references{
     Amati, V., Schoenenberger, F., and Snijders, T.A.B. (2015),
@@ -98,7 +99,7 @@ Bug reports can be submitted at
     \emph{Sociological Methodology} \bold{31}, 361--395.
     
     Snijders, T.A.B. (2017), Stochastic Actor-Oriented Models for Network
-   Dynamics. \emph{Annual Review of Statistics and Its Application}
+    Dynamics. \emph{Annual Review of Statistics and Its Application}
     \bold{4}, 343--363.
     
     Snijders, T.A.B., Koskinen, J., and Schweinberger, M. (2010).

@@ -10,6 +10,7 @@
  *****************************************************************************/
 
 #include "Covariate.h"
+#include "ActorSet.h"
 #include <cmath>
 
 using namespace std;
@@ -63,6 +64,11 @@ void Covariate::range(double range)
 	this->lrange = range;
 }
 
+
+int Covariate::covariateN() const
+{
+	return this->pActorSet()->n();
+}
 
 double Covariate::min() const
 {

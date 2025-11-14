@@ -12,7 +12,8 @@
 ##@initializeFRAN siena07 reformat data and send to C. get targets.
 initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 	profileData=FALSE, returnDeps=FALSE,
-	returnChains=FALSE, byGroup=FALSE,
+	returnChains=FALSE, returnChangeContributions=FALSE,
+	byGroup=FALSE, 
 	returnDataFrame=FALSE, byWave=FALSE,
 	returnLoglik=FALSE, onlyLoglik=FALSE)
 {
@@ -107,6 +108,18 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 	{
 		z$int2 <- 1
 	}
+	if (!is.null(prevAns))
+	{
+		if (!inherits(prevAns, "sienaFit"))
+		{
+			stop("prevAns should be a sienaFit object")
+		}
+		if (x$gmm & (!prevAns$gmm))
+		{
+			cat("Use of Generalized Method of Moments also required for prevAns.\n")
+			stop("Algorithm object specifies gmm, but prevAns did not use it.")
+		}	
+	}
 	if (!initC) ## i.e. first time round
 	{
 		if (!inherits(data,"siena"))
@@ -148,11 +161,12 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		}
 		if (x$useStdInits)
 		{
-		# The restriction to effects with shortname not unspInt or behUnspInt
-		# is because of the possibility to call getEffects with
+		# The restriction to effects with shortname not unspInt, behUnspInt, or 
+		# contUnspInt is because of the possibility to call getEffects with
 		# non-default values of nintn and behNintn.
-			effectsr <- (!(effects$shortName %in% c("unspInt","behUnspInt")))
-			defEffectsr <- (!(defaultEffects$shortName %in% c("unspInt","behUnspInt")))
+			effectsr <- (!(effects$shortName %in% c("unspInt","behUnspInt","contUnspInt")))
+			defEffectsr <- (!(defaultEffects$shortName %in% c("unspInt","behUnspInt",
+			                                                  "contUnspInt")))
 			if (any(effects$shortName[effectsr] != defaultEffects$shortName[defEffectsr]))
 			{
 				cat("There seems to be a mismatch between data set and effects object.\n")
@@ -321,8 +335,10 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		z$posj <- rep(FALSE, z$pp)
 		z$posj[requestedEffects$basicRate] <- TRUE
 		z$BasicRateFunction <- z$posj
-		z$gmmEffects <- (requestedEffects$type=="gmm")
-		
+		z$gmmEffects <- ((requestedEffects$type=="gmm") & requestedEffects$fix) # hhoho
+#browser()
+		## bugfix to allow use of intitializeFran without siena07
+		if(is.null(z$thetaBound)) z$thetaBound <- 50
 		if (any(!z$fixed))
 		{
 			if (max(abs(z$theta[!z$fixed])) > z$thetaBound)
@@ -513,7 +529,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 				# from phase1.r.
 				# Partial diagonalization of derivative matrix
 				# for use if 0 < x$diagonalize < 1.
-				if (!z$gmm)
+				if (any(!z$gmm))
 				{
 				  temp <- (1-x$diagonalize)*z$dfra +
 				    x$diagonalize*diag(diag(z$dfra), nrow=dim(z$dfra)[1])
@@ -530,13 +546,12 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 				  z$gamma <- prevAns$gamma
 				  temp <- (1-x$diagonalize)*z$D0 +
 				    x$diagonalize*diag(diag(z$D0), nrow=dim(z$D0)[1])
-				  temp[which(z$fixed & !z$gmmEffects), ] <- 0.0
-				  temp[, which(z$fixed & !z$gmmEffects)] <- 0.0
-				  diag(temp)[which(z$fixed & !z$gmmEffects)] <- 1.0
+				  temp[z$fixed[!z$gmmEffects], ] <- 0.0
+				  temp[, z$fixed[!z$gmmEffects]] <- 0.0
+				  diag(temp)[z$fixed[!z$gmmEffects]] <- 1.0
 				  # Invert this matrix
 				  z$dinvv <- solve(temp)%*%z$B
 				}
-
 				z$sf <- prevAns$sf
 				# check for backward compatibility with pre-1.1-220 versions:
 				if (is.null(prevAns$regrCoef))
@@ -631,26 +646,26 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		basicEffects <-
 			lapply(myeffects, function(x)
 				{
-					x[!x$shortName %in% c("unspInt", "behUnspInt"), ]
+					x[!x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt"), ]
 				}
 				)
 		basicEffectsl <-
 			lapply(myeffects, function(x)
 				{
-					!x$shortName %in% c("unspInt", "behUnspInt")
+					!x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt")
 				}
 				)
 
 		interactionEffects <-
 			lapply(myeffects, function(x)
 				{
-					x[x$shortName %in% c("unspInt", "behUnspInt"), ]
+					x[x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt"), ]
 				}
 				)
 		interactionEffectsl <-
 			lapply(myeffects, function(x)
 				{
-					x$shortName %in% c("unspInt", "behUnspInt")
+					x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt")
 				}
 				)
 		## store effects objects as we may need to recreate them
@@ -953,6 +968,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 	z$returnDepsStored <- returnDeps
 	z$observations <- f$observations
 	z$returnChains <- returnChains
+	z$returnChangeContributions <- returnChangeContributions
 	z$byGroup <- byGroup
 	z$byWave <- byWave
 	z$returnDataFrame <- returnDataFrame
@@ -1834,6 +1850,8 @@ unpackBehavior<- function(depvar, observations)
     attr(beh, "simMean") <- attr(depvar, "simMean")
     ## attr simMeans
     attr(beh, "simMeans") <- attr(depvar, "simMeans")
+    ## attr variance
+    attr(beh, "variance") <- attr(depvar, "variance")
     if (attr(depvar, "type") == "behavior")
     {
         beh <- round(beh)
@@ -2120,15 +2138,21 @@ numberIntn <- function(myeff){
 
 ##@ numberIntn siena07 sienaBayes, number of behavior interaction effects used for getEffects
 numberBehIntn <- function(myeff){
-	if (!is.null(myeff)){	
-		numbeh <- length(unique(myeff$name[myeff$shortName=="linear"]))# number of dependent behaviors
+	if (!is.null(myeff)){
+		numbeh <- length(unique(myeff$name[myeff$shortName=="linear"])) # number of discrete behaviors
 		nbehIntn <- sum(myeff$shortName == 'behUnspInt')/3 # 3 for eval - creation - endow
+		numcont <- length(unique(myeff$name[myeff$shortName=="intercept"])) # nr. of continuous behaviors
+		ncontIntn <- sum(myeff$shortName == 'contUnspInt')
 	}
 	else
 	{
 		numbeh <- 0
+		numcont <- 0
 	}		
-	ifelse((numbeh <= 0), 4, nbehIntn/numbeh) # 4 is the default in getEffects
+	ifelse((numbeh == 0 && numcont == 0), 4,  # 4 is the default in getEffects
+	       ifelse(numbeh == 0, max(4, ncontIntn/numcont),
+           ifelse(numcont == 0, max(4, nbehIntn/numbeh),
+	              max(nbehIntn/numbeh, ncontIntn/numcont))))
 }
 
 
@@ -2154,7 +2178,7 @@ checkVersion <- function(dat, effs){
 		differentVersions <- (effectsVersion != attr(defaultEffects, "version"))
 	}
 	if ((differentVersions) & 
-		(any((effs$shortName %in% c("unspInt","behUnspInt"))&effs$include)))
+		(any((effs$shortName %in% c("unspInt","behUnspInt", "contUnspInt"))&effs$include)))
 		{
 		warning("Your effects object contains interaction effects and was made
 		  using a different RSiena version. 

@@ -11,3 +11,4 @@
 ^README.md$
 ^.*\.code-workspace$
 NEWSnew.md
+man/Show.*

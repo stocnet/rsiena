@@ -4,6 +4,9 @@
 \alias{score.Test}
 \alias{scoreTest}
 \alias{sienaTest}
+\alias{siena.Test}
+\alias{scoretest}
+\alias{sienatest}
 \alias{testSame.RSiena}
 \title{  Wald and score tests for RSiena results }
 \description{

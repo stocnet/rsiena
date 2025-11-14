@@ -9,6 +9,7 @@
  * OutTieFunction.
  *****************************************************************************/
 
+#include <R_ext/Print.h>
 #include "OutTieFunction.h"
 #include "model/tables/NetworkCache.h"
 
@@ -25,6 +26,50 @@ namespace siena
 OutTieFunction::OutTieFunction(string networkName) :
 	NetworkAlterFunction(networkName)
 {
+}
+
+
+/**
+ * Constructor.
+ * @param[in] networkName the name of the network variable this function is
+ * associated with
+ */
+OutTieFunction::OutTieFunction(string networkName, 
+				const bool simulatedState) :
+	NetworkAlterFunction(networkName, simulatedState)
+{
+}
+
+/**
+ * Initializes this function.
+ * @param[in] pData the observed data
+ * @param[in] pState the current state of the dependent variables
+ * @param[in] period the period of interest
+ * @param[in] pCache the cache object to be used to speed up calculations
+ */
+void OutTieFunction::initialize(const Data * pData,
+	State * pState,  
+	int period,
+	Cache * pCache)
+{
+	NetworkAlterFunction::initialize(pData, pState, period, pCache);
+}
+
+/**
+ * Initializes this function.
+ * @param[in] pData the observed data
+ * @param[in] pState the current state of the dependent variables
+ * @param[in] pSimulatedState the current simulated state of the dependent variables
+ * @param[in] period the period of interest
+ * @param[in] pCache the cache object to be used to speed up calculations
+ */
+void OutTieFunction::initialize(const Data * pData,
+	State * pState, State * pSimulatedState,  
+	int period,
+	Cache * pCache)
+{
+	NetworkAlterFunction::initialize(pData, pState, pSimulatedState, period, pCache);	
+//	Rprintf("Passeert hier\n");
 }
 
 

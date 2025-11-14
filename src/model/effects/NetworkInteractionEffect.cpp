@@ -141,6 +141,8 @@ double NetworkInteractionEffect::egoStatistic(int ego,
 	{
 		// Special case. The only effect that is not an ego effect can be
 		// an arbitrary network effect.
+		// Distinguishing this special case leads only to a 
+		// minor gain in efficiency.
 
 		// In what follows, we use the fact that tieStatistic(alter) is
 		// the same for an ego effect regardless of the alter.
@@ -182,6 +184,8 @@ double NetworkInteractionEffect::egoStatistic(int ego,
 	{
 		// The regular case: All interacting effects are assumed to be dyadic
 		statistic = NetworkEffect::egoStatistic(ego, pSummationTieNetwork);
+		// this means that the sum of
+		// NetworkInteractionEffect::tieStatistic (below!) will be used
 	}
 
 	return statistic;

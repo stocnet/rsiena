@@ -261,7 +261,7 @@ phase1.2 <- function(z, x, ...)
 	  W <- solve(sigmagmm) # Matrix of GMoM weights
 	  gamma <- z$dfra[,-which(z$gmmEffects==TRUE)] # gammaT qxp matrix of first order derivatives
 	  B0 <- t(gamma) %*% W
-	  B <- solve(diag(sqrt(rowSums(B0*B0)))) %*% B0 # Row-normlized matrix B
+	  B <- solve(diag(sqrt(rowSums(B0*B0)))) %*% B0 # Row-normalized matrix B
 	  D0 <- B %*% gamma # Matrix D = B * gammaT
 	  if (inherits(try(dinvGmm <- solve(D0), silent=TRUE), "try-error"))
 	  {
@@ -310,9 +310,10 @@ phase1.2 <- function(z, x, ...)
 	{
 	  temp <- (1-x$diagonalize)*dinvGmm +
 	    x$diagonalize*diag(diag(dinvGmm), nrow=dim(dinvGmm)[1])
-	  temp[which(z$fixed & !z$gmmEffects), ] <- 0.0
-	  temp[, which(z$fixed & !z$gmmEffects)] <- 0.0
-	  diag(temp)[which(z$fixed & !z$gmmEffects)] <- 1.0
+	  temp[z$fixed[!z$gmmEffects], ] <- 0.0  # changed version 1.4.19,
+	                                         # also next 2 lines
+	  temp[, z$fixed[!z$gmmEffects]] <- 0.0
+	  diag(temp)[z$fixed[!z$gmmEffects]] <- 1.0
 	  # Invert this matrix
 	  z$dinvv <- solve(temp)%*%B
 	}
@@ -332,13 +333,13 @@ phase1.2 <- function(z, x, ...)
 			format(0.5 * x$firstg, digits = 5, nsmall = 5, width = 8), '.\n'),
 		cf, sep='')
 	fchange <- 0.5 * x$firstg * fchange
-	if (!z$gmm)
+	if (z$gmm)
 	{
-	fchange[z$fixed] <- 0.0
+		fchange[z$fixed & !z$gmmEffects] <- 0.0
 	}
 	else
 	{
-	  fchange[which(z$fixed & !z$gmmEffects)] <- 0.0
+		fchange[z$fixed] <- 0.0
 	}
 	##check if jump is too large
 	maxrat<- max(abs(fchange / z$scale))
@@ -409,7 +410,7 @@ CalculateDerivative <- function(z, x)
 					##browser()
 					z$jacobianwarn1[i] <- TRUE
 					Report(c('Warning: diagonal value', i,
-							'is non-positive.\n\n'), cf)
+							'is non-positive: ', round(dfra[i, i],8),'  \n\n'), cf)
 				}
 			}
 			if (z$n1 < 200)
@@ -668,6 +669,7 @@ makeZsmall <- function(z)
 	zsmall$nrunMH <- z$nrunMH
 	zsmall$returnDeps <- z$returnDeps
 	zsmall$returnChains <- z$returnChains
+	zsmall$returnChangeContributions <- z$returnChangeContributions
 	zsmall$returnDataFrame <- z$returnDataFrame
 	zsmall$addChainToStore <- z$addChainToStore
 	zsmall$callGrid <- z$callGrid

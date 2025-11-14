@@ -40,12 +40,15 @@ public:
 	DoubleCovariateFunction(std::string covariateName1, std::string covariateName2);
 	virtual void initialize(const Data * pData, State * pState, int period,
 			Cache * pCache);
+	virtual void preprocessEgo(int ego);
 
 protected:
 	double firstCovariateValue(int i) const;
 	double secondCovariateValue(int i) const;
 	int firstCovariateIntValue(int i) const;
 	int secondCovariateIntValue(int i) const;
+	int firstCovariateN() const;
+	int secondCovariateN() const;
 	bool firstMissing(int i) const;
 	bool secondMissing(int i) const;
 	double firstCovariateMinimum() const;

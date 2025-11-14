@@ -23,8 +23,9 @@ class SameCovariateInTiesFunction: public CovariateNetworkAlterFunction
 public:
 	SameCovariateInTiesFunction(std::string networkName,
 			std::string covariateName, bool sameValue, bool sameVariable,
-			bool excludeMissing);
+			int parameter, bool excludeMissing);
 
+	virtual ~SameCovariateInTiesFunction();
 	virtual void initialize(const Data * pData,
 		State * pState, int period, Cache * pCache);
 
@@ -35,6 +36,11 @@ private:
 	bool lexcludeMissing {};
 	bool lsameValue {};
 	bool lsameVariable {};
+	bool lroot {}; // should the square root be taken?
+	bool laverage {}; // should the average be used?
+	int * lpCovariateNumbers {};
+	double lCovEgo {};
+	int lCovNumberEgo {};
 };
 
 }

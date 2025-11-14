@@ -51,6 +51,7 @@ public:
 
 	double similarity(double a, double b) const;
 	double similarityNetwork(double a, double b, std::string name) const;
+	int covariateN() const;
 		
 	virtual double min() const;
 	virtual double max() const;
