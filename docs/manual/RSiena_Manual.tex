@@ -15277,6 +15277,43 @@ a_{i\vit}(x, z)\, = \,x_{+i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_
 a_{i\vit}(x, z) \, = \, v_{i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij}}.
 \]
 
+\item \emph{Total In-Exposure at Distance 2} (\verb|totInExposureDist2|):
+    \[
+        a_{i10}(x, z) =  \sum_{h \neq i} z_h \sum_{j} x_{ij} x_{hj}
+    \]
+    This statistic sums, for each actor $i$, the number of indirect exposures to alters with 
+    attribute $z_h$ via shared connections at distance 2 (i.e., through common alters $j$).
+
+    Multiple versions of averaging have been implemented:
+
+\item \emph{Average Total In-Exposure at Distance 2} (\verb|avTinExposureDist2|):
+\[
+      a_{i11}(x, z) = \frac{\sum_{h \neq i} z_h \sum_{j} x_{ij} x_{hj}}{\sum_{j} x_{ij}}
+\]
+This version averages the total in-exposure at distance 2 by the number of direct 
+connections of actor $i$. If $\sum_{j}x_{ij}=0$, the statistic is defined as 0.
+
+\item\emph{Total Average In-Exposure at Distance 2} (\verb|totAInExposureDist2|):
+\[
+      a_{i12}(x, z) = \sum_{h \neq i} z_h \sum_{j}\frac{ x_{ij} x_{hj}}{\sum_{h'} x_{h'j} - x_{ij}}
+\]
+Here, for each shared alter $j$, the exposure is averaged over the number of other actors 
+(excluding $i$) connected to $j$. If the denominator is 0, the term is defined as 0.
+
+% The version with both types of averaging is not yet implemented.
+
+\item\emph{Any In-Exposure at Distance 2} (\verb|anyInExposureDist2|):
+\[
+      a_{i13}(x, z) = \sum_{j} 
+      \begin{cases}
+      1  & \text{if } x_{ij} \sum_{h} z_h  x_{hj} > 0 \\
+      0 & \text{otherwise}
+      \end{cases}
+\]
+This effect counts, for each alter $j$ connected to $i$, whether there is at least one 
+other actor $h$ (with $z_h>0$) also connected to $j$. This is a version of penalizing 
+many indirect alters.
+
 \end{enumerate}
 
 For all  these diffusion effects there is an additional dependence
@@ -15292,7 +15329,7 @@ have adopted the innovation, i.e., if
 E.g., if $p=3$, then there is influence on actor $i$ only if
 this actor has at least three alters who have adopted the innovation.
 
-For the effects \verb|avExposure|, \verb|totExposure|, \verb|susceptAvIn|,
+For the effects \verb|avExposure|, \verb|avTinExposureDist2|, \verb|totExposure|, \verb|totInExposureDist2|, \verb|totAInExposureDist2|, \verb|susceptAvIn|,
 and \verb|susceptAvCovar|, \\
 if $p < 0$,
 the same rule is applied with the minimum $|p|$, but if there
