@@ -1394,6 +1394,7 @@ void StatisticCalculator::calculateNetworkRateStatistics(
 void StatisticCalculator::calculateBehaviorRateStatistics(
 	BehaviorLongitudinalData * pBehaviorData)
 {
+	Cache cache;
 	// create a copy of the current state and zero any values missing
 	//at either end of period
 	const int * currentState = this->lpState->
@@ -1602,47 +1603,28 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 		else if (rateType == "diffusion")
 		{
 			DiffusionRateEffect * pEffect = 0;
-		    NetworkLongitudinalData *pNetworkData = this->lpData->
-		        pNetworkData(interactionName);
-		    const Network * pStructural =
-		        pNetworkData->pNetworkLessMissingStart(this->lperiod);
-			// unused:
-			// BehaviorLongitudinalData * pBehavior =
-			//		this->lpData->pBehaviorData(interactionName);
-			// initialize BehaviorVariable pointer BUT SHOULD BE DONE DIFFERENTLY (DG)
-			EpochSimulation dummySimulation(const_cast<Data*>(this->lpData), const_cast<Model*>(this->lpModel));
-			BehaviorVariable * pBehaviorVariable = new BehaviorVariable(pBehaviorData, &dummySimulation);
-			pBehaviorVariable->initialize(this->lperiod);
+			Rprintf("Create diffusion rate effect in StatisticCalculator: %s\n", pEffectInfo->effectName().c_str());
+
 			if (interactionName2 == "")
 			{
 				if (effectName == "avExposure" || effectName == "totExposure")
 				{
-					pEffect = new ExposureEffect(pEffectInfo, pStructural, pBehaviorVariable, effectName, parameter, internalEffectParameter);
+					pEffect = new ExposureEffect(pEffectInfo);
 				}
 				else if (effectName == "infectIn" || effectName == "infectDeg" || effectName == "infectOut")
 				{
-					pEffect = new InfectEffect(pEffectInfo, pStructural, pBehaviorVariable, effectName, parameter, internalEffectParameter);
+					pEffect = new InfectEffect(pEffectInfo);
 				}
 				else if(effectName == "susceptAvIn")
 				{
-					pEffect = new SusceptibilityEffect(pEffectInfo,
-												pStructural,
-												pBehaviorVariable,
-												effectName,
-												parameter,
-												internalEffectParameter);
+					pEffect = new SusceptibilityEffect(pEffectInfo);
 				}
 				else if(effectName == "anyInExposureDist2" ||
 					effectName == "totInExposureDist2" ||
 					effectName == "avTinExposureDist2" ||
 					effectName == "totAInExposureDist2")
 				{
-					pEffect = new Distance2ExposureEffect(pEffectInfo,
-												pStructural,
-												pBehaviorVariable,
-												effectName,
-												parameter,
-												internalEffectParameter);
+					pEffect = new Distance2ExposureEffect(pEffectInfo);
 				}
 				else
 				{
@@ -1652,32 +1634,13 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 			}
 			else
 			{
-				ConstantCovariate * pConstantCovariate =
-					this->lpData->pConstantCovariate(interactionName2);
-				ChangingCovariate * pChangingCovariate =
-					this->lpData->pChangingCovariate(interactionName2);
-	
 				if (effectName == "infectCovar")
 				{
-					pEffect = new InfectEffect(pEffectInfo,
-												pStructural,
-												pBehaviorVariable,
-												pConstantCovariate,
-												pChangingCovariate,
-												effectName,
-												parameter,
-												internalEffectParameter);
+					pEffect = new InfectEffect(pEffectInfo);
 				}
 				else if(effectName == "susceptAvCovar")
 				{
-					pEffect = new SusceptibilityEffect(pEffectInfo,
-												pStructural,
-												pBehaviorVariable,
-												pConstantCovariate,
-												pChangingCovariate,
-												effectName,
-												parameter,
-												internalEffectParameter);
+					pEffect = new SusceptibilityEffect(pEffectInfo);
 				}
 				else
 				{
@@ -1685,10 +1648,13 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 						effectName);
 				}
 			}
+			Rprintf("Initialize the effect to work with our data and state of variables.\n");
+			pEffect->initialize(lpData, lpPredictorState, lperiod, &cache);
 			double statistic = 0;
+			Rprintf("Calculate diffusion rate statistic.\n");
 			for (int i = 0; i < pBehaviorData->n(); i++)
 			{
-				statistic += pEffect->value(i, this->lperiod) * difference[i];
+				statistic += pEffect->egoRateStatistic(i) * difference[i];
 			}
 			delete pEffect;
 			this->lstatistics[pEffectInfo] = statistic;

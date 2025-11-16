@@ -9,7 +9,7 @@
 
 namespace siena {
 
-double ExposureEffect::proximityValue(const Network* pNetwork, int i, int period) const
+double ExposureEffect::proximityValue(const Network* pNetwork, int i) const
 {
     int egoNumer = 1;
     int egoDenom = 1;
@@ -26,7 +26,7 @@ double ExposureEffect::proximityValue(const Network* pNetwork, int i, int period
     {
         for (IncidentTieIterator iter = pNetwork->outTies(i); iter.valid(); iter.next())
         {
-            double alterValue = this->lpBehaviorVariable->value(iter.actor());
+            double alterValue = this->value(iter.actor());
             if (alterValue >= 0.5)
             {
                 numInfectedAlter++;
@@ -35,7 +35,7 @@ double ExposureEffect::proximityValue(const Network* pNetwork, int i, int period
         }
     }
 
-    totalAlterValue = this->applyInternalEffectParameter(totalAlterValue, numInfectedAlter);
+    totalAlterValue = this->applyThreshold(totalAlterValue, numInfectedAlter);
 
     totalAlterValue *= egoNumer;
 

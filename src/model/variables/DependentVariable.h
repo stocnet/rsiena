@@ -143,7 +143,6 @@ public:
 	double logreciprocalDegreeScore(const NetworkVariable * pNetwork) const;
 
 	// Diffusion effects
-
 	std::map<const EffectInfo *, double> ldiffusionscores;
 	std::map<const EffectInfo *, double> ldiffusionsumterms;
 	
@@ -186,6 +185,7 @@ public:
 	int aborts(int stepType) const;
 
 	int numberSettings() const;
+	inline const std::vector<DiffusionRateEffect*>& diffusionRateEffects() const;
 
 protected:
 	inline EpochSimulation * pSimulation() const;
@@ -456,7 +456,6 @@ const Function * DependentVariable::pCreationFunction() const
 	return this->lpCreationFunction;
 }
 
-
 /**
  * Returns the index of the current period.
  */
@@ -472,6 +471,10 @@ int DependentVariable::period() const
 double DependentVariable::basicRate() const
 {
 	return this->lbasicRate;
+}
+
+inline const std::vector<DiffusionRateEffect*>& DependentVariable::diffusionRateEffects() const {
+    return ldiffusionRateEffects;
 }
 
 }

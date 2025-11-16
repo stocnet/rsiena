@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include "SusceptibilityEffect.h"
 #include "utils/Utils.h"
-#include "model/variables/BehaviorVariable.h"
 #include "network/OneModeNetwork.h"
 #include "data/ConstantCovariate.h"
 #include "data/ChangingCovariate.h"
@@ -13,7 +12,7 @@
 namespace siena
 {
 
-double SusceptibilityEffect::proximityValue(const Network* pNetwork, int i, int period) const
+double SusceptibilityEffect::proximityValue(const Network* pNetwork, int i) const
 {
     int egoNumer = 1;
     int egoDenom = 1;
@@ -37,7 +36,7 @@ double SusceptibilityEffect::proximityValue(const Network* pNetwork, int i, int 
     {
         for (IncidentTieIterator iter = pNetwork->outTies(i); iter.valid(); iter.next())
         {
-            double alterValue = this->lpBehaviorVariable->value(iter.actor());
+            double alterValue = this->value(iter.actor());
             if (alterValue >= 0.5)
             {
                 numInfectedAlter++;
@@ -47,7 +46,7 @@ double SusceptibilityEffect::proximityValue(const Network* pNetwork, int i, int 
     }
 
     // Internal effect parameter thresholding
-    totalAlterValue = this->applyInternalEffectParameter(totalAlterValue, numInfectedAlter);
+    totalAlterValue = this->applyThreshold(totalAlterValue, numInfectedAlter);
 
     totalAlterValue *= egoNumer;
 
@@ -69,7 +68,7 @@ double SusceptibilityEffect::proximityValue(const Network* pNetwork, int i, int 
         }
         else if (this->lpChangingCovariate)
         {
-            rawStatistic *= this->lpChangingCovariate->value(i, period);
+            rawStatistic *= this->lpChangingCovariate->value(i, this->period());
         }
         else
         {

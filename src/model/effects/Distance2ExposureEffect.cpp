@@ -2,7 +2,6 @@
 #include <cstring>
 #include "Distance2ExposureEffect.h"
 #include "utils/Utils.h"
-#include "model/variables/BehaviorVariable.h"
 #include "network/OneModeNetwork.h"
 #include "data/ConstantCovariate.h"
 #include "data/ChangingCovariate.h"
@@ -12,7 +11,7 @@
 namespace siena
 {
 
-double Distance2ExposureEffect::proximityValue(const Network* pNetwork, int i, int period) const
+double Distance2ExposureEffect::proximityValue(const Network* pNetwork, int i) const
 {
     int egoNumer = 1;
     int egoDenom = 1;
@@ -37,7 +36,7 @@ double Distance2ExposureEffect::proximityValue(const Network* pNetwork, int i, i
             {
                 if (i != iterH.actor())
                 {
-                    double alterInDist2Value = this->lpBehaviorVariable->value(iterH.actor());
+                    double alterInDist2Value = this->value(iterH.actor());
                     if (alterInDist2Value >= 0.5)
                     {
                         numInfectedAlter++;
@@ -62,7 +61,7 @@ double Distance2ExposureEffect::proximityValue(const Network* pNetwork, int i, i
     }
 
     // does using the thresholds make sense here?
-    totalAlterValue = this->applyInternalEffectParameter(totalAlterValue, numInfectedAlter);
+    totalAlterValue = this->applyThreshold(totalAlterValue, numInfectedAlter);
 
     double rawStatistic;
     if (egoDenom > 1)

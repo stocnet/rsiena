@@ -14,7 +14,7 @@
 
 #include <string>
 #include "NetworkEffect.h"
-
+#include "BehaviorRateEffect.h"
 
 namespace siena
 {
@@ -24,10 +24,10 @@ namespace siena
 // ----------------------------------------------------------------------------
 
 class Network;
-class BehaviorVariable;
+// class BehaviorVariable;
 class ConstantCovariate;
 class ChangingCovariate;
-class NetworkVariable;
+// class NetworkVariable;
 
 // Remove: class DiffusionEffectValueTable;
 
@@ -36,68 +36,62 @@ class NetworkVariable;
 // ----------------------------------------------------------------------------
 
 /**
- * Encapsulates the information necessary for calculating the contributions
- * of a diffusion rate effect. This includes the effect type,
- * the network variable and the behavior variable
- * the effect depends on, and the statistical parameter of the effect.
+ * The base class for all diffusion rate effects depending on some network variable.
  */
-class DiffusionRateEffect : public Effect
+class DiffusionRateEffect : public BehaviorRateEffect
 {
 public:
-    DiffusionRateEffect(const EffectInfo* pEffectInfo,
-                        const Network* pNetwork,
-                        const BehaviorVariable* pBehaviorVariable,
-                        std::string effectName,
-                        double parameter,
-                        double internalEffectParameter);
-    DiffusionRateEffect(const EffectInfo* pEffectInfo,
-        const Network * pNetwork,
-        const BehaviorVariable * pBehaviorVariable,
-        const ConstantCovariate * pCovariate,
-        const ChangingCovariate * pChangingCovariate,
-        std::string effectName,
-        double parameter,
-        double internalEffectParameter);
+    DiffusionRateEffect(const EffectInfo* pEffectInfo);
 
     virtual ~DiffusionRateEffect();
     
-    // Returns the raw statistic (for scores and statistics)
-    double value(int i, int period) const;
+    virtual void initialize(const Data* pData, 
+        State* pState, int period, Cache* pCache);
     
-    // Returns the exponentiated rate contribution (for rate calculations)
-    double logRate(int i, int period) const;
-    
-    void parameter(double parameterValue);
-    double parameter() const;
+    double egoRateStatistic(int i) const;
+    double rateLinPred(int i) const;
 
     void setInternalEffectParameter(int parValue);
     int getInternalEffectParameter() const;
 protected:
+    inline const Network * pNetwork() const;
+    
     // Helper method that calculates raw proximity/exposure statistic
     // Contains all effect-specific conditional logic
     // double proximityValue(const Network* pNetwork, int i, int period) const;
     // Only declare as pure virtual, do not implement here:
-    virtual double proximityValue(const Network* pNetwork, int i, int period) const;
+    virtual double proximityValue(const Network* pNetwork, int i) const;
 
-	double applyInternalEffectParameter(double value, int numInfectedAlter) const;
-
-    // The network variable this effect depends on
-    const Network * lpNetwork;
-
-    // The behavior variable this effect depends on
-    const BehaviorVariable * lpBehaviorVariable;
+	double applyThreshold(double value, int numInfectedAlter) const;
 
     // The covariates some effects depend on
     const ConstantCovariate * lpConstantCovariate;
     const ChangingCovariate * lpChangingCovariate;
-
+    
     std::string leffectName {};
+
 private:
-    double lparameter {};
+     // The network variable this effect depends on
+    const Network * lpNetwork;
+
     int linternalEffectParameter {};
     int labsInternalEffectParameter {};
     bool linternalNonZero {};
+
 };
+
+// ----------------------------------------------------------------------------
+// Section: Inline methods
+// ----------------------------------------------------------------------------
+
+/**
+ * Returns the network this effect is interacting with.
+ */
+const Network * DiffusionRateEffect::pNetwork()
+	const
+{
+	return this->lpNetwork;
+}
 
 }
 

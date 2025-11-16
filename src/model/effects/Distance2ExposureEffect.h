@@ -15,7 +15,7 @@ public:
     using DiffusionRateEffect::DiffusionRateEffect; // Inherit constructors
 
 protected:
-    double proximityValue(const Network* pNetwork, int i, int period) const;
+    double proximityValue(const Network* pNetwork, int i) const;
 };
 
 }

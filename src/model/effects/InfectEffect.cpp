@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include "InfectEffect.h"
 #include "utils/Utils.h"
-#include "model/variables/BehaviorVariable.h"
 #include "network/OneModeNetwork.h"
 #include "data/ConstantCovariate.h"
 #include "data/ChangingCovariate.h"
@@ -12,7 +11,7 @@
 
 namespace siena {
 
-double InfectEffect::proximityValue(const Network* pNetwork, int i, int period) const
+double InfectEffect::proximityValue(const Network* pNetwork, int i) const
 {
     double totalAlterValue = 0;
     int numInfectedAlter = 0;
@@ -21,7 +20,7 @@ double InfectEffect::proximityValue(const Network* pNetwork, int i, int period) 
     {
         for (IncidentTieIterator iter = pNetwork->outTies(i); iter.valid(); iter.next())
         {
-            double alterValue = this->lpBehaviorVariable->value(iter.actor());
+            double alterValue = this->value(iter.actor());
 
             if (alterValue >= 0.5)
             {
@@ -45,7 +44,7 @@ double InfectEffect::proximityValue(const Network* pNetwork, int i, int period) 
                 }
                 else if (this->lpChangingCovariate)
                 {
-                    alterValue *= this->lpChangingCovariate->value(iter.actor(), period);
+                    alterValue *= this->lpChangingCovariate->value(iter.actor(), this->period());
                 }
                 else
                 {
@@ -56,7 +55,7 @@ double InfectEffect::proximityValue(const Network* pNetwork, int i, int period) 
         }
     }
 
-    totalAlterValue = this->applyInternalEffectParameter(totalAlterValue, numInfectedAlter);
+    totalAlterValue = this->applyThreshold(totalAlterValue, numInfectedAlter);
 
     return totalAlterValue;
 }

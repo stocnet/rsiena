@@ -9,10 +9,17 @@
  * DiffusionRateEffect.
  *****************************************************************************/
 
+#include <stdexcept>
+
 #include <cmath>
 #include <cstring>
 #include "DiffusionRateEffect.h"
 #include "utils/Utils.h"
+#include "data/Data.h"
+#include "model/State.h"
+#include "model/EffectInfo.h"
+#include "network/Network.h"
+#include "model/tables/Cache.h"
 #include "network/OneModeNetwork.h"
 #include "model/variables/NetworkVariable.h"
 #include "model/variables/BehaviorVariable.h"
@@ -28,80 +35,92 @@ namespace siena
 
 /**
  * Constructor.
- * @param[in] pNetwork the network this effect depends on
- * @param[in] pBehaviorVariable the behavior variable this effect depends on
- * @param[in] effectName the name of this effect
- * @param[in] parameter the statistical parameter of this effect
- * @param[in] internalEffectParameter the internal effect parameter
+ * @param[in] pEffectInfo the descriptor object of the effect
  */
-DiffusionRateEffect::DiffusionRateEffect(const EffectInfo* pEffectInfo,
-    const Network * pNetwork,
-    const BehaviorVariable * pBehaviorVariable,
-    string effectName,
-    double parameter,
-    double internalEffectParameter) : Effect(pEffectInfo)
+DiffusionRateEffect::DiffusionRateEffect(const EffectInfo* pEffectInfo)
+    : BehaviorRateEffect(pEffectInfo)
 {
-    this->lpNetwork = pNetwork;
-    this->lpBehaviorVariable = pBehaviorVariable;
-    this->lpConstantCovariate = 0;
-    this->lpChangingCovariate = 0;
-    this->leffectName = effectName;
-    this->lparameter = parameter;
-    this->linternalEffectParameter = round(internalEffectParameter);
-    this->labsInternalEffectParameter = std::abs(this->linternalEffectParameter);
-    this->linternalNonZero = (this->linternalEffectParameter != 0);
-
-    if (((effectName == "infectDeg") || (effectName == "infectIn") ||
-                (effectName == "infectOut")) && (this->linternalEffectParameter < 0))
-    {
-        throw logic_error("Negative internal parameter not permitted for effect "+effectName);
-    }
+    // Nothing else needed here; everything is set up in initialize
 }
 
 /**
- * Constructor.
- * @param[in] pNetwork the network this effect depends on
- * @param[in] pBehaviorVariable the behavior variable this effect depends on
- * @param[in] pConstantCovariate the covariate this effect depends on
- * @param[in] pChangingCovariate the changing covariate this effect depends on
- * @param[in] effectName the name of this effect
- * @param[in] parameter the statistical parameter of this effect
- * @param[in] internalEffectParameter the internal effect parameter
- */
-DiffusionRateEffect::DiffusionRateEffect(const EffectInfo* pEffectInfo,
-    const Network * pNetwork,
-    const BehaviorVariable * pBehaviorVariable,
-    const ConstantCovariate * pConstantCovariate,
-    const ChangingCovariate * pChangingCovariate,
-    string effectName,
-    double parameter,
-    double internalEffectParameter) : Effect(pEffectInfo)
-{
-    this->lpNetwork = pNetwork;
-    this->lpBehaviorVariable = pBehaviorVariable;
-    this->lpChangingCovariate = pChangingCovariate;
-    this->lpConstantCovariate = pConstantCovariate;
-    this->leffectName = effectName;
-    this->lparameter = parameter;
-    this->linternalEffectParameter = round(internalEffectParameter);
-    this->labsInternalEffectParameter = std::abs(this->linternalEffectParameter);
-    this->linternalNonZero = (this->linternalEffectParameter != 0);
-
-    if ((effectName == "infectCovar") && (this->linternalEffectParameter < 0))
-    {
-        throw logic_error("Negative internal parameter not permitted for effect "+effectName);
-    }
-}
-
-/**
- * Destructor.
+ * Deallocates this effect object;
  */
 DiffusionRateEffect::~DiffusionRateEffect()
 {
-    // Nothing to clean up
 }
 
-double DiffusionRateEffect::proximityValue(const Network* pNetwork, int i, int period) const
+/**
+ * Initializes this effect.
+ * @param[in] pData the observed data
+ * @param[in] pState the current state of the dependent variables
+ * @param[in] period the period of interest
+ * @param[in] pCache the cache object to be used to speed up calculations
+ */
+void DiffusionRateEffect::initialize(const Data* pData, State* pState, int period, Cache* pCache)
+{
+    BehaviorRateEffect::initialize(pData, pState, period, pCache);
+    string networkName = this->pEffectInfo()->interactionName1();
+    this->lpNetwork = pState->pNetwork(networkName);
+
+    if (!this->lpNetwork) {
+		throw logic_error("Network '" + networkName + "' expected.");
+	}
+
+    string name = this->pEffectInfo()->interactionName2();
+    // could just be done for those effects that need it?
+    if(!name.empty())
+    {
+        this->lpConstantCovariate = pData->pConstantCovariate(name);
+	    this->lpChangingCovariate = pData->pChangingCovariate(name);
+    }
+    this->leffectName = this->pEffectInfo()->effectName(); // not always necessary?
+    this->linternalEffectParameter = round(this->pEffectInfo()->internalEffectParameter()); // why round?
+    this->labsInternalEffectParameter = std::abs(this->linternalEffectParameter);
+    this->linternalNonZero = (this->linternalEffectParameter != 0);
+
+
+}
+
+
+// /**
+//  * Constructor.
+//  * @param[in] pNetwork the network this effect depends on
+//  * @param[in] pBehaviorVariable the behavior variable this effect depends on
+//  * @param[in] pConstantCovariate the covariate this effect depends on
+//  * @param[in] pChangingCovariate the changing covariate this effect depends on
+//  * @param[in] effectName the name of this effect
+//  * @param[in] parameter the statistical parameter of this effect
+//  * @param[in] internalEffectParameter the internal effect parameter
+//  */
+// DiffusionRateEffect::DiffusionRateEffect(const EffectInfo* pEffectInfo,
+//     const Network * pNetwork,
+//     const BehaviorVariable * pBehaviorVariable,
+//     const ConstantCovariate * pConstantCovariate,
+//     const ChangingCovariate * pChangingCovariate,
+//     string effectName,
+//     double parameter,
+//     double internalEffectParameter) : Effect(pEffectInfo)
+// {
+//     this->lpNetwork = pNetwork;
+//     this->lpBehaviorVariable = pBehaviorVariable;
+//     this->lpChangingCovariate = pChangingCovariate;
+//     this->lpConstantCovariate = pConstantCovariate;
+//     this->leffectName = effectName;
+//     this->lparameter = parameter;
+//     this->linternalEffectParameter = round(internalEffectParameter);
+//     this->labsInternalEffectParameter = std::abs(this->linternalEffectParameter);
+//     this->linternalNonZero = (this->linternalEffectParameter != 0);
+
+//     if ((effectName == "infectCovar") && (this->linternalEffectParameter < 0))
+//     {
+//         throw logic_error("Negative internal parameter not permitted for effect "+effectName);
+//     }
+// }
+
+
+
+double DiffusionRateEffect::proximityValue(const Network* pNetwork, int i) const
 {
     throw std::logic_error("proximityValue not implemented for this effect type.");
 }
@@ -281,7 +300,7 @@ double DiffusionRateEffect::proximityValue(const Network* pNetwork, int i, int p
     return rawStatistic;
 } */
 
-double DiffusionRateEffect::applyInternalEffectParameter(double value, int numInfectedAlter) const
+double DiffusionRateEffect::applyThreshold(double value, int numInfectedAlter) const
 {
     if (this->linternalNonZero)
     {
@@ -304,35 +323,18 @@ double DiffusionRateEffect::applyInternalEffectParameter(double value, int numIn
  * Returns the raw statistic (for scores and statistics calculation).
  * Simple transformer: just returns the proximity value.
  */
-double DiffusionRateEffect::value(int i, int period) const
+double DiffusionRateEffect::egoRateStatistic(int i) const
 {
-    return this->proximityValue(this->lpNetwork, i, period);
+    return this->proximityValue(this->lpNetwork, i);
 }
 
 /**
- * Returns the exponentiated rate contribution (for rate calculations).
- * Exponentiates the raw statistic: exp(parameter * rawStatistic)
+ * Returns the (log) rate contribution (for rate calculations).
  */
-double DiffusionRateEffect::logRate(int i, int period) const
+double DiffusionRateEffect::rateLinPred(int i) const
 {
-    double rawStatistic = this->proximityValue(this->lpNetwork, i, period);    
-    return this->lparameter * rawStatistic;
-}
-
-/**
- * Stores the parameter for the diffusion rate effect.
- */
-void DiffusionRateEffect::parameter(double parameterValue)
-{
-    this->lparameter = parameterValue;
-}
-
-/**
- * Returns the parameter for the diffusion rate effect.
- */
-double DiffusionRateEffect::parameter() const
-{
-    return this->lparameter;
+    double rawStatistic = this->proximityValue(this->lpNetwork, i);    
+    return this->parameter() * rawStatistic;
 }
 
 /**

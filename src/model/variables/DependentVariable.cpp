@@ -116,6 +116,8 @@ namespace siena
 	{
 		const Data *pData = this->lpSimulation->pData();
 		const Model *pModel = this->lpSimulation->pModel();
+		// const Cache *pCache = this->lpSimulation->pCache();
+
 
 		// initialize setting scores
 		if (this->networkVariable())
@@ -138,7 +140,7 @@ namespace siena
 		{
 			EffectInfo *pEffectInfo = rRateEffects[i];
 			double parameter = pEffectInfo->parameter();
-			double internalEffectParameter = pEffectInfo->internalEffectParameter();
+			// double internalEffectParameter = pEffectInfo->internalEffectParameter();
 			string effectName = pEffectInfo->effectName();
 			string interactionName = pEffectInfo->interactionName1();
 			string interactionName2 = pEffectInfo->interactionName2();
@@ -378,12 +380,12 @@ namespace siena
 			else if (rateType == "diffusion")
 			{
 				const NetworkVariable *pVariable;
-				const BehaviorVariable *pBehaviorVariable =
-					dynamic_cast<const BehaviorVariable *>(this);
+				// const BehaviorVariable *pBehaviorVariable =
+				// 	dynamic_cast<const BehaviorVariable *>(this);
 
 				pVariable = dynamic_cast<const NetworkVariable *>(
 					this->lpSimulation->pVariable(interactionName));
-				Network * pNetwork = pVariable->pNetwork();
+				// Network * pNetwork = pVariable->pNetwork();
 				if (!pVariable)
 				{
 					throw logic_error("The diffusion rate effect " +
@@ -397,27 +399,24 @@ namespace siena
 				{
 					throw std::invalid_argument("Mismatch of actor sets");
 				}
+				Rprintf("Create diffusion rate effect in dependentVariable: %s\n", effectName.c_str());
+
 				if (interactionName2 == "")
 				{
 					if (effectName == "avExposure" || effectName == "totExposure")
 					{
 						this->ldiffusionRateEffects.push_back(
-							new ExposureEffect(pEffectInfo, pNetwork, pBehaviorVariable, effectName, parameter, internalEffectParameter));
+							new ExposureEffect(pEffectInfo));
 					}
 					else if (effectName == "infectIn" || effectName == "infectDeg" || effectName == "infectOut")
 					{
 						this->ldiffusionRateEffects.push_back(
-							new InfectEffect(pEffectInfo, pNetwork, pBehaviorVariable, effectName, parameter, internalEffectParameter));
+							new InfectEffect(pEffectInfo));
 					}
 					else if(effectName == "susceptAvIn")
 					{
 						this->ldiffusionRateEffects.push_back(
-							new SusceptibilityEffect(pEffectInfo,
-													pNetwork,
-													pBehaviorVariable,
-													effectName,
-													parameter,
-													internalEffectParameter));
+							new SusceptibilityEffect(pEffectInfo));
 					}
 					else if(effectName == "anyInExposureDist2" ||
 						effectName == "totInExposureDist2" ||
@@ -425,12 +424,7 @@ namespace siena
 						effectName == "totAInExposureDist2")
 					{
 						this->ldiffusionRateEffects.push_back(
-							new Distance2ExposureEffect(pEffectInfo,
-													pNetwork,
-													pBehaviorVariable,
-													effectName,
-													parameter,
-													internalEffectParameter));
+							new Distance2ExposureEffect(pEffectInfo));
 					}
 					else
 					{
@@ -441,34 +435,20 @@ namespace siena
 				{
 					// Covariate-dependent diffusion rate effects
 
-					const ConstantCovariate *pConstantCovariate =
-						this->lpSimulation->pData()->pConstantCovariate(interactionName2);
-					const ChangingCovariate *pChangingCovariate =
-						this->lpSimulation->pData()->pChangingCovariate(interactionName2);
+					// const ConstantCovariate *pConstantCovariate =
+					// 	this->lpSimulation->pData()->pConstantCovariate(interactionName2);
+					// const ChangingCovariate *pChangingCovariate =
+					// 	this->lpSimulation->pData()->pChangingCovariate(interactionName2);
 
 					if (effectName == "infectCovar")
 					{
 						this->ldiffusionRateEffects.push_back(
-							new InfectEffect(pEffectInfo,
-													pNetwork,
-													pBehaviorVariable,
-													pConstantCovariate,
-													pChangingCovariate,
-													effectName,
-													parameter,
-													internalEffectParameter));
+							new InfectEffect(pEffectInfo));
 					}
 					else if (effectName == "susceptCovar" || effectName == "susceptAvCovar")
 					{
 						this->ldiffusionRateEffects.push_back(
-							new SusceptibilityEffect(pEffectInfo,
-													pNetwork,
-													pBehaviorVariable,
-													pConstantCovariate,
-													pChangingCovariate,
-													effectName,
-													parameter,
-													internalEffectParameter));
+							new SusceptibilityEffect(pEffectInfo));
 					}
 					else
 					{
@@ -912,7 +892,7 @@ namespace siena
 
 		for (int effectIndex = 0; effectIndex < effectCount; effectIndex++)
 		{
-			rate *= this->lstructuralRateEffects[effectIndex]->value(i);
+			rate *= this->lstructuralRateEffects[effectIndex]->value(i); // currently already exponentiated, change to exp of log sum later?
 		}
 
 		return rate;
@@ -927,7 +907,7 @@ namespace siena
 		int effectCount = this->ldiffusionRateEffects.size();
 		for (int effectIndex = 0; effectIndex < effectCount; effectIndex++)
 		{
-			rate += this->ldiffusionRateEffects[effectIndex]->logRate(i, this->lperiod);
+			rate += this->ldiffusionRateEffects[effectIndex]->rateLinPred(i);
 		}
 		return exp(rate);
 	}
@@ -1226,19 +1206,15 @@ namespace siena
 		{
 			EffectInfo *pInfo = rRateEffects[i];
 			string rateType = pInfo->rateType();
-			// string effectName = pInfo->effectName();
-			// string interactionName = pInfo->interactionName1();
-			//  string interactionName2 = pInfo->interactionName2();
-			// int internalEffectParameter = pInfo->internalEffectParameter(); unused?
-			// const BehaviorVariable *pBehaviorVariable =
-			//	dynamic_cast<const BehaviorVariable *>(this);
 			if (rateType == "diffusion")
 			{
 				// Find the corresponding DiffusionRateEffect
+				Rprintf("accumulate Rate score for  diffusion rate effect: %s\n", pInfo->effectName().c_str());
+
 				DiffusionRateEffect* pEffect = this->ldiffusionRateEffects[diffusionEffectIndex];
 				if (this == pSelectedVariable)
 				{
-					this->ldiffusionscores[pInfo] += pEffect->value(selectedActor, this->lperiod);
+					this->ldiffusionscores[pInfo] += pEffect->egoRateStatistic(selectedActor);
 				}
 				this->ldiffusionscores[pInfo] -= tau * this->ldiffusionsumterms[pInfo];
 				this->pSimulation()->score(pInfo, this->ldiffusionscores[pInfo]);
@@ -1694,10 +1670,11 @@ namespace siena
 			if (pInfo->rateType() == "diffusion")
 			{
 				double timesRate = 0;
+				Rprintf("accumulate Score Sum Term for  diffusion rate effect: %s\n", pInfo->effectName().c_str());
 				DiffusionRateEffect* pEffect = this->ldiffusionRateEffects[diffusionEffectIndex];
 				for (int actor = 0; actor < this->n(); actor++)
 				{
-					timesRate += pEffect->value(actor, this->lperiod) * this->lrate[actor];
+					timesRate += pEffect->egoRateStatistic(actor) * this->lrate[actor];
 				}
 				this->ldiffusionsumterms[pInfo] = timesRate;
 				diffusionEffectIndex++;
