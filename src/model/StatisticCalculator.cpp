@@ -1603,7 +1603,6 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 		else if (rateType == "diffusion")
 		{
 			DiffusionRateEffect * pEffect = 0;
-			Rprintf("Create diffusion rate effect in StatisticCalculator: %s\n", pEffectInfo->effectName().c_str());
 
 			if (interactionName2 == "")
 			{
@@ -1648,10 +1647,8 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 						effectName);
 				}
 			}
-			Rprintf("Initialize the effect to work with our data and state of variables.\n");
 			pEffect->initialize(lpData, lpPredictorState, lperiod, &cache);
 			double statistic = 0;
-			Rprintf("Calculate diffusion rate statistic.\n");
 			for (int i = 0; i < pBehaviorData->n(); i++)
 			{
 				statistic += pEffect->egoRateStatistic(i) * difference[i];

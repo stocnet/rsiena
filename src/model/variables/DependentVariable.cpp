@@ -399,7 +399,6 @@ namespace siena
 				{
 					throw std::invalid_argument("Mismatch of actor sets");
 				}
-				Rprintf("Create diffusion rate effect in dependentVariable: %s\n", effectName.c_str());
 
 				if (interactionName2 == "")
 				{
@@ -1209,7 +1208,6 @@ namespace siena
 			if (rateType == "diffusion")
 			{
 				// Find the corresponding DiffusionRateEffect
-				Rprintf("accumulate Rate score for  diffusion rate effect: %s\n", pInfo->effectName().c_str());
 
 				DiffusionRateEffect* pEffect = this->ldiffusionRateEffects[diffusionEffectIndex];
 				if (this == pSelectedVariable)
@@ -1670,7 +1668,6 @@ namespace siena
 			if (pInfo->rateType() == "diffusion")
 			{
 				double timesRate = 0;
-				Rprintf("accumulate Score Sum Term for  diffusion rate effect: %s\n", pInfo->effectName().c_str());
 				DiffusionRateEffect* pEffect = this->ldiffusionRateEffects[diffusionEffectIndex];
 				for (int actor = 0; actor < this->n(); actor++)
 				{
