@@ -2027,6 +2027,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new LinearShapeEffect(pEffectInfo);
 	}
+	else if (effectName == "linear_nc")
+	{
+		pEffect = new LinearShapeNCEffect(pEffectInfo);
+	}
 	else if (effectName == "quad")
 	{
 		pEffect = new QuadraticShapeEffect(pEffectInfo);
@@ -2034,6 +2038,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "quad_cc")
 	{
 		pEffect = new QuadraticShapeCcEffect(pEffectInfo);
+	}
+		else if (effectName == "quad_nc")
+	{
+		pEffect = new QuadraticShapeNCEffect(pEffectInfo);
 	}
 	else if (effectName == "constant")
 	{
@@ -2318,30 +2326,22 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
     else if (effectName == "avSimVarAlt")
     {
         pEffect = new VarianceAlterSimilarityEffect(pEffectInfo, true, false, false);
-    }
-	else if (effectName == "totTwoInStarAlt")
-	{
-		pEffect = new AverageTwoInStarAlterEffect(pEffectInfo, false, false);
 	}
-	else if (effectName == "avTwoInStarAlt")
-	{
-		pEffect = new AverageTwoInStarAlterEffect(pEffectInfo, true, false);
-	}
-	else if (effectName == "avTwoInStarAltA")
-	{
-		pEffect = new AverageTwoInStarAlterEffect(pEffectInfo, true, true);
-	}
-	else if (effectName == "totTwoInStarAltA")
-	{
-		pEffect = new AverageTwoInStarAlterEffect(pEffectInfo, false, true);
-	}
-	else if (effectName == "totGwdspFFAlt")
+		else if (effectName == "totGwdspFFAlt")
 	{
 		pEffect = new TotalGwdspAlterEffect(pEffectInfo, true);
 	}
 	else if (effectName == "totGwdspFBAlt")
 	{
 		pEffect = new TotalGwdspAlterEffect(pEffectInfo, false);
+	}
+	else if (effectName == "totGwdspFFAlt_nc")
+	{
+		pEffect = new TotalGwdspAlterNCEffect(pEffectInfo, true);
+	}
+	else if (effectName == "totGwdspFBAlt_nc")
+	{
+		pEffect = new TotalGwdspAlterNCEffect(pEffectInfo, false);
 	}
 	else if (effectName == "avAlt")
 	{
@@ -2467,6 +2467,22 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "totAInAltDist2")
 	{
 		pEffect = new AverageAlterInDist2Effect(pEffectInfo, false, true);
+	}
+	else if (effectName == "avInAltDist2_nc")
+	{
+		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, true, true);
+	}
+	else if (effectName == "totInAltDist2_nc")
+	{
+		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "avTInAltDist2_nc")
+	{
+		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, true, false);
+	}
+	else if (effectName == "totAInAltDist2_nc")
+	{
+		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, false, true);
 	}
     else if (effectName == "varAlt")
     {

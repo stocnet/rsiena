@@ -2,21 +2,21 @@ skip_on_cran()
 
 ################################################################################
 ################################################################################
-### file test-totTwoInStarAlt.R
+### file test-totInAltDist2_nc.R
 ################################################################################
 ################################################################################
 
 ################################################################################
-### Check totTwoInStarAlt effect ###
+### Check totInAltDist2_nc effect ###
 ################################################################################
 
-# Use internal data set to test totTwoInStarAlt effect
+# Use internal data set to test totInAltDist2_nc effect
 mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
 mybeh <- sienaDependent(s50a[, 2:3], type = "behavior")
 mydata <- sienaDataCreate(mynet, mybeh)
 mymodel <- getEffects(mydata)
 p <- 1
-mymodel <- setEffect(mymodel, totTwoInStarAlt, name = "mybeh", interaction1 = "mynet")
+mymodel <- setEffect(mymodel, totInAltDist2_nc, name = "mybeh", interaction1 = "mynet")
 mycontrols <- sienaAlgorithmCreate(projname = NULL, seed = 42)
 ans <- siena07(
   mycontrols,
@@ -77,10 +77,10 @@ test_that("Target statistics are correct", {
   #   (mybeh[, , 2])  %*%  (instarmat > 0)
   # )
   weighted <- (mybeh[, , 2]) %*% instarmat
-  totTwoInStarAlt_target <- sum((mybeh[, , 2]) * weighted)
+  totInAltDist2_nc_target <- sum((mybeh[, , 2]) * weighted)
 
   expect_equal(
-    totTwoInStarAlt_target,
+    totInAltDist2_nc_target,
     ans$targets[7]
   )
 

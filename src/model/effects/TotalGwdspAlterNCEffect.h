@@ -3,14 +3,14 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: TotalGwdspAlterEffect.h
+ * File: TotalGwdspAlterNCEffect.h
  *
  * Description: This file contains the declaration of the class GwdspEffect.
  *
  *****************************************************************************/
 
-#ifndef TOTALGWDSPALTEREFFECT_H_
-#define TOTALGWDSPALTEREFFECT_H_
+#ifndef TOTALGWDSPALTERNCEFFECT_H_
+#define TOTALGWDSPALTERNCEFFECT_H_
 
 #include "NetworkDependentBehaviorEffect.h"
 #include <vector>
@@ -25,10 +25,10 @@ class NetworkCache;
 /**
  * This class defines the total geometrically weighted alter effect.
  */
-class TotalGwdspAlterEffect : public NetworkDependentBehaviorEffect
+class TotalGwdspAlterNCEffect : public NetworkDependentBehaviorEffect
 {
 public:
-	TotalGwdspAlterEffect(const EffectInfo * pEffectInfo, bool forward);
+	TotalGwdspAlterNCEffect(const EffectInfo * pEffectInfo, bool forward);
 	virtual void initialize(const Data * pData, State * pState,	int period,
 			Cache * pCache);
 	// do we need a deallocator?
@@ -60,11 +60,11 @@ private:
 // should not be necessary
 
 
-// NetworkCache * TotalGwdspAlterEffect::pNetworkCache() const
+// NetworkCache * TotalGwdspAlterNCEffect::pNetworkCache() const
 // {
 // 	return this->lpNetworkCache;
 // }
 
 }
 
-#endif /*TOTALGWDSPALTEREFFECT_H_*/
+#endif /*TOTALGWDSPALTERNCEFFECT_H_*/

@@ -3,7 +3,7 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: TotalGwdspAlterEffect.cpp
+ * File: TotalGwdspAlterNCEffect.cpp
  *
  * Description: This file contains the implementation of the class
  * GwdspEffect.
@@ -11,7 +11,7 @@
 
 #include <stdexcept>
 #include <cmath>
-#include "TotalGwdspAlterEffect.h"
+#include "TotalGwdspAlterNCEffect.h"
 #include "network/Network.h"
 #include "model/State.h"
 #include "model/tables/Cache.h"
@@ -35,7 +35,7 @@ namespace siena
 /**
  * Constructor.
  */
-TotalGwdspAlterEffect::TotalGwdspAlterEffect(const EffectInfo * pEffectInfo, bool forward) :
+TotalGwdspAlterNCEffect::TotalGwdspAlterNCEffect(const EffectInfo * pEffectInfo, bool forward) :
 	NetworkDependentBehaviorEffect(pEffectInfo)
 {
 	this->linternalEffectParameter = pEffectInfo->internalEffectParameter();
@@ -60,7 +60,7 @@ TotalGwdspAlterEffect::TotalGwdspAlterEffect(const EffectInfo * pEffectInfo, boo
  * @param[in] period the period of interest
  * @param[in] pCache the cache object to be used to speed up calculations
  */
-void TotalGwdspAlterEffect::initialize(const Data * pData,
+void TotalGwdspAlterNCEffect::initialize(const Data * pData,
 	State * pState,
 	int period,
 	Cache * pCache)
@@ -82,7 +82,7 @@ void TotalGwdspAlterEffect::initialize(const Data * pData,
 /**
  * Calculates the contribution of a tie flip to the given actor.
  */
-double TotalGwdspAlterEffect::calculateChangeContribution(int actor,
+double TotalGwdspAlterNCEffect::calculateChangeContribution(int actor,
 		int difference)
 {
 	double contribution = 0;
@@ -112,7 +112,7 @@ double TotalGwdspAlterEffect::calculateChangeContribution(int actor,
 					twoc = this->lpInitialisedTable->get(j);
 				else 
 					twoc = this->lpInitialisedTable->get(j);
-				alterValue = this->centeredValue(j) * this->lcumulativeWeight[twoc];
+				alterValue = this->value(j) * this->lcumulativeWeight[twoc];
 				// int tieValue =  this->pNetwork()->tieValue(actor, j);
 				// if (((pNetwork->inDegree(j) - tieValue)> 0) && (this->ldivide2))
 				// {
@@ -138,7 +138,7 @@ double TotalGwdspAlterEffect::calculateChangeContribution(int actor,
 /**
  * Calculates the statistic corresponding to the given ego.
  */
-double TotalGwdspAlterEffect::egoStatistic(int ego, double * currentValues)
+double TotalGwdspAlterNCEffect::egoStatistic(int ego, double * currentValues)
 {
 	double statistic = 0;
 	const Network * pNetwork = this->pNetwork();
@@ -151,11 +151,11 @@ double TotalGwdspAlterEffect::egoStatistic(int ego, double * currentValues)
 				pathCount = pNetwork->twoPathCount(ego, j);
 			else
 				pathCount = pNetwork->inTwoStarCount(ego, j);
-			statistic += (currentValues[j]) *
+			statistic += (currentValues[j] + this->overallCenterMean()) *
 					this->lcumulativeWeight[pathCount];
 		}
 	}
-	statistic *= (currentValues[ego]);
+	statistic *= (currentValues[ego] + this->overallCenterMean());
 
 	return statistic;
 }

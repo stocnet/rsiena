@@ -67,24 +67,24 @@ double AverageTwoInStarAlterEffect::calculateChangeContribution(int actor,
 	if (pNetwork->outDegree(actor) > 0) 
 	{
 		// The formula for the effect:
-		// s_i(x) = v_i * sum(v_j) over all two-in-star alters j of i,
+		// s_i(x) = v_i * sum(v_h) over all two-in-star alters h of i,
 		// weighted by the number of common two-in-stars divided
 		// We need to calculate the change delta in s_i(x), if we changed
 		// v_i to v_i + d (d being the given amount of change in v_i).
 
 		double sumAlterValue = 0;
 		// double denom = 0;
-		for (int j = 0; j < this->n(); j++) //inefficient?
+		for (int h = 0; h < this->n(); h++) //inefficient?
 		{
-			if (j != actor)
+			if (h != actor)
 			{
 				// int instars = pNetwork->inTwoStarCount(actor, j);
-				int instars = this->pInStarTable()->get(j);
-				double alterValue = this->value(j) * instars;
-				int tieValue =  this->pNetwork()->tieValue(actor, j);
-				if (((pNetwork->inDegree(j) - tieValue)> 0) && (this->ldivide2))
+				int instars = this->pInStarTable()->get(h);
+				double alterValue = this->value(h) * instars;
+				int tieValue =  this->pNetwork()->tieValue(h, actor);
+				if (((pNetwork->outDegree(h) - tieValue)> 0) && (this->ldivide2))
 				{
-					alterValue /= (pNetwork->inDegree(j) - tieValue);
+					alterValue /= (pNetwork->outDegree(h) - tieValue);
 				}
 				sumAlterValue += alterValue;
 			}
@@ -110,26 +110,30 @@ double AverageTwoInStarAlterEffect::egoStatistic(int ego, double * currentValues
 {
 	double statistic = 0;
 	const Network * pNetwork = this->pNetwork();
+	double alterValue = 0;
 
 	// double denom = 0;
-	for (int j = 0; j < this->n(); j++)
+	for (int h = 0; h < this->n(); h++)
 	{
-		if (j != ego)
+		if (h != ego)
 		{
-			int instarCount = pNetwork->inTwoStarCount(ego, j);
+			int instarCount = pNetwork->inTwoStarCount(ego, h);
+			double alterValue = (currentValues[h] + this->overallCenterMean()) * instarCount;
+			if ((pNetwork->outDegree(h) > 1) && (this->ldivide2))
+			{
+				alterValue /= (pNetwork->outDegree(h) - 1);
+					// there always is a tie i -> iteri.actor()
+			}
+
 			// Configuration Table can not be used because preprocess ego has not been called before?
 			// if (instarCount > 0)
 			// {
 			// 	denom += currentValues[j] + this->overallCenterMean();
 			// }
-			statistic += (currentValues[j] + this->overallCenterMean()) * instarCount;
+			statistic += alterValue;
 		}
 		// tieFromi =  this->pNetwork()->tieValue(i, iter.actor());
-		if ((pNetwork->inDegree(j) > 1) && (this->ldivide2))
-		{
-			statistic /= (pNetwork->inDegree(j) - 1);
-				// there always is a tie i -> iteri.actor()
-		}
+
 	}
 	statistic *= (currentValues[ego] + this->overallCenterMean());
 	// if (denom != 0)

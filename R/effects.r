@@ -831,8 +831,9 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 		if (!(attr(depvar,'allUpOnly') || attr(depvar, 'allDownOnly')))
 		{
 			objEffects[grepl("linear shape", objEffects$effectName) &
-				objEffects$type == 'eval',
-			c('include', 'initialValue','untrimmedValue')]  <-
+				objEffects$type == 'eval' &
+				objEffects$shortName != 'linear_nc',
+				c('include', 'initialValue','untrimmedValue')]  <-
 				list(TRUE, starts$tendency, starts$untrimmed)
 		}
 		else
@@ -843,7 +844,7 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 		{
 			objEffects[grepl("quadratic shape", objEffects$effectName) &
 				objEffects$type == 'eval' &
-				objEffects$shortName != 'quad_cc','include'] <- TRUE
+				objEffects$shortName != 'quad_cc' & objEffects$shortName != 'quad_nc','include'] <- TRUE
 			## no starting value for quadratic effect
 		}
 

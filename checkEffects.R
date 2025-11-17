@@ -3446,7 +3446,7 @@ sum( (mybeh[,,3]-mbh) * (( sum((mybeh[,,3]-mbh) * colSums(mynet[,,2])) / sum(col
 
 
 ################################################################################
-### check totTwoInStarAlt
+### check totInAltDist2_nc
 ################################################################################
 
 mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
@@ -3464,7 +3464,7 @@ mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
 mybeh <- sienaDependent(s50a[,2:3], type="behavior")
 mydata <- sienaDataCreate(mynet, mybeh)
 mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,totTwoInStarAlt, name='mybeh', interaction1 = "mynet")
+mymodel <- setEffect(mymodel,totInAltDist2_nc, name='mybeh', interaction1 = "mynet")
 mymodel
 (ans2 <- siena07(mycontrols, data=mydata, effects=mymodel))
 ans2$targets # different from totInAltDist2
@@ -3473,7 +3473,7 @@ ans2$targets # different from totInAltDist2
 sum(mybeh[,,2] - mbh)# OK linear shape
 sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
 
-# for totTwoinstarAlt effect:
+# for totInAltDist2_nc effect:
 ## The target statistic equals the sum of over s_i^beh =
 ## v_i * sum(v_j) over all two-in-star alters j of i,
 ## weighted by the number of common two-out-stars
@@ -3496,10 +3496,10 @@ instars <- function(mat){
     return(matrix_vals)
   }
 
-divi <- function(x,y){ifelse(y==0, 0, x/y)}
+# divi <- function(x,y){ifelse(y==0, 0, x/y)}
 
 instarmat <- instars(mynet[,,1])
 
-weighted <- divi((mybeh[,,2]) %*% instarmat, (mybeh[,,2])  %*%  (instarmat > 0))
-weighted
-sum((mybeh[,,2])*weighted) # totTwoInStarAlt ok
+# weighted <- divi((mybeh[,,2]) %*% instarmat, (mybeh[,,2])  %*%  (instarmat > 0))
+weighted <- mybeh[,,2] %*% instarmat
+sum((mybeh[,,2])*weighted) # totInAltDist2_nc ok
