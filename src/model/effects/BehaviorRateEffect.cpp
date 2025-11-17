@@ -156,4 +156,23 @@ double BehaviorRateEffect::variance() const
     return this->lpBehaviorData->variance();
 }
 
+/**
+ * Calculates the behavior rate contribution corresponding to the given ego.
+ */
+double BehaviorRateEffect::calculateRateContribution(int ego) const
+{
+	throw runtime_error("calculateRateContribution not implemented for " +
+		this->pEffectInfo()->effectName());
+}
+
+/**
+ * Returns the linear predictor of the effect to the rate corresponding to the given ego.
+ */
+double BehaviorRateEffect::rateLinPred(int ego) const
+{
+	throw runtime_error("rateLinPred not implemented for " +
+		this->pEffectInfo()->effectName());
+}
+
+
 }

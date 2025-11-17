@@ -320,10 +320,10 @@ double DiffusionRateEffect::applyThreshold(double value, int numInfectedAlter) c
 }
 
 /**
- * Returns the raw statistic (for scores and statistics calculation).
+ * Returns the rate contribution (for scores and statistics calculation).
  * Simple transformer: just returns the proximity value.
  */
-double DiffusionRateEffect::egoRateStatistic(int i) const
+double DiffusionRateEffect::calculateRateContribution(int i) const
 {
     return this->proximityValue(this->lpNetwork, i);
 }
@@ -333,8 +333,8 @@ double DiffusionRateEffect::egoRateStatistic(int i) const
  */
 double DiffusionRateEffect::rateLinPred(int i) const
 {
-    double rawStatistic = this->proximityValue(this->lpNetwork, i);    
-    return this->parameter() * rawStatistic;
+    double rateContribution = this->calculateRateContribution(i);    
+    return this->parameter() * rateContribution;
 }
 
 /**

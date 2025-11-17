@@ -48,7 +48,7 @@ public:
     virtual void initialize(const Data* pData, 
         State* pState, int period, Cache* pCache);
     
-    double egoRateStatistic(int i) const;
+    double calculateRateContribution(int i) const;
     double rateLinPred(int i) const;
 
     void setInternalEffectParameter(int parValue);

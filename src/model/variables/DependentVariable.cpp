@@ -1212,7 +1212,7 @@ namespace siena
 				DiffusionRateEffect* pEffect = this->ldiffusionRateEffects[diffusionEffectIndex];
 				if (this == pSelectedVariable)
 				{
-					this->ldiffusionscores[pInfo] += pEffect->egoRateStatistic(selectedActor);
+					this->ldiffusionscores[pInfo] += pEffect->calculateRateContribution(selectedActor);
 				}
 				this->ldiffusionscores[pInfo] -= tau * this->ldiffusionsumterms[pInfo];
 				this->pSimulation()->score(pInfo, this->ldiffusionscores[pInfo]);
@@ -1671,7 +1671,7 @@ namespace siena
 				DiffusionRateEffect* pEffect = this->ldiffusionRateEffects[diffusionEffectIndex];
 				for (int actor = 0; actor < this->n(); actor++)
 				{
-					timesRate += pEffect->egoRateStatistic(actor) * this->lrate[actor];
+					timesRate += pEffect->calculateRateContribution(actor) * this->lrate[actor];
 				}
 				this->ldiffusionsumterms[pInfo] = timesRate;
 				diffusionEffectIndex++;
