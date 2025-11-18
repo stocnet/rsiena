@@ -1,3 +1,29 @@
+2025-10-28
+
+# RSiena 1.5.6
+
+## Changes in RSiena:
+### Coding
+  * The virtual function `preprocessEgo` now is defined properly for 
+    the function classes `NetworkAlterFunction`, 
+   `CovariateNetworkAlterFunction`, `DoubleCovariateFunction`, 
+   `SameCovariateInTiesFunction`. 
+   This was done to correct a bug that appeared for effect `sameXInPop`
+   for a two-mode network; perhaps there was a similar bug for `diffXInPop`,
+   `sameXOutAct`, `diffXOutAct`, and `sameXVInPop`. 
+### Functionality:
+  * Auxiliary function `egoAlterCombi` for GoF now omits values 
+    where the behavioral variable is `NA`.
+  * Various small additions to output of `siena07` for `verbose=TRUE` 
+    (`phase1.r` and `phase2.r`). 
+
+2025-10-17
+
+# RSiena 1.5.3
+
+### Effects
+  * New effects `quad_cc`, `avAlt_cc`, `totAlt_cc`.
+
 2025-09-06
 
 # RSiena 1.5.2

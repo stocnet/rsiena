@@ -216,7 +216,7 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.5.2.
+This version was renewed for \RS version 1.5.6.
 \end{abstract}
 
 
@@ -1184,7 +1184,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.5.2).
+  identified by a version number (e.g.\ 1.5.6).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -14711,6 +14711,9 @@ with the behavioral variable itself.
  $s^{\rm beh}_{i\vit}(x, z) =  z_i^2 \,$ ;\\
  note that here $z_i$ is the
  \underline{centered} dependent behavioral variable;
+ by default, this centering is done by the grand mean in the data;
+ for using the contemporaneous mean, work with the effect
+ \texttt{(quad\_cc)} instead;
 
  \item {\em threshold shape effect}    \texttt{(threshold)},
   \texttt{(threshold2)},  \texttt{(threshold3)},  \texttt{(threshold4)},
@@ -14975,11 +14978,15 @@ where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values in
  $s^{\rm beh}_{i\vit}(x, z) =  z_i \big( \sum_j x_{ij}\, z_j \big)
                                 / \big (\sum_j x_{ij}\big)  $\\
  (and the mean behavior, i.e. $0$, if the ratio is 0/0) ;
+ note that the mean behavior by default is the empirical grand mean in
+ the data; for using the contemporaneous mean, work with
+ \texttt{(avAlt\_cc)} instead;
 
  \item {\em total alter effect} \texttt{(totAlt)},
  defined by  $i$'s
  behavior multiplied by the sum of behavior of his alters, \\
  $s^{\rm beh}_{i\vit}(x, z) =  z_i \big( \sum_j x_{ij}\, z_j \big) ;  $\\
+ also here a contemporaneously centered variant \texttt{(totAlt\_cc)} exists;
 
  \item {\em average in-alter effect} \texttt{(avInAlt)},
  defined by  $i$'s
@@ -17404,12 +17411,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type
-\verb|R CMD check RSiena_1.5.2.tar.gz|\\
+\verb|R CMD check RSiena_1.5.6.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.5.2.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.5.6.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -18544,18 +18551,50 @@ Changes in RSiena:
 
 \fi
 
+
+
+\item 2025-10-28 GitHub, package version 1.5.6.
+
+Changes in RSiena:
+\begin{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+  \item Auxiliary function \sfn{egoAlterCombi} for  Goodness of Fit
+    now omits values  where the behavioral variable is missing.
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+   \item Bug corrected that may have affected effects
+   \texttt{sameXInPop}, \texttt{diffXInPop},
+   \texttt{sameXOutAct}, \texttt{diffXOutAct}, and \texttt{sameXVInPop},
+   leading to divergence or crashes.
+    \end{itemize}
+\end{itemize}
+
+
+\item 2025-10-17 GitHub, package version 1.5.3.
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects:
+   \begin{itemize}
+    \item \texttt{quad\_cc}, \texttt{avAlt\_cc}, \texttt{totAlt\_cc}.
+    \end{itemize}
+\end{itemize}
+
+
 \item 2025-09-06 GitHub, package version 1.5.2.
 
 Changes in RSiena:
 \begin{itemize}
 \item Improvements of functionality:
    \begin{itemize}
-    \item Option \texttt{returnChangeContributions=TRUE} added to 
-        \sfn{siena07}, allowing users to extract the 
+    \item Option \texttt{returnChangeContributions=TRUE} added to
+        \sfn{siena07}, allowing users to extract the
         \texttt{changeContributions} to the \sfn{sienaFit} object.
-    \item \sfn{sienaRIDynamics} reinstated based on the above new option, 
+    \item \sfn{sienaRIDynamics} reinstated based on the above new option,
         replacing the original code.
-  \item \sfn{selectionTable} got an attribute \texttt{quad} indicating 
+  \item \sfn{selectionTable} got an attribute \texttt{quad} indicating
     whether the plot is a quadratic function.
   \item Users can now extract now extract the changeContributions when running
     \sfn{siena07} by setting an argument \texttt{returnChangeContributions=TRUE}.

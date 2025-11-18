@@ -98,6 +98,17 @@ void NetworkAlterFunction::initialize(const Data * pData,
 }
 
 /**
+ * Does the necessary preprocessing work for calculating the alter
+ * function for a specific ego. This method must be invoked before
+ * calling NetworkAlterFunction::value(...).
+ */
+void NetworkAlterFunction::preprocessEgo(int ego)
+{
+	AlterFunction::preprocessEgo(ego);
+}
+
+
+/**
  * Returns if there is a tie from the current ego to the given alter.
  */
 bool NetworkAlterFunction::outTieExists(int alter) const

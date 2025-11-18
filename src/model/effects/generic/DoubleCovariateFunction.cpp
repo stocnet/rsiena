@@ -97,6 +97,17 @@ void DoubleCovariateFunction::initialize(const Data * pData,
 
 
 /**
+ * Does the necessary preprocessing work for calculating the alter
+ * function for a specific ego. This method must be invoked before
+ * calling DoubleCovariateFunction::value(...).
+ */
+void DoubleCovariateFunction::preprocessEgo(int ego)
+{
+	AlterFunction::preprocessEgo(ego);
+}
+
+
+/**
  * Returns the first covariate value for the given actor.
  * For behavior, this is the non-centered value.
  */

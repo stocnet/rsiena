@@ -105,7 +105,10 @@ SameCovariateInTiesFunction::~SameCovariateInTiesFunction()
  */
 void SameCovariateInTiesFunction::preprocessEgo(int ego)
 {
+	CovariateNetworkAlterFunction::preprocessEgo(ego);
 	this->lCovEgo = this->covvalue(ego);
+// Not rounded to integer, because for !this->laverage,
+// the function works also for non-integer covariates.
 	if (this->laverage)
 	{
 		this->lCovNumberEgo = this->lpCovariateNumbers[this->covIntValue(ego)];
@@ -173,11 +176,11 @@ double SameCovariateInTiesFunction::value(int alter) const
 		{
 			if (this->lsameValue)
 			{
-				vval = statistic/(this->lpCovariateNumbers[int(round(this->lCovEgo))]); 
+				vval = statistic/(this->lCovNumberEgo); 
 			}
 			else
 			{
-				int totdiff = this->covariateN() - this->lpCovariateNumbers[int(round(this->lCovEgo))];
+				int totdiff = this->covariateN() - this->lCovNumberEgo ;
 				if (totdiff > 0) // else 0/0
 				{
 					vval = statistic/totdiff; 

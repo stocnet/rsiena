@@ -317,7 +317,7 @@ Total of 240 iteration steps.
 1 0   
 > myeff <- setEffect(myeff, avAlt, name="mynet2", interaction1="mynet1")
   effectNumber effectName           shortName include fix   test  initialValue
-1 565          mynet2 average alter avAlt     TRUE    FALSE FALSE          0  
+1 566          mynet2 average alter avAlt     TRUE    FALSE FALSE          0  
   parm
 1 0   
 > ##myeff$initialValue[98] <- 0.34699930338 ## siena3 starting values differ
@@ -588,7 +588,7 @@ Total of 266 iteration steps.
 11 mynet2 mynet2 quadratic shape          TRUE    FALSE FALSE    0.00000   0   
 > (myeff <- includeEffects(myeff, avSim, name="mynet2", interaction1="mynet1"))
   effectNumber effectName                shortName include fix   test 
-1 522          mynet2 average similarity avSim     TRUE    FALSE FALSE
+1 523          mynet2 average similarity avSim     TRUE    FALSE FALSE
   initialValue parm
 1          0   0   
    name   effectName                      include fix   test  initialValue parm
@@ -1041,4 +1041,4 @@ Total of 590 iteration steps.
 > 
 > proc.time()
    user  system elapsed 
-  19.34    0.31   19.84 
+  20.18    0.31   20.56 

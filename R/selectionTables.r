@@ -440,11 +440,9 @@ selectionTableWithMax <- function(x, xd, name, vname,
 	attr(df, "name") <- name
 	attr(df, "vname") <- vname
 	attr(df, "multiplier") <- multiplier
-	attr(df, "levls") <- sel.t$levls
-	attr(df, "levls.alt") <- sel.t$levls.alt
-	attr(df, "quad")<- sel.t$quad
-#   df$valter <- as.numeric(as.character(df$valter)) # superfluous
-#   df$select <- as.numeric(as.character(df$select)) # superfluous
+	attr(df, "levls") <- st$levls
+	attr(df, "levls.alt") <- st$levls.alt
+	attr(df, "quad")<- st$quad
     df
 }
 

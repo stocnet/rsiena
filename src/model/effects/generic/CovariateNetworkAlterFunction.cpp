@@ -82,6 +82,16 @@ void CovariateNetworkAlterFunction::initialize(const Data * pData,
 }
 
 /**
+ * Does the necessary preprocessing work for calculating the alter
+ * function for a specific ego. This method must be invoked before
+ * calling CovariateNetworkAlterFunction::value(...).
+ */
+void CovariateNetworkAlterFunction::preprocessEgo(int ego)
+{
+	NetworkAlterFunction::preprocessEgo(ego);
+}
+
+/**
  * Returns the overall mean of covvalue
  */
 double CovariateNetworkAlterFunction::covmean() const
@@ -105,7 +115,7 @@ double CovariateNetworkAlterFunction::covmean() const
 
 /**
  * Returns the covariate value for the given actor.
- * For behavior, this is the centered value.
+ * For behavior, returns the centered value.
  */
 double CovariateNetworkAlterFunction::covvalue(int alter) const
 {
