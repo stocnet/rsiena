@@ -26,6 +26,8 @@ try({
     diff1 = 1,
     useTieProb = TRUE,
     depvar = "mynet",
+    level = "egoChoice",
+    condition = c("recip","density","transTrip"),
     uncertainty = FALSE,  # no sims for quick check
     verbose = TRUE
   )
@@ -36,6 +38,7 @@ try({
   cat("sienaAME: SUCCESS\n")
 })
 
+
 # Optional: check with uncertainty/parallel (should be similar, but gives quantiles etc.)
 cat("\nTesting sienaAME (static, uncertainty) ...\n")
 try({
@@ -44,13 +47,14 @@ try({
     data = mydata,
     effectName1 = "recip",
     contrast1 = c(0, 1),
-    useTieProb = TRUE,
+    useTieProb = FALSE,
     depvar = "mynet",
     level = "period",
-    condition = c("transTrip"),
+    condition = c("density"),
     nsim = 100,  # keep small for speed
     uncertainty = TRUE,
-    verbose = TRUE
+    verbose = TRUE,
+    mainEffect = "riskRatio"
   )
   print(ame_static_uncert)
    ame_static_uncert2 <- sienaAME(
@@ -58,13 +62,14 @@ try({
     data = mydata,
     effectName1 = "transTrip",
     diff1 = 1,
-    useTieProb = TRUE,
+    useTieProb = FALSE,
     depvar = "mynet",
     level = "period",
     condition = c("recip"),
     nsim = 100,  # keep small for speed
     uncertainty = TRUE,
-    verbose = TRUE
+    verbose = TRUE,
+    mainEffect = "riskRatio"
   )
   # This should return something with quantiles/SD/mean
   stopifnot(is.data.frame(ame_static_uncert) || is.data.table(ame_static_uncert))
@@ -96,13 +101,14 @@ ame_static_interaction <- sienaAME(
     interaction1 = TRUE,
     int_effectNames1 = "transRecTrip",
     mod_effectNames1 = "recip",
-    useTieProb = FALSE,
+    useTieProb = TRUE,
     depvar = "mynet2",
     level = "period",
     condition = "density",
     nsim = 100,  # keep small for speed
     uncertainty = TRUE,
-    verbose = TRUE
+    verbose = TRUE,
+    mainEffect = "riskRatio"
 )
 ame_static_interaction
 
@@ -120,32 +126,10 @@ ame_static_interaction2 <- sienaAME(
     condition = "transTrip",
     nsim = 100,  # keep small for speed
     uncertainty = TRUE,
-    verbose = TRUE
+    verbose = TRUE,
+    mainEffect = "riskRatio"
 )
-
-ame_static_moderator <- sienaAME(
-    ans = ans2,
-    data = mydata2,
-    effectName1 = "transTrip",
-    diff1 = 1,
-    interaction1 = TRUE,
-    int_effectNames1 = "transRecTrip",
-    mod_effectNames1 = "recip",
-    second = TRUE,
-    effectName2 = "recip",
-    contrast2 = c(0,1), #be more explicit about lower and hihger?
-    interaction2 = TRUE,
-    int_effectNames2 = "transRecTrip",
-    mod_effectNames2 = "transTrip",
-    useTieProb = TRUE,
-    depvar = "mynet2",
-    level = "period",
-    nsim = 5000,  # keep small for speed
-    uncertainty = TRUE,
-    verbose = TRUE
-)
-
-ame_static_moderator
+ame_static_interaction2
 
 ame_static_moderator2 <- sienaAME(
     ans = ans2,
@@ -164,10 +148,80 @@ ame_static_moderator2 <- sienaAME(
     useTieProb = TRUE,
     depvar = "mynet2",
     level = "period",
-    condition = "density",
+    nsim = 100,  # keep small for speed
+    uncertainty = TRUE,
+    verbose = TRUE,
+    mainEffect = "riskRatio"
+)
+
+ame_static_moderator2
+
+ame_static_interaction <- sienaAME(
+    ans = ans2,
+    data = mydata2,
+    effectName1 = "transTrip",
+    diff1 = 1,
+    interaction1 = TRUE,
+    int_effectNames1 = "transRecTrip",
+    mod_effectNames1 = "recip",
+    useTieProb = TRUE,
+    depvar = "mynet2",
+    level = "period",
+    condition = "recip",
     nsim = 100,  # keep small for speed
     uncertainty = TRUE,
     verbose = TRUE
+)
+ame_static_interaction
+
+ame_static_moderator <- sienaAME(
+    ans = ans2,
+    data = mydata2,
+    effectName1 = "transTrip",
+    diff1 = 1,
+    interaction1 = TRUE,
+    int_effectNames1 = "transRecTrip",
+    mod_effectNames1 = "recip",
+    second = TRUE,
+    effectName2 = "recip",
+    contrast2 = c(0,1), #be more explicit about lower and hihger?
+    interaction2 = TRUE,
+    int_effectNames2 = "transRecTrip",
+    mod_effectNames2 = "transTrip",
+    useTieProb = TRUE,
+    depvar = "mynet2",
+    level = "period",
+    nsim = 100,  # keep small for speed
+    uncertainty = FALSE,
+    verbose = TRUE,
+    details = TRUE,
+    mainEffect = "riskRatio"
+)
+
+ame_static_moderator
+
+ame_static_moderator2 <- sienaAME(
+    ans = ans2,
+    data = mydata2,
+    effectName1 = "recip",
+    contrast1 = c(0,1), #be more explicit about lower and hihger?
+    interaction1 = TRUE,
+    int_effectNames1 = "transRecTrip",
+    mod_effectNames1 = "transTrip",
+    second = TRUE,
+    effectName2 = "transTrip",
+    diff2 = 1,
+    interaction2 = TRUE,
+    int_effectNames2 = "transRecTrip",
+    mod_effectNames2 = "recip",
+    useTieProb = FALSE,
+    depvar = "mynet2",
+    level = "period",
+    condition = "density",
+    nsim = 100,  # keep small for speed
+    uncertainty = TRUE,
+    verbose = TRUE,
+    mainEffect = "riskRatio"
 )
 
 ame_static_moderator2
