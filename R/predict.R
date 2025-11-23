@@ -73,7 +73,7 @@ predictProbability <- function(ans, staticContributions, theta, useTieProb = TRU
     df <- staticContributions
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
     df <- addProbabilityColumn(df, group_vars = c("period", "ego"), useTieProb = useTieProb)
-    df <- subset(df, df[["density"]] != 0)
+    #df <- subset(df, df[["density"]] != 0)
     df <- conditionalReplace(df, df[["density"]] == -1, setdiff(effectNames, "density"), function(x) x * -1)
     df
 }
@@ -170,7 +170,7 @@ predictProbabilityDynamic <- function(ans, data, theta, algorithm, effects,
     df <- widenContribution(df)
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
     df <- addProbabilityColumn(df, group_vars = c("chain","period", "ministep"), useTieProb = useTieProb)
-    df <- subset(df, df[["density"]] != 0)
+    #df <- subset(df, df[["density"]] != 0)
     df <- conditionalReplace(df, df[["density"]] == -1, setdiff(effectNames, "density"), function(x) x * -1)
     df
 }
@@ -253,7 +253,7 @@ makeEstimator <- function(predictFun, predictArgs, outcome,
         }
         callArgs <- c(list(theta = theta), predictArgs)
         unit_pred <- do.call(predictFun, callArgs)
-        agg(
+        main_result <- agg(
             ME = outcome,
             data = unit_pred,
             level = level,
@@ -261,6 +261,12 @@ makeEstimator <- function(predictFun, predictArgs, outcome,
             sum.fun = sum.fun,
             na.rm = na.rm
         )
+        if (isTRUE(predictArgs$details)) {
+          details <- unit_pred
+          return(list(summary = main_result, details = details))
+        } else {
+          return(main_result)
+        }
     }
 }
 
@@ -396,8 +402,10 @@ agg <- function(ME,
     none = character(0),
     period = "period",
     ego = c("period", "ego"),
+    egoChoice = c("period", "ego", "choice"),
     chain = c("period", "chain"),
-    ministep = c("period", "chain", "ministep")
+    ministep = c("period", "chain", "ministep"),
+    ministepChoice = c("period", "chain", "ministep", "choice")
   )
   group_vars <- c(levels[[level]], condition)
 

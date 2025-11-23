@@ -31,13 +31,15 @@ sienaAME <- function(
     combine_batch = TRUE,
     batch_size = 50,
     keep_batch = FALSE,
-    verbose = TRUE
+    verbose = TRUE,
+    mainEffect = "RiskDifference", # or "RiskRatio"
+    details = FALSE
 ){
     if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
     staticContributions <- calculateContribution(ans, data, depvar)
 
     if(!second){
-        diffName <- "firstDiff"
+        diffName <- ifelse(mainEffect == "RiskDifference", "firstDiff", "firstRiskRatio")
         diffFun <- predictFirstDiff
         predictArgs <- list(
             ans = ans,
@@ -48,10 +50,12 @@ sienaAME <- function(
             interaction = interaction1,
             int_effectNames = int_effectNames1,
             mod_effectNames = mod_effectNames1,
-            useTieProb = useTieProb
+            useTieProb = useTieProb,
+            mainEffect = mainEffect,
+            details = details
         )
     }else{
-        diffName <- "secondDiff"
+        diffName <- ifelse(mainEffect == "RiskDifference", "secondDiff", "secondRiskRatio")
         diffFun <- predictSecondDiff
         predictArgs <- list(
             ans = ans,
@@ -68,9 +72,10 @@ sienaAME <- function(
             interaction2 = interaction2,
             int_effectNames2 = int_effectNames2,
             mod_effectNames2 = mod_effectNames2,
-            useTieProb = useTieProb
+            useTieProb = useTieProb,
+            mainEffect = mainEffect,
+            details = details
         )
-        ME <- "secondDiff"
     }
     sienaPostestimate(
         predictFun = diffFun,
@@ -102,7 +107,10 @@ predictFirstDiff <- function(ans, theta, staticContributions,
     effectName, diff = NULL, contrast = NULL,
     interaction = FALSE,
     int_effectNames = NULL,
-    mod_effectNames = NULL
+    mod_effectNames = NULL,
+    details = FALSE,
+    calcRiskRatio = FALSE,
+    mainEffect = "riskDifference"
 ) {
     effects <- ans[["effects"]] # provide effects instead?
     include <- effects[["include"]]
@@ -117,30 +125,33 @@ predictFirstDiff <- function(ans, theta, staticContributions,
   }
   thetaNoRate <- theta[effectNames]
 
-  print(thetaNoRate)
-
-    df <- staticContributions
-    df <- addUtilityColumn(df, effectNames, thetaNoRate)
-    df <- addProbabilityColumn(df, group_vars = c("period", "ego"), useTieProb = useTieProb)
-    df[["firstDiff"]] <- calculateFirstDiff(
-        densityValue = df[["density"]],
-        changeProb = df[["changeProb"]],
-        changeUtil = df[["changeUtil"]],
-        effectName = effectName, 
-        effectContribution = df[[effectName]],
-        diff = diff, contrast = contrast,
-        interaction = interaction,
-        int_effectNames = int_effectNames,
-        mod_effectNames = mod_effectNames, 
-        modContribution = df[[mod_effectNames]],
-        effectNames = effectNames,
-        theta = thetaNoRate,
-        useTieProb = useTieProb, 
-        tieProb = df[["tieProb"]]
+  df <- staticContributions
+  df <- addUtilityColumn(df, effectNames, thetaNoRate)
+  df <- addProbabilityColumn(df, group_vars = c("period", "ego"), useTieProb = useTieProb)
+  df <- cbind(df, calculateFirstDiff(
+      densityValue = df[["density"]],
+      changeProb = df[["changeProb"]],
+      changeUtil = df[["changeUtil"]],
+      effectName = effectName, 
+      effectContribution = df[[effectName]],
+      diff = diff, contrast = contrast,
+      interaction = interaction,
+      int_effectNames = int_effectNames,
+      mod_effectNames = mod_effectNames, 
+      modContribution = df[[mod_effectNames]],
+      effectNames = effectNames,
+      theta = thetaNoRate,
+      useTieProb = useTieProb, 
+      tieProb = df[["tieProb"]],
+      details = details,
+      calcRiskRatio = calcRiskRatio,
+      mainEffect = mainEffect
     )
-    df <- subset(df, df[["density"]] != 0)
-    df <- conditionalReplace(df, df[["density"]] == -1, setdiff(effectNames, "density"), function(x) x * -1)
-    df
+  )
+
+  #df <- subset(df, df[["density"]] != 0)
+  df <- conditionalReplace(df, df[["density"]] == -1, setdiff(effectNames, "density"), function(x) x * -1)
+  df
 }
 
 predictSecondDiff <- function(ans, theta, staticContributions,
@@ -152,7 +163,9 @@ predictSecondDiff <- function(ans, theta, staticContributions,
     effectName2, diff2 = NULL, contrast2 = NULL,
     interaction2 = FALSE,
     int_effectNames2 = NULL,
-    mod_effectNames2 = NULL
+    mod_effectNames2 = NULL,
+    mainEffect = "riskDifference",
+    details = FALSE
 ) {
     effects <- ans[["effects"]] # provide effects instead?
     include <- effects[["include"]]
@@ -170,7 +183,7 @@ predictSecondDiff <- function(ans, theta, staticContributions,
     df <- staticContributions
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
     df <- addProbabilityColumn(df, group_vars = c("period", "ego"), useTieProb = useTieProb)
-    df[["secondDiff"]] <- calculateSecondDiff(
+    df <- cbind(df,  calculateSecondDiff(
         densityValue = df[["density"]], 
         changeProb = df[["changeProb"]],
         changeUtil = df[["changeUtil"]],
@@ -189,9 +202,12 @@ predictSecondDiff <- function(ans, theta, staticContributions,
         effectNames = effectNames,
         theta = thetaNoRate,
         useTieProb = useTieProb, 
-        tieProb = df[["tieProb"]]# if not tieProb NULL?
+        tieProb = df[["tieProb"]], # if not tieProb NULL?
+        details = details,
+        mainEffect = mainEffect
+      )
     )
-    df <- subset(df, df[["density"]] != 0)
+    #df <- subset(df, df[["density"]] != 0)
     df <- conditionalReplace(df, df[["density"]] == -1, setdiff(effectNames, "density"), function(x) x * -1)
     df
 }
@@ -211,7 +227,9 @@ calculateFirstDiff <- function(densityValue,
                                theta, 
                                useTieProb = TRUE,
                                tieProb = NULL,
-                               details = FALSE){
+                               details = FALSE,
+                               calcRiskRatio = FALSE,
+                               mainEffect = "firstDiff"){
 
   if (effectName == "density") {
     if((!is.null(diff))) stop("firstDiff for density must be contrast c(-1,1)")
@@ -245,6 +263,7 @@ calculateFirstDiff <- function(densityValue,
 
   expDiff <- exp(utilDiff)
   changeProb_cf <- as.vector(changeProb * expDiff / (1 - changeProb + changeProb * expDiff))
+  changeProb_cf[densityValue == 0] <- NA
   if (useTieProb == TRUE) {
     tieProb_cf <- changeProb_cf
     idx <- which(!is.na(densityValue) & densityValue == -1)
@@ -254,9 +273,21 @@ calculateFirstDiff <- function(densityValue,
      firstDiff <- changeProb_cf - changeProb
   }
 
-  # Ensure correct sign for changes in contrast
   if(!is.null(contrast)){
-    firstDiff[which(newChangeStatistic == min(contrast))] <- -firstDiff[which(newChangeStatistic == min(contrast))]
+    idx_flip <- which(newChangeStatistic == min(contrast))
+    firstDiff[idx_flip] <- -firstDiff[idx_flip]
+  }
+
+  if (calcRiskRatio || mainEffect == "riskRatio") {
+    if (useTieProb == TRUE) {
+      firstRiskRatio <- tieProb_cf / tieProb
+    } else {
+      firstRiskRatio <- changeProb_cf / changeProb
+    }
+    if (!is.null(contrast)) {
+      idx_flip <- which(newChangeStatistic == min(contrast))
+      firstRiskRatio[idx_flip] <- 1 / firstRiskRatio[idx_flip]
+    }
   }
 
   if(details){ # mostly for debugging
@@ -270,9 +301,14 @@ calculateFirstDiff <- function(densityValue,
       out[["newTieProb"]] <- tieProb_cf
       out[["oldTieProb"]] <- tieProb
     }
+    if(calcRiskRatio|| mainEffect == "riskRatio"){
+      out[["firstRiskRatio"]] <- firstRiskRatio
+    }
     return(out)
+  } else if (mainEffect == "riskRatio") {
+    return(as.data.frame(firstRiskRatio))
   } else {
-    return(firstDiff) # returns vector!
+    return(as.data.frame(firstDiff))
   }
 }
 
@@ -299,7 +335,9 @@ calculateSecondDiff <- function(densityValue,
                                 theta,
                                 useTieProb = TRUE,
                                 tieProb = NULL,
-                                details = FALSE){
+                                details = FALSE,
+                                mainEffect = "riskDifference",
+                                calcRiskRatio = FALSE){
   firstDiff <- calculateFirstDiff(
     densityValue = densityValue,
     changeProb = changeProb,
@@ -315,8 +353,12 @@ calculateSecondDiff <- function(densityValue,
     effectNames = effectNames,
     theta = theta, 
     useTieProb = useTieProb,
-    tieProb = tieProb
+    tieProb = tieProb,
+    mainEffect = mainEffect,
+    details = details
   )
+  str(firstDiff)
+
 
   if(!is.null(contrast2)){
     oldChangeStatistic2 <- densityValue * effectContribution2
@@ -339,7 +381,6 @@ calculateSecondDiff <- function(densityValue,
     tieProb_cf21 <- changeProb_cf21
     idx <- which(!is.na(densityValue) & densityValue == -1)
     if (length(idx) > 0) tieProb_cf21[idx] <- 1 - changeProb_cf21[idx]
-    firstDiff <- tieProb_cf21 - tieProb
   }
   changeUtil21 <- changeUtil + utilDiff21
   ## dangerous with interactions because other effect values are not "corrected"
@@ -360,29 +401,53 @@ calculateSecondDiff <- function(densityValue,
     int_effectNames = int_effectNames1,
     mod_effectNames = mod_effectNames1,
     modContribution = modContribution1,
-    effectNames = effectNames
+    effectNames = effectNames,
+    mainEffect = mainEffect,
+    details = details
   )
+  str(firstDiff2)
 
-  secondDiff <- firstDiff2 - firstDiff
-  
+  secondDiff <- firstDiff2[["firstDiff"]] - firstDiff[["firstDiff"]]
   if(!is.null(contrast2)){
     secondDiff[which(newChangeStatistic2 == min(contrast2))] <- -secondDiff[which(newChangeStatistic2 == min(contrast2))]
   }
 
+  if (mainEffect == "riskRatio") {
+    print(paste("firstRiskratio 1 is of length:", length(firstDiff[["firstRiskRatio"]]), " and firstRiskratio 2 is of length:", length(firstDiff2[["firstRiskRatio"]])))
+      secondRiskRatio <- firstDiff2[["firstRiskRatio"]] / firstDiff[["firstRiskRatio"]]
+    if (!is.null(contrast2)) {
+      idx_flip <- which(newChangeStatistic2 == min(contrast2))
+      secondRiskRatio[idx_flip] <- 1 / secondRiskRatio[idx_flip]
+    }
+  }
+  print(mainEffect)
+
   if(details){
     out <- data.frame(
-      "utilDiff21" = utilDiff21,
-      "newChangeProb21" = changeProb_cf21,
-      "firstDiff1" = firstDiff,
-      "firstDiff2" = firstDiff2,
-      "secondDiff" = secondDiff)
-     if(useTieProb){
-      out[["newTieProb21"]] <- tieProb_cf21
-      out[["oldTieProb"]] <- tieProb
+      "changeProb_base" = changeProb,                # unchanged average probability
+      "changeProb_main" = firstDiff[["newChangeProb"]],             # after main effect is changed
+      "changeProb_mod" = firstDiff2[["newChangeProb"]],             # after moderator alone is changed
+      "changeProb_both" = changeProb_cf21,           # after both have changed
+      "firstDiff1" = firstDiff[["firstDiff"]],
+      "firstDiff2" = firstDiff2[["firstDiff"]],
+      "secondDiff" = secondDiff
+    )
+    if (useTieProb) {
+      out$tieprob_base  <- tieProb
+      out$tieprob_main  <- firstDiff[["newTieProb"]]
+      out$tieprob_mod   <- firstDiff2[["newTieProb"]] # If you have tieProb_cf2, use that instead
+      out$tieprob_both  <- tieProb_cf21
+    }
+    if (mainEffect == "riskRatio" || calcRiskRatio) {
+      out$firstRiskRatio1 <- firstDiff[["firstRiskRatio"]]
+      out$firstRiskRatio2 <- firstDiff2[["firstRiskRatio"]]
+      out$secondRiskRatio <- secondRiskRatio
     }
     return(out)
+  } else if (mainEffect == "riskRatio") {
+    return(as.data.frame(secondRiskRatio))
   } else {
-    return(secondDiff)
+    return(as.data.frame(secondDiff))
   }
 }
 
