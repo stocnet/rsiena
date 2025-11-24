@@ -87,8 +87,8 @@ double IndegreeWeightedAverageGroupEffect::calculateChangeContribution(int actor
 	if (this->ldivide)
 	{
 	    weightedN += this->pNetwork()->inDegree(actor);
+	    statistic /= weightedN;
 	}
-    statistic /= weightedN;
 	if (!this->lcenterMean)
 	{
 		statistic += (this->overallCenterMean() - this->lcenteringValue);

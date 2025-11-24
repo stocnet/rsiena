@@ -323,18 +323,9 @@ double DiffusionRateEffect::applyThreshold(double value, int numInfectedAlter) c
  * Returns the rate contribution (for scores and statistics calculation).
  * Simple transformer: just returns the proximity value.
  */
-double DiffusionRateEffect::calculateRateContribution(int i) const
+double DiffusionRateEffect::calculateContribution(int i) const
 {
     return this->proximityValue(this->lpNetwork, i);
-}
-
-/**
- * Returns the (log) rate contribution (for rate calculations).
- */
-double DiffusionRateEffect::rateLinPred(int i) const
-{
-    double rateContribution = this->calculateRateContribution(i);    
-    return this->parameter() * rateContribution;
 }
 
 /**

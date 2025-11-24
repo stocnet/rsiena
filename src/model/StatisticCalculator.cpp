@@ -1455,12 +1455,12 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 	for (unsigned i = 0; i < rRateEffects.size(); i++)
 	{
 		EffectInfo *pEffectInfo = rRateEffects[i];
-		double parameter = pEffectInfo->parameter();
+		// double parameter = pEffectInfo->parameter(); // not used
 		string effectName = pEffectInfo->effectName();
 		string interactionName = pEffectInfo->interactionName1();
 		string interactionName2 = pEffectInfo->interactionName2();
 		string rateType = pEffectInfo->rateType();
-		int internalEffectParameter = pEffectInfo->internalEffectParameter();
+		// int internalEffectParameter = pEffectInfo->internalEffectParameter(); // not used
 
 		if (rateType == "covariate")
 		{

@@ -2,12 +2,12 @@ skip_on_cran()
 
 ################################################################################
 ################################################################################
-### file test-indegAvGroup.R
+### file test-indegTotGroup.R
 ################################################################################
 ################################################################################
 
 ################################################################################
-### Use internal data set to test indegAvGroup effect
+### Use internal data set to test indegTotGroup effect
 ################################################################################
 
 ## Test for three networks without shape effects
@@ -19,7 +19,7 @@ mymodel <- getEffects(mydata)
 p <- 1
 mymodel <- includeEffects (mymodel, linear, quad,  name='mybeh', include=FALSE)
 
-mymodel <- setEffect(mymodel,indegAvGroup, 
+mymodel <- setEffect(mymodel,indegTotGroup, 
                      name='mybeh', interaction1='mynet', parameter=p)
 mymodel
 mycontrols <- sienaAlgorithmCreate(projname=NULL)
@@ -42,8 +42,10 @@ test_that("Target statistics are correct", {
   # Calculate c_p for testing the average group parameter
   c_p <- ifelse(p <= 0.5, 0, p - mbh)
 
-  indegedAverage_target <- sum((mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) / sum(colSums(mynet[,,1])) ) - c_p )) + 
-  sum((mybeh[,,3]-mbh) * (( sum((mybeh[,,3]-mbh) * colSums(mynet[,,2])) / sum(colSums(mynet[,,2])) ) - c_p ))
+  indegedAverage_target <- sum((mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) /
+    sum(colSums(mynet[,,1])) ) - c_p )) + 
+  sum((mybeh[,,3]-mbh) * (( sum((mybeh[,,3]-mbh) * colSums(mynet[,,2])) /
+sum(colSums(mynet[,,2])) ) - c_p ))
 
   expect_equal(
     indegedAverage_target,

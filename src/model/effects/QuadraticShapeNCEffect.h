@@ -10,7 +10,7 @@
  *****************************************************************************/
 
 #ifndef QUADRATICSHAPENCEFFECT_H_
-#define QUADRATICSHAPEEFFECT_H_
+#define QUADRATICSHAPENCEFFECT_H_
 
 #include "BehaviorEffect.h"
 

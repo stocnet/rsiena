@@ -13,7 +13,6 @@ namespace siena
 
 double Distance2ExposureEffect::proximityValue(const Network* pNetwork, int i) const
 {
-    int egoNumer = 1;
     int egoDenom = 1;
 
     // avTinExposureDist2 is normalized by outdegree

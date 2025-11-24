@@ -40,8 +40,7 @@ public:
 	virtual void initialize(const Data * pData, State * pState,
 			int period, Cache * pCache);
 
-	virtual double calculateRateContribution(int i) const;
-    virtual double rateLinPred(int i) const;
+	virtual double calculateContribution(int i) const;
 
 
 protected:
