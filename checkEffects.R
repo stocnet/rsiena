@@ -3469,11 +3469,10 @@ c_p <- ifelse(p <= 0.5, 0, p - mbh)
 sum((mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) / sum(colSums(mynet[,,1])) ) - c_p )) + 
   sum((mybeh[,,3]-mbh) * (( sum((mybeh[,,3]-mbh) * colSums(mynet[,,2])) / sum(colSums(mynet[,,2])) ) - c_p )) # 28.37791 ok
 
+
 ################################################################################
 ### check indegTotGroup
 ################################################################################
-
-# DOES NOT WORK!!!
 
 mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
 mybeh <- sienaDependent(s50a[,2:3], type="behavior")
@@ -3496,6 +3495,7 @@ sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
 
 c_p <- ifelse(p <= 0.5, 0, p - mbh)
 sum( (mybeh[,,2]-mbh) * (sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) - c_p )) # 159.575 ok
+
 
 ## Test for three networks without shape effects
 
@@ -3879,15 +3879,22 @@ weight_mat <- exp(alpha) * (1 - (1 - exp(-alpha))^twopath_mat)
 weighted_beh <- (mybeh[, , 2] - mbh) %*% weight_mat
 sum((mybeh[, , 2] - mbh) * weighted_beh) # 87.40375 ok
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+
+mynet <- sienaDependent(array(c(s501,s502, s503), dim=c(50, 50, 3)))
+mybeh <- sienaDependent(s50a[,1:3], type="behavior")
 mydata <- sienaDataCreate(mynet, mybeh)
 mymodel <- getEffects(mydata)
 mymodel <- setEffect(mymodel,totGwdspFFAlt_nc, name='mybeh', interaction1 = "mynet")
+mymodel <- includeEffects(mymodel, linear_nc, quad_nc,
+    name = "mybeh")
+mymodel <- includeEffects(mymodel, linear, quad,
+    name = "mybeh", include = FALSE)
 mymodel
 mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
 (ans <- siena07(mycontrols, data=mydata, effects=mymodel))
 ans$targets # different from totGwdspFFAlt
+
+
 
 ## same as above but without centering of behavior
 adj <- mynet[, , 1]
@@ -3896,3 +3903,75 @@ twopath_mat <- forward_twopaths(adj)
 weight_mat <- exp(alpha) * (1 - (1 - exp(-alpha))^twopath_mat)
 weighted_beh <- (mybeh[, , 2]) %*% weight_mat
 sum((mybeh[, , 2]) * weighted_beh) # 2691.373 ok
+
+## Check Contributions
+
+staticChangeContributions <- getChangeContributions(mycontrols, data=mydata, effects=mymodel)
+
+## Check if it works for density
+
+conts <- staticChangeContributions[[1]][[1]][[1]] # period 2, effect 1 (density)
+conts <- do.call(rbind, conts)
+adj <- mynet[, , 1]
+manual_contribs <- 1-2*adj
+diag(manual_contribs) <- 0
+all.equal(manual_contribs, conts) # TRUE
+
+## Trying to manually compute contributions for totGwdspFFAlt_nc and compare with extracted ones
+conts <- staticChangeContributions[[1]][[1]][[5]] # period 2, effect 5 (totGwdspFFAlt_nc)
+conts <- do.call(rbind, conts)
+
+n <- nrow(adj)
+alpha <- 0.69
+twopath_mat <- forward_twopaths(adj)
+weight_mat <- exp(alpha) * (1 - (1 - exp(-alpha))^twopath_mat)
+manual_contribs <- matrix(NA, n, 3)
+for (ego in 1:n) {
+  current_value <- mybeh[, , 1][ego]
+  for (delta in c(-1, 0, 1)) {
+    newval <- current_value + delta
+    col <- delta + 2
+    if (newval < 1 || newval > 5) {
+      manual_contribs[ego, col] <- NA
+    } else {
+      change_stat <- sum(mybeh[, , 1][-ego] * weight_mat[ego, -ego])
+      manual_contribs[ego, col] <- delta * change_stat
+    }
+  }
+}
+
+all.equal(manual_contribs, conts) # TRUE
+
+## Also check period 2
+
+conts <- staticChangeContributions[[1]][[2]][[1]] # period 2, effect 1 (density)
+conts <- do.call(rbind, conts)
+adj <- mynet[, , 2]
+manual_contribs <- 1-2*adj
+diag(manual_contribs) <- 0
+all.equal(manual_contribs, conts) # TRUE
+
+conts <- staticChangeContributions[[1]][[2]][[5]] # period 2, effect 5 (totGwdspFFAlt_nc)
+conts <- do.call(rbind, conts)
+
+adj <- mynet[, , 2]
+n <- nrow(adj)
+alpha <- 0.69
+twopath_mat <- forward_twopaths(adj)
+weight_mat <- exp(alpha) * (1 - (1 - exp(-alpha))^twopath_mat)
+manual_contribs <- matrix(NA, n, 3)
+for (ego in 1:n) {
+  current_value <- mybeh[, , 2][ego]
+  for (delta in c(-1, 0, 1)) {
+    newval <- current_value + delta
+    col <- delta + 2
+    if (newval < 1 || newval > 5) {
+      manual_contribs[ego, col] <- NA
+    } else {
+      change_stat <- sum(mybeh[, , 2][-ego] * weight_mat[ego, -ego])
+      manual_contribs[ego, col] <- delta * change_stat
+    }
+  }
+}
+
+all.equal(manual_contribs, conts) # TRUE

@@ -754,8 +754,8 @@ SEXP getTargetsChangeContributions(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST
 
 	for (size_t group = 0; group < nGroups; group++)
 	{
-		SET_VECTOR_ELT(altStats, group, Rf_allocVector(VECSXP, (*pGroupData)[group]->observationCount()));
-		for (int p = 0; p < (*pGroupData)[group]->observationCount(); p++)
+		SET_VECTOR_ELT(altStats, group, Rf_allocVector(VECSXP, (*pGroupData)[group]->observationCount()-1));
+		for (int p = 0; p < (*pGroupData)[group]->observationCount()-1; p++)
 		{
 			SET_VECTOR_ELT(VECTOR_ELT(altStats, group), p, Rf_allocVector(VECSXP, objEffects));
 		}
@@ -767,7 +767,7 @@ SEXP getTargetsChangeContributions(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST
 
 		for (int period = 0; period < pData->observationCount() - 1; period++)
 		{
-			State State (pData, period + 1);
+			State State (pData, period);
 			// TODO altStats[0] == altStats[1] ??
 			StatisticCalculator calculator(pData, pModel, &State, period, false, true);
 			vector<vector<double *>> changeContributions;
@@ -775,7 +775,7 @@ SEXP getTargetsChangeContributions(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST
 			int actors = pData->rDependentVariableData()[0]->n();
 			for (unsigned e = 0; e < changeContributions.size(); e++)
 			{
-				SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), period+1),
+				SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), period),
 								e, Rf_allocVector(VECSXP, actors));
 				int choices;
 				if (strcmp(CHAR(STRING_ELT(NETWORKTYPES, e)), "behavior") == 0)
@@ -795,45 +795,45 @@ SEXP getTargetsChangeContributions(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST
 					{
 						d[i] = changeContributions.at(e).at(actor)[i];
 					}
-					SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), period+1), e), 
+					SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), period), e), 
 								actor, actorsVal);
 					UNPROTECT(1);         
 				}
 			}
 		}
 		
-        // Handle period 0 separately
-		State State (pData, 0);
-		StatisticCalculator calculator(pData, pModel, &State, 0, false, true);
-		vector<vector<double *>> changeContributions;
-		getChangeContributionStatistics(EFFECTSLIST, &calculator, &changeContributions);
-		int actors = pData->rDependentVariableData()[0]->n();
-		for (unsigned e = 0; e < changeContributions.size(); e++)
-		{
-			SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), 0),
-				e, Rf_allocVector(VECSXP, actors));
-			int choices;
-			if (strcmp(CHAR(STRING_ELT(NETWORKTYPES, e)), "behavior") == 0)
-			{
-				choices = 3;
-			}
-			else
-			{						
-				choices = actors; // will not work for bipartite
-			}
-			for (int actor = 0; actor < actors; actor++)
-			{
-				SEXP actorsVal = PROTECT(Rf_allocVector(REALSXP, choices));
-				double * d = REAL(actorsVal);
-				for (int i = 0; i < Rf_length(actorsVal); i++)
-				{
-					d[i] = changeContributions.at(e).at(actor)[i];
-				}
-				SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), 0), e), 
-						actor, actorsVal);
-				UNPROTECT(1);     
-			}
-		}
+        // // Handle period 0 separately
+		// State State (pData, 0);
+		// StatisticCalculator calculator(pData, pModel, &State, 0, false, true);
+		// vector<vector<double *>> changeContributions;
+		// getChangeContributionStatistics(EFFECTSLIST, &calculator, &changeContributions);
+		// int actors = pData->rDependentVariableData()[0]->n();
+		// for (unsigned e = 0; e < changeContributions.size(); e++)
+		// {
+		// 	SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), 0),
+		// 		e, Rf_allocVector(VECSXP, actors));
+		// 	int choices;
+		// 	if (strcmp(CHAR(STRING_ELT(NETWORKTYPES, e)), "behavior") == 0)
+		// 	{
+		// 		choices = 3;
+		// 	}
+		// 	else
+		// 	{						
+		// 		choices = actors; // will not work for bipartite
+		// 	}
+		// 	for (int actor = 0; actor < actors; actor++)
+		// 	{
+		// 		SEXP actorsVal = PROTECT(Rf_allocVector(REALSXP, choices));
+		// 		double * d = REAL(actorsVal);
+		// 		for (int i = 0; i < Rf_length(actorsVal); i++)
+		// 		{
+		// 			d[i] = changeContributions.at(e).at(actor)[i];
+		// 		}
+		// 		SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), 0), e), 
+		// 				actor, actorsVal);
+		// 		UNPROTECT(1);     
+		// 	}
+		// }
 	}
 	UNPROTECT(2);
 	return altStats;

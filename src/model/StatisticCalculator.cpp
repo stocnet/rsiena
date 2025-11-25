@@ -1651,7 +1651,7 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 			double statistic = 0;
 			for (int i = 0; i < pBehaviorData->n(); i++)
 			{
-				statistic += pEffect->calculateRateContribution(i) * difference[i];
+				statistic += pEffect->calculateContribution(i) * difference[i];
 			}
 			delete pEffect;
 			this->lstatistics[pEffectInfo] = statistic;
