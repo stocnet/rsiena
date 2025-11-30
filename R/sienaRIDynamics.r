@@ -400,7 +400,7 @@ plot.sienaRIDynamics <- function(x, staticRI = NULL, col = NULL,
 				ignored,\n staticRI and x do not refer to the same effects")
 				staticValues <- NULL
 			}
-			else if(length(staticRI$expectedRI)-1 != length(x$intervalValues))
+			else if(length(staticRI$expectedRI) != length(x$intervalValues))
 			{
 				warning("staticRI does not correspond to x and is therefore 
 				ignored,\n staticRI and x do not refer to the same number of observation moments")
