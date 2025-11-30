@@ -103,70 +103,18 @@ sienaRI <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL,
 ##@getChangeContributions. Use as RSiena:::getChangeContributions
 getChangeContributions <- function(algorithm, data, effects)
 {
-	## Gets the simulated statistics.
-	## The following initializations data, effects, and model
-	## for calling "getTargets" in "siena07.setup.h"
-	## is more or less copied from "getTargets" in "getTargets.r".
-	## However, some modifications have been necessary to get it to work.
-	f <- unpackData(data,algorithm)
-
-	effects <- effects[effects$include,]
-	if (!is.null(algorithm$settings))
-	{
-		stop('not implemented: RI together with settings')
-		# effects <- addSettingsEffects(effects, algorithm)
-	}
-	else
-	{
-		effects$setting <- rep("", nrow(effects))
-	}
-	pData <- .Call(C_setupData, PACKAGE=pkgname,
-		list(as.integer(f$observations)),
-		list(f$nodeSets))
-	## register a finalizer
-	ans <- reg.finalizer(pData, clearData, onexit = FALSE)
-	ans<- .Call(C_OneMode, PACKAGE=pkgname,
-		pData, list(f$nets))
-	ans <- .Call(C_Bipartite, PACKAGE=pkgname, # added 1.1-299
-		pData, list(f$bipartites))
-	ans<- .Call(C_Behavior, PACKAGE=pkgname, pData,
-		list(f$behavs))
-	ans<-.Call(C_ConstantCovariates, PACKAGE=pkgname,
-		pData, list(f$cCovars))
-	ans<-.Call(C_ChangingCovariates,PACKAGE=pkgname,
-		pData,list(f$vCovars))
-	ans<-.Call(C_DyadicCovariates,PACKAGE=pkgname,
-		pData,list(f$dycCovars))
-	ans<-.Call(C_ChangingDyadicCovariates,PACKAGE=pkgname,
-		pData, list(f$dyvCovars))
-
-	storage.mode(effects$parm) <- 'integer'
-	storage.mode(effects$group) <- 'integer'
-	storage.mode(effects$period) <- 'integer'
-
-	effects$effectPtr <- rep(NA, nrow(effects))
-	depvarnames <- names(data$depvars)
-	tmpeffects <- split(effects, effects$name)
-	myeffectsOrder <- match(depvarnames, names(tmpeffects))
-	ans <- .Call(C_effects, PACKAGE=pkgname, pData, tmpeffects)
-	pModel <- ans[[1]][[1]]
-	for (i in 1:length(ans[[2]]))
-	{
-		effectPtr <- ans[[2]][[i]]
-		tmpeffects[[i]]$effectPtr <- effectPtr
-	}
-	myeffects <- tmpeffects
-	for(i in 1:length(myeffectsOrder)){
-		myeffects[[i]]<-tmpeffects[[myeffectsOrder[i]]]
-	}
-#cat("e\n") #Hier gaat hij fout. 
-# Voor returnStaticChangeContributions=TRUE gaat het wel goed.
-#browser()
-	ans <- .Call(C_getTargets, PACKAGE=pkgname, pData, pModel, myeffects,
-		parallelrun=TRUE, returnActorStatistics=FALSE,
-		returnStaticChangeContributions=TRUE)
-	# See getTargets in siena07setup.cpp; also see rTargets in StatisticsSimulation.cpp
-	ans
+    setup <- sienaSetupForCpp(algorithm, data, effects,
+                              includeBehavior = TRUE,
+                              includeBipartite = TRUE,
+                              returnActorStatistics = FALSE,
+                              returnStaticChangeContributions = TRUE,
+                              parallelrun = FALSE)
+    ans <- .Call(C_getTargets, PACKAGE=pkgname, 
+                 setup$pData, setup$pModel, setup$myeffects,
+                 parallelrun = FALSE,
+                 returnActorStatistics = FALSE,
+                 returnStaticChangeContributions = TRUE)
+    ans
 }
 
 expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
@@ -789,3 +737,60 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 	invisible(cl)
 }
 
+##@sienaSetupForCpp Use as RSiena:::sienaSetupForCpp
+sienaSetupForCpp <- function(algorithm, data, effects, 
+                             includeBehavior = TRUE, 
+                             includeBipartite = TRUE,
+                             returnActorStatistics = FALSE,
+                             returnStaticChangeContributions = FALSE,
+                             parallelrun = FALSE,
+							 initC = FALSE) {
+    f <- unpackData(data, algorithm)
+    effects <- effects[effects$include,]
+    effects$setting <- rep("", nrow(effects))
+    pData <- .Call(C_setupData, PACKAGE=pkgname,
+                   list(as.integer(f$observations)),
+                   list(f$nodeSets))
+    reg.finalizer(pData, clearData, onexit = FALSE)
+    .Call(C_OneMode, PACKAGE=pkgname, pData, list(f$nets))
+    if (includeBipartite && !is.null(f$bipartites)) {
+        .Call(C_Bipartite, PACKAGE=pkgname, pData, list(f$bipartites))
+    }
+    if (includeBehavior && !is.null(f$behavs)) {
+        .Call(C_Behavior, PACKAGE=pkgname, pData, list(f$behavs))
+    }
+    .Call(C_ConstantCovariates, PACKAGE=pkgname, pData, list(f$cCovars))
+    .Call(C_ChangingCovariates, PACKAGE=pkgname, pData, list(f$vCovars))
+    .Call(C_DyadicCovariates, PACKAGE=pkgname, pData, list(f$dycCovars))
+    .Call(C_ChangingDyadicCovariates, PACKAGE=pkgname, pData, list(f$dyvCovars))
+    .Call(C_ExogEvent, PACKAGE=pkgname, pData, lapply(f, function(x)x$exog))
+	## split the names of the constraints
+	higher <- attr(f, "allHigher")
+	disjoint <- attr(f, "allDisjoint")
+	atLeastOne <- attr(f, "allAtLeastOne")
+	froms <- sapply(strsplit(names(higher), ","), function(x)x[1])
+	tos <- sapply(strsplit(names(higher), ","), function(x)x[2])
+	.Call(C_Constraints, PACKAGE=pkgname,
+		pData, froms[higher], tos[higher],
+		froms[disjoint], tos[disjoint],
+		froms[atLeastOne], tos[atLeastOne])
+	# siena07 only does this with !initC
+	storage.mode(effects$parm) <- 'integer'
+    storage.mode(effects$group) <- 'integer'
+    storage.mode(effects$period) <- 'integer'
+    effects$effectPtr <- rep(NA, nrow(effects))
+    depvarnames <- names(data$depvars)
+    tmpeffects <- split(effects, effects$name)
+    myeffectsOrder <- match(depvarnames, names(tmpeffects))
+    ans <- .Call(C_effects, PACKAGE=pkgname, pData, tmpeffects)
+    pModel <- ans[[1]][[1]]
+    for (i in 1:length(ans[[2]])) {
+        effectPtr <- ans[[2]][[i]]
+        tmpeffects[[i]]$effectPtr <- effectPtr
+    }
+    myeffects <- tmpeffects
+    for (i in 1:length(myeffectsOrder)) {
+        myeffects[[i]] <- tmpeffects[[myeffectsOrder[i]]]
+    }
+    list(pData = pData, pModel = pModel, myeffects = myeffects)
+}
