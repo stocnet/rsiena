@@ -18,7 +18,8 @@ namespace siena
 {
 
 /**
- * Handles all distance-2 diffusion rate effects (e.g., anyInExposureDist2, totInExposureDist2, avTinExposureDist2, totAInExposureDist2).
+ * Handles all distance-2 diffusion rate effects (e.g., anyInExposureDist2, 
+ * totInExposureDist2, avTinExposureDist2, totAInExposureDist2).
  */
 class Distance2ExposureEffect : public DiffusionRateEffect
 {

@@ -42,13 +42,11 @@ test_that("Target statistics are correct", {
   # Calculate c_p for testing the average group parameter
   c_p <- ifelse(p <= 0.5, 0, p - mbh)
 
-  indegedAverage_target <- sum((mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) /
-    sum(colSums(mynet[,,1])) ) - c_p )) + 
-  sum((mybeh[,,3]-mbh) * (( sum((mybeh[,,3]-mbh) * colSums(mynet[,,2])) /
-sum(colSums(mynet[,,2])) ) - c_p ))
+  indegedTotale_target <- sum( (mybeh[,,2]-mbh) * ( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) - c_p )) +
+sum( (mybeh[,,3]-mbh) * ( sum((mybeh[,,3]-mbh) * colSums(mynet[,,2])) - c_p ))
 
   expect_equal(
-    indegedAverage_target,
+    indegedTotale_target,
     ans$targets[7]
   )
 

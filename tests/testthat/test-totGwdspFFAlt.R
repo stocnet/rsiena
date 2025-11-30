@@ -69,6 +69,14 @@ test_that("Target statistics are correct", {
 
   # just use instars2 <- adj %*% t(adj) and set the diagonal to 0 ?
 
+  # Helper function for forward two-paths
+  forward_twopaths <- function(adj) {
+    # For each i, j: number of k such that i->k and k->j
+    mat <- adj %*% adj
+    diag(mat) <- 0
+    return(mat)
+  }
+
   adj <- mynet[, , 1]
   alpha <- 0.69
   twopath_mat <- forward_twopaths(adj)

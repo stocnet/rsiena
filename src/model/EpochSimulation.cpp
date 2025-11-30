@@ -293,7 +293,7 @@ void EpochSimulation::initialize(int period) {
 		}
 
 		for (DiffusionRateEffect * pEffect : this->lvariables[i]->diffusionRateEffects()) {
-			Rprintf("Initialize diffusion rate effect in EpochSimulation: %s\n", pEffect->pEffectInfo()->effectName().c_str());
+		// Rprintf("Initialize diffusion rate effect in EpochSimulation: %s\n", pEffect->pEffectInfo()->effectName().c_str());
         pEffect->initialize(this->lpData, this->lpState, period, this->lpCache);
     }
 	}

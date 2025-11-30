@@ -51,21 +51,12 @@ test_that("Target statistics are correct", {
     ans$targets[6]
   )
 
-  instars <- function(mat){
-    # make an empty version of the matrix where we will store instar values
-    matrix_vals <- mat
-    matrix_vals[] <- 0
-    # loop over the actors in the network, comparing pair-wise their values 
-    for (i in 1:nrow(mat)){
-      for (j in 1:nrow(mat)){
-        a_row <- mat[i, c(-i, -j)]
-        b_row <- mat[j, c(-i, -j)]
-        matrix_vals[i, j] <- sum(a_row * b_row) # take sum of instars
-      }
-    }
-    diag(matrix_vals) <- 0
-    # return results
-    return(matrix_vals)
+  # Helper function for forward two-paths
+  forward_twopaths <- function(adj) {
+    # For each i, j: number of k such that i->k and k->j
+    mat <- adj %*% adj
+    diag(mat) <- 0
+    return(mat)
   }
 
   # just use instars2 <- adj %*% t(adj) and set the diagonal to 0 ?
