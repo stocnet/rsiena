@@ -1,3 +1,14 @@
+/******************************************************************************
+ * SIENA: Simulation Investigation for Empirical Network Analysis
+ *
+ * Web: http://www.stats.ox.ac.uk/~snijders/siena/
+ *
+ * File: ExposureEffect.cpp
+ *
+ * Description: This file contains the implementation of the class
+ * ExposureEffect, which handles direct exposure-based diffusion rate effects.
+ *****************************************************************************/
+
 #include <cmath>
 #include <cstring>
 #include "ExposureEffect.h"

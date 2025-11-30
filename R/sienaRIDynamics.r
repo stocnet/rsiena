@@ -10,13 +10,26 @@
 # *****************************************************************************/
 
 ##@sienaRIDynamics
-sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL, depvar=NULL, intervalsPerPeriod=NULL, n3 = NULL, useChangeContributions = FALSE)
+sienaRIDynamics <- function(
+	data, 
+	ans=NULL, 
+	theta=NULL, 
+	algorithm=NULL, 
+	effects=NULL, 
+	depvar=NULL, 
+	intervalsPerPeriod=NULL, 
+	n3 = NULL, 
+	useChangeContributions = FALSE
+	)
 {
 	if(length(data$depvars)>1){
 		if(is.null(depvar)){
 			currentNetName <- attr(data$depvars,"names")[1]
-			warning("If the models contains more than one dependent variables, \n it should be specified by variable 'depvar' for which dependent variable the relative importances should be calculated. \n\n")
-			warning(paste("As 'depvar = NULL', relative importances are calculated for variable ", currentNetName, sep=""))
+			warning("If the models contains more than one dependent variables, 
+			\n it should be specified by variable 'depvar' for which dependent 
+			variable the relative importances should be calculated. \n\n")
+			warning(paste("As 'depvar = NULL', relative importances are 
+			calculated for variable ", currentNetName, sep=""))
 		}else if(!(depvar %in% attr(data$depvars,"names"))){
 			stop("'depvar' is not a name of a dependent variable")
 		}else{
@@ -38,7 +51,9 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 		if(ans$cconditional){
 			if(is.null(effects))
 			{
-				stop("effects = NULL! In case of conditional estimation, the 'sienaEffects' object has to be given to function sienRIDynamics directly.")
+				stop("effects = NULL! In case of conditional estimation, the 
+				'sienaEffects' object has to be given to function 
+				sienRIDynamics directly.")
 			}
 			if(!inherits(effects, "sienaEffects"))
 			{
@@ -48,7 +63,9 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 		}else{
 			if(!is.null(algorithm)||!is.null(theta)||!is.null(effects))
 			{
-				warning("some information are multiply defined \n results will be based on 'theta', 'algorithm', and 'effects' stored in 'ans' (as 'ans$theta', 'ans$x', 'ans$effects')")
+				warning("some information are multiply defined \n results will 
+				be based on 'theta', 'algorithm', and 'effects' stored in 'ans' 
+				(as 'ans$theta', 'ans$x', 'ans$effects')")
 			}
 			effs <- ans$effects
 		}
@@ -59,14 +76,24 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 				intervalsPerPeriod <- as.integer(intervalsPerPeriod)
 			}else{
 				intervalsPerPeriod <- NULL
-				warning("'intervalsPerPeriod' has to be of type 'numeric' \n used default settings")
+				warning("'intervalsPerPeriod' has to be of type 'numeric' \n 
+				used default settings")
 			}
 		}
 		if(is.null(intervalsPerPeriod))
 		{
 			intervalsPerPeriod <- 10
 		}
-		RIValues <- calculateRIDynamics(data = data, ans=ans, theta = c(ans$rate, ans$theta), algorithm = ans$x,  effects = effs, depvar = currentNetName, intervalsPerPeriod=intervalsPerPeriod, n3 = n3, useChangeContributions = useChangeContributions)
+		RIValues <- calculateRIDynamics(
+			data = data, 
+			ans=ans, 
+			theta = c(ans$rate, ans$theta), 
+			algorithm = ans$x,  
+			effects = effs, 
+			depvar = currentNetName, 
+			intervalsPerPeriod=intervalsPerPeriod, 
+			n3 = n3, 
+			useChangeContributions = useChangeContributions)
 	}else{
 		if (!inherits(algorithm, "sienaAlgorithm"))
 		{
@@ -86,9 +113,11 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 		{
 			if(length(theta) == sum(effs$include==TRUE & effs$type!="rate"))
 			{
-				stop("vector of model parameters has wrong dimension, maybe rate parameters are missing")
+				stop("vector of model parameters has wrong dimension, 
+					maybe rate parameters are missing")
 			}
-			stop("theta is not a legitimate parameter vector \n number of parameters has to match number of effects")
+			stop("theta is not a legitimate parameter vector \n number 
+				of parameters has to match number of effects")
 		}
 		paras <- theta
 		if(!is.null(intervalsPerPeriod))
@@ -98,7 +127,8 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 				intervalsPerPeriod <- as.integer(intervalsPerPeriod)
 			}else{
 				intervalsPerPeriod <- NULL
-				warning("'intervalsPerPeriod' has to be of type 'numeric' \n used default settings")
+				warning("'intervalsPerPeriod' has to be of type 'numeric' 
+					\n used default settings")
 			}
 		}
 		if(is.null(intervalsPerPeriod))
@@ -106,13 +136,35 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 			intervalsPerPeriod <- 10
 		}
 		## all necessary information available
-		RIValues <- calculateRIDynamics(data = data, ans= ans, theta = paras, algorithm = algo,  effects = effs, depvar = currentNetName, intervalsPerPeriod=intervalsPerPeriod, n3 = n3, useChangeContributions = useChangeContributions)
+		RIValues <- calculateRIDynamics(
+			data = data, 
+			ans= ans, 
+			theta = paras, 
+			algorithm = algo,  
+			effects = effs, 
+			depvar = currentNetName, 
+			intervalsPerPeriod=intervalsPerPeriod, 
+			n3 = n3, 
+			useChangeContributions = useChangeContributions)
 	}
 	RIValues
 }
 
-##@calculateRIDynamics calculateRIDynamics simulates sequences of micro-steps, and aggregates the relative importances of effects over micro-steps of same time intervals
-calculateRIDynamics <- function(data=NULL, ans=NULL, theta=theta, algorithm=NULL, effects=NULL, depvar=NULL, intervalsPerPeriod=10, returnActorStatistics=NULL, n3 = n3, useChangeContributions = useChangeContributions)
+##@calculateRIDynamics calculateRIDynamics simulates sequences of micro-steps, 
+## and aggregates the relative importances of effects over micro-steps of 
+## same time intervals
+calculateRIDynamics <- function(
+	data=NULL, 
+	ans=NULL, 
+	theta=theta, 
+	algorithm=NULL, 
+	effects=NULL, 
+	depvar=NULL, 
+	intervalsPerPeriod=10, 
+	returnActorStatistics=NULL, 
+	n3 = n3, 
+	useChangeContributions = useChangeContributions
+	)
 {
     x <- algorithm # why not use algorithm directly?
 	if (!is.null(n3)) {
@@ -120,11 +172,13 @@ calculateRIDynamics <- function(data=NULL, ans=NULL, theta=theta, algorithm=NULL
 	}
 	if (useChangeContributions) {
         if (is.null(ans) || is.null(ans$changeContributions)) {
-            warning("useChangeContributions=TRUE, but 'ans' does not contain 'changeContributions'. Will rerun siena07 to generate them.")
+            warning("useChangeContributions=TRUE, but 'ans' does not 
+			contain 'changeContributions'. Will rerun siena07 to generate them.")
             useChangeContributions <- FALSE
         }
 		if (!is.null(n3)) {
-		    warning("n3 cannot be changed when useChangeContributions=TRUE; using the number of chains stored in 'ans'.")
+		    warning("n3 cannot be changed when useChangeContributions=TRUE; 
+			using the number of chains stored in 'ans'.")
     		n3 <- NULL
 		}
     }
@@ -136,8 +190,14 @@ calculateRIDynamics <- function(data=NULL, ans=NULL, theta=theta, algorithm=NULL
 			prevAns <- NULL
 			effects$initialValue[effects$include] <- theta
 		}
-        ans <- siena07(x, data=data, effects=effects,
-                       prevAns=prevAns, initC=FALSE, returnDeps=FALSE, returnChangeContributions=TRUE)
+        ans <- siena07(
+			x, 
+			data=data, 
+			effects=effects,
+            prevAns=prevAns, 
+			initC=FALSE, 
+			returnDeps=FALSE, 
+			returnChangeContributions=TRUE)
     }
 	chains <- x$n3
 	periods <- data$observation-1
@@ -251,8 +311,10 @@ print.sienaRIDynamics <- function(x, ...){
 	periods <- length(x$intervalValues)
 	intervals <- length(x$intervalValues[[1]])
 	effs <- length(x$effectNames)
-	cat(paste("\n  Relative importance of effects in micro-steps of dependent variable '", x$dependentVariable,"'. \n \n",sep=""))
-	cat(paste("  Periods between observations are devided into ", intervals, " intervals. \n \n",sep=""))
+	cat(paste("\n  Relative importance of effects in micro-steps of 
+	dependent variable '", x$dependentVariable,"'. \n \n",sep=""))
+	cat(paste("  Periods between observations are devided into ", intervals, 
+	" intervals. \n \n",sep=""))
 	cat(paste("  Displayed results are aggregations over intervals:\n", sep=""))
 	for(p in 1:periods){
 		cat(paste("\n\nPeriod ",p,":\n", sep=""))
@@ -327,17 +389,21 @@ plot.sienaRIDynamics <- function(x, staticRI = NULL, col = NULL,
 		{
 			if(staticRI$dependentVariable != x$dependentVariable)
 			{
-				warning("staticRI does not correspond to x and is therefore ignored,\n staticRI and x do not refer to the same dependent variable")
+				warning("staticRI does not correspond to x and is therefore 
+				ignored,\n staticRI and x do not refer to the same dependent variable")
 				staticValues <- NULL
 			}
-			else if(length(staticRI$effectNames) != length(x$effectNames) || sum(x$effectNames==staticRI$effectNames)!=length(x$effectNames))
+			else if(length(staticRI$effectNames) != length(x$effectNames) || 
+				sum(x$effectNames==staticRI$effectNames)!=length(x$effectNames))
 			{
-				warning("staticRI does not correspond to x and is therefore ignored,\n staticRI and x do not refer to the same effects")
+				warning("staticRI does not correspond to x and is therefore 
+				ignored,\n staticRI and x do not refer to the same effects")
 				staticValues <- NULL
 			}
 			else if(length(staticRI$expectedRI)-1 != length(x$intervalValues))
 			{
-				warning("staticRI does not correspond to x and is therefore ignored,\n staticRI and x do not refer to the same number of observation moments")
+				warning("staticRI does not correspond to x and is therefore 
+				ignored,\n staticRI and x do not refer to the same number of observation moments")
 				staticValues <- NULL
 			}
 			else

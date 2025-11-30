@@ -891,7 +891,8 @@ namespace siena
 
 		for (int effectIndex = 0; effectIndex < effectCount; effectIndex++)
 		{
-			rate *= this->lstructuralRateEffects[effectIndex]->value(i); // currently already exponentiated, change to exp of log sum later?
+			rate *= this->lstructuralRateEffects[effectIndex]->value(i);
+			 // currently already exponentiated, change to exp of log sum later?
 		}
 
 		return rate;

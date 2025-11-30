@@ -1,3 +1,14 @@
+/******************************************************************************
+ * SIENA: Simulation Investigation for Empirical Network Analysis
+ *
+ * Web: http://www.stats.ox.ac.uk/~snijders/siena/
+ *
+ * File: SusceptibilityEffect.h
+ *
+ * Description: This file contains the definition of the class
+ * SusceptibilityEffect, which handles susceptibility diffusion rate effects.
+ *****************************************************************************/
+
 #ifndef SUSCEPTIBILITYEFFECT_H_
 #define SUSCEPTIBILITYEFFECT_H_
 

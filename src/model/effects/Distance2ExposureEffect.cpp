@@ -1,3 +1,14 @@
+/******************************************************************************
+ * SIENA: Simulation Investigation for Empirical Network Analysis
+ *
+ * Web: http://www.stats.ox.ac.uk/~snijders/siena/
+ *
+ * File: Distance2ExposureEffect.cpp
+ *
+ * Description: This file contains the implementation of the class
+ * Distance2ExposureEffect, which handles distance-2 exposure rate effects.
+ *****************************************************************************/
+
 #include <cmath>
 #include <cstring>
 #include "Distance2ExposureEffect.h"

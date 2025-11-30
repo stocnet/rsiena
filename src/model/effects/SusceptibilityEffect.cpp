@@ -1,3 +1,14 @@
+/******************************************************************************
+ * SIENA: Simulation Investigation for Empirical Network Analysis
+ *
+ * Web: http://www.stats.ox.ac.uk/~snijders/siena/
+ *
+ * File: SusceptibilityEffect.cpp
+ *
+ * Description: This file contains the implementation of the class
+ * SusceptibilityEffect, which handles susceptibility diffusion rate effects.
+ *****************************************************************************/
+
 #include <cmath>
 #include <cstring>
 #include <stdexcept>

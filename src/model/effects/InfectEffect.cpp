@@ -1,3 +1,14 @@
+/******************************************************************************
+ * SIENA: Simulation Investigation for Empirical Network Analysis
+ *
+ * Web: http://www.stats.ox.ac.uk/~snijders/siena/
+ *
+ * File: InfectEffect.cpp
+ *
+ * Description: This file contains the implementation of the class
+ * InfectEffect, which handles infection-based diffusion rate effects.
+ *****************************************************************************/
+
 #include <cmath>
 #include <cstring>
 #include <stdexcept>
