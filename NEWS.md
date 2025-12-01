@@ -3,14 +3,17 @@
 # RSiena 1.5.7
 
 ## Changes in RSiena:
-### Effects
+## Effects
   * Completely refactored diffusion rate effects as a child of newly
   constructed abstract class behaviorRateEffect that is used in 
   StatisticCalculator and DependentVariable for calculation of rates, scores
-  and statistics. New diffusion rate effects can now added relatively easily
-  with a new cpp file.
+  and statistics. New diffusion rate effects can now be added relatively easily
+  with a new cpp file. Closes #97 .
+  * NetworkDependentBehaviorEffects can now also use twopath tables. 
+    Also added a two-path-count helper function.
+    
   * New distance 2 exposure diffusion rate effects `totInExposureDist2`, 
-  `totAInExposureDist2`, `anyInExposureDist2`, non-local behavior effects 
+  `totAInExposureDist2`, `anyInExposureDist2`, behavior effects `totPopAlt`,
   `totGroup`, `indegAvGroup`, `indegtotGroup`, `totGwdspFFAlt`, `totGwdspFBAlt_nc`
   and new behavior effects without centering `linear_nc`, `quad_nc`, 
   `avInAltDist2_nc`, `totInAltDist2_nc`, `avTinaltDist2_nc`, `totAInAltDist2_nc`, 
@@ -23,9 +26,10 @@
   using the values at the start of the period to calculate allowed changes and
   effect change statistics. This means that there is no calculation of the 
   first ministep after the last observation wave anymore. Additionally cleaned 
-  up documentation and scripts for sienaRI and sienaRIDynamics.
+  up documentation and scripts for siena07, sienaRI and sienaRIDynamics.
   * Eliminated additional test file for chains and integrated into parallel.R
   as far as it seemed necessary.
+ * Cleaned up some legacy code related to rate effects.
 
 2025-10-28
 

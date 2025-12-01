@@ -18,8 +18,8 @@ namespace siena
 {
 
 /**
- * Average and total Popularity alter effect (see manual). Also the effect of the (average) number of 
- * two-in-stars originating from ego.
+ * Average and total Popularity alter effect (see manual). Also the effect of 
+ * the (average) number of two-in-stars originating from ego.
  */
 class PopularityAlterEffect : public NetworkDependentBehaviorEffect
 {

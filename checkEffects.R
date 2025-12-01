@@ -3975,3 +3975,47 @@ for (ego in 1:n) {
 }
 
 all.equal(manual_contribs, conts) # TRUE
+
+
+################################################################################
+### check popAlt and totPopAlt
+################################################################################
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mycontrols <- sienaAlgorithmCreate(projname=NULL)
+
+# popAlt
+mymodel <- includeEffects(mymodel, popAlt, name='mybeh', interaction1='mynet')
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+(mbh <- mean(mybeh))
+
+indeg <- colSums(mynet[, , 1])
+outdeg <- rowSums(mynet[, , 1])
+avg_popularity <- vapply(1:nrow(mynet[, , 1]), function(i) {
+  alters <- which(mynet[, , 1][i, ] != 0)
+  if (length(alters) > 0) {
+    mean(indeg[alters])
+  } else {
+    0
+  }
+}, FUN.VALUE=1)
+
+sum((mybeh[,,2] - mbh)*avg_popularity) # popAlt 26.611 ok
+
+# totPopAlt
+mymodel <- getEffects(mydata)
+mymodel <- includeEffects(mymodel, totPopAlt, name='mybeh', interaction1='mynet')
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+popalt_stat <- vapply(1:nrow(s502), function(i) {
+  alters <- which(s502[i, ] != 0)
+  sum(indeg[alters])
+}, FUN.VALUE=1)
+
+sum((mybeh[,,2] - mbh)*popalt_stat) # totPopAlt 99.22 ok

@@ -14887,7 +14887,14 @@ The list of these effects is the following.
 
 
  \item
- {\em popularity alter effect} \texttt{(popAlt)}, defined by the
+ {\em total popularity alter effect} \texttt{(popAlt)}, defined by the
+ sum of in-degrees of the other actors $j$ to whom $i$ is tied,\\
+ $s^{\rm beh}_{i\vit}(x, z) =   z_i \, \sum_j x_{ij} x_{+j}  $;\\
+ this effect may be useful, e.g., as a control effect for the total
+ similarity $\times$ popularity alter effect and in distance 2 influence effects;
+
+  \item
+ {\em total popularity alter effect} \texttt{(totPopAlt)}, defined by the
  average in-degrees of the other actors $j$ to whom $i$ is tied,\\
  $s^{\rm beh}_{i\vit}(x, z) =   z_i\,x_{i+}^{-1} \, \sum_j x_{ij} x_{+j}  $;\\
  (and 0 if $x_{i+} = 0$) ;\\
