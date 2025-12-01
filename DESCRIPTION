@@ -2,8 +2,8 @@ Encoding: UTF-8
 Package: RSiena
 Type: Package
 Title: Siena - Simulation Investigation for Empirical Network Analysis
-Version: 1.5.6
-Date: 2025-10-28
+Version: 1.5.7
+Date: 2025-12-01
 Authors@R: c(person("Tom A.B.", "Snijders", role = c("aut", "ctb"), comment = c(ORCID = "0000-0003-3157-4157")),
               person("Ruth M.", "Ripley", role = "aut"),
               person("Krists", "Boitmanis", role = c( "aut","ctb")),
@@ -29,7 +29,7 @@ Authors@R: c(person("Tom A.B.", "Snijders", role = c("aut", "ctb"), comment = c(
 Maintainer: Christian Steglich <c.e.g.steglich@rug.nl>
 Depends: R (>= 3.5.0)
 Imports: Matrix, lattice, parallel, MASS, methods, xtable
-Suggests: network, tools, codetools, tcltk, testthat (>= 3.0.0)
+Suggests: network, tools, codetools, tcltk
 SystemRequirements: GNU make
 Description: The main purpose of this package is to perform simulation-based
    estimation of stochastic actor-oriented models for longitudinal network
