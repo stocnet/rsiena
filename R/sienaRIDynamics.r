@@ -10,7 +10,15 @@
 # *****************************************************************************/
 
 ##@sienaRIDynamics
-sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL, depvar = NULL, intervalsPerPeriod=10, n3 = NULL, useChangeContributions = FALSE)
+sienaRIDynamics <- function(data, 
+	ans=NULL, 
+	theta=NULL, 
+	algorithm=NULL, 
+	effects=NULL, 
+	depvar = NULL, 
+	intervalsPerPeriod=10, 
+	n3 = NULL, 
+	useChangeContributions = FALSE)
 {
 	if(length(data$depvars)>1){
 		if(is.null(depvar)){
@@ -39,7 +47,8 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 				intervalsPerPeriod <- as.integer(intervalsPerPeriod)
 			} else {
 				intervalsPerPeriod <- NULL
-				warning("'intervalsPerPeriod' has to be of type 'numeric' \n used default settings")
+				warning("'intervalsPerPeriod' has to be of type 'numeric' \n 
+					used default settings")
 			}
 		}
 	if(is.null(intervalsPerPeriod))
@@ -72,7 +81,9 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 			effs <- effects
 			if(!is.null(algorithm)||!is.null(theta))
 			{
-				warning("some information are multiply defined \n results will be based on 'theta' and 'algorithm' stored in 'ans' (as 'ans$theta', 'ans$x')")
+				warning("some information are multiply defined \n results will 
+					be based on 'theta' and 'algorithm' stored in 'ans' 
+					(as 'ans$theta', 'ans$x')")
 			}
 		} else {
 			if(!is.null(algorithm)||!is.null(theta)||!is.null(effects))
@@ -82,7 +93,15 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 				(as 'ans$theta', 'ans$x', 'ans$effects')")
 			}
 		}
-		RIValues <- calculateRIDynamics(data = data, ans=ans, theta = paras, algorithm = algo, effects = effs, depvar = depvar, intervalsPerPeriod=intervalsPerPeriod, n3 = n3, useChangeContributions = useChangeContributions)
+		RIValues <- calculateRIDynamics(data = data, 
+			ans=ans, 
+			theta = paras, 
+			algorithm = algo, 
+			effects = effs, 
+			depvar = depvar, 
+			intervalsPerPeriod=intervalsPerPeriod, 
+			n3 = n3, 
+			useChangeContributions = useChangeContributions)
 	} else {
 		## Use theta, algorithm, and effects given in the function call
 		if (!inherits(algorithm, "sienaAlgorithm"))
@@ -107,13 +126,32 @@ sienaRIDynamics <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=
 			stop("theta is not a legitimate parameter vector \n number 
 				of parameters has to match number of effects")
 		}
-		RIValues <- calculateRIDynamics(data = data, ans= NULL, theta = theta, algorithm = algorithm,  effects = effects, depvar = depvar, intervalsPerPeriod=intervalsPerPeriod, n3 = n3, useChangeContributions = useChangeContributions)
+		RIValues <- calculateRIDynamics(data = data, 
+		ans= NULL, 
+		theta = theta, 
+		algorithm = algorithm, 
+		effects = effects, 
+		depvar = depvar, 
+		intervalsPerPeriod=intervalsPerPeriod, 
+		n3 = n3, 
+		useChangeContributions = useChangeContributions)
 	}
 	RIValues
 }
 
-##@calculateRIDynamics calculateRIDynamics simulates sequences ministeps, and aggregates the relative importances of effects over ministeps of same time intervals
-calculateRIDynamics <- function(data, ans, theta, algorithm, effects, depvar, intervalsPerPeriod=10, returnActorStatistics=NULL, n3 = NULL, useChangeContributions = FALSE)
+##@calculateRIDynamics calculateRIDynamics simulates sequences ministeps, 
+## and aggregates the relative importances of effects over ministeps of same 
+## time intervals
+calculateRIDynamics <- function(data, 
+	ans, 
+	theta, 
+	algorithm, 
+	effects, 
+	depvar, 
+	intervalsPerPeriod=10, 
+	returnActorStatistics=NULL, 
+	n3 = NULL, 
+	useChangeContributions = FALSE)
 {
     x <- algorithm # why not use algorithm directly?
 	if (!is.null(n3)) {
@@ -168,7 +206,8 @@ calculateRIDynamics <- function(data, ans, theta, algorithm, effects, depvar, in
 	blanks <- matrix(0, sum(currentNetObjEffs),intervalsPerPeriod)
 	for(period in 1:periods)
 	{
-		RIintervalValues[[period]] <- data.frame(blanks, row.names = effectIds[currentNetObjEffs])
+		RIintervalValues[[period]] <- data.frame(blanks, 
+			row.names = effectIds[currentNetObjEffs])
 	}
 	for (chain in (1:chains))
 	{
@@ -270,20 +309,23 @@ print.sienaRIDynamics <- function(x, ...)
 		cat(paste("\n\nPeriod ",p,":\n", sep=""))
 		colNames = paste("int ", 1:intervals, sep="")
 		line1 <- paste(format("", width =52), sep="")
-		line2 <- paste(format(1:effs,width=3), '. ', format(x$effectNames, width = 45),sep="")
+		line2 <- paste(format(1:effs,width=3), '. ', format(x$effectNames, 
+			width = 45),sep="")
 		col <- 0
 		for(i in 1:length(colNames))
 		{
 			col <- col + 1
 			line1 <- paste(line1, format(colNames[i], width=8),"  ", sep = "")
-			line2 <- paste(line2, format(round(x$intervalValues[[p]][[i]], 4), width=8, nsmall=4),"  ",sep="")
+			line2 <- paste(line2, format(round(x$intervalValues[[p]][[i]], 4), 
+				width=8, nsmall=4),"  ",sep="")
 			if(col == 5)
 			{
 				line2 <- paste(line2, rep('\n',effs), sep="")
 				cat(as.matrix(line1),'\n \n', sep='')
 				cat(as.matrix(line2),'\n', sep='')
 				line1 <- paste(format("", width =52), sep="")
-				line2 <- paste(format(1:effs,width=3), '. ', format(x$effectNames, width = 45),sep="")
+				line2 <- paste(format(1:effs,width=3), '. ', 
+					format(x$effectNames, width = 45),sep="")
 				col<-0
 			}
 		}
@@ -351,7 +393,8 @@ plot.sienaRIDynamics <- function(x, staticRI = NULL, col = NULL,
 			else if(length(staticRI$expectedRI) != length(x$intervalValues))
 			{
 				warning("staticRI does not correspond to x and is therefore 
-				ignored,\n staticRI and x do not refer to the same number of observation moments")
+				ignored,\n staticRI and x do not refer to the same number of 
+				observation moments")
 				staticValues <- NULL
 			}
 			else
@@ -371,7 +414,8 @@ plot.sienaRIDynamics <- function(x, staticRI = NULL, col = NULL,
 				legendColumns <- as.integer(legendColumns)
 			} else {
 				legendColumns <- NULL
-				warning("legendColumns has to be of type 'numeric' \n used default settings")
+				warning("legendColumns has to be of type 'numeric' \n used 
+					default settings")
 			}
 		}
 		if(is.null(legendColumns))
@@ -385,7 +429,8 @@ plot.sienaRIDynamics <- function(x, staticRI = NULL, col = NULL,
 				legendHeight <- legendHeight
 			} else {
 				legendHeight <- NULL
-				warning("legendHeight has to be of type 'numeric' \n used default settings")
+				warning("legendHeight has to be of type 'numeric' \n used 
+					default settings")
 			}
 		}
 		if(is.null(legendHeight))
@@ -435,7 +480,8 @@ plot.sienaRIDynamics <- function(x, staticRI = NULL, col = NULL,
 			cex.legend <- cex.legend
 		} else {
 			cex.legend <- NULL
-			warning("cex.legend has to be of type 'numeric' \n used default settings")
+			warning("cex.legend has to be of type 'numeric' \n used default 
+				settings")
 		}
 	}
 	if(is.null(cex.legend))
