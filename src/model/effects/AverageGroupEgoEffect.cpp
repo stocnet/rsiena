@@ -127,7 +127,14 @@ void AverageGroupEgoEffect::preprocessEgo(int ego)
  */
 double AverageGroupEgoEffect::calculateContribution(int alter) const
 {
-	return this->lGroupMean;
+	if(ldivide)
+	{
+		return this->lGroupMean;
+	}
+	else
+	{
+		return this->lGroupMean * this->lnm;
+	}
 }
 
 
@@ -146,7 +153,14 @@ bool AverageGroupEgoEffect::egoEffect() const
  */
 double AverageGroupEgoEffect::tieStatistic(int alter)
 {
-	return this->lGroupMean;
+	if(ldivide)
+	{
+		return this->lGroupMean;
+	}
+	else
+	{
+		return this->lGroupMean * this->lnm;
+	}
 }
 
 /**
@@ -156,7 +170,14 @@ double AverageGroupEgoEffect::tieStatistic(int alter)
  */
 double AverageGroupEgoEffect::egoStatistic(int ego,	const Network * pNetwork)
 {
-	return pNetwork->outDegree(ego) * this->lGroupMean;
+	if(ldivide)
+	{
+		return pNetwork->outDegree(ego) * this->lGroupMean;
+	}
+	else
+	{
+		return pNetwork->outDegree(ego) * this->lGroupMean * this->lnm;
+	}
 }
 
 }

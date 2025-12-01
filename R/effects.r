@@ -1337,7 +1337,7 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 		if (constant)
 		{
 			covObjEffects <-
-				covObjEffects[!(covObjEffects$shortName %in% c("avGroupEgoX")),]
+				covObjEffects[!(covObjEffects$shortName %in% c("avGroupEgoX", "totGroupEgoX")),]
 		}
 
 # these lines tentatively dropped version 1.2-5
@@ -1396,7 +1396,7 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 					"degAbsDiffX", "degPosDiffX", "degNegDiffX",
 					"altInDist2", "totInDist2", "simEgoInDist2", 
 					"sameEgoInDist2", "sameXInPop", "diffXInPop",
-					"sameXCycle4", "inPopX", "inActX", "avGroupEgoX"), ]
+					"sameXCycle4", "inPopX", "inActX", "avGroupEgoX", "totGroupEgoX"), ]
 			covRateEffects <- createEffects("covarBipartiteRate", covarname,
 				name=varname,
 				groupName=groupName, group=group,

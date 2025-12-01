@@ -11488,7 +11488,7 @@ $s^{\rm net}_{i\vit}(x ) = \sum_j  x^{\rm{simm}}_{ij}\,v_j $ .
  \item {\em group average} \texttt{(avGroupEgoX)}, defined by ego's value multiplied by the
  average of the covariate for this period,  \\
  $s^{\rm beh}_{i\vit}(x, z) =  \sum_j x_{ij} \, \overline {v}  $;\\
- here $\overline {v}$ is the mean of the values $v_{ih}$ for all actors $h$
+ here $\overline {v}$ is the mean of the values $v_{h}$ for all actors $h$
  in the actor set: for changing covariates, the mean of the wave at the
  start of the period; for behavioral dependent variables,
  the current mean.
@@ -11498,6 +11498,14 @@ $s^{\rm net}_{i\vit}(x ) = \sum_j  x^{\rm{simm}}_{ij}\,v_j $ .
  in the multi-group object.
  Note that always, the average $\overline {v} $ is centered by the global mean.
  For multi-group data, global centering means centering over all groups.
+
+ \item {\em group total} \texttt{(totGroupEgoX)}, defined by ego's value multiplied by the
+ sum of the covariate for this period,  \\
+ $s^{\rm beh}_{i\vit}(x, z) =  \sum_j x_{ij} \, \sum_h{v_h}  $;\\
+ here $\sum_h{v_h} $ is the sum of the values $v_{h}$ for all actors $h$
+ in the actor set: for changing covariates, the total of the wave at the
+ start of the period; for behavioral dependent variables,
+ the current total.
 
 \setcounter{savenumi}{\value{enumi}}
 

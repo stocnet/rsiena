@@ -3420,6 +3420,46 @@ c_p <- ifelse(p <= 0.5, 0, p - mbh)
 sum((mybeh[,,2]-mbh)*(sum((mybeh[,,2]-mbh))-c_p)) # 56.745 OK
 
 ################################################################################
+### check avGroupEgoX and totGroupEgoX
+################################################################################
+
+# Model test for totGroupEgoX
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- includeEffects(mymodel, totGroupEgoX,  
+                      name='mynet', interaction1='mybeh')
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets # does not converge well
+
+(mbh <- mean(mybeh))
+
+adj <- mynet[, , 2] # adjacency matrix for the period
+beh <- mybeh[, , 1] - mbh # covariate vector for the period
+
+group_total <- sum(beh)
+total_ties <- sum(adj)
+total_ties * group_total
+
+# Model test for avGroupEgoX
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- includeEffects(mymodel, avGroupEgoX, name='mynet', interaction1='mybeh')
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel)) # does not converge well
+ans$targets
+
+adj <- mynet[, , 2] # adjacency matrix for the period
+beh <- mybeh[, , 1]-mbh # covariate vector for the period
+
+group_mean <- mean(beh, na.rm = TRUE)
+outdeg <- rowSums(adj)
+
+sum(outdeg * group_mean) # avGroupEgoX ok
+
+################################################################################
 ### check indegAvGroup
 ################################################################################
 
