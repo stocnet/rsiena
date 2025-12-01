@@ -8,12 +8,12 @@
    effects in a SAOM according to the measure of relative importance described
    in Indlekofer and Brandes (2013).
    More precisely, it returns aggregates of relative importances over
-   simulated micro-steps between observation moments as described in Section
+   simulated ministeps between observation moments as described in Section
    3.2 of this paper.
    The measure is based on the influence of effects on simulated
-   micro-steps and takes the complete model specification into account.
+   mini-steps and takes the complete model specification into account.
    Therefore, required arguments are the analysed data given as a
-   \code{siena} data object (necessary for the micro-steps simulations)
+   \code{siena} data object (necessary for the ministeps simulations)
    as well as the complete model specification represented either by an
    estimated \code{sienaFit} object or by the triple consisting of a
    suitable parameter vector \code{theta} and the corresponding
@@ -21,7 +21,7 @@
  }
 \usage{
   sienaRIDynamics(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL,
-     depvar=NULL, intervalsPerPeriod=NULL, n3 = NULL, useChangeContributions=FALSE)
+     depvar=NULL, intervalsPerPeriod=10, n3 = NULL, useChangeContributions=FALSE)
   \method{plot}{sienaRIDynamics}(x, staticRI=NULL, col=NULL,
      ylim=NULL, width=NULL, height=NULL, legend=TRUE, legendColumns=NULL,
      legendHeight=NULL, cex.legend=NULL, \dots)
@@ -54,7 +54,7 @@
   \item{depvar}{If the model contains more than one dependent variable,
     it has to be specified for which dependent variable the relative importances
     of associated effects should be determined.
-    Only those simulated micro-steps that refer to the selected dependent
+    Only those simulated ministeps that refer to the selected dependent
     variable are considered in the aggregated values of relative importance
     of the corresponding effects.
     If \code{depvar=NULL}, relative importances will be determined for
@@ -63,7 +63,7 @@
   \item{intervalsPerPeriod}{For analyzing the dynamics of relative
     importances between observation moments, the time interval between
     observation moments is divided into \code{intervalsPerPeriod} subintervals.
-    The values of relative importance are aggregated over all micro-steps
+    The values of relative importance are aggregated over all ministeps
     of one subinterval. Default value is 10 subintervals per period.}
   \item{n3}{Integer specifying the number of chains to be simulated. 
     Defaults to the value in \code{algorithm} or what was set when estimating \code{ans}.
@@ -140,14 +140,14 @@ it defaults to the value of \code{ans$n3} if \code{ans} is specified.
 \code{sienaRIDynamics} returns an object of class \code{sienaRIDynamics}.
 
  A returned \code{sienaRIDynamics} object stores the relative importances
-   of effects in simulated micro-steps aggregated to \code{intervalsPerPeriod}
+   of effects in simulated ministeps aggregated to \code{intervalsPerPeriod}
    averages per period. For details, see Section 3.2 of
    Indlekofer and Brandes (2013).
 
 A \code{sienaRIDynamics} object consists of following components:
     \describe{
     \item{\code{intervalValues}}{the relative importances of included
-          effects for simulated micro-steps of the considered dependent
+          effects for simulated ministeps of the considered dependent
           variable aggregated over subintervals.}
     \item{\code{dependentVariable}}{the name of the dependent variable
           the results refer to.}
