@@ -25,7 +25,8 @@
   using the values at the start of the period to calculate allowed changes and
   effect change statistics. This means that there is no calculation of the 
   first ministep after the last observation wave anymore. This also means that 
-  sienaRI does not calculate a RI measure at the last observation moment. Added  clarification in and cleaned up the documentation and scripts for siena07, 
+  sienaRI does not calculate a RI measure at the last observation moment. Added  
+  clarification in and cleaned up the documentation and scripts for siena07, 
   sienaRI and sienaRIDynamics.
   * Eliminated additional test file for chains and integrated into parallel.R
   as far as it seemed necessary.
