@@ -91,7 +91,6 @@
 #include "IsolatePopEffect.h"
 #include "JumpCovariateTransitiveTripletsEffect.h"
 #include "LinearShapeEffect.h"
-#include "LinearShapeNCEffect.h"
 #include "MainCovariateEffect.h"
 #include "MainCovariateContinuousEffect.h"
 #include "MaxAlterEffect.h"

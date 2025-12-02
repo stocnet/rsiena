@@ -831,8 +831,7 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 		if (!(attr(depvar,'allUpOnly') || attr(depvar, 'allDownOnly')))
 		{
 			objEffects[grepl("linear shape", objEffects$effectName) &
-				objEffects$type == 'eval' &
-				objEffects$shortName != 'linear_nc',
+				objEffects$type == 'eval',
 				c('include', 'initialValue','untrimmedValue')]  <-
 				list(TRUE, starts$tendency, starts$untrimmed)
 		}

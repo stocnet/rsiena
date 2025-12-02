@@ -1870,13 +1870,41 @@ are used.
 Functions \nnm{StatisticCalculator::calculateNetworkRateStatistics} and
 \nnm{StatisticCalculator::calculateBehaviorRateStatistics}
 in \nnm{StatisticCalculator.cpp}
-calculate the rate functions.
+calculate the rate functions. In addition to calculating rate statistics, 
+RSiena also computes scores for rate effects. These scores are calculated in 
+functions such as \nnm{getStatistics} in \texttt{siena07internals.cpp} and in 
+methods of \nnm{DependentVariable} and \nnm{EpochSimulation}.
 
 The \texttt{RateX} effect is defined in a funny way.
 If you look for the string "RateX", it occurs nowhere in the cpp directory.
 It is identified by being the only rate effect of type "covariate",
 together with the dependent variable name and the explanatory variable,
 given by the parameter "interaction1".
+
+\subsection{Diffusion rate effects}
+
+Diffusion rate effects can be added and modified more easily than other rate 
+effects, as they are implemented as a distinct class, \nnm{DiffusionRateEffect}, 
+which inherits from \nnm{BehaviorRateEffect}. The method 
+\nnm{DiffusionRateEffect::calculateRateContribution} returns the value used in 
+the calculation of rates, scores, and statistics in both \nnm{DependentVariable} 
+and \nnm{StatisticCalculator}, each of which creates its own instances of 
+diffusion rate effects.
+
+The contribution to the rate function is calculated by\\ 
+\nnm{DiffusionRateEffect::proximityValue}, which must be defined in each 
+diffusion rate class (or is otherwise pure virtual). To create a new 
+\nnm{DiffusionRateEffect}, one should define a new class inheriting from 
+\nnm{DiffusionRateEffect} and implement the mathematical definition of the 
+rate effect in the \nnm{proximityValue} method. New diffusion rate effects 
+must also be explicitly constructed and initialized in 
+\nnm{DependentVariable::initializeRateFunction} and 
+\nnm{StatisticCalculator::calculateBehaviorRateStatistics}. Additionally, 
+they must be registered as known diffusion rate effects in the \nnm{getStatistics} 
+function in \texttt{siena07internals.cpp}.
+
+Further refactoring of all rate effects and their construction and storage may 
+be possible to make the code more uniform and easier to maintain.
 
 
 \newpage
@@ -6338,7 +6366,7 @@ if ef3 is defined then it is a three-effect interaction.
 The values ef1, ef2, ef3 refer to the index number
 of the effects (or whatever identified is convenient;
 I suppose the index number is a good way of referring to it).
-\item  Csiena: Effects must have a tag “kind” with values
+\item  Csiena: Effects must have a tag ï¿½kindï¿½ with values
 {ego, dyadic, interaction, other}.
 Ego effects are those depending only on the value of ego
 on an actor variable (actor covariate or dependent behavior variable).

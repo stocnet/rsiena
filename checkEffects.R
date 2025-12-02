@@ -3925,9 +3925,9 @@ mybeh <- sienaDependent(s50a[,1:3], type="behavior")
 mydata <- sienaDataCreate(mynet, mybeh)
 mymodel <- getEffects(mydata)
 mymodel <- setEffect(mymodel,totGwdspFFAlt_nc, name='mybeh', interaction1 = "mynet")
-mymodel <- includeEffects(mymodel, linear_nc, quad_nc,
+mymodel <- includeEffects(mymodel, quad_nc,
     name = "mybeh")
-mymodel <- includeEffects(mymodel, linear, quad,
+mymodel <- includeEffects(mymodel, quad,
     name = "mybeh", include = FALSE)
 mymodel
 mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
@@ -3937,16 +3937,20 @@ ans$targets # different from totGwdspFFAlt
 
 
 ## same as above but without centering of behavior
-adj <- mynet[, , 1]
 alpha <- 0.69
-twopath_mat <- forward_twopaths(adj)
-weight_mat <- exp(alpha) * (1 - (1 - exp(-alpha))^twopath_mat)
-weighted_beh <- (mybeh[, , 2]) %*% weight_mat
-sum((mybeh[, , 2]) * weighted_beh) # 2691.373 ok
+twopath_mat1 <- forward_twopaths(mynet[, , 1])
+weight_mat1 <- exp(alpha) * (1 - (1 - exp(-alpha))^twopath_mat1)
+stat1 <- sum(mybeh[, , 2] * (mybeh[, , 2] %*% weight_mat1))
+
+twopath_mat2 <- forward_twopaths(mynet[, , 2])
+weight_mat2 <- exp(alpha) * (1 - (1 - exp(-alpha))^twopath_mat2)
+stat2 <- sum(mybeh[, , 3] * (mybeh[, , 3] %*% weight_mat2))
+
+stat1 + stat2 # 2691.373 ok
 
 ## Check Contributions
 
-staticChangeContributions <- getChangeContributions(mycontrols, data=mydata, effects=mymodel)
+staticChangeContributions <- RSiena:::getChangeContributions(mycontrols, data=mydata, effects=mymodel)
 
 ## Check if it works for density
 
@@ -3957,8 +3961,10 @@ manual_contribs <- 1-2*adj
 diag(manual_contribs) <- 0
 all.equal(manual_contribs, conts) # TRUE
 
-## Trying to manually compute contributions for totGwdspFFAlt_nc and compare with extracted ones
-conts <- staticChangeContributions[[1]][[1]][[5]] # period 2, effect 5 (totGwdspFFAlt_nc)
+## Trying to manually compute contributions for totGwdspFFAlt_nc 
+## and compare with extracted ones
+# period 2, effect 5 (totGwdspFFAlt_nc)
+conts <- staticChangeContributions[[1]][[1]][[5]] 
 conts <- do.call(rbind, conts)
 
 n <- nrow(adj)
@@ -3984,14 +3990,16 @@ all.equal(manual_contribs, conts) # TRUE
 
 ## Also check period 2
 
-conts <- staticChangeContributions[[1]][[2]][[1]] # period 2, effect 1 (density)
+conts <- staticChangeContributions[[1]][[2]][[1]]
+# period 2, effect 1 (density)
 conts <- do.call(rbind, conts)
 adj <- mynet[, , 2]
 manual_contribs <- 1-2*adj
 diag(manual_contribs) <- 0
 all.equal(manual_contribs, conts) # TRUE
 
-conts <- staticChangeContributions[[1]][[2]][[5]] # period 2, effect 5 (totGwdspFFAlt_nc)
+conts <- staticChangeContributions[[1]][[2]][[5]] 
+# period 2, effect 5 (totGwdspFFAlt_nc)
 conts <- do.call(rbind, conts)
 
 adj <- mynet[, , 2]

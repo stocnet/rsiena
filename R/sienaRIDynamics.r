@@ -18,7 +18,9 @@ sienaRIDynamics <- function(data,
 	depvar = NULL, 
 	intervalsPerPeriod=10, 
 	n3 = NULL, 
-	useChangeContributions = FALSE)
+	useChangeContributions = FALSE,
+	silent = TRUE,
+	seed = NULL)
 {
 	if(length(data$depvars)>1){
 		if(is.null(depvar)){
@@ -101,7 +103,9 @@ sienaRIDynamics <- function(data,
 			depvar = depvar, 
 			intervalsPerPeriod=intervalsPerPeriod, 
 			n3 = n3, 
-			useChangeContributions = useChangeContributions)
+			useChangeContributions = useChangeContributions,
+			silent = silent,
+			seed = seed)
 	} else {
 		## Use theta, algorithm, and effects given in the function call
 		if (!inherits(algorithm, "sienaAlgorithm"))
@@ -134,7 +138,9 @@ sienaRIDynamics <- function(data,
 		depvar = depvar, 
 		intervalsPerPeriod=intervalsPerPeriod, 
 		n3 = n3, 
-		useChangeContributions = useChangeContributions)
+		useChangeContributions = useChangeContributions,
+		silent = silent,
+		seed = seed)
 	}
 	RIValues
 }
@@ -151,9 +157,20 @@ calculateRIDynamics <- function(data,
 	intervalsPerPeriod=10, 
 	returnActorStatistics=NULL, 
 	n3 = NULL, 
-	useChangeContributions = FALSE)
+	useChangeContributions = FALSE,
+	silent = TRUE,
+	seed = NULL)
 {
     x <- algorithm # why not use algorithm directly?
+	if(!is.null(seed))
+	{
+		if(is.numeric(seed))
+		{
+			x$seed <- as.integer(seed)
+		} else {
+			warning("'seed' has to be of type 'numeric' \n used default settings")
+		}
+	}
 	if (!is.null(n3)) {
     	x$n3 <- as.integer(n3)
 	}
@@ -186,7 +203,8 @@ calculateRIDynamics <- function(data,
             prevAns=prevAns, 
 			initC=FALSE, 
 			returnDeps=FALSE, 
-			returnChangeContributions=TRUE)
+			returnChangeContributions=TRUE,
+			silent = silent)
     }
 	chains <- x$n3
 	periods <- data$observation-1
@@ -302,7 +320,7 @@ print.sienaRIDynamics <- function(x, ...)
 	effs <- length(x$effectNames)
 	cat(paste("\n  Relative importance of effects in micro-steps of 
 	dependent variable '", x$dependentVariable,"'. \n \n",sep=""))
-	cat(paste("  Periods between observations are devided into ", intervals, 
+	cat(paste("  Periods between observations are divided into ", intervals, 
 	" intervals. \n \n",sep=""))
 	cat(paste("  Displayed results are aggregations over intervals:\n", sep=""))
 	for(p in 1:periods){

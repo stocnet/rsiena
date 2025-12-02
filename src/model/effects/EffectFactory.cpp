@@ -2027,10 +2027,6 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new LinearShapeEffect(pEffectInfo);
 	}
-	else if (effectName == "linear_nc")
-	{
-		pEffect = new LinearShapeNCEffect(pEffectInfo);
-	}
 	else if (effectName == "quad")
 	{
 		pEffect = new QuadraticShapeEffect(pEffectInfo);

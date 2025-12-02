@@ -9,7 +9,8 @@
    in Indlekofer and Brandes (2013).
    More precisely, it returns aggregates of relative importances over
    simulated ministeps between observation moments as described in Section
-   3.2 of this paper.
+   3.2 of this paper but only for the starting observation at
+   each period.
    The measure is based on the influence of effects on simulated
    mini-steps and takes the complete model specification into account.
    Therefore, required arguments are the analysed data given as a
@@ -21,7 +22,8 @@
  }
 \usage{
   sienaRIDynamics(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL,
-     depvar=NULL, intervalsPerPeriod=10, n3 = NULL, useChangeContributions=FALSE)
+     depvar=NULL, intervalsPerPeriod=10, n3 = NULL, useChangeContributions=FALSE,
+     silent = TRUE, seed = NULL)
   \method{plot}{sienaRIDynamics}(x, staticRI=NULL, col=NULL,
      ylim=NULL, width=NULL, height=NULL, legend=TRUE, legendColumns=NULL,
      legendHeight=NULL, cex.legend=NULL, \dots)
@@ -68,6 +70,10 @@
   \item{n3}{Integer specifying the number of chains to be simulated. 
     Defaults to the value in \code{algorithm} or what was set when estimating \code{ans}.
     A very large value will result in a long computation time and large memory usage.}
+  \item{silent}{Logical specifying whether output during internal
+    \code{\link{siena07}} calls should be suppressed. Default is \code{TRUE}.}
+  \item{seed}{Integer specifying the seed for random number generation
+    during internal \code{\link{siena07}} calls.}
   \item{useChangeContributions}{Logical specifying whether previously extracted change 
     contributions should be used instead of rerunning phase 3 simulations.}
   \item{x}{\code{sienaRIDynamics} object resulting from a call to
@@ -166,16 +172,17 @@ mycontrols <- sienaAlgorithmCreate(nsub=2, n3=50, cond=FALSE)
 mynet1 <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
 mydata <- sienaDataCreate(mynet1)
 mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, density, recip, transTies, nbrDist2)
+mymodel <- includeEffects(mymodel, density, recip, transTies)
 ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE,
                returnChangeContributions=TRUE)
 
 RIDynamics1 <- sienaRIDynamics(mydata, ans=ans, useChangeContributions=TRUE)
 RIDynamics1
+\dontrun{
 plot(RIDynamics1)
 
-
 mycontrols2 <- sienaAlgorithmCreate(nsub=2, n3=50, cond=TRUE)
+
 ans2 <- siena07(mycontrols2, data=mydata, effects=mymodel, batch=TRUE)
 
 RIDynamics2 <- sienaRIDynamics(mydata, ans=ans2, effects=mymodel)
@@ -190,7 +197,7 @@ mynet2 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
 mybeh <- sienaDependent(s50a, type="behavior")
 mydata2 <- sienaDataCreate(mynet2, mybeh)
 mymodel2 <- getEffects(mydata2)
-mymodel2 <- includeEffects(mymodel2, density, recip, transTies, transTrip, nbrDist2)
+mymodel2 <- includeEffects(mymodel2, density, recip, transTies, transTrip)
 ans3 <- siena07(mycontrols3, data=mydata2, effects=mymodel2, batch=TRUE)
 
 RIDynamics4 <- sienaRIDynamics(mydata2, ans=ans3, depvar="mybeh")
@@ -202,6 +209,6 @@ RIDynamics5
 
 RI5 <- sienaRI(mydata2, ans=ans3)
 plot(RIDynamics5, staticRI=RI5[[1]])
-
+}
 }
 \keyword{models}

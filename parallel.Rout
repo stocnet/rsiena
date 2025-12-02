@@ -783,8 +783,9 @@ Nodeset            Actors
 Range              0 - 1   
 
 "uponly":  mybeh:    all periods
-> mymodel <- sienaModelCreate(seed=1234, firstg=0.001, nsub=1, n3=10)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> mymodel <- sienaModelCreate(projname=NULL, seed=1234, firstg=0.001, nsub=1, n3=10)
+If you use this algorithm object, siena07 will create/use an output file /var/folders/rh/zphscs4s62bf0fv819555gsc0000gn/T//Rtmp7m2Tfu/Siena11c45608b22db.txt .
+This is a temporary file for this R session.
 > myeff <- getEffects(mydata)
 > (myeff <- setEffect(myeff,avExposure,type='rate',parameter=2,
 +                             name='mybeh',interaction1='mynet'))
@@ -1683,4 +1684,4 @@ Period 2:
 > 
 > proc.time()
    user  system elapsed 
- 64.393   4.895  67.004 
+ 65.497   4.752  68.224 

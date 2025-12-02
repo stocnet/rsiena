@@ -183,7 +183,7 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 					'continuous'")
 			}
 
-			# impute for wave 1
+			# impute for period 1
 			if (networkTypes[eff] %in% c("oneMode", "bipartite"))
 			{
 				depNetwork[,,1][is.na(depNetwork[,,1])] <- 0
@@ -293,9 +293,9 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 					toggleProbabilities[,,w] <-
 						t(vapply(distributions, function(x){x[1,]}, rep(0,choices)))
 				}
-				# toggleProbabilities is an array referring to ego * choices * wave,
-				# giving the probability of ego in a ministep in the wave
-				# to make this choice.
+				# toggleProbabilities is an array referring to ego * choices * 
+				# period, giving the probability of ego in a ministep at the 
+				# start of the period to make this choice.
 				# For oneMode networks choices are alters;
 				# for  bipartite choices are second mode nodes,and the last is "no change";
 				# for behavior choices are to add -1, 0, +1.
@@ -471,7 +471,7 @@ print.sienaRI <- function(x, printSigma = FALSE, ...){
 			x$dependentVariable,"' at observation moments:\n\n\n", sep=""))
 	periods <- length(x$expectedRI)
 	effs <- length(x$effectNames)
-	colNames = paste("wave ", 1:periods, sep="")
+	colNames = paste("period ", 1:periods, sep="")
 	line1 <- format("", width =63)
 	line2 <- paste(format(1:effs,width=3), '. ',
 		format(x$effectNames, width = 56),sep="")
@@ -737,7 +737,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 		barplot(cbind(x$RIActors[[w]][,actors], x$expectedRI[[w]]),
 			space=c(rep(0.1,nactors),1.5),width=c(rep(1,nactors),1),
 			beside =FALSE, yaxt = "n", xlab="Actor", cex.names = cex.names,
-			ylab=paste("wave ", w, sep=""),border=bordergrey,
+			ylab=paste("period ", w, sep=""),border=bordergrey,
 			col = cl, names.arg=c(actors,"exp. rel. imp."))
 		axis(2, at=c(0,0.25,0.5,0.75,1),labels=c("0","","0.5","","1"))
 		axis(4, at=c(0,0.25,0.5,0.75,1),labels=c("0","","0.5","","1"))

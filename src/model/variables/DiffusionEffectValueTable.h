@@ -6,7 +6,8 @@
  * File: DiffusionEffectValueTable.h
  *
  * Description: This file contains the definition of the
- * DiffusionEffectValueTable class.
+ * DiffusionEffectValueTable class. Currently not in use but
+ * planned to be restored for optimization of diffusion effect calculations.
  *****************************************************************************/
 
 #ifndef DIFFUSIONEFFECTVALUETABLE_H_

@@ -13,8 +13,9 @@
  of a SAOM according to the measure of relative importance described in
  Section 3.1 of Indlekofer and Brandes (2013).
  This is based on the influence of effects on potential tie change or
- behavior change decisions of individual actors at the given observation
- moments (waves).  \cr
+ behavior change decisions of individual actors at the start of given observed 
+ periods.
+ \cr
  Other measures useful for effect sizes are entropy-based
  effect sizes as in Snijders (2004) and the within-ego
  standard deviations of change statistics.
@@ -130,7 +131,7 @@ vectors and ignored in the standard deviations; but the change statistics
 for these dyads still are given in \code{changeStatistics} (if requested).
 
 The averages reported in the components \code{sigmas} (average across actors)
-and \code{meansigmas} (average across waves) are obtained by averaging at the
+and \code{meansigmas} (average across periods) are obtained by averaging at the
 variance level and then taking square roots.
 }
 \value{
@@ -181,14 +182,14 @@ corresponding to the observation moments.
           \code{print} method for \code{sienaRI} objects.}
     \item{- \code{sigma}}{a list of effects by ego matrices of the values of
           the within-ego standard deviations of the change statistics.}
-    \item{- \code{sigmas}}{effects by wave matrices of averages
+    \item{- \code{sigmas}}{effects by period matrices of averages
          (see above for how this is done; across actors) of \code{sigma}.
           These are printed if \code{printSigma=TRUE}.}
     \item{- \code{meansigmas}}{average (see above for how this is done)
-          over waves of \code{sigmas}.}
+          over periods of \code{sigmas}.}
     \item{- \code{changeStatistics}}{a list of arrays
           (effects by choices by egos)
-          containing, for each observation wave,
+          containing, for observation at the start of a period,
           the values of the change statistics for making this choice,
           where for one-mode networks the choice is defined by the alters
           with alter=ego referring to 'no change',
@@ -198,9 +199,9 @@ corresponding to the observation moments.
           going down, staying constant, or going up;
           this output is produced only if \code{getChangeStats=TRUE}.}
     \item{- \code{toggleProbabilities}}{an array
-         (egos by choices by waves), where "choices" are as directly above,
+         (egos by choices by periods), where "choices" are as directly above,
          giving the choice probabilities of ego in a ministep,
-         when the data are as in this wave.}
+         when the data are as at the start of this period.}
     }
 }
 
@@ -225,17 +226,17 @@ ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE)
 RI <- sienaRI(mydata, ans)
 RI
 print(RI, printSigma=TRUE)
-# average within-ego standard deviations of change statistics by wave:
+# average within-ego standard deviations of change statistics by period:
 RI$sigmas
-# sigma averaged over waves:
+# sigma averaged over periods:
 RI$meansigmas
 # to get the change statistics:
 RI.cs <- sienaRI(mydata, ans, getChangeStats=TRUE)
-# For the network at the first wave:
+# For the network at the start of the first period:
 dim(RI.cs$changeStatistics[[1]])
 # E.g., the change statistics for the first actor (note the 0 first column):
 RI.cs$changeStatistics[[1]][,1,]
-# semi-standardized parameters by wave:
+# semi-standardized parameters by period:
 ans$theta * RI$meansigmas
 \dontrun{
 plot(RI, addPieChart=TRUE)

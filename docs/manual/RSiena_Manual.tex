@@ -14710,8 +14710,7 @@ with the behavioral variable itself.
  \item {\em behavioral shape effect} \texttt{(linear)},\\
  $s^{\rm beh}_{i\vit}(x, z) = z_i \,$ ,\\
  where $z_{i}$ denotes the value of the dependent behavior variable
- of actor $i$; for using no centering, work with the effect
- \texttt{(linear\_nc)} instead;
+ of actor $i$;
 
  \item {\em quadratic shape effect, or effect of the behavior upon itself}
                                                              \texttt{(quad)},
@@ -17011,7 +17010,10 @@ The Indlekofer-Brandes measures are numerical answers to the question,
 `How strongly do these probabilities depend on each of the effects?'.
 In their paper, measures are proposed for expressing this per actor
 per wave; these measures can be relative (so that the total importance
-for each actor always is 1), or raw.
+for each actor always is 1), or raw. In the current implementation,
+only the relative importances for the waves at the start of each period are
+calculated as the first ministep after the last observation is never estimated
+by \sfn{sienaRI}.
 The relative importances are calculated by  \sfn{sienaRI} as \texttt{RIActors},
 the raw importances as \texttt{IActors} (see the help page).
 The  relative importances can be averaged over actors to give
@@ -17052,9 +17054,9 @@ They are calculated by  \sfn{sienaRI} as \texttt{RHActors}
 (see the help page). The mean over actors is printed by the print method
 for \sfn{sienaRI}.
 
-Note that the values given by \sfn{sienaRI} refer to each of the waves,
+Note that the values given by \sfn{sienaRI} refer to each of the periods,
 including the first wave; for this purpose, $x$ in (\ref{explained})
-is taken as the observed network (and behaviour...) at each wave.
+is taken as the observed network (and behaviour...) at the start of each period.
 
 
 \subsubsection{Standard deviation of change statistics}

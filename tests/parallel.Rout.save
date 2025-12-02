@@ -1,11 +1,13 @@
 
-R version 4.5.1 (2025-06-13 ucrt) -- "Great Square Root"
+R version 4.5.1 (2025-06-13) -- "Great Square Root"
 Copyright (C) 2025 The R Foundation for Statistical Computing
-Platform: x86_64-w64-mingw32/x64
+Platform: aarch64-apple-darwin24.4.0
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
 Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
 
 R is a collaborative project with many contributors.
 Type 'contributors()' for more information and
@@ -138,9 +140,9 @@ Total of 588 iteration steps.
   parm
 1 0   
   effectName                  include fix   test  initialValue parm
-1 basic rate parameter mynet1 TRUE    FALSE FALSE    4.80941   0
-2 outdegree (density)         TRUE    FALSE FALSE   -0.56039   0
-3 reciprocity                 TRUE    FALSE FALSE    0.00000   0
+1 basic rate parameter mynet1 TRUE    FALSE FALSE    4.80941   0   
+2 outdegree (density)         TRUE    FALSE FALSE   -0.56039   0   
+3 reciprocity                 TRUE    FALSE FALSE    0.00000   0   
 4 indegree - popularity       TRUE    FALSE FALSE    0.00000   0   
 5 outdegree - activity        TRUE    TRUE  TRUE     0.00000   0   
 > (myeff <- includeInteraction(myeff, recip, inPop, fix=TRUE, test=TRUE))
@@ -171,8 +173,8 @@ Total of 588 iteration steps.
 > ans
 Estimates, standard errors and convergence t-ratios
 
-                                      Estimate   Standard   Convergence
-                                                   Error      t-ratio
+                                              Estimate   Standard   Convergence 
+                                                           Error      t-ratio   
   1. rate basic rate parameter mynet1          3.0375  ( 0.6487   )   -0.1316   
   2. eval outdegree (density)                 -1.4598  ( 0.4672   )   -0.0938   
   3. eval reciprocity                          1.8008  ( 0.5119   )    0.0402   
@@ -312,12 +314,12 @@ Total of 240 iteration steps.
 > myeff <- getEffects(mydata)
 > myeff <- setEffect(myeff, linear, initialValue=0.34699930338, name="mynet2")
   effectNumber effectName          shortName include fix   test  initialValue
-1 494          mynet2 linear shape linear    TRUE    FALSE FALSE      0.347  
+1 501          mynet2 linear shape linear    TRUE    FALSE FALSE      0.347  
   parm
 1 0   
 > myeff <- setEffect(myeff, avAlt, name="mynet2", interaction1="mynet1")
   effectNumber effectName           shortName include fix   test  initialValue
-1 566          mynet2 average alter avAlt     TRUE    FALSE FALSE          0  
+1 590          mynet2 average alter avAlt     TRUE    FALSE FALSE          0  
   parm
 1 0   
 > ##myeff$initialValue[98] <- 0.34699930338 ## siena3 starting values differ
@@ -588,7 +590,7 @@ Total of 266 iteration steps.
 11 mynet2 mynet2 quadratic shape          TRUE    FALSE FALSE    0.00000   0   
 > (myeff <- includeEffects(myeff, avSim, name="mynet2", interaction1="mynet1"))
   effectNumber effectName                shortName include fix   test 
-1 523          mynet2 average similarity avSim     TRUE    FALSE FALSE
+1 534          mynet2 average similarity avSim     TRUE    FALSE FALSE
   initialValue parm
 1          0   0   
    name   effectName                      include fix   test  initialValue parm
@@ -693,35 +695,35 @@ Total of 757 iteration steps.
 > friend <- sienaDependent(array(c(s501, s502), dim = c(50,50,2)))
 > behavior <- sienaDependent(matrix(c(y1,y2), 50,2), type = "continuous")
 > (mydata <- sienaDataCreate(friend, behavior))
-Dependent variables:  friend, behavior
-Number of observations: 2
+Dependent variables:  friend, behavior 
+Number of observations: 2 
 
-Nodeset                  Actors
-Number of nodes              50
+Nodeset                  Actors 
+Number of nodes              50 
 
-Dependent variable friend
-Type               oneMode
-Observations       2
-Nodeset            Actors
+Dependent variable friend     
+Type               oneMode    
+Observations       2          
+Nodeset            Actors     
 Densities          0.046 0.047
 
-Dependent variable behavior
-Type               continuous
-Observations       2
-Nodeset            Actors
+Dependent variable behavior      
+Type               continuous    
+Observations       2             
+Nodeset            Actors        
 Range              -6.242 - 6.507
 
 > (myeff <- getEffects(mydata, onePeriodSde = TRUE))
-SDE init parameters:  -0.1117176 -0.864023 0.8576913
-SDE par stand errors: 0.04669358 0.1223113 0.08791327
+SDE init parameters:  -0.1117176 -0.864023 0.8576913 
+SDE par stand errors: 0.04669358 0.1223113 0.08791327 
   name     effectName                  include fix   test  initialValue parm
-1 friend   basic rate parameter friend TRUE    FALSE FALSE    4.69604   0
-2 friend   outdegree (density)         TRUE    FALSE FALSE   -1.48852   0
-3 friend   reciprocity                 TRUE    FALSE FALSE    0.00000   0
-4 sde      scale parameter period 1    TRUE    TRUE  FALSE    1.00000   0
-5 behavior wiener (behavior.behavior)  TRUE    FALSE FALSE    0.85769   0
-6 behavior feedback from behavior      TRUE    FALSE FALSE   -0.11172   0
-7 behavior intercept                   TRUE    FALSE FALSE   -0.86402   0
+1 friend   basic rate parameter friend TRUE    FALSE FALSE    4.69604   0   
+2 friend   outdegree (density)         TRUE    FALSE FALSE   -1.48852   0   
+3 friend   reciprocity                 TRUE    FALSE FALSE    0.00000   0   
+4 sde      scale parameter period 1    TRUE    TRUE  FALSE    1.00000   0   
+5 behavior wiener (behavior.behavior)  TRUE    FALSE FALSE    0.85769   0   
+6 behavior feedback from behavior      TRUE    FALSE FALSE   -0.11172   0   
+7 behavior intercept                   TRUE    FALSE FALSE   -0.86402   0   
 > algorithmMoM <- sienaAlgorithmCreate(nsub=1, n3=20, seed=321)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > (ans <- siena07(algorithmMoM, data = mydata, effects = myeff, batch=TRUE,
@@ -760,7 +762,7 @@ Total of 305 iteration steps.
 > (mydata <- sienaDataCreate(mynet, mybeh))
 For dependent variable mybeh, in some periods,
 there are only increases, or only decreases.
-This will be respected in the simulations.
+This will be respected in the simulations. 
 If this is not desired, use allowOnly=FALSE when creating the dependent variable.
 Dependent variables:  mynet, mybeh 
 Number of observations: 2 
@@ -781,13 +783,13 @@ Nodeset            Actors
 Range              0 - 1   
 
 "uponly":  mybeh:    all periods
-> mymodel <- sienaModelCreate(projname=NULL, seed=1234, firstg=0.001, nsub=1, n3=10)
+> mymodel <- sienaModelCreate(seed=1234, firstg=0.001, nsub=1, n3=10)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > myeff <- getEffects(mydata)
 > (myeff <- setEffect(myeff,avExposure,type='rate',parameter=2,
-+ 							name='mybeh',interaction1='mynet'))
++                             name='mybeh',interaction1='mynet'))
   effectNumber effectName                            shortName  include fix  
-1 486          average exposure effect on rate mybeh avExposure TRUE    FALSE
+1 489          average exposure effect on rate mybeh avExposure TRUE    FALSE
   test  initialValue parm
 1 FALSE          0   2   
   name  effectName                            include fix   test  initialValue
@@ -882,8 +884,8 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 1 132          outdegree-trunc(2) outTrunc  FALSE   FALSE FALSE          0  
   parm
 1 2   
-> myeff <- includeInteraction(myeff, outTrunc, egoX, egoX, 
-+ 						interaction1=c("","smoke","alc"))
+> myeff <- includeInteraction(myeff, outTrunc, egoX, egoX,
++                         interaction1=c("","smoke","alc"))
   effectNumber effectName                               shortName include fix  
 1 132          outdegree-trunc(2)                       outTrunc  FALSE   FALSE
 2 278          alc ego                                  egoX      FALSE   FALSE
@@ -962,30 +964,30 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 8 0    eval
 
  Regular and GMoM statistics
-  name   effectName                    Statistic
-1 mynet1 basic rate parameter mynet1   Regular  
-2 mynet1 mynet1: outdegree (density)   Regular  
-3 mynet1 mynet1: reciprocity           Regular  
+  name   effectName                        Statistic
+1 mynet1 basic rate parameter mynet1       Regular  
+2 mynet1 mynet1: outdegree (density)       Regular  
+3 mynet1 mynet1: reciprocity               Regular  
 4 mynet1 mynet1: from mynet2 agreement (0) Regular  
-5 mynet2 basic rate parameter mynet2   Regular  
-6 mynet2 mynet2: outdegree (density)   Regular  
-7 mynet2 mynet2: reciprocity           Regular  
-8 mynet2 mynet2: mynet1                Regular  
+5 mynet2 basic rate parameter mynet2       Regular  
+6 mynet2 mynet2: outdegree (density)       Regular  
+7 mynet2 mynet2: reciprocity               Regular  
+8 mynet2 mynet2: mynet1                    Regular  
 9 mynet1 mynet1: from mynet2 agreement (#) GMoM     
 > (ans <- siena07(myalgorithm1, data=mydata, effects=myeff[myeff$type!="gmm",],
 +                 batch=TRUE, silent=TRUE))
 Estimates, standard errors and convergence t-ratios
 
-                                        Estimate   Standard   Convergence 
-                                                     Error      t-ratio   
-  1. rate basic rate parameter mynet1    5.6484  (  4.8181  )    0.4124   
-  2. eval mynet1: outdegree (density)   -2.5305  (  3.6595  )   -0.1408   
-  3. eval mynet1: reciprocity            1.9880  (  1.7456  )   -0.1755   
+                                            Estimate   Standard   Convergence 
+                                                         Error      t-ratio   
+  1. rate basic rate parameter mynet1        5.6484  (  4.8181  )    0.4124   
+  2. eval mynet1: outdegree (density)       -2.5305  (  3.6595  )   -0.1408   
+  3. eval mynet1: reciprocity                1.9880  (  1.7456  )   -0.1755   
   4. eval mynet1: from mynet2 agreement (0)  1.3280  (  0.3647  )    0.0327   
-  5. rate basic rate parameter mynet2    4.6919  ( 13.9914  )   -0.0588   
-  6. eval mynet2: outdegree (density)   -2.7862  (  6.3305  )   -0.3071   
-  7. eval mynet2: reciprocity            1.7889  (  4.4589  )   -0.2856   
-  8. eval mynet2: mynet1                 3.1491  ( 16.3708  )   -0.5944   
+  5. rate basic rate parameter mynet2        4.6919  ( 13.9914  )   -0.0588   
+  6. eval mynet2: outdegree (density)       -2.7862  (  6.3305  )   -0.3071   
+  7. eval mynet2: reciprocity                1.7889  (  4.4589  )   -0.2856   
+  8. eval mynet2: mynet1                     3.1491  ( 16.3708  )   -0.5944   
 
 Overall maximum convergence ratio:    0.8311 
 
@@ -998,8 +1000,8 @@ Estimated by Generalized Method of Moments
 
 Estimates, standard errors and convergence t-ratios
 
-                                        Estimate   Standard   Convergence 
-                                                     Error      t-ratio   
+                                            Estimate   Standard   Convergence 
+                                                         Error      t-ratio   
   1. rate basic rate parameter mynet1        5.4255  ( 1.0817   )   -0.2549   
   2. eval mynet1: outdegree (density)       -2.5970  ( 0.2717   )    0.1179   
   3. eval mynet1: reciprocity                1.9354  ( 0.4496   )    0.4581   
@@ -1015,13 +1017,13 @@ Overall maximum convergence ratio:    1.3483
 Total of 405 iteration steps.
 
 > (ans2 <- siena07(myalgorithm2, data=mydata, effects=myeff, prevAns=ans1, batch=TRUE,
-+                               silent=TRUE))
++                  silent=TRUE))
 Estimated by Generalized Method of Moments
 
 Estimates, standard errors and convergence t-ratios
 
-                                        Estimate   Standard   Convergence 
-                                                     Error      t-ratio   
+                                            Estimate   Standard   Convergence 
+                                                         Error      t-ratio   
   1. rate basic rate parameter mynet1        5.0506  ( 1.2471   )    0.3424   
   2. eval mynet1: outdegree (density)       -2.4559  ( 0.1976   )    0.4815   
   3. eval mynet1: reciprocity                1.6352  ( 0.3341   )   -0.0907   
@@ -1036,9 +1038,649 @@ Overall maximum convergence ratio:    2.2389
 
 Total of 590 iteration steps.
 
+> 
+> ##test21
+> # Run simple test model ----
+> mynet <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
+> mydata <- sienaDataCreate(mynet)
+> mymodel <- getEffects(mydata)
+> ## TransitiveTriplets model
+> mymodel <- includeEffects(mymodel, transTrip, name = "mynet")
+  effectNumber effectName          shortName include fix   test  initialValue
+1 21           transitive triplets transTrip TRUE    FALSE FALSE          0  
+  parm
+1 0   
+> # Test returnChangeContributions when running siena07 directly ----
+> mycontrols <- sienaAlgorithmCreate( 
++      nsub=1, 
++      n3=60, 
++      cond = FALSE, 
++      seed = 42
++      )
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> 
+> print('test21')
+[1] "test21"
+> ans <- siena07(
++   mycontrols,
++   data = mydata,
++   effects = mymodel,
++   returnChangeContributions = TRUE,
++   silent=TRUE
++ )
+No X11 device available, forcing use of batch mode
+> length(ans$changeContributions) # 50 as expected
+[1] 60
+> head(ans$changeContributions[[1]][[1]][[1]])
+[[1]]
+     [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14]
+[1,]    1    1    1    1    1    1   -1    1    1     1     1     0     1     1
+[2,]    0    0    0    0    0    0    0    0    0     0     0     0     0     0
+[3,]    0    2    0    0    0    0   -4    0    0     0     0     0     0     0
+     [,15] [,16] [,17] [,18] [,19] [,20] [,21] [,22] [,23] [,24] [,25] [,26]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     0     0     0     0     0     0     0     0     0     2
+     [,27] [,28] [,29] [,30] [,31] [,32] [,33] [,34] [,35] [,36] [,37] [,38]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     0     0     0     0     0     0     0     0     0     0
+     [,39] [,40] [,41] [,42] [,43] [,44] [,45] [,46] [,47] [,48] [,49] [,50]
+[1,]     1     1     1    -1     1    -1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     0    -4     0    -4     0     0     0     0     0     0
+attr(,"effectNames")
+[1] "density"   "recip"     "transTrip"
+attr(,"effectTypes")
+[1] "eval" "eval" "eval"
+attr(,"networkName")
+[1] "mynet"
+attr(,"networkType")
+[1] "oneMode"
+
+[[2]]
+     [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14]
+[1,]    1    1    1    1    1    1    1    1    1     1     1     1     1     1
+[2,]    0    0    0    0    0    0    0    0    0     0     0     0     0     0
+[3,]    0    0    0    0    0    0    0    0    0     0     0     0     0     0
+     [,15] [,16] [,17] [,18] [,19] [,20] [,21] [,22] [,23] [,24] [,25] [,26]
+[1,]     1     1    -1     1     1     1    -1     0     1     1     1     1
+[2,]     0     0    -1     0     0     0    -1     0     0     1     1     0
+[3,]     0     0    -1     1     1     0    -2     0     0     3     2     0
+     [,27] [,28] [,29] [,30] [,31] [,32] [,33] [,34] [,35] [,36] [,37] [,38]
+[1,]     1     1     1     1    -1     1     1    -1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     0     0    -2     3     0    -1     0     0     3     0
+     [,39] [,40] [,41] [,42] [,43] [,44] [,45] [,46] [,47] [,48] [,49] [,50]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     1     0     0     0     0     0     0     0
+[3,]     0     0     0     0     0     0     0     0     0     0     0     0
+attr(,"effectNames")
+[1] "density"   "recip"     "transTrip"
+attr(,"effectTypes")
+[1] "eval" "eval" "eval"
+attr(,"networkName")
+[1] "mynet"
+attr(,"networkType")
+[1] "oneMode"
+
+[[3]]
+     [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14]
+[1,]    1    1    1    1    1    1   -1    1    1     1     1     1     1     1
+[2,]    0    0    0    0    0    0   -1    0    0     0     0     1     0     0
+[3,]    0    2    0    0    0    0   -2    0    0     0     0     1     0     0
+     [,15] [,16] [,17] [,18] [,19] [,20] [,21] [,22] [,23] [,24] [,25] [,26]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     1
+[3,]     0     0     0     0     0     0     0     0     0     0     0     1
+     [,27] [,28] [,29] [,30] [,31] [,32] [,33] [,34] [,35] [,36] [,37] [,38]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     0     0     0     0     0     0     0     0     0     0
+     [,39] [,40] [,41] [,42] [,43] [,44] [,45] [,46] [,47] [,48] [,49] [,50]
+[1,]     1     1     1    -1     1     0     1     1     1     1     1     1
+[2,]     0     0     0    -1     0     0     0     0     0     0     0     0
+[3,]     0     0     0    -2     0     0     0     0     0     0     0     0
+attr(,"effectNames")
+[1] "density"   "recip"     "transTrip"
+attr(,"effectTypes")
+[1] "eval" "eval" "eval"
+attr(,"networkName")
+[1] "mynet"
+attr(,"networkType")
+[1] "oneMode"
+
+[[4]]
+     [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14]
+[1,]    1    1    1    1    1    1   -1    1    1     1     1     1     1     1
+[2,]    0    0    0    0    0    0   -1    0    0     0     0     1     0     0
+[3,]    0    2    0    0    0    0   -2    0    0     0     0     1     0     0
+     [,15] [,16] [,17] [,18] [,19] [,20] [,21] [,22] [,23] [,24] [,25] [,26]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     1
+[3,]     0     0     0     0     0     0     0     0     0     0     0     3
+     [,27] [,28] [,29] [,30] [,31] [,32] [,33] [,34] [,35] [,36] [,37] [,38]
+[1,]     1     1    -1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     1     0     0     2     0     0     1     0     0     0     0     0
+     [,39] [,40] [,41] [,42] [,43] [,44] [,45] [,46] [,47] [,48] [,49] [,50]
+[1,]     1     1     1    -1     1     0     1     1     1     1     1     1
+[2,]     0     0     0    -1     0     0     0     0     0     0     0     0
+[3,]     0     0     0    -2     0     0     0     0     0     0     0     0
+attr(,"effectNames")
+[1] "density"   "recip"     "transTrip"
+attr(,"effectTypes")
+[1] "eval" "eval" "eval"
+attr(,"networkName")
+[1] "mynet"
+attr(,"networkType")
+[1] "oneMode"
+
+[[5]]
+     [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14]
+[1,]    1    0    1    1    1    1   -1    1    1     1    -1     1     1     1
+[2,]    0    0    0    0    0    0   -1    0    0     0    -1     0     0     0
+[3,]    1    0    0    0    0    0    0    0    0     1     0     0     0     1
+     [,15] [,16] [,17] [,18] [,19] [,20] [,21] [,22] [,23] [,24] [,25] [,26]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     2     2     0     0     1     0     0     0     0     0     0     1
+     [,27] [,28] [,29] [,30] [,31] [,32] [,33] [,34] [,35] [,36] [,37] [,38]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     0     1     0     0     0     0     0     0     0     0
+     [,39] [,40] [,41] [,42] [,43] [,44] [,45] [,46] [,47] [,48] [,49] [,50]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     0     2     0     2     0     0     0     0     0     0
+attr(,"effectNames")
+[1] "density"   "recip"     "transTrip"
+attr(,"effectTypes")
+[1] "eval" "eval" "eval"
+attr(,"networkName")
+[1] "mynet"
+attr(,"networkType")
+[1] "oneMode"
+
+[[6]]
+     [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14]
+[1,]    1    1    1    1    1    1    1    1    1     1     1     1     1     1
+[2,]    0    0    0    0    0    0    0    0    0     0     0     0     0     0
+[3,]    0    0    0    0    2    0    0    0    0     0     0     0     0     1
+     [,15] [,16] [,17] [,18] [,19] [,20] [,21] [,22] [,23] [,24] [,25] [,26]
+[1,]     1     1     1     1     1     1     1    -1     1     1     0     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     2     0     0     0     4    -1     0     1     0     0
+     [,27] [,28] [,29] [,30] [,31] [,32] [,33] [,34] [,35] [,36] [,37] [,38]
+[1,]     1     1     1     1    -1    -1     1     1     1     1     1     1
+[2,]     0     0     0     0    -1     0     0     0     0     0     0     0
+[3,]     0     0     0     0    -3    -2     0     2     0     0     3     0
+     [,39] [,40] [,41] [,42] [,43] [,44] [,45] [,46] [,47] [,48] [,49] [,50]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     0     0     1     0     0     0     0     0     0     0
+attr(,"effectNames")
+[1] "density"   "recip"     "transTrip"
+attr(,"effectTypes")
+[1] "eval" "eval" "eval"
+attr(,"networkName")
+[1] "mynet"
+attr(,"networkType")
+[1] "oneMode"
+
+> dim(ans$changeContributions[[1]][[1]][[1]][[1]]) # 3 x 50 as expected
+[1]  3 50
+> 
+> # Test returnChangeContributions when setting msub = 0 and prevAns = ans, 
+> #using batch mode
+> mycontrols$nsub <- 0
+> ans2 <- siena07(
++   mycontrols,
++   data=mydata,
++   effects=mymodel,
++   batch=TRUE,
++   prevAns = ans,
++   returnChangeContributions = TRUE)
+
+Start phase 0 
+theta:  6.496  5.161 -2.659  2.435  0.604 
+
+Start phase 3 
+> length(ans$changeContributions) # 60 chainsas expected
+[1] 60
+> head(ans$changeContributions[[1]][[1]][[1]])
+[[1]]
+     [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14]
+[1,]    1    1    1    1    1    1   -1    1    1     1     1     0     1     1
+[2,]    0    0    0    0    0    0    0    0    0     0     0     0     0     0
+[3,]    0    2    0    0    0    0   -4    0    0     0     0     0     0     0
+     [,15] [,16] [,17] [,18] [,19] [,20] [,21] [,22] [,23] [,24] [,25] [,26]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     0     0     0     0     0     0     0     0     0     2
+     [,27] [,28] [,29] [,30] [,31] [,32] [,33] [,34] [,35] [,36] [,37] [,38]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     0     0     0     0     0     0     0     0     0     0
+     [,39] [,40] [,41] [,42] [,43] [,44] [,45] [,46] [,47] [,48] [,49] [,50]
+[1,]     1     1     1    -1     1    -1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     0    -4     0    -4     0     0     0     0     0     0
+attr(,"effectNames")
+[1] "density"   "recip"     "transTrip"
+attr(,"effectTypes")
+[1] "eval" "eval" "eval"
+attr(,"networkName")
+[1] "mynet"
+attr(,"networkType")
+[1] "oneMode"
+
+[[2]]
+     [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14]
+[1,]    1    1    1    1    1    1    1    1    1     1     1     1     1     1
+[2,]    0    0    0    0    0    0    0    0    0     0     0     0     0     0
+[3,]    0    0    0    0    0    0    0    0    0     0     0     0     0     0
+     [,15] [,16] [,17] [,18] [,19] [,20] [,21] [,22] [,23] [,24] [,25] [,26]
+[1,]     1     1    -1     1     1     1    -1     0     1     1     1     1
+[2,]     0     0    -1     0     0     0    -1     0     0     1     1     0
+[3,]     0     0    -1     1     1     0    -2     0     0     3     2     0
+     [,27] [,28] [,29] [,30] [,31] [,32] [,33] [,34] [,35] [,36] [,37] [,38]
+[1,]     1     1     1     1    -1     1     1    -1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     0     0    -2     3     0    -1     0     0     3     0
+     [,39] [,40] [,41] [,42] [,43] [,44] [,45] [,46] [,47] [,48] [,49] [,50]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     1     0     0     0     0     0     0     0
+[3,]     0     0     0     0     0     0     0     0     0     0     0     0
+attr(,"effectNames")
+[1] "density"   "recip"     "transTrip"
+attr(,"effectTypes")
+[1] "eval" "eval" "eval"
+attr(,"networkName")
+[1] "mynet"
+attr(,"networkType")
+[1] "oneMode"
+
+[[3]]
+     [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14]
+[1,]    1    1    1    1    1    1   -1    1    1     1     1     1     1     1
+[2,]    0    0    0    0    0    0   -1    0    0     0     0     1     0     0
+[3,]    0    2    0    0    0    0   -2    0    0     0     0     1     0     0
+     [,15] [,16] [,17] [,18] [,19] [,20] [,21] [,22] [,23] [,24] [,25] [,26]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     1
+[3,]     0     0     0     0     0     0     0     0     0     0     0     1
+     [,27] [,28] [,29] [,30] [,31] [,32] [,33] [,34] [,35] [,36] [,37] [,38]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     0     0     0     0     0     0     0     0     0     0
+     [,39] [,40] [,41] [,42] [,43] [,44] [,45] [,46] [,47] [,48] [,49] [,50]
+[1,]     1     1     1    -1     1     0     1     1     1     1     1     1
+[2,]     0     0     0    -1     0     0     0     0     0     0     0     0
+[3,]     0     0     0    -2     0     0     0     0     0     0     0     0
+attr(,"effectNames")
+[1] "density"   "recip"     "transTrip"
+attr(,"effectTypes")
+[1] "eval" "eval" "eval"
+attr(,"networkName")
+[1] "mynet"
+attr(,"networkType")
+[1] "oneMode"
+
+[[4]]
+     [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14]
+[1,]    1    1    1    1    1    1   -1    1    1     1     1     1     1     1
+[2,]    0    0    0    0    0    0   -1    0    0     0     0     1     0     0
+[3,]    0    2    0    0    0    0   -2    0    0     0     0     1     0     0
+     [,15] [,16] [,17] [,18] [,19] [,20] [,21] [,22] [,23] [,24] [,25] [,26]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     1
+[3,]     0     0     0     0     0     0     0     0     0     0     0     3
+     [,27] [,28] [,29] [,30] [,31] [,32] [,33] [,34] [,35] [,36] [,37] [,38]
+[1,]     1     1    -1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     1     0     0     2     0     0     1     0     0     0     0     0
+     [,39] [,40] [,41] [,42] [,43] [,44] [,45] [,46] [,47] [,48] [,49] [,50]
+[1,]     1     1     1    -1     1     0     1     1     1     1     1     1
+[2,]     0     0     0    -1     0     0     0     0     0     0     0     0
+[3,]     0     0     0    -2     0     0     0     0     0     0     0     0
+attr(,"effectNames")
+[1] "density"   "recip"     "transTrip"
+attr(,"effectTypes")
+[1] "eval" "eval" "eval"
+attr(,"networkName")
+[1] "mynet"
+attr(,"networkType")
+[1] "oneMode"
+
+[[5]]
+     [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14]
+[1,]    1    0    1    1    1    1   -1    1    1     1    -1     1     1     1
+[2,]    0    0    0    0    0    0   -1    0    0     0    -1     0     0     0
+[3,]    1    0    0    0    0    0    0    0    0     1     0     0     0     1
+     [,15] [,16] [,17] [,18] [,19] [,20] [,21] [,22] [,23] [,24] [,25] [,26]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     2     2     0     0     1     0     0     0     0     0     0     1
+     [,27] [,28] [,29] [,30] [,31] [,32] [,33] [,34] [,35] [,36] [,37] [,38]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     0     1     0     0     0     0     0     0     0     0
+     [,39] [,40] [,41] [,42] [,43] [,44] [,45] [,46] [,47] [,48] [,49] [,50]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     0     2     0     2     0     0     0     0     0     0
+attr(,"effectNames")
+[1] "density"   "recip"     "transTrip"
+attr(,"effectTypes")
+[1] "eval" "eval" "eval"
+attr(,"networkName")
+[1] "mynet"
+attr(,"networkType")
+[1] "oneMode"
+
+[[6]]
+     [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14]
+[1,]    1    1    1    1    1    1    1    1    1     1     1     1     1     1
+[2,]    0    0    0    0    0    0    0    0    0     0     0     0     0     0
+[3,]    0    0    0    0    2    0    0    0    0     0     0     0     0     1
+     [,15] [,16] [,17] [,18] [,19] [,20] [,21] [,22] [,23] [,24] [,25] [,26]
+[1,]     1     1     1     1     1     1     1    -1     1     1     0     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     2     0     0     0     4    -1     0     1     0     0
+     [,27] [,28] [,29] [,30] [,31] [,32] [,33] [,34] [,35] [,36] [,37] [,38]
+[1,]     1     1     1     1    -1    -1     1     1     1     1     1     1
+[2,]     0     0     0     0    -1     0     0     0     0     0     0     0
+[3,]     0     0     0     0    -3    -2     0     2     0     0     3     0
+     [,39] [,40] [,41] [,42] [,43] [,44] [,45] [,46] [,47] [,48] [,49] [,50]
+[1,]     1     1     1     1     1     1     1     1     1     1     1     1
+[2,]     0     0     0     0     0     0     0     0     0     0     0     0
+[3,]     0     0     0     0     1     0     0     0     0     0     0     0
+attr(,"effectNames")
+[1] "density"   "recip"     "transTrip"
+attr(,"effectTypes")
+[1] "eval" "eval" "eval"
+attr(,"networkName")
+[1] "mynet"
+attr(,"networkType")
+[1] "oneMode"
+
+> 
+> ##test22
+> # Test sienaRIDynamics ----
+> ## Unconditional Estimation ----
+> ### Use changeContributions from ans ----
+> print('test22')
+[1] "test22"
+> 
+> RIDynamics1 <- sienaRIDynamics(data=mydata, 
++      ans=ans, 
++      useChangeContributions=TRUE, 
++      intervalsPerPeriod=10)
+> RIDynamics1
+
+  Relative importance of effects in micro-steps of 
+	dependent variable 'mynet'. 
+ 
+  Periods between observations are divided into 10 intervals. 
+ 
+  Displayed results are aggregations over intervals:
+
+
+Period 1:
+                                                    int 1     int 2     int 3     int 4     int 5     
+ 
+  1. eval outdegree (density)                       0.4655    0.4968    0.5145    0.5309    0.5459  
+  2. eval reciprocity                               0.3777    0.3621    0.3477    0.3390    0.3305  
+  3. eval transitive triplets                       0.1569    0.1411    0.1378    0.1301    0.1236  
+
+                                                    int 6     int 7     int 8     int 9     int 10    
+ 
+  1. eval outdegree (density)                       0.5445    0.5558    0.5624    0.5515    0.5625  
+  2. eval reciprocity                               0.3316    0.3245    0.3186    0.3185    0.3168  
+  3. eval transitive triplets                       0.1239    0.1198    0.1189    0.1300    0.1207  
+
+
+
+Period 2:
+                                                    int 1     int 2     int 3     int 4     int 5     
+ 
+  1. eval outdegree (density)                       0.5404    0.5485    0.5568    0.5575    0.5643  
+  2. eval reciprocity                               0.3109    0.3110    0.3113    0.3130    0.3078  
+  3. eval transitive triplets                       0.1487    0.1405    0.1319    0.1296    0.1279  
+
+                                                    int 6     int 7     int 8     int 9     int 10    
+ 
+  1. eval outdegree (density)                       0.5595    0.5694    0.5735    0.5738    0.5701  
+  2. eval reciprocity                               0.3105    0.3045    0.3047    0.3072    0.3038  
+  3. eval transitive triplets                       0.1300    0.1261    0.1219    0.1190    0.1261  
+
+> 
+> ### Unconditional Estimation with model rerun
+> mycontrols2 <- sienaAlgorithmCreate(nsub=2, n3=60, cond=FALSE, seed = 84)
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> mynet2 <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
+> mydata2 <- sienaDataCreate(mynet2)
+> mymodel2 <- getEffects(mydata2)
+> mymodel2 <- includeEffects(mymodel2, density, recip, transTies)
+  effectNumber effectName          shortName include fix   test  initialValue
+1 11           outdegree (density) density   TRUE    FALSE FALSE   -0.56039  
+2 14           reciprocity         recip     TRUE    FALSE FALSE    0.00000  
+3 43           transitive ties     transTies TRUE    FALSE FALSE    0.00000  
+  parm
+1 0   
+2 0   
+3 0   
+> ans2 <- siena07(mycontrols2, data=mydata2, effects=mymodel2, batch=TRUE,
++      silent=TRUE)
+> RIDynamics2 <- sienaRIDynamics(mydata2, ans=ans2)
+No X11 device available, forcing use of batch mode
+> RIDynamics2
+
+  Relative importance of effects in micro-steps of 
+	dependent variable 'mynet2'. 
+ 
+  Periods between observations are divided into 10 intervals. 
+ 
+  Displayed results are aggregations over intervals:
+
+
+Period 1:
+                                                    int 1     int 2     int 3     int 4     int 5     
+ 
+  1. eval outdegree (density)                       0.4007    0.4116    0.4002    0.3899    0.3818  
+  2. eval reciprocity                               0.2198    0.2190    0.2067    0.2026    0.2012  
+  3. eval transitive ties                           0.3511    0.3410    0.3648    0.3792    0.3887  
+
+                                                    int 6     int 7     int 8     int 9     int 10    
+ 
+  1. eval outdegree (density)                       0.3895    0.3744    0.3877    0.3789    0.3673  
+  2. eval reciprocity                               0.2016    0.1941    0.1915    0.1884    0.1860  
+  3. eval transitive ties                           0.3806    0.4032    0.3924    0.4044    0.4184  
+
+> 
+> ### Don't use ans but previously estimated coefficients ----
+> RIDynamics3 <- sienaRIDynamics(data=mydata2, theta=c(ans2$rate,ans2$theta),
++              algorithm=mycontrols2, effects=mymodel2, intervalsPerPeriod=10)
+No X11 device available, forcing use of batch mode
+> RIDynamics3
+
+  Relative importance of effects in micro-steps of 
+	dependent variable 'mynet2'. 
+ 
+  Periods between observations are divided into 10 intervals. 
+ 
+  Displayed results are aggregations over intervals:
+
+
+Period 1:
+                                                    int 1     int 2     int 3     int 4     int 5     
+ 
+  1. eval outdegree (density)                       0.4007    0.4116    0.4002    0.3899    0.3818  
+  2. eval reciprocity                               0.2198    0.2190    0.2067    0.2026    0.2012  
+  3. eval transitive ties                           0.3511    0.3410    0.3648    0.3792    0.3887  
+
+                                                    int 6     int 7     int 8     int 9     int 10    
+ 
+  1. eval outdegree (density)                       0.3895    0.3744    0.3877    0.3789    0.3673  
+  2. eval reciprocity                               0.2016    0.1941    0.1915    0.1884    0.1860  
+  3. eval transitive ties                           0.3806    0.4032    0.3924    0.4044    0.4184  
+
+> 
+> ## Conditional Estimation ----
+> mycontrols3 <- sienaAlgorithmCreate(nsub=2, n3=60, cond=TRUE, seed = 4242)
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> ans3 <- siena07(mycontrols3, data=mydata2, effects=mymodel2, batch=TRUE, 
++      silent=TRUE)
+> 
+> RIDynamics4 <- sienaRIDynamics(mydata2, ans=ans3, effects = mymodel2)
+No X11 device available, forcing use of batch mode
+> RIDynamics4
+
+  Relative importance of effects in micro-steps of 
+	dependent variable 'mynet2'. 
+ 
+  Periods between observations are divided into 10 intervals. 
+ 
+  Displayed results are aggregations over intervals:
+
+
+Period 1:
+                                                    int 1     int 2     int 3     int 4     int 5     
+ 
+  1. eval outdegree (density)                       0.3993    0.3945    0.3919    0.3846    0.3905  
+  2. eval reciprocity                               0.2338    0.2241    0.2162    0.2082    0.1931  
+  3. eval transitive ties                           0.3336    0.3481    0.3586    0.3739    0.3830  
+
+                                                    int 6     int 7     int 8     int 9     int 10    
+ 
+  1. eval outdegree (density)                       0.3695    0.3813    0.3684    0.3608    0.3652  
+  2. eval reciprocity                               0.1982    0.1933    0.1902    0.1892    0.1940  
+  3. eval transitive ties                           0.3990    0.3920    0.4081    0.4166    0.4075  
+
+> 
+> ##test23
+> ## Test sienaRIDynamics with behavior variable ----
+> mycontrols3 <- sienaAlgorithmCreate(nsub=2, n3=60, seed = 8484)
+If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> mynet3 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+> mybeh <- sienaDependent(s50a, type="behavior")
+> mydata3 <- sienaDataCreate(mynet3, mybeh)
+> mymodel3 <- getEffects(mydata3)
+> mymodel3 <- includeEffects(mymodel3, density, recip, transTies, transTrip)
+  effectNumber effectName          shortName include fix   test  initialValue
+1 13           outdegree (density) density   TRUE    FALSE FALSE    -1.4677  
+2 16           reciprocity         recip     TRUE    FALSE FALSE     0.0000  
+3 22           transitive triplets transTrip TRUE    FALSE FALSE     0.0000  
+4 45           transitive ties     transTies TRUE    FALSE FALSE     0.0000  
+  parm
+1 0   
+2 0   
+3 0   
+4 0   
+> print('test23')
+[1] "test23"
+> ans4 <- siena07(mycontrols3, data=mydata3, effects=mymodel3, batch=TRUE,
++                 returnChangeContributions=TRUE, silent=TRUE)
+> length(ans4$changeContributions) # 60 chains as expected
+[1] 60
+> length(ans4$changeContributions[[1]][[1]]) # 2 periods as expected
+[1] 2
+> beh_steps <- sapply(ans4$changeContributions[[1]][[1]][[2]], 
++      function(ministep) attr(ministep, "networkName")) %in%  "mybeh"
+> any(beh_steps) # TRUE as expected
+[1] TRUE
+> 
+> ministeps <- ans4$changeContributions[[1]][[1]][[1]]
+> getDepvarName <- function(ministep) attr(ministep, "networkName")
+> beh_steps <- Filter(function(ministep) getDepvarName(ministep)  == "mybeh", 
++      ans4$changeContributions[[1]][[1]][[1]]) # 1st period, 1st group, 1st chain, behavior steps
+> RIDynamics5 <- sienaRIDynamics(mydata3, ans=ans4, depvar="mybeh",
++                                useChangeContributions=TRUE)
+> RIDynamics5
+
+  Relative importance of effects in micro-steps of 
+	dependent variable 'mybeh'. 
+ 
+  Periods between observations are divided into 10 intervals. 
+ 
+  Displayed results are aggregations over intervals:
+
+
+Period 1:
+                                                    int 1     int 2     int 3     int 4     int 5     
+ 
+  1. eval mybeh linear shape                        0.3186    0.3844    0.4154    0.4316    0.4456  
+  2. eval mybeh quadratic shape                     0.2980    0.3423    0.3729    0.3834    0.3911  
+
+                                                    int 6     int 7     int 8     int 9     int 10    
+ 
+  1. eval mybeh linear shape                        0.4593    0.4649    0.4865    0.4913    0.4871  
+  2. eval mybeh quadratic shape                     0.3973    0.4068    0.4019    0.4020    0.4112  
+
+
+
+Period 2:
+                                                    int 1     int 2     int 3     int 4     int 5     
+ 
+  1. eval mybeh linear shape                        0.4320    0.4946    0.5104    0.5126    0.5364  
+  2. eval mybeh quadratic shape                     0.3663    0.4254    0.4279    0.4524    0.4502  
+
+                                                    int 6     int 7     int 8     int 9     int 10    
+ 
+  1. eval mybeh linear shape                        0.5353    0.5328    0.5480    0.5416    0.5448  
+  2. eval mybeh quadratic shape                     0.4580    0.4622    0.4520    0.4584    0.4552  
+
+> net_steps <- Filter(function(ministep) getDepvarName(ministep)  == "mynet3", 
++      ans4$changeContributions[[1]][[1]][[1]]) # 1st period, 1st group, 1st chain, network steps
+> RIDynamics6 <- sienaRIDynamics(mydata3, ans=ans4, depvar="mynet3")
+No X11 device available, forcing use of batch mode
+> RIDynamics6
+
+  Relative importance of effects in micro-steps of 
+	dependent variable 'mynet3'. 
+ 
+  Periods between observations are divided into 10 intervals. 
+ 
+  Displayed results are aggregations over intervals:
+
+
+Period 1:
+                                                    int 1     int 2     int 3     int 4     int 5     
+ 
+  1. eval outdegree (density)                       0.4615    0.5102    0.5237    0.5386    0.5562  
+  2. eval reciprocity                               0.3203    0.2884    0.2814    0.2764    0.2671  
+  3. eval transitive triplets                       0.0785    0.0738    0.0715    0.0696    0.0670  
+  4. eval transitive ties                           0.1397    0.1276    0.1234    0.1154    0.1097  
+
+                                                    int 6     int 7     int 8     int 9     int 10    
+ 
+  1. eval outdegree (density)                       0.5560    0.5622    0.5574    0.5766    0.5723  
+  2. eval reciprocity                               0.2638    0.2603    0.2625    0.2481    0.2515  
+  3. eval transitive triplets                       0.0682    0.0681    0.0714    0.0709    0.0734  
+  4. eval transitive ties                           0.1121    0.1094    0.1088    0.1044    0.1029  
+
+
+
+Period 2:
+                                                    int 1     int 2     int 3     int 4     int 5     
+ 
+  1. eval outdegree (density)                       0.5151    0.5431    0.5477    0.5545    0.5619  
+  2. eval reciprocity                               0.2789    0.2635    0.2696    0.2623    0.2635  
+  3. eval transitive triplets                       0.0813    0.0769    0.0723    0.0737    0.0711  
+  4. eval transitive ties                           0.1247    0.1166    0.1104    0.1095    0.1035  
+
+                                                    int 6     int 7     int 8     int 9     int 10    
+ 
+  1. eval outdegree (density)                       0.5668    0.5791    0.5709    0.5733    0.5751  
+  2. eval reciprocity                               0.2580    0.2579    0.2555    0.2507    0.2508  
+  3. eval transitive triplets                       0.0720    0.0675    0.0723    0.0735    0.0735  
+  4. eval transitive ties                           0.1031    0.0955    0.1014    0.1025    0.1006  
+
+> 
 > ## delete output file
 > if (file.exists('Siena.txt')){unlink('Siena.txt')}
 > 
 > proc.time()
    user  system elapsed 
-  20.18    0.31   20.56 
+ 64.393   4.895  67.004 

@@ -129,7 +129,6 @@ behaviorOneModeSymObjective,xxxxxx double indegree (#),xxxxxx crossed in-degree 
 behaviorSymSymObjective,xxxxxx double degree (#),xxxxxx joint degree sum (#),FFDeg,FALSE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorBipBipObjective,xxxxxx double outdegree (#),xxxxxx joint outdegree sum,FFDeg (#),FALSE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorObjective,xxxxxx linear shape,xxxxxx centered sum,linear,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,TRUE
-behaviorObjective,xxxxxx linear shape (non cent.),xxxxxx non cent. sum,linear_nc,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,TRUE
 behaviorObjective,xxxxxx quadratic shape,xxxxxx sum of cent. squares,quad,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,TRUE
 behaviorObjective,xxxxxx quadratic shape (cont. cent.),xxxxxx sum of cont. cent. squares,quad_cc,FALSE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,TRUE
 behaviorObjective,xxxxxx quadratic shape (non cent.),xxxxxx sum of non cent. squares,quad_nc,FALSE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,TRUE
