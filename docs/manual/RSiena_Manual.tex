@@ -11488,7 +11488,7 @@ $s^{\rm net}_{i\vit}(x ) = \sum_j  x^{\rm{simm}}_{ij}\,v_j $ .
  \item {\em group average} \texttt{(avGroupEgoX)}, defined by ego's value multiplied by the
  average of the covariate for this period,  \\
  $s^{\rm beh}_{i\vit}(x, z) =  \sum_j x_{ij} \, \overline {v}  $;\\
- here $\overline {v}$ is the mean of the values $v_{ih}$ for all actors $h$
+ here $\overline {v}$ is the mean of the values $v_{h}$ for all actors $h$
  in the actor set: for changing covariates, the mean of the wave at the
  start of the period; for behavioral dependent variables,
  the current mean.
@@ -11498,6 +11498,14 @@ $s^{\rm net}_{i\vit}(x ) = \sum_j  x^{\rm{simm}}_{ij}\,v_j $ .
  in the multi-group object.
  Note that always, the average $\overline {v} $ is centered by the global mean.
  For multi-group data, global centering means centering over all groups.
+
+ \item {\em group total} \texttt{(totGroupEgoX)}, defined by ego's value multiplied by the
+ sum of the covariate for this period,  \\
+ $s^{\rm beh}_{i\vit}(x, z) =  \sum_j x_{ij} \, \sum_h{v_h}  $;\\
+ here $\sum_h{v_h} $ is the sum of the values $v_{h}$ for all actors $h$
+ in the actor set: for changing covariates, the total of the wave at the
+ start of the period; for behavioral dependent variables,
+ the current total.
 
 \setcounter{savenumi}{\value{enumi}}
 
@@ -14713,7 +14721,8 @@ with the behavioral variable itself.
  \underline{centered} dependent behavioral variable;
  by default, this centering is done by the grand mean in the data;
  for using the contemporaneous mean, work with the effect
- \texttt{(quad\_cc)} instead;
+ \texttt{(quad\_cc)} instead; for using no centering, work with the effect
+ \texttt{(quad\_nc)} instead;
 
  \item {\em threshold shape effect}    \texttt{(threshold)},
   \texttt{(threshold2)},  \texttt{(threshold3)},  \texttt{(threshold4)},
@@ -14759,6 +14768,12 @@ with the behavioral variable itself.
  (Note that the centering in a multi-group data set
  will affect the linear shape parameter.)
 
+ \item {\em group total} \texttt{(totGroup)}, defined by ego's value multiplied by the
+sum of \underline{all} values $z_h$ for this period,  \\
+$s^{\rm beh}_{i\vit}(x, z) =  z_{i} \left( \sum_{h} z_h - c_p \right) $;\\
+here $\sum_{h} z_h$ is the sum of the values $z_h$ for all actors $h$
+in the group, and $c_p$ is a centering constant depending on the internal effect 
+parameter $p$, defined as for the \texttt{avGroup} effect above.
 
  \item {\em constant effect}    \texttt{(constant)},\\
   an elementary effect for behavior,
@@ -14770,6 +14785,7 @@ with the behavioral variable itself.
    effect; therefore its parameter cannot be estimated. It is only of theoretical
    importance, and can be used perhaps in interaction with other effects.
 \end{startenum}
+
 Next there is a list of effects that have to do with the influence of
 the network on the behavior.
 To specify such effects in \RS using, e.g., function \sfn{includeEffects},
@@ -14878,7 +14894,14 @@ The list of these effects is the following.
 
 
  \item
- {\em popularity alter effect} \texttt{(popAlt)}, defined by the
+ {\em total popularity alter effect} \texttt{(popAlt)}, defined by the
+ sum of in-degrees of the other actors $j$ to whom $i$ is tied,\\
+ $s^{\rm beh}_{i\vit}(x, z) =   z_i \, \sum_j x_{ij} x_{+j}  $;\\
+ this effect may be useful, e.g., as a control effect for the total
+ similarity $\times$ popularity alter effect and in distance 2 influence effects;
+
+  \item
+ {\em total popularity alter effect} \texttt{(totPopAlt)}, defined by the
  average in-degrees of the other actors $j$ to whom $i$ is tied,\\
  $s^{\rm beh}_{i\vit}(x, z) =   z_i\,x_{i+}^{-1} \, \sum_j x_{ij} x_{+j}  $;\\
  (and 0 if $x_{i+} = 0$) ;\\
@@ -15109,14 +15132,18 @@ where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values in
 (cf.\ (\ref{alt_av3})), \\
  $s^{\rm beh}_{i\vit}(x, z) =  z_i \big( \sum_j x_{ij}\, \check z_j^{(-i)} \big)
                                 / \big (\sum_j x_{ij}\big)  $\\[0.5ex]
- (and the mean behavior, i.e. $0$, if the ratio is 0/0) ;
+ (and the mean behavior, i.e. $0$, if the ratio is 0/0) ; for using 
+ no centering, work with the effect  
+ \texttt{(avInAltDist2\_nc)} instead;
 
  \item {\em total incoming alter effect at distance 2} \texttt{(totInAltDist2)},
  defined by  $i$'s
  behavior multiplied by the total of the incoming alter-totals  of his alters,
  excluding the contribution from a tie $i \rightarrow j$ (if any),\\
  $s^{\rm beh}_{i\vit}(x, z) = z_i \sum_j x_{ij}\, \sum_{h \neq i} x_{hj}\,z_h =
-         z_i \sum_j x_{ij}\, (x_{+j}- x_{ij}) \, \check z_j^{(-i)}  $;
+         z_i \sum_j x_{ij}\, (x_{+j}- x_{ij}) \, \check z_j^{(-i)}  $; for using 
+ no centering, work with the effect 
+ \texttt{(totInAltDist2\_nc)} instead;
 
  \item {\em average total incoming alter effect at distance 2} \texttt{(avTInAltDist2)},
  defined by  $i$'s
@@ -15124,14 +15151,48 @@ where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values in
  excluding the contribution from a tie $i \rightarrow j$ (if any),\\[0.3ex]
  $s^{\rm beh}_{i\vit}(x, z) =  z_i \big( \sum_j x_{ij}\,(x_{+j}- x_{ij}) \, \check z_j^{(-i)} \big)
                                 / \big (\sum_j x_{ij}\big)  $\\[0.5ex]
- (and the mean behavior, i.e. $0$, if the ratio is 0/0) ;
+ (and the mean behavior, i.e. $0$, if the ratio is 0/0) ; for using 
+ no centering, work with the effect 
+ \texttt{(avTInAltDist2\_nc)} instead;
 
  \item {\em total average incoming alter effect at distance 2} \texttt{(totAInAltDist2)},
  defined by  $i$'s
  behavior multiplied by the total of the incoming alter-averages $ z_j^{(-i)}$ of his alters,
  excluding the contribution from a tie $i \rightarrow j$ (if any), \\[0.3ex]
  $s^{\rm beh}_{i\vit}(x, z) =  z_i \big( \sum_j x_{ij}\, \check z_j^{(-i)} \big) $;
+ for using no centering, work with the effect 
+ \texttt{(totAInAltDist2\_nc)} instead;
 
+ \item two variations of the
+   \emph{GWDSP (geometrically weighted dyadwise shared partners)} alter effects:
+    {\em total GWDSP I -> K -> J alter} \texttt{(totGwdspFFAlt)} and 
+    {\em total GWDSP I -> K <- J alter} \texttt{(totGwdspFBAlt)}.
+   These are geometrically weighted versions of \texttt{totAltDist2} and 
+   \texttt{totInAltDist2}, respectively, penalizing additional paths between ego 
+   and his distance 2 alters defined by
+      \begin{equation}
+      s^{\rm beh}_{i\vit}(x, z, \alpha) \,=\,
+            z_{i} \,
+                  \sum_{h;\; h \neq i}^n \, z_{h} 
+                  e^{\alpha}\,\Big\{1\,-\,\big(1 - e^{-\alpha}\big)^{
+                        \sum_{j=1} x_{ij}x_{jh} }  \Big\}
+            \, \
+      \end{equation}
+      and
+      \begin{equation}
+      s^{\rm beh}_{i\vit}(x, z, \alpha) \,=\,
+            z_{i} \,
+                  \sum_{h;\; h \neq i}^n  \, z_{h} 
+                  e^{\alpha}\,\Big\{1\,-\,\big(1-e^{-\alpha}\big)^{
+                        \sum_{j=1} x_{ij}x_{hj} }  \Big\}
+            \, \ ;
+      \end{equation}
+for using no centering, work with the effect 
+\texttt{(totGwdspFFAlt\_nc)} respectively 
+\texttt{(totGwdspFBAlt\_nc)} instead;
+
+% the versions penalizing additional alters of distance 2's behavior 
+% is not implemented yet
 
  \item {\em average in-similarity effect at distance 2} \texttt{(avInSimDist2)},
  defined by  $i$'s average similarity to the incoming alter
@@ -15221,10 +15282,27 @@ in all but the final wave; \\
  \texttt{(avSimPopEgo)}, defined by the
  sum of centered similarity scores ${\rm sim}^z_{ij}$ between $i$
  and the other actors $j$ to whom he is  tied, multiplied by ego's indegree, \\
- $s^{\rm beh}_{i\vit}(x, z) =  x_{+i} \, x_{i+}^{-1} \sum_j x_{ij} ({\rm sim}^z_{ij} - \widehat{{\rm sim}^z}) $;\\
+ $s^{\rm beh}_{i\vit}(x, z) =  x_{+i} \, x_{i+}^{-1} 
+      \sum_j x_{ij} ({\rm sim}^z_{ij} - \widehat{{\rm sim}^z}) $;\\
  (and 0 if $x_{i+} = 0$) ;\\
- because of collinearity, under the Method of Moments this cannot be estimated together with the
-  average similarity $\times$ popularity alter effect;
+ because of collinearity, under the Method of Moments this cannot be estimated 
+ together with the average similarity $\times$ popularity alter effect;
+
+ \item {\em indegree-weighted group average} \texttt{(indegAvGroup)}, defined 
+ by ego's value multiplied by the  indegree-weighted average of all values 
+ $z_h$ for this period,  \\
+ $s^{\rm beh}_{i\vit}(x, z) =  z_{i} \left( \frac{ \sum_{h} x_{+h} z_{h} }
+      {\sum_{h} x_{+h}  } - c_p \right) $;\\
+ here $x_{+h}$ is the indegree of actor $h$ in the specified network, and 
+ $c_p$ is a centering constant as for \texttt{avGroup}.
+
+ \item {\em indegree-weighted group total} \texttt{(indegTotGroup)}, 
+ defined by ego's value multiplied by the indegree-weighted sum of all values 
+ $z_h$ for this period,  \\
+ $s^{\rm beh}_{i\vit}(x, z) =  z_{i} 
+ \left( \sum_{h} x_{+h} z_{h} - c_p \right) $;\\
+ here $x_{+h}$ is the indegree of actor $h$ in the specified network, 
+ and $c_p$ is a centering constant as for \texttt{totGroup}.
 
 \end{followenum}
 
@@ -15846,36 +15924,36 @@ reciprocated degrees.
 \item \emph{average exposure effect} (\verb|avExposure|),
   defined as the proportion of $i$'s alters who have adopted the innovation,
 \[
-a_{i\vit}(y) \, = \, \frac{\sum_{j=1}^n z_j\, x_{ij} }{\sum_{j=1}^n x_{ij}};
+a_{i\vit}(x, z) \, = \, \frac{\sum_{j=1}^n z_j\, x_{ij} }{\sum_{j=1}^n x_{ij}};
 \]
 
 \item \emph{total exposure effect} (\verb|totExposure|), defined as the
  number of $i$'s alters who have adopted the innovation,
 \[
-a_{i\vit}(y) \,=\, \sum_{j=1}^n z_j\, x_{ij} ;
+a_{i\vit}(x, z) \,=\, \sum_{j=1}^n z_j\, x_{ij} ;
 \]
 \item \emph{infection by indegree effect} (\verb|infectIn|),
   defined as the sum of indegrees of $i$'s alters who are also adopters of the innovation,
 \[
-a_{i\vit}(y) \, =\, \sum_{j=1}^n z_j \,x_{ij}\, x_{+j};
+a_{i\vit}(x, z) \, =\, \sum_{j=1}^n z_j \,x_{ij}\, x_{+j};
 \]
   for non-directed networks this is called the
    \emph{infection by degree effect} (\verb|infectDeg|);
 \item \emph{infection by outdegree effect} (\verb|infectOut|),
  defined as the sum of outdegrees of $i$'s alters who are also adopters of the innovation,
 \[
-a_{i\vit}(y)\, = \, \sum_{j=1}^n z_j\, x_{ij}\, x_{j+};
+a_{i\vit}(x, z)\, = \, \sum_{j=1}^n z_j\, x_{ij}\, x_{j+};
 \]
 \item \emph{infection by covariate effect} (\verb|infectCovar|),
  defined as the sum of covariate values of $i$'s alters who are also adopters of the innovation,
 \[
-a_{i\vit}(y)\, =\, \sum_{j=1}^n z_j\, x_{ij}\, v_j;
+a_{i\vit}(x, z)\, =\, \sum_{j=1}^n z_j\, x_{ij}\, v_j;
 \]
 \item \emph{susceptibility to average exposure by indegree effect}
  (\verb|susceptAvIn|),
  defined as the interaction between $i$'s indegree and $i$'s average exposure,
 \[
-a_{i\vit}(y)\, = \,x_{+i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij}};
+a_{i\vit}(x, z)\, = \,x_{+i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij}};
 \]
   for non-directed networks the equivalent effect is \verb|totExposure|;
 
@@ -15883,8 +15961,48 @@ a_{i\vit}(y)\, = \,x_{+i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij
  (\verb|susceptAvCovar|),
   defined as the interaction between $i$'s covariate value and $i$'s  average exposure,
 \[
-a_{i\vit}(y) \, = \, v_{i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij}}.
+a_{i\vit}(x, z) \, = \, v_{i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij}}.
 \]
+
+\item \emph{Total In-Exposure at Distance 2} (\verb|totInExposureDist2|):
+    \[
+        a_{i10}(x, z) =  \sum_{h \neq i} z_h \sum_{j} x_{ij} x_{hj}
+    \]
+    This statistic sums, for each actor $i$, the number of indirect exposures to
+    alters with attribute $z_h$ via shared connections at distance 2 
+    (i.e., through common alters $j$).
+
+    Multiple versions of averaging have been implemented:
+
+\item \emph{Average Total In-Exposure at Distance 2} (\verb|avTinExposureDist2|):
+\[
+      a_{i11}(x, z) = \frac{\sum_{h \neq i} z_h \sum_{j} x_{ij} x_{hj}}{\sum_{j} x_{ij}}
+\]
+This version averages the total in-exposure at distance 2 by the number of direct 
+connections of actor $i$. If $\sum_{j}x_{ij}=0$, the statistic is defined as 0.
+
+\item\emph{Total Average In-Exposure at Distance 2} (\verb|totAInExposureDist2|):
+\[
+      a_{i12}(x, z) = \sum_{h \neq i} z_h \sum_{j}\frac{ x_{ij} x_{hj}}{\sum_{h'} 
+            x_{h'j} - x_{ij}}
+\]
+Here, for each shared alter $j$, the exposure is averaged over the number of other 
+actors (excluding $i$) connected to $j$. If the denominator is 0, the term is 
+defined as 0.
+
+% The version with both types of averaging is not yet implemented.
+
+\item\emph{Any In-Exposure at Distance 2} (\verb|anyInExposureDist2|):
+\[
+      a_{i13}(x, z) = \sum_{j} 
+      \begin{cases}
+      1  & \text{if } x_{ij} \sum_{h} z_h  x_{hj} > 0 \\
+      0 & \text{otherwise}
+      \end{cases}
+\]
+This effect counts, for each alter $j$ connected to $i$, whether there is at 
+least one other actor $h$ (with $z_h>0$) also connected to $j$. This is a 
+version of penalizing many indirect alters.
 
 \end{enumerate}
 
@@ -15893,7 +16011,7 @@ on the internal effect parameter $p$; the formulae given above are the default,
 valid for $p=0$.
 
 The parameter $p$ must be integer-valued. If $p > 0$, the contribution is
-changed to $a_{i\vit}(y) = 0$ if less than $p$ alters
+changed to $a_{i\vit}(x, z) = 0$ if less than $p$ alters
 have adopted the innovation, i.e., if
 \[
 \sum_{j=1}^n  z_j\, x_{ij} \, < \, p \ .
@@ -15901,15 +16019,15 @@ have adopted the innovation, i.e., if
 E.g., if $p=3$, then there is influence on actor $i$ only if
 this actor has at least three alters who have adopted the innovation.
 
-For the effects \verb|avExposure|, \verb|totExposure|, \verb|susceptAvIn|,
+For the effects \verb|avExposure|, \verb|avTinExposureDist2|, \verb|totExposure|, 
+\verb|totInExposureDist2|, \verb|totAInExposureDist2|, \verb|susceptAvIn|,
 and \verb|susceptAvCovar|, \\
-if $p < 0$,
-the same rule is applied with the minimum $|p|$, but if there
+if $p < 0$, the same rule is applied with the minimum $|p|$, but if there
 are more than $|p|$ alters who have adopted the innovation,
 only the value $|p|$ is used.
 This means that for $p < 0$,
 $\sum_{j=1}^n  z_j\, x_{ij}$ in the formula for
- $a_{ik}(y) $ is replaced by
+ $a_{ik}(x, z) $ is replaced by
  \[
  \left\{ \begin{array}{ll}
                 0 & \text{  if  } \sum_{j=1}^n  z_j\, x_{ij} < |p| \\[0.9ex]
@@ -16892,7 +17010,10 @@ The Indlekofer-Brandes measures are numerical answers to the question,
 `How strongly do these probabilities depend on each of the effects?'.
 In their paper, measures are proposed for expressing this per actor
 per wave; these measures can be relative (so that the total importance
-for each actor always is 1), or raw.
+for each actor always is 1), or raw. In the current implementation,
+only the relative importances for the waves at the start of each period are
+calculated as the first ministep after the last observation is never estimated
+by \sfn{sienaRI}.
 The relative importances are calculated by  \sfn{sienaRI} as \texttt{RIActors},
 the raw importances as \texttt{IActors} (see the help page).
 The  relative importances can be averaged over actors to give
@@ -16933,9 +17054,9 @@ They are calculated by  \sfn{sienaRI} as \texttt{RHActors}
 (see the help page). The mean over actors is printed by the print method
 for \sfn{sienaRI}.
 
-Note that the values given by \sfn{sienaRI} refer to each of the waves,
+Note that the values given by \sfn{sienaRI} refer to each of the periods,
 including the first wave; for this purpose, $x$ in (\ref{explained})
-is taken as the observed network (and behaviour...) at each wave.
+is taken as the observed network (and behaviour...) at the start of each period.
 
 
 \subsubsection{Standard deviation of change statistics}

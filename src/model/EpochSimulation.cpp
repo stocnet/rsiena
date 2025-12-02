@@ -40,6 +40,9 @@
 #include "model/filters/LowerFilter.h"
 #include "model/ml/Chain.h"
 #include "model/ml/MiniStep.h"
+#include "model/effects/DiffusionRateEffect.h"
+#include "model/EffectInfo.h"
+
 #include <Rinternals.h>
 
 using namespace std;
@@ -288,6 +291,11 @@ void EpochSimulation::initialize(int period) {
 			pFunction->rEffects()[j]->initialize(this->lpData, this->lpState,
 					period, this->lpCache);
 		}
+
+		for (DiffusionRateEffect * pEffect : this->lvariables[i]->diffusionRateEffects()) {
+		// Rprintf("Initialize diffusion rate effect in EpochSimulation: %s\n", pEffect->pEffectInfo()->effectName().c_str());
+        pEffect->initialize(this->lpData, this->lpState, period, this->lpCache);
+    }
 	}
 
 	for (unsigned i = 0; i < this->lcontinuousVariables.size(); i++) {
@@ -303,6 +311,8 @@ void EpochSimulation::initialize(int period) {
 	if (this->lcontinuousVariables.size() > 0) {
 		 this->lpSdeSimulation->initialize(period);
 	}
+
+
 
 	// Reset the time
 	this->ltime = 0;
@@ -678,6 +688,13 @@ const Model * EpochSimulation::pModel() const {
 }
 
 /**
+ * Returns the current state of dependent variables in this simulation object.
+ */
+const State * EpochSimulation::pState() const {
+    return this->lpState;
+}
+
+/**
  * Returns the object responsible for the simulation of the continuous 
  * variables.
  */
@@ -938,17 +955,7 @@ double EpochSimulation::lnFactorial(int a) const {
 		return z;
 	}
 }
-/**
- * Updates parameters. Probably legacy code and not used.
- */
-void EpochSimulation::updateParameters(int period) {
-	Rprintf("ever used?\n");
-	for (unsigned i = 0; i < this->lvariables.size(); i++) {
-		this->lvariables[i]->updateBasicRate(period);
-		this->lvariables[i]->updateEffectParameters();
-	}
 
-}
 /**
  * Returns the current map of derivatives for the given effect.
  * The derivatives are updated for each ministep of a chain.

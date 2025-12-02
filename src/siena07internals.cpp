@@ -1985,7 +1985,11 @@ void getStatistics(SEXP EFFECTSLIST,
 								strcmp(effectName, "infectDeg") == 0 ||
 								strcmp(effectName, "infectOut") == 0 ||
 								strcmp(effectName, "susceptAvCovar") == 0 ||
-								strcmp(effectName, "infectCovar") == 0)
+								strcmp(effectName, "infectCovar") == 0 ||
+								strcmp(effectName, "anyInExposureDist2") == 0 ||
+								strcmp(effectName, "totInExposureDist2") == 0 ||
+								strcmp(effectName, "avTinExposureDist2") == 0 ||
+								strcmp(effectName, "totAInExposureDist2") == 0)
 						{
 							score = pEpochSimulation->score(pEffectInfo);
 						}

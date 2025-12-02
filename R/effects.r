@@ -832,7 +832,7 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 		{
 			objEffects[grepl("linear shape", objEffects$effectName) &
 				objEffects$type == 'eval',
-			c('include', 'initialValue','untrimmedValue')]  <-
+				c('include', 'initialValue','untrimmedValue')]  <-
 				list(TRUE, starts$tendency, starts$untrimmed)
 		}
 		else
@@ -843,7 +843,7 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 		{
 			objEffects[grepl("quadratic shape", objEffects$effectName) &
 				objEffects$type == 'eval' &
-				objEffects$shortName != 'quad_cc','include'] <- TRUE
+				objEffects$shortName != 'quad_cc' & objEffects$shortName != 'quad_nc','include'] <- TRUE
 			## no starting value for quadratic effect
 		}
 
@@ -1336,7 +1336,7 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 		if (constant)
 		{
 			covObjEffects <-
-				covObjEffects[!(covObjEffects$shortName %in% c("avGroupEgoX")),]
+				covObjEffects[!(covObjEffects$shortName %in% c("avGroupEgoX", "totGroupEgoX")),]
 		}
 
 # these lines tentatively dropped version 1.2-5
@@ -1395,7 +1395,7 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 					"degAbsDiffX", "degPosDiffX", "degNegDiffX",
 					"altInDist2", "totInDist2", "simEgoInDist2", 
 					"sameEgoInDist2", "sameXInPop", "diffXInPop",
-					"sameXCycle4", "inPopX", "inActX", "avGroupEgoX"), ]
+					"sameXCycle4", "inPopX", "inActX", "avGroupEgoX", "totGroupEgoX"), ]
 			covRateEffects <- createEffects("covarBipartiteRate", covarname,
 				name=varname,
 				groupName=groupName, group=group,

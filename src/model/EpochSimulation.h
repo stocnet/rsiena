@@ -59,6 +59,7 @@ public:
 	// Accessors
 	const Data * pData() const;
 	const Model * pModel() const;
+	const State * pState() const;
 	const SdeSimulation * pSdeSimulation() const;
 	const DependentVariable * pVariable(std::string name) const;
 	const ContinuousVariable * pContinuousVariable(std::string name) const;

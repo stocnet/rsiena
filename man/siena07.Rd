@@ -80,8 +80,10 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
     provisional estimate was obtained for a similar model;\cr
     possibly also \code{returnDeps} if the simulated dependent variables
     (networks, behaviour) should be returned;\cr
-    possibly also \code{returnChains} or \code{returnChangeContributions} if the simulated sequences (chains)
-    of ministeps or the simulated change statistics (contributions) should be returned; this may produce a very big file.}
+    possibly also \code{returnChains} or \code{returnChangeContributions} if 
+    the simulated sequences (chains) of ministeps or the simulated change 
+    statistics (contributions) should be returned; this may produce a very 
+    big file.}
 }
 \details{
   This is the main function and workhorse of RSiena.
@@ -256,10 +258,10 @@ siena07(x, batch=FALSE, verbose=FALSE, silent=FALSE,
     The chain has the structure
     \code{chain[[run]][[depvar]][[period]][[ministep]]}.
     }
-  \item{returnChangeContributions}{If \code{returnChangeContributions = TRUE}:
+  \item{changeContributions}{If \code{returnChangeContributions = TRUE}:
     list, or data frame, of simulated change contributions.
     The contributions have the structure
-    \code{returnChangeContributions[[run]][[depvar]][[period]][[ministep]]}.
+    \code{changeContributions[[run]][[depvar]][[period]][[ministep]]}.
     }
    \item{Phase3nits}{Number of iterations actually performed in phase 3.}
    \item{thetaUsed}{If \code{thetaValues} is not \code{NULL}, the matrix

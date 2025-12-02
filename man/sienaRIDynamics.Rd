@@ -8,12 +8,13 @@
    effects in a SAOM according to the measure of relative importance described
    in Indlekofer and Brandes (2013).
    More precisely, it returns aggregates of relative importances over
-   simulated micro-steps between observation moments as described in Section
-   3.2 of this paper.
+   simulated ministeps between observation moments as described in Section
+   3.2 of this paper but only for the starting observation at
+   each period.
    The measure is based on the influence of effects on simulated
-   micro-steps and takes the complete model specification into account.
+   mini-steps and takes the complete model specification into account.
    Therefore, required arguments are the analysed data given as a
-   \code{siena} data object (necessary for the micro-steps simulations)
+   \code{siena} data object (necessary for the ministeps simulations)
    as well as the complete model specification represented either by an
    estimated \code{sienaFit} object or by the triple consisting of a
    suitable parameter vector \code{theta} and the corresponding
@@ -21,7 +22,8 @@
  }
 \usage{
   sienaRIDynamics(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL,
-     depvar=NULL, intervalsPerPeriod=NULL, n3 = NULL, useChangeContributions=FALSE)
+     depvar=NULL, intervalsPerPeriod=10, n3 = NULL, useChangeContributions=FALSE,
+     silent = TRUE, seed = NULL)
   \method{plot}{sienaRIDynamics}(x, staticRI=NULL, col=NULL,
      ylim=NULL, width=NULL, height=NULL, legend=TRUE, legendColumns=NULL,
      legendHeight=NULL, cex.legend=NULL, \dots)
@@ -54,7 +56,7 @@
   \item{depvar}{If the model contains more than one dependent variable,
     it has to be specified for which dependent variable the relative importances
     of associated effects should be determined.
-    Only those simulated micro-steps that refer to the selected dependent
+    Only those simulated ministeps that refer to the selected dependent
     variable are considered in the aggregated values of relative importance
     of the corresponding effects.
     If \code{depvar=NULL}, relative importances will be determined for
@@ -63,11 +65,15 @@
   \item{intervalsPerPeriod}{For analyzing the dynamics of relative
     importances between observation moments, the time interval between
     observation moments is divided into \code{intervalsPerPeriod} subintervals.
-    The values of relative importance are aggregated over all micro-steps
+    The values of relative importance are aggregated over all ministeps
     of one subinterval. Default value is 10 subintervals per period.}
   \item{n3}{Integer specifying the number of chains to be simulated. 
     Defaults to the value in \code{algorithm} or what was set when estimating \code{ans}.
     A very large value will result in a long computation time and large memory usage.}
+  \item{silent}{Logical specifying whether output during internal
+    \code{\link{siena07}} calls should be suppressed. Default is \code{TRUE}.}
+  \item{seed}{Integer specifying the seed for random number generation
+    during internal \code{\link{siena07}} calls.}
   \item{useChangeContributions}{Logical specifying whether previously extracted change 
     contributions should be used instead of rerunning phase 3 simulations.}
   \item{x}{\code{sienaRIDynamics} object resulting from a call to
@@ -140,14 +146,14 @@ it defaults to the value of \code{ans$n3} if \code{ans} is specified.
 \code{sienaRIDynamics} returns an object of class \code{sienaRIDynamics}.
 
  A returned \code{sienaRIDynamics} object stores the relative importances
-   of effects in simulated micro-steps aggregated to \code{intervalsPerPeriod}
+   of effects in simulated ministeps aggregated to \code{intervalsPerPeriod}
    averages per period. For details, see Section 3.2 of
    Indlekofer and Brandes (2013).
 
 A \code{sienaRIDynamics} object consists of following components:
     \describe{
     \item{\code{intervalValues}}{the relative importances of included
-          effects for simulated micro-steps of the considered dependent
+          effects for simulated ministeps of the considered dependent
           variable aggregated over subintervals.}
     \item{\code{dependentVariable}}{the name of the dependent variable
           the results refer to.}
@@ -166,16 +172,17 @@ mycontrols <- sienaAlgorithmCreate(nsub=2, n3=50, cond=FALSE)
 mynet1 <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
 mydata <- sienaDataCreate(mynet1)
 mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, density, recip, transTies, nbrDist2)
+mymodel <- includeEffects(mymodel, density, recip, transTies)
 ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE,
                returnChangeContributions=TRUE)
 
 RIDynamics1 <- sienaRIDynamics(mydata, ans=ans, useChangeContributions=TRUE)
 RIDynamics1
+\dontrun{
 plot(RIDynamics1)
 
-
 mycontrols2 <- sienaAlgorithmCreate(nsub=2, n3=50, cond=TRUE)
+
 ans2 <- siena07(mycontrols2, data=mydata, effects=mymodel, batch=TRUE)
 
 RIDynamics2 <- sienaRIDynamics(mydata, ans=ans2, effects=mymodel)
@@ -190,7 +197,7 @@ mynet2 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
 mybeh <- sienaDependent(s50a, type="behavior")
 mydata2 <- sienaDataCreate(mynet2, mybeh)
 mymodel2 <- getEffects(mydata2)
-mymodel2 <- includeEffects(mymodel2, density, recip, transTies, transTrip, nbrDist2)
+mymodel2 <- includeEffects(mymodel2, density, recip, transTies, transTrip)
 ans3 <- siena07(mycontrols3, data=mydata2, effects=mymodel2, batch=TRUE)
 
 RIDynamics4 <- sienaRIDynamics(mydata2, ans=ans3, depvar="mybeh")
@@ -202,6 +209,6 @@ RIDynamics5
 
 RI5 <- sienaRI(mydata2, ans=ans3)
 plot(RIDynamics5, staticRI=RI5[[1]])
-
+}
 }
 \keyword{models}

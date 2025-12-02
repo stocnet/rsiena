@@ -52,7 +52,7 @@ class NetworkLongitudinalData;
 class Network;
 class EffectInfo;
 class StructuralRateEffect;
-class DiffusionRateEffect;
+class DiffusionRateEffect; // necessary to forward declare?
 class MiniStep;
 class Setting;
 
@@ -118,7 +118,6 @@ public:
 	double nonSettingsRate() const;
 	double rate(int actor) const;
 	inline double basicRate() const;
-	void updateBasicRate(int period);
 
 	int simulatedDistance() const;
 
@@ -144,23 +143,9 @@ public:
 	double logreciprocalDegreeScore(const NetworkVariable * pNetwork) const;
 
 	// Diffusion effects
-
 	std::map<const EffectInfo *, double> ldiffusionscores;
 	std::map<const EffectInfo *, double> ldiffusionsumterms;
-	double calculateDiffusionRateEffect(
-		const BehaviorVariable * pBehaviorVariable,
-		const Network * pNetwork,
-		int i, std::string effectName,
-		int internalEffectParameter);
-	double calculateDiffusionRateEffect(
-		const BehaviorVariable * pBehaviorVariable,
-		const Network * pNetwork,
-		int i, std::string effectName,
-		int internalEffectParameter,
-		const ConstantCovariate * pConstantCovariate,
-		const ChangingCovariate * pChangingCovariate);
-// note: calculateDiffusionRateEffect is also a function in StatisticCalculator (almost the same...)
-
+	
 	// Maximum likelihood related
 
 	/**
@@ -171,8 +156,6 @@ public:
 
 	virtual bool validMiniStep(const MiniStep * pMiniStep,
 		bool checkUpOnlyDownOnlyConditions = true) const;
-
-	void updateEffectParameters();
 
 	/**
 	 * Returns if the observed value for the option of the given ministep
@@ -202,6 +185,7 @@ public:
 	int aborts(int stepType) const;
 
 	int numberSettings() const;
+	inline const std::vector<DiffusionRateEffect*>& diffusionRateEffects() const;
 
 protected:
 	inline EpochSimulation * pSimulation() const;
@@ -283,7 +267,6 @@ private:
 	std::vector<StructuralRateEffect *> lstructuralRateEffects;
 
 	// The diffusion rate effects.
-
 	std::vector<DiffusionRateEffect *> ldiffusionRateEffects;
 
 	// The evaluation function for this variable
@@ -473,7 +456,6 @@ const Function * DependentVariable::pCreationFunction() const
 	return this->lpCreationFunction;
 }
 
-
 /**
  * Returns the index of the current period.
  */
@@ -489,6 +471,10 @@ int DependentVariable::period() const
 double DependentVariable::basicRate() const
 {
 	return this->lbasicRate;
+}
+
+inline const std::vector<DiffusionRateEffect*>& DependentVariable::diffusionRateEffects() const {
+    return ldiffusionRateEffects;
 }
 
 }

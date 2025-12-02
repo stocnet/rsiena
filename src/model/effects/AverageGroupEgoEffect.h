@@ -28,7 +28,7 @@ namespace siena
 class AverageGroupEgoEffect : public CovariateDependentNetworkEffect
 {
 public:
-	AverageGroupEgoEffect(const EffectInfo * pEffectInfo);
+	AverageGroupEgoEffect(const EffectInfo * pEffectInfo, bool divide);
 
 	void initialize(const Data * pData,
 		State * pState,
@@ -53,6 +53,8 @@ private:
 //	double loverallCenterMean {};
 	BehaviorLongitudinalData * lpBehaviorData {};
 	int lperiod {};
+	// divide indicates whether there will be division by the number of actors
+	bool ldivide {};
 };
 
 }

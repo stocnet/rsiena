@@ -928,7 +928,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "avGroupEgoX")
 	{
-		pEffect = new AverageGroupEgoEffect(pEffectInfo);
+		pEffect = new AverageGroupEgoEffect(pEffectInfo, true);
+	}
+	else if (effectName == "totGroupEgoX")
+	{
+		pEffect = new AverageGroupEgoEffect(pEffectInfo, false);
 	}
 	else if (effectName == "cycle4")
 	{
@@ -2031,6 +2035,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new QuadraticShapeCcEffect(pEffectInfo);
 	}
+		else if (effectName == "quad_nc")
+	{
+		pEffect = new QuadraticShapeNCEffect(pEffectInfo);
+	}
 	else if (effectName == "constant")
 	{
 		pEffect = new ConstantEffect(pEffectInfo);
@@ -2083,6 +2091,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "totInSim")
 	{
 		pEffect = new SimilarityIndegreeEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "indegAvGroup")
+	{
+		pEffect = new IndegreeWeightedAverageGroupEffect(pEffectInfo, true);
+	}
+	else if (effectName == "indegTotGroup")
+	{
+		pEffect = new IndegreeWeightedAverageGroupEffect(pEffectInfo, false);
 	}
 	else if (effectName == "indeg")
 	{
@@ -2281,7 +2297,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "popAlt")
 	{
-		pEffect = new PopularityAlterEffect(pEffectInfo);
+		pEffect = new PopularityAlterEffect(pEffectInfo, true);
+	}
+	else if (effectName == "totPopAlt")
+	{
+		pEffect = new PopularityAlterEffect(pEffectInfo, false);
 	}
 	else if (effectName == "avSimRecPop")
 	{
@@ -2302,7 +2322,23 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
     else if (effectName == "avSimVarAlt")
     {
         pEffect = new VarianceAlterSimilarityEffect(pEffectInfo, true, false, false);
-    }
+	}
+		else if (effectName == "totGwdspFFAlt")
+	{
+		pEffect = new TotalGwdspAlterEffect(pEffectInfo, true);
+	}
+	else if (effectName == "totGwdspFBAlt")
+	{
+		pEffect = new TotalGwdspAlterEffect(pEffectInfo, false);
+	}
+	else if (effectName == "totGwdspFFAlt_nc")
+	{
+		pEffect = new TotalGwdspAlterNCEffect(pEffectInfo, true);
+	}
+	else if (effectName == "totGwdspFBAlt_nc")
+	{
+		pEffect = new TotalGwdspAlterNCEffect(pEffectInfo, false);
+	}
 	else if (effectName == "avAlt")
 	{
 		if (pContinuousData)
@@ -2324,7 +2360,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "avGroup")
 	{
-		pEffect = new AverageGroupEffect(pEffectInfo);
+		pEffect = new AverageGroupEffect(pEffectInfo, true);
+	}
+		else if (effectName == "totGroup")
+	{
+		pEffect = new AverageGroupEffect(pEffectInfo, false);
 	}
 	else if (effectName == "totAlt")
 	{
@@ -2423,6 +2463,22 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "totAInAltDist2")
 	{
 		pEffect = new AverageAlterInDist2Effect(pEffectInfo, false, true);
+	}
+	else if (effectName == "avInAltDist2_nc")
+	{
+		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, true, true);
+	}
+	else if (effectName == "totInAltDist2_nc")
+	{
+		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "avTInAltDist2_nc")
+	{
+		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, true, false);
+	}
+	else if (effectName == "totAInAltDist2_nc")
+	{
+		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, false, true);
 	}
     else if (effectName == "varAlt")
     {
