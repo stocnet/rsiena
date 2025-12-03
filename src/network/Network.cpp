@@ -509,6 +509,16 @@ int Network::inTwoStarCount(int i, int j) const {
 }
 
 /**
+ * This method returns the number of actors with ties from <i>i</i> and
+ * to <i>j</i>.
+ */
+int Network::twoPathCount(int i, int j) const {
+	this->checkSenderRange(i);
+	this->checkSenderRange(j);
+	return commonActorCount(this->outTies(i), this->inTies(j));
+}
+
+/**
  * Indicates that all ties are non-zero.
  */
 bool Network::complete() const {

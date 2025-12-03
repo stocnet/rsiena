@@ -22,7 +22,7 @@ namespace siena
 /**
  * Constructor.
  */
-AverageGroupEffect::AverageGroupEffect(const EffectInfo * pEffectInfo) :
+AverageGroupEffect::AverageGroupEffect(const EffectInfo * pEffectInfo, bool divide) :
 	BehaviorEffect(pEffectInfo)
 {
 	this->lcenterMean = (pEffectInfo->internalEffectParameter() <= 0.5);
@@ -34,6 +34,8 @@ AverageGroupEffect::AverageGroupEffect(const EffectInfo * pEffectInfo) :
 	{
 		this->lcenteringValue = 0.0;
 	}
+	this->ldivide = divide;
+	// Indicates whether there will be division by the number of actors.
 }
 
 /**
@@ -66,7 +68,10 @@ double AverageGroupEffect::calculateChangeContribution(int actor,
 		statistic += this->centeredValue(i);
 	}
 	statistic += this->centeredValue(actor) + difference;
-	statistic /= this->n();
+	if (this->ldivide) 
+	{
+		statistic /= this->n();
+	}
 //Rprintf("calculateSumPlus %f ", thesum);
 //Rprintf(" and %f \n", thesum);
 	if (!this->lcenterMean)
@@ -87,7 +92,10 @@ double AverageGroupEffect::egoStatistic(int ego, double * currentValues)
 	{
 		thesum += currentValues[i];
 	}
-	thesum /= this->n();
+	if (this->ldivide) 
+	{
+		thesum /= this->n();
+	}
 	if (!this->lcenterMean)
 	{
 		thesum += (this->overallCenterMean() - this->lcenteringValue);

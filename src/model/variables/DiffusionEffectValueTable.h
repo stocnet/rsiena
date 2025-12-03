@@ -6,7 +6,8 @@
  * File: DiffusionEffectValueTable.h
  *
  * Description: This file contains the definition of the
- * DiffusionEffectValueTable class.
+ * DiffusionEffectValueTable class. Currently not in use but
+ * planned to be restored for optimization of diffusion effect calculations.
  *****************************************************************************/
 
 #ifndef DIFFUSIONEFFECTVALUETABLE_H_
@@ -32,7 +33,7 @@ public:
 
 	double parameter() const;
 	void parameter(double value);
-	double value(int i);
+	/* Is not defined: double value(int i);*/
 	double value(int numerator, int denominator);
 
 private:

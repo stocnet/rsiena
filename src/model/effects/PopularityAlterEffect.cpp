@@ -20,11 +20,12 @@ namespace siena
  * Constructor.
  */
 PopularityAlterEffect::PopularityAlterEffect(
-		const EffectInfo * pEffectInfo) :
+		const EffectInfo * pEffectInfo, bool divide) :
 	NetworkDependentBehaviorEffect(pEffectInfo)
 {
+	this->ldivide = divide;
+	// Indicates whether there will be division by the outdegree of ego
 }
-
 
 /**
  * Calculates the change in the statistic corresponding to this effect if
@@ -48,7 +49,7 @@ double PopularityAlterEffect::egoStatistic(int ego, double * currentValues)
 
 
 /**
- * Returns the average in-degree of the neighbors of the given actor in
+ * Returns the total or average in-degree of the neighbors of the given actor in
  * the current network (0, if the actor has no outgoing ties).
  */
 double PopularityAlterEffect::averageInDegree(int i) const
@@ -64,8 +65,10 @@ double PopularityAlterEffect::averageInDegree(int i) const
 		{
 			inDegree += pNetwork->inDegree(iter.actor());
 		}
-
+		if (this->ldivide)
+		{
 		inDegree /= pNetwork->outDegree(i);
+		}
 	}
 
 	return inDegree;

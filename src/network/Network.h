@@ -83,6 +83,7 @@ public:
 
 	int outTwoStarCount(int i, int j) const;
 	int inTwoStarCount(int i, int j) const;
+	int twoPathCount(int i, int j) const;
 
 	void addNetworkChangeListener(INetworkChangeListener* const listener);
 
