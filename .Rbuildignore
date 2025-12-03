@@ -12,3 +12,6 @@
 ^.*\.code-workspace$
 NEWSnew.md
 man/Show.*
+^\.vscode$
+^\.txt$
+^tests/\.RData$
