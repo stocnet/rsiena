@@ -244,11 +244,7 @@ sienaPostestimate <- function(
     )
     # is this efficient for data.table?
     uncert <- agg(outcome, uncert, level = level, condition = condition, sum.fun = summarizeValue)
-    # if (is.null(condition)) { # what if level is not NULL?
-        cbind(expect, uncert)
-    # } else {
-    #     merge(expect, uncert, by = c(level, condition))
-    # }
+    mergeEstimates(expect, uncert, level = level, condition = condition)
 }
 
 makeEstimator <- function(predictFun, predictArgs, outcome,
@@ -442,27 +438,40 @@ agg <- function(ME,
     return(output)
   }
 
-  ## this has to be an inefficient solution for base R?
+  # ## this has to be an inefficient solution for base R?
+  # grouping <- interaction(data[, group_vars, drop = FALSE], drop = TRUE)
+  # split_list <- split(data[[ME]], grouping)
+  # sum_list <- lapply(split_list, sum.fun, na.rm = na.rm)
+  # # Ensure all outputs are lists with the same names
+  # sum_list <- lapply(sum_list, expand_summary)
+  # all_names <- unique(unlist(lapply(sum_list, names)))
+  # sum_list <- lapply(sum_list, function(x) {
+  #   x[setdiff(all_names, names(x))] <- NA
+  #   x <- x[all_names]
+  #   as.data.frame(as.list(x), stringsAsFactors = FALSE)
+  # })
+  # group_levels <- unique(grouping)
+  # group_df <- do.call(rbind, lapply(strsplit(as.character(group_levels), ".", fixed = TRUE), function(x) {
+  #   length(x) <- length(group_vars)
+  #   names(x) <- group_vars
+  #   as.data.frame(as.list(x), stringsAsFactors = FALSE)
+  # }))
+  # names(group_df) <- group_vars
+  # res_df <- as.data.frame(do.call(rbind, sum_list))
+  # out <- cbind(group_df, res_df)
+  # rownames(out) <- NULL
+  # return(out)
+    # Grouping and aggregation
   grouping <- interaction(data[, group_vars, drop = FALSE], drop = TRUE)
-  split_list <- split(data[[ME]], grouping)
-  sum_list <- lapply(split_list, sum.fun, na.rm = na.rm)
-  # Ensure all outputs are lists with the same names
-  sum_list <- lapply(sum_list, expand_summary)
-  all_names <- unique(unlist(lapply(sum_list, names)))
-  sum_list <- lapply(sum_list, function(x) {
-    x[setdiff(all_names, names(x))] <- NA
-    x <- x[all_names]
-    as.data.frame(as.list(x), stringsAsFactors = FALSE)
+  split_data <- split(data, grouping)
+  agg_list <- lapply(split_data, function(subdf) {
+    vals <- subdf[[ME]]
+    res <- expand_summary(sum.fun(vals, na.rm = na.rm))
+    # Add group columns
+    group_vals <- subdf[1, group_vars, drop = FALSE]
+    cbind(group_vals, as.data.frame(res, stringsAsFactors = FALSE))
   })
-  group_levels <- unique(grouping)
-  group_df <- do.call(rbind, lapply(strsplit(as.character(group_levels), ".", fixed = TRUE), function(x) {
-    length(x) <- length(group_vars)
-    names(x) <- group_vars
-    as.data.frame(as.list(x), stringsAsFactors = FALSE)
-  }))
-  names(group_df) <- group_vars
-  res_df <- as.data.frame(do.call(rbind, sum_list))
-  out <- cbind(group_df, res_df)
+  out <- do.call(rbind, agg_list)
   rownames(out) <- NULL
   return(out)
 }
@@ -540,4 +549,22 @@ conditionalReplace <- function(df, row_ids, cols, fun) {
     df[row_ids, cols] <- fun(df[row_ids, cols])
   }
   df
+}
+
+mergeEstimates <- function(df1, df2, level = "none", condition = NULL) {
+  levels_list <- list(
+    none = character(0),
+    period = "period",
+    ego = c("period", "ego"),
+    egoChoice = c("period", "ego", "choice"),
+    chain = c("period", "chain"),
+    ministep = c("period", "chain", "ministep"),
+    ministepChoice = c("period", "chain", "ministep", "choice")
+  )
+  group_vars <- c(levels_list[[level]], condition)
+  if (length(group_vars) > 0) {
+    merge(df1, df2, by = group_vars, all = TRUE)
+  } else {
+    cbind(df1, df2)
+  }
 }
