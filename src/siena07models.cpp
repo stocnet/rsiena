@@ -423,8 +423,11 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 			}
 			if(returnChangeContributions)
 			{
-				SEXP thisChangeContributions = getChangeContributionsList(*(pEpochSimulation->pChain()), EFFECTSLIST);
-				SET_VECTOR_ELT(VECTOR_ELT(changeContributionChains, group), period, thisChangeContributions);
+				SEXP thisChangeContributions = 
+					getDynamicChangeContributionsList(*(pEpochSimulation->pChain()), 
+						EFFECTSLIST);
+				SET_VECTOR_ELT(VECTOR_ELT(changeContributionChains, group), 
+					period, thisChangeContributions);
 			}
 			if (returnLoglik)
 			{

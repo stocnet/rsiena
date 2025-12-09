@@ -21,8 +21,14 @@ sienaPredict <- function(
     keep_batch = FALSE,
     verbose = TRUE
     ){
+        # depvar restriction is not necessary anymore?
         if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
-        staticContributions <- calculateContribution(ans, data, depvar)
+        staticContributions <- getStaticChangeContributions(
+            ans = ans,
+            data = data,
+            depvar = depvar,
+            returnDataFrame = TRUE
+        )
         probName <- ifelse(useTieProb, "tieProb", "changeProb")
         probFun <- predictProbability
         predictArgs <- list(
@@ -68,9 +74,7 @@ predictProbability <- function(ans, staticContributions, theta, useTieProb = TRU
     } else {
         thetaNoRate <- theta[seq_along(effectNames)]
     }
-
-
-    df <- staticContributions
+    df <- widenStaticContribution(staticContributions)
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
     df <- addProbabilityColumn(df, group_vars = c("period", "ego"), useTieProb = useTieProb)
     #df <- subset(df, df[["density"]] != 0)
@@ -156,7 +160,7 @@ predictProbabilityDynamic <- function(ans, data, theta, algorithm, effects,
         thetaNoRate <- theta[seq_along(effectNames)]
     }
 
-    df <- getChangeContributionsDynamic(
+    df <- getDynamicChangeContributions(
         ans = ans, 
         theta = theta, 
         data = data, 
@@ -167,7 +171,7 @@ predictProbabilityDynamic <- function(ans, data, theta, algorithm, effects,
         useChangeContributions = useChangeContributions, 
         returnDataFrame = TRUE
     )
-    df <- widenContribution(df)
+    df <- widenDynamicContribution(df)
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
     df <- addProbabilityColumn(df, group_vars = c("chain","period", "ministep"), useTieProb = useTieProb)
     #df <- subset(df, df[["density"]] != 0)
@@ -221,6 +225,8 @@ sienaPostestimate <- function(
         clusterType <- "FORK"
         nbrNodes <- 1
     }
+
+
     uncert <- drawSim(
         estimator = estimator,
         theta_hat = theta_hat,
@@ -238,11 +244,11 @@ sienaPostestimate <- function(
     )
     # is this efficient for data.table?
     uncert <- agg(outcome, uncert, level = level, condition = condition, sum.fun = summarizeValue)
-    if (is.null(condition)) {
+    # if (is.null(condition)) { # what if level is not NULL?
         cbind(expect, uncert)
-    } else {
-        merge(expect, uncert)
-    }
+    # } else {
+    #     merge(expect, uncert, by = c(level, condition))
+    # }
 }
 
 makeEstimator <- function(predictFun, predictArgs, outcome,
@@ -305,8 +311,11 @@ drawSim <- function(
     } else {
       if (verbose) message("Using existing cluster.")
     }
-    # Export all arguments to the cluster
-    parallel::clusterExport(cl, names(sim_args), envir = list2env(sim_args, parent = .GlobalEnv))
+    # Export necessary variables and functions to the cluster
+    parallel::clusterExport(cl, c("estimator", "theta_hat", "cov_theta", 
+      "widenStaticContribution", "addUtilityColumn", "addProbabilityColumn", 
+      "conditionalReplace", "softmax_arma"), 
+      envir=environment())
     # Make sure that all clusters have all dependencies available 
     parallel::clusterEvalQ(cl, {
       library(data.table)
@@ -348,6 +357,7 @@ drawSim <- function(
       mc.cores = nbrNodes
       )
     }
+
     file_name <- file.path(batch_dir, sprintf("%s%03d.rds", prefix, b))
     saveRDS(batch_result, file = file_name)
     rm(batch_result)
@@ -362,7 +372,6 @@ drawSim <- function(
   if (verbose) message("All batches complete. Now combining and cleaning up...")
   
   if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads()
-  
   if(combine_batch){
     # Combine all batches
     batch_files <- list.files(batch_dir, pattern = sprintf("^%s\\d{3}\\.rds$", prefix), full.names = TRUE)
@@ -380,7 +389,6 @@ drawSim <- function(
         if (verbose) message(sprintf("Deleted batch %d (%d-%d)", b, first, last))
       }
     }
-    
     if (verbose) message("Returning combined results.")
     if (requireNamespace("data.table", quietly = TRUE)) {
       return(data.table::rbindlist(combined_results))
@@ -423,24 +431,37 @@ agg <- function(ME,
     if (!data.table::is.data.table(data)) {
       data <- data.table::as.data.table(data)
     }
-    result <- data[, expand_summary(sum.fun(get(ME), na.rm = na.rm)), by = group_vars]
+    result <- data[, expand_summary(sum.fun(get(ME), na.rm = na.rm)), 
+      by = group_vars]
     return(result)
   }
-
   # ---- Fallback base R: ----
   if (length(group_vars) == 0) {
     output <- expand_summary(sum.fun(data[[ME]], na.rm = na.rm))
     output <- as.data.frame(output)
     return(output)
   }
+
+  ## this has to be an inefficient solution for base R?
   grouping <- interaction(data[, group_vars, drop = FALSE], drop = TRUE)
   split_list <- split(data[[ME]], grouping)
   sum_list <- lapply(split_list, sum.fun, na.rm = na.rm)
-  # Turn to data.frame with group codes and result; handle multi-valued outputs
+  # Ensure all outputs are lists with the same names
+  sum_list <- lapply(sum_list, expand_summary)
+  all_names <- unique(unlist(lapply(sum_list, names)))
+  sum_list <- lapply(sum_list, function(x) {
+    x[setdiff(all_names, names(x))] <- NA
+    x <- x[all_names]
+    as.data.frame(as.list(x), stringsAsFactors = FALSE)
+  })
   group_levels <- unique(grouping)
-  group_df <- do.call(rbind, lapply(strsplit(as.character(group_levels), ".", fixed = TRUE), as.data.frame.list))
+  group_df <- do.call(rbind, lapply(strsplit(as.character(group_levels), ".", fixed = TRUE), function(x) {
+    length(x) <- length(group_vars)
+    names(x) <- group_vars
+    as.data.frame(as.list(x), stringsAsFactors = FALSE)
+  }))
   names(group_df) <- group_vars
-  res_df <- as.data.frame(do.call(rbind, lapply(sum_list, expand_summary)))
+  res_df <- as.data.frame(do.call(rbind, sum_list))
   out <- cbind(group_df, res_df)
   rownames(out) <- NULL
   return(out)
@@ -464,10 +485,16 @@ calculateUtility <- function(mat, theta) {
 }
 
 addUtilityColumn <- function(df, effectNames, theta) {
-  if (requireNamespace("data.table", quietly = TRUE) && data.table::is.data.table(df)) {
-    df[, ("changeUtil") := calculateUtility(as.matrix(.SD), theta), .SDcols = effectNames]
+  if (requireNamespace("data.table", quietly = TRUE) && 
+      data.table::is.data.table(df)) {
+    df[, ("changeUtil") := calculateUtility(
+      as.matrix(.SD), 
+      theta), 
+      .SDcols = effectNames]
   } else {
-    df[["changeUtil"]] <- calculateUtility(as.matrix(df[, effectNames, drop = FALSE]), theta)
+    df[["changeUtil"]] <- calculateUtility(
+      as.matrix(df[, effectNames, drop = FALSE]), 
+      theta)
     return(df)
   }
 }
@@ -479,6 +506,8 @@ addProbabilityColumn <- function(
 ) {
   stopifnot(is.data.frame(df))
   if (requireNamespace("data.table", quietly = TRUE) && data.table::is.data.table(df)) {
+    # For non standard evaluation
+    changeUtil <- tieProb <- NULL
     df[, ("changeProb") := softmax_arma(changeUtil), by = group_vars]
     if (useTieProb) {
       df[, tieProb := get("changeProb")]
@@ -489,7 +518,10 @@ addProbabilityColumn <- function(
     df
   } else {
     grouping <- interaction(df[, group_vars, drop = FALSE], drop = TRUE)
-    df[["changeProb"]] <- ave(df[["changeUtil"]], grouping, FUN = softmax_arma)
+    df[["changeProb"]] <- ave(df[["changeUtil"]], 
+      grouping, 
+      FUN = softmax_arma)
+    if (is.list(df[["changeProb"]])) df[["changeProb"]] <- unlist(df[["changeProb"]])
     if (useTieProb) {
       df[,"tieProb"] <- df[, "changeProb"]
       if ("density" %in% names(df)) {

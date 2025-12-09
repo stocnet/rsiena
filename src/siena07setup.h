@@ -114,7 +114,19 @@ SEXP getTargets(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
 		SEXP RETURNSTATICCHANGECONTRIBUTIONS);
 
 /**
- * Sets up a minimal chain and does pre burnin and burnin.  Processes a
+ *  Gets static change contributions relative to the input data
+ */
+SEXP getStaticChangeContributions(SEXP DATAPTR, 
+	SEXP MODELPTR, SEXP EFFECTSLIST, SEXP PARALLELRUN);
+
+/**
+ *  Gets target actor statistics relative to the input data
+ */
+SEXP getTargetActorStatistics(SEXP dataptr, 
+	SEXP modelptr, SEXP effectslist, SEXP parallelrun);
+
+/**
+ * Sets up a minimal chain and does pre burnin andg burnin.  Processes a
  * complete set of data objects, crewating a chain for each period and storing
  * them on the model object.
  */

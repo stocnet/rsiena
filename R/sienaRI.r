@@ -10,131 +10,100 @@
 # *****************************************************************************/
 
 ##@sienaRI
-sienaRI <- function(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL,
+sienaRI <- function(data, 
+	ans=NULL, 
+	theta=NULL, 
+	algorithm=NULL, 
+	effects=NULL,
 	getChangeStats=FALSE)
 {
 	if (!inherits(data, "siena"))
 	{
-		stop("no a legitimate Siena data specification")
+		stop("not a legitimate Siena data specification")
 	}
 	datatypes <- sapply(data$depvars, function(x){attr(x,"type")})
 	if (any(datatypes == "bipartite"))
 	{
-#		stop("sienaRI works only for dependent variables of 
-#			type 'oneMode' or 'behavior'")
 	}
-	if(!is.null(ans)) ## add option to read previously calculated changeContributions? not that relevant 
+	## add option to read previously calculated changeContributions? not relevant?
+	if(!is.null(ans))  
 	{
 		if (!inherits(ans, "sienaFit"))
 		{
 			stop(paste("ans is not a legitimate Siena fit object", sep=""))
 		}
-		if(!is.null(algorithm)||!is.null(theta)||!is.null(effects))
-		{
-			warning(paste("some informations are multiply defined \n",
-					"results will be based on 'theta', 'algorithm', and 
-					'effects'\n", "stored in 'ans' (as 'ans$theta', 'ans$x', 
-					'ans$effects')\n", sep=""))
+		# if(!is.null(algorithm)||!is.null(theta)||!is.null(effects))
+		# {
+		# 	warning(paste("some informations are multiply defined \n",
+		# 			"results will be based on 'theta', 'algorithm', and 
+		# 			'effects'\n", "stored in 'ans' (as 'ans$theta', 'ans$x', 
+		# 			'ans$effects')\n", sep=""))
+		# }
+		# We are now taking passed values instead of those from ans
+		# Does not need a warning as this should be expected behavior?
+		if(is.null(theta)){
+			theta <- ans$theta
 		}
-		if (sum(ans$effects$include==TRUE &
-				(ans$effects$type =="endow"|ans$effects$type =="creation")) > 0)
-		{
-			stop("sienaRI does not yet work for models containing endowment or 
-				creation effects")
+		if(is.null(algorithm)){
+			algorithm <- ans$x
 		}
-		if (any(ans$effects$shortName %in% c("unspInt", "behUnspInt", "contUnspInt"))){
-			stop("sienaRI does not work for models containing interaction effects")
+		if(is.null(effects)){
+			effects <- ans$effects
 		}
-		contributions <- getChangeContributions(algorithm = ans$x, data = data,
-			effects = ans$effects)
-		# contributions[[1]] is periods by effects by actors by actors
-#cat("a\n")
-#browser()
-		RI <- expectedRelativeImportance(conts = contributions,
-			effects = ans$effects, theta =ans$theta, thedata=data,
-			getChangeStatistics=getChangeStats)
 	}
-	else
+	if (!inherits(algorithm, "sienaAlgorithm"))
 	{
-		if (!inherits(algorithm, "sienaAlgorithm"))
-		{
-			stop(paste("algorithm is not a legitimate Siena algorithm 
-				specification", sep=""))
-		}
-		algo <- algorithm
-		if (!inherits(effects, "sienaEffects"))
-		{
-			stop(paste("effects is not a legitimate Siena effects object", sep=""))
-		}
-		if(sum(effects$include==TRUE &
-				(effects$type =="endow"|effects$type =="creation")) > 0)
-		{
-			stop("sienaRI does not yet work for models containing endowment or 
-				creation effects")
-		}
-		effs <- effects
-		if (!is.numeric(theta))
-		{
-			stop("theta is not a legitimate parameter vector")
-		}
-		if(length(theta) != sum(effs$include==TRUE & effs$type!="rate"))
-		{
-			if(length(theta) != sum(effs$include==TRUE))
-			{
-				stop("theta is not a legitimate parameter vector \n number of 
-					parameters has to match number of effects")
-			}
-			warning(paste("length of theta does not match the number of 
-				objective function effects\n", "theta is treated as if 
-					containing rate parameters"))
-			paras <- theta
-			## all necessary information available
-			contributions <- getChangeContributions(algorithm = algo,
-				data = data, effects = effs)
-			RI <- expectedRelativeImportance(conts = contributions,
-				effects = effs, theta = paras, thedata=data,
-				getChangeStatistics=getChangeStats)
-		}else{
-			paras <- theta
-			## all necessary information available
-			contributions <- getChangeContributions(algorithm = algo,
-				data = data, effects = effs)
-			RI <- expectedRelativeImportance(conts = contributions,
-				effects = effs, theta = paras, thedata=data,
-				getChangeStatistics=getChangeStats)
-		}
+		stop(paste("algorithm is not a legitimate Siena algorithm 
+			specification", sep=""))
 	}
-	RI
+	if (!inherits(effects, "sienaEffects"))
+	{
+		stop(paste("effects is not a legitimate Siena effects object", sep=""))
+	}
+	if(sum(effects$include==TRUE &
+				(effects$type =="endow"|effects$type =="creation")) > 0)
+	{
+		stop("sienaRI does not yet work for models containing endowment or 
+			creation effects")
+	}
+	if (!is.numeric(theta))
+	{
+		stop("theta is not a legitimate parameter vector")
+	}
+	if(length(theta) != sum(effects$include==TRUE & effects$type!="rate"))
+	{
+		if(length(theta) != sum(effects$include==TRUE))
+		{
+			stop("theta is not a legitimate parameter vector \n number of 
+				parameters has to match number of effects")
+		}
+		warning(paste("length of theta does not match the number of 
+			objective function effects\n", "theta is treated as if 
+				containing rate parameters"))
+	}
+	contributions <- getStaticChangeContributions(
+		ans = ans,
+		data = data,
+		algorithm = algorithm, 
+		effects = effects,
+		depvar = NULL,
+		returnDataFrame = FALSE
+	)
+	RIValues <- expectedRelativeImportance(
+		conts = contributions,
+		effects = effects, 
+		theta = theta, 
+		data=data,
+		getChangeStatistics=getChangeStats
+	)
+	RIValues
 }
 
-##@getChangeContributions. Use as RSiena:::getChangeContributions
-getChangeContributions <- function(algorithm, data, effects)
-{
-	if (!is.null(algorithm$settings)) {
-        stop('not implemented: RI together with settings')
-        # effects <- addSettingsEffects(effects, algorithm)
-    } else {
-            setup <- sienaSetupForCpp(algorithm, data, effects,
-                              includeBehavior = TRUE,
-                              includeBipartite = TRUE,
-                              returnActorStatistics = FALSE,
-                              returnStaticChangeContributions = TRUE,
-                              parallelrun = FALSE)
-    }
-
-    ans <- .Call(C_getTargets, PACKAGE=pkgname, 
-                 setup$pData, setup$pModel, setup$myeffects,
-                 parallelrun = FALSE,
-                 returnActorStatistics = FALSE,
-                 returnStaticChangeContributions = TRUE)
-    ans
-}
-
-expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
+expectedRelativeImportance <- function(conts, effects, theta, data=NULL,
 	getChangeStatistics=FALSE, effectNames = NULL)
 {
 	rms <- function(xx){sqrt((1/dim(xx)[2])*rowSums(xx^2,na.rm=TRUE))} # should be extracted as helper function
-	waves <- length(conts[[1]])
+	periods <- length(conts[[1]])
 	effects <- effects[effects$include == TRUE,]
 	noRate <- effects$type != "rate"
 	effects <- effects[noRate,]
@@ -150,6 +119,7 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 	effectIds <- paste(effectNa,effectTypes,networkInteraction, sep = ".")
 	currentDepName <- ""
 	depNumber <- 0
+
 	for(eff in 1:length(effectIds))
 	{
 		if(networkNames[eff] != currentDepName)
@@ -157,9 +127,10 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 			currentDepName <- networkNames[eff]
 			actors <- length(conts[[1]][[1]][[1]])
 			depNumber <- depNumber + 1
-			currentDepEffs <- effects$name == currentDepName
-			effNumber <- sum(currentDepEffs)
-			depNetwork <- thedata$depvars[[depNumber]]
+			currentDepeffects <- effects$name == currentDepName
+			currentDepConts <- 	networkNames == currentDepName
+			effNumber <- sum(currentDepeffects)
+			depNetwork <- data$depvars[[currentDepName]]
 			if (networkTypes[eff] == "oneMode")
 			{
 				choices <- actors
@@ -197,6 +168,7 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 			for (m in 2:dim(depNetwork)[3]){depNetwork[,,m][is.na(depNetwork[,,m])] <-
 				depNetwork[,,m-1][is.na(depNetwork[,,m])]}
 				# Make sure the diagonals are not treated as structurals
+
 				if (networkTypes[eff] == "oneMode")
 				{
 					for (m in 1:(dim(depNetwork)[3])){diag(depNetwork[,,m]) <- 0}
@@ -210,10 +182,10 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 					}
 				}
 
-			# currentDepObjEffsNames <- paste(effects$shortName[currentDepEffs],
-			# 	effects$type[currentDepEffs],effects$interaction1[currentDepEffs],sep=".")
-			# otherObjEffsNames <- paste(effects$shortName[!currentDepEffs],
-			# 	effects$type[!currentDepEffs],effects$interaction1[!currentDepEffs],sep=".")
+			# currentDepObjeffectsNames <- paste(effects$shortName[currentDepeffects],
+			# 	effects$type[currentDepeffects],effects$interaction1[currentDepeffects],sep=".")
+			# otherObjeffectsNames <- paste(effects$shortName[!currentDepeffects],
+			# 	effects$type[!currentDepeffects],effects$interaction1[!currentDepeffects],sep=".")
 
 			entropies <- vector(mode="numeric", length = actors)
 			expectedRI <- list()
@@ -224,7 +196,7 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 			RHActors <-list()
 			changeStats <-list()
 			sigma <- list()
-			sigmas <- matrix(NA, sum(currentDepEffs), periods)
+			sigmas <- matrix(NA, sum(currentDepeffects), periods)
 			if (networkTypes[eff] == "behavior")
 			{
 				toggleProbabilities <- array(0, dim=c(actors, 3, periods))
@@ -235,7 +207,8 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 			}
 			for(w in 1:periods)
 			{
-				currentDepEffectContributions <- conts[[1]][[w]][currentDepEffs]
+
+				currentDepEffectContributions <- conts[[1]][[w]][currentDepConts]
 				if (networkTypes[eff] == "bipartite")
 				{
 					currentDepEffectContributions <- lapply(
@@ -257,7 +230,7 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 
 #cat("b\n")
 #browser()
-				rownames(cdec) <- effectNa[currentDepEffs]
+				rownames(cdec) <- effectNa[currentDepeffects]
 				if (getChangeStatistics)
 				{
 					changeStats[[w]] <- cdec
@@ -270,7 +243,7 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 					for (ff in 1:(dim(cdec)[1])){cdec[ff,,][t(structurals[,,w])] <- NA}
 				}
 				distributions <- apply(cdec, 3,
-					calculateDistributions, theta[which(currentDepEffs)])
+					calculateDistributions, theta[which(currentDepeffects)])
 
 				distributions <-
 					lapply(apply(distributions, 2, list),
@@ -311,20 +284,20 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 				entropies <- entropy_vector
 				# divide by column sums:
 				RIActors[[w]] <- t(t(RIs_matrix)/rowSums(t(RIs_matrix), na.rm=TRUE))
-				rownames(RIActors[[w]]) <- effectNa[currentDepEffs]
+				rownames(RIActors[[w]]) <- effectNa[currentDepeffects]
 				absoluteSumActors[[w]] <- colSums(RIs_matrix, na.rm=TRUE)
 				RHActors[[w]] <- entropies
 				expectedRI[[w]] <- rowMeans(RIActors[[w]], na.rm=TRUE)
 				IActors[[w]] <- RIs_matrix
-				rownames(IActors[[w]]) <- effectNa[currentDepEffs]
+				rownames(IActors[[w]]) <- effectNa[currentDepeffects]
 				expectedI[[w]] <- rowMeans(RIs_matrix, na.rm=TRUE)
 				sigma[[w]] <- apply(cdec, c(1,3), sd, na.rm=TRUE)
-				rownames(sigma[[w]]) <- effectNa[currentDepEffs]
+				rownames(sigma[[w]]) <- effectNa[currentDepeffects]
 				sigmas[,w] <- rms(sigma[[w]])
 			}
-			rownames(sigmas) <- effectNa[currentDepEffs]
+			rownames(sigmas) <- effectNa[currentDepeffects]
 			meansigmas <- rms(sigmas)
-			names(meansigmas) <- effectNa[currentDepEffs]
+			names(meansigmas) <- effectNa[currentDepeffects]
 			RItmp <- NULL
 			RItmp$dependentVariable <- currentDepName
 			RItmp$expectedRI <- expectedRI
@@ -338,11 +311,11 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 			RItmp$meansigmas <- meansigmas
 			if(!is.null(effectNames))
 			{
-				RItmp$effectNames <- effectNames[currentDepEffs]
+				RItmp$effectNames <- effectNames[currentDepeffects]
 			}else{
 				RItmp$effectNames <-
-					paste(effectTypes[currentDepEffs], " ",
-						effects$effectName[currentDepEffs], sep="")
+					paste(effectTypes[currentDepeffects], " ",
+						effects$effectName[currentDepeffects], sep="")
 			}
 			if (getChangeStatistics){
 				RItmp$changeStatistics <- changeStats
@@ -372,28 +345,29 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 	RI
 }
 
-calculateDistributions <- function(effectContributions = NULL, theta = NULL)
-{
-	neffects <- dim(effectContributions)[1]
-	nchoices <- dim(effectContributions)[2]
-	distributions <- array(NA, dim = c(neffects+1,nchoices))
-	the.choices <- !is.na(colSums(effectContributions))
-	if (sum(the.choices) >= 2)
-	{
-		distributions[1,the.choices] <- # could be softmax()
-			exp(colSums(theta*effectContributions[,the.choices,drop=FALSE], na.rm=TRUE))/
-			sum(exp(colSums(theta*effectContributions[,the.choices,drop=FALSE], na.rm=TRUE)))
-		for(eff in 1:neffects)
-		{
-			th <- theta
-			th[eff] <- 0
-			distributions[eff+1,the.choices] <- # could be softmax()
-				exp(colSums(th*effectContributions[,the.choices,drop=FALSE], na.rm=TRUE))/
-				sum(exp(colSums(th*effectContributions[,the.choices,drop=FALSE], na.rm=TRUE)))
-		}
-	}
-	distributions
+calculateDistributions <- function(effectContributions = NULL, theta = NULL) {
+    neffects <- dim(effectContributions)[1]
+    nchoices <- dim(effectContributions)[2]
+    distributions <- array(NA, dim = c(neffects + 1, nchoices))
+    the.choices <- !is.na(colSums(effectContributions))
+    if (sum(the.choices) >= 2) {
+        # Full theta
+        util <- calculateUtility(t(effectContributions[, the.choices, 
+			drop = FALSE]), theta)
+        distributions[1, the.choices] <- softmax_arma(util)
+        # Each effect set to zero
+        for (eff in 1:neffects) {
+            th <- theta
+            th[eff] <- 0
+            util0 <- calculateUtility(t(effectContributions[, the.choices, 
+				drop = FALSE]), th)
+            distributions[eff + 1, the.choices] <- softmax_arma(util0)
+        }
+    }
+    distributions
 }
+
+## the following function could be changed into rcpp for speed as well
 
 entropy <- function(distribution = NULL)
 {
@@ -470,10 +444,10 @@ print.sienaRI <- function(x, printSigma = FALSE, ...){
 	cat(paste("\n  Expected relative importance of effects for dependent variable '",
 			x$dependentVariable,"' at observation moments:\n\n\n", sep=""))
 	periods <- length(x$expectedRI)
-	effs <- length(x$effectNames)
+	effects <- length(x$effectNames)
 	colNames = paste("period ", 1:periods, sep="")
 	line1 <- format("", width =63)
-	line2 <- paste(format(1:effs,width=3), '. ',
+	line2 <- paste(format(1:effects,width=3), '. ',
 		format(x$effectNames, width = 56),sep="")
 	line3 <- line2
 	line4 <- format(" R_H ('degree of certainty')", width = 61)
@@ -494,8 +468,8 @@ print.sienaRI <- function(x, printSigma = FALSE, ...){
 				format(round(x$sigmas[,w], 4), width=8, nsmall=4),"  ",sep="")
 		}
 	}
-	line2 <- paste(line2, rep('\n',effs), sep="")
-	line3 <- paste(line3, rep('\n',effs), sep="")
+	line2 <- paste(line2, rep('\n',effects), sep="")
+	line3 <- paste(line3, rep('\n',effects), sep="")
 	cat(as.matrix(line1),'\n \n', sep='')
 	cat(as.matrix(line2),'\n', sep='')
 	cat("\n  Expected importance of effects for this dependent variable:\n\n")
@@ -504,7 +478,7 @@ print.sienaRI <- function(x, printSigma = FALSE, ...){
 	if (printSigma)
 	{
 		cat("\n sigma (average within-ego standard deviation of change statistics):\n\n")
-		line5 <- paste(line5, rep('\n',effs), sep="")
+		line5 <- paste(line5, rep('\n',effects), sep="")
 		cat('\n',as.matrix(line5),'\n', sep='')
 	}
 	invisible(x)
@@ -757,17 +731,11 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 	invisible(cl)
 }
 
-##@sienaSetupForCpp Use as RSiena:::sienaSetupForCpp
-sienaSetupForCpp <- function(algorithm, data, effects, 
+##@sienaSetupDataForCpp Use as RSiena:::sienaSetupDataForCpp
+sienaSetupDataForCpp <- function(algorithm, data, 
                              includeBehavior = TRUE, 
-                             includeBipartite = TRUE,
-                             returnActorStatistics = FALSE,
-                             returnStaticChangeContributions = FALSE,
-                             parallelrun = FALSE,
-							 initC = FALSE) {
+                             includeBipartite = TRUE) {
     f <- unpackData(data, algorithm)
-    effects <- effects[effects$include,]
-    effects$setting <- rep("", nrow(effects))
     pData <- .Call(C_setupData, PACKAGE=pkgname,
                    list(as.integer(f$observations)),
                    list(f$nodeSets))
@@ -797,24 +765,26 @@ sienaSetupForCpp <- function(algorithm, data, effects,
 	# 	froms[disjoint], tos[disjoint],
 	# 	froms[atLeastOne], tos[atLeastOne])
 	# siena07 only does this with !initC
-	storage.mode(effects$parm) <- 'integer'
+    return(pData)
+}
+
+##@sienaSetupEffectsForCpp Use as RSiena:::sienaSetupEffectsForCpp
+sienaSetupEffectsForCpp <- function(pData, data, effects) {
+    effects$setting <- rep("", nrow(effects))
+    storage.mode(effects$parm) <- 'integer'
     storage.mode(effects$group) <- 'integer'
     storage.mode(effects$period) <- 'integer'
     effects$effectPtr <- rep(NA, nrow(effects))
-    depvarnames <- names(data$depvars)
-    tmpeffects <- split(effects, effects$name)
-    myeffectsOrder <- match(depvarnames, names(tmpeffects))
-    ans <- .Call(C_effects, PACKAGE=pkgname, pData, tmpeffects)
+    myeffects <- split(effects, effects$name)
+    ans <- .Call(C_effects, PACKAGE=pkgname, pData, myeffects)
     pModel <- ans[[1]][[1]]
-	reg.finalizer(pModel, clearModel, onexit = FALSE)
-
-    for (i in 1:length(ans[[2]])) {
-        effectPtr <- ans[[2]][[i]]
-        tmpeffects[[i]]$effectPtr <- effectPtr
+    reg.finalizer(pModel, clearModel, onexit = FALSE)
+    for (i in 1:length(ans[[2]])) ## ans[[2]] is a list of lists of
+        ## pointers to effects. Each list corresponds to one
+        ## dependent variable
+    {
+		effectPtr <- ans[[2]][[i]]
+		myeffects[[i]]$effectPtr <- effectPtr
     }
-    myeffects <- tmpeffects
-    for (i in 1:length(myeffectsOrder)) {
-        myeffects[[i]] <- tmpeffects[[myeffectsOrder[i]]]
-    }
-    list(pData = pData, pModel = pModel, myeffects = myeffects)
+    list(pModel = pModel, myeffects = myeffects)
 }

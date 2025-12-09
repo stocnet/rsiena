@@ -1589,12 +1589,13 @@ SEXP createInteractionEffects(SEXP EFFECTS, Model *pModel,
 }
 
 /**
- *  Retrieves the contributions to all possible tie flips or behavior changes for each of the effects,
- *  for one period. The call will relate to one group only, although all effects
+ *  Retrieves the contributions to all possible tie flips or behavior changes for 
+ *  each of the effects, for one period. The call will relate to one group only, 
+ *  although all effects
  *  are the same apart from the basic rates. Not used in maximum likelihood.
  */
  
-void getChangeContributionStatistics(SEXP EFFECTSLIST,
+void getStaticChangeContributionstatistics(SEXP EFFECTSLIST,
 		const StatisticCalculator * pCalculator, vector<vector<double *> > *rChangeContributions)
 {
     // get the column names from the names attribute
@@ -1636,16 +1637,20 @@ void getChangeContributionStatistics(SEXP EFFECTSLIST,
             if(strcmp(netType, "oneMode") == 0 || strcmp(netType, "bipartite") == 0 ||
                     strcmp(netType, "behavior") == 0)
             {
-				// todo At the moment, change contributions cannot be calculated for endowment or creation effects
-				// modifications in the corresponding methods (calculateNetworkEndowmentStatistics, calculateNetworkCreationStatistics,
-				// and calculateBehaviorStatistics) in StatisticCalculator.cpp would be necessary!!!
-				//if (strcmp(effectType, "eval") == 0 || strcmp(effectType, "endow") == 0 || strcmp(effectType, "creation") == 0)
+// todo At the moment, change contributions cannot be calculated for endowment 
+// or creation effects modifications in the corresponding methods 
+// (calculateNetworkEndowmentStatistics, calculateNetworkCreationStatistics,
+// and calculateBehaviorStatistics) in StatisticCalculator.cpp would be necessary!!!
+//if (strcmp(effectType, "eval") == 0 || strcmp(effectType, "endow") == 0 || 
+// strcmp(effectType, "creation") == 0)
                 if (strcmp(effectType, "eval") == 0)
                 {
-					EffectInfo * pEffectInfo = (EffectInfo *) R_ExternalPtrAddr(VECTOR_ELT(VECTOR_ELT(EFFECTS,pointerCol), i));
+					EffectInfo * pEffectInfo = (EffectInfo *) 
+						R_ExternalPtrAddr(VECTOR_ELT(VECTOR_ELT(EFFECTS,pointerCol), i));
 					if(rChangeContributions != 0)
                     {
-						rChangeContributions->push_back(pCalculator->staticChangeContributions(pEffectInfo));
+						rChangeContributions->push_back(
+							pCalculator->staticChangeContributions(pEffectInfo));
                     }
                 }
             }

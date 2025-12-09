@@ -228,6 +228,7 @@ myeff <- setEffect(myeff, from, name='mynet1', interaction1='mynet2')
                  silent=TRUE))
 
 ##test21
+# Test contribution extraction ----
 # Run simple test model ----
 mynet <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
 mydata <- sienaDataCreate(mynet)
@@ -250,9 +251,9 @@ ans <- siena07(
   returnChangeContributions = TRUE,
   silent=TRUE
 )
-length(ans$changeContributions) # 50 as expected
+length(ans$changeContributions) # 60 as expected
 head(ans$changeContributions[[1]][[1]][[1]])
-dim(ans$changeContributions[[1]][[1]][[1]][[1]]) # 3 x 50 as expected
+dim(ans$changeContributions[[1]][[1]][[1]][[1]]) # 3 x 60 as expected
 
 # Test returnChangeContributions when setting msub = 0 and prevAns = ans, 
 #using batch mode
@@ -263,9 +264,10 @@ ans2 <- siena07(
   effects=mymodel,
   batch=TRUE,
   prevAns = ans,
-  returnChangeContributions = TRUE)
-length(ans$changeContributions) # 60 chainsas expected
-head(ans$changeContributions[[1]][[1]][[1]])
+  returnChangeContributions = TRUE,
+  returnDataFrame = TRUE)
+length(ans2$changeContributions) # 60 chains as expected
+
 
 ##test22
 # Test sienaRIDynamics ----
@@ -274,7 +276,7 @@ head(ans$changeContributions[[1]][[1]][[1]])
 print('test22')
 
 RIDynamics1 <- sienaRIDynamics(data=mydata, 
-     ans=ans, 
+     ans=ans,
      useChangeContributions=TRUE, 
      intervalsPerPeriod=10)
 RIDynamics1
@@ -287,7 +289,7 @@ mymodel2 <- getEffects(mydata2)
 mymodel2 <- includeEffects(mymodel2, density, recip, transTies)
 ans2 <- siena07(mycontrols2, data=mydata2, effects=mymodel2, batch=TRUE,
      silent=TRUE)
-RIDynamics2 <- sienaRIDynamics(mydata2, ans=ans2)
+RIDynamics2 <- sienaRIDynamics(mydata2, ans=ans2, algorithm = mycontrols2)
 RIDynamics2
 
 ### Don't use ans but previously estimated coefficients ----
@@ -300,7 +302,9 @@ mycontrols3 <- sienaAlgorithmCreate(nsub=2, n3=60, cond=TRUE, seed = 4242)
 ans3 <- siena07(mycontrols3, data=mydata2, effects=mymodel2, batch=TRUE, 
      silent=TRUE)
 
-RIDynamics4 <- sienaRIDynamics(mydata2, ans=ans3, effects = mymodel2)
+RIDynamics4 <- sienaRIDynamics(mydata2, ans=ans3, 
+     algorithm = mycontrols3,
+     effects = mymodel2)
 RIDynamics4
 
 ##test23
@@ -316,20 +320,19 @@ ans4 <- siena07(mycontrols3, data=mydata3, effects=mymodel3, batch=TRUE,
                 returnChangeContributions=TRUE, silent=TRUE)
 length(ans4$changeContributions) # 60 chains as expected
 length(ans4$changeContributions[[1]][[1]]) # 2 periods as expected
+
 beh_steps <- sapply(ans4$changeContributions[[1]][[1]][[2]], 
      function(ministep) attr(ministep, "networkName")) %in%  "mybeh"
 any(beh_steps) # TRUE as expected
-
-ministeps <- ans4$changeContributions[[1]][[1]][[1]]
-getDepvarName <- function(ministep) attr(ministep, "networkName")
-beh_steps <- Filter(function(ministep) getDepvarName(ministep)  == "mybeh", 
-     ans4$changeContributions[[1]][[1]][[1]]) # 1st period, 1st group, 1st chain, behavior steps
 RIDynamics5 <- sienaRIDynamics(mydata3, ans=ans4, depvar="mybeh",
                                useChangeContributions=TRUE)
 RIDynamics5
-net_steps <- Filter(function(ministep) getDepvarName(ministep)  == "mynet3", 
-     ans4$changeContributions[[1]][[1]][[1]]) # 1st period, 1st group, 1st chain, network steps
-RIDynamics6 <- sienaRIDynamics(mydata3, ans=ans4, depvar="mynet3")
+
+net_steps <- sapply(ans4$changeContributions[[1]][[1]][[1]], 
+     function(ministep) attr(ministep, "networkName")) %in%  "mynet3"
+any(net_steps) # TRUE as expected
+RIDynamics6 <- sienaRIDynamics(mydata3, ans=ans4, depvar="mynet3",
+     algorithm = mycontrols3)
 RIDynamics6
 
 ## delete output file

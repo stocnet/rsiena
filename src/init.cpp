@@ -41,6 +41,8 @@ static const R_CallMethodDef CallEntries[] = {
    CALLDEF(forwardModel, 17),
    CALLDEF(getChainProbabilities, 8),
    CALLDEF(getTargets, 6),
+   CALLDEF(getTargetActorStatistics, 4),
+   CALLDEF(getStaticChangeContributions, 4),
    CALLDEF(interactionEffects, 2),
    CALLDEF(mlInitializeSubProcesses, 10),
    CALLDEF(mlMakeChains, 9),

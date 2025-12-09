@@ -9,88 +9,239 @@
 # * at observation moments or over simulated sequences of ministeps
 # *****************************************************************************/
 
-##@calculateContribution NOT USED YET IN sienaRI (this is more transforming then calculating)
-calculateContribution <- function(ans, data,
-                                  depvar = NULL,
-                                  algorithm = NULL){
-  ego <- choice <- period <- NULL # To resolve R CMD checks not understanding data.table syntax
-  ## NOT NECESSARY?!
-  effects <- ans$effects
+getStaticChangeContributions <- function(ans = NULL,
+                                         data,
+                                         algorithm = NULL,
+                                         effects = NULL,
+                                         depvar = NULL,
+                                         returnDataFrame = FALSE) {
+  # Flexible argument handling
+  if (!is.null(ans)) {
+    if (is.null(algorithm)) algorithm <- ans$x
+    if (is.null(effects)) effects <- ans$requestedEffects
+  }
+  if (is.null(data) || is.null(algorithm) || is.null(effects)) {
+    stop("Must provide either 'ans' or all of 'algorithm' and 'effects'.")
+  }
+
+  # Remove rate effects
   noRate <- effects$type != "rate"
   effects <- effects[noRate, ]
-  effectNames <- effects[effects$include == TRUE,"shortName"]
+  effectNames <- effects[effects$include == TRUE, "shortName"]
+  effectDepvars <- effects[effects$include == TRUE, "name"]
+  effectNetTypes <- effects[effects$include == TRUE, "netType"]
 
-  if(is.null(depvar)){
-    depvar <- names(data$depvars)[1]
+  depvars_available <- names(data$depvars)
+  if (is.null(depvar)) {
+    depvar <- depvars_available
   }
-  
-  if(is.null(algorithm)){
-    algorithm <- ans$x
-  }
-  
-  ## should be possible to use counterfactual data here
-  
-  staticChangeContributions <- getChangeContributions(
-    algorithm,
-    data,
-    effects
-  )
-  
-  n_periods <- length(staticChangeContributions[[1]])
-  n_effects <- length(effectNames)
-  n_egos <- dim(data[["depvars"]][[depvar]])[1]
-  n_choices <- dim(data[["depvars"]][[depvar]])[2]
 
-  # Preallocate a big array: [period, effect, ego, choice]
-  ## this looks super inefficient
-  result <- array(NA_real_, dim = c(n_periods, n_effects, n_egos, n_choices),
-               dimnames = list(period = seq_len(n_periods),
-                               effect = effectNames,
-                               ego = seq_len(n_egos),
-                               choice = seq_len(n_choices)))
-  for (p in seq_len(n_periods)) {
-    for (e in seq_len(n_effects)) {
-      # staticChangeContributions[[1]][[p]][[e]] is a list of ego -> choice vector
-      mat <- do.call(rbind, staticChangeContributions[[1]][[p]][[e]]) # [n_egos, n_choices]
-      result[p, e, , ] <- mat
+  # Prepare for C++ call
+  if (!is.null(algorithm$settings)) {
+    stop('not implemented: RI together with settings')
+  } else {
+    pData <- sienaSetupDataForCpp(algorithm,
+                                  data,
+                                  includeBehavior = TRUE,
+                                  includeBipartite = FALSE)
+    effects <- effects[effects$include, ]
+    setup <- sienaSetupEffectsForCpp(pData, data, effects)
+  }
+
+  staticChangeContributions <- .Call(C_getStaticChangeContributions, PACKAGE = pkgname,
+                                     pData, setup$pModel, setup$myeffects,
+                                     parallelrun = FALSE)
+  #attr(staticChangeContributions, "effectNames") <- effects$shortName
+
+  if (!returnDataFrame) {
+    return(staticChangeContributions)
+  }
+
+  staticChangeContributions_effectNames <- attr(staticChangeContributions, "effectNames")
+  results <- list()
+  for (dv in depvar) {
+    effect_idx <- which(effectDepvars == dv)
+    effectNames_depvar <- effectNames[effect_idx]
+    match_idx <- match(effectNames_depvar, staticChangeContributions_effectNames)
+    n_effects <- length(match_idx)
+    n_egos <- dim(data[["depvars"]][[dv]])[1]
+    netType <- unique(effectNetTypes[effectDepvars == dv])
+    if (netType == "oneMode") {
+      n_choices <- dim(data[["depvars"]][[dv]])[2]
+    } else if (netType == "behavior") {
+      n_choices <- 3
+    } else {
+      stop("Unsupported netType: ", netType)
+    }
+    for (g in seq_along(staticChangeContributions)) {
+      group_contrib <- staticChangeContributions[[g]]
+      n_periods <- length(group_contrib)
+      result <- array(NA_real_, dim = c(n_periods, n_effects, n_egos, n_choices),
+                      dimnames = list(
+                        period = seq_len(n_periods),
+                        effect = effectNames_depvar,
+                        ego = seq_len(n_egos),
+                        choice = seq_len(n_choices)
+                      ))
+      for (p in seq_len(n_periods)) {
+        for (e in seq_len(n_effects)) {
+          mat <- do.call(rbind, group_contrib[[p]][[match_idx[e]]])
+          result[p, e, , ] <- mat
+        }
+      }
+      if (requireNamespace("data.table", quietly = TRUE)) {
+        # To resolve R CMD checks not understanding data.table syntax
+        ego <- choice <- period <- group <- networkName <- NULL 
+        DT <- data.table::as.data.table(as.table(result))
+        data.table::setnames(DT, c("period", "effectname", "ego", "choice", "contribution"))
+        DT[, ego := as.integer(ego)]
+        DT[, choice := as.integer(choice)]
+        DT[, period := as.integer(period)]
+        DT[, group := g]
+        DT[, networkName := dv]
+        results[[paste0("g", g, "_", dv)]] <- DT
+      } else {
+        df <- as.data.frame(as.table(result))
+        names(df) <- c("period", "effectname", "ego", "choice", "contribution")
+        df$period <- as.integer(df$period)
+        df$ego <- as.integer(df$ego)
+        df$choice <- as.integer(df$choice)
+        df$group <- g
+        df$networkName <- dv
+        results[[paste0("g", g, "_", dv)]] <- df
+      }
     }
   }
-  
   if (requireNamespace("data.table", quietly = TRUE)) {
-    DT <- data.table::as.data.table(as.table(result))
-    data.table::setnames(DT, c("period", "effect", "ego", "choice", "cont"))
-    DT[, ego := as.integer(ego)]
-    DT[, choice := as.integer(choice)]
-    DT[, period := as.integer(period)]
-    DT <- data.table::dcast(DT, period + ego + choice ~ effect, value.var = "cont")
-    # data.table::setDF(DT) only if we want to use pure data.frame later!
-    DT
+    data.table::rbindlist(results, use.names = TRUE, fill = TRUE)
   } else {
-    df <- as.data.frame(as.table(result))
-    names(df) <- c("period","effect","ego","choice","cont")
-    df$period <- as.integer(df$period)
-    df$ego <- as.integer(df$ego)
-    df$choice <- as.integer(df$choice)
-
-    df_wide <- reshape(df, idvar = c("period", "ego", "choice"), timevar = "effect",
-                       direction = "wide")
-    colnames(df_wide) <- sub("^cont\\.", "", colnames(df_wide))
-    df_wide
+    do.call(rbind, results)
   }
 }
+
+# ##@calculateContribution NOT USED YET IN sienaRI (this is more transforming then calculating)
+# calculateContribution <- function(ans, data,
+#                                   depvar = NULL,
+#                                   algorithm = NULL){
+#   ego <- choice <- period <- NULL # To resolve R CMD checks not understanding data.table syntax
+#   ## NOT NECESSARY?!
+#   effects <- ans$requestedEffects
+#   noRate <- effects$type != "rate"
+#   effects <- effects[noRate, ]
+#   effectNames <- effects[effects$include == TRUE,"shortName"]
+#   effectDepvars <- effects[effects$include == TRUE, "name"]
+#   effectNetTypes <- effects[effects$include == TRUE, "netType"]
+
+
+#   depvars_available <- names(data$depvars)
+#   if (is.null(depvar)) {
+#     depvar <- depvars_available
+#   }
+ 
+#   if(is.null(algorithm)){
+#     algorithm <- ans$x
+#   }
+  
+#   ## should be possible to use counterfactual data here
+#   ## potentially restrict to only one depvar here already?
+#   staticChangeContributions <- getStaticChangeContributions(
+#     algorithm,
+#     data,
+#     effects
+#   )
+  
+#   staticChangeContributions_effectNames <- attr(staticChangeContributions, "effectNames")
+
+#   # Filter effects for the selected depvar
+#   effect_idx <- which(effectDepvars == depvar)
+#   effectNames_depvar <- effectNames[effect_idx]
+
+#   # Match effectNames_depvar to staticChangeContributions effect names
+#   match_idx <- match(effectNames_depvar, staticChangeContributions_effectNames)
+#   n_effects <- length(match_idx)
+
+#   results <- list()
+#   for (dv in depvar) {
+#     # Filter effects for this depvar
+#     effect_idx <- which(effectDepvars == dv)
+#     effectNames_depvar <- effectNames[effect_idx]
+#     match_idx <- match(effectNames_depvar, staticChangeContributions_effectNames)
+#     n_effects <- length(match_idx)
+#     n_egos <- dim(data[["depvars"]][[dv]])[1]
+#     netType <- unique(effectNetTypes[effectDepvars == dv])
+#     if (netType == "oneMode") {
+#       n_choices <- dim(data[["depvars"]][[dv]])[2]
+#     } else if (netType == "behavior") {
+#       beh <- data[["depvars"]][[dv]]
+#       n_choices <- 3
+#     } else {
+#       stop("Unsupported netType: ", netType)
+#     }
+#     for (g in seq_along(staticChangeContributions)) {
+#       group_contrib <- staticChangeContributions[[g]]
+#       n_periods <- length(group_contrib)
+#       # Preallocate array for this group
+#       result <- array(NA_real_, dim = c(n_periods, n_effects, n_egos, n_choices),
+#                       dimnames = list(
+#                         period = seq_len(n_periods),
+#                         effect = effectNames_depvar,
+#                         ego = seq_len(n_egos),
+#                         choice = seq_len(n_choices)
+#                       ))
+#       for (p in seq_len(n_periods)) {
+#         for (e in seq_len(n_effects)) {
+#           mat <- do.call(rbind, group_contrib[[p]][[match_idx[e]]])
+#           result[p, e, , ] <- mat
+#         }
+#       }
+
+#       if (requireNamespace("data.table", quietly = TRUE)) {
+#         DT <- data.table::as.data.table(as.table(result))
+#         data.table::setnames(DT, c("period", "effectname", "ego", "choice", "contribution"))
+#         DT[, ego := as.integer(ego)]
+#         DT[, choice := as.integer(choice)]
+#         DT[, period := as.integer(period)]
+#         DT[, group := g]
+#         DT[, networkName := dv]
+#         # DT <- data.table::dcast(DT, networkName + group + period + ego + choice ~ effect, value.var = "cont")
+#         results[[paste0("g", g, "_", dv)]] <- DT
+#       } else {
+#         df <- as.data.frame(as.table(result))
+#         names(df) <- c("period","effectname","ego","choice","contribution")
+#         df$period <- as.integer(df$period)
+#         df$ego <- as.integer(df$ego)
+#         df$choice <- as.integer(df$choice)
+#         df$group <- g
+#         df$networkName <- dv
+#         # df_wide <- reshape(df, idvar = c("networkName", "group","period", "ego", "choice"), timevar = "effect",
+#         #                   direction = "wide")
+#         # colnames(df_wide) <- sub("^cont\\.", "", colnames(df_wide))
+#         # results[[dv]] <- df_wide
+#         results[[paste0("g", g, "_", dv)]] <- df
+#       }
+#     }
+#   }
+#   # Combine all depvars
+#   # could be kept as a list of dt/dfs instead
+#   if (requireNamespace("data.table", quietly = TRUE)) {
+#     data.table::rbindlist(results, use.names = TRUE, fill = TRUE)
+#   } else {
+#     do.call(rbind, results)
+#   }
+# }
 
 # ##@calculateContributionsDynamic sienaRIDynamics (this is more transforming then calculating)
 # calculateContributionsDynamic <- function(ans,
 #                                          data,
 #                                          theta,
 #                                          algorithm,
-#                                          effects, #effects object from ans$effects can not be used?!
+#                                          effects, #effects object from ans$requestedEffects can not be used?!
 #                                          depvar,
 #                                          n3 = NULL, 
 #                                          useChangeContributions = TRUE) {
 
 #   ## should add some checks, that effects is a real effects object
-#   changeContributions <- getChangeContributionsDynamic(
+#   changeContributions <- getDynamicChangeContributions(
 #         data = data,
 #         ans = ans,
 #         theta = theta,
@@ -125,131 +276,157 @@ calculateContribution <- function(ans, data,
 #   }
 # }
 
-##@getChangeContributions. Use as RSiena:::getChangeContributions - copied from sienaRI
-getChangeContributions <- function(algorithm, data, effects)
-{
-  ## Daniel: Probably should be changed similarily to the dynamic contributions
+##@getStaticChangeContributions. Use as RSiena:::getStaticChangeContributions
+# getStaticChangeContributions <- function(algorithm, data, effects) {
+# 	if (!is.null(algorithm$settings)) {
+#         stop('not implemented: RI together with settings')
+#         # effects <- addSettingsEffects(effects, algorithm)
+#     } else {
+#         pData <- sienaSetupDataForCpp(algorithm,
+#                                       data,
+#                                       includeBehavior = TRUE,
+#                                       includeBipartite = FALSE)
+#         effects <- effects[effects$include, ]
+#         setup <- sienaSetupEffectsForCpp(pData,
+#                                        data, 
+#                                        effects)
+#   }
 
-	## Gets the simulated statistics.
-	## The following initializations data, effects, and model
-	## for calling "getTargets" in "siena07.setup.h"
-	## is more or less copied from "getTargets" in "getTargets.r".
-	## However, some modifications have been necessary to get it to work.
-	f <- unpackData(data,algorithm)
+#     ans <- .Call(C_getStaticChangeContributions, PACKAGE=pkgname, 
+#                  pData, setup$pModel, setup$myeffects,
+#                  parallelrun = FALSE)
+#     ans
+# }
 
-	effects <- effects[effects$include,] # unnecessary?
-	if (!is.null(algorithm$settings))
-	{
-		stop('not implemented: RI together with settings')
-		# effects <- addSettingsEffects(effects, algorithm)
-	}
-	else
-	{
-		effects$setting <- rep("", nrow(effects))
-	}
-	pData <- .Call(C_setupData, PACKAGE=pkgname,
-		list(as.integer(f$observations)),
-		list(f$nodeSets))
-	## register a finalizer
-  ## is this really all the same ans?
-	ans <- reg.finalizer(pData, clearData, onexit = FALSE)
-	ans<- .Call(C_OneMode, PACKAGE=pkgname,
-		pData, list(f$nets))
-	ans <- .Call(C_Bipartite, PACKAGE=pkgname, # added 1.1-299
-		pData, list(f$bipartites))
-	ans<- .Call(C_Behavior, PACKAGE=pkgname, pData,
-		list(f$behavs))
-	ans<-.Call(C_ConstantCovariates, PACKAGE=pkgname,
-		pData, list(f$cCovars))
-	ans<-.Call(C_ChangingCovariates,PACKAGE=pkgname,
-		pData,list(f$vCovars))
-	ans<-.Call(C_DyadicCovariates,PACKAGE=pkgname,
-		pData,list(f$dycCovars))
-	ans<-.Call(C_ChangingDyadicCovariates,PACKAGE=pkgname,
-		pData, list(f$dyvCovars))
-
-	storage.mode(effects$parm) <- 'integer'
-	storage.mode(effects$group) <- 'integer'
-	storage.mode(effects$period) <- 'integer'
-
-	effects$effectPtr <- rep(NA, nrow(effects))
-	depvarnames <- names(data$depvars)
-	tmpeffects <- split(effects, effects$name)
-	myeffectsOrder <- match(depvarnames, names(tmpeffects))
-	ans <- .Call(C_effects, PACKAGE=pkgname, pData, tmpeffects)
-	pModel <- ans[[1]][[1]]
-	for (i in 1:length(ans[[2]]))
-	{
-		effectPtr <- ans[[2]][[i]]
-		tmpeffects[[i]]$effectPtr <- effectPtr
-	}
-	myeffects <- tmpeffects
-	for(i in 1:length(myeffectsOrder)){
-		myeffects[[i]]<-tmpeffects[[myeffectsOrder[i]]]
-	}
-#cat("e\n") #Hier gaat hij fout. 
-# Voor returnStaticChangeContributions=TRUE gaat het wel goed.
-#browser()
-	ans <- .Call(C_getTargets, PACKAGE=pkgname, pData, pModel, myeffects,
-		parallelrun=TRUE, returnActorStatistics=FALSE,
-		returnStaticChangeContributions=TRUE)
-	# See getTargets in siena07setup.cpp; also see rTargets in StatisticsSimulation.cpp
-	staticChangeContributions <- ans
-  staticChangeContributions # why call this ans?
-}
-
-## extracts dynamic contributions from ans or simulates sequences ministeps to generate them. Changed and extracted from sienaRIDynamics
-getChangeContributionsDynamic <- function(ans = NULL, theta=NULL, data=NULL, 
-                                          algorithm, 
-                                          effects,
+## extracts dynamic contributions from ans or simulates sequences ministeps to 
+## generate them. Changed and extracted from sienaRIDynamics
+getDynamicChangeContributions <- function(ans = NULL, 
+                                          theta=NULL, 
+                                          data = NULL, 
+                                          algorithm = NULL, 
+                                          effects = NULL,
                                           depvar = NULL,
                                           n3 = NULL, 
                                           useChangeContributions = FALSE, 
-                                          returnDataFrame = FALSE){
-	if (!is.null(n3)) 
+                                          returnDataFrame = FALSE,
+                                          silent = TRUE,
+                                          seed = NULL) {
+  # Flexible argument handling allows either extracted pre
+  # calculated contributions from ans or simulating them
+
+  if (useChangeContributions && (is.null(ans) || is.null(ans$changeContributions))) 
   {
-   	algorithm$n3 <- as.integer(n3)
-	}
-	if (useChangeContributions) 
-	{
-    if (is.null(ans) || is.null(ans$changeContributions)) 
-		{
-      warning("useChangeContributions=TRUE, but 'ans' does not contain 'changeContributions'. Will rerun siena07 to generate them.")
-      useChangeContributions <- FALSE
-    }
-		if (!is.null(n3))
-		{
-	    warning("n3 cannot be changed when useChangeContributions=TRUE; using the number of chains stored in 'ans'.")
-   		n3 <- NULL
-		}
+            warning("useChangeContributions=TRUE, but 'ans' does not 
+			      contain 'changeContributions'. Will rerun siena07 to generate them.")
+            useChangeContributions <- FALSE
   }
-  if (!useChangeContributions)
-	{
-    # you should only use ans, if theta is not NULL!
-    if (is.null(theta))
-		{
-		  theta <- ans$theta
-		}
+  if (useChangeContributions && !returnDataFrame && 
+    (is.data.frame(ans$changeContributions) || 
+      is.data.frame(ans$changeContributions[[1]]))) 
+  {
+            stop("useChangeContributions=TRUE & returnDataFrame=FALSE; but
+              'ans$changeContributions' contains data.frames")
+  }
+  if (useChangeContributions && is.null(n3)) 
+  {
+    warning("n3 cannot be changed when useChangeContributions=TRUE; 
+    using the number of chains stored in 'ans'.")
+  }
+  if(!useChangeContributions) # could be extracted to a separate function
+  {
+    if (is.null(algorithm))
+    {
+      stop("Must provide 'algorithm' when useChangeContributions=FALSE.")
+    } 
+    else
+    {
+      if (!inherits(algorithm, "sienaAlgorithm")) 
+      {
+        stop("algorithm is not a legitimate Siena algorithm specification")
+      }
+    }
+    if(is.null(data)) 
+    {
+      stop("Must provide 'data' when useChangeContributions=FALSE ")
+    } else 
+    {
+      if (!inherits(data, "siena")) {
+        stop("'data' is not a legitimate Siena data specification")
+      }
+    }
+    if(is.null(effects))
+    {
+      if (is.null(ans)) 
+      {
+        stop("Must provide 'ans' or 'effects' when useChangeContributions=FALSE.")
+      }
+      if (ans$cconditional) 
+      {
+        stop("Must provide 'effects' for conditional estimation")
+      }
+      effects <- ans$effects
+      if (!inherits(effects, "sienaEffects")) 
+      {
+        stop("effects is not a legitimate Siena effects object")
+      }
+    }
+    if(is.null(theta)) {
+      if (is.null(ans)) {
+        stop("Must provide 'ans' or 'theta' when useChangeContributions=FALSE.")
+      }
+      theta <- ans$theta
+      if (!is.numeric(theta)) 
+      {
+        stop("theta is not a legitimate parameter vector")
+      }
+    }
+    # Prepare algorithm for simulating only phase 3
+    algorithm$nsub <- 0
+    if (!is.null(n3)) 
+    {
+      algorithm$n3 <- as.integer(n3)
+    }
+    if(!is.null(seed))
+    {
+      if(is.numeric(seed))
+      {
+        algorithm$seed <- as.integer(seed)
+      } else {
+        warning("'seed' has to be of type 'numeric' \n used default settings")
+      }
+    }
+
+    # Update effects initial values with provided theta to sample chains from
+    # specificed parameter values in phase 3 of siena07
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
     noRateIncluded <- includedEffects[["type"]] != "rate"
-    if(length(theta) > length(effects$initialValue[effects$include])) {
+    if(length(theta) > length(effects[include, "initialValue"])) {
         theta <- theta[noRateIncluded] # if conditional estimation?
-    } else if(length(theta) < length(effects$initialValue[effects$include])) {
+    } else if(length(theta) < length(effects[include, "initialValue"])) {
         theta <- c(ans$rate, theta) # if unconditional estimation?
     }
-		algorithm$nsub <- 0
-	  effects$initialValue[effects$include] <- theta
-
-    ans <- siena07(algorithm, data=data, effects=effects, initC=FALSE, returnDeps=FALSE, 
-                       returnChangeContributions=TRUE, returnDataFrame = returnDataFrame)
+    effects$initialValue[effects$include] <- theta
+    ans <- siena07(
+      algorithm, 
+      data=data, 
+      effects=effects,
+      initC=FALSE, # why?
+      returnDeps=FALSE, 
+      returnChangeContributions=TRUE, 
+      returnDataFrame = returnDataFrame,
+      silent = silent)
   }
+
   changeContributions <- ans$changeContributions
 
-  if (returnDataFrame) {
+  if (!returnDataFrame) { # could be extracted to a separate function
+    return(changeContributions) # what exactly is the list format?
+  } else {
     if (is.list(changeContributions) && !is.data.frame(changeContributions[[1]])) 
     {
-      warning("SIENA backend returned nested lists, not data.frames; auto-flattening each chain.")
+      warning("SIENA backend returned nested lists, not data.frames; 
+      auto-flattening each chain.")
       changeContributions <- lapply(changeContributions, flattenChangeContributionsList)
     }
   # filtering before binding proofed to be quite slow
@@ -264,27 +441,29 @@ getChangeContributionsDynamic <- function(ans = NULL, theta=NULL, data=NULL,
       )
       if (!is.null(depvar))
       {
-        changeContributions <- changeContributions[changeContributions[["networkName"]] %in% depvar, , drop=FALSE]
+        changeContributions <- changeContributions[changeContributions[["networkName"]] 
+          %in% depvar, , drop=FALSE]
       }
     } else {
-      changeContributions <- do.call(rbind, lapply(seq_along(changeContributions), function(i) {
-        df <- changeContributions[[i]]
-        df$chain <- i
-        df
+      changeContributions <- do.call(rbind, 
+        lapply(seq_along(changeContributions), function(i) {
+          df <- changeContributions[[i]]
+          df$chain <- i
+          df
       }))
       rownames(changeContributions) <- NULL
       if (!is.null(depvar))
       {
-        changeContributions <- changeContributions[changeContributions[["networkName"]] %in% depvar, , drop=FALSE]
+        changeContributions <- changeContributions[
+          changeContributions[["networkName"]] %in% depvar, , drop=FALSE]
       }
     }
     return(changeContributions)
   }
-  changeContributions
 }
 
 ## Not doing this might reduce run time quite a bit! -> code would need to be adjusted though
-widenContribution <- function(changeContributions){
+widenDynamicContribution <- function(changeContributions){
   ## currently only works for dynamic case and data has to be pre filtered to only one depvar
   if (all(c("effectname", "contribution") %in% names(changeContributions))) {
     if (requireNamespace("data.table", quietly = TRUE)) {
@@ -292,16 +471,54 @@ widenContribution <- function(changeContributions){
           changeContributions, chain + group + period + ministep + choice ~ effectname,
           value.var = "contribution"
         )
-      }
-    } else {
-      if (all(c("effectname", "contribution") %in% names(changeContributions))) {
+      } else {
+        ## in the dynamic case, this might lose some information that we should keep
+        needed <- c("chain", 
+          "group", 
+          "period", 
+          "ministep", 
+          "choice", 
+          "effectname", 
+          "contribution")
+        changeContributions <- changeContributions[, needed]
         changeContributions <- reshape(
           changeContributions,
           idvar = c("chain", "group", "period", "ministep", "choice"),
           timevar = "effectname", v.names = "contribution",
           direction = "wide"
         )
-        colnames(changeContributions) <- sub("^contribution\\.", "", colnames(changeContributions))
+        colnames(changeContributions) <- sub("^contribution\\.", "", 
+          colnames(changeContributions))
+      }
+    }
+  changeContributions
+}
+
+widenStaticContribution <- function(changeContributions){
+  ## currently only works for dynamic case and data has to be pre filtered to only one depvar
+  if (all(c("effectname", "contribution") %in% names(changeContributions))) {
+    if (requireNamespace("data.table", quietly = TRUE)) {
+        changeContributions <- data.table::dcast(
+          changeContributions, group + period + ego + choice ~ effectname,
+          value.var = "contribution"
+        )
+      } else {
+        ## in the dynamic case, this might lose some information that we should keep
+        needed <- c("group", 
+          "period", 
+          "ego", 
+          "choice", 
+          "effectname", 
+          "contribution")
+        changeContributions <- changeContributions[, needed]
+        changeContributions <- reshape(
+          changeContributions,
+          idvar = c("group", "period", "ego", "choice"),
+          timevar = "effectname", v.names = "contribution",
+          direction = "wide"
+        )
+        colnames(changeContributions) <- sub("^contribution\\.", "", 
+          colnames(changeContributions))
       }
     }
   changeContributions

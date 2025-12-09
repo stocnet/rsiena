@@ -3950,7 +3950,7 @@ stat1 + stat2 # 2691.373 ok
 
 ## Check Contributions
 
-staticChangeContributions <- RSiena:::getChangeContributions(mycontrols, data=mydata, effects=mymodel)
+staticChangeContributions <- RSiena:::getStaticChangeContributions(mycontrols, data=mydata, effects=mymodel)
 
 ## Check if it works for density
 

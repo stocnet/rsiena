@@ -1,16 +1,19 @@
 ##@getTargets Miscellaneous Written for Krista. Use as RSiena:::getTargets
 getTargets <- function(data, effects) {
-    setup <- sienaSetupForCpp(NULL, data, effects,
-                              includeBehavior = TRUE,
-                              includeBipartite = TRUE,
-                              returnActorStatistics = FALSE,
-                              returnStaticChangeContributions = FALSE,
-                              parallelrun = FALSE)
-    ans <- .Call(C_getTargets, PACKAGE=pkgname,
-                 setup$pData, setup$pModel, setup$myeffects,
-                 parallelrun = FALSE,
-                 returnActorStatistics = FALSE,
-                 returnStaticChangeContributions = FALSE)
+        pData <- sienaSetupDataForCpp(NULL,
+                                      data,
+                                      includeBehavior = TRUE,
+                                      includeBipartite = FALSE)
+        effects <- effects[effects$include, ]
+        setup <- sienaSetupEffectsForCpp(pData,
+                                       data, 
+                                       effects)
+        ans <- .Call(C_getTargets, PACKAGE=pkgname,
+                     pData, setup$pModel, setup$myeffects,
+                     parallelrun = FALSE,
+                     returnActorStatistics = FALSE,
+                     returnStaticChangeContributions = FALSE)
+
     ans
 }
 
@@ -19,21 +22,17 @@ getTargets <- function(data, effects) {
 ## replaces the actual data for the wave for this behaviour with imputedData.
 ## For use with multiple imputation of behavior data.
 actorTargets <- function(data, effects, algorithm, behaviorName, wave,
-                         imputedData = NULL, rate = FALSE)
-{
+                         imputedData = NULL, rate = FALSE) {
     depvarsNo <- length(data$depvars)
     behNo <- c(1:depvarsNo)[names(data$depvars) == behaviorName]
     beh <- data$depvars[[behNo]][,1,]
     n <- dim(data$depvars[[behNo]])[1]
     waves <- dim(data$depvars[[behNo]])[3]
-
-    effects <- effects[effects$include,]
-    effects$setting <- rep("", nrow(effects))
-    effects <- effects[effects$name == behaviorName,]
-    effects <- effects[!effects$basicRate,]
-    noEff <- dim(effects)[1]
+    effects_filtered <- effects[effects$include,]
+    effects_filtered <- effects_filtered[effects_filtered$name == behaviorName,]
+    effects_filtered <- effects_filtered[!effects_filtered$basicRate,]
+    noEff <- dim(effects_filtered)[1]
     ans2 <- array(NA, dim = c(n, noEff))
-
     w <- wave
     vars <- data$depvars
     if (!is.null(imputedData)) {
@@ -56,20 +55,22 @@ actorTargets <- function(data, effects, algorithm, behaviorName, wave,
             data$depvars[[behNo]][j,1, setdiff(1:waves, w+1)] <- 0
         }
 
-        # Use sienaSetupForCpp for setup
-        setup <- sienaSetupForCpp(algorithm, data, effects,
-                                  includeBehavior = TRUE,
-                                  includeBipartite = FALSE,
-                                  returnActorStatistics = FALSE,
-                                  returnStaticChangeContributions = FALSE,
-                                  parallelrun = FALSE)
+        pData <- sienaSetupDataForCpp(algorithm,
+                                      data,
+                                      includeBehavior = TRUE,
+                                      includeBipartite = FALSE)
+        setup <- sienaSetupEffectsForCpp(pData,
+                                       data, effects_filtered)
         ans <- .Call(C_getTargets, PACKAGE=pkgname,
-                     setup$pData, setup$pModel, setup$myeffects,
+                     pData, setup$pModel, setup$myeffects,
                      parallelrun = FALSE,
                      returnActorStatistics = FALSE,
                      returnStaticChangeContributions = FALSE)
         ans2[j,] <- ans[,w]
     }
 
-    list(effects = effects$effectName, effectType = effects$type, targets = ans2)
+    list(effects = effects_filtered$effectName, 
+        effectType = effects_filtered$type, 
+        targets = ans2)
+    # why not returned a named list?
 }

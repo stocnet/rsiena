@@ -133,7 +133,7 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
     }
     thetaNoRate <- theta[effectNames]
 
-    df <- getChangeContributionsDynamic(
+    df <- getDynamicChangeContributions(
         ans = ans,
         data = data,
         theta = theta,
@@ -145,11 +145,11 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
         returnDataFrame = TRUE
     )
 
-    df <- widenContribution(df)
+    df <- widenDynamicContribution(df)
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
     df <- addProbabilityColumn(df, group_vars=c("chain", "period", "ministep"), useTieProb = useTieProb)
 
-    df[["firstDiff"]] <- calculateFirstDiff(
+    df <- cbind(df, calculateFirstDiff(
         densityValue = df[["density"]],
         changeProb = df[["changeProb"]],
         changeUtil = df[["changeUtil"]],
@@ -164,6 +164,7 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
         theta = thetaNoRate,
         useTieProb = useTieProb,
         tieProb = df[["tieProb"]]
+      )
     )
     df <- subset(df, df[["density"]] != 0)
     df <- conditionalReplace(df, df[["density"]] == -1, setdiff(effectNames, "density"), function(x) x * -1)
@@ -199,7 +200,7 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
     thetaNoRate <- theta[effectNames]
 
 
-    df <- getChangeContributionsDynamic(
+    df <- getDynamicChangeContributions(
         ans = ans,
         data = data,
         theta = theta,
@@ -210,7 +211,7 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
         useChangeContributions = useChangeContributions,
         returnDataFrame = TRUE
     )  
-    df <- widenContribution(df)
+    df <- widenDynamicContribution(df)
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
     df <- addProbabilityColumn(df, group_vars = c("chain", "period", "ministep"), useTieProb = useTieProb)
 

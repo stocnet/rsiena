@@ -17,8 +17,8 @@ export(
 	siena.table, xtable, score.Test, Wald.RSiena, Multipar.RSiena, 
    testSame.RSiena, funnelPlot, meta.table,
    influenceTable, selectionTable,
-   sienaAME, sienaAMEDynamic, sienaPredict, sienaPredictDynamic, calculateContribution,
-   getChangeContributions, getChangeContributionsDynamic
+   sienaAME, sienaAMEDynamic, sienaPredict, sienaPredictDynamic, 
+   getStaticChangeContributions, getDynamicChangeContributions
 )
 
 # importFrom("data.table", "rbindlist", "as.data.table", ":=",
@@ -40,14 +40,14 @@ importFrom("graphics", "axis", "barplot", "layout", "lines",
            "mtext", "pairs", "panel.smooth", "par", "pie", "plot",
            "points", "strwidth", "text")
 importFrom("methods", "as", "is", "hasArg")
-importFrom("stats", ".getXlevels", "acf", "as.formula", "coef",
+importFrom("stats", ".getXlevels", "acf", "as.formula", "ave", "coef",
            "contr.helmert", "cor", "cor.test", "cov", "density",
            "dnorm", "ecdf", "filter", "hatvalues", "lm", "lm.wfit", "mad",
            "mahalanobis", "median", "model.matrix", "model.offset",
            "model.response", "model.weights", "na.omit", "naprint",
            "optim", "optimize", "pchisq", "plot.ts", "pnorm", 
-           "predict.lm", "pt", "qchisq", "qnorm", "quantile",
-           "rWishart", "rnorm", "runif", "sd", "setNames", "ts", "uniroot", 
+           "predict.lm", "pt", "qchisq", "qnorm", "quantile", "reshape",
+           "rnorm", "runif", "rWishart", "sd", "setNames", "ts", "uniroot", 
            "var", "weighted.mean", "weights")
 importFrom("utils", "browseURL", "edit",
            "flush.console", "getFromNamespace", "object.size",

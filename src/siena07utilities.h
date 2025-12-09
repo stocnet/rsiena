@@ -75,7 +75,7 @@ namespace siena
 	SEXP getDFFromVector(const std::vector<MiniStep *> & rMiniSteps, bool sort=true);
 	SEXP getMiniStepList(const MiniStep & miniStep, int period);
 	SEXP getChainList(const Chain & chain);
-	SEXP getChangeContributionsList(const Chain & chain, SEXP EFFECTSLIST);
+	SEXP getDynamicChangeContributionsList(const Chain & chain, SEXP EFFECTSLIST);
 	SEXP flattenChangeContributionsList(SEXP changeContributionChains);
 	SEXP createRObjectAttributes(SEXP EFFECTSLIST, SEXP & stats);
 	Chain * makeChainFromList(Data * pData, SEXP CHAIN, int period);

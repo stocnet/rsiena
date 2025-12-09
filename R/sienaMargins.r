@@ -32,14 +32,18 @@ sienaAME <- function(
     batch_size = 50,
     keep_batch = FALSE,
     verbose = TRUE,
-    mainEffect = "RiskDifference", # or "RiskRatio"
+    mainEffect = "riskDifference", # or "RiskRatio"
     details = FALSE
 ){
+    # might not be necessary to restrict to one depvar, but let's keep it for now
     if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
-    staticContributions <- calculateContribution(ans, data, depvar)
+    staticContributions <- getStaticChangeContributions(ans = ans, 
+      data = data, 
+      depvar = depvar,
+      returnDataFrame = TRUE)
 
     if(!second){
-        diffName <- ifelse(mainEffect == "RiskDifference", "firstDiff", "firstRiskRatio")
+        diffName <- ifelse(mainEffect == "riskDifference", "firstDiff", "firstRiskRatio")
         diffFun <- predictFirstDiff
         predictArgs <- list(
             ans = ans,
@@ -55,7 +59,7 @@ sienaAME <- function(
             details = details
         )
     }else{
-        diffName <- ifelse(mainEffect == "RiskDifference", "secondDiff", "secondRiskRatio")
+        diffName <- ifelse(mainEffect == "riskDifference", "secondDiff", "secondRiskRatio")
         diffFun <- predictSecondDiff
         predictArgs <- list(
             ans = ans,
@@ -124,8 +128,7 @@ predictFirstDiff <- function(ans, theta, staticContributions,
       names(theta) <- allEffectNames
   }
   thetaNoRate <- theta[effectNames]
-
-  df <- staticContributions
+  df <- widenStaticContribution(staticContributions)
   df <- addUtilityColumn(df, effectNames, thetaNoRate)
   df <- addProbabilityColumn(df, group_vars = c("period", "ego"), useTieProb = useTieProb)
   df <- cbind(df, calculateFirstDiff(
@@ -180,7 +183,7 @@ predictSecondDiff <- function(ans, theta, staticContributions,
     }
     thetaNoRate <- theta[effectNames]
 
-    df <- staticContributions
+    df <- widenStaticContribution(staticContributions)
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
     df <- addProbabilityColumn(df, group_vars = c("period", "ego"), useTieProb = useTieProb)
     df <- cbind(df,  calculateSecondDiff(
@@ -357,7 +360,6 @@ calculateSecondDiff <- function(densityValue,
     mainEffect = mainEffect,
     details = details
   )
-  str(firstDiff)
 
 
   if(!is.null(contrast2)){
@@ -405,7 +407,6 @@ calculateSecondDiff <- function(densityValue,
     mainEffect = mainEffect,
     details = details
   )
-  str(firstDiff2)
 
   secondDiff <- firstDiff2[["firstDiff"]] - firstDiff[["firstDiff"]]
   if(!is.null(contrast2)){
@@ -413,14 +414,14 @@ calculateSecondDiff <- function(densityValue,
   }
 
   if (mainEffect == "riskRatio") {
-    print(paste("firstRiskratio 1 is of length:", length(firstDiff[["firstRiskRatio"]]), " and firstRiskratio 2 is of length:", length(firstDiff2[["firstRiskRatio"]])))
+    # print(paste("firstRiskratio 1 is of length:", length(firstDiff[["firstRiskRatio"]]), " and firstRiskratio 2 is of length:", length(firstDiff2[["firstRiskRatio"]])))
       secondRiskRatio <- firstDiff2[["firstRiskRatio"]] / firstDiff[["firstRiskRatio"]]
     if (!is.null(contrast2)) {
       idx_flip <- which(newChangeStatistic2 == min(contrast2))
       secondRiskRatio[idx_flip] <- 1 / secondRiskRatio[idx_flip]
     }
   }
-  print(mainEffect)
+ # print(mainEffect)
 
   if(details){
     out <- data.frame(

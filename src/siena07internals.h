@@ -216,7 +216,7 @@ SEXP createInteractionEffects(SEXP EFFECTS, Model *pModel,
  *  only, although all effects are the same apart from the basic rates. Not
  *  used in maximum likelihood.
  */
-void getChangeContributionStatistics(SEXP EFFECTSLIST,
+void getStaticChangeContributionstatistics(SEXP EFFECTSLIST,
 	const StatisticCalculator * pCalculator,
 	std::vector<std::vector<double * > > *rChangeContributions);
 

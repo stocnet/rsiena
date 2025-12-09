@@ -22,6 +22,10 @@ sienaRIDynamics <- function(data,
 	silent = TRUE,
 	seed = NULL)
 {
+	if (!inherits(data, "siena"))
+	{
+		stop("not a legitimate Siena data specification")
+	}
 	if(length(data$depvars)>1){
 		if(is.null(depvar)){
 			currentNetName <- attr(data$depvars,"names")[1]
@@ -38,105 +42,55 @@ sienaRIDynamics <- function(data,
 	} else {
 		depvar <- attr(data$depvars,"names")[1]
 	}
-	if (!inherits(data, "siena"))
-	{
-		stop("data is not a legitimate Siena data specification")
-	}
-	if(!is.null(intervalsPerPeriod))
-	{
-		if(is.numeric(intervalsPerPeriod))
-			{
-				intervalsPerPeriod <- as.integer(intervalsPerPeriod)
-			} else {
-				intervalsPerPeriod <- NULL
-				warning("'intervalsPerPeriod' has to be of type 'numeric' \n 
-					used default settings")
-			}
-		}
+    if(!is.null(intervalsPerPeriod) && !is.numeric(intervalsPerPeriod)){
+        intervalsPerPeriod <- NULL
+        warning("'intervalsPerPeriod' has to be of type 'numeric' \n 
+			used default settings")
+    }
 	if(is.null(intervalsPerPeriod))
 	{
 			intervalsPerPeriod <- 10
 	}
-	if(!is.null(ans))
+	if(!is.null(ans)){
+        if (!inherits(ans, "sienaFit")){
+            stop("'ans' is not a legitimate Siena fit object")
+        }
+        if(is.null(theta)){
+            if(ans$cconditional){
+                theta <- c(ans$rate, ans$theta)
+            } else {
+                theta <- ans$theta
+            }
+        }
+    }
+    if(is.null(effects)) # is also checked in getDynamicChangeContributions
+    {
+      if (is.null(ans)) 
+      {
+        stop("Must provide one of 'ans' or 'effects'")
+      }
+      effects <- ans$effects
+	}
+    if (!inherits(effects, "sienaEffects")) 
 	{
-		## Take from ans if available
-		if (!inherits(ans, "sienaFit"))
-		{
-			stop("ans is not a legitimate Siena fit object")
-		}
-		if(is.nul(theta)){
-			theta <- ans$theta
-		}
-		if(is.null(algorithm)){
-			algorithm <- ans$x
-		}
-		if(is.null(effects)){
-			effects <- ans$effects
-		}
-		if(ans$cconditional)
-		{
-			if(is.null(effects))
-			{
-				stop("effects = NULL! In case of conditional estimation, the 
-				'sienaEffects' object has to be given to function 
-				sienRIDynamics directly.")
-			}
-			if(!inherits(effects, "sienaEffects"))
-			{
-				stop("effects is not a legitimate Siena effects object")
-			}
-			effs <- effects
-			if(!is.null(algorithm)||!is.null(theta))
-			{
-				warning("some information are multiply defined \n results will 
-					be based on 'theta' and 'algorithm' stored in 'ans' 
-					(as 'ans$theta', 'ans$x')")
-			}
-		} else {
-			if(!is.null(algorithm)||!is.null(theta)||!is.null(effects))
-			{
-				warning("some information are multiply defined \n results will 
-				be based on 'theta', 'algorithm', and 'effects' stored in 'ans' 
-				(as 'ans$theta', 'ans$x', 'ans$effects')")
-			}
-		}
-		RIValues <- calculateRIDynamics(data = data, 
-			ans=ans, 
-			theta = paras, 
-			algorithm = algo, 
-			effects = effs, 
-			depvar = depvar, 
-			intervalsPerPeriod=intervalsPerPeriod, 
-			n3 = n3, 
-			useChangeContributions = useChangeContributions,
-			silent = silent,
-			seed = seed)
-	} else {
-		## Use theta, algorithm, and effects given in the function call
-		if (!inherits(algorithm, "sienaAlgorithm"))
-		{
-			stop("algorithm is not a legitimate Siena algorithm specification")
-		}
-		if (!inherits(effects, "sienaEffects"))
-		{
-			stop("effects is not a legitimate Siena effects object")
-		}
-		if(!is.numeric(theta))
-		{
-			stop("theta is not a legitimate parameter vector")
-		}
-		if(length(theta) != sum(effects$include==TRUE))
-		{
-			if(length(theta) == sum(effects$include==TRUE & effects$type!="rate"))
-			{
-				stop("vector of model parameters has wrong dimension, 
-					maybe rate parameters are missing")
-			}
-			stop("theta is not a legitimate parameter vector \n number 
-				of parameters has to match number of effects")
-		}
-		RIValues <- calculateRIDynamics(data = data, 
-		ans= NULL, 
+        stop("'effects' is not a legitimate Siena effects object")
+	}
+	if(!is.numeric(theta))
+	{
+		stop("'theta' is not a legitimate parameter vector")
+	}
+	# if(length(theta) != sum(effects$include==TRUE))
+	# {
+	# 	if(length(theta) == sum(effects$include==TRUE & effects$type!="rate"))
+	# 	{
+	# 		stop("vector of model parameters has wrong dimension, 
+	# 			maybe rate parameters are missing")
+	# 	}
+	# 	stop("theta is not a legitimate parameter vector \n number 
+	# 		of parameters has to match number of effects")
+	# }
+	RIValues <- expectedRelativeImportanceDynamic(data = data, 
+		ans= ans, 
 		theta = theta, 
 		algorithm = algorithm, 
 		effects = effects, 
@@ -146,14 +100,13 @@ sienaRIDynamics <- function(data,
 		useChangeContributions = useChangeContributions,
 		silent = silent,
 		seed = seed)
-	}
 	RIValues
 }
 
-##@calculateRIDynamics calculateRIDynamics simulates sequences ministeps, 
-## and aggregates the relative importances of effects over ministeps of same 
-## time intervals
-calculateRIDynamics <- function(data, 
+##@expectedRelativeImportanceDynamic expectedRelativeImportanceDynamic simulates 
+## sequences ministeps, and aggregates the relative importances of effects over 
+## ministeps of same time intervals
+expectedRelativeImportanceDynamic <- function(data, 
 	ans, 
 	theta, 
 	algorithm, 
@@ -166,55 +119,19 @@ calculateRIDynamics <- function(data,
 	silent = TRUE,
 	seed = NULL)
 {
-    x <- algorithm # why not use algorithm directly?
-	if(!is.null(seed))
-	{
-		if(is.numeric(seed))
-		{
-			x$seed <- as.integer(seed)
-		} else {
-			warning("'seed' has to be of type 'numeric' \n used default settings")
-		}
-	}
-	if (!is.null(n3)) {
-    	x$n3 <- as.integer(n3)
-	}
-	if (useChangeContributions) {
-        if (is.null(ans) || is.null(ans$changeContributions)) {
-            warning("useChangeContributions=TRUE, but 'ans' does not 
-			contain 'changeContributions'. Will rerun siena07 to generate them.")
-            useChangeContributions <- FALSE
-        }
-		if (!is.null(n3)) {
-		    warning("n3 cannot be changed when useChangeContributions=TRUE; 
-			using the number of chains stored in 'ans'.")
-    		n3 <- NULL
-		}
-    }
-    if (!useChangeContributions) 
-	{
-		x$nsub <- 0
-        if (!is.null(ans)) 
-		{
-			prevAns <- ans
-		} else {
-			prevAns <- NULL
-			effects$initialValue[effects$include] <- theta
-		}
-        ans <- siena07(
-			x, 
-			data=data, 
-			effects=effects,
-            prevAns=prevAns, 
-			initC=FALSE, 
-			returnDeps=FALSE, 
-			returnChangeContributions=TRUE,
-			silent = silent)
-    }
-	chains <- x$n3
-    changeContributions <- getChangeContributionsDynamic(data = data, ans = ans, theta = theta, algorithm = algorithm, effects = effects, n3 = NULL, useChangeContributions = FALSE)
-	chains <- algorithm$n3
-	periods <- data$observation-1
+    changeContributions <- getDynamicChangeContributions(
+		data = data, 
+		ans = ans, 
+		theta = theta, 
+		algorithm = algorithm, 
+		effects = effects, 
+		n3 = n3, 
+		useChangeContributions = useChangeContributions,
+		returnDataFrame = FALSE,
+		silent = silent,
+		seed = seed)
+	chains <- length(changeContributions)
+	periods <- length(changeContributions[[1]][[1]])
 	effects <- effects[effects$include==TRUE,]
 	noRate <- effects$type != "rate"
 	thetaNoRate <- theta[noRate]

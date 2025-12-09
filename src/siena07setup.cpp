@@ -696,7 +696,9 @@ SEXP getTargetActorStatistics(SEXP dataptr, SEXP modelptr, SEXP effectslist, SEX
 	size_t nGroups = pGroupData->size();
 
 	SEXP altStats = PROTECT(Rf_allocVector(VECSXP, nGroups));
-	SEXP NETWORKTYPES = PROTECT(createRObjectAttributes(effectslist, altStats));
+	// was protected before but that seems unnecessary:
+	// SEXP NETWORKTYPES = PROTECT(createRObjectAttributes(effectslist, altStats));
+	SEXP NETWORKTYPES = createRObjectAttributes(effectslist, altStats);
 	int objEffects = Rf_length(NETWORKTYPES);
 
 	for (size_t group = 0; group < nGroups; group++)
@@ -732,12 +734,13 @@ SEXP getTargetActorStatistics(SEXP dataptr, SEXP modelptr, SEXP effectslist, SEX
 			}
 		}
 	}
-	UNPROTECT(2);
+	UNPROTECT(1);
 	return altStats;
 }
 
 
-SEXP getTargetsChangeContributions(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST, SEXP PARALLELRUN)
+SEXP getStaticChangeContributions(SEXP DATAPTR, 
+	SEXP MODELPTR, SEXP EFFECTSLIST, SEXP PARALLELRUN)
 {
 	vector<Data *> * pGroupData = (vector<Data *> *) R_ExternalPtrAddr(DATAPTR);
 	Model * pModel = (Model *) R_ExternalPtrAddr(MODELPTR);
@@ -754,10 +757,12 @@ SEXP getTargetsChangeContributions(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST
 
 	for (size_t group = 0; group < nGroups; group++)
 	{
-		SET_VECTOR_ELT(altStats, group, Rf_allocVector(VECSXP, (*pGroupData)[group]->observationCount()-1));
+		SET_VECTOR_ELT(altStats, group, Rf_allocVector(VECSXP, 
+			(*pGroupData)[group]->observationCount()-1));
 		for (int p = 0; p < (*pGroupData)[group]->observationCount()-1; p++)
 		{
-			SET_VECTOR_ELT(VECTOR_ELT(altStats, group), p, Rf_allocVector(VECSXP, objEffects));
+			SET_VECTOR_ELT(VECTOR_ELT(altStats, group), p, 
+				Rf_allocVector(VECSXP, objEffects));
 		}
 	}
 
@@ -771,7 +776,7 @@ SEXP getTargetsChangeContributions(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST
 			// TODO altStats[0] == altStats[1] ??
 			StatisticCalculator calculator(pData, pModel, &State, period, false, true);
 			vector<vector<double *>> changeContributions;
-			getChangeContributionStatistics(EFFECTSLIST, &calculator, &changeContributions);
+			getStaticChangeContributionstatistics(EFFECTSLIST, &calculator, &changeContributions);
 			int actors = pData->rDependentVariableData()[0]->n();
 			for (unsigned e = 0; e < changeContributions.size(); e++)
 			{
@@ -801,39 +806,6 @@ SEXP getTargetsChangeContributions(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST
 				}
 			}
 		}
-		
-        // // Handle period 0 separately
-		// State State (pData, 0);
-		// StatisticCalculator calculator(pData, pModel, &State, 0, false, true);
-		// vector<vector<double *>> changeContributions;
-		// getChangeContributionStatistics(EFFECTSLIST, &calculator, &changeContributions);
-		// int actors = pData->rDependentVariableData()[0]->n();
-		// for (unsigned e = 0; e < changeContributions.size(); e++)
-		// {
-		// 	SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), 0),
-		// 		e, Rf_allocVector(VECSXP, actors));
-		// 	int choices;
-		// 	if (strcmp(CHAR(STRING_ELT(NETWORKTYPES, e)), "behavior") == 0)
-		// 	{
-		// 		choices = 3;
-		// 	}
-		// 	else
-		// 	{						
-		// 		choices = actors; // will not work for bipartite
-		// 	}
-		// 	for (int actor = 0; actor < actors; actor++)
-		// 	{
-		// 		SEXP actorsVal = PROTECT(Rf_allocVector(REALSXP, choices));
-		// 		double * d = REAL(actorsVal);
-		// 		for (int i = 0; i < Rf_length(actorsVal); i++)
-		// 		{
-		// 			d[i] = changeContributions.at(e).at(actor)[i];
-		// 		}
-		// 		SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), 0), e), 
-		// 				actor, actorsVal);
-		// 		UNPROTECT(1);     
-		// 	}
-		// }
 	}
 	UNPROTECT(2);
 	return altStats;
@@ -849,18 +821,18 @@ SEXP getTargets(SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
 	SEXP RETURNSTATICCHANGECONTRIBUTIONS)
 {
 	// select alternative result type
-	int returnActorStatistics = sexp_to_int(RETURNACTORSTATISTICS, 0);
-	int returnStaticChangeContributions = sexp_to_int(RETURNSTATICCHANGECONTRIBUTIONS, 0);
-	if (returnActorStatistics + returnStaticChangeContributions >= 2)
-	{
-		Rf_error("returnActorStatistics and returnStaticChangeContributions are mutually exclusive");
-	}
-	if (returnActorStatistics) {
-		return getTargetActorStatistics(DATAPTR, MODELPTR, EFFECTSLIST, PARALLELRUN);
-	}
-	if (returnStaticChangeContributions) {
-		return getTargetsChangeContributions(DATAPTR, MODELPTR, EFFECTSLIST, PARALLELRUN);
-	}
+	// int returnActorStatistics = sexp_to_int(RETURNACTORSTATISTICS, 0);
+	// int returnStaticChangeContributions = sexp_to_int(RETURNSTATICCHANGECONTRIBUTIONS, 0);
+	// if (returnActorStatistics + returnStaticChangeContributions >= 2)
+	// {
+	// 	Rf_error("returnActorStatistics and returnStaticChangeContributions are mutually exclusive");
+	// }
+	// if (returnActorStatistics) {
+	// 	return getTargetActorStatistics(DATAPTR, MODELPTR, EFFECTSLIST, PARALLELRUN);
+	// }
+	// if (returnStaticChangeContributions) {
+	// 	return getStaticChangeContributions(DATAPTR, MODELPTR, EFFECTSLIST, PARALLELRUN);
+	// }
 
 	/* get hold of the data vector */
 	vector<Data *> * pGroupData = (vector<Data *> *) R_ExternalPtrAddr(DATAPTR);

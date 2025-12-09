@@ -846,9 +846,10 @@ SEXP getChainList(const Chain& chain)
 }
 
 /**
- * Create a list of tie flip contributions or behavior change contributions for each ministep in a chain
+ * Create a list of tie flip contributions or behavior change contributions for 
+ *  each ministep in a chain
  */
-SEXP getChangeContributionsList(const Chain& chain, SEXP EFFECTSLIST)
+SEXP getDynamicChangeContributionsList(const Chain& chain, SEXP EFFECTSLIST)
 {
 	// get the column names from the names attribute
 	SEXP cols;
@@ -872,11 +873,11 @@ SEXP getChangeContributionsList(const Chain& chain, SEXP EFFECTSLIST)
 	int intptr3Col;
 	int settingCol;
 
-		getColNos(Names, &netTypeCol, &nameCol, &effectCol,
-				&parmCol, &int1Col, &int2Col, &initValCol,
-				&typeCol, &groupCol, &periodCol, &pointerCol,
-				&rateTypeCol, &intptr1Col, &intptr2Col, &intptr3Col,
-				&settingCol);
+	getColNos(Names, &netTypeCol, &nameCol, &effectCol,
+			&parmCol, &int1Col, &int2Col, &initValCol,
+			&typeCol, &groupCol, &periodCol, &pointerCol,
+			&rateTypeCol, &intptr1Col, &intptr2Col, &intptr3Col,
+			&settingCol);
 
 	MiniStep * pMiniStep = chain.pFirst()->pNext();
 
@@ -907,7 +908,8 @@ SEXP getChangeContributionsList(const Chain& chain, SEXP EFFECTSLIST)
 			}
 			for (int ii = 0; ii < Rf_length(EFFECTSLIST); ii++)
 			{
-				const char * networkName = CHAR(STRING_ELT(VECTOR_ELT(VECTOR_ELT(EFFECTSLIST, ii),nameCol), 0));
+				const char * networkName = CHAR(STRING_ELT(VECTOR_ELT(
+					VECTOR_ELT(EFFECTSLIST, ii),nameCol), 0));
 				if (strcmp(netwName, networkName) == 0)
 				{
 					SEXP NETNAME;
@@ -930,14 +932,18 @@ SEXP getChangeContributionsList(const Chain& chain, SEXP EFFECTSLIST)
 					int rateEffects = 0;
 					for(int e = 0; e < numberOfEffects; e++)
 					{
-						const char * effectType = CHAR(STRING_ELT(VECTOR_ELT(EFFECTS, typeCol), e));
-						if (!(strcmp(effectType, "eval") == 0 || strcmp(effectType, "endow") == 0 || strcmp(effectType, "creation") == 0))
+						const char * effectType = CHAR(STRING_ELT(VECTOR_ELT(
+							EFFECTS, typeCol), e));
+						if (!(strcmp(effectType, "eval") == 0 || 
+							strcmp(effectType, "endow") == 0 || 
+							strcmp(effectType, "creation") == 0))
 						{
 							rateEffects = rateEffects + 1;
 						}
 					}
 					int length = numberOfEffects-rateEffects;
-					PROTECT(MINISTEPCONTRIBUTIONS = Rf_allocMatrix(REALSXP,length, choices));
+					PROTECT(MINISTEPCONTRIBUTIONS = Rf_allocMatrix(REALSXP,
+						length, choices));
 					double * rcontr;
 					rcontr = REAL(MINISTEPCONTRIBUTIONS);
 					SEXP EFFECTNAMES;
@@ -951,12 +957,19 @@ SEXP getChangeContributionsList(const Chain& chain, SEXP EFFECTSLIST)
 					int rates = 0;
 					for (int i = 0; i < numberOfEffects; i++)
 					{
-						const char * effectType = CHAR(STRING_ELT(VECTOR_ELT(EFFECTS, typeCol), i));
-						if (strcmp(effectType, "eval") == 0 || strcmp(effectType, "endow") == 0 || strcmp(effectType, "creation") == 0)
+						const char * effectType = CHAR(STRING_ELT(
+							VECTOR_ELT(EFFECTS, typeCol), i));
+						if (strcmp(effectType, "eval") == 0 || 
+							strcmp(effectType, "endow") == 0 || 
+							strcmp(effectType, "creation") == 0)
 						{
-							EffectInfo * pEffectInfo = (EffectInfo *)R_ExternalPtrAddr(VECTOR_ELT(VECTOR_ELT(EFFECTS, pointerCol), i));
-							SET_STRING_ELT(EFFECTNAMES, i-rates, Rf_mkChar(pEffectInfo->effectName().c_str()));
-							SET_STRING_ELT(EFFECTTYPES, i-rates, Rf_mkChar(effectType));
+							EffectInfo * pEffectInfo = (EffectInfo *)
+								R_ExternalPtrAddr(VECTOR_ELT(VECTOR_ELT(EFFECTS, 
+									pointerCol), i));
+							SET_STRING_ELT(EFFECTNAMES, i-rates, 
+									Rf_mkChar(pEffectInfo->effectName().c_str()));
+							SET_STRING_ELT(EFFECTTYPES, i-rates, 
+									Rf_mkChar(effectType));
 							vector<double> values = (*contributions)[pEffectInfo];
 							for(int a = 0; a < choices; a++)
 							{

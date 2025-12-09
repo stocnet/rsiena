@@ -1,16 +1,16 @@
 ##@getActorStatistics. Use as RSiena:::getTheActorStatistics
 getTheActorStatistics <- function(algorithm, data, effects) {
-    setup <- sienaSetupForCpp(algorithm, data, effects,
-                              includeBehavior = TRUE,
-                              includeBipartite = TRUE,
-                              returnActorStatistics = TRUE,
-                              returnStaticChangeContributions = FALSE,
-                              parallelrun = TRUE)
-    ans <- .Call(C_getTargets, PACKAGE=pkgname,
-                 setup$pData, setup$pModel, setup$myeffects,
-                 parallelrun = TRUE,
-                 returnActorStatistics = TRUE,
-                 returnStaticChangeContributions = FALSE)
+    pData <- sienaSetupDataForCpp(algorithm,
+                                    data,
+                                    includeBehavior = TRUE,
+                                    includeBipartite = FALSE)
+    effects <- effects[effects$include, ]
+    setup <- sienaSetupEffectsForCpp(pData,
+                                    data, 
+                                    effects)
+    ans <- .Call(C_getTargetActorStatistics, PACKAGE=pkgname,
+                 pData, setup$pModel, setup$myeffects,
+                 parallelrun = TRUE)
     ans
 }
 
