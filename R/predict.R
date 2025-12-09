@@ -77,7 +77,6 @@ predictProbability <- function(ans, staticContributions, theta, useTieProb = TRU
     df <- widenStaticContribution(staticContributions)
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
     df <- addProbabilityColumn(df, group_vars = c("period", "ego"), useTieProb = useTieProb)
-    #df <- subset(df, df[["density"]] != 0)
     df <- conditionalReplace(df, df[["density"]] == -1, setdiff(effectNames, "density"), function(x) x * -1)
     df
 }
@@ -174,7 +173,6 @@ predictProbabilityDynamic <- function(ans, data, theta, algorithm, effects,
     df <- widenDynamicContribution(df)
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
     df <- addProbabilityColumn(df, group_vars = c("chain","period", "ministep"), useTieProb = useTieProb)
-    #df <- subset(df, df[["density"]] != 0)
     df <- conditionalReplace(df, df[["density"]] == -1, setdiff(effectNames, "density"), function(x) x * -1)
     df
 }
@@ -522,6 +520,7 @@ addProbabilityColumn <- function(
       df[, tieProb := get("changeProb")]
       if ("density" %in% names(df)) {
         df[density == -1, tieProb := 1 - tieProb]
+        df[density == 0, tieProb := NA]
       }
     }
     df
@@ -536,6 +535,7 @@ addProbabilityColumn <- function(
       if ("density" %in% names(df)) {
         idx <- which(df[["density"]] == -1)
         df[idx, "tieProb"] <- 1 - df[idx, "tieProb"]
+        df[df[["density"]] == 0, "tieProb"] <- NA
       }
     }
     df

@@ -21,14 +21,14 @@ ans <- siena07(
 test_that("sienaPredict (base R fallback)", {
   with_mocked_bindings(
     {
-      pred <- sienaPredict(
+      pred_df <- sienaPredict(
         ans = ans,
         data = mydata,
         useTieProb = TRUE,
         condition = "transTrip",
         level = "period"
       )
-      expect_true(is.data.frame(pred) && !("data.table" %in% class(pred)))
+      expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
     },
     requireNamespace = function(pkg, ...) FALSE,
     .package="base"
@@ -139,7 +139,7 @@ test_that("sienaPredictDynamic with FORK clustertype (base R fallback)", {
 test_that("sienaPredictDynamic (base R fallback)", {
   with_mocked_bindings(
     {
-      pred <- sienaPredictDynamic(
+      pred_df <- sienaPredictDynamic(
         ans = ans,
         data = mydata,
         effects = mymodel,
@@ -149,7 +149,7 @@ test_that("sienaPredictDynamic (base R fallback)", {
         nsim = 10,
         condition = "density"
       )
-      expect_true(is.data.frame(pred) && !("data.table" %in% class(pred)))
+      expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
     },
     requireNamespace = function(pkg, ...) FALSE,
     .package="base"
