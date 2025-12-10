@@ -177,3 +177,109 @@ test_that("Dynamic contributions (data.table, new theta values)", {
   )
   expect_true("data.table" %in% class(dyn_dt))
 })
+
+
+# Minimal RSiena setup with manual interactions & not using one of the main effects
+mynet2 <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
+mydata2 <- sienaDataCreate(mynet2)
+mymodel2 <- getEffects(mydata2)
+## outdegree recip model
+# Intentionally do NOT include outPop effect
+# mymodel2 <- includeEffects(mymodel2, outPop, name = "mynet2")
+mymodel2 <- includeInteraction(mymodel2, recip, outPop, name = "mynet2")
+
+mycontrols2 <- sienaAlgorithmCreate(projname = NULL, 
+  seed = 42, 
+  n3 = 60)
+
+ans2 <- siena07(
+  mycontrols2,
+  data = mydata2,
+  effects = mymodel2,
+  returnChangeContributions = TRUE,
+  returnDataFrame = FALSE
+)
+
+test_that("getStaticChangeContributions with custom interactions & without main effect (data.table)", {
+  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
+  library(data.table)
+
+  stat_dt <- getStaticChangeContributions(
+      ans = ans2,
+      data = mydata2,
+      algorithm = mycontrols2,
+      effects = mymodel2,
+      depvar = "mynet2",
+      returnDataFrame = TRUE
+  )
+  expect_true(!any(stat_dt$effectname == "outPop"))
+  expect_true(any(stat_dt$effectname == "unspInt"))
+  expect_true("data.table" %in% class(stat_dt) || is.data.frame(stat_dt))
+
+})
+
+test_that("getStaticChangeContributions with custom interactions & without main effect (base R fallback)", {
+  with_mocked_bindings(
+    {
+      stat_df <- getStaticChangeContributions(
+          ans = ans2,
+          data = mydata2,
+          algorithm = mycontrols2,
+          effects = mymodel2,
+          depvar = "mynet2",
+          returnDataFrame = TRUE
+      )
+      expect_true(!any(stat_df$effectname == "outPop"))
+      expect_true(any(stat_df$effectname == "unspInt"))
+      expect_true(is.data.frame(stat_df) && !("data.table" %in% class(stat_df)))
+    },
+    requireNamespace = function(pkg, ...) FALSE,
+    .package="base"
+  )
+})
+
+test_that("getDynamicChangeContributions with custom interactions & without main effect (data.table)", {
+  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
+  library(data.table)
+
+  stat_dt <- getDynamicChangeContributions(
+      ans = ans2,
+      data = mydata2,
+      algorithm = mycontrols2,
+      effects = mymodel2,
+      depvar = "mynet2",
+      useChangeContributions = FALSE,
+      n3 = 60,
+      returnDataFrame = TRUE
+  )
+  expect_true(!any(stat_dt$effectname == "outPop"))
+  expect_true(any(stat_dt$effectname == "unspInt"))
+  expect_true("data.table" %in% class(stat_dt) || is.data.frame(stat_dt))
+
+})
+
+test_that("getDynamicChangeContributions with custom interactions & without main effect (base R fallback)", {
+  with_mocked_bindings(
+    {
+      stat_df <- getDynamicChangeContributions(
+          ans = ans2,
+          data = mydata2,
+          algorithm = mycontrols2,
+          effects = mymodel2,
+          depvar = "mynet2",
+          useChangeContributions = FALSE,
+          n3 = 60,
+          returnDataFrame = TRUE
+      )
+      expect_true(!any(stat_df$effectname == "outPop"))
+      expect_true(any(stat_df$effectname == "unspInt"))
+      expect_true(is.data.frame(stat_df) && !("data.table" %in% class(stat_df)))
+    },
+    requireNamespace = function(pkg, ...) FALSE,
+    .package="base"
+  )
+})
+
+
+
+

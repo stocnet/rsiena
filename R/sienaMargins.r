@@ -1,6 +1,7 @@
 sienaAME <- function(
     ans,
     data,
+    effects = NULL, # needed for custom interactions
     effectName1,
     diff1 = NULL,
     contrast1 = NULL,
@@ -39,11 +40,13 @@ sienaAME <- function(
     if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
     staticContributions <- getStaticChangeContributions(ans = ans, 
       data = data, 
+      effects = effects,
       depvar = depvar,
       returnDataFrame = TRUE)
-
     if(!second){
-        diffName <- ifelse(mainEffect == "riskDifference", "firstDiff", "firstRiskRatio")
+        diffName <- ifelse(mainEffect == "riskDifference", 
+          "firstDiff", 
+          "firstRiskRatio")
         diffFun <- predictFirstDiff
         predictArgs <- list(
             ans = ans,
@@ -209,6 +212,7 @@ predictSecondDiff <- function(ans, theta, staticContributions,
         useTieProb = useTieProb, 
         tieProb = df[["tieProb"]], # if not tieProb NULL?
         details = details,
+        calcRiskRatio = calcRiskRatio,
         mainEffect = mainEffect
       )
     )

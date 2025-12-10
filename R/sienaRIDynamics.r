@@ -56,7 +56,7 @@ sienaRIDynamics <- function(data,
             stop("'ans' is not a legitimate Siena fit object")
         }
         if(is.null(theta)){
-            if(ans$cconditional){
+            if(!ans$cconditional){
                 theta <- c(ans$rate, ans$theta)
             } else {
                 theta <- ans$theta
@@ -69,7 +69,11 @@ sienaRIDynamics <- function(data,
       {
         stop("Must provide one of 'ans' or 'effects'")
       }
-      effects <- ans$effects
+	  if (ans$cconditional) 
+      {
+        stop("Must provide 'effects' for conditional estimation")
+      }
+      effects <- ans$requestedEffects
 	}
     if (!inherits(effects, "sienaEffects")) 
 	{
@@ -130,11 +134,18 @@ expectedRelativeImportanceDynamic <- function(data,
 		returnDataFrame = FALSE,
 		silent = silent,
 		seed = seed)
+	## Calculations after this seem somewhat slow
 	chains <- length(changeContributions)
 	periods <- length(changeContributions[[1]][[1]])
 	effects <- effects[effects$include==TRUE,]
-	noRate <- effects$type != "rate"
-	thetaNoRate <- theta[noRate]
+	rate <- effects$type == "rate"
+	noRate <- !rate
+	# only exclude rate effects IF THEY ARE in theta
+	if(length(theta) > sum(noRate)) {
+        thetaNoRate <- theta[noRate]
+    } else {
+		thetaNoRate <- theta
+    }
 	effectNames <- effects$shortName[noRate]
 	effectTypes <- effects$type[noRate]
 	depvar <- depvar

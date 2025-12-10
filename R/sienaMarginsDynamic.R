@@ -33,13 +33,17 @@ sienaAMEDynamic <- function(
     cluster = NULL,
     batch_dir = "temp",
     prefix = "simBatch_b",
-    batch_size = 1,
+    batch_size = NULL,
     combine_batch = TRUE,
     keep_batch = FALSE,
-    verbose = TRUE
+    verbose = TRUE,
+    mainEffect = "riskDifference", # or "RiskRatio"
+    details = FALSE
 ){
     if(!second){
-        diffName <- "firstDiff"
+        diffName <- ifelse(mainEffect == "riskDifference", 
+            "firstDiff", 
+            "firstRiskRatio")
         diffFun <- predictFirstDiffDynamic
         predictArgs <- list(
             ans = ans,
@@ -55,10 +59,14 @@ sienaAMEDynamic <- function(
             useTieProb = useTieProb,
             depvar = depvar,
             n3 = n3,
-            useChangeContributions = FALSE
+            useChangeContributions = FALSE,
+            mainEffect = mainEffect,
+            details = details
         )
     }else{
-        diffName <- "secondDiff"
+        diffName <- ifelse(mainEffect == "riskDifference", 
+            "secondDiff", 
+            "secondRiskRatio")
         diffFun <- predictSecondDiffDynamic
         predictArgs <- list(
             ans = ans,
@@ -80,10 +88,27 @@ sienaAMEDynamic <- function(
             useTieProb = useTieProb,
             depvar = depvar,
             n3 = n3,
-            useChangeContributions = FALSE
+            useChangeContributions = FALSE,
+            mainEffect = mainEffect,
+            details = details
         )
         ME <- "secondDiff"
     }
+    
+    if (is.null(batch_size)) {
+    n_actors <- nrow(data$depvars[[1]])
+    # Heuristic: smaller batches for larger networks
+    if (n_actors < 50) {
+        batch_size <- 10
+    } else if (n_actors < 100) {
+        batch_size <- 5
+    } else {
+        batch_size <- 2
+    }
+    # Ensure batch_size is at least nbrNodes, but not more than nsim
+    batch_size <- min(max(batch_size, nbrNodes), nsim)
+    }
+
     sienaPostestimate(
         predictFun = diffFun,
         predictArgs = predictArgs,
@@ -117,7 +142,10 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
     int_effectNames = NULL,
     mod_effectNames = NULL,
     n3 = NULL,
-    useChangeContributions = FALSE
+    useChangeContributions = FALSE,
+    details = FALSE,
+    calcRiskRatio = FALSE,
+    mainEffect = "riskDifference"
 ){
     if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
     include <- effects[["include"]]
@@ -163,7 +191,10 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
         effectNames = effectNames,
         theta = thetaNoRate,
         useTieProb = useTieProb,
-        tieProb = df[["tieProb"]]
+        tieProb = df[["tieProb"]],
+        details = details,
+        calcRiskRatio = calcRiskRatio,
+        mainEffect = mainEffect
       )
     )
     df <- conditionalReplace(df, df[["density"]] == -1, setdiff(effectNames, "density"), function(x) x * -1)
@@ -183,7 +214,9 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
     int_effectNames2 = NULL,
     mod_effectNames2 = NULL,
     n3 = NULL,
-    useChangeContributions = FALSE
+    useChangeContributions = FALSE,
+    mainEffect = "riskDifference",
+    details = FALSE
 ){
     if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
     include <- effects[["include"]]
@@ -233,7 +266,10 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
         effectNames = effectNames,
         theta = thetaNoRate,
         useTieProb = useTieProb,
-        tieProb = df[["tieProb"]]# if not tieProb NULL?
+        tieProb = df[["tieProb"]], # if not tieProb NULL?
+        details = details,
+        calcRiskRatio = calcRiskRatio,
+        mainEffect = mainEffect
         )
     )
 

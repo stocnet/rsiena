@@ -147,13 +147,12 @@ test_that("sienaAME static (data.table, second difference)", {
   expect_true("secondDiff" %in% names(ame_second))
 })
 
-# Check moderator/interaction later
 
 mynet2 <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
 mydata2 <- sienaDataCreate(mynet2)
 mymodel2 <- getEffects(mydata2)
 mymodel2 <- includeEffects(mymodel2, transTrip, transRecTrip, name = "mynet2")
-mycontrols2 <- sienaAlgorithmCreate(projname=NULL, n3 = 50, cond = FALSE)
+mycontrols2 <- sienaAlgorithmCreate(projname=NULL, n3 = 60, cond = FALSE)
 ans2 <- siena07(
   mycontrols2,
   data = mydata2,
@@ -176,11 +175,11 @@ test_that("sienaAME static interaction (base R fallback)", {
         useTieProb = TRUE,
         depvar = "mynet2",
         level = "period",
-        condition = "density",
+        condition = "recip",
         nsim = 10,
         uncertainty = TRUE,
         verbose = FALSE,
-        mainEffect = "riskRatio"
+        mainEffect = "riskDifference"
       )
       expect_true(is.data.frame(ame_static_interaction))
       expect_false("data.table" %in% class(ame_static_interaction))
@@ -268,7 +267,7 @@ test_that("sienaAME static moderator (data.table)", {
     nsim = 10,
     uncertainty = FALSE,
     verbose = FALSE,
-    mainEffect = "riskDifference"
+    mainEffect = "riskRatio"
   )
   expect_true("data.table" %in% class(ame_static_moderator) || is.data.frame(ame_static_moderator))
 })
@@ -384,41 +383,76 @@ test_that("sienaAME static interaction (data.table, uncertainty)", {
 })
 
 
+mynet3 <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
+mydata3 <- sienaDataCreate(mynet3)
+mymodel3 <- getEffects(mydata3)
+## inPop recip model
+mymodel3 <- includeEffects(mymodel3, inPop, name = "mynet3")
+mymodel3 <- includeInteraction(mymodel3, recip, inPop, name = "mynet3")
 
-# Currently static AME does not support user interactions
+mycontrols3 <- sienaAlgorithmCreate(projname=NULL, n3 = 60, cond = FALSE)
+ans3 <- siena07(
+  mycontrols3,
+  data = mydata3,
+  effects = mymodel3,
+  returnChangeContributions = TRUE,
+  returnDataFrame = TRUE
+)
 
-# mynet3 <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
-# mydata3 <- sienaDataCreate(mynet3)
-# mymodel3 <- getEffects(mydata3)
-# ## outdegree recip model
-# mymodel3 <- includeEffects(mymodel3, transTrip, name = "mynet3")
-# mymodel3 <- includeEffects(mymodel3, outPop, name = "mynet3")
-# mymodel3 <- includeInteraction(mymodel3, recip, outPop, name = "mynet3")
+test_that("sienaPredict with custom interactions (data.table)", {
+  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
+  library(data.table)
 
-# mycontrols3 <- sienaAlgorithmCreate(projname=NULL, n3 = 500, cond = FALSE)
-# ans3 <- siena07(
-#   mycontrols3,
-#   data = mydata3,
-#   effects = mymodel3,
-#   returnChangeContributions = TRUE,
-#   returnDataFrame = TRUE
-# )
+  ame_static_interaction <- sienaAME(
+    ans = ans3,
+    data = mydata3,
+    effects = mymodel3,
+    effectName1 = "recip",
+    contrast1 = c(0,1),
+    interaction1 = TRUE,
+    int_effectNames1 = "unspInt",
+    mod_effectNames1 = "inPop",
+    useTieProb = TRUE,
+    depvar = "mynet3",
+    level = "period",
+    condition = "inPop",
+    nsim = 5,
+    uncertainty = TRUE,
+    verbose = TRUE
+  )
+  expect_true("data.table" %in% class(ame_static_interaction) || 
+    is.data.frame(ame_static_interaction))
+})
 
-# ame_static_moderator <- sienaAME(
-#     ans = ans3,
-#     data = mydata3,
-#     effectName1 = "transTrip",
-#     diff1 = 1,
-#     second = TRUE,
-#     effectName2 = "outPop",
-#     diff2 = 1,
-#     useTieProb = TRUE,
-#     depvar = "mynet3",
-#     level = "period",
-#     nsim = 100,  # keep small for speed
-#     uncertainty = TRUE,
-#     verbose = TRUE
-# )
+test_that("sienaAME static moderator (data.table)", {
+  skip_if_not(requireNamespace("data.table", quietly = TRUE), 
+    "data.table not available")
+  library(data.table)
+  ame_static_moderator <- sienaAME(
+    ans = ans3,
+    data = mydata3,
+    effectName1 = "recip",
+    contrast1 = c(0,1),
+    interaction1 = TRUE,
+    int_effectNames1 = "unspInt",
+    mod_effectNames1 = "inPop",
+    second = TRUE,
+    effectName2 = "inPop",
+    diff2 = 1,
+    interaction2 = TRUE,
+    int_effectNames2 = "unspInt",
+    mod_effectNames2 = "recip",
+    useTieProb = TRUE,
+    depvar = "mynet3",
+    level = "period",
+    uncertainty = FALSE,
+    verbose = FALSE,
+    mainEffect = "riskDifference"
+  )
+  expect_true("data.table" %in% class(ame_static_moderator) || 
+    is.data.frame(ame_static_moderator))
+})
+
 
 # ame_dynamic_moderator
 

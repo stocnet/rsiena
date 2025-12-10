@@ -47,8 +47,26 @@ sienaRI <- function(data,
 		if(is.null(algorithm)){
 			algorithm <- ans$x
 		}
+		# does not work when interactions are present WITHOUT base effects
 		if(is.null(effects)){
-			effects <- ans$effects
+			effects <- ans$requestedEffects
+			# Find interaction effects
+			interactionShortNames <- c("unspInt", "behUnspInt", "contUnspInt")
+			interactionEffs <- effects[effects$shortName %in% 
+				interactionShortNames, ]
+			if (nrow(interactionEffs) > 0) {
+				# Collect all referenced effectNumbers
+				referenced <- unique(c(interactionEffs$effect1, 
+					interactionEffs$effect2, 
+					interactionEffs$effect3))
+				referenced <- referenced[referenced > 0]
+				# Check if all referenced effectNumbers are present in effects
+				missingBase <- setdiff(referenced, effects$effectNumber)
+				if (length(missingBase) > 0) {
+					stop("Requires full effects object when interaction 
+						effects are present without base effects.")
+				}
+        }
 		}
 	}
 	if (!inherits(algorithm, "sienaAlgorithm"))
@@ -69,7 +87,7 @@ sienaRI <- function(data,
 	if (!is.numeric(theta))
 	{
 		stop("theta is not a legitimate parameter vector")
-	}
+	}		
 	if(length(theta) != sum(effects$include==TRUE & effects$type!="rate"))
 	{
 		if(length(theta) != sum(effects$include==TRUE))
@@ -729,62 +747,4 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 			bty = "n", cex=cex.legend)
 	}
 	invisible(cl)
-}
-
-##@sienaSetupDataForCpp Use as RSiena:::sienaSetupDataForCpp
-sienaSetupDataForCpp <- function(algorithm, data, 
-                             includeBehavior = TRUE, 
-                             includeBipartite = TRUE) {
-    f <- unpackData(data, algorithm)
-    pData <- .Call(C_setupData, PACKAGE=pkgname,
-                   list(as.integer(f$observations)),
-                   list(f$nodeSets))
-    reg.finalizer(pData, clearData, onexit = FALSE)
-    .Call(C_OneMode, PACKAGE=pkgname, pData, list(f$nets))
-    if (includeBipartite && !is.null(f$bipartites)) {
-        .Call(C_Bipartite, PACKAGE=pkgname, pData, list(f$bipartites))
-    }
-    if (includeBehavior && !is.null(f$behavs)) {
-        .Call(C_Behavior, PACKAGE=pkgname, pData, list(f$behavs))
-    }
-    .Call(C_ConstantCovariates, PACKAGE=pkgname, pData, list(f$cCovars))
-    .Call(C_ChangingCovariates, PACKAGE=pkgname, pData, list(f$vCovars))
-    .Call(C_DyadicCovariates, PACKAGE=pkgname, pData, list(f$dycCovars))
-    .Call(C_ChangingDyadicCovariates, PACKAGE=pkgname, pData, list(f$dyvCovars))
-    # if (is.null(f$exog) || !is.list(f$exog)) {
-	# 	f$exog <- vector("list", length(f$depvars))
-	# }
-	# ## split the names of the constraints
-	# higher <- attr(f, "allHigher")
-	# disjoint <- attr(f, "allDisjoint")
-	# atLeastOne <- attr(f, "allAtLeastOne")
-	# froms <- sapply(strsplit(names(higher), ","), function(x)x[1])
-	# tos <- sapply(strsplit(names(higher), ","), function(x)x[2])
-	# .Call(C_Constraints, PACKAGE=pkgname,
-	# 	pData, froms[higher], tos[higher],
-	# 	froms[disjoint], tos[disjoint],
-	# 	froms[atLeastOne], tos[atLeastOne])
-	# siena07 only does this with !initC
-    return(pData)
-}
-
-##@sienaSetupEffectsForCpp Use as RSiena:::sienaSetupEffectsForCpp
-sienaSetupEffectsForCpp <- function(pData, data, effects) {
-    effects$setting <- rep("", nrow(effects))
-    storage.mode(effects$parm) <- 'integer'
-    storage.mode(effects$group) <- 'integer'
-    storage.mode(effects$period) <- 'integer'
-    effects$effectPtr <- rep(NA, nrow(effects))
-    myeffects <- split(effects, effects$name)
-    ans <- .Call(C_effects, PACKAGE=pkgname, pData, myeffects)
-    pModel <- ans[[1]][[1]]
-    reg.finalizer(pModel, clearModel, onexit = FALSE)
-    for (i in 1:length(ans[[2]])) ## ans[[2]] is a list of lists of
-        ## pointers to effects. Each list corresponds to one
-        ## dependent variable
-    {
-		effectPtr <- ans[[2]][[i]]
-		myeffects[[i]]$effectPtr <- effectPtr
-    }
-    list(pModel = pModel, myeffects = myeffects)
 }

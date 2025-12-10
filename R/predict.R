@@ -2,6 +2,7 @@
 sienaPredict <- function(
     ans,
     data,
+    effects = NULL,
     useTieProb = TRUE,
     depvar = NULL,
     level = "period",
@@ -26,6 +27,7 @@ sienaPredict <- function(
         staticContributions <- getStaticChangeContributions(
             ans = ans,
             data = data,
+            effects = effects,
             depvar = depvar,
             returnDataFrame = TRUE
         )
@@ -62,12 +64,11 @@ sienaPredict <- function(
 }
 
 predictProbability <- function(ans, staticContributions, theta, useTieProb = TRUE) {
-    effects <- ans[["effects"]] # provide effects instead?
+    effects <- ans[["requestedEffects"]] # provide effects instead?
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
     noRateIncluded <- includedEffects[["type"]] != "rate"
     effectNames  <- includedEffects[["shortName"]][noRateIncluded]
-
     # Align theta by name
     if (!is.null(names(theta))) {
         thetaNoRate <- theta[effectNames]
@@ -105,7 +106,8 @@ sienaPredictDynamic <- function(
     combine_batch = TRUE,
     batch_size = 10,
     keep_batch = FALSE,
-    verbose = TRUE
+    verbose = TRUE,
+    silent = TRUE
     ){
         if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
         probName <- ifelse(useTieProb, "tieProb", "changeProb")
@@ -117,7 +119,8 @@ sienaPredictDynamic <- function(
             useTieProb = useTieProb,
             depvar = depvar,
             n3 = n3,
-            useChangeContributions = FALSE
+            useChangeContributions = FALSE,
+            silent = silent
         )
         sienaPostestimate(
             predictFun = predictProbabilityDynamic,
@@ -146,7 +149,7 @@ sienaPredictDynamic <- function(
 }
 
 predictProbabilityDynamic <- function(ans, data, theta, algorithm, effects,
-    useTieProb = TRUE, depvar, n3 = NULL, useChangeContributions = FALSE) {
+    useTieProb = TRUE, depvar, n3 = NULL, useChangeContributions = FALSE, silent = TRUE) {
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
     noRateIncluded <- includedEffects[["type"]] != "rate"
@@ -168,7 +171,8 @@ predictProbabilityDynamic <- function(ans, data, theta, algorithm, effects,
         depvar = depvar, 
         n3 = n3, 
         useChangeContributions = useChangeContributions, 
-        returnDataFrame = TRUE
+        returnDataFrame = TRUE,
+        silent = silent
     )
     df <- widenDynamicContribution(df)
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
@@ -223,7 +227,6 @@ sienaPostestimate <- function(
         clusterType <- "FORK"
         nbrNodes <- 1
     }
-
 
     uncert <- drawSim(
         estimator = estimator,
