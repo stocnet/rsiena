@@ -17,7 +17,7 @@ export(
 	siena.table, xtable, score.Test, Wald.RSiena, Multipar.RSiena, 
    testSame.RSiena, funnelPlot, meta.table,
    influenceTable, selectionTable,
-   sienaAME, sienaAMEDynamic, sienaPredict, sienaPredictDynamic, 
+   sienaAME, sienaAMEDynamic, predict.sienaFit, predictDynamic, 
    getStaticChangeContributions, getDynamicChangeContributions
 )
 
@@ -98,3 +98,9 @@ S3method(print, xtable.sienaFit)
 S3method(print, chains.data.frame)
 S3method(print, influenceTable)
 S3method(print, selectionTable)
+S3method(predict, sienaFit)
+S3method(fitted, sienaFit)
+S3method(residuals, sienaFit)
+
+
+
