@@ -1,9 +1,10 @@
-##@sienaPredict make into method?
-sienaPredict <- function(
-    ans,
-    data,
+##@predict.sienaFit
+predict.sienaFit <- function(
+    object,
+    newdata,
+    type = c("changeProb", "tieProb"), #behavior not implemented *here*
+    newParams = NULL,
     effects = NULL,
-    useTieProb = TRUE,
     depvar = NULL,
     level = "period",
     condition = NULL,
@@ -18,36 +19,37 @@ sienaPredict <- function(
     batch_dir = "temp",
     prefix = "simBatch_b",
     combine_batch = TRUE,
-    batch_size = 50,
+    batch_size = NULL,
     keep_batch = FALSE,
-    verbose = TRUE
+    verbose = TRUE,
+    ...
     ){
+        type <- match.arg(type)
         # depvar restriction is not necessary anymore?
-        if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
+        if (is.null(depvar)) depvar <- names(newdata[["depvars"]])[1]
         staticContributions <- getStaticChangeContributions(
-            ans = ans,
-            data = data,
+            ans = object,
+            data = newdata,
             effects = effects,
             depvar = depvar,
             returnDataFrame = TRUE
         )
-        probName <- ifelse(useTieProb, "tieProb", "changeProb")
         probFun <- predictProbability
         predictArgs <- list(
-            ans = ans,
+            ans = object,
             staticContributions = staticContributions,
             useTieProb = useTieProb
         )
         sienaPostestimate(
             predictFun = probFun,
             predictArgs = predictArgs,
-            outcome = probName,
+            outcome = type,
             level = level,
             condition = condition,
             sum.fun = sum.fun,
             na.rm = na.rm,
-            theta_hat = ans[["theta"]],
-            cov_theta = ans[["covtheta"]],
+            theta_hat = object[["theta"]], # change into coef
+            cov_theta = object[["covtheta"]], # change into cov
             uncertainty = uncertainty,
             nsim = nsim,
             useCluster = useCluster,
@@ -82,7 +84,7 @@ predictProbability <- function(ans, staticContributions, theta, useTieProb = TRU
     df
 }
 
-sienaPredictDynamic <- function(
+predictDynamic <- function(
     ans,
     data,
     effects,
@@ -291,6 +293,7 @@ drawSim <- function(
   if(nbrNodes > 1){
     clusterType <- match.arg(clusterType) ## maybe add explicit single core
   }
+  # Add non batch options later?
   if (!dir.exists(batch_dir)) dir.create(batch_dir, recursive = TRUE)
   
   if(is.null(batch_size)) batch_size <- floor(nsim/nbrNodes)
@@ -315,7 +318,7 @@ drawSim <- function(
       envir=environment())
     # Make sure that all clusters have all dependencies available 
     parallel::clusterEvalQ(cl, {
-      library(data.table)
+      library(data.table) # this might not be allowed on CRAN?
     })
   } else {
     if (.Platform$OS.type == "windows") {
@@ -439,30 +442,6 @@ agg <- function(ME,
     return(output)
   }
 
-  # ## this has to be an inefficient solution for base R?
-  # grouping <- interaction(data[, group_vars, drop = FALSE], drop = TRUE)
-  # split_list <- split(data[[ME]], grouping)
-  # sum_list <- lapply(split_list, sum.fun, na.rm = na.rm)
-  # # Ensure all outputs are lists with the same names
-  # sum_list <- lapply(sum_list, expand_summary)
-  # all_names <- unique(unlist(lapply(sum_list, names)))
-  # sum_list <- lapply(sum_list, function(x) {
-  #   x[setdiff(all_names, names(x))] <- NA
-  #   x <- x[all_names]
-  #   as.data.frame(as.list(x), stringsAsFactors = FALSE)
-  # })
-  # group_levels <- unique(grouping)
-  # group_df <- do.call(rbind, lapply(strsplit(as.character(group_levels), ".", fixed = TRUE), function(x) {
-  #   length(x) <- length(group_vars)
-  #   names(x) <- group_vars
-  #   as.data.frame(as.list(x), stringsAsFactors = FALSE)
-  # }))
-  # names(group_df) <- group_vars
-  # res_df <- as.data.frame(do.call(rbind, sum_list))
-  # out <- cbind(group_df, res_df)
-  # rownames(out) <- NULL
-  # return(out)
-    # Grouping and aggregation
   grouping <- interaction(data[, group_vars, drop = FALSE], drop = TRUE)
   split_data <- split(data, grouping)
   agg_list <- lapply(split_data, function(subdf) {

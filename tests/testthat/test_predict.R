@@ -13,20 +13,21 @@ ans <- siena07(
   mycontrols,
   data = mydata,
   effects = mymodel,
-  returnChangeContributions = TRUE,
-  returnDataFrame = TRUE,
-  silent = TRUE
-)
+  returnDeps = TRUE,
+  silent = TRUE)
+fitted(ans)
+residuals(ans)
 
-test_that("sienaPredict (base R fallback)", {
+test_that("predict.sienaFit (base R fallback)", {
   with_mocked_bindings(
     {
-      pred_df <- sienaPredict(
-        ans = ans,
+      pred_df <- predict(
+        object = ans,
         data = mydata,
         useTieProb = TRUE,
+        nsim = 10,
         condition = "transTrip",
-        level = "period"
+        level = "egoChoice"
       )
       expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
     },
@@ -35,11 +36,11 @@ test_that("sienaPredict (base R fallback)", {
   )
 })
 
-test_that("sienaPredict (data.table)", {
+test_that("predict.sienaFit (data.table)", {
   skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
   library(data.table)
-  pred_dt <- sienaPredict(
-    ans = ans,
+  pred_dt <- predict.sienaFit(
+    object = ans,
     data = mydata,
     useTieProb = TRUE,
     nsim = 10,
@@ -50,11 +51,11 @@ test_that("sienaPredict (data.table)", {
   expect_true("data.table" %in% class(pred_dt) && is.data.frame(pred_dt))
 })
 
-test_that("Test sienaPredict with PSOCK clustertype (data.table)", {
+test_that("Test predict.sienaFit with PSOCK clustertype (data.table)", {
   skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
   library(data.table)
-  pred_dt <- sienaPredict(
-    ans = ans,
+  pred_dt <- predict(
+    object = ans,
     data = mydata,
     useTieProb = TRUE,
     nsim = 1000,
@@ -70,11 +71,11 @@ test_that("Test sienaPredict with PSOCK clustertype (data.table)", {
 })
 
 # does not work here because mock bindings are not exported to cluster workers
-# test_that("sienaPredictDynamic with PSOCK clustertype (base R fallback)", {
+# test_that("predictDynamic with PSOCK clustertype (base R fallback)", {
 #   with_mocked_bindings(
 #     {
-#       pred_df <- sienaPredict(
-#         ans = ans,
+#       pred_df <- predict.sienaFit(
+#         object = ans,
 #         data = mydata,
 #         useTieProb = TRUE,
 #         nsim = 10,
@@ -93,11 +94,11 @@ test_that("Test sienaPredict with PSOCK clustertype (data.table)", {
 #   )
 # })
 
-test_that("Test sienaPredict with FORK clustertype (data.table)", {
+test_that("Test predict.sienaFit with FORK clustertype (data.table)", {
   skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
   library(data.table)
-  pred_dt <- sienaPredict(
-    ans = ans,
+  pred_dt <- predict(
+    object = ans,
     data = mydata,
     useTieProb = TRUE,
     nsim = 10,
@@ -112,10 +113,10 @@ test_that("Test sienaPredict with FORK clustertype (data.table)", {
   expect_true("data.table" %in% class(pred_dt) && is.data.frame(pred_dt))
 })
 
-test_that("sienaPredictDynamic with FORK clustertype (base R fallback)", {
+test_that("predictDynamic with FORK clustertype (base R fallback)", {
   with_mocked_bindings(
     {
-      pred_df <- sienaPredictDynamic(
+      pred_df <- predictDynamic(
         ans = ans,
         data = mydata,
         effects = mymodel,
@@ -140,10 +141,10 @@ test_that("sienaPredictDynamic with FORK clustertype (base R fallback)", {
 })
 
 
-test_that("sienaPredictDynamic (base R fallback)", {
+test_that("predictDynamic (base R fallback)", {
   with_mocked_bindings(
     {
-      pred_df <- sienaPredictDynamic(
+      pred_df <- predictDynamic(
         ans = ans,
         data = mydata,
         effects = mymodel,
@@ -160,10 +161,10 @@ test_that("sienaPredictDynamic (base R fallback)", {
   )
 })
 
-test_that("sienaPredictDynamic (data.table)", {
+test_that("predictDynamic (data.table)", {
   skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
   library(data.table)
-  pred_dt <- sienaPredictDynamic(
+  pred_dt <- predictDynamic(
     ans = ans,
     data = mydata,
     effects = mymodel,
@@ -192,11 +193,11 @@ test_that("sienaPredictDynamic (data.table)", {
     returnDataFrame = TRUE
   )
   
-test_that("sienaPredict with custom interactions & without main effect (data.table)", {
+test_that("predict.sienaFit with custom interactions & without main effect (data.table)", {
   skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
   library(data.table)
 
-  pred_dt <- sienaPredict(ans2,
+  pred_dt <- predict.sienaFit(ans2,
     data =  mydata2,
     effects = mymodel2,
     uncertainty = FALSE
@@ -205,10 +206,10 @@ test_that("sienaPredict with custom interactions & without main effect (data.tab
 
 })
 
-test_that("sienaPredict with custom interactions & without main effect (base R fallback)", {
+test_that("predict.sienaFit with custom interactions & without main effect (base R fallback)", {
   with_mocked_bindings(
     {
-      pred_df <- sienaPredict(
+      pred_df <- predict(
         ans = ans2,
         data = mydata2,
         effects = mymodel2,

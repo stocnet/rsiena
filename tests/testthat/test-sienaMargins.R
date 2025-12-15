@@ -399,7 +399,7 @@ ans3 <- siena07(
   returnDataFrame = TRUE
 )
 
-test_that("sienaPredict with custom interactions (data.table)", {
+test_that("predict.sienaFit with custom interactions (data.table)", {
   skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
   library(data.table)
 
