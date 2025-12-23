@@ -1,4 +1,21 @@
-2025-12-01
+2025-12-23
+
+# RSiena 1.6.0
+
+## Changes in RSiena:
+### Function names for exported functions in R
+  * Overhaul of naming system, which required many new function and methods.
+### Bug correction
+  * `checkImpossibleChanges` restricted to networks.
+  * `checkZeroChanges` adapted to also cover behavioral variables.
+### Documentation
+  * Chapter 3 was inserted in the manual to explain the new function names.
+    Appendix A, "List of Functions in Order of Execution", was dropped
+    and the author of this appendix, Paulina Preciado Lopez, was
+    accordingly dropped from the list of authors of the manual.
+    Greetings, Paulina!}
+
+2025-11-03
 
 # RSiena 1.5.7
 
@@ -17,27 +34,59 @@
   and new behavior effects without centering `quad_nc`, 
   `avInAltDist2_nc`, `totInAltDist2_nc`, `avTinaltDist2_nc`, `totAInAltDist2_nc`, 
   `totGwdspFFAlt_nc`, `totGwdspFBAlt_nc`.
+ * New effects `avSameXAlt`, `totSameXAlt`, `avSameXInAlt`, `totSameXInalt`,
+  `avXRecAlt`, totXRecAlt`, `avSameXRecAlt`, `totSameXRecAlt`,
+  `avAltSameX`, `totAltSameX`, `avRecAltSameX`, `totRecAltSameX`.
+  * New effects `avInAltAltX`, `totInAltAltX`, `avRecAltAltX`, `totRecAltAltX`, 
+    `avAltSameX`, `totAltSameX`, `avInAltSameX`, `totInAltSameX`, 
+    `avRecAltSameX`, `totRecAltSameX`.
 ### Coding
   * Slightly refactored contribution, target and actortarget getter to use
-  a unified API for setting up c++ objects.
+  a unified API for setting up C++ objects.
   * Corrected how static contributions are extracted to actually calculate
   correct contributions for the first potential ministep in each period, 
   using the values at the start of the period to calculate allowed changes and
   effect change statistics. This means that there is no calculation of the 
   first ministep after the last observation wave anymore. This also means that 
   sienaRI does not calculate a RI measure at the last observation moment. Added  
-  clarification in and cleaned up the documentation and scripts for siena07, 
-  sienaRI and sienaRIDynamics.
-  * Eliminated additional test file for chains and integrated into parallel.R
+  clarification in and cleaned up the documentation and scripts for `siena07`, 
+  `sienaRI` and `sienaRIDynamics`.
+  * Eliminated additional test file for chains and integrated into `parallel.R`
   as far as it seemed necessary.
   * Cleaned up some legacy code related to rate effects.
+  * Reprogrammed effects `avXAlt`, `totXAlt`, `avXInAlt`, `totXInalt` 
+    for greater efficiency (class `AltersCovariateAverageEffect`).
+    Removed class `InAltersCovariateAverageEffect`.
+  * Dropped `EpochSimulation::updateParameters`, 
+    `DependentVariable::updateBasicRate`, 
+    `DependentVariable::updateEffectParameters`. These were not used at all.
+  * Dropped algorithm as an argument for function `unpackData` and 
+    `getChangeContributions`, and as a consequence also from  
+    `getTheActorStatistics` and argument `x` from `actorTargets`.
 ### Documentation
-  * A new subsection was added to Siena_algorithms to explain the new construcion
-  of diffusion rate effects.
+  * A new subsection was added to `Siena_algorithms` to explain the new 
+    construction of diffusion rate effects.
 
 2025-10-28
 
 # RSiena 1.5.6
+
+## Changes in RSiena:
+### Coding
+  * The virtual function `preprocessEgo` now is defined properly for 
+    the function classes `NetworkAlterFunction`, 
+   `CovariateNetworkAlterFunction`, `DoubleCovariateFunction`, 
+   `SameCovariateInTiesFunction`. 
+   This was done to correct a bug that appeared for effect `sameXInPop`
+   for a two-mode network; perhaps there was a similar bug for `diffXInPop`,
+   `sameXOutAct`, `diffXOutAct`, and `sameXVInPop`. 
+### Functionality:
+  * Auxiliary function `egoAlterCombi` for GoF now omits values 
+    where the behavioral variable is `NA`.
+  * Various small additions to output of `siena07` for `verbose=TRUE` 
+    (`phase1.r` and `phase2.r`). 
+
+# RSiena 1.5.5
 
 ## Changes in RSiena:
 ### Coding

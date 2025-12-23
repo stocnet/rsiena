@@ -1,38 +1,44 @@
-\name{sienaRI}
+\name{interpret_size}
+\alias{interpret_size}
 \alias{sienaRI}
+\alias{interpret_size}
+\alias{interpret_size.sienaFit}
+\alias{interpret_size.sienaEffects}
 \alias{entropy}
+\alias{plot.interpret_size}
+\alias{print.interpret_size}
 \alias{plot.sienaRI}
 \alias{print.sienaRI}
-\alias{sienaRI.methods}
+\alias{interpret_size.methods}
 \title{Functions to assess the relative importance of effects at observation
        moments}
 \description{
- The function \code{sienaRI} computes various effect sizes for
+ The function \code{interpret_size} computes various effect sizes for
  Stochastic Actor-oriented Models.
  As its value it returns the relative importance of effects
  of a SAOM according to the measure of relative importance described in
  Section 3.1 of Indlekofer and Brandes (2013).
  This is based on the influence of effects on potential tie change or
- behavior change decisions of individual actors at the start of given observed 
- periods.
- \cr
+ behavior change decisions of individual actors at the given observation
+ moments (waves).  \cr
  Other measures useful for effect sizes are entropy-based
  effect sizes as in Snijders (2004) and the within-ego
  standard deviations of change statistics.
  If \code{getChangeStats=TRUE}, the arrays of change statistics are
- stored in the \code{sienaRI} object.
+ stored in the \code{sienaRI} object that is created.
 
  It takes the data as well as the complete model specification into account.
  Therefore, necessary arguments are the analysed data given as a
- \code{\link{siena}} data object as well as the complete model
+ \code{\link{sienadata}} data object as well as the complete model
  specification represented either by an estimated \code{sienaFit}
- object or by the triple consisting of a
+ object or by the combination of a
  suitable parameter vector \code{theta} and the corresponding
- \code{\link{sienaAlgorithm}} and \code{\link{sienaEffects}} objects.
+ \code{\link{sienaEffects}} object.
 }
 \usage{
-sienaRI(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL,
-        getChangeStats=FALSE)
+\method{interpret_size}{sienaFit}(x, data, getChangeStats=FALSE, ...)
+\method{interpret_size}{sienaEffects}(x, data, theta,
+              getChangeStats=FALSE, ...)
 \method{print}{sienaRI}(x, printSigma=FALSE,\dots)
 \method{plot}{sienaRI}(x, actors = NULL, col = NULL, addPieChart = FALSE,
               radius = 1, width = NULL, height = NULL, legend = TRUE,
@@ -40,35 +46,21 @@ sienaRI(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL,
               cex.legend = NULL, cex.names = NULL,\dots)
 }
 \arguments{
+  \item{x}{for \code{interpret_size.sienaFit}: a \code{sienaFit} object,
+           resulting from a call of \code{\link{siena}};\cr
+           for \code{interpret_size.sienaEffects}: a \code{sienaEffects} object
+           that was used for calling \code{\link{siena}};\cr
+           for \code{print.sienaRI} and \code{plot.sienaRI}:
+           a \code{sienaRI} object resulting
+           from a call to \code{interpret_size}.}
   \item{data}{\code{siena} data object representing the analyzed data and
-              resulting from a call to \code{\link{sienaDataCreate}}.}
-  \item{ans}{\code{\link{sienaFit}} object resulting from a call to
-              \code{\link{siena07}}. The \code{sienaFit} object contains
-              all necessary information on the model specification,
-              in particular, the vector of parameter values \code{ans$theta},
-              the algorithm used for estimation \code{ans$x},
-              and information on included model effects \code{ans$effects}.
-              If \code{ans} is a valid \code{sienaFit} object, the calculations
-              of relative importances are based on \code{ans$theta},
-              \code{ans$x}, and \code{ans$effects}.
-              Alternatively, the necessary information can be given directly
-              as a suitable parameter vector \code{theta}, a
-              \code{sienaAlgorithm} object, and a \code{sienaEffects} object.
-              In this case, \code{ans} has to be unspecified
-              (i.e., \code{ans=NULL}).}
-  \item{theta}{Vector of parameter values of effects included in the model.
+              resulting from a call to \code{\link{make_data_rsiena}}.}
+  \item{theta}{Vector of parameter values of evaluation effects 
+               included in the model.
                Length of \code{theta} has to be equal to the number of
-               included effects.}
-  \item{algorithm}{\code{sienaAlgorithm} object as resulting from a call to
-               \code{\link{sienaAlgorithmCreate}}. Works only for estimation
-               by Method of Moments (i.e., if  \code{maxlike = FALSE}).}
-  \item{effects}{\code{sienaEffects} object specifying which effects are
-               included the model. Note that \code{sienaRI} does not yet work
-               for endowment or creation effects, i.e., included effects have to
-               be of type \code{eval} (or \code{rate}).}
+               included evaluation effects in the effects object \code{x}.}
   \item{getChangeStats}{Boolean: If \code{TRUE}, an array of change statistics
-               is added to the \code{sienaRI} object.}
-  \item{x}{\code{sienaRI} object resulting from a call to \code{sienaRI}.}
+               is added to the \code{interpret_size} object.}
   \item{printSigma}{Boolean: If \code{TRUE},
        average within-actor standard deviations of change statistics
        ('\code{sigma}') are included in the print.}
@@ -91,51 +83,29 @@ sienaRI(data, ans=NULL, theta=NULL, algorithm=NULL, effects=NULL,
   \item{cex.names}{Specifies the relative font size of bar graph labels.}
   \item{\dots}{Other arguments.}
 }
-\details{
-\code{sienaRI} takes the data as well as the complete model specification
- into account. Therefore, necessary arguments are the analyzed data given as a
- \code{siena} data object as well as the complete model specification represented
- either by an estimated \code{sienaFit} object or by the triple consisting of a
- suitable parameter vector \code{theta} and the corresponding
- \code{sienaAlgorithm} and \code{sienaEffects} objects.
+\details{\code{interpret_size} works only for estimation by the Method of Moments
+      using \code{\link{modelType}} 1 (directed networks) or 2
+      ('forcing' model for non-directed networks).
+      For dependent behavior variables, \code{behModelType=1} ('standard') is assumed.
+      It does not yet work for endowment or creation effects
+      (i.e., included effects have to be of type \code{eval}) or \code{rate},
+    and also not for models with interaction effects.
+    For two-mode (bipartite) networks as dependent variables,
+    it works only if the number of second-mode nodes is less than the
+    number of actors.
 
-A \code{sienaFit} object contains all necessary information on the model
-specification, in particular, the vector of parameter values \code{ans$theta},
-the used algorithm for estimation \code{ans$x}, and information on included
-model effects \code{ans$effects}.
+    If there are any missing tie values in the network data set, they are imputed by
+    initial zeros and Last Observation Carried Forward. Structural zeros and ones
+    are replaced by \code{NA} and treated as impossible choices in the probability
+    vectors and ignored in the standard deviations; but the change statistics
+    for these dyads still are given in \code{changeStatistics} (if requested).
 
-If \code{ans} is a valid \code{sienaFit} object, the calculations of relative
-importances are based on \code{ans$theta}, \code{ans$x}, and
-\code{ans$effects}. Alternatively, the necessary information can be given
-directly as a suitable parameter vector \code{theta}, a \code{sienaAlgorithm}
-object, and a \code{sienaEffects} object. In this case, \code{ans} has to be
-unspecified, i.e., \code{ans=NULL}.
-
-Note that \code{sienaRI} works only with Method of Moments
-(i.e., for \code{sienaAlgorithm} objects with \code{maxlike = FALSE})
-and that it does not yet work for endowment or creation effects
-(i.e., included effects have to be of type \code{eval}),
-and also not for models with interaction effects.
-For two-mode (bipartite) networks as dependent variables,
-it works only if the number of second-mode nodes is less than the
-number of actors.
-If the network is non-directed, the relative importances and entropy-based
-'degrees of certainty' are calculated for \code{modelType=2}
-('forcing'; see  \code{\link{sienaAlgorithmCreate}}).
-For dependent behavior variables, \code{behModelType=1} ('standard') is assumed.
-
-If there are any missing tie values in the network data set, they are imputed by
-initial zeros and Last Observation Carried Forward. Structural zeros and ones
-are replaced by \code{NA} and treated as impossible choices in the probability
-vectors and ignored in the standard deviations; but the change statistics
-for these dyads still are given in \code{changeStatistics} (if requested).
-
-The averages reported in the components \code{sigmas} (average across actors)
-and \code{meansigmas} (average across periods) are obtained by averaging at the
-variance level and then taking square roots.
+    The averages reported in the components \code{sigmas} (average across actors)
+    and \code{meansigmas} (average across waves) are obtained by averaging at the
+    variance level and then taking square roots.
 }
 \value{
- If the model contains only one dependent variable, \code{sienaRI} returns
+ If the model contains only one dependent variable, \code{interpret_size} returns
  an object of class \code{sienaRI}. Otherwise, it returns a list of objects
  of class \code{sienaRI}, each corresponding to one dependent variable.
 
@@ -179,17 +149,17 @@ corresponding to the observation moments.
           this is R_H(i,x) of formula (6) in Snijders (2004).
           The mean over actors of these degrees of certainty, given by
           formula (7) in Snijders (2004), is printed by the
-          \code{print} method for \code{sienaRI} objects.}
+          \code{print} method for \code{interpret_size} objects.}
     \item{- \code{sigma}}{a list of effects by ego matrices of the values of
           the within-ego standard deviations of the change statistics.}
-    \item{- \code{sigmas}}{effects by period matrices of averages
+    \item{- \code{sigmas}}{effects by wave matrices of averages
          (see above for how this is done; across actors) of \code{sigma}.
           These are printed if \code{printSigma=TRUE}.}
     \item{- \code{meansigmas}}{average (see above for how this is done)
-          over periods of \code{sigmas}.}
+          over waves of \code{sigmas}.}
     \item{- \code{changeStatistics}}{a list of arrays
           (effects by choices by egos)
-          containing, for observation at the start of a period,
+          containing, for each observation wave,
           the values of the change statistics for making this choice,
           where for one-mode networks the choice is defined by the alters
           with alter=ego referring to 'no change',
@@ -199,9 +169,9 @@ corresponding to the observation moments.
           going down, staying constant, or going up;
           this output is produced only if \code{getChangeStats=TRUE}.}
     \item{- \code{toggleProbabilities}}{an array
-         (egos by choices by periods), where "choices" are as directly above,
+         (egos by choices by waves), where "choices" are as directly above,
          giving the choice probabilities of ego in a ministep,
-         when the data are as at the start of this period.}
+         when the data are as in this wave.}
     }
 }
 
@@ -214,47 +184,46 @@ corresponding to the observation moments.
   Explained Variation in Dynamic Network Models.
   \emph{Mathematics and Social Sciences}, \bold{168}, 31--41.
 }
-\author{Natalie Indlekofer, Tom Snijders}
+\author{Natalie Indlekofer, Tom Snijders, Daniel Gotthardt}
 \examples{
-myalgorithm <- sienaAlgorithmCreate(nsub=1, n3=50, projname=NULL)
-mynet1 <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
-mydata <- sienaDataCreate(mynet1)
-myeff <- getEffects(mydata)
-myeff <- includeEffects(myeff, density, recip, outAct, inPop)
-(myeff <- setEffect(myeff, reciAct, parameter=1))
-ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE)
-RI <- sienaRI(mydata, ans)
+myalgo <- set_algorithm_saom(nsub=1, n3=50, seed=1293)
+mynet1 <- as_dependent_rsiena(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
+mydata <- make_data_rsiena(mynet1)
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, list(density, recip, outAct, inPop))
+(myeff <- set_effect(myeff, reciAct, parameter=1))
+ans <- siena(mydata, effects=myeff, control_algo=myalgo, batch=TRUE)
+RI <- interpret_size(ans, mydata)
 RI
 print(RI, printSigma=TRUE)
-# average within-ego standard deviations of change statistics by period:
+# average within-ego standard deviations of change statistics by wave:
 RI$sigmas
-# sigma averaged over periods:
+# sigma averaged over waves:
 RI$meansigmas
 # to get the change statistics:
-RI.cs <- sienaRI(mydata, ans, getChangeStats=TRUE)
-# For the network at the start of the first period:
+RI.cs <- interpret_size(ans, mydata, getChangeStats=TRUE)
+# For the network at the first wave:
 dim(RI.cs$changeStatistics[[1]])
 # E.g., the change statistics for the first actor (note the 0 first column):
 RI.cs$changeStatistics[[1]][,1,]
-# semi-standardized parameters by period:
+# semi-standardized parameters by wave:
 ans$theta * RI$meansigmas
 \dontrun{
 plot(RI, addPieChart=TRUE)
 plot(RI, actors=1:20, addPieChart=TRUE, radius=1.08)
 }
 # For two dependent variables:
-myalgorithm <- sienaAlgorithmCreate(nsub=1, n3=50, projname=NULL)
-mynet2 <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata2 <- sienaDataCreate(mynet2, mybeh)
-myeff2 <- getEffects(mydata2)
-myeff2 <- includeEffects(myeff2, density, recip, transTies)
-myeff2 <- includeEffects(myeff2, avAlt, name="mybeh", interaction1="mynet2")
-ans2 <- siena07(myalgorithm, data=mydata2, effects=myeff2, batch=TRUE)
+myalgo <- set_algorithm_saom(nsub=1, n3=50, seed=1293)
+mynet2 <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata2 <- make_data_rsiena(mynet2, mybeh)
+myeff2 <- make_specification(mydata2)
+myeff2 <- set_effect(myeff2, list(density, recip, transTies))
+myeff2 <- set_effect(myeff2, avAlt, depvar="mybeh", covar1="mynet2")
+ans2 <- siena(mydata2, effects=myeff2, control_algo=myalgo, batch=TRUE)
 # Use only the parameters for the evaluation function:
-theta.eval <- ans2$theta[myeff2$type[myeff2$include]=="eval"]
-RI <- sienaRI(mydata2, theta=theta.eval, algorithm=myalgorithm,
-              effects = myeff2)
+(theta.eval <- coef(ans2, dropRates=TRUE))
+RI <- interpret_size(myeff2, data=mydata2, theta=theta.eval)
 RI[[1]]
 RI[[2]]
 RI[[1]]$sigmas

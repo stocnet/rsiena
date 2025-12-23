@@ -15,7 +15,8 @@ bibentry(bibtype = "Misc",
          url = meta$URL,
          textVersion =
             paste("Tom A.B. Snijders, Ruth M. Ripley, Krist Boitmanis,
-            Christian Steglich, Nynke M.D. Niezink, Felix Schoenenberger, and Viviana Amati, ",
+            Christian Steglich, Nynke M.D. Niezink, Felix Schoenenberger, Viviana Amati, 
+            and Daniel Gotthardt",
             year,
             ". RSiena - Simulation Investigation for Empirical Network Analysis, ",
             vers, ". ", meta$URL, sep="")
@@ -26,8 +27,7 @@ bibentry(bibtype = "Manual",
          author = c(as.person("Tom A.B. Snijders"),
                              as.person("Ruth Ripley"),
                              as.person("Zsofia B\'{o}da"),
-                             as.person("Andr\'{a}s V\"{o}r\"{o}s"),
-                             as.person("Paulina Preciado")
+                             as.person("Andr\'{a}s V\"{o}r\"{o}s")
                              ),
          year = year,
          address = "Groningen, The Netherlands",

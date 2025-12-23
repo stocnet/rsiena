@@ -1,24 +1,35 @@
-\name{siena08}
+\name{meta_siena}
 \alias{siena08}
 \alias{sienaMeta}
+\alias{meta_siena}
 \title{
 Function to perform a meta analysis of a collection of Siena fits.
 }
 \description{
-Estimates a meta analysis based on a collection of Siena fits.
+  Estimates a meta analysis based on a collection of Siena fits.\cr   
+  \code{meta_siena()} and \code{siena08()}
+  are identical functions, differing only in the keyword
+  for the output file. The first name is preferred, 
+  the other is kept for backward compatibility.
 }
 \usage{
-siena08(..., projname = "sienaMeta", bound = 5, alpha = 0.05, maxit=20)
+
+meta_siena(..., outputName = "sienaMeta", bound = 10, alpha = 0.05, maxit=20)
+
+siena08(..., projname = "sienaMeta", bound = 10, alpha = 0.05, maxit=20)
 }
 \arguments{
   \item{\dots}{names of \code{\link{sienaFit}} objects, returned from
-    \code{\link{siena07}}.
+    \code{\link{siena}}.
     They will be renamed if entered in format \code{newname=oldname}.
     It is also allowed to give for \dots a list of \code{\link{sienaFit}}
     objects.
 }
+\item{outputName}{
+  Base name of report file if required.
+}
 \item{projname}{
-  Base name of report file if required
+  Base name of report file if required.
 }
 \item{bound}{
   Upper limit of standard error for inclusion in the meta analysis.
@@ -114,7 +125,8 @@ siena08(..., projname = "sienaMeta", bound = 5, alpha = 0.05, maxit=20)
 \author{Ruth Ripley, Tom Snijders}
 
 \seealso{\code{\link{print.sienaMeta}}, \code{\link{funnelPlot}},
-  \code{\link{meta.table}}, \code{\link{iwlsm}}, \code{\link{siena07}}
+  \code{\link{meta.table}}, \code{\link{iwlsm}}, 
+  \code{\link{siena}}
 }
 \examples{
 \dontrun{
@@ -123,36 +135,38 @@ siena08(..., projname = "sienaMeta", bound = 5, alpha = 0.05, maxit=20)
 # but the Fisher combinations of p-values are meaningful.
 # However, using three groups does show the idea.
 
-Group1 <- sienaDependent(array(c(N3401, HN3401), dim=c(45, 45, 2)))
-Group3 <- sienaDependent(array(c(N3403, HN3403), dim=c(37, 37, 2)))
-Group4 <- sienaDependent(array(c(N3404, HN3404), dim=c(33, 33, 2)))
-dataset.1 <- sienaDataCreate(Friends = Group1)
-dataset.3 <- sienaDataCreate(Friends = Group3)
-dataset.4 <- sienaDataCreate(Friends = Group4)
-OneAlgorithm <- sienaAlgorithmCreate(projname = "SingleGroups", seed=128)
-effects.1 <- getEffects(dataset.1)
-effects.3 <- getEffects(dataset.3)
-effects.4 <- getEffects(dataset.4)
-effects.1 <- includeEffects(effects.1, transTrip)
-effects.1 <- setEffect(effects.1, transRecTrip, fix=TRUE, test=TRUE)
-effects.3 <- includeEffects(effects.3, transTrip)
-effects.3 <- setEffect(effects.3, transRecTrip, fix=TRUE, test=TRUE)
-effects.4 <- includeEffects(effects.4, transTrip)
-effects.4 <- setEffect(effects.4, transRecTrip, fix=TRUE, test=TRUE)
-ans.1 <- siena07(OneAlgorithm, data=dataset.1, effects=effects.1, batch=TRUE)
-ans.3 <- siena07(OneAlgorithm, data=dataset.3, effects=effects.3, batch=TRUE)
-ans.4 <- siena07(OneAlgorithm, data=dataset.4, effects=effects.4, batch=TRUE)
+Group1 <- as_dependent_rsiena(array(c(N3401, HN3401), dim=c(45, 45, 2)))
+Group3 <- as_dependent_rsiena(array(c(N3403, HN3403), dim=c(37, 37, 2)))
+Group4 <- as_dependent_rsiena(array(c(N3404, HN3404), dim=c(33, 33, 2)))
+dataset.1 <- make_data_rsiena(Friends = Group1)
+dataset.3 <- make_data_rsiena(Friends = Group3)
+dataset.4 <- make_data_rsiena(Friends = Group4)
+OneAlgorithm <- set_algorithm_saom(seed=128, nsub=2, n3=100)
+effects.1 <- make_specification(dataset.1)
+effects.3 <- make_specification(dataset.3)
+effects.4 <- make_specification(dataset.4)
+effects.1 <- set_effect(effects.1, transTrip)
+effects.1 <- set_effect(effects.1, transRecTrip, fix=TRUE, test=TRUE)
+effects.3 <- set_effect(effects.3, transTrip)
+effects.3 <- set_effect(effects.3, transRecTrip, fix=TRUE, test=TRUE)
+effects.4 <- set_effect(effects.4, transTrip)
+effects.4 <- set_effect(effects.4, transRecTrip, fix=TRUE, test=TRUE)
+ans.1 <- siena(OneAlgorithm, data=dataset.1, effects=effects.1, batch=TRUE)
+ans.3 <- siena(OneAlgorithm, data=dataset.3, effects=effects.3, batch=TRUE)
+ans.4 <- siena(OneAlgorithm, data=dataset.4, effects=effects.4, batch=TRUE)
 ans.1
 ans.3
 ans.4
-(meta <- siena08(ans.1, ans.3, ans.4))
+meta <- meta_siena(ans.1, ans.3, ans.4)
+print(meta)
 plot(meta, which=2:3, layout = c(2,1))
 # For specifically presenting the Fisher combinations:
 # First determine the components of meta with estimated effects:
-which.est <- sapply(meta, function(x){ifelse(is.list(x),!is.null(x$cjplus),FALSE)})
+which.est <- sapply(meta, 
+                function(x){ifelse(is.list(x),!is.null(x$cjplus),FALSE)})
 Fishers <- t(sapply(1:sum(which.est),
-        function(i){c(meta[[i]]$cjplus, meta[[i]]$cjminus,
-                        meta[[i]]$cjplusp, meta[[i]]$cjminusp, 2*meta[[i]]$n1 )}))
+ function(i){c(meta[[i]]$cjplus, meta[[i]]$cjminus,
+               meta[[i]]$cjplusp, meta[[i]]$cjminusp, 2*meta[[i]]$n1 )}))
 Fishers <- as.data.frame(Fishers, row.names=names(meta)[which.est])
 names(Fishers) <- c('Fplus', 'Fminus', 'pplus', 'pminus', 'df')
 Fishers

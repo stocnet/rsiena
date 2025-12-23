@@ -28,9 +28,9 @@ See \url{https://www.stats.ox.ac.uk/~snijders/siena/s50_data.htm}
 \seealso{\code{\link{s501}}, \code{\link{s502}}, \code{\link{s503}}, \code{\link{s50a}}
 }
 \examples{
-mynet <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
-myvar <- varCovar(s50s)
-mydata <- sienaDataCreate(mynet, myvar)
+mynet <- as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+myvar  <- as_covariate_rsiena(s50s)
+mydata <- make_data_rsiena(mynet, myvar)
 mydata
 }
 \keyword{datasets}

@@ -1,5 +1,7 @@
-\name{includeInteraction}
+\name{set_interaction}
+\alias{set_interaction}
 \alias{includeInteraction}
+\alias{set_interaction.sienaEffects}
 \title{
 Function to create user-specified interactions for a Siena model.
 }
@@ -7,29 +9,64 @@ Function to create user-specified interactions for a Siena model.
   an interaction effect in a Siena effects object.
 }
 \usage{
-includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
+\method{set_interaction}{sienaEffects}(x, shortNames, type="eval",
+            depvar=x$name[1], covar1=rep("", 3), covar2=rep("", 3),
+            initialValue = 0, random=FALSE,
+            include=TRUE, fix=FALSE, test=FALSE, verbose=TRUE, ...)
+
+includeInteraction(x, ..., include = TRUE, name = x$name[1],
     type = "eval", interaction1 = rep("", 3), interaction2 = rep("", 3),
     fix=FALSE, test=FALSE, random=FALSE,
     initialValue=0,
     character = FALSE, verbose = TRUE)
 }
 \arguments{
-  \item{myeff}{a Siena effects object as created by \code{\link{getEffects}},
+  \item{x}{a Siena effects object as created by \code{\link{make_specification}},
     which is either an object of class \code{sienaEffects}
     or \code{sienaGroupEffects}.
   }
-  \item{\dots}{2 or 3 shortNames to identify the effects
-    which should be interacted.
+  \item{shortNames}{2 or 3 shortNames to identify the effects
+    which should be interacted. Should be given as character strings
+    for \code{set_interaction}.
   }
-  \item{include}{Boolean. default TRUE, but can be switched to FALSE to
+  \item{type}{
+    Type of effects to be interacted.
+  }
+  \item{depvar}{Name of dependent variable (network or behavior)
+    for which interactions are being defined.
+    Defaults to the first in the effects object.
+  }
+  \item{covar1}{
+    Vector of Siena objects where needed to completely identify the
+    effect e.g. covariate name or behavior variable name.
+    See the examples below. Trailing blanks may be omitted.
+  }
+  \item{covar2}{
+    Vector of Siena objects where needed to completely identify the
+    effect e.g. covariate name or behavior variable name.
+    Trailing blanks may be omitted.
+  }
+  \item{initialValue}{Initial value for estimation. Default 0.}
+  \item{random}{For specifying that the interaction effect will vary randomly;
+    not relevant for \code{RSiena} at this moment.
+    Boolean required. Default FALSE.}
+  \item{include}{
+    Boolean. default TRUE, but can be switched to FALSE to
     turn off an interaction.
+  }
+  \item{fix}{
+    Boolean. Are the effects to be fixed at the value stored in
+    \code{x$initialValue} or not.}
+  \item{test}{
+    Boolean. Are the effects to be tested or not (requires \code{fix}).}
+  \item{character}{Boolean: are the effect names character strings or not.}
+  \item{verbose}{Boolean: should the print of altered effects be produced.}
+  \item{\dots}{for \code{includeInteraction}: 2 or 3 shortNames to identify the effects
+    which should be interacted. Not used for \code{set_interaction}.
   }
   \item{name}{Name of dependent variable (network or behavior)
     for which interactions are being defined.
     Defaults to the first in the effects object.
-  }
-  \item{type}{
-    Type of effects to be interacted.
   }
   \item{interaction1}{
     Vector of Siena objects where needed to completely identify the
@@ -42,34 +79,24 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
     effect e.g. covariate name or behavior variable name.
     Trailing blanks may be omitted.
   }
-  \item{fix}{
-    Boolean. Are the effects to be fixed at the value stored in
-    \code{myeff$initialValue} or not.}
-  \item{test}{
-    Boolean. Are the effects to be tested or not (requires \code{fix}).}
-  \item{random}{For specifying that the interaction effect will vary randomly;
-    not relevant for \code{RSiena} at this moment.
-    Boolean required. Default FALSE.}
-  \item{initialValue}{Initial value for estimation. Default 0.}
-  \item{character}{Boolean: are the effect names character strings or not.}
-  \item{verbose}{Boolean: should the print of altered effects be produced.}
 }
 \details{The details provided should uniquely identify two or three
   effects. If so, an interaction effect will be created and included or
   not in the model. \cr
   Whether interactions between two or three given effects
-  can be created depends on their \code{interactionType} (which can be, for
+  can be created depends on their \cr
+  \code{interactionType} (which can be, for
   dependent network variables, empty, ego, or dyadic; and for dependent
   behavioral variables, empty or OK). Consult the section on Interaction
   Effects in the manual for this. The \code{interactionType} is shown
-  in the list of effects obtained from the function
+  in the list of effects obtained from the function \cr
   \code{\link{effectsDocumentation}}.\cr
   The short names must not be set between quotes,
   unless you use \code{character=TRUE}.\cr
   From the point of view of model building it is usually advisable, when
   including an interaction effect in a model, also to include the
   corresponding main effects. This is however not enforced
-  by \code{includeInteraction}.\cr
+  by \code{set_interaction}.\cr
 
   As from version 1.3.24, effects object have a "version" attribute.
   Effects objects including interaction effects are not necessarily compatible
@@ -89,7 +116,8 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   of \code{parameter} and (in this case) \code{include=FALSE} or
   \code{fix=TRUE, initialValue=0}. \cr
   If an internal effect parameter is changed for one of the main effects
-  after the last call of \code{includeInteraction} for a given interaction
+  after the last call of \cr
+  \code{set_interaction} for a given interaction
   effect, this will not be visible in the name of the interaction effect
   when the effects object is printed.
   However, the correct value of the internal effect parameter
@@ -101,7 +129,8 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   if they were not included.\cr
 
   Interaction effects are constructed from effects with shortName
-  \code{unspInt} (for networks), \code{behUnspInt} (for discrete behavior),
+  \code{unspInt} (for networks), \cr
+  \code{behUnspInt} (for discrete behavior),
   and \code{contUnspInt} (for continuous behavior) by specifying their
   elements \code{effect1} and \code{effect2}, and possibly \code{effect3}.
   The shortName is not altered by this function.
@@ -109,7 +138,7 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   The number of possible user-specified interaction effects is limited
   by the parameters \code{nintn} (for dependent network variables)
   and \code{behNintn} (for dependent behavior variables) in the call of
-  \code{\link{getEffects}}, which determine the numbers of effects with
+  \code{\link{make_specification}}, which determine the numbers of effects with
   shortNames \code{unspInt}, \code{behUnspInt}, and \code{contUnspInt}
   (for the latter two, the maximum is \code{behNintn} each).
 
@@ -124,7 +153,8 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
   between \code{recip} and \code{simX} for an example.
 
   Further information about Siena effects objects is given
-  in the help page for \code{\link{getEffects}}.
+  in the help page for \cr
+  \code{\link{make_specification}}.
 
   A list of all effects in a given effects object (e.g., \code{myeff}),
   including their names of dependent variables, effect names, short names,
@@ -144,24 +174,28 @@ includeInteraction(myeff, ..., include = TRUE, name = myeff$name[1],
 \references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley, Tom Snijders}
 \seealso{
-  \code{\link{getEffects}}, \code{\link{setEffect}},
+  \code{\link{make_specification}}, \code{\link{set_effect}},
   \code{\link{includeEffects}}, \code{\link{effectsDocumentation}
 }}
 \examples{
-mynet <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
-alc <- varCovar(s50a)
-sm <- varCovar(s50s)
-mydata <- sienaDataCreate(mynet, alc, sm)
-myeff <- getEffects(mydata)
-myeff <- includeInteraction(myeff, recip, inPop)
-myeff <- includeEffects(myeff, egoX, altX, simX, interaction1="alc")
-myeff <- includeInteraction(myeff, egoX, altX, interaction1=c("alc", "sm"))
-myeff <- includeInteraction(myeff, recip, simX, interaction1=c("", "alc"))
-myeff <- setEffect(myeff, gwespFF, parameter=20)
-myeff <- includeInteraction(myeff, recip, gwespFF)
+mynet <- as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+alc <- as_covariate_rsiena(s50a)
+sm <- as_covariate_rsiena(s50s)
+mydata <- make_data_rsiena(mynet, alc, sm)
+myeff <- make_specification(mydata)
 myeff
-(myeff <- setEffect(myeff, gwespFF, parameter=69, include=FALSE))
-myeff <- includeInteraction(myeff, recip, gwespFF)
+myeff <- set_effect(myeff, inPop)
+myeff <- set_interaction(myeff, list(recip, inPop))
+myeff
+myeff <- set_effect(myeff, list(egoX, altX, simX), interaction1="alc")
+myeff <- set_interaction(myeff, list(egoX, altX), covar1=c("alc", "sm"))
+myeff <- set_interaction(myeff, list(recip, simX), covar1=c("", "alc"))
+myeff
+myeff <- set_effect(myeff, gwespFF, parameter=20)
+myeff <- set_interaction(myeff, list(recip, gwespFF))
+myeff
+(myeff <- set_effect(myeff, gwespFF, parameter=69, include=FALSE))
+myeff <- set_interaction(myeff, list(recip, gwespFF))
 myeff
 }
-\keyword{ classes }
+\keyword{classes}

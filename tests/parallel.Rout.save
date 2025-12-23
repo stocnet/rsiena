@@ -1,13 +1,11 @@
 
-R version 4.5.1 (2025-06-13) -- "Great Square Root"
+R version 4.5.1 (2025-06-13 ucrt) -- "Great Square Root"
 Copyright (C) 2025 The R Foundation for Statistical Computing
-Platform: aarch64-apple-darwin24.4.0
+Platform: x86_64-w64-mingw32/x64
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
 Type 'license()' or 'licence()' for distribution details.
-
-  Natural language support but running in an English locale
 
 R is a collaborative project with many contributors.
 Type 'contributors()' for more information and
@@ -21,13 +19,13 @@ Type 'q()' to quit R.
 > 
 > # When new effects are added, the numbering of effects changes.
 > # This will have consequences for the output of includeInteraction,
-> # and will require adaptation of parrallel.Rout.save.
+> # and will require adaptation of parallel.Rout.save.
 > 
 > ##test3
 > mynet1 <- sienaDependent(array(c(tmp3, tmp4),dim=c(32, 32, 2)))
 > mydata <- sienaDataCreate(mynet1)
 > myeff<- getEffects(mydata)
-> mymodel<- model.create(findiff=TRUE, fn = simstats0c,
+> mymodel<- sienaAlgorithmCreate(findiff=TRUE, fn = simstats0c,
 +                        cond=FALSE, nsub=2, n3=50, seed=3)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > print('test3')
@@ -101,7 +99,7 @@ Total of 231 iteration steps.
 > mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
 > mydata <- sienaDataCreate(mynet1)
 > myeff<- getEffects(mydata)
-> mymodel<- model.create(fn = simstats0c,  nsub=2, n3=50,
+> mymodel<- sienaAlgorithmCreate(fn = simstats0c,  nsub=2, n3=50,
 +                        cond=FALSE, seed=5)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > print('test5')
@@ -199,7 +197,7 @@ chi-squared = 11.43, d.f. = 2;  p = 0.003.
 > mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
 > mydata <- sienaDataCreate(mynet1)
 > myeff<- getEffects(mydata)
-> mymodel<- model.create(fn = simstats0c,  nsub=2, n3=50,
+> mymodel<- sienaAlgorithmCreate(fn = simstats0c,  nsub=2, n3=50,
 +                        cond=FALSE, doubleAveraging=0,seed=5)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > print('test6')
@@ -258,7 +256,7 @@ chi-squared = 0.91, d.f. = 1; one-sided Z = 0.95; two-sided p = 0.341.
 > mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
 > mydata <- sienaDataCreate(mynet1)
 > myeff<- getEffects(mydata)
-> mymodel<- model.create(fn = simstats0c,  nsub=2, n3=50,
+> mymodel<- sienaAlgorithmCreate(fn = simstats0c,  nsub=2, n3=50,
 +                        cond=FALSE,  diagonalize=0.5, seed=5)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > print('test7')
@@ -281,7 +279,7 @@ Overall maximum convergence ratio:    0.3630
 Total of 545 iteration steps.
 
 > ##test8
-> mymodel<- model.create(fn = simstats0c,  nsub=1, n3=50,
+> mymodel<- sienaAlgorithmCreate(fn = simstats0c,  nsub=1, n3=50,
 +                        cond=TRUE, condvarno=1, seed=5)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > print('test8')
@@ -361,7 +359,7 @@ Total of 335 iteration steps.
 > ##test11
 > print('test11')
 [1] "test11"
-> mymodel<- model.create(fn = simstats0c,  nsub=1, n3=50,
+> mymodel<- sienaAlgorithmCreate(fn = simstats0c,  nsub=1, n3=50,
 +                        behModelType=c(mynet2=2), seed=6)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > (ans <- siena07(mymodel, data=mydata, effects=myeff, batch=TRUE,
@@ -475,7 +473,7 @@ Use the following indices for plotting:
 
 If you would like to fit time dummies to your model,
 use the includeTimeDummy function.
-Type "?sienaTimeTest" for more information on this output.
+Type "?test_time" for more information on this output.
 > ##test13
 > print('test13')
 [1] "test13"
@@ -606,7 +604,7 @@ Total of 266 iteration steps.
 10 mynet2 mynet2 linear shape             TRUE    FALSE FALSE    0.32237   0   
 11 mynet2 mynet2 quadratic shape          TRUE    FALSE FALSE    0.00000   0   
 12 mynet2 mynet2 average similarity       TRUE    FALSE FALSE    0.00000   0   
-> (myeff <- includeGMoMStatistics(myeff, simX_gmm, interaction1="mynet2"))
+> (myeff <- includeGMoMStatistics(myeff, simX_gmm, covar1="mynet2"))
     name shortName type include
 1 mynet1  simX_gmm  gmm    TRUE
 
@@ -763,7 +761,8 @@ Total of 305 iteration steps.
 For dependent variable mybeh, in some periods,
 there are only increases, or only decreases.
 This will be respected in the simulations. 
-If this is not desired, use allowOnly=FALSE when creating the dependent variable.
+If this is not desired,
+ use allowOnly=FALSE when creating the dependent variable.
 Dependent variables:  mynet, mybeh 
 Number of observations: 2 
 
@@ -783,7 +782,7 @@ Nodeset            Actors
 Range              0 - 1   
 
 "uponly":  mybeh:    all periods
-> mymodel <- sienaModelCreate(seed=1234, firstg=0.001, nsub=1, n3=10)
+> mymodel <- sienaAlgorithmCreate(projname=NULL, seed=1234, firstg=0.001, nsub=1, n3=10)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > myeff <- getEffects(mydata)
 > (myeff <- setEffect(myeff,avExposure,type='rate',parameter=2,
@@ -936,8 +935,8 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 1 367          mynet1: from mynet2 agreement (0) from      TRUE    FALSE FALSE
   initialValue parm
 1          0   0   
-> (myeff <- includeGMoMStatistics(myeff, from_gmm, name='mynet1',
-+                                 interaction1='mynet2'))
+> (myeff <- includeGMoMStatistics(myeff, from_gmm, depvar='mynet1',
++                                 covar1='mynet2'))
     name shortName type include
 1 mynet1  from_gmm  gmm    TRUE
 
@@ -1066,10 +1065,9 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 +   data = mydata,
 +   effects = mymodel,
 +   returnChangeContributions = TRUE,
-+   silent=TRUE
++   silent=TRUE, batch=TRUE 
 + )
-No X11 device available, forcing use of batch mode
-> length(ans$changeContributions) # 50 as expected
+> length(ans$changeContributions) # 60 as expected
 [1] 60
 > head(ans$changeContributions[[1]][[1]][[1]])
 [[1]]
@@ -1231,7 +1229,7 @@ attr(,"networkType")
 > dim(ans$changeContributions[[1]][[1]][[1]][[1]]) # 3 x 50 as expected
 [1]  3 50
 > 
-> # Test returnChangeContributions when setting msub = 0 and prevAns = ans, 
+> # Test returnChangeContributions when setting nsub = 0 and prevAns = ans, 
 > #using batch mode
 > mycontrols$nsub <- 0
 > ans2 <- siena07(
@@ -1246,7 +1244,7 @@ Start phase 0
 theta:  6.496  5.161 -2.659  2.435  0.604 
 
 Start phase 3 
-> length(ans$changeContributions) # 60 chainsas expected
+> length(ans$changeContributions) # 60 chains as expected
 [1] 60
 > head(ans$changeContributions[[1]][[1]][[1]])
 [[1]]
@@ -1413,7 +1411,7 @@ attr(,"networkType")
 > print('test22')
 [1] "test22"
 > 
-> RIDynamics1 <- sienaRIDynamics(data=mydata, 
+> RIDynamics1 <- interpret_size_dynamics(data=mydata, 
 +      ans=ans, 
 +      useChangeContributions=TRUE, 
 +      intervalsPerPeriod=10)
@@ -1473,8 +1471,7 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 3 0   
 > ans2 <- siena07(mycontrols2, data=mydata2, effects=mymodel2, batch=TRUE,
 +      silent=TRUE)
-> RIDynamics2 <- sienaRIDynamics(mydata2, ans=ans2)
-No X11 device available, forcing use of batch mode
+> RIDynamics2 <-  interpret_size_dynamics(mydata2, ans=ans2)
 > RIDynamics2
 
   Relative importance of effects in micro-steps of 
@@ -1500,9 +1497,8 @@ Period 1:
 
 > 
 > ### Don't use ans but previously estimated coefficients ----
-> RIDynamics3 <- sienaRIDynamics(data=mydata2, theta=c(ans2$rate,ans2$theta),
+> RIDynamics3 <- interpret_size_dynamics(data=mydata2, theta=c(ans2$rate,ans2$theta),
 +              algorithm=mycontrols2, effects=mymodel2, intervalsPerPeriod=10)
-No X11 device available, forcing use of batch mode
 > RIDynamics3
 
   Relative importance of effects in micro-steps of 
@@ -1533,8 +1529,7 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 > ans3 <- siena07(mycontrols3, data=mydata2, effects=mymodel2, batch=TRUE, 
 +      silent=TRUE)
 > 
-> RIDynamics4 <- sienaRIDynamics(mydata2, ans=ans3, effects = mymodel2)
-No X11 device available, forcing use of batch mode
+> RIDynamics4 <- interpret_size_dynamics(mydata2, ans=ans3, effects = mymodel2)
 > RIDynamics4
 
   Relative importance of effects in micro-steps of 
@@ -1595,7 +1590,7 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 > getDepvarName <- function(ministep) attr(ministep, "networkName")
 > beh_steps <- Filter(function(ministep) getDepvarName(ministep)  == "mybeh", 
 +      ans4$changeContributions[[1]][[1]][[1]]) # 1st period, 1st group, 1st chain, behavior steps
-> RIDynamics5 <- sienaRIDynamics(mydata3, ans=ans4, depvar="mybeh",
+> RIDynamics5 <- interpret_size_dynamics(mydata3, ans=ans4, depvar="mybeh",
 +                                useChangeContributions=TRUE)
 > RIDynamics5
 
@@ -1633,8 +1628,7 @@ Period 2:
 
 > net_steps <- Filter(function(ministep) getDepvarName(ministep)  == "mynet3", 
 +      ans4$changeContributions[[1]][[1]][[1]]) # 1st period, 1st group, 1st chain, network steps
-> RIDynamics6 <- sienaRIDynamics(mydata3, ans=ans4, depvar="mynet3")
-No X11 device available, forcing use of batch mode
+> RIDynamics6 <- interpret_size_dynamics(mydata3, ans=ans4, depvar="mynet3")
 > RIDynamics6
 
   Relative importance of effects in micro-steps of 
@@ -1680,7 +1674,8 @@ Period 2:
 > 
 > ## delete output file
 > if (file.exists('Siena.txt')){unlink('Siena.txt')}
+> if (file.exists('.txt')){unlink('.txt')}
 > 
 > proc.time()
    user  system elapsed 
- 64.393   4.895  67.004 
+  37.81    0.76   38.65 

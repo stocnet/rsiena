@@ -1,11 +1,17 @@
-\name{sienaGroupCreate}
+\name{make_group_rsiena}
 \alias{sienaGroupCreate}
 \alias{sienaGroup}
+\alias{make_group_rsiena}
 \title{Function to group together several Siena data objects }
 \description{Creates an object of class "sienaGroup" from a list of  
-  Siena data objects.
+  Siena data objects.\cr
+  The functions \code{make_group_rsiena} and \code{sienaGroupCreate}
+  are identical. The first name is preferred, 
+  the other is kept for backward compatibility.
 }
 \usage{
+make_group_rsiena(objlist, singleOK = FALSE)
+
 sienaGroupCreate(objlist, singleOK = FALSE, getDocumentation=FALSE)
 }
 \arguments{
@@ -42,14 +48,14 @@ for dyadic covariates an \eqn{n \times n \times 2}{n * n * 2} array
 The values for the second wave should be identical to those for the
 first wave (they will be used only for centering operations).
 
-For later use in \code{\link{siena07}},
+For later use in \code{\link{siena}},
 it will often (but not always...) be helpful when creating the
 Siena data objects in \code{objlist}
 to use \code{allowOnly=FALSE} in the call of
-\code{\link{sienaDependent}}; see the help page for this function.
+\code{\link{as_dependent_rsiena}}; see the help page for this function.
 
-If there are multiple dependent networks, it may be necessary to run
-\code{\link{sienaDataConstraint}} before \code{sienaGroupCreate}
+If there are multiple dependent networks, it may be necessary to run \cr
+\code{\link{make_constraint.sienadata}} before \code{make_group_rsiena}
 to ensure that these constraints are equal for all groups.
 }
 
@@ -133,29 +139,29 @@ containing the input objects, with attributes:
 \references{See the Section on Multi-group Siena analysis in the manual
    available from \url{https://www.stats.ox.ac.uk/~snijders/siena/ }.}
 \author{ Ruth Ripley, Modification by Tom Snijders }
-\seealso{\code{\link{sienaDataCreate}}, \code{\link{sienaDataConstraint}} }
+\seealso{\code{\link{make_data_rsiena}} }
 \examples{
-Group1 <- sienaDependent(array(c(N3401, HN3401), dim=c(45, 45, 2)))
-Group3 <- sienaDependent(array(c(N3403, HN3403), dim=c(37, 37, 2)))
-Group4 <- sienaDependent(array(c(N3404, HN3404), dim=c(33, 33, 2)))
-Group6 <- sienaDependent(array(c(N3406, HN3406), dim=c(36, 36, 2)))
+Group1 <- as_dependent_rsiena(array(c(N3401, HN3401), dim=c(45, 45, 2)))
+Group3 <- as_dependent_rsiena(array(c(N3403, HN3403), dim=c(37, 37, 2)))
+Group4 <- as_dependent_rsiena(array(c(N3404, HN3404), dim=c(33, 33, 2)))
+Group6 <- as_dependent_rsiena(array(c(N3406, HN3406), dim=c(36, 36, 2)))
 # Illustration of the use of group-level variables:
 # dum1 is a dummy variable for group 1,
 # having constant value 1 in group 1, and constant value 0 in the other groups.
-dum1.1  <- coCovar(c(rep(1,45)), warn = FALSE)
-dum1.3  <- coCovar(c(rep(0,37)), warn = FALSE)
-dum1.4  <- coCovar(c(rep(0,33)), warn = FALSE)
-dum1.6  <- coCovar(c(rep(0,36)), warn = FALSE)
+dum1.1  <- as_covariate_rsiena(c(rep(1,45)), warn = FALSE)
+dum1.3  <- as_covariate_rsiena(c(rep(0,37)), warn = FALSE)
+dum1.4  <- as_covariate_rsiena(c(rep(0,33)), warn = FALSE)
+dum1.6  <- as_covariate_rsiena(c(rep(0,36)), warn = FALSE)
 # In a similar way, dummies for the other groups can be defined.
-dataset.1 <- sienaDataCreate(Friends = Group1, dum1 = dum1.1)
-dataset.3 <- sienaDataCreate(Friends = Group3, dum1 = dum1.3)
-dataset.4 <- sienaDataCreate(Friends = Group4, dum1 = dum1.4)
-dataset.6 <- sienaDataCreate(Friends = Group6, dum1 = dum1.6)
-(FourGroups <- sienaGroupCreate(list(dataset.1, dataset.3, dataset.4,
+dataset.1 <- make_data_rsiena(Friends = Group1, dum1 = dum1.1)
+dataset.3 <- make_data_rsiena(Friends = Group3, dum1 = dum1.3)
+dataset.4 <- make_data_rsiena(Friends = Group4, dum1 = dum1.4)
+dataset.6 <- make_data_rsiena(Friends = Group6, dum1 = dum1.6)
+(FourGroups <- make_group_rsiena(list(dataset.1, dataset.3, dataset.4,
                                      dataset.6)))
 class(FourGroups)
 # The main effect of the group-level variable is the \code{egoX} effect:
-myeff <- getEffects(FourGroups)
-(myeff <- includeEffects(myeff, egoX, interaction1 = "dum1"))
+myeff <- make_specification(FourGroups)
+(myeff <- set_effect(myeff, egoX, covar1 = "dum1"))
 }
-\keyword{ classes }
+\keyword{classes}

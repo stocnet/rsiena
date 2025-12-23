@@ -13,8 +13,8 @@
 ## * even if these main effects were not requested.
 ## *
 ## ****************************************************************************/
-##@print.siena Methods
-print.siena <- function(x, ...)
+##@print.sienadata Methods
+print.sienadata <- function(x, ...)
 {
     ##@onlys internal print.siena; prints matrix attributes of x$depvar
 	onlys <- function(x, attrib){
@@ -52,7 +52,7 @@ print.siena <- function(x, ...)
 		}
 	}
 # begin main method siena.print proper
-	if (!inherits(x, "siena"))
+	if ((!inherits(x, "sienadata")) & (!inherits(x, "siena")))
 	{
         stop("not a legitimate Siena data object")
 	}
@@ -1308,3 +1308,9 @@ print.chains.data.frame <- function(x, ...)
 		print(endState)
 	}
 }
+
+## extra for backward compatibility with siena objects
+## created before version 1.6:
+
+##@print.siena Methods
+print.siena <- print.sienadata

@@ -1599,7 +1599,7 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 		tt <- getInternals()
 		return(tt)
 	}
-	if (!inherits(x, 'sienaGroup') && !inherits(x, 'siena'))
+	if (!inherits(x, 'sienaGroup') && !inherits(x, 'sienadata') && !inherits(x, 'siena'))
 	{
 		stop('Not a valid siena data object or group')
 	}
@@ -2320,3 +2320,28 @@ getBipartiteStartingVals <- function(depvar)
 	list(startRate=startRate, degree=alphaf1, alpha=alpha, prec=prec, tmp=tmp,
 		untrimmed = untrimmed)
 }
+
+
+make_specification <- function(x, ...) UseMethod("make_specification", x)
+
+##@ make_specification DataCreate method for siena data sets
+make_specification.sienadata <- function(x, nintn = 10, behNintn=4, 
+										onePeriodSde=FALSE, ...)
+{
+	getEffects(x, nintn = nintn, behNintn=behNintn, 
+					getDocumentation=FALSE, onePeriodSde=onePeriodSde)
+}
+
+##@ make_specification DataCreate method for siena data sets
+make_specification.sienaGroup <- function(x, nintn = 10, behNintn=4, 	
+											onePeriodSde=FALSE, ...)
+{
+	getEffects(x, nintn = nintn, behNintn=behNintn, 
+					getDocumentation=FALSE, onePeriodSde=onePeriodSde)
+}
+					
+## extra for backward compatibility with siena objects
+## created before version 1.6:
+
+##@make_specification.siena Methods
+make_specification.siena <- make_specification.sienadata

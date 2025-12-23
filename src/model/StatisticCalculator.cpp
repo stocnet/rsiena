@@ -907,7 +907,7 @@ void StatisticCalculator::calculateBehaviorStatistics(
 	{
 		difference[i] =
 			pBehaviorData->value(this->lperiod, i) - currentState[i];
-// is this correct? centering?
+// This is a difference between two integer vectors, so both are non-centered
 		if (pBehaviorData->missing(this->lperiod, i) ||
 			pBehaviorData->missing(this->lperiod + 1, i))
 		{

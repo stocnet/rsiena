@@ -6,12 +6,12 @@
   Print methods for Siena effects objects
 }
 \description{
-  Prints the major columns of the effects object.   
+  Prints the major columns of the effects object.
   Or all, with any non-atomic columns listed separately.
 }
 \usage{
 \method{print}{sienaEffects}(x, fileName = NULL, includeOnly=TRUE,
-   expandDummies = FALSE, includeRandoms = FALSE, dropRates=FALSE, 
+   expandDummies = FALSE, includeRandoms = FALSE, dropRates=FALSE,
    includeShortNames=FALSE, ...)
 \method{summary}{sienaEffects}(object, fileName = NULL,
    includeOnly=TRUE, expandDummies = FALSE, ...)
@@ -46,7 +46,8 @@
   of the statistics used for GMoM estimation.
 
  The function \code{summary.sienaEffects} checks the rows for valid
- printing via \code{print.data.frame} and excludes any that will
+ printing via \cr
+ \code{print.data.frame} and excludes any that will
  fail. The OK columns are printed first, followed by any others.
 
  Output from either can be directed to a file by using the argument
@@ -58,19 +59,22 @@
 \author{Ruth Ripley, modifications by Tom Snijders and Viviana Amati.
 }
 \seealso{\code{\link{sienaEffects}},
-    \code{\link{getEffects}}, \code{\link{includeEffects}},
-    \code{\link{includeGMoMStatistics}},
-    \code{\link{sienaTimeTest}},
+    \code{\link{make_specification}}, \code{\link{set_effect}},
+    \code{\link{includeGMoMStatistics}}, \cr
+    \code{\link{test_time}},
     \code{\link{effectsDocumentation}}
 }
 \examples{
-mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
-mybeh <- sienaDependent(s50a, type="behavior")
-mycovar <- coCovar(rnorm(50))
-mydyadcovar <- coDyadCovar(matrix(as.numeric(rnorm(2500) > 2), nrow=50))
-mydata <- sienaDataCreate(mynet1, mybeh, mycovar, mydyadcovar)
-myeff <- getEffects(mydata)
-myeff
+mynet <- as_dependent_rsiena(
+           array(c(s501, s502, s503), dim=c(50, 50, 3)))
+mybeh <- as_dependent_rsiena(s50a, type="behavior")
+mycovar <- as_covariate_rsiena(rnorm(50))
+mydyadcovar <- as_covariate_rsiena(
+              matrix(as.numeric(rnorm(2500) > 2), nrow=50),
+              type="oneMode")
+(mydata <- make_data_rsiena(mynet, mybeh, mycovar, mydyadcovar))
+myeff <- make_specification(mydata)
+print(myeff)
 print(myeff, includeShortNames=TRUE)
 summary(myeff)
 }

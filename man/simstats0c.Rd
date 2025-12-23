@@ -5,28 +5,33 @@
 \alias{terminateFRAN}
 \title{Versions of FRAN}
 \description{
- The functions to be called as "FRAN" by \code{\link{siena07}}.   
+ The functions to be called as "FRAN" by \code{\link{siena}}
+ and \code{\link{siena07}}.
  They call compiled C++. Not for general users' use.
 }
 \usage{
 simstats0c(z, x, data=NULL, effects=NULL, fromFiniteDiff=FALSE,
-           returnDeps=FALSE, returnChains=FALSE, returnChangeContributions=FALSE,
+           returnDeps=FALSE, returnChains=FALSE, 
+           returnChangeContributions=FALSE,
            byWave=FALSE, returnDataFrame=FALSE, returnLoglik=FALSE)
 maxlikec(z, x, data=NULL, effects=NULL,
            returnChains=FALSE, byGroup = FALSE, 
-           byWave=FALSE, returnDataFrame=FALSE, returnLoglik=FALSE, onlyLoglik=FALSE)
+           byWave=FALSE, returnDataFrame=FALSE, 
+           returnLoglik=FALSE, onlyLoglik=FALSE)
 initializeFRAN(z, x, data, effects, prevAns=NULL, initC,
            profileData=FALSE, returnDeps=FALSE, returnChains=FALSE,
-           returnChangeContributions=FALSE, byGroup=FALSE, returnDataFrame=FALSE,
+           returnChangeContributions=FALSE, 
+           byGroup=FALSE, returnDataFrame=FALSE,
            byWave=FALSE, returnLoglik=FALSE, onlyLoglik=FALSE)
 terminateFRAN(z, x)
 }
 \arguments{
-  \item{z}{Control object, passed in automatically in  \code{\link{siena07}}.}
-  \item{x}{A sienaAlgorithm object, passed in automatically in  \code{\link{siena07}}.}
-  \item{data}{A sienaData object as returned by \code{\link{sienaDataCreate}}.}
+  \item{z}{Control object, passed in automatically in  \code{\link{siena}}.}
+  \item{x}{A sienaAlgorithm object, passed in automatically in  \code{\link{siena}}.}
+  \item{data}{A \code{\link{sienadata}} object as returned by 
+    \code{\link{make_data_rsiena}}.}
   \item{effects}{A sienaEffects object as
-    returned by \code{\link{getEffects}}.}
+    returned by \code{\link{make_specification}}.}
   \item{fromFiniteDiff}{Boolean used during calculation of derivatives
     by finite differences. Not for user use.}
   \item{returnDeps}{Boolean. Whether to return the simulated networks in
@@ -36,7 +41,7 @@ terminateFRAN(z, x)
   \item{byWave}{Boolean. Whether to return the finite difference or
     maximum likelihood
     derivatives by wave (uses a great deal of memory). Only necessary
-    for \code{\link{sienaTimeTest}}}
+    for \code{\link{test_time}}}
   \item{byGroup}{Boolean. For internal use: allows different thetas for each
     group to be used in \code{sienaBayes}.}
   \item{returnDataFrame}{Boolean. Whether to return the chains as
@@ -46,7 +51,7 @@ terminateFRAN(z, x)
    \item{onlyLoglik}{Boolean: whether to return just the likelihood for
     the simulated chain, plus details of steps accepted and rejected. }
   \item{prevAns}{An object of class "sienaFit" as returned by
-   \code{\link{siena07}}, from which scaling
+   \code{\link{siena}}, from which scaling
     information (derivative matrix and standard deviation of the
     deviations) will be extracted along with the latest version of the
     parameters which will be used as the initial values, unless the
@@ -68,7 +73,7 @@ terminateFRAN(z, x)
   should be used for the element FRAN of the model object, the former when using
   estimation by forward simulation, the latter for maximum likelihood estimation.
   The arguments with no defaults must be passed in on the call to
-  \code{\link{siena07}}.
+  \code{\link{siena}}.
   \code{initializeFRAN} and \code{terminateFRAN} are called in both cases.
 }
 \value{\code{simstats0c} returns a list containing:
@@ -103,7 +108,7 @@ terminateFRAN(z, x)
     each period. Each list consists a list for each dependent variable, each 
     of which consists of a list for each period, each component of which 
     is a matrix of effects times choices containing the changeContributions 
-    (+- change statistics) for each ministep.
+    (+- change statistics) for each ministep. \cr
     Only if \code{returnChangeContributions} is TRUE.}
   \item{accepts}{Number of accepted MH steps by dependent variable
     (permute steps are counted under first dependent variable)}
@@ -112,22 +117,22 @@ terminateFRAN(z, x)
   \item{aborts}{Number of aborted MH steps counted under first dependent
     variable.}
   \item{loglik}{Loglikelihood of the simulations. Only if
-    \code{returnLoglik} is TRUE. If \code{onlyLoglik} is TRUE, only
-    \code{loglik}, \code{accepts},\code{rejects} and \code{aborts} are
-    returned.}
+    \code{returnLoglik} is TRUE. \cr
+    If \code{onlyLoglik} is TRUE, only \code{loglik}, \code{accepts},
+    \code{rejects} and \code{aborts} are returned.}
   \code{initializeFRAN} and \code{terminateFRAN} return the control
     object \code{z}.
 }
 \references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley }
-\seealso{\code{\link{siena07}} }
+\seealso{\code{\link{siena}} }
 \examples{
-
-mynet1 <- sienaNet(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
-mydata <- sienaDataCreate(mynet1)
-myeff <- getEffects(mydata)
-myeff <- includeEffects(myeff, transTrip)
-myalgorithm <- sienaAlgorithmCreate(fn=simstats0c, nsub=2, n3=100, projname=NULL)
+mynet1 <- as_dependent_rsiena(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
+mydata <- make_data_rsiena(mynet1)
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, transTrip)
+myalgorithm <- sienaAlgorithmCreate(fn=simstats0c, 
+                                    nsub=2, n3=100, projname=NULL)
 ans <- siena07(myalgorithm, data=mydata, effects=myeff,  batch=TRUE)
 }
 \keyword{models}

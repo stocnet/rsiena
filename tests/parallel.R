@@ -2,13 +2,13 @@ library(RSiena)
 
 # When new effects are added, the numbering of effects changes.
 # This will have consequences for the output of includeInteraction,
-# and will require adaptation of parrallel.Rout.save.
+# and will require adaptation of parallel.Rout.save.
 
 ##test3
 mynet1 <- sienaDependent(array(c(tmp3, tmp4),dim=c(32, 32, 2)))
 mydata <- sienaDataCreate(mynet1)
 myeff<- getEffects(mydata)
-mymodel<- model.create(findiff=TRUE, fn = simstats0c,
+mymodel<- sienaAlgorithmCreate(findiff=TRUE, fn = simstats0c,
                        cond=FALSE, nsub=2, n3=50, seed=3)
 print('test3')
 ans<- siena07(mymodel, data=mydata, effects=myeff,
@@ -29,7 +29,7 @@ ans
 mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
 mydata <- sienaDataCreate(mynet1)
 myeff<- getEffects(mydata)
-mymodel<- model.create(fn = simstats0c,  nsub=2, n3=50,
+mymodel<- sienaAlgorithmCreate(fn = simstats0c,  nsub=2, n3=50,
                        cond=FALSE, seed=5)
 print('test5')
 ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
@@ -46,7 +46,7 @@ score.Test(ans)
 mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
 mydata <- sienaDataCreate(mynet1)
 myeff<- getEffects(mydata)
-mymodel<- model.create(fn = simstats0c,  nsub=2, n3=50,
+mymodel<- sienaAlgorithmCreate(fn = simstats0c,  nsub=2, n3=50,
                        cond=FALSE, doubleAveraging=0,seed=5)
 print('test6')
 ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
@@ -63,7 +63,7 @@ testSame.RSiena(ans, 3, 4)
 mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
 mydata <- sienaDataCreate(mynet1)
 myeff<- getEffects(mydata)
-mymodel<- model.create(fn = simstats0c,  nsub=2, n3=50,
+mymodel<- sienaAlgorithmCreate(fn = simstats0c,  nsub=2, n3=50,
                        cond=FALSE,  diagonalize=0.5, seed=5)
 print('test7')
 ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
@@ -71,7 +71,7 @@ ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
 ##, verbose=TRUE)#,dll='../siena/src/RSiena.dll')
 ans
 ##test8
-mymodel<- model.create(fn = simstats0c,  nsub=1, n3=50,
+mymodel<- sienaAlgorithmCreate(fn = simstats0c,  nsub=1, n3=50,
                        cond=TRUE, condvarno=1, seed=5)
 print('test8')
 ans <- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
@@ -96,7 +96,7 @@ ans <- siena07(mymodel, data=mydata, effects=myeff, batch=TRUE,
 ans
 ##test11
 print('test11')
-mymodel<- model.create(fn = simstats0c,  nsub=1, n3=50,
+mymodel<- sienaAlgorithmCreate(fn = simstats0c,  nsub=1, n3=50,
                        behModelType=c(mynet2=2), seed=6)
 (ans <- siena07(mymodel, data=mydata, effects=myeff, batch=TRUE,
                parallelTesting=TRUE, silent=TRUE))
@@ -150,7 +150,7 @@ myeff <- getEffects(mydata)
 (myeff <- includeEffects(myeff, transTrip))
 (myeff <- includeEffects(myeff, egoX, simX, interaction1="mynet2"))
 (myeff <- includeEffects(myeff, avSim, name="mynet2", interaction1="mynet1"))
-(myeff <- includeGMoMStatistics(myeff, simX_gmm, interaction1="mynet2"))
+(myeff <- includeGMoMStatistics(myeff, simX_gmm, covar1="mynet2"))
 algo <- sienaAlgorithmCreate(nsub=1, n3=100, gmm=TRUE, seed=6)
 (ans <- siena07(algo, data=mydata, effects=myeff, batch=TRUE,
                 parallelTesting=TRUE, silent=TRUE))
@@ -175,7 +175,7 @@ sm2 <- pmax(sm1,sm2)
 sm2[c(33,28,29,44)] <- 1
 mybeh <- sienaDependent(cbind(sm1,sm2), type="behavior")
 (mydata <- sienaDataCreate(mynet, mybeh))
-mymodel <- sienaModelCreate(seed=1234, firstg=0.001, nsub=1, n3=10)
+mymodel <- sienaAlgorithmCreate(projname=NULL, seed=1234, firstg=0.001, nsub=1, n3=10)
 myeff <- getEffects(mydata)
 (myeff <- setEffect(myeff,avExposure,type='rate',parameter=2,
                             name='mybeh',interaction1='mynet'))
@@ -218,8 +218,8 @@ mydata <- sienaDataCreate(mynet1, mynet2)
 myeff <- getEffects(mydata)
 myeff <- includeEffects(myeff, crprod, name='mynet2', interaction1='mynet1')
 myeff <- setEffect(myeff, from, name='mynet1', interaction1='mynet2')
-(myeff <- includeGMoMStatistics(myeff, from_gmm, name='mynet1',
-                                interaction1='mynet2'))
+(myeff <- includeGMoMStatistics(myeff, from_gmm, depvar='mynet1',
+                                covar1='mynet2'))
 (ans <- siena07(myalgorithm1, data=mydata, effects=myeff[myeff$type!="gmm",],
                 batch=TRUE, silent=TRUE))
 (ans1 <- siena07(myalgorithm2, data=mydata, effects=myeff,
@@ -248,13 +248,13 @@ ans <- siena07(
   data = mydata,
   effects = mymodel,
   returnChangeContributions = TRUE,
-  silent=TRUE
+  silent=TRUE, batch=TRUE 
 )
-length(ans$changeContributions) # 50 as expected
+length(ans$changeContributions) # 60 as expected
 head(ans$changeContributions[[1]][[1]][[1]])
 dim(ans$changeContributions[[1]][[1]][[1]][[1]]) # 3 x 50 as expected
 
-# Test returnChangeContributions when setting msub = 0 and prevAns = ans, 
+# Test returnChangeContributions when setting nsub = 0 and prevAns = ans, 
 #using batch mode
 mycontrols$nsub <- 0
 ans2 <- siena07(
@@ -264,7 +264,7 @@ ans2 <- siena07(
   batch=TRUE,
   prevAns = ans,
   returnChangeContributions = TRUE)
-length(ans$changeContributions) # 60 chainsas expected
+length(ans$changeContributions) # 60 chains as expected
 head(ans$changeContributions[[1]][[1]][[1]])
 
 ##test22
@@ -273,7 +273,7 @@ head(ans$changeContributions[[1]][[1]][[1]])
 ### Use changeContributions from ans ----
 print('test22')
 
-RIDynamics1 <- sienaRIDynamics(data=mydata, 
+RIDynamics1 <- interpret_size_dynamics(data=mydata, 
      ans=ans, 
      useChangeContributions=TRUE, 
      intervalsPerPeriod=10)
@@ -287,11 +287,11 @@ mymodel2 <- getEffects(mydata2)
 mymodel2 <- includeEffects(mymodel2, density, recip, transTies)
 ans2 <- siena07(mycontrols2, data=mydata2, effects=mymodel2, batch=TRUE,
      silent=TRUE)
-RIDynamics2 <- sienaRIDynamics(mydata2, ans=ans2)
+RIDynamics2 <-  interpret_size_dynamics(mydata2, ans=ans2)
 RIDynamics2
 
 ### Don't use ans but previously estimated coefficients ----
-RIDynamics3 <- sienaRIDynamics(data=mydata2, theta=c(ans2$rate,ans2$theta),
+RIDynamics3 <- interpret_size_dynamics(data=mydata2, theta=c(ans2$rate,ans2$theta),
              algorithm=mycontrols2, effects=mymodel2, intervalsPerPeriod=10)
 RIDynamics3
 
@@ -300,7 +300,7 @@ mycontrols3 <- sienaAlgorithmCreate(nsub=2, n3=60, cond=TRUE, seed = 4242)
 ans3 <- siena07(mycontrols3, data=mydata2, effects=mymodel2, batch=TRUE, 
      silent=TRUE)
 
-RIDynamics4 <- sienaRIDynamics(mydata2, ans=ans3, effects = mymodel2)
+RIDynamics4 <- interpret_size_dynamics(mydata2, ans=ans3, effects = mymodel2)
 RIDynamics4
 
 ##test23
@@ -324,13 +324,14 @@ ministeps <- ans4$changeContributions[[1]][[1]][[1]]
 getDepvarName <- function(ministep) attr(ministep, "networkName")
 beh_steps <- Filter(function(ministep) getDepvarName(ministep)  == "mybeh", 
      ans4$changeContributions[[1]][[1]][[1]]) # 1st period, 1st group, 1st chain, behavior steps
-RIDynamics5 <- sienaRIDynamics(mydata3, ans=ans4, depvar="mybeh",
+RIDynamics5 <- interpret_size_dynamics(mydata3, ans=ans4, depvar="mybeh",
                                useChangeContributions=TRUE)
 RIDynamics5
 net_steps <- Filter(function(ministep) getDepvarName(ministep)  == "mynet3", 
      ans4$changeContributions[[1]][[1]][[1]]) # 1st period, 1st group, 1st chain, network steps
-RIDynamics6 <- sienaRIDynamics(mydata3, ans=ans4, depvar="mynet3")
+RIDynamics6 <- interpret_size_dynamics(mydata3, ans=ans4, depvar="mynet3")
 RIDynamics6
 
 ## delete output file
 if (file.exists('Siena.txt')){unlink('Siena.txt')}
+if (file.exists('.txt')){unlink('.txt')}

@@ -1,4 +1,6 @@
-\name{selectionTable}
+\name{interpret_selection}
+\alias{interpret_selection}
+\alias{interpret_selection.sienaFit}
 \alias{selectionTable}
 \alias{selectiontable}
 \alias{selection.Table}
@@ -9,10 +11,16 @@
  which may be helpful for the interpretation of results
  for network dynamics,
  for an estimation result represented by a
- \code{sienaFit} object created by \code{\link{siena07}}.
+ \code{sienaFit} object created by \code{\link{siena}}.
 }
 
 \usage{
+\method{interpret_selection}{sienaFit}(x, xd, name, vname,
+    as.matrix=FALSE,levls=NULL, levls.alt=levls,
+    nfirst=x$nwarm+1, multiplier=1,
+    include.endow=FALSE, include.creation=FALSE,
+    silent=FALSE, ...)
+    
 selectionTable(x, xd, name, vname,
     as.matrix=FALSE,levls=NULL, levls.alt=levls,
     nfirst=x$nwarm+1, multiplier=1,
@@ -21,10 +29,10 @@ selectionTable(x, xd, name, vname,
 }
 \arguments{
   \item{x}{An object of class \code{\link{sienaFit}}, produced by a
-    call to \code{\link{siena07}} for a model including
+    call to \code{\link{siena}} for a model including
     a behavioral dependent variable;
     or an object of class \code{\link{sienaMeta}}, produced by a
-    call to \code{\link{siena08}};
+    call to \code{\link{meta_siena}};
     or an object of class \code{sienaBayesFit}, produced by a
     call to \code{sienaBayes}.  }
   \item{xd}{If \code{x} is of class \code{\link{sienaFit}},
@@ -48,6 +56,8 @@ selectionTable(x, xd, name, vname,
         the sum of evaluation and creation effects is used.}
   \item{silent}{boolean; if \code{FALSE}, some information
      is reproduced at the console.}
+  \item{\dots}{Other arguments.}
+
 }
 \details{
  This functions is used for constructing selection tables
@@ -103,17 +113,18 @@ selectionTable(x, xd, name, vname,
   See the manual, Sections 13.2 and 13.4.
 }
 \author{Tom Snijders}
-\seealso{\code{\link{siena07}}, \code{\link{siena08}} }
+\seealso{\code{\link{siena}}, \code{\link{meta_siena}} }
 \examples{
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mycov  <- coCovar(s50a[,1])
-mydata <- sienaDataCreate(mynet, mycov)
-myeff <- getEffects(mydata)
-myeff <- includeEffects(myeff, simX, interaction1="mycov")
-myalgorithm <- sienaAlgorithmCreate(nsub=2, n3=100, seed=1291)
-# nsub=2, n3=100 is used here for having a brief computation, not for practice.
-ans <- siena07(myalgorithm, data=mydata, effects=myeff, silent=TRUE, batch=TRUE)
-selectionTable(ans, mydata, "mynet", "mycov")
-}
 
-\keyword{models}
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mycov <- as_covariate_rsiena(s50a[,1])
+mydata <- make_data_rsiena(mynet, mycov)
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, simX, covar1="mycov")
+myalgo <- set_algorithm_saom(nsub=2, n3=100, seed=1291)
+# nsub=2, n3=100 is used here for having a brief computation, not for practice.
+(ans <- siena(mydata, effects=myeff, control_algo=myalgo, 
+                                            silent=TRUE, batch=TRUE))
+interpret_selection(ans, mydata, "mynet", "mycov")
+}
+\keyword{models, methods}

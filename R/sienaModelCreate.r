@@ -9,7 +9,244 @@
 # *
 # *****************************************************************************/
 
-##@sienaModelCreate DataCreate
+
+##@set_model_saom ModelCreate
+set_model_saom <- function(modelType=NULL, behModelType=NULL,
+						MaxDegree = NULL, Offset = NULL)
+# Sets details of SAOM model specification
+{
+	model <- list()
+	if (!is.null(modelType))
+	{
+		if (any(!(modelType %in% 1:11)))
+		{
+			stop('modelType can only have integer values from 1 to 11\n')
+		}
+		if (any(is.null(names(modelType))))
+		{
+			stop('modelType must have names of dependent networks')
+		}
+		model$modelType <- modelType
+	}
+	if (!is.null(behModelType))
+	{
+		if (any(!(behModelType %in% c(1,2))))
+		{
+			warning('behModelType can only have values 1 or 2; other values changed to 1\n')
+			model$behModelType[!(behModelType %in% c(1,2))] <- 1
+		}
+		if (any(is.null(names(behModelType))))
+		{
+			stop('behModelType must have names of dependent behavioral variables')
+		}
+		model$behModelType <- behModelType
+	}
+	model$MaxDegree <- MaxDegree
+	if (!is.null(Offset))
+	{
+		if (any(is.null(names(Offset))))
+		{
+			stop('Offset must have names of dependent behavioral variables')
+		}
+		model$UniversalOffset <- Offset
+	}
+	class(model) <- "sienaModel"
+	attr(model, "version") <- packageDescription(pkgname, fields = "Version")
+	model
+}
+
+
+##@set_algorithm_saom ModelCreate
+set_algorithm_saom <- function(
+# Sets SAOM estimation procedure:
+	maxlike = FALSE, gmm = FALSE,
+	cond = NA, condvarno = 0, condname = "",
+	simOnly=FALSE,
+	targets=NULL, thetaValues = NULL, thetaBound = 50,
+	seed = NULL,
+# Specification of Robbins Monro algorithm:
+	n3 = 1000, nsub = 4, n2start = NULL, firstg = 0.2, reduceg = 0.5,
+	truncation=5, doubleAveraging=0,
+	diagonalize=0.2*!maxlike, standardizeVar=(diagonalize<1), dolby=TRUE,
+	useStdInits = FALSE, findiff = FALSE,
+# Specification of likelihood algorithm,
+# relevant only for maximum likelihood and Bayesian estimation:
+	mult=5, prML=1, maximumPermutationLength=40,
+	minimumPermutationLength=2, initialPermutationLength=20, localML=FALSE)
+# Note: sienaModelCreate also contains the keyword `fn`,
+# which allows to use a function for one simulation step in the RM algorithm
+# different from "simstats0c" and "maxlikec".
+{
+	model <- list()
+	model$maxlike <- maxlike
+	model$gmm <- gmm
+	if (maxlike)
+	{
+		model$FRANname <- "maxlikec"
+		if (is.na(cond))
+		{
+			cond <- FALSE
+		}
+		if (cond)
+		{
+			stop("Conditional estimation is not possible with",
+				"maximum likelihood estimation")
+		}
+	}
+	else
+	{
+		model$FRANname <- "simstats0c"
+	}
+	model$cconditional <- cond
+	if (!is.na(cond) && cond && condvarno == 0 && condname == "")
+	{
+		model$condvarno <-  1
+		model$condname <- ""
+	}
+	else
+	{
+		model$condvarno <-  condvarno
+		model$condname <- condname
+	}
+	model$simOnly <- simOnly
+	model$targets <- targets
+	model$thetaBound <- thetaBound
+	## create theta values for phase 3, if necessary
+	if (is.null(thetaValues))
+	{
+		model$thetaValues <- NULL
+		model$thetaFromFile <- FALSE
+	}
+	else
+	{
+		if (!model$simOnly)
+		{
+			cat('The thetaValues parameter was given,\n')
+			cat('but simOnly was not specified.\n')
+			cat('This is inconsistent.\n')
+			stop('Inconsistent combination simOnly - thetaValues')
+		}
+		if (!is.matrix(thetaValues))
+		{
+			stop('thetaValues should be a matrix.')
+		}
+		model$thetaValues <- thetaValues
+		model$thetaFromFile <- TRUE
+	}
+	model$useStdInits <- useStdInits
+	model$checktime <- TRUE
+	model$n3 <- n3
+	model$firstg <- firstg
+	model$reduceg <- reduceg
+	model$maxrat <- 1.0
+	model$normSetRates <- FALSE
+	model$FinDiff.method <-  findiff
+	model$nsub <- nsub
+	model$n2start <- n2start
+	model$dolby <- (dolby && (!maxlike)&& (!gmm))
+	if (diagonalize < 0) {diagonalize <- 0}
+	if (diagonalize > 1) {diagonalize <- 1}
+	model$diagg <- (diagonalize >= 0.9999)
+	model$diagonalize <- diagonalize
+	model$randomSeed <- seed
+	model$mult <- mult
+	model$prML <- prML
+	if (length (prML) == 1)
+	{
+		if (prML <= 1) # old default
+#	pridg=0.05, prcdg=0.05, prper=0.2, pripr=0.3, prdpr=0.3,
+#	prirms=0.05, prdrms=0.05,
+		{
+			model$pridg <-  0.05   # insert diagonal
+			model$prcdg <-  0.05   # cancel diagonal
+			model$prper <-  0.2    # permute
+			model$pripr <-  0.3    # insert permute (CCP)
+			model$prdpr <-  0.3    # delete permute (CCP)
+			model$prirms <- 0.05   # insert random missing
+			model$prdrms <- 0.05   # delete random missing
+			# prob(move) = 0
+		}
+		else  # prML == 2
+		{
+			model$pridg <-  0.05   # insert diagonal
+			model$prcdg <-  0.05   # cancel diagonal
+			model$prper <-  0      # permute
+			model$pripr <-  0.3    # insert permute (CCP)
+			model$prdpr <-  0.3    # delete permute (CCP)
+			model$prirms <- 0.05   # insert random missing
+			model$prdrms <- 0.05   # delete random missing
+			# prob(move) = 0.2
+		}
+	}
+	else
+	{
+		if (length(prML) != 7)
+		{
+			stop("prML should have length 1 or 7")
+		}
+		if ((sum(prML)> 1) | (min(prML) < 0))
+		{
+			stop("prML, if given as a 7-vector, should have nonnegative numbers with sum <= 1")
+		}
+		model$pridg <- prML[1]    # insert diagonal
+		model$prcdg <- prML[2]    # cancel diagonal
+		model$prper <- prML[3]    # permute
+		model$pripr <- prML[4]    # insert permute (CCP)
+		model$prdpr <- prML[5]    # delete permute (CCP)
+		model$prirms <- prML[6]   # insert random missing
+		model$prdrms <- prML[7]   # delete random missing
+	}
+	model$maximumPermutationLength <- maximumPermutationLength
+	model$minimumPermutationLength <- minimumPermutationLength
+	model$initialPermutationLength <- initialPermutationLength
+	model$truncation <- truncation
+	model$doubleAveraging <- doubleAveraging
+	# The following options are used only in phase2.r.
+	model$standardizeWithTruncation <- standardizeVar
+	model$standardizeVar <- standardizeVar
+	# The difference between these two is a hidden, non-documented option,
+	# which perhaps could be tried out.
+	model$noAggregation <- FALSE
+	# This also is a hidden, non-documented option, perhaps for being tried out.
+	#  \item{noAggregation}{Logical:
+	#   do not replace current parameter value after subphase 1
+	#   by the mean over subphase 1, if some quasi-autocorrelation
+	#   then is larger than .5. May be helpful if initial value was very far away.
+	class(model) <- "sienaAlgorithmSettings"
+	attr(model, "version") <- packageDescription(pkgname, fields = "Version")
+	model
+}
+
+
+##@set_output_saom ModelCreate
+set_output_saom <- function(outputName=NULL, lessMem=FALSE,
+	returnThetas=FALSE, 
+#	returnDeps=FALSE, Now in ... for siena
+	returnChains=FALSE, returnDataFrame=FALSE,
+	returnChangeContributions=FALSE)
+# Sets output options for SAOM estimation.
+# How is it with returnLoglik, onlyLoglik?
+# Can be put in ... or here
+{
+	model <- list()
+	model$outputName <- outputName
+	model$sf2.byIteration <- !lessMem
+	model$returnThetas=returnThetas
+#	model$returnDeps=returnDeps
+	model$returnChains=returnChains
+	model$returnDataFrame=returnDataFrame
+	if (returnDataFrame & ( !returnChains))
+	{
+		warning("Specifying returnDataFrame without returnChains has no effect")
+	}
+	model$returnChangeContributions=returnChangeContributions
+	class(model) <- "sienaOutputOptions"
+	attr(model, "version") <- packageDescription(pkgname, fields = "Version")
+	model
+}
+
+
+##@sienaModelCreate ModelCreate
 sienaModelCreate <- function(fn,
 	projname="Siena", MaxDegree=NULL, Offset=NULL,
 	useStdInits=FALSE,
@@ -181,7 +418,7 @@ sienaModelCreate <- function(fn,
 			model$prdrms <- 0.05   # delete random missing
 			# prob(move) = 0
 		}
-		else  # prML == 2 
+		else  # prML == 2
 		{
 			model$pridg <-  0.05   # insert diagonal
 			model$prcdg <-  0.05   # cancel diagonal
@@ -235,8 +472,6 @@ sienaModelCreate <- function(fn,
 	attr(model, "version") <- packageDescription(pkgname, fields = "Version")
 	model
 }
-
-model.create <- sienaModelCreate
 
 ##@sienaAlgorithmCreate DataCreate
 sienaAlgorithmCreate <- sienaModelCreate

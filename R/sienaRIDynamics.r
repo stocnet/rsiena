@@ -9,18 +9,11 @@
 # * in sequences of simulated mini-steps
 # *****************************************************************************/
 
-##@sienaRIDynamics
-sienaRIDynamics <- function(data, 
-	ans=NULL, 
-	theta=NULL, 
-	algorithm=NULL, 
-	effects=NULL, 
-	depvar = NULL, 
-	intervalsPerPeriod=10, 
-	n3 = NULL, 
-	useChangeContributions = FALSE,
-	silent = TRUE,
-	seed = NULL)
+##@interpret_size_dynamics
+interpret_size_dynamics <- function(data, ans=NULL, theta=NULL, 
+				algorithm=NULL, effects=NULL, depvar=NULL, intervalsPerPeriod=NULL, 
+				n3 = NULL, useChangeContributions = FALSE,
+				silent = TRUE, seed = NULL)
 {
 	if(length(data$depvars)>1){
 		if(is.null(depvar)){
@@ -38,7 +31,7 @@ sienaRIDynamics <- function(data,
 	} else {
 		depvar <- attr(data$depvars,"names")[1]
 	}
-	if (!inherits(data, "siena"))
+	if (!inherits(data, "sienadata"))
 	{
 		stop("data is not a legitimate Siena data specification")
 	}
@@ -204,7 +197,7 @@ calculateRIDynamics <- function(data,
 			initC=FALSE, 
 			returnDeps=FALSE, 
 			returnChangeContributions=TRUE,
-			silent = silent)
+			silent = silent, batch=TRUE)
     }
 	chains <- x$n3
 	periods <- data$observation-1

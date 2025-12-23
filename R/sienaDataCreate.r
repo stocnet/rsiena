@@ -6,8 +6,20 @@
 # * File: sienaDataCreate.r
 # *
 # * Description: This module contains the code to create
-# * Siena data object and group data objects.
+# * Siena data objects and group data objects.
 # *****************************************************************************/
+##@ make_data_rsiena DataCreate new name
+make_data_rsiena <- function(..., nodeSets=NULL)
+{
+	sienaDataCreate(..., nodeSets=nodeSets)
+}
+
+##@ make_group DataCreate new name
+make_group_rsiena <- function(objlist, singleOK = FALSE)
+{
+	sienaGroupCreate(objlist, singleOK=singleOK)
+}
+
 ##@addAttributes DataCreate method for attaching attributes to objects
 # This is used when creating the data object.
 addAttributes <- function(x, name, ...) UseMethod("addAttributes")
@@ -1024,7 +1036,7 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 		message("For dependent variable ", names(depvars)[i], ", in some periods,")
 		message("there are only increases, or only decreases.")
 		message("This will be respected in the simulations. ")
-		message("If this is not desired, use allowOnly=FALSE when creating the dependent variable.")
+		message("If this is not desired,\n use allowOnly=FALSE when creating the dependent variable.")
 		}
 		attr(depvars[[i]], 'name') <- names(depvars)[i]
 	}
@@ -1041,7 +1053,7 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 	z <- checkConstraints(z)
 	z <- covarDist2(z)
 	attr(z, "version") <- packageDescription(pkgname, fields = "Version")
-	class(z) <- "siena"
+	class(z) <- "sienadata"
 	z
 }
 ##@checkConstraints DataCreate
@@ -1170,7 +1182,7 @@ checkConstraints <- function(z)
 		message(report)
 		cat("This will be respected in the simulations. ")
 		cat("If this is not desired, change attribute 'higher'\n")
-		cat("by function sienaDataConstraint.\n")
+		cat("by function make_constraint.\n")
 	}
 	if (any(disjoint))
 	{
@@ -1183,7 +1195,7 @@ checkConstraints <- function(z)
 		message(report)
 		cat("This will be respected in the simulations.\n")
 		cat("If this is not desired, change attribute 'disjoint'\n")
-		cat("by function sienaDataConstraint.\n")
+		cat("by function make_constraint.\n")
 
 	}
 	if (any(atLeastOne))
@@ -1574,7 +1586,7 @@ namedVector <- function(vectorValue, vectorNames, listType=FALSE)
 createSettings <- function(x, varName=1, model=TRUE)
 ##
 {
-	if (!inherits(x, 'siena'))
+	if (!inherits(x, 'sienadata'))
 	{
 		stop('x should be a siena data object')
 	}
@@ -1600,7 +1612,7 @@ createSettings <- function(x, varName=1, model=TRUE)
 # this refers only to the indicated variable.
 hasSettings <- function(x, varName=NULL)
 {
-	if (!inherits(x, 'siena'))
+	if (!inherits(x, 'sienadata'))
 	{
 		stop('x should be a siena data object')
 	}
@@ -1703,9 +1715,9 @@ sienaGroupCreate <- function(objlist, singleOK=FALSE, getDocumentation=FALSE)
 	{
 		stop('Need a list of objects')
 	}
-	if (any (sapply(objlist, function(x) !inherits(x, 'siena'))))
+	if (any (sapply(objlist, function(x) !inherits(x, 'sienadata'))))
 	{
-		stop('Not a list of valid siena objects')
+		stop('Not a list of valid sienadata objects')
 	}
 	if (length(objlist) == 1 && !singleOK)
 	{
@@ -2077,7 +2089,7 @@ sienaGroupCreate <- function(objlist, singleOK=FALSE, getDocumentation=FALSE)
 		names(group) <- paste('Data', 1:length(group), sep="")
 	}
 # This is where the names Data1 etc. are created.
-	class(group)<- c("sienaGroup", "siena")
+	class(group)<- c("sienaGroup", "sienadata")
 	attr(group, "version") <- packageDescription(pkgname, fields = "Version")
 	balmeans <- calcBalmeanGroup (group)
 	names(balmeans) <- netnames

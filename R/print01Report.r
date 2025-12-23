@@ -873,7 +873,7 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 		Report("\n\n", outf) ## end of reportDataObject
 	}
 	## create output file. ## start of print01Report proper
-	if (!(inherits(data, "siena")))
+	if (!(inherits(data, "sienadata")))
 	{
 		stop("The first argument needs to be a siena data object.")
 	}

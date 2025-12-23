@@ -23,22 +23,27 @@ Bug reports can be submitted at
   The main flow of operations of this package is as follows.
 
   Data objects can be created from matrices and
-  vectors using \code{\link{sienaDependent}}, \code{\link{coCovar}},
-  \code{\link{varCovar}}, \code{\link{coDyadCovar}}, etc.,
-  and finally \code{\link{sienaDataCreate}}.
+  vectors using \code{\link{as_dependent_rsiena}}, \cr
+  \code{\link{as_covariate_rsiena}},
+  possibly \code{\link{as_composition_rsiena}}, \cr
+  and finally \code{\link{make_data_rsiena}}.
 
   Effects are selected using an \code{\link{sienaEffects}} object,
-  which can be created using \code{\link{getEffects}}
-  and may be further specified by \code{\link{includeEffects}},
-  \code{\link{setEffect}}, and \code{\link{includeInteraction}}.
+  which can be created using \code{\link{make_specification}}
+  and may be further specified by \code{\link{set_effect}},
+  and \code{\link{set_interaction}}.
 
-  Control of the estimation algorithm requires a
-  \code{\link{sienaAlgorithm}} object that
-  defines the settings (parameters) of the algorithm,
-  and which can be created by \code{\link{sienaAlgorithmCreate}}.
+  Control of the model family, the estimation algorithm,
+  and the output produced  requires control objects that
+  define the settings of the algorithm,
+  and which can be created by \code{\link{set_algorithm_saom}}, 
+  \code{\link{set_model_saom}}, and \code{\link{set_output_saom}}.
 
-  Function \code{\link{siena07}} is used to fit a model.
-  Function \code{\link{sienaGOF}} can be used for studying goodness of fit.
+  Function \code{\link{siena}} is used to fit a model.
+  Function \code{\link{test_gof}} can be used for studying goodness of fit.
+  
+  Version 1.6 has established an overhaul of the function names used,
+  while retaining the old function names for backward compatibility.
 
   A general introduction to the method is available in the tutorial paper
   Snijders, van de Bunt, and Steglich (2010).
@@ -47,8 +52,8 @@ Bug reports can be submitted at
   \tabular{ll}{
     Package: \tab RSiena\cr
     Type: \tab Package\cr
-    Version: \tab 1.5.7\cr
-    Date: \tab 2025-12-01\cr
+    Version: \tab 1.6.0\cr
+    Date: \tab 2025-12-23\cr
     Depends: \tab R (>= 3.5.0)\cr
     Imports: \tab Matrix, lattice, parallel, MASS, methods, xtable\cr
     Suggests: \tab network, tools, codetools, tcltk\cr
@@ -117,20 +122,22 @@ Bug reports can be submitted at
     \emph{Sociological Methodology} \bold{40}, 329--393.
     Information about the implementation of the algorithm is in
      \url{https://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf}.
-	 
-    Further see \url{https://www.stats.ox.ac.uk/~snijders/siena/} and
-	\url{https://github.com/stocnet/rsiena/wiki}.
+     
+    Further see \url{https://www.stats.ox.ac.uk/~snijders/siena/} and \cr
+    \url{https://github.com/stocnet/rsiena/wiki}.
 }
-\seealso{\code{\link{siena07}}}
+\seealso{\code{\link{siena}}}
 
 \examples{
-mynet1 <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
-mydata <- sienaDataCreate(mynet1)
-myeff <- getEffects(mydata)
-myeff <- includeEffects(myeff, transTrip)
-myeff
-myalgorithm <- sienaAlgorithmCreate(nsub=3, n3=200)
-ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE)
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mybeh  <- as_dependent_rsiena(s50a[,1:2], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, avAlt, depvar="mybeh", covar1="mynet")
+myalgo <- set_algorithm_saom(nsub=2, n3=100, seed=1291)
+# nsub=2, n3=100 is used here for having a brief computation, not for practice.
+(ans <- siena(mydata, effects=myeff, control_algo=myalgo,
+                                            silent=TRUE, batch=TRUE))
 summary(ans)
 }
-\keyword{ package }
+\keyword{package}
