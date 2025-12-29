@@ -38,7 +38,7 @@ predict.sienaFit <- function(
         predictArgs <- list(
             ans = object,
             staticContributions = staticContributions,
-            useTieProb = useTieProb
+            type = type
         )
         sienaPostestimate(
             predictFun = probFun,
@@ -65,7 +65,7 @@ predict.sienaFit <- function(
         )
 }
 
-predictProbability <- function(ans, staticContributions, theta, useTieProb = TRUE) {
+predictProbability <- function(ans, staticContributions, theta, type = "changeProb") {
     effects <- ans[["requestedEffects"]] # provide effects instead?
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
@@ -79,17 +79,17 @@ predictProbability <- function(ans, staticContributions, theta, useTieProb = TRU
     }
     df <- widenStaticContribution(staticContributions)
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
-    df <- addProbabilityColumn(df, group_vars = c("period", "ego"), useTieProb = useTieProb)
+    df <- addProbabilityColumn(df, group_vars = c("period", "ego"), type = type)
     df <- conditionalReplace(df, df[["density"]] == -1, setdiff(effectNames, "density"), function(x) x * -1)
     df
 }
 
 predictDynamic <- function(
     ans,
-    data,
+    newdata,
     effects,
     algorithm,
-    useTieProb = TRUE,
+    type = c("changeProb", "tieProb"),
     depvar = NULL,
     level = "period",
     condition = NULL,
@@ -111,14 +111,14 @@ predictDynamic <- function(
     verbose = TRUE,
     silent = TRUE
     ){
-        if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
-        probName <- ifelse(useTieProb, "tieProb", "changeProb")
+        type <- match.arg(type)
+        if (is.null(depvar)) depvar <- names(newdata[["depvars"]])[1]
         predictDynamicArgs <- list(
             ans = ans,
-            data = data,
+            data = newdata,
             effects = effects,
             algorithm = algorithm,
-            useTieProb = useTieProb,
+            type = type,
             depvar = depvar,
             n3 = n3,
             useChangeContributions = FALSE,
@@ -127,7 +127,7 @@ predictDynamic <- function(
         sienaPostestimate(
             predictFun = predictProbabilityDynamic,
             predictArgs = predictDynamicArgs,
-            outcome = probName,
+            outcome = type,
             level = level,
             condition = condition,
             sum.fun = sum.fun,
@@ -151,7 +151,7 @@ predictDynamic <- function(
 }
 
 predictProbabilityDynamic <- function(ans, data, theta, algorithm, effects,
-    useTieProb = TRUE, depvar, n3 = NULL, useChangeContributions = FALSE, silent = TRUE) {
+    type = "changeProb", depvar, n3 = NULL, useChangeContributions = FALSE, silent = TRUE) {
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
     noRateIncluded <- includedEffects[["type"]] != "rate"
@@ -178,7 +178,7 @@ predictProbabilityDynamic <- function(ans, data, theta, algorithm, effects,
     )
     df <- widenDynamicContribution(df)
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
-    df <- addProbabilityColumn(df, group_vars = c("chain","period", "ministep"), useTieProb = useTieProb)
+    df <- addProbabilityColumn(df, group_vars = c("chain","period", "ministep"), type = type)
     df <- conditionalReplace(df, df[["density"]] == -1, setdiff(effectNames, "density"), function(x) x * -1)
     df
 }
@@ -491,14 +491,14 @@ addUtilityColumn <- function(df, effectNames, theta) {
 addProbabilityColumn <- function(
     df,
     group_vars,
-    useTieProb = FALSE
+    type = "changeProb"
 ) {
   stopifnot(is.data.frame(df))
   if (requireNamespace("data.table", quietly = TRUE) && data.table::is.data.table(df)) {
     # For non standard evaluation
     changeUtil <- tieProb <- NULL
     df[, ("changeProb") := softmax_arma(changeUtil), by = group_vars]
-    if (useTieProb) {
+    if (type == "tieProb") {
       df[, tieProb := get("changeProb")]
       if ("density" %in% names(df)) {
         df[density == -1, tieProb := 1 - tieProb]
@@ -512,7 +512,7 @@ addProbabilityColumn <- function(
       grouping, 
       FUN = softmax_arma)
     if (is.list(df[["changeProb"]])) df[["changeProb"]] <- unlist(df[["changeProb"]])
-    if (useTieProb) {
+    if (type == "tieProb") {
       df[,"tieProb"] <- df[, "changeProb"]
       if ("density" %in% names(df)) {
         idx <- which(df[["density"]] == -1)

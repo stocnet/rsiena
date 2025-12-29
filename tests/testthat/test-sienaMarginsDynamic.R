@@ -26,7 +26,7 @@ test_that("sienaAMEDynamic (base R fallback, uncertainty = FALSE)", {
         algorithm = mycontrols,
         n3 = 60,
         nsim = 5,
-        useTieProb = TRUE,
+        type = "tieProb",
         condition = "density",
         uncertainty = FALSE
       )
@@ -51,7 +51,7 @@ test_that("sienaAMEDynamic (data.table, uncertainty = FALSE)", {
     algorithm = mycontrols,
     n3 = 60,
     nsim = 5,
-    useTieProb = TRUE,
+    type = "tieProb",
     condition = "density",
     uncertainty = FALSE
   )
@@ -71,7 +71,7 @@ test_that("sienaAMEDynamic (base R fallback)", {
         algorithm = mycontrols,
         n3 = 60, # keep small for test speed
         nsim = 5, # keep small for test speed
-        useTieProb = TRUE,
+        type = "tieProb",
         condition = "density"
       )
       expect_true(is.data.frame(margins_dynamic))
@@ -95,7 +95,7 @@ test_that("sienaAMEDynamic (data.table)", {
     algorithm = mycontrols,
     n3 = 60, # keep small for test speed
     nsim = 5, # keep small for test speed
-    useTieProb = TRUE,
+    type = "tieProb",
     condition = "density"
   )
   expect_true("data.table" %in% class(margins_dynamic) || is.data.frame(margins_dynamic))
@@ -130,7 +130,7 @@ test_that("sienaAMEDynamic (base R fallback, interaction)", {
         algorithm = mycontrols2,
         n3 = 60,
         nsim = 5,
-        useTieProb = TRUE,
+        type = "tieProb",
         level = "period",
         condition = c("density", "recip"),
       )
@@ -157,7 +157,7 @@ test_that("sienaAMEDynamic (data.table, interaction)", {
     algorithm = mycontrols2,
     n3 = 60,
     nsim = 5,
-    useTieProb = TRUE,
+    type = "tieProb",
     level = "period",
     condition = "recip",
     mainEffect = "riskRatio"
@@ -195,7 +195,7 @@ test_that("sienaAMEDynamic (custom interaction)", {
       algorithm = mycontrols3,
       n3 = 60,
       nsim = 5,
-      useTieProb = TRUE,
+      type = "tieProb",
       level = "period",
       condition = "density"
     )
@@ -218,7 +218,7 @@ test_that("sienaAMEDynamic (base R fallback, custom interaction)", {
         algorithm = mycontrols3,
         n3 = 60,
         nsim = 5,
-        useTieProb = TRUE,
+        type = "tieProb",
         level = "period",
         condition = "density"
       )

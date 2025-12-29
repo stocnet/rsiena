@@ -14,8 +14,7 @@ sienaAME <- function(
     interaction2 = FALSE,
     int_effectNames2 = NULL,
     mod_effectNames2 = NULL,
-    useTieProb = TRUE,
-    depvar = NULL,
+    type = c("changeProb", "tieProb"),
     second = FALSE,
     level = "period",
     condition = NULL, 
@@ -36,6 +35,7 @@ sienaAME <- function(
     mainEffect = "riskDifference", # or "RiskRatio"
     details = FALSE
 ){
+    type <- match.arg(type)
     # might not be necessary to restrict to one depvar, but let's keep it for now
     if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
     staticContributions <- getStaticChangeContributions(ans = ans, 
@@ -57,7 +57,7 @@ sienaAME <- function(
             interaction = interaction1,
             int_effectNames = int_effectNames1,
             mod_effectNames = mod_effectNames1,
-            useTieProb = useTieProb,
+            type = type,
             mainEffect = mainEffect,
             details = details
         )
@@ -79,7 +79,7 @@ sienaAME <- function(
             interaction2 = interaction2,
             int_effectNames2 = int_effectNames2,
             mod_effectNames2 = mod_effectNames2,
-            useTieProb = useTieProb,
+            type = type,
             mainEffect = mainEffect,
             details = details
         )
@@ -110,7 +110,7 @@ sienaAME <- function(
 }
 
 predictFirstDiff <- function(ans, theta, staticContributions,
-    useTieProb = TRUE,
+    type = "changeProb",
     effectName, diff = NULL, contrast = NULL,
     interaction = FALSE,
     int_effectNames = NULL,
@@ -133,7 +133,7 @@ predictFirstDiff <- function(ans, theta, staticContributions,
   thetaNoRate <- theta[effectNames]
   df <- widenStaticContribution(staticContributions)
   df <- addUtilityColumn(df, effectNames, thetaNoRate)
-  df <- addProbabilityColumn(df, group_vars = c("period", "ego"), useTieProb = useTieProb)
+  df <- addProbabilityColumn(df, group_vars = c("period", "ego"), type = type)
   
   df <- subset(df, df[["density"]] != 0)
   df <- cbind(df, calculateFirstDiff(
@@ -149,7 +149,7 @@ predictFirstDiff <- function(ans, theta, staticContributions,
       modContribution = df[[mod_effectNames]],
       effectNames = effectNames,
       theta = thetaNoRate,
-      useTieProb = useTieProb, 
+      type = type, 
       tieProb = df[["tieProb"]],
       details = details,
       calcRiskRatio = calcRiskRatio,
@@ -162,7 +162,7 @@ predictFirstDiff <- function(ans, theta, staticContributions,
 }
 
 predictSecondDiff <- function(ans, theta, staticContributions,
-    useTieProb = TRUE,
+    type = "changeProb",
     effectName1, diff1 = NULL, contrast1 = NULL,
     interaction1 = FALSE,
     int_effectNames1 = NULL,
@@ -189,7 +189,7 @@ predictSecondDiff <- function(ans, theta, staticContributions,
 
     df <- widenStaticContribution(staticContributions)
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
-    df <- addProbabilityColumn(df, group_vars = c("period", "ego"), useTieProb = useTieProb)
+    df <- addProbabilityColumn(df, group_vars = c("period", "ego"), type = type)
     df <- subset(df, df[["density"]] != 0)
     df <- cbind(df,  calculateSecondDiff(
         densityValue = df[["density"]], 
@@ -209,7 +209,7 @@ predictSecondDiff <- function(ans, theta, staticContributions,
         modContribution2 = df[[mod_effectNames2]],
         effectNames = effectNames,
         theta = thetaNoRate,
-        useTieProb = useTieProb, 
+        type = type, 
         tieProb = df[["tieProb"]], # if not tieProb NULL?
         details = details,
         calcRiskRatio = calcRiskRatio,
@@ -233,7 +233,7 @@ calculateFirstDiff <- function(densityValue,
                                modContribution = NULL,
                                effectNames,
                                theta, 
-                               useTieProb = TRUE,
+                               type = "changeProb",
                                tieProb = NULL,
                                details = FALSE,
                                calcRiskRatio = FALSE,
@@ -272,7 +272,7 @@ calculateFirstDiff <- function(densityValue,
   changeProb_cf <- as.vector(changeProb * expDiff / 
     (1 - changeProb + changeProb * expDiff))
   changeProb_cf[densityValue == 0] <- NA
-  if (useTieProb == TRUE) {
+  if (type == "tieProb") {
     tieProb_cf <- changeProb_cf
     idx <- which(!is.na(densityValue) & densityValue == -1)
     if (length(idx) > 0) tieProb_cf[idx] <- 1 - changeProb_cf[idx]
@@ -287,7 +287,7 @@ calculateFirstDiff <- function(densityValue,
   }
 
   if (calcRiskRatio || mainEffect == "riskRatio") {
-    if (useTieProb == TRUE) {
+    if (type == "tieProb") {
       firstRiskRatio <- tieProb_cf / tieProb
     } else {
       firstRiskRatio <- changeProb_cf / changeProb
@@ -305,7 +305,7 @@ calculateFirstDiff <- function(densityValue,
       "newChangeProb" = changeProb_cf, # make clear if change or tieProb
       "oldChangeProb" = changeProb
     )
-    if(useTieProb){
+    if(type == "tieProb"){
       out[["newTieProb"]] <- tieProb_cf
       out[["oldTieProb"]] <- tieProb
     }
@@ -341,7 +341,7 @@ calculateSecondDiff <- function(densityValue,
                                 modContribution2 = NULL,
                                 effectNames,
                                 theta,
-                                useTieProb = TRUE,
+                                type = "changeProb",
                                 tieProb = NULL,
                                 details = FALSE,
                                 mainEffect = "riskDifference",
@@ -360,7 +360,7 @@ calculateSecondDiff <- function(densityValue,
     modContribution = modContribution1,
     effectNames = effectNames,
     theta = theta, 
-    useTieProb = useTieProb,
+    type = type,
     tieProb = tieProb,
     mainEffect = mainEffect,
     details = details
@@ -383,7 +383,7 @@ calculateSecondDiff <- function(densityValue,
                                       effectNames = effectNames)
   expDiff21 <- exp(utilDiff21)
   changeProb_cf21 <- as.vector(changeProb * expDiff21 / (1-changeProb + changeProb * expDiff21))
-  if (useTieProb == TRUE) {
+  if (type == "tieProb") {
     tieProb_cf21 <- changeProb_cf21
     idx <- which(!is.na(densityValue) & densityValue == -1)
     if (length(idx) > 0) tieProb_cf21[idx] <- 1 - changeProb_cf21[idx]
@@ -403,7 +403,7 @@ calculateSecondDiff <- function(densityValue,
     contrast = contrast1,
     effectContribution = effectContribution1,
     theta = theta, 
-    useTieProb = useTieProb,
+    type = type,
     tieProb = tieProb_cf21,
     interaction = interaction1,
     int_effectNames = int_effectNames1,
@@ -439,7 +439,7 @@ calculateSecondDiff <- function(densityValue,
       "firstDiff2" = firstDiff2[["firstDiff"]],
       "secondDiff" = secondDiff
     )
-    if (useTieProb) {
+    if (type == "tieProb") {
       out$tieprob_base  <- tieProb
       out$tieprob_main  <- firstDiff[["newTieProb"]]
       out$tieprob_mod   <- firstDiff2[["newTieProb"]] # If you have tieProb_cf2, use that instead

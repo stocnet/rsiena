@@ -16,7 +16,7 @@ sienaAMEDynamic <- function(
     mod_effectNames2 = NULL,
     effects,
     algorithm,
-    useTieProb = TRUE,
+    type = c("changeProb", "tieProb"),
     depvar = NULL,
     second = FALSE,
     level = "none",
@@ -40,6 +40,7 @@ sienaAMEDynamic <- function(
     mainEffect = "riskDifference", # or "RiskRatio"
     details = FALSE
 ){
+    type <- match.arg(type)
     if(!second){
         diffName <- ifelse(mainEffect == "riskDifference", 
             "firstDiff", 
@@ -56,7 +57,7 @@ sienaAMEDynamic <- function(
             interaction = interaction1,
             int_effectNames = int_effectNames1,
             mod_effectNames = mod_effectNames1,
-            useTieProb = useTieProb,
+            type = type,
             depvar = depvar,
             n3 = n3,
             useChangeContributions = FALSE,
@@ -85,7 +86,7 @@ sienaAMEDynamic <- function(
             interaction2 = interaction2,
             int_effectNames2 = int_effectNames2,
             mod_effectNames2 = mod_effectNames2,
-            useTieProb = useTieProb,
+            type = type,
             depvar = depvar,
             n3 = n3,
             useChangeContributions = FALSE,
@@ -136,7 +137,7 @@ sienaAMEDynamic <- function(
 }
 
 predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
-    useTieProb = TRUE, depvar = NULL,
+    type = "changeProb", depvar = NULL,
     effectName, diff = NULL, contrast = NULL,
     interaction = FALSE,
     int_effectNames = NULL,
@@ -175,7 +176,7 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
 
     df <- widenDynamicContribution(df)
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
-    df <- addProbabilityColumn(df, group_vars=c("chain", "period", "ministep"), useTieProb = useTieProb)
+    df <- addProbabilityColumn(df, group_vars=c("chain", "period", "ministep"), type = type)
     df <- subset(df, df[["density"]] != 0)
     df <- cbind(df, calculateFirstDiff(
         densityValue = df[["density"]],
@@ -190,7 +191,7 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
         modContribution = df[[mod_effectNames]],
         effectNames = effectNames,
         theta = thetaNoRate,
-        useTieProb = useTieProb,
+        type = type,
         tieProb = df[["tieProb"]],
         details = details,
         calcRiskRatio = calcRiskRatio,
@@ -202,7 +203,7 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
 }
 
 predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
-    useTieProb = TRUE, depvar = NULL,
+    type = "changeProb", depvar = NULL,
     effectName1, 
     diff1 = NULL, contrast1 = NULL,
     interaction1 = FALSE,
@@ -245,7 +246,7 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
     )  
     df <- widenDynamicContribution(df)
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
-    df <- addProbabilityColumn(df, group_vars = c("chain", "period", "ministep"), useTieProb = useTieProb)
+    df <- addProbabilityColumn(df, group_vars = c("chain", "period", "ministep"), type = type)
     df <- subset(df, df[["density"]] != 0)
     df <- cbind(df, calculateSecondDiff(
         densityValue = df[["density"]], 
@@ -265,7 +266,7 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
         modContribution2 = df[[mod_effectNames2]],
         effectNames = effectNames,
         theta = thetaNoRate,
-        useTieProb = useTieProb,
+        type = type,
         tieProb = df[["tieProb"]], # if not tieProb NULL?
         details = details,
         calcRiskRatio = calcRiskRatio,
