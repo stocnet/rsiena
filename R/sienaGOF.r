@@ -1617,6 +1617,10 @@ egoAlterCombi <- function (i, obsData, sims, period, groupName, varName,
 	combi.egoalter <- outer(10*trafo(x), trafo(x) ,'+')
 	possible.pairs <-
 		sort(unique(as.vector(outer(10*trafo(brange), trafo(brange), '+'))))
+	if ((length(possible.pairs) >= 100) && is.null(i))
+	{
+	warning("The transformation used for egoAlterCombi has too many values.")
+	}
 	tmeax <- table((m * combi.egoalter)@x, useNA = "no")
 	ppnames <- as.character(possible.pairs)
 	teax <- setNames(0*possible.pairs, ppnames)

@@ -1,4 +1,4 @@
-2025-12-23
+2025-12-29
 
 # RSiena 1.6.0
 
@@ -8,12 +8,16 @@
 ### Bug correction
   * `checkImpossibleChanges` restricted to networks.
   * `checkZeroChanges` adapted to also cover behavioral variables.
+### Functionality
+  * Warning if `egoAlterCombi` is used with more than 99 ego-alter values.
 ### Documentation
   * Chapter 3 was inserted in the manual to explain the new function names.
     Appendix A, "List of Functions in Order of Execution", was dropped
     and the author of this appendix, Paulina Preciado Lopez, was
     accordingly dropped from the list of authors of the manual.
     Greetings, Paulina!}
+  * Example of `dyadicCov` for ego-alter combinations dropped,
+    as this is already covered by `egoAlterCombi`.
 
 2025-11-03
 

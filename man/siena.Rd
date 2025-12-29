@@ -17,6 +17,7 @@
 \usage{
 \method{siena}{sienadata}(x, effects=NULL,
         control_model=NULL, control_algo=NULL, control_out=NULL,
+        thetaBound = 50,
         batch = FALSE, verbose = FALSE, silent=TRUE,
         initC=TRUE,
         nbrNodes = 1, clusterString=rep("localhost", nbrNodes),
@@ -42,6 +43,12 @@ siena07(alg, batch=FALSE, verbose=FALSE, silent=FALSE,
                        of class \code{\link{sienaAlgorithmSettings}}. }
   \item{control_out}{Control object for the output,
                        of class \code{\link{sienaOutputOptions}}. }
+  \item{thetaBound}{Numeric: if at some moment during estimation the maximum
+   absolute value of the parameters exceeds \code{thetaBound}, estimation
+   is interrupted. In interactive use, the user is requested to give
+   a higher number; if non-numeric input is given, estimation stops.
+   In non-interactive use, estimation stops anyway.
+   The check is turned off by using \code{thetaBound=Inf}.}
   \item{batch}{ Desired interface: \code{FALSE} gives a gui
      (graphical user interface implemented as a tcl/tk screen),
      \code{TRUE} gives a small (if \code{verbose=FALSE}) amount of printout
@@ -72,12 +79,6 @@ siena07(alg, batch=FALSE, verbose=FALSE, silent=FALSE,
     dependent variable). Can only be used if \code{x$simOnly=TRUE}.}
   \item{returnThetas}{Boolean: whether to return theta values
    and generated estimation statistics of Phase 2 runs.}
-  \item{thetaBound}{Numeric: if at some moment during estimation the maximum
-   absolute value of the parameters exceeds \code{thetaBound}, estimation
-   is interrupted. In interactive use, the user is requested to give
-   a higher number; if non-numeric input is given, estimation stops.
-   In non-interactive use, estimation stops anyway.
-   The check is turned off by using \code{thetaBound=Inf}.}
   \item{targets}{Numeric vector of length equal to the number of estimated
     parameters, meant to supersede the targets calculated from the data set;
     see "Details". Not for regular use.}
@@ -207,15 +208,13 @@ siena07(alg, batch=FALSE, verbose=FALSE, silent=FALSE,
  simulations. This must be noted in the interpretation, and will be visible
  in \code{thetaUsed} (see below).
 
- The keyword \code{thetaBound} (set in \code{\link{set_algorithm_saom}} or directly 
- in \code{siena07})
- is used because in practice, parameter values
+ The keyword \code{thetaBound} is used because in practice, parameter values
  of Stochastic Actor-oriented Models will be limited in magnitude,
  and for usual models values larger than 50 never occur, which means
- that when they occur this is regarded as a signal of divergence
+ that when they occur this may be regarded as a signal of divergence
  of the algorithm.\cr
- Note that covariates should have large enough standard deviations;
- see the manual.
+ Note that covariates should have large enough standard deviations
+ for parameters to have moderate values; see the manual.
 }
 \value{
   Returns an object of class \code{\link{sienaFit}}, some parts of which are:

@@ -15,6 +15,7 @@ siena <- function(x, ...) UseMethod("siena", x)
 ##@siena.sienadata siena Methods
 siena.sienadata <- function(x, effects=NULL,
 	control_model=NULL, control_algo=NULL, control_out=NULL,
+	thetaBound = 50,
 	batch = FALSE, verbose = FALSE, silent=TRUE,
 	initC=TRUE,
 	nbrNodes = 1,
@@ -100,6 +101,7 @@ siena.sienadata <- function(x, effects=NULL,
 	time0 <-  proc.time()['elapsed']
 	z <- list() ## z is the object for all control information which may change.
 	z$newNames <- TRUE
+	z$thetaBound <- thetaBound
 
 	if (control_algo$maxlike)
 	{
@@ -116,7 +118,6 @@ siena.sienadata <- function(x, effects=NULL,
 	x <- c(control_model, control_algo, control_out)
 	x$projname <- x$outputName
 	z$returnThetas <- control_out$returnThetas
-	z$thetaBound <- control_algo$thetaBound
 
 	parallelTesting <- FALSE
 	clusterIter <- !control_algo$maxlike

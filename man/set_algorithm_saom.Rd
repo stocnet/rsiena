@@ -41,8 +41,7 @@
   set_algorithm_saom(maxlike = FALSE, gmm = FALSE,
     cond = NA, condvarno = 0, condname = "",
     simOnly = FALSE,
-    targets = NULL, thetaValues = NULL, thetaBound = 50,
-    seed = NULL,
+    targets = NULL, thetaValues = NULL, seed = NULL,
     n3 = 1000, nsub = 4, n2start = NULL, firstg = 0.2, reduceg = 0.5,
     truncation = 5, doubleAveraging = 0,
     diagonalize = 0.2*!maxlike, standardizeVar = (diagonalize<1),
@@ -156,12 +155,6 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL,
     number of estimated parameters in the effects object (if conditional
     estimation is used, without the rate parameters for the conditioning
     dependent variable). Can only be used if \code{simOnly=TRUE}.}
-  \item{thetaBound}{Numeric: if at some moment during estimation the maximum
-   absolute value of the parameters exceeds \code{thetaBound}, estimation
-   is interrupted. In interactive use, the user is requested to give
-   a higher number; if non-numeric input is given, estimation stops.
-   In non-interactive use, estimation stops anyway.
-   The check is turned off by using \code{thetaBound=Inf}.}
   \item{seed}{Integer. Starting value of random seed.}
   \item{n3}{Number of iterations in phase 3. For regular use with the
     Method of Moments, n3 = 1000 mostly suffices.

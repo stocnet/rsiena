@@ -6,10 +6,10 @@
 Function to perform a meta analysis of a collection of Siena fits.
 }
 \description{
-  Estimates a meta analysis based on a collection of Siena fits.\cr   
+  Estimates a meta analysis based on a collection of Siena fits.\cr
   \code{meta_siena()} and \code{siena08()}
   are identical functions, differing only in the keyword
-  for the output file. The first name is preferred, 
+  for the output file. The first name is preferred,
   the other is kept for backward compatibility.
 }
 \usage{
@@ -125,7 +125,7 @@ siena08(..., projname = "sienaMeta", bound = 10, alpha = 0.05, maxit=20)
 \author{Ruth Ripley, Tom Snijders}
 
 \seealso{\code{\link{print.sienaMeta}}, \code{\link{funnelPlot}},
-  \code{\link{meta.table}}, \code{\link{iwlsm}}, 
+  \code{\link{meta.table}}, \code{\link{iwlsm}},
   \code{\link{siena}}
 }
 \examples{
@@ -151,9 +151,9 @@ effects.3 <- set_effect(effects.3, transTrip)
 effects.3 <- set_effect(effects.3, transRecTrip, fix=TRUE, test=TRUE)
 effects.4 <- set_effect(effects.4, transTrip)
 effects.4 <- set_effect(effects.4, transRecTrip, fix=TRUE, test=TRUE)
-ans.1 <- siena(OneAlgorithm, data=dataset.1, effects=effects.1, batch=TRUE)
-ans.3 <- siena(OneAlgorithm, data=dataset.3, effects=effects.3, batch=TRUE)
-ans.4 <- siena(OneAlgorithm, data=dataset.4, effects=effects.4, batch=TRUE)
+ans.1 <- siena(dataset.1, effects=effects.1, batch=TRUE)
+ans.3 <- siena(dataset.3, effects=effects.3, batch=TRUE)
+ans.4 <- siena(dataset.4, effects=effects.4, batch=TRUE)
 ans.1
 ans.3
 ans.4
@@ -162,7 +162,7 @@ print(meta)
 plot(meta, which=2:3, layout = c(2,1))
 # For specifically presenting the Fisher combinations:
 # First determine the components of meta with estimated effects:
-which.est <- sapply(meta, 
+which.est <- sapply(meta,
                 function(x){ifelse(is.list(x),!is.null(x$cjplus),FALSE)})
 Fishers <- t(sapply(1:sum(which.est),
  function(i){c(meta[[i]]$cjplus, meta[[i]]$cjminus,

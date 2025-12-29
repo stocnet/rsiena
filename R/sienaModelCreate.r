@@ -62,7 +62,7 @@ set_algorithm_saom <- function(
 	maxlike = FALSE, gmm = FALSE,
 	cond = NA, condvarno = 0, condname = "",
 	simOnly=FALSE,
-	targets=NULL, thetaValues = NULL, thetaBound = 50,
+	targets=NULL, thetaValues = NULL, 
 	seed = NULL,
 # Specification of Robbins Monro algorithm:
 	n3 = 1000, nsub = 4, n2start = NULL, firstg = 0.2, reduceg = 0.5,
@@ -110,7 +110,6 @@ set_algorithm_saom <- function(
 	}
 	model$simOnly <- simOnly
 	model$targets <- targets
-	model$thetaBound <- thetaBound
 	## create theta values for phase 3, if necessary
 	if (is.null(thetaValues))
 	{

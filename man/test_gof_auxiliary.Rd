@@ -82,7 +82,7 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
     There may be more time points, but those after \eqn{(M-1)} will not be used.}
   \item{trafo}{ For \code{egoAlterCombi}:
     transformation of the dependent behavior variable.
-    Default: identity function.}
+    Default: identity function. }
 }
 \details{
  The statistics should be chosen to represent features of the network
@@ -121,14 +121,18 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
 
  \code{dyadicCov} assumes that \code{dc} is a categorical dyadic variable,
  and returns the frequencies of the non-zero values for realized ties.
+ It is recommended to do this for a categorical covariate.
  Since zero values of dc are not counted, it may be advisable
  to code dc so that all non-diagonal values are non-zero,
  and all diagonal values are zero.
 
  \code{egoAlterCombi} returns the frequencies of realized ties for each
   ego-alter combination of values of the dependent behavior variable,
-  transformed by trafo; if \code{NULL}, untransformed.
- }
+  transformed by trafo; if \code{NULL}, untransformed.\cr
+  The range of this transformation should preferably have 5 or fewer values,
+  and definitely not 10 or more, as this would lead to problems in
+  the coding of ego-alter combinations.
+    }
 
 \value{
  \code{OutdegreeDistribution} returns a named vector, the distribution
@@ -157,7 +161,7 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
 
  \code{dyadicCov} returns a named vector, the frequencies of the non-missing
   non-zero values dc(ego,alter) of the observed or simulated (ego,alter) ties.
-
+  
  \code{sparseMatrixExtraction} returns the simulated network as a
   \code{"TsparseMatrix"};
   this is the virtual class for sparse numeric matrices
@@ -253,30 +257,11 @@ traf <- function(z){pmax(pmin(z,4),2)}
 (gofea <- test_gof(ans, egoAlterCombi, verbose=TRUE, join=TRUE,
     varName=c("mynet1","mybeh"), trafo=traf))
 plot(gofea)
+descriptives(gofea, showAll=TRUE)
 
 (gofdc <- test_gof(ans, dyadicCov, verbose=TRUE, join=TRUE,
     dc=mydycov, varName="mynet1"))
 plot(gofdc)
-
-# How to use dyadicCov for ego-alter combinations of a monadic variable:
-mycov <- c(rep(1:3,16),1,2) # artificial monadic variable, just for trying
-mycov.egoalter <- outer(10*mycov, mycov ,'+')
-diag(mycov.egoalter) <- 0
-dim(mycov.egoalter) # 50 * 50 matrix
-# This is a dyadic variable indicating ego-alter combinations of mycov.
-# This construction works since mycov has integer values
-# not outside the interval from 1 to 9 (actually, only 1 to 3).
-# All cells of this matrix contain a two-digit number,
-# left digit is row (ego) value, right digit is column (alter) value.
-# See the top left part of the matrix:
-mycov.egoalter[1:10,1:12]
-# The number of values is the square of the number of values of mycov;
-# therefore, recommended to do this for a monadic covariate
-# with no more than 5 values. Categorize the covariate!
-gof.mycov <- test_gof(ans, dyadicCov, verbose=TRUE, varName="mynet1",
-    dc=mycov.egoalter)
-plot(gof.mycov)
-descriptives(gof.mycov, showAll=TRUE)
 
 (gofb <- test_gof(ans, BehaviorDistribution, varName = "mybeh",
     verbose=TRUE, join=TRUE, cumulative=FALSE))
