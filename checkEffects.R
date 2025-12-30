@@ -3484,7 +3484,8 @@ sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
 ##substracting c_p from the mean for p > 0.5
 
 c_p <- ifelse(p <= 0.5, 0, p - mbh)
-sum( (mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) / sum(colSums(mynet[,,1])) ) - c_p )) # 15.74569 OK
+sum( (mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) / 
+  sum(colSums(mynet[,,1])) ) - c_p )) # 15.74569 OK
 
 ## Test for three networks without shape effects
 
@@ -3503,9 +3504,8 @@ mycontrols <- sienaAlgorithmCreate(projname=NULL)
 (ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE,
                 prevAns = ans, returnDeps=TRUE))
 ans$targets
-
-c_p <- ifelse(p <= 0.5, 0, p - mbh)
 (mbh <- mean(mybeh))
+c_p <- ifelse(p <= 0.5, 0, p - mbh)
 sum((mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) / sum(colSums(mynet[,,1])) ) - c_p )) +
   sum((mybeh[,,3]-mbh) * (( sum((mybeh[,,3]-mbh) * colSums(mynet[,,2])) / sum(colSums(mynet[,,2])) ) - c_p )) # 28.37791 ok
 
@@ -3555,8 +3555,8 @@ mycontrols <- sienaAlgorithmCreate(projname=NULL)
                 prevAns = ans, returnDeps=TRUE))
 ans$targets
 
-c_p <- ifelse(p <= 0.5, 0, p - mbh)
 (mbh <- mean(mybeh))
+c_p <- ifelse(p <= 0.5, 0, p - mbh)
 sum( (mybeh[,,2]-mbh) * ( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) - c_p )) +
 sum( (mybeh[,,3]-mbh) * ( sum((mybeh[,,3]-mbh) * colSums(mynet[,,2])) - c_p )) # 456.7178 ok
 

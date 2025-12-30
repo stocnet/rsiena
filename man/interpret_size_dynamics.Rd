@@ -191,10 +191,6 @@ myalgo2 <- set_algorithm_saom(nsub=2, n3=50, seed=1777, cond=TRUE)
             control_out=myout, batch=TRUE))
 
 RIDynamics2 <- interpret_size_dynamics(mydata, ans=ans2, effects=mymodel)
-
-
-
-
 RIDynamics2
 
 

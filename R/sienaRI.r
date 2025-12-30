@@ -32,7 +32,7 @@ sienaRI <- function(data, ans=NULL, theta=NULL, effects=NULL,
 		{
 			warning(paste("some informations are multiply defined \n",
 					"results will be based on 'theta' and 'effects'\n",
-					"stored in 'ans' (as 'ans$theta', 'ans$x', 'ans$effects')\n", sep=""))
+					"stored in 'ans' (as 'ans$theta','ans$effects')\n", sep=""))
 		}
 		if (sum(ans$effects$include==TRUE &
 				(ans$effects$type =="endow"|ans$effects$type =="creation")) > 0)
@@ -58,7 +58,8 @@ sienaRI <- function(data, ans=NULL, theta=NULL, effects=NULL,
 		if(sum(effects$include==TRUE &
 				(effects$type =="endow"|effects$type =="creation")) > 0)
 		{
-			stop("interpret_size does not yet work for models containing endowment or creation effects")
+			stop("interpret_size does not yet work for models containing endowment or 
+				creation effects")
 		}
 		effs <- effects
 		if (!is.numeric(theta))
@@ -69,10 +70,12 @@ sienaRI <- function(data, ans=NULL, theta=NULL, effects=NULL,
 		{
 			if(length(theta) != sum(effs$include==TRUE))
 			{
-				stop("theta is not a legitimate parameter vector \n number of parameters has to match number of effects")
+				stop("theta is not a legitimate parameter vector \n number of 
+					parameters has to match number of effects")
 			}
-			warning(paste("length of theta does not match the number of objective function effects\n",
-					"theta is treated as if containing rate parameters"))
+			warning(paste("length of theta does not match the number of 
+				objective function effects\n", "theta is treated as if 
+				containing rate parameters"))
 			paras <- theta
 			## all necessary information available
 			contributions <- getChangeContributions(data = data, effects = effs)
@@ -112,61 +115,19 @@ interpret_size.sienaFit <- function(x, data, getChangeStats=FALSE, ...)
 ##@getChangeContributions. Use as RSiena:::getChangeContributions
 getChangeContributions <- function(data, effects)
 {
-	## Gets the simulated statistics.
-	## The following initializations data, effects, and model
-	## for calling "getTargets" in "siena07.setup.h"
-	## is more or less copied from "getTargets" in "getTargets.r".
-	## However, some modifications have been necessary to get it to work.
-	f <- unpackData(data)
+	# How to check for settings without algorithm? Is it relevant?
+    setup <- sienaSetupForCpp(data, effects,
+                              includeBehavior = TRUE,
+                              includeBipartite = TRUE,
+                              returnActorStatistics = FALSE,
+                              returnStaticChangeContributions = TRUE,
+                              parallelrun = FALSE)
 
-	effects <- effects[effects$include,]
-#	effects$setting <- rep("", nrow(effects))
-	pData <- .Call(C_setupData, PACKAGE=pkgname,
-		list(as.integer(f$observations)),
-		list(f$nodeSets))
-	## register a finalizer
-	ans <- reg.finalizer(pData, clearData, onexit = FALSE)
-	ans<- .Call(C_OneMode, PACKAGE=pkgname,
-		pData, list(f$nets))
-	ans <- .Call(C_Bipartite, PACKAGE=pkgname, # added 1.1-299
-		pData, list(f$bipartites))
-	ans<- .Call(C_Behavior, PACKAGE=pkgname, pData,
-		list(f$behavs))
-	ans<-.Call(C_ConstantCovariates, PACKAGE=pkgname,
-		pData, list(f$cCovars))
-	ans<-.Call(C_ChangingCovariates,PACKAGE=pkgname,
-		pData,list(f$vCovars))
-	ans<-.Call(C_DyadicCovariates,PACKAGE=pkgname,
-		pData,list(f$dycCovars))
-	ans<-.Call(C_ChangingDyadicCovariates,PACKAGE=pkgname,
-		pData, list(f$dyvCovars))
-
-	storage.mode(effects$parm) <- 'integer'
-	storage.mode(effects$group) <- 'integer'
-	storage.mode(effects$period) <- 'integer'
-
-	effects$effectPtr <- rep(NA, nrow(effects))
-	depvarnames <- names(data$depvars)
-	tmpeffects <- split(effects, effects$name)
-	myeffectsOrder <- match(depvarnames, names(tmpeffects))
-	ans <- .Call(C_effects, PACKAGE=pkgname, pData, tmpeffects)
-	pModel <- ans[[1]][[1]]
-	for (i in 1:length(ans[[2]]))
-{
-		effectPtr <- ans[[2]][[i]]
-		tmpeffects[[i]]$effectPtr <- effectPtr
-	}
-	myeffects <- tmpeffects
-	for(i in 1:length(myeffectsOrder)){
-		myeffects[[i]]<-tmpeffects[[myeffectsOrder[i]]]
-	}
-#cat("e\n") #Hier gaat hij fout. 
-# Voor returnStaticChangeContributions=TRUE gaat het wel goed.
-#browser()
-	ans <- .Call(C_getTargets, PACKAGE=pkgname, pData, pModel, myeffects,
-		parallelrun=TRUE, returnActorStatistics=FALSE,
+    ans <- .Call(C_getTargets, PACKAGE=pkgname, 
+                 setup$pData, setup$pModel, setup$myeffects,
+                 parallelrun = FALSE,
+                 returnActorStatistics = FALSE,
                  returnStaticChangeContributions = TRUE)
-	# See getTargets in siena07setup.cpp; also see rTargets in StatisticsSimulation.cpp
     ans
 }
 
@@ -174,7 +135,7 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 	getChangeStatistics=FALSE, effectNames = NULL)
 {
 	rms <- function(xx){sqrt((1/dim(xx)[2])*rowSums(xx^2,na.rm=TRUE))}
-	waves <- length(conts[[1]])
+	periods <- length(conts[[1]])
 	effects <- effects[effects$include == TRUE,]
 	noRate <- effects$type != "rate"
 	effects <- effects[noRate,]
@@ -212,16 +173,18 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 			{
 				if (dim(depNetwork)[2] >= actors)
 				{
-					stop("interpret_size does not work for bipartite networks with second mode >= first mode")
+					stop("interpret_size does not work for bipartite networks with 
+						second mode >= first mode")
 				}
 				choices <- dim(depNetwork)[2] + 1
 			}
 			else
 			{
-				stop("interpret_size does not work for dependent variables of type 'continuous'")
+				stop("interpret_size does not work for dependent variables of type 
+					'continuous'")
 			}
 
-			# impute for wave 1
+			# impute for period 1
 			if (networkTypes[eff] %in% c("oneMode", "bipartite"))
 			{
 				depNetwork[,,1][is.na(depNetwork[,,1])] <- 0
@@ -230,7 +193,7 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 			{
 				depNetwork[,,1][is.na(depNetwork[,,1])] <- attr(depNetwork, 'modes')[1]
 			}
-			# impute for next waves;
+			# impute for next periods;
 			# this may be undesirable for structurals immediately followed by NA...
 			for (m in 2:dim(depNetwork)[3]){depNetwork[,,m][is.na(depNetwork[,,m])] <-
 				depNetwork[,,m-1][is.na(depNetwork[,,m])]}
@@ -262,16 +225,16 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 			RHActors <-list()
 			changeStats <-list()
 			sigma <- list()
-			sigmas <- matrix(NA, sum(currentDepEffs), waves)
+			sigmas <- matrix(NA, sum(currentDepEffs), periods)
 			if (networkTypes[eff] == "behavior")
 			{
-				toggleProbabilities <- array(0, dim=c(actors, 3, waves))
+				toggleProbabilities <- array(0, dim=c(actors, 3, periods))
 			}
 			else
 			{
-				toggleProbabilities <- array(0, dim=c(actors, choices, waves))
+				toggleProbabilities <- array(0, dim=c(actors, choices, periods))
 			}
-			for(w in 1:waves)
+			for(w in 1:periods)
 			{
 				currentDepEffectContributions <- conts[[1]][[w]][currentDepEffs]
 				if (networkTypes[eff] == "bipartite")
@@ -503,9 +466,9 @@ print.sienaRI <- function(x, printSigma = FALSE, ...){
 	}
 	cat(paste("\n  Expected relative importance of effects for dependent variable '",
 			x$dependentVariable,"' at observation moments:\n\n\n", sep=""))
-	waves <- length(x$expectedRI)
+	periods <- length(x$expectedRI)
 	effs <- length(x$effectNames)
-	colNames = paste("wave ", 1:waves, sep="")
+	colNames = paste("period ", 1:periods, sep="")
 	line1 <- format("", width =63)
 	line2 <- paste(format(1:effs,width=3), '. ',
 		format(x$effectNames, width = 56),sep="")
@@ -576,7 +539,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 	{
 		stop("not a legitimate Siena relative importance of effects object")
 	}
-	waves <- length(x$expectedRI)
+	periods <- length(x$expectedRI)
 	if (is.null(actors))
 	{
 		nactors <- dim(x$RIActors[[1]])[2]
@@ -741,37 +704,37 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 	{
 		if(legend)
 		{
-			layoutMatrix <- matrix(c(1:(2*waves+1),(2*waves+1)), byrow= TRUE,
-				ncol=2, nrow=(waves+1))
+			layoutMatrix <- matrix(c(1:(2*periods+1),(2*periods+1)), byrow= TRUE,
+				ncol=2, nrow=(periods+1))
 			layout(layoutMatrix,widths= c((nactors/6)+10,3.5+2.5*(rad^2)),
-				heights=c(rep(height,waves),legendHeight))
+				heights=c(rep(height,periods),legendHeight))
 		}else{
-			layoutMatrix <- matrix((1:(2*waves)), byrow= TRUE,
-				ncol=2, nrow=waves)
+			layoutMatrix <- matrix((1:(2*periods)), byrow= TRUE,
+				ncol=2, nrow=periods)
 			layout(layoutMatrix,widths = c((nactors/6)+10,7+2.5*(rad^2)),
-				heights=rep(height,waves))
+				heights=rep(height,periods))
 		}
 	}else{
 		if(legend)
 		{
-			layoutMatrix <- matrix((1:(waves+1)), byrow= TRUE,
-				ncol=1, nrow=(waves+1))
+			layoutMatrix <- matrix((1:(periods+1)), byrow= TRUE,
+				ncol=1, nrow=(periods+1))
 			layout(layoutMatrix)
 		}else{
-			layoutMatrix <- matrix((1:waves), byrow= TRUE, ncol=1, nrow=waves)
-			layout(layoutMatrix, heights=2*rep(height,waves))
+			layoutMatrix <- matrix((1:periods), byrow= TRUE, ncol=1, nrow=periods)
+			layout(layoutMatrix, heights=2*rep(height,periods))
 			# no widths, because these are only relative numbers,
 			# so requiring constant widths is redundant
 		}
 		par( oma = c( 1, 1, 2, 1 ), xpd=T , cex = 0.75, no.readonly = TRUE )
 	}
 	par(mar = c(3,3,1,1))
-	for(w in 1:waves)
+	for(w in 1:periods)
 	{
 		barplot(cbind(x$RIActors[[w]][,actors], x$expectedRI[[w]]),
 			space=c(rep(0.1,nactors),1.5),width=c(rep(1,nactors),1),
 			beside =FALSE, yaxt = "n", xlab="Actor", cex.names = cex.names,
-			ylab=paste("wave ", w, sep=""),border=bordergrey,
+			ylab=paste("period ", w, sep=""),border=bordergrey,
 			col = cl, names.arg=c(actors,"exp. rel. imp."))
 		axis(2, at=c(0,0.25,0.5,0.75,1),labels=c("0","","0.5","","1"))
 		axis(4, at=c(0,0.25,0.5,0.75,1),labels=c("0","","0.5","","1"))
@@ -792,7 +755,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 }
 
 ##@sienaSetupForCpp Use as RSiena:::sienaSetupForCpp
-sienaSetupForCpp <- function(algorithm, data, effects, 
+sienaSetupForCpp <- function(data, effects, 
                              includeBehavior = TRUE, 
                              includeBipartite = TRUE,
                              returnActorStatistics = FALSE,

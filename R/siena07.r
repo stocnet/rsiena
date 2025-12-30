@@ -454,7 +454,7 @@ siena07 <- function(alg, batch = FALSE, verbose = FALSE, silent=FALSE,
 	time1 <-  proc.time()['elapsed']
 	Report(c("Total computation time", round(time1 - time0, digits=2),
 			"seconds.\n"), outf)
-z$compTime <- round(time1 - time0, digits=2)
+	z$compTime <- round(time1 - time0, digits=2)
 
 	if (useCluster)
 	{
@@ -775,14 +775,14 @@ coef.sienaFit <- function(object, dropRates=TRUE, shortenNames=TRUE, ...)
 }
 
 ##@vcov.sienaFit method for sienaFit
-vcov.sienaFit <- function(x, dropRates=TRUE, shortenNames=TRUE, ...)
+vcov.sienaFit <- function(object, dropRates=TRUE, shortenNames=TRUE, ...)
 {
-	result <- x$covtheta
-	colnames(result) <- fromObjectToText(x$requestedEffects$effectName)
+	result <- object$covtheta
+	colnames(result) <- fromObjectToText(object$requestedEffects$effectName)
 	rownames(result) <- colnames(result)
 	if (dropRates)
 	{
-		return(result[!x$requestedEffects$basicRate,!x$requestedEffects$basicRate])
+		return(result[!object$requestedEffects$basicRate,!object$requestedEffects$basicRate])
 	}
 	else
 	{

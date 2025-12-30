@@ -128,7 +128,7 @@ mynet1 <- as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)))
 mydata <- make_data_rsiena(mynet1)
 myeff <- make_specification(mydata)
 myeff <- set_effect(myeff, transTrip)
-ans <- siena(mydata, effects=myeff, batch=TRUE)
+ans <- siena(mydata, effects=myeff, batch=TRUE, control_algo=myalgorithm)
 
 ## Conduct the score-type test to assess whether heterogeneity is present.
 tt <- test_time(ans)
@@ -137,7 +137,7 @@ summary(tt)
 ## Suppose that we wish to include time dummies.
 ## Add them in the following way:
 myeff <- includeTimeDummy(myeff, recip, transTrip, timeDummy="2")
-ans2 <- siena(mydata, effects=myeff, batch=TRUE)
+ans2 <- siena(mydata, effects=myeff, batch=TRUE, control_algo=myalgorithm)
 
 ## Re-assess the time heterogeneity
 (tt2 <- test_time(ans2))

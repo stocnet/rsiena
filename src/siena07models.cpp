@@ -66,7 +66,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 	SEXP FROMFINITEDIFF, SEXP MODELPTR, SEXP EFFECTSLIST,
 	SEXP THETA, SEXP RANDOMSEED2, SEXP RETURNDEPS, SEXP NEEDSEEDS,
 	SEXP USESTREAMS, SEXP ADDCHAINTOSTORE, SEXP RETURNCHAINS, SEXP RETURNLOGLIK,
-	SEXP RETURNACTORSTATISTICS, SEXP RETURNCHANGECONTRIBUTIONS)
+	SEXP RETURNACTORSTATISTICS, SEXP RETURNCHANGECONTRIBUTIONS, SEXP RETURNDATAFRAME)
 {
 	SEXP NEWRANDOMSEED = PROTECT(Rf_duplicate(RANDOMSEED2)); // for parallel testing only
 
@@ -90,6 +90,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 	int returnLoglik = sexp_to_int(RETURNLOGLIK, 0);
 	int returnActorStatistics = sexp_to_int(RETURNACTORSTATISTICS, 0);
 	int returnChangeContributions = sexp_to_int(RETURNCHANGECONTRIBUTIONS, 0);
+	int returnDataFrame = sexp_to_int(RETURNDATAFRAME, 0);
 	int deriv = Rf_asInteger(DERIV);
 	int needSeeds = Rf_asInteger(NEEDSEEDS);
 
@@ -412,13 +413,16 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 			}
 			if (returnChains)
 			{
-
-				SEXP thisChain =
-					getChainList(*(pEpochSimulation->pChain()));
-
-				SET_VECTOR_ELT(VECTOR_ELT(chains, group), period,
-					thisChain);
-
+				SEXP thisChain;
+				if (returnDataFrame)
+				{
+					thisChain = getChainDFPlus(*(pEpochSimulation->pChain()), true);
+				}
+				else
+				{
+					thisChain = getChainList(*(pEpochSimulation->pChain()));
+				}
+				SET_VECTOR_ELT(VECTOR_ELT(chains, group), period, thisChain);
 			}
 			if(returnChangeContributions)
 			{

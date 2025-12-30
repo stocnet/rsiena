@@ -1,6 +1,6 @@
 ##@getTargets Miscellaneous Written for Krista. Use as RSiena:::getTargets
 getTargets <- function(data, effects) {
-    setup <- sienaSetupForCpp(NULL, data, effects,
+    setup <- sienaSetupForCpp(data, effects,
                               includeBehavior = TRUE,
                               includeBipartite = TRUE,
                               returnActorStatistics = FALSE,
@@ -18,7 +18,7 @@ getTargets <- function(data, effects) {
 ## the last wave), for effects associated with a specified behavior.  Optionally
 ## replaces the actual data for the wave for this behaviour with imputedData.
 ## For use with multiple imputation of behavior data.
-actorTargets <- function(data, effects, algorithm, behaviorName, wave,
+actorTargets <- function(data, effects, behaviorName, wave,
                          imputedData = NULL, rate = FALSE)
 {
     depvarsNo <- length(data$depvars)
@@ -57,7 +57,7 @@ actorTargets <- function(data, effects, algorithm, behaviorName, wave,
         }
 
         # Use sienaSetupForCpp for setup
-        setup <- sienaSetupForCpp(algorithm, data, effects,
+        setup <- sienaSetupForCpp(data, effects,
                                   includeBehavior = TRUE,
                                   includeBipartite = FALSE,
                                   returnActorStatistics = FALSE,

@@ -19,7 +19,7 @@
 \usage{
 \method{coef}{sienaFit}(object, dropRates=TRUE, shortenNames=TRUE, ...)
 
-\method{vcov}{sienaFit}(x, dropRates=TRUE, shortenNames=TRUE, ...)
+\method{vcov}{sienaFit}(object, dropRates=TRUE, shortenNames=TRUE, ...)
 
 \method{print}{sienaFit}(x, tstat=TRUE, ...)
 
