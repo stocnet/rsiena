@@ -172,7 +172,7 @@ A \code{interpret_size_dynamics} object consists of following components:
 \author{Natalie Indlekofer}
 \examples{
 
-myalgo <- set_algorithm_saom(nsub=2, n3=50, seed=1777, cond=FALSE)
+myalgo <- set_algorithm_saom(nsub=1, n3=32, seed=1777, cond=FALSE)
 myout <- set_output_saom(returnChangeContributions=TRUE)
 mynet1 <- as_dependent_rsiena(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
 mydata <- make_data_rsiena(mynet1)
@@ -184,9 +184,11 @@ mymodel <- set_effect(mymodel, list(inPop, outAct, transTrip))
 RIDynamics1 <- interpret_size_dynamics(mydata, ans=ans, 
                  useChangeContributions=TRUE)
 RIDynamics1
+\dontrun{
 plot(RIDynamics1)
+}
 
-myalgo2 <- set_algorithm_saom(nsub=2, n3=50, seed=1777, cond=TRUE)
+myalgo2 <- set_algorithm_saom(nsub=1, n3=32, seed=1777, cond=TRUE)
 (ans2 <- siena(mydata, effects=mymodel, control_algo=myalgo2, 
             control_out=myout, batch=TRUE))
 
@@ -194,31 +196,28 @@ RIDynamics2 <- interpret_size_dynamics(mydata, ans=ans2, effects=mymodel)
 RIDynamics2
 
 
-mysalgo2 <- sienaAlgorithmCreate(nsub=2, n3=50, seed=1777, cond=TRUE)
+myalgo3 <- sienaAlgorithmCreate(nsub=1, n3=32, seed=1777, cond=TRUE)
 RIDynamics3 <- interpret_size_dynamics(data=mydata, 
              theta=c(ans2$rate,ans2$theta),
-             algorithm=mysalgo2, effects=mymodel, intervalsPerPeriod=4)
+             algorithm=myalgo3, effects=mymodel, intervalsPerPeriod=4)
 RIDynamics3
 
-myalgo3 <- set_algorithm_saom(nsub=2, n3=50)
+myalgo4 <- set_algorithm_saom(nsub=1, n3=32)
 mynet2 <-  as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)))
 mybeh <-  as_dependent_rsiena(s50a, type="behavior")
 mydata2 <- make_data_rsiena(mynet2, mybeh)
 mymodel2 <- make_specification(mydata2)
 mymodel2 <- set_effect(mymodel2, list(inPop, outAct, transTrip))
 
-(ans3 <- siena(mydata2, effects=mymodel2, control_algo=myalgo3,
+(ans3 <- siena(mydata2, effects=mymodel2, control_algo=myalgo4,
             control_out=myout,  batch=TRUE))
 
 RIDynamics4 <- interpret_size_dynamics(mydata2, ans=ans3, depvar="mybeh")
 RIDynamics4
 
-RIDynamics5 <- interpret_size_dynamics(mydata2, ans=ans3, depvar="mynet2", 
-                                       n3 = 100)
-RIDynamics5
-
-
 RI5 <- interpret_size(ans3, data=mydata2)
-plot(RIDynamics5, staticRI=RI5[[1]])
+\dontrun{
+  plot(RIDynamics5, staticRI=RI5[[1]])
+}
 }
 \keyword{models}
