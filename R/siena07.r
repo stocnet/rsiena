@@ -10,17 +10,15 @@
 ## * Also contains utility functions used within siena07
 ## ****************************************************************************/
 
-siena <- function(x, ...) UseMethod("siena", x)
-
-##@siena.sienadata siena Methods
-siena.sienadata <- function(x, effects=NULL,
-	control_model=NULL, control_algo=NULL, control_out=NULL,
+##@siena estimation
+siena <- function(data = NULL, effects = NULL,
+	control_model = NULL, control_algo = NULL, control_out = NULL,
 	thetaBound = 50,
-	batch = FALSE, verbose = FALSE, silent=TRUE,
-	initC=TRUE,
+	batch = FALSE, verbose = FALSE, silent = TRUE,
+	initC = TRUE,
 	nbrNodes = 1,
-	clusterString=rep("localhost", nbrNodes),
-	clusterType=c("PSOCK", "FORK"), cl=NULL, ...)
+	clusterString = rep("localhost", nbrNodes),
+	clusterType = c("PSOCK", "FORK"), cl = NULL, ...)
 {
 	exitfn <- function()
 	{
@@ -36,8 +34,11 @@ siena.sienadata <- function(x, effects=NULL,
 
 	checking <- any(grepl("_R_CHECK", names(Sys.getenv())))
 
-	data <- x
-	dataName <- deparse(substitute(x))
+	dataName <- deparse(substitute(data))
+	if (dataName=="")
+	{
+		dataName <- "Siena"
+	}
 
 	if (!inherits(effects, "sienaEffects"))
 	{
@@ -67,10 +68,11 @@ siena.sienadata <- function(x, effects=NULL,
 		}
 		else
 		{
-			control_out$outputName=paste(dataName, "_out", sep="")
+			control_out$outputName <- paste(dataName, "_out", sep="")
 			cat('siena will create/use an output file',
 				paste(control_out$outputName,'.txt',sep=''),'.\n')
 		}
+		control_out$projname <- control_out$outputName
 	}
 	if (control_algo$maxlike)
 	{
@@ -87,7 +89,6 @@ siena.sienadata <- function(x, effects=NULL,
 				"is not possible with maximum likelihood estimation")
 		}
 	}
-	x <- c(control_model, control_algo, control_out)
 
 	# If the user is passing clusters through -cl- then change the
 	# useCluster to TRUE, and assign the -nbrNodes- to number of nodes
@@ -116,7 +117,6 @@ siena.sienadata <- function(x, effects=NULL,
 		}
 	}
 	x <- c(control_model, control_algo, control_out)
-	x$projname <- x$outputName
 	z$returnThetas <- control_out$returnThetas
 
 	parallelTesting <- FALSE
@@ -251,16 +251,16 @@ siena.sienadata <- function(x, effects=NULL,
 
 
 ##@siena07 siena07
-siena07 <- function(alg, batch = FALSE, verbose = FALSE, silent=FALSE,
+siena07 <- function(alg, batch = FALSE, verbose = FALSE, silent = FALSE,
 	useCluster = FALSE, nbrNodes = 2,
 	thetaValues = NULL,
     returnThetas = FALSE,
 	thetaBound = 50,
 	targets = NULL,
-	initC=TRUE,
-	clusterString=rep("localhost", nbrNodes), tt=NULL,
-	parallelTesting=FALSE, clusterIter=!x$maxlike,
-	clusterType=c("PSOCK", "FORK"), cl=NULL, ...)
+	initC = TRUE,
+	clusterString = rep("localhost", nbrNodes), tt = NULL,
+	parallelTesting = FALSE, clusterIter = !alg$maxlike,
+	clusterType = c("PSOCK", "FORK"), cl = NULL, ...)
 {
 	exitfn <- function()
 	{
@@ -835,10 +835,3 @@ fromObjectToText <- function(a, type='notex'){
 	b <- gsub('#', '.', fixed=TRUE, b)
 	b
 }
-
-
-## extra for backward compatibility with siena objects
-## created before version 1.6:
-
-##@siena.siena Methods
-siena.siena <- siena.sienadata

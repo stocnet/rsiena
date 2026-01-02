@@ -15,7 +15,7 @@
   the other is kept for backward compatibility.
 }
 \usage{
-\method{siena}{sienadata}(x, effects=NULL,
+siena(data=NULL, effects=NULL,
         control_model=NULL, control_algo=NULL, control_out=NULL,
         thetaBound = 50,
         batch = FALSE, verbose = FALSE, silent=TRUE,
@@ -30,11 +30,11 @@ siena07(alg, batch=FALSE, verbose=FALSE, silent=FALSE,
         thetaBound = 50,
         targets = NULL,
         initC=TRUE, clusterString=rep("localhost", nbrNodes), tt=NULL,
-        parallelTesting=FALSE, clusterIter=!x$maxlike,
+        parallelTesting=FALSE, clusterIter=!alg$maxlike,
         clusterType=c("PSOCK", "FORK"), cl=NULL, ...)
       }
 \arguments{
-  \item{x}{Siena data set of class \code{\link{sienadata}}. }
+  \item{data}{Siena data set of class \code{\link{sienadata}}. }
   \item{effects}{\code{sienaEffects} object specifying which effects are
     included the model.}
   \item{control_model}{Control object for the model,
@@ -76,7 +76,7 @@ siena07(alg, batch=FALSE, verbose=FALSE, silent=FALSE,
     values to be used in Phase 3. The number of columns must be equal to the
     number of estimated parameters in the effects object (if conditional
     estimation is used, without the rate parameters for the conditioning
-    dependent variable). Can only be used if \code{x$simOnly=TRUE}.}
+    dependent variable). Can only be used if \code{alg$simOnly=TRUE}.}
   \item{returnThetas}{Boolean: whether to return theta values
    and generated estimation statistics of Phase 2 runs.}
   \item{targets}{Numeric vector of length equal to the number of estimated
@@ -113,11 +113,11 @@ siena07(alg, batch=FALSE, verbose=FALSE, silent=FALSE,
 
  \code{siena} runs a Robbins-Monro algorithm for parameter estimation
   using the three-phase implementation described in Snijders (2001, 2017),
- with (if \code{findiff=FALSE} in the algorithm object)
+ with (if \code{findiff=FALSE} in \code{control_algo})
  derivative estimation as in Schweinberger and Snijders (2007).
  The default is estimation according to the Method of Moments
  as in Snijders, Steglich and Schweinberger (2007).\cr
- If  \code{gmm=TRUE} in the algorithm object and \code{myeff} contains one or more
+ If  \code{gmm=TRUE} in \code{control_algo} and \code{myeff} contains one or more
  \code{gmm} statistics as included by function
  \code{\link{includeGMoMStatistics}}, the algorithm employs the
  Generalized Method of Moments as defined in Amati, Schoenenberger, and
@@ -125,7 +125,8 @@ siena07(alg, batch=FALSE, verbose=FALSE, silent=FALSE,
  For continuous behavior variables defined with \code{type="continuous"} in \cr
  \code{\link{as_dependent_rsiena}}, estimation is done as
  described in Niezink and Snijders (2017).\cr
- If  \code{maxlike=TRUE} in the algorithm object, estimation is done by Maximum Likelihood
+ If  \code{maxlike=TRUE} in \code{control_algo}, 
+ estimation is done by Maximum Likelihood
  implemented as in Snijders, Koskinen and Schweinberger (2010).\cr
  Phase 1 does a few iterations to
  estimate the derivative matrix of the targets with respect to the
@@ -136,7 +137,7 @@ siena07(alg, batch=FALSE, verbose=FALSE, silent=FALSE,
  Unless in batch mode, a tcl/tk screen is displayed to allow interruption
  and to show progress.
 
- If \code{targets} is specified in the algorithm object for \code{siena}
+ If \code{targets} is specified in \code{control_algo}
  or in the call of \code{siena07} (which should be done only in special cases),
  and provided that estimation is by the Method of Moments, the data
  is not a multi-group data set and has exactly 2 waves,
@@ -156,7 +157,7 @@ siena07(alg, batch=FALSE, verbose=FALSE, silent=FALSE,
  \code{\link{initializeFRAN}}.)
 
  For good estimation of standard errors, it is necessary that \code{n3}
- in the algorithm object is large enough. More about this is in the manual.
+ in \code{control_algo} is large enough. More about this is in the manual.
  The default value \code{n3} is adequate for most explorative use,
  but for presentation in publications larger values are necessary, depending
  on the data set and model; e.g., \code{n3=3000} or larger.
@@ -170,11 +171,11 @@ siena07(alg, batch=FALSE, verbose=FALSE, silent=FALSE,
  score tests of their hypothesized values can be obtained
  using \code{\link{test_parameter}} with \code{method="score"}.
 
- If \code{simOnly} is \code{TRUE} in the algorithm object,
+ If \code{simOnly=TRUE} in \code{control_algo},
  which is meant to go together with  \code{nsub=0},
  the calculation of the standard errors and covariance
  matrix at the end of Pase 3 is skipped. No estimation is performed.
- If \code{thetaValues} in the algorithm object is not \code{NULL},
+ If \code{thetaValues} in \code{control_algo} is not \code{NULL},
  the parameter values in  the rows of this matrix will be used
  in the consecutive runs of Phase 3.
  If \code{n3} is larger than the number of rows times \code{nbrNodes}
@@ -185,7 +186,7 @@ siena07(alg, batch=FALSE, verbose=FALSE, silent=FALSE,
  Multiple processors are used for estimation by MoM to distribute each iteration
  in each subphase over the cluster of nodes. The number of iterations
  accordingly will be divided (approximately) by the number of nodes;
- for phase 2, unless \code{n2start} is specified in the algorithm object.
+ for phase 2, unless \code{n2start} is specified in \code{control_algo}.
  This implies that if multiple processors are used, think of dividing
  \code{n2start} by \code{nbrNodes}.\cr
  For estimation by ML, multiple processing is done per period. Therefore,
@@ -226,7 +227,8 @@ siena07(alg, batch=FALSE, verbose=FALSE, silent=FALSE,
   \item{requestedEffects}{The included effects in the effects object.}
   \item{effects}{The included effects in the effects object to which are added
     the main effects of the requested interaction effects, if any.}
-  \item{theta}{Estimated value of theta, if \code{x$simOnly=FALSE}.}
+  \item{theta}{Estimated value of theta, if \code{simOnly=FALSE}
+    in \code{control_algo}.}
   \item{thetas}{Matrix, returned if \code{returnThetas} and \code{x$nsub >= 1}.
     First column is subphase; further columns are values of theta as generated
     during this subphase of Phase 2.}

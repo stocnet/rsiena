@@ -229,6 +229,7 @@ set_output_saom <- function(outputName=NULL, lessMem=FALSE,
 {
 	model <- list()
 	model$outputName <- outputName
+	model$projname <- outputName
 	model$sf2.byIteration <- !lessMem
 	model$returnThetas=returnThetas
 #	model$returnDeps=returnDeps
