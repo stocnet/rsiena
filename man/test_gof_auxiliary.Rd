@@ -452,8 +452,8 @@ plot(goftc, center=TRUE, scale=TRUE)
 # For this type of auxiliary statistics
 # it is advisable in the plot to center and scale.
 # note the keys at the x-axis; these names are given by sna::triad.census
-descriptives.test_gof(goftc)
-round(descriptives.test_gof(goftc))
+descriptives(goftc)
+round(descriptives(goftc))
 
 gofgd <- test_gof(ans2, GeodesicDistribution, varName="mynet1",
            verbose=TRUE, join=TRUE, cumulative=FALSE)

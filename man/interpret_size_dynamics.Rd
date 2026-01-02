@@ -22,12 +22,12 @@
    \code{sienaAlgorithm} and \code{sienaEffects} objects.
  }
 \usage{
-  interpret_size_dynamics(data, ans=NULL, theta=NULL, 
-     algorithm=NULL, effects=NULL, depvar=NULL, 
+  interpret_size_dynamics(data, ans=NULL, theta=NULL,
+     algorithm=NULL, effects=NULL, depvar=NULL,
      intervalsPerPeriod=NULL, n3 = NULL, useChangeContributions=FALSE,
      silent=TRUE, seed=NULL)
   \method{plot}{sienaRIDynamics}(x, staticRI=NULL, col=NULL,
-     ylim=NULL, width=NULL, height=NULL, legend=TRUE, 
+     ylim=NULL, width=NULL, height=NULL, legend=TRUE,
      legendColumns=NULL, legendHeight=NULL, cex.legend=NULL, \dots)
 }
 \arguments{
@@ -70,14 +70,14 @@
     \code{intervalsPerPeriod} subintervals.
     The values of relative importance are aggregated over all ministeps
     of one subinterval. Default value is 10 subintervals per period.}
-  \item{n3}{Integer specifying the number of chains to be simulated. 
+  \item{n3}{Integer specifying the number of chains to be simulated.
     Defaults to the value in \code{algorithm} or what was set when estimating \code{ans}.
     A very large value will result in a long computation time and large memory usage.}
   \item{silent}{Logical specifying whether output during internal
     \code{\link{siena}} calls should be suppressed. Default is \code{TRUE}.}
   \item{seed}{Integer specifying the seed for random number generation
     during internal \code{\link{siena}} calls.}
-  \item{useChangeContributions}{Logical specifying whether previously extracted change 
+  \item{useChangeContributions}{Logical specifying whether previously extracted change
     contributions should be used instead of rerunning phase 3 simulations.}
   \item{x}{\code{interpret_size_dynamics} object resulting from a call to \cr
     \code{interpret_size_dynamics}.}
@@ -128,7 +128,7 @@ dependent variable, it is necessary to give the associated
 Alternatively, the necessary information can be given directly as a
 suitable parameter vector \code{theta} (containing necessary rate
 and evaluation parameters), a \code{sienaAlgorithm} object, \cr
-and a \code{sienaEffects} object. 
+and a \code{sienaEffects} object.
 In this case, \code{ans} has to be unspecified, i.e., \code{ans=NULL}.
 
 If the sienaFit object \code{ans} was already estimated with
@@ -141,7 +141,7 @@ and \code{n3} is ignored, since the number of chains is determined by the
 previous \code{siena07} run.
 If \code{useChangeContributions=FALSE}, new chains are simulated internally
 with \code{siena07} and the change contributions are calculated from these
-chains. The number of simulations is determined by the value of \code{n3} or 
+chains. The number of simulations is determined by the value of \code{n3} or
 the value of \code{algorithm$n3} if \code{algorithm} is specified. Otherwise,
 it defaults to the value of \code{ans$n3} if \code{ans} is specified.
 }
@@ -165,7 +165,7 @@ A \code{interpret_size_dynamics} object consists of following components:
 }
 \seealso{\code{\link{sienaRI}} and \code{\link{siena07}}}
 \references{
-  Indlekofer, N. and Brandes, U. (2013), 
+  Indlekofer, N. and Brandes, U. (2013),
   Relative Importance of Effects in Stochastic Actor-oriented Models.
   \emph{Network Science}, \bold{1 (3)}, 275--297.
 }
@@ -178,10 +178,10 @@ mynet1 <- as_dependent_rsiena(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
 mydata <- make_data_rsiena(mynet1)
 mymodel <- make_specification(mydata)
 mymodel <- set_effect(mymodel, list(inPop, outAct, transTrip))
-(ans <- siena(mydata, effects=mymodel, 
+(ans <- siena(mydata, effects=mymodel,
             control_algo=myalgo, control_out=myout, batch=TRUE))
 
-RIDynamics1 <- interpret_size_dynamics(mydata, ans=ans, 
+RIDynamics1 <- interpret_size_dynamics(mydata, ans=ans,
                  useChangeContributions=TRUE)
 RIDynamics1
 \dontrun{
@@ -189,7 +189,7 @@ plot(RIDynamics1)
 }
 
 myalgo2 <- set_algorithm_saom(nsub=1, n3=32, seed=1777, cond=TRUE)
-(ans2 <- siena(mydata, effects=mymodel, control_algo=myalgo2, 
+(ans2 <- siena(mydata, effects=mymodel, control_algo=myalgo2,
             control_out=myout, batch=TRUE))
 
 RIDynamics2 <- interpret_size_dynamics(mydata, ans=ans2, effects=mymodel)
@@ -197,7 +197,7 @@ RIDynamics2
 
 
 myalgo3 <- sienaAlgorithmCreate(nsub=1, n3=32, seed=1777, cond=TRUE)
-RIDynamics3 <- interpret_size_dynamics(data=mydata, 
+RIDynamics3 <- interpret_size_dynamics(data=mydata,
              theta=c(ans2$rate,ans2$theta),
              algorithm=myalgo3, effects=mymodel, intervalsPerPeriod=4)
 RIDynamics3
@@ -217,7 +217,10 @@ RIDynamics4
 
 RI5 <- interpret_size(ans3, data=mydata2)
 \dontrun{
-  plot(RIDynamics5, staticRI=RI5[[1]])
+RIDynamics5 <- interpret_size_dynamics(mydata2, ans=ans3,
+                                       depvar="mynet2", n3 = 50)
+RIDynamics5
+plot(RIDynamics5, staticRI=RI5[[1]])
 }
 }
 \keyword{models}

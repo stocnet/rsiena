@@ -313,7 +313,7 @@ plot(gofi)
                      varName="mynet1"))
 # cumulative is an example of "...".
 plot(gofi.nc)
-descriptives.test_gof(gofi.nc)
+descriptives(gofi.nc)
 
 (gofi2 <- test_gof(ans, IndegreeDistribution, varName="mynet2"))
 plot(gofi2)

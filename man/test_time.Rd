@@ -164,9 +164,7 @@ ttp <- test_time(ansp, effects=2:3)
 
 ## Pairwise plots show
 plot(ttp, pairwise=TRUE)
-
-## Time test plots show
-plot(ttp, effects=1:4, dims=c(2,2))}
+}
 
 ## Instead of working with includeTimeDummy,
 ## you can also define time dummies explicitly;
