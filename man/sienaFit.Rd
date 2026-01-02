@@ -13,19 +13,19 @@
 \alias{coef.sienaFit}
 \alias{vcov}
 \alias{vcov.sienaFit}
-\title{Methods for processing sienaFit objects, 
+\title{Methods for processing sienaFit objects,
          produced by \code{\link{siena}}
 }
 \usage{
-\method{coef}{sienaFit}(object, dropRates=TRUE, shortenNames=TRUE, ...)
-
-\method{vcov}{sienaFit}(object, dropRates=TRUE, shortenNames=TRUE, ...)
-
 \method{print}{sienaFit}(x, tstat=TRUE, ...)
 
 \method{summary}{sienaFit}(object, ...)
 
 \method{print}{summary.sienaFit}(x, matrices=TRUE, ...)
+
+\method{coef}{sienaFit}(object, dropRates=TRUE, shortenNames=TRUE, ...)
+
+\method{vcov}{sienaFit}(object, dropRates=TRUE, shortenNames=TRUE, ...)
 
 \method{write_result}{sienaFit}(x, type="tex",
     fileName=paste(deparse(substitute(x)),".",type,sep=""),
@@ -34,17 +34,17 @@
 \method{xtable}{sienaFit}(x, caption = NULL, label = NULL, align = NULL,
     digits = NULL, display = NULL, ...)
 
-siena_table(x, type="tex", 
+siena_table(x, type="tex",
     fileName=paste(deparse(substitute(x)), ".", type,sep=""),
     vertLine=TRUE, tstatPrint=FALSE, sig=FALSE, d=3, nfirst=NULL)
 }
 \arguments{
-  \item{object}{An object of class \code{\link{sienaFit}}, produced by
-    \code{\link{siena}}. For \code{siena_table}, objects of class
-    \code{sienaBayes} are also permitted.}
   \item{x}{An object of class \code{sienaFit}, or
     \code{summary.sienaFit} as appropriate. For \code{siena_table},
     objects of class \code{sienaBayes} are also permitted.}
+  \item{object}{An object of class \code{\link{sienaFit}}, produced by
+    \code{\link{siena}}. For \code{siena_table}, objects of class
+    \code{sienaBayes} are also permitted.}
   \item{dropRates}{Logical. Should the results for the basic rate parameters
     also be given?}
   \item{shortenNames}{Logical. Should the effect names
@@ -88,7 +88,7 @@ siena_table(x, type="tex",
 \value{
   Function \code{coef.sienaFit} gives the estimated parameters,
   and \code{vcov.sienaFit} their estimated variance-covariance matrix.
-  
+
   The function \code{print.sienaFit} prints a table containing estimated
   parameter values, standard errors and (optionally)
   t-statistics for convergence.

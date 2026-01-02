@@ -13,9 +13,9 @@
 sienaRI <- function(data, ans=NULL, theta=NULL, effects=NULL,
 	getChangeStats=FALSE)
 {
-	if (!inherits(data, "sienadata"))
+	if (!inherits(data, "sienadata") && !inherits(data, "siena"))
 	{
-		stop("no a legitimate Siena data specification")
+		stop("not a legitimate Siena data specification")
 	}
 	datatypes <- sapply(data$depvars, function(x){attr(x,"type")})
 	if (any(datatypes == "bipartite"))
@@ -58,7 +58,7 @@ sienaRI <- function(data, ans=NULL, theta=NULL, effects=NULL,
 		if(sum(effects$include==TRUE &
 				(effects$type =="endow"|effects$type =="creation")) > 0)
 		{
-			stop("interpret_size does not yet work for models containing endowment or 
+			stop("interpret_size does not yet work for models containing endowment or
 				creation effects")
 		}
 		effs <- effects
@@ -70,12 +70,12 @@ sienaRI <- function(data, ans=NULL, theta=NULL, effects=NULL,
 		{
 			if(length(theta) != sum(effs$include==TRUE))
 			{
-				stop("theta is not a legitimate parameter vector \n number of 
+				stop("theta is not a legitimate parameter vector \n number of
 					parameters has to match number of effects")
 			}
-			warning(paste("length of theta does not match the number of 
-				objective function effects\n", "theta is treated as if 
-				containing rate parameters"))
+			warning(paste("length of theta does not match the number",
+					" of objective function effects\n", 
+					"theta is treated as if containing rate parameters"))
 			paras <- theta
 			## all necessary information available
 			contributions <- getChangeContributions(data = data, effects = effs)
@@ -99,7 +99,7 @@ sienaRI <- function(data, ans=NULL, theta=NULL, effects=NULL,
 interpret_size <- function(x, ...) UseMethod("interpret_size", x)
 
 ##@interpret_size  method for sienaEffects objects
-interpret_size.sienaEffects <- function(x, data, 
+interpret_size.sienaEffects <- function(x, data,
 		theta, getChangeStats=FALSE, ...)
 {
     sienaRI(data, theta=theta, effects=x,
@@ -123,7 +123,7 @@ getChangeContributions <- function(data, effects)
                               returnStaticChangeContributions = TRUE,
                               parallelrun = FALSE)
 
-    ans <- .Call(C_getTargets, PACKAGE=pkgname, 
+    ans <- .Call(C_getTargets, PACKAGE=pkgname,
                  setup$pData, setup$pModel, setup$myeffects,
                  parallelrun = FALSE,
                  returnActorStatistics = FALSE,
@@ -173,14 +173,14 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 			{
 				if (dim(depNetwork)[2] >= actors)
 				{
-					stop("interpret_size does not work for bipartite networks with 
+					stop("interpret_size does not work for bipartite networks with
 						second mode >= first mode")
 				}
 				choices <- dim(depNetwork)[2] + 1
 			}
 			else
 			{
-				stop("interpret_size does not work for dependent variables of type 
+				stop("interpret_size does not work for dependent variables of type
 					'continuous'")
 			}
 
@@ -205,8 +205,8 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 			structurals <- (depNetwork >= 10)
 			if (networkTypes[eff] == "oneMode"){
 				if (attr(depNetwork, 'symmetric')){
-					message('\nNote that for symmetric networks, 
-						effect sizes are for modelType 2 
+					message('\nNote that for symmetric networks,
+						effect sizes are for modelType 2
 						(forcing).')
 					}
 				}
@@ -274,8 +274,8 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 						function(x){matrix(x[[1]], nrow=effNumber+1,
 							ncol=choices, byrow=F)})
 				# distributions is a list, length = number of actors
-				# distributions[[i]] is for actor i, a matrix of dim (effects + 1) 
-				# * (actors as alters) giving the probability of toggling the 
+				# distributions[[i]] is for actor i, a matrix of dim (effects + 1)
+				# * (actors as alters) giving the probability of toggling the
 				# tie variable to the alters;
 				# the first row is for the unchanged parameter vector theta,
 				# each of the following has put one element of theta to 0.
@@ -290,8 +290,8 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 					toggleProbabilities[,,w] <-
 						t(vapply(distributions, function(x){x[1,]}, rep(0,choices)))
 				}
-				# toggleProbabilities is an array referring to ego * choices * 
-				# period, giving the probability of ego in a ministep at the 
+				# toggleProbabilities is an array referring to ego * choices *
+				# period, giving the probability of ego in a ministep at the
 				# start of the period to make this choice.
 				# For oneMode networks choices are alters;
 				# for  bipartite choices are second mode nodes,and the last is "no change";
@@ -564,7 +564,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 				legendColumns <- as.integer(legendColumns)
 			}else{
 				legendColumns <- NULL
-				warning("legendColumns has to be of type 'numeric' \n used default settings")
+warning("legendColumns has to be of type 'numeric' \n used default settings")
 			}
 		}
 		if(is.null(legendColumns))
@@ -578,7 +578,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 				legendHeight <- legendHeight
 			}else{
 				legendHeight <- NULL
-				warning("legendHeight has to be of type 'numeric' \n used default settings")
+warning("legendHeight has to be of type 'numeric' \n used default settings")
 			}
 		}
 		if(is.null(legendHeight))
@@ -594,7 +594,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 			height <- height
 		}else{
 			height <- NULL
-			warning("height has to be of type 'numeric' \n used default settings")
+warning("height has to be of type 'numeric' \n used default settings")
 		}
 	}
 	if(is.null(height))
@@ -609,7 +609,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 			width <- width
 		}else{
 			width <- NULL
-			warning("width has to be of type 'numeric' \n used default settings")
+warning("width has to be of type 'numeric' \n used default settings")
 		}
 	}
 	if(is.null(width))
@@ -629,7 +629,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 			cex.legend <- cex.legend
 		}else{
 			cex.legend <- NULL
-			warning("cex.legend has to be of type 'numeric' \n used default settings")
+warning("cex.legend has to be of type 'numeric' \n used default settings")
 		}
 	}
 	if(is.null(cex.legend))
@@ -644,7 +644,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 			cex.names <- cex.names
 		}else{
 			cex.names <- NULL
-			warning("cex.names has to be of type 'numeric' \n used default settings")
+warning("cex.names has to be of type 'numeric' \n used default settings")
 		}
 	}
 	if(is.null(cex.names))
@@ -659,7 +659,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 			rad <- radius
 		}else{
 			rad <- NULL
-			warning("radius has to be of type 'numeric' \n used default settings")
+		warning("radius has to be of type 'numeric' \n used default settings")
 		}
 	}
 	if(is.null(radius))
@@ -755,8 +755,8 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 }
 
 ##@sienaSetupForCpp Use as RSiena:::sienaSetupForCpp
-sienaSetupForCpp <- function(data, effects, 
-                             includeBehavior = TRUE, 
+sienaSetupForCpp <- function(data, effects,
+                             includeBehavior = TRUE,
                              includeBipartite = TRUE,
                              returnActorStatistics = FALSE,
                              returnStaticChangeContributions = FALSE,
