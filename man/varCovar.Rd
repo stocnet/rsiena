@@ -2,7 +2,8 @@
 \alias{varCovar}
 \title{Function to create a changing covariate object.}
 \description{
-  This function creates a changing covariate object from a matrix.
+  This function creates a changing covariate object from a matrix.\cr
+  It now is superseded by function \code{\link{as_covariate_rsiena}}.
 }
 \usage{
 varCovar(val, centered=TRUE, nodeSet="Actors",  warn=TRUE,
@@ -43,19 +44,18 @@ varCovar(val, centered=TRUE, nodeSet="Actors",  warn=TRUE,
 }
 \value{
   Returns the covariate as an object of class "varCovar", in which
-  form it can be used as an argument to \code{\link{sienaDataCreate}}.
+  form it can be used as an argument to \code{\link{make_data_rsiena}}.
 }
 \references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley}
-\seealso{\code{\link{sienaDataCreate}}, \code{\link{coCovar}},
-\code{\link{coDyadCovar}}, \code{\link{varDyadCovar}},
-\code{\link{sienaNodeSet}}}
+\seealso{\code{\link{make_data_rsiena}}, 
+\code{\link{as_covariate_rsiena}},
+\code{\link{as_nodeset_rsiena}}}
 \examples{
-
-myvarCovar <- varCovar(s50a)
-senders <- sienaNodeSet(50, nodeSetName="senders")
-receivers <- sienaNodeSet(30, nodeSetName="receivers")
-senders.covariate <- varCovar(s50a, nodeSet="senders")
-receivers.covariate <- varCovar(s50s[1:30,], nodeSet="receivers")
+myvarCovar <- as_covariate_rsiena(s50a)
+senders <- as_nodeset_rsiena(50, nodeSetName="senders")
+receivers <- as_nodeset_rsiena(30, nodeSetName="receivers")
+senders.covariate <- as_covariate_rsiena(s50a, nodeSet="senders")
+receivers.covariate <- as_covariate_rsiena(s50s[1:30,], nodeSet="receivers")
 }
 \keyword{classes}

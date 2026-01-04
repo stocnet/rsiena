@@ -180,7 +180,7 @@
 \title{{\Huge Manual for \textsf{RSiena} } }
 %\protect\newline \normalsize } }
 \author{\Large Ruth M.\ Ripley, Tom A.B.\ Snijders\\[1ex]
-        \Large Zs\'{o}fia Boda, Andr\'{a}s V\"{o}r\"{o}s, Paulina Preciado  \\[4ex]
+        \Large Zs\'{o}fia Boda, Andr\'{a}s V\"{o}r\"{o}s  \\[4ex]
        {\large University of Oxford: Department of Statistics; Nuffield College}\\[1ex]
        {\large University of Groningen: Department of Sociology}\\[1ex]
     }
@@ -216,7 +216,10 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.5.6.
+This version was renewed for \RS version 1.6.0.
+
+In version 1.6, the names of \RS functions have undergone
+important changes. 
 \end{abstract}
 
 
@@ -1184,7 +1187,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.5.6).
+  identified by a version number (e.g.\ 1.6.0).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -1209,6 +1212,134 @@ For technical problems running \rs, follow the following points.
      of \RS you are using.
 \end{description}
 %\addtocontents{toc}{\vspace{-2ex}}  % hack to avoid a 3-page table of contents
+
+\newpage
+
+\section{New function names from Version 1.6}
+\label{S_names}
+
+In Version 1.6, many functions in \RS have been given new names.
+This was done in order to make them more readily comprehensible,
+to give a somewhat more logical structure, and
+for coordination with other packages in the \SN suite.
+The old function names still are available in order
+for existing scripts still to be useful also for the newer versions of \rs.
+
+This manual and the example scripts on the web
+still use mainly the old function names,
+but this soon will be changed.
+The descriptions of the old and the new function names
+are in the same help pages in the R system.
+\medskip
+
+For many functions this is just a name change.
+The main differences are the following.
+\begin{enumerate}
+  \item The algorithm now does not have to be specified for 
+        standard use. The name of the output text file generated
+        by the estimation is called \texttt{dataName\_out.txt},
+        where \texttt{dataName} is the name of the data object.        
+  \item Constructing the algorithm is split into three functions:
+        \begin{enumerate}
+        \item \sfn{set\_model\_saom} for defining the general model
+             (e.g., \texttt{modelType});
+        \item \sfn{set\_algorithm\_saom} for defining the 
+              method and algorithm for estimation (e.g., settings of the
+              Robbins-Monro algorithm, maximum likelihood estimation);
+        \item \sfn{set\_output\_saom} for defining the output to be    
+               created (e.g., different name for the text output file).
+        \end{enumerate}  
+  \item The estimation function now is called \sfn{siena} 
+        instead of \sfn{siena07}.
+        Its first argument is the data set; omitting the algorithm objects
+        is usual, and will lead to a default estimation. 
+  \item Constructing covariates is done by one function, 
+        \sfn{as\_covariate\_rsiena}; the distinction between monadic and dyadic,
+        and between changing or time-constant, is made by the 
+        structure of the input object and the further arguments
+        (see the table below).
+  \item Including effects is done by one function, \sfn{set\_effect}.\\
+        If more than one effect is to be included by one function call,
+        the \texttt{shortNames} are to be given in a list.\\
+        The argument names now are \texttt{depvar}, \texttt{covar1},
+        and \texttt{covar2}, replacing the earlier (less fortunate)
+        names \texttt{name}, \texttt{interaction1}, and \texttt{interaction2}.
+  \item For defining interactions, the function \sfn{set\_interaction}
+        requires to give the \texttt{shortNames} of the two or three 
+        interacting effects in a list.
+\end{enumerate}
+
+In departure of the general rule that the old names are retained
+in view of compatibility, the following names were canceled:
+\begin{enumerate}[resume]
+  \item The names \sfn{sienaRI} and \sfn{sienaRIDynamics}
+        are not retained, and replaced by \sfn{interpret\_size} and   
+        \sfn{interpret\_size\_dynamics}; these functions still are not 
+        final.
+  \item The name \sfn{siena.table} is not retained but replaced
+         by  \sfn{siena\_table}; 
+         however, the new (and preferred) name is \sfn{write\_result}.
+  \item \sfn{model.create}, an alias for \sfn{sienaAlgorithmCreate},
+        was dropped.
+\end{enumerate}
+
+The following table gives the correspondence between the old and new names.
+The `how' column indicates by the letter `A' that the change is
+just an alias, or can be treated as such; the letter `C' 
+indicates that the arguments also changed.
+
+\begin{center}
+\begin{tabular}{lll}
+Old name  & new name & how \\
+\hline
+ sienaDependent         &  as\_dependent\_rsiena     & A\\
+ coCovar                &  as\_covariate\_rsiena     & A \\
+ varCovar               &  as\_covariate\_rsiena(..., type="monadic")     &  C \\
+ coDyadCovar            &  as\_covariate\_rsiena(..., type="oneMode")     &  C \\
+                        &  \emph{or} as\_covariate\_rsiena(..., type="bipartite")     &  \\
+ varDyadCovar           &  as\_covariate\_rsiena     &  A \\
+ sienaCompositionChange &  as\_composition\_rsiena   &  A \\
+ sienaCompositionChangeFromFile &  as\_composition\_file\_rsiena  & A \\
+ sienaNodeSet           & as\_nodeset\_rsiena        &  A \\
+ sienaDataCreate        & make\_data\_rsiena         &  A \\
+ sienaGroupCreate       & make\_group\_rsiena        &  A \\
+ getEffects             & make\_specification        &  A \\
+ includeEffects         & set\_effect                &  C  \\
+ setEffect              & set\_effect                &  C \\
+ includeInteraction     & set\_interaction           &  C \\
+ sienaAlgorithmCreate   & set\_model\_saom,          &  \\
+                        & set\_algorithm\_saom,      &  \\
+                        & set\_output\_saom          &  \\
+ sienaDataConstraint    & make\_constraint           &  A \\
+ siena07                & siena                      &  C \\
+ siena08                & meta\_siena                &  C \\
+ siena.table  $\bigotimes$          & write\_result              &  A \\
+ Multipar.RSiena        & test\_parameter            &  A \\
+ Wald.RSiena            & test\_parameter            & C \\
+ testSame               & test\_parameter(..., method="same", ...)    & C \\
+ score.Test             & test\_parameter(..., method="score", ...)   & C  \\
+ sienaTimeTest          & test\_time                 &  A \\
+ sienaGOF               & test\_gof                  &  A \\
+ descriptives.sienaGOF $\bigotimes$ & descriptives               &  A \\
+ selectionTable         & interpret\_selection       &  A \\
+ influenceTable         & interpret\_influence       &  A \\
+ sienaRI  $\bigotimes$  & interpret\_size            &  C \\
+ sienaRIDynamics $\bigotimes$& interpret\_size\_dynamics  &  C   \\
+\hline                  &
+\emph{and for \textsf{multiSiena} } : \\
+\hline
+ sienaBayes             &  multi\_siena             &  ? \\
+ simulateData           &  simulate                 &  ?  \\
+\hline
+                                     
+\end{tabular}
+
+ $\bigotimes$  = old name not retained.
+\end{center}
+
+
+
+
 
 \newpage
 
@@ -5757,19 +5888,19 @@ Output can be obtained in several ways.
         produces in the working directory a html file with the \texttt{ans}
         results in
         tabular form. The \textsf{xtable} package has many further options.\\
-  \item The function \textsf{siena.table}
+  \item The function \textsf{siena\_table}
         is available which serves a similar purpose,
         but not using \textsf{xtable}.
         This function writes the table to a file;
         the default file name of the table produced is the name of the
         \sfn{sienaFit} object.
-        The choice between \textsf{xtable.sienaFit} and \textsf{siena.table}
+        The choice between \textsf{xtable.sienaFit} and \textsf{siena\_table}
         depends on the preference for the tables produced.
 
-        For importing the results of \sfn{xtable} or \textsf{siena.table} into
+        For importing the results of \sfn{xtable} or \textsf{siena\_table} into
         MS-Word, the following steps can be used.
 
-        Request \texttt{siena.table(ans)} for some \sfn{sienaFit} object,
+        Request \texttt{siena\_table(ans)} for some \sfn{sienaFit} object,
         called \texttt{ans} in this example. This will produce,
         under the default settings, the file \texttt{ans.htm} in the current
         working directory.
@@ -6082,8 +6213,8 @@ are \texttt{avSim\_gmm}, \texttt{avAlt\_gmm}, \texttt{totAlt\_gmm}, \texttt{maxA
 For the GMoM, the additional statistics used for estimation are specified by
 the function \sfn{includeGMoMStatistics}. For example, the following lines
 \begin{verbatim}
-myeff <- includeGMoMStatistics(myeff, egoX_gmm, interaction1 = "mybeh")
-myeff <- includeGMoMStatistics(myeff, simX_gmm, interaction1 = "mybeh")
+myeff <- includeGMoMStatistics(myeff, egoX_gmm, covar1 = "mybeh")
+myeff <- includeGMoMStatistics(myeff, simX_gmm, covar1 = "mybeh")
 \end{verbatim}
 specify the GMoM statistics for the covariate-related activity and similarity effects.
 
@@ -7158,7 +7289,7 @@ the split between creation and maintenance can be made as follows:
 
 In an example using the Glasgow data (160 students, with joiners and leavers),
 we obtained the following results (the LaTeX table was made by the function
-\textsf{siena.table}).
+\textsf{siena\_table}).
 
 % Use of \@startpbox doesn't match its definition.%
 
@@ -9380,7 +9511,7 @@ functions in script  \texttt{BayesPlots.r} is may be possible
 to make an improved guess for this iteration number,
 and use this for \texttt{nfirst}.
 
-The function \textsf{siena.table} can be used also for making
+The function \textsf{siena\_table} can be used also for making
 \texttt{html} or \LaTeX\ tables of the results for the global parameters;
 here again, the parameter \texttt{nfirst} may be used.
 
@@ -11488,7 +11619,7 @@ $s^{\rm net}_{i\vit}(x ) = \sum_j  x^{\rm{simm}}_{ij}\,v_j $ .
  \item {\em group average} \texttt{(avGroupEgoX)}, defined by ego's value multiplied by the
  average of the covariate for this period,  \\
  $s^{\rm beh}_{i\vit}(x, z) =  \sum_j x_{ij} \, \overline {v}  $;\\
- here $\overline {v}$ is the mean of the values $v_{ih}$ for all actors $h$
+ here $\overline {v}$ is the mean of the values $v_{h}$ for all actors $h$
  in the actor set: for changing covariates, the mean of the wave at the
  start of the period; for behavioral dependent variables,
  the current mean.
@@ -11498,6 +11629,14 @@ $s^{\rm net}_{i\vit}(x ) = \sum_j  x^{\rm{simm}}_{ij}\,v_j $ .
  in the multi-group object.
  Note that always, the average $\overline {v} $ is centered by the global mean.
  For multi-group data, global centering means centering over all groups.
+
+ \item {\em group total} \texttt{(totGroupEgoX)}, defined by ego's value multiplied by the
+ sum of the covariate for this period,  \\
+ $s^{\rm beh}_{i\vit}(x, z) =  \sum_j x_{ij} \, \sum_h{v_h}  $;\\
+ here $\sum_h{v_h} $ is the sum of the values $v_{h}$ for all actors $h$
+ in the actor set: for changing covariates, the total of the wave at the
+ start of the period; for behavioral dependent variables,
+ the current total.
 
 \setcounter{savenumi}{\value{enumi}}
 
@@ -14713,7 +14852,8 @@ with the behavioral variable itself.
  \underline{centered} dependent behavioral variable;
  by default, this centering is done by the grand mean in the data;
  for using the contemporaneous mean, work with the effect
- \texttt{(quad\_cc)} instead;
+ \texttt{(quad\_cc)} instead; for using no centering, work with the effect
+ \texttt{(quad\_nc)} instead;
 
  \item {\em threshold shape effect}    \texttt{(threshold)},
   \texttt{(threshold2)},  \texttt{(threshold3)},  \texttt{(threshold4)},
@@ -14759,6 +14899,12 @@ with the behavioral variable itself.
  (Note that the centering in a multi-group data set
  will affect the linear shape parameter.)
 
+ \item {\em group total} \texttt{(totGroup)}, defined by ego's value multiplied by the
+sum of \underline{all} values $z_h$ for this period,  \\
+$s^{\rm beh}_{i\vit}(x, z) =  z_{i} \left( \sum_{h} z_h - c_p \right) $;\\
+here $\sum_{h} z_h$ is the sum of the values $z_h$ for all actors $h$
+in the group, and $c_p$ is a centering constant depending on the internal effect
+parameter $p$, defined as for the \texttt{avGroup} effect above.
 
  \item {\em constant effect}    \texttt{(constant)},\\
   an elementary effect for behavior,
@@ -14770,6 +14916,7 @@ with the behavioral variable itself.
    effect; therefore its parameter cannot be estimated. It is only of theoretical
    importance, and can be used perhaps in interaction with other effects.
 \end{startenum}
+
 Next there is a list of effects that have to do with the influence of
 the network on the behavior.
 To specify such effects in \RS using, e.g., function \sfn{includeEffects},
@@ -14878,7 +15025,14 @@ The list of these effects is the following.
 
 
  \item
- {\em popularity alter effect} \texttt{(popAlt)}, defined by the
+ {\em total popularity alter effect} \texttt{(popAlt)}, defined by the
+ sum of in-degrees of the other actors $j$ to whom $i$ is tied,\\
+ $s^{\rm beh}_{i\vit}(x, z) =   z_i \, \sum_j x_{ij} x_{+j}  $;\\
+ this effect may be useful, e.g., as a control effect for the total
+ similarity $\times$ popularity alter effect and in distance 2 influence effects;
+
+  \item
+ {\em total popularity alter effect} \texttt{(totPopAlt)}, defined by the
  average in-degrees of the other actors $j$ to whom $i$ is tied,\\
  $s^{\rm beh}_{i\vit}(x, z) =   z_i\,x_{i+}^{-1} \, \sum_j x_{ij} x_{+j}  $;\\
  (and 0 if $x_{i+} = 0$) ;\\
@@ -15109,14 +15263,18 @@ where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values in
 (cf.\ (\ref{alt_av3})), \\
  $s^{\rm beh}_{i\vit}(x, z) =  z_i \big( \sum_j x_{ij}\, \check z_j^{(-i)} \big)
                                 / \big (\sum_j x_{ij}\big)  $\\[0.5ex]
- (and the mean behavior, i.e. $0$, if the ratio is 0/0) ;
+ (and the mean behavior, i.e. $0$, if the ratio is 0/0) ; for using
+ no centering, work with the effect
+ \texttt{(avInAltDist2\_nc)} instead;
 
  \item {\em total incoming alter effect at distance 2} \texttt{(totInAltDist2)},
  defined by  $i$'s
  behavior multiplied by the total of the incoming alter-totals  of his alters,
  excluding the contribution from a tie $i \rightarrow j$ (if any),\\
  $s^{\rm beh}_{i\vit}(x, z) = z_i \sum_j x_{ij}\, \sum_{h \neq i} x_{hj}\,z_h =
-         z_i \sum_j x_{ij}\, (x_{+j}- x_{ij}) \, \check z_j^{(-i)}  $;
+         z_i \sum_j x_{ij}\, (x_{+j}- x_{ij}) \, \check z_j^{(-i)}  $; for using
+ no centering, work with the effect
+ \texttt{(totInAltDist2\_nc)} instead;
 
  \item {\em average total incoming alter effect at distance 2} \texttt{(avTInAltDist2)},
  defined by  $i$'s
@@ -15124,14 +15282,48 @@ where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values in
  excluding the contribution from a tie $i \rightarrow j$ (if any),\\[0.3ex]
  $s^{\rm beh}_{i\vit}(x, z) =  z_i \big( \sum_j x_{ij}\,(x_{+j}- x_{ij}) \, \check z_j^{(-i)} \big)
                                 / \big (\sum_j x_{ij}\big)  $\\[0.5ex]
- (and the mean behavior, i.e. $0$, if the ratio is 0/0) ;
+ (and the mean behavior, i.e. $0$, if the ratio is 0/0) ; for using
+ no centering, work with the effect
+ \texttt{(avTInAltDist2\_nc)} instead;
 
  \item {\em total average incoming alter effect at distance 2} \texttt{(totAInAltDist2)},
  defined by  $i$'s
  behavior multiplied by the total of the incoming alter-averages $ z_j^{(-i)}$ of his alters,
  excluding the contribution from a tie $i \rightarrow j$ (if any), \\[0.3ex]
  $s^{\rm beh}_{i\vit}(x, z) =  z_i \big( \sum_j x_{ij}\, \check z_j^{(-i)} \big) $;
+ for using no centering, work with the effect
+ \texttt{(totAInAltDist2\_nc)} instead;
 
+ \item two variations of the
+   \emph{GWDSP (geometrically weighted dyadwise shared partners)} alter effects:
+    {\em total GWDSP I -> K -> J alter} \texttt{(totGwdspFFAlt)} and
+    {\em total GWDSP I -> K <- J alter} \texttt{(totGwdspFBAlt)}.
+   These are geometrically weighted versions of \texttt{totAltDist2} and
+   \texttt{totInAltDist2}, respectively, penalizing additional paths between ego
+   and his distance 2 alters defined by
+      \begin{equation}
+      s^{\rm beh}_{i\vit}(x, z, \alpha) \,=\,
+            z_{i} \,
+                  \sum_{h;\; h \neq i}^n \, z_{h}
+                  e^{\alpha}\,\Big\{1\,-\,\big(1 - e^{-\alpha}\big)^{
+                        \sum_{j=1} x_{ij}x_{jh} }  \Big\}
+            \, \
+      \end{equation}
+      and
+      \begin{equation}
+      s^{\rm beh}_{i\vit}(x, z, \alpha) \,=\,
+            z_{i} \,
+                  \sum_{h;\; h \neq i}^n  \, z_{h}
+                  e^{\alpha}\,\Big\{1\,-\,\big(1-e^{-\alpha}\big)^{
+                        \sum_{j=1} x_{ij}x_{hj} }  \Big\}
+            \, \ ;
+      \end{equation}
+for using no centering, work with the effect
+\texttt{(totGwdspFFAlt\_nc)} respectively
+\texttt{(totGwdspFBAlt\_nc)} instead;
+
+% the versions penalizing additional alters of distance 2's behavior
+% is not implemented yet
 
  \item {\em average in-similarity effect at distance 2} \texttt{(avInSimDist2)},
  defined by  $i$'s average similarity to the incoming alter
@@ -15221,10 +15413,27 @@ in all but the final wave; \\
  \texttt{(avSimPopEgo)}, defined by the
  sum of centered similarity scores ${\rm sim}^z_{ij}$ between $i$
  and the other actors $j$ to whom he is  tied, multiplied by ego's indegree, \\
- $s^{\rm beh}_{i\vit}(x, z) =  x_{+i} \, x_{i+}^{-1} \sum_j x_{ij} ({\rm sim}^z_{ij} - \widehat{{\rm sim}^z}) $;\\
+ $s^{\rm beh}_{i\vit}(x, z) =  x_{+i} \, x_{i+}^{-1}
+      \sum_j x_{ij} ({\rm sim}^z_{ij} - \widehat{{\rm sim}^z}) $;\\
  (and 0 if $x_{i+} = 0$) ;\\
- because of collinearity, under the Method of Moments this cannot be estimated together with the
-  average similarity $\times$ popularity alter effect;
+ because of collinearity, under the Method of Moments this cannot be estimated
+ together with the average similarity $\times$ popularity alter effect;
+
+ \item {\em indegree-weighted group average} \texttt{(indegAvGroup)}, defined
+ by ego's value multiplied by the  indegree-weighted average of all values
+ $z_h$ for this period,  \\
+ $s^{\rm beh}_{i\vit}(x, z) =  z_{i} \left( \frac{ \sum_{h} x_{+h} z_{h} }
+      {\sum_{h} x_{+h}  } - c_p \right) $;\\
+ here $x_{+h}$ is the indegree of actor $h$ in the specified network, and
+ $c_p$ is a centering constant as for \texttt{avGroup}.
+
+ \item {\em indegree-weighted group total} \texttt{(indegTotGroup)},
+ defined by ego's value multiplied by the indegree-weighted sum of all values
+ $z_h$ for this period,  \\
+ $s^{\rm beh}_{i\vit}(x, z) =  z_{i}
+ \left( \sum_{h} x_{+h} z_{h} - c_p \right) $;\\
+ here $x_{+h}$ is the indegree of actor $h$ in the specified network,
+ and $c_p$ is a centering constant as for \texttt{totGroup}.
 
 \end{followenum}
 
@@ -15321,10 +15530,53 @@ denoted $v_j$), there are the following effects.
  \texttt{(totXAlt)},\\
       defined as the product of $i$'s behavior $z_i$ and
       $i$'s alters' covariate sum $x_{i+}\,\breve v_i$ as defined
-      in (\ref{alt_av}),\\
+      in (\ref{alt_avwa}),\\
        $s^{\rm beh}_{i\vit}(x, z) = z_i \, x_{i+}\, \breve v_i $.\\
       This is similar to the `total alter' effect; for
       $v_i = z_i$ it would reduce to the latter effect.
+
+\item \emph{in-alter's covariate average } effect on behavior $z$
+ \texttt{(avXInAlt)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      $i$'s in-alters' covariate-average $\breve v_i$ as defined
+      in
+\begin{equation}
+  \check v_i = \left\{\begin{array}{ll} \displaystyle
+         \frac{\sum_j x_{ji}v_j}{x_{+i}}  &  \text{ if } x_{+i} > 0     \\
+         0                                &  \text{ if } x_{+i} = 0  ,
+  \end{array}   \right.            \label{inalt_av}
+\end{equation}
+      the effect being \\
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \, \check v_i $.\\
+      This is similar to the `average in-alter' effect; for
+      $v_i = z_i$ it would reduce to the latter effect.
+
+\item \emph{in-alter's covariate total } effect on behavior $z$
+ \texttt{(totXInAlt)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      $i$'s alters' covariate sum $x_{i+}\,\check v_i$ as defined
+      in (\ref{inalt_av}),\\
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \, x_{i+}\, \check v_i $.\\
+      This is similar to the `total in-alter' effect; for
+      $v_i = z_i$ it would reduce to the latter effect.
+
+
+\item \emph{reciprocal alter's covariate average } effect on behavior $z$
+ \texttt{(avXRecAlt)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      the average of the covariate values $v_j$
+      for those to whom $i$ has a reciprocal tie:
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \,  \displaystyle
+            \frac{\sum_j x_{ij}\,x_{ji} \, v_j }{\sum_j x_{ij}\,x_{ji} }$,\\
+      where 0/0 is defined as 0;
+
+\item \emph{reciprocal alter's covariate total } effect on behavior $z$
+ \texttt{(totXRecAlt)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      the sum of the covariate values $v_j$
+      for those to whom $i$ has a reciprocal tie:
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \,
+            \sum_j x_{ij}\,x_{ji} \, v_j $; \\
 
 
  \item {\em maximum alter's covariate effect} \texttt{(maxXAlt)},
@@ -15340,6 +15592,96 @@ denoted $v_j$), there are the following effects.
  (and the mean covariate if $\sum_j x_{ij} = 0$) ;
 
 
+\item \emph{alter's same covariate average } effect on behavior $z$
+ \texttt{(avSameXAlt)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      the proportion of those to whom $i$ has a tie
+      who also have the same covariate value:
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \,  \displaystyle
+            \frac{\sum_j x_{ij} \, I\{v_j\,=\,v_i\} }{\sum_j x_{ij} }$,\\
+      where 0/0 is defined as 0;
+
+\item \emph{alter's same covariate total } effect on behavior $z$
+ \texttt{(totSameXAlt)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      the number of actors $j$ to whom $i$ has a  tie
+      and who also have the same covariate value:\\
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \,
+            \sum_j x_{ij} \, I\{v_j\,=\,v_i\} $; \\
+
+
+
+\item \emph{in-alter's same covariate average } effect on behavior $z$
+ \texttt{(avSameXInAlt)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      the proportion of those from whom $i$ has an incoming tie
+      who also have the same covariate value:
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \,  \displaystyle
+            \frac{\sum_j x_{ji} \, I\{v_j\,=\,v_i\} }{\sum_j x_{ji} }$,\\
+      where 0/0 is defined as 0;
+
+\item \emph{in-alter's same covariate total } effect on behavior $z$
+ \texttt{(totSameXInAlt)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      the number of actors $j$ from whom $i$ has an incoming tie
+      and who also have the same covariate value:\\
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \,
+            \sum_j x_{ji} \, I\{v_j\,=\,v_i\} $; \\
+
+
+
+
+\item \emph{reciprocal alter's same covariate average } effect on behavior $z$
+ \texttt{(avSameXRecAlt)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      the proportion of those to whom $i$ has a reciprocal tie
+      who also have the same covariate value:\\[0.4em]
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \,  \displaystyle
+            \frac{\sum_j x_{ij}\,x_{ji} \, I\{v_j\,=\,v_i\} }{\sum_j x_{ij}\,x_{ji} }$,\\
+      where 0/0 is defined as 0;
+
+\item \emph{reciprocal alter's same covariate total } effect on behavior $z$
+ \texttt{(totSameXRecAlt)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      the number of actors $j$ to whom $i$ has a reciprocal tie
+      and who also have the same covariate value:\\
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \,
+            \sum_j x_{ij}\,x_{ji} \, I\{v_j\,=\,v_i\} $; \\
+
+
+\item \emph{average alter for same covariate } effect on behavior $z$
+ \texttt{(avAltSameX)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      the average behavior of those to whom $i$ has a tie
+      and who also have the same covariate value:\\[0.6em]
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \,  \displaystyle
+            \frac{\sum_j x_{ij} \, I\{v_j\,=\,v_i\}\, z_j }{\sum_j x_{ij}\, I\{v_j\,=\,v_i\} }$,\\
+      where 0/0 is defined as 0;
+
+\item \emph{total alter for same covariate  } effect on behavior $z$
+ \texttt{(totAltSameX)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      the sum of behavior of those to whom $i$ has a tie
+      and who also have the same covariate value:\\
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \,
+            \sum_j x_{ij}\, I\{v_j\,=\,v_i\} \, z_j $; \\
+
+\item \emph{average reciprocated alter for same covariate } effect on behavior $z$
+ \texttt{(avRecAltSameX)},\\[0.3em]
+      defined as the product of $i$'s behavior $z_i$ and
+      the average behavior of those to whom $i$ has a  reciprocated tie
+      and who also have the same covariate value:\\
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \,  \displaystyle
+            \frac{\sum_j x_{ij} \,x_{ji}\, I\{v_j\,=\,v_i\}\, z_j }{\sum_j x_{ij}\,x_{ji}\, I\{v_j\,=\,v_i\} }$,\\
+      where 0/0 is defined as 0;
+
+\item \emph{total  reciprocated alter for same covariate  } effect on behavior $z$
+ \texttt{(totRecAltSameX)},\\
+      defined as the product of $i$'s behavior $z_i$ and
+      the sum of behavior of those to whom $i$ has a  reciprocated tie
+      and who also have the same covariate value:\\
+       $s^{\rm beh}_{i\vit}(x, z) = z_i \,
+            \sum_j x_{ij}\,x_{ji} \, I\{v_j\,=\,v_i\} \, z_j $; \\
 
 \item {\em absolute contrast outdegree -- covariate}
  \texttt{(degAbsContrX)},
@@ -15846,36 +16188,36 @@ reciprocated degrees.
 \item \emph{average exposure effect} (\verb|avExposure|),
   defined as the proportion of $i$'s alters who have adopted the innovation,
 \[
-a_{i\vit}(y) \, = \, \frac{\sum_{j=1}^n z_j\, x_{ij} }{\sum_{j=1}^n x_{ij}};
+a_{i\vit}(x, z) \, = \, \frac{\sum_{j=1}^n z_j\, x_{ij} }{\sum_{j=1}^n x_{ij}};
 \]
 
 \item \emph{total exposure effect} (\verb|totExposure|), defined as the
  number of $i$'s alters who have adopted the innovation,
 \[
-a_{i\vit}(y) \,=\, \sum_{j=1}^n z_j\, x_{ij} ;
+a_{i\vit}(x, z) \,=\, \sum_{j=1}^n z_j\, x_{ij} ;
 \]
 \item \emph{infection by indegree effect} (\verb|infectIn|),
   defined as the sum of indegrees of $i$'s alters who are also adopters of the innovation,
 \[
-a_{i\vit}(y) \, =\, \sum_{j=1}^n z_j \,x_{ij}\, x_{+j};
+a_{i\vit}(x, z) \, =\, \sum_{j=1}^n z_j \,x_{ij}\, x_{+j};
 \]
   for non-directed networks this is called the
    \emph{infection by degree effect} (\verb|infectDeg|);
 \item \emph{infection by outdegree effect} (\verb|infectOut|),
  defined as the sum of outdegrees of $i$'s alters who are also adopters of the innovation,
 \[
-a_{i\vit}(y)\, = \, \sum_{j=1}^n z_j\, x_{ij}\, x_{j+};
+a_{i\vit}(x, z)\, = \, \sum_{j=1}^n z_j\, x_{ij}\, x_{j+};
 \]
 \item \emph{infection by covariate effect} (\verb|infectCovar|),
  defined as the sum of covariate values of $i$'s alters who are also adopters of the innovation,
 \[
-a_{i\vit}(y)\, =\, \sum_{j=1}^n z_j\, x_{ij}\, v_j;
+a_{i\vit}(x, z)\, =\, \sum_{j=1}^n z_j\, x_{ij}\, v_j;
 \]
 \item \emph{susceptibility to average exposure by indegree effect}
  (\verb|susceptAvIn|),
  defined as the interaction between $i$'s indegree and $i$'s average exposure,
 \[
-a_{i\vit}(y)\, = \,x_{+i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij}};
+a_{i\vit}(x, z)\, = \,x_{+i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij}};
 \]
   for non-directed networks the equivalent effect is \verb|totExposure|;
 
@@ -15883,8 +16225,48 @@ a_{i\vit}(y)\, = \,x_{+i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij
  (\verb|susceptAvCovar|),
   defined as the interaction between $i$'s covariate value and $i$'s  average exposure,
 \[
-a_{i\vit}(y) \, = \, v_{i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij}}.
+a_{i\vit}(x, z) \, = \, v_{i} \, \frac{\sum_{j=1}^n z_j\, x_{ij}}{\sum_{j=1}^n x_{ij}}.
 \]
+
+\item \emph{Total In-Exposure at Distance 2} (\verb|totInExposureDist2|):
+    \[
+        a_{i10}(x, z) =  \sum_{h \neq i} z_h \sum_{j} x_{ij} x_{hj}
+    \]
+    This statistic sums, for each actor $i$, the number of indirect exposures to
+    alters with attribute $z_h$ via shared connections at distance 2
+    (i.e., through common alters $j$).
+
+    Multiple versions of averaging have been implemented:
+
+\item \emph{Average Total In-Exposure at Distance 2} (\verb|avTinExposureDist2|):
+\[
+      a_{i11}(x, z) = \frac{\sum_{h \neq i} z_h \sum_{j} x_{ij} x_{hj}}{\sum_{j} x_{ij}}
+\]
+This version averages the total in-exposure at distance 2 by the number of direct
+connections of actor $i$. If $\sum_{j}x_{ij}=0$, the statistic is defined as 0.
+
+\item\emph{Total Average In-Exposure at Distance 2} (\verb|totAInExposureDist2|):
+\[
+      a_{i12}(x, z) = \sum_{h \neq i} z_h \sum_{j}\frac{ x_{ij} x_{hj}}{\sum_{h'}
+            x_{h'j} - x_{ij}}
+\]
+Here, for each shared alter $j$, the exposure is averaged over the number of other
+actors (excluding $i$) connected to $j$. If the denominator is 0, the term is
+defined as 0.
+
+% The version with both types of averaging is not yet implemented.
+
+\item\emph{Any In-Exposure at Distance 2} (\verb|anyInExposureDist2|):
+\[
+      a_{i13}(x, z) = \sum_{j}
+      \begin{cases}
+      1  & \text{if } x_{ij} \sum_{h} z_h  x_{hj} > 0 \\
+      0 & \text{otherwise}
+      \end{cases}
+\]
+This effect counts, for each alter $j$ connected to $i$, whether there is at
+least one other actor $h$ (with $z_h>0$) also connected to $j$. This is a
+version of penalizing many indirect alters.
 
 \end{enumerate}
 
@@ -15893,7 +16275,7 @@ on the internal effect parameter $p$; the formulae given above are the default,
 valid for $p=0$.
 
 The parameter $p$ must be integer-valued. If $p > 0$, the contribution is
-changed to $a_{i\vit}(y) = 0$ if less than $p$ alters
+changed to $a_{i\vit}(x, z) = 0$ if less than $p$ alters
 have adopted the innovation, i.e., if
 \[
 \sum_{j=1}^n  z_j\, x_{ij} \, < \, p \ .
@@ -15901,15 +16283,15 @@ have adopted the innovation, i.e., if
 E.g., if $p=3$, then there is influence on actor $i$ only if
 this actor has at least three alters who have adopted the innovation.
 
-For the effects \verb|avExposure|, \verb|totExposure|, \verb|susceptAvIn|,
+For the effects \verb|avExposure|, \verb|avTinExposureDist2|, \verb|totExposure|,
+\verb|totInExposureDist2|, \verb|totAInExposureDist2|, \verb|susceptAvIn|,
 and \verb|susceptAvCovar|, \\
-if $p < 0$,
-the same rule is applied with the minimum $|p|$, but if there
+if $p < 0$, the same rule is applied with the minimum $|p|$, but if there
 are more than $|p|$ alters who have adopted the innovation,
 only the value $|p|$ is used.
 This means that for $p < 0$,
 $\sum_{j=1}^n  z_j\, x_{ij}$ in the formula for
- $a_{ik}(y) $ is replaced by
+ $a_{ik}(x, z) $ is replaced by
  \[
  \left\{ \begin{array}{ll}
                 0 & \text{  if  } \sum_{j=1}^n  z_j\, x_{ij} < |p| \\[0.9ex]
@@ -16865,7 +17247,7 @@ Such a measure is not easily available for most other statistical models;
 linear regression is special in allowing such a well-interpretable
 measure of `fit'.
 The following measures that have something of the same purpose
-are available in \RS through function  \sfn{sienaRI}.
+are available in \RS through function  \sfn{interpret\_size}.
 
 Some further material is at \\
 \url{https://www.stats.ox.ac.uk/~snijders/siena/EffectSizes_s.pdf}.
@@ -16878,7 +17260,7 @@ There is a script at \\
 The measure for \emph{relative importance of effects} in {\saom}s,
 proposed by \citet{IndlekoferBrandes2013},
 together with a measure for the (non-relative) \emph{importance of effects},
-can be calculated by \sfn{sienaRI}.
+can be calculated by \sfn{interpret\_size}.
 
 Ministeps in the {\saom} are random events with $c$ possible outcomes;
 for one-mode networks $c = n$, for two-mode networks $c$ is the
@@ -16892,11 +17274,14 @@ The Indlekofer-Brandes measures are numerical answers to the question,
 `How strongly do these probabilities depend on each of the effects?'.
 In their paper, measures are proposed for expressing this per actor
 per wave; these measures can be relative (so that the total importance
-for each actor always is 1), or raw.
-The relative importances are calculated by  \sfn{sienaRI} as \texttt{RIActors},
+for each actor always is 1), or raw. In the current implementation,
+only the relative importances for the waves at the start of each period are
+calculated as the first ministep after the last observation is never estimated
+by \sfn{interpret\_size}.
+The relative importances are calculated by  \sfn{interpret\_size} as \texttt{RIActors},
 the raw importances as \texttt{IActors} (see the help page).
 The  relative importances can be averaged over actors to give
-\texttt{expectedRI}, which is printed by the print method for \sfn{sienaRI}.
+\texttt{expectedRI}, which is printed by the print method for \sfn{interpret\_size}.
 
 \subsubsection{Entropy / relative certainty}
 
@@ -16929,13 +17314,13 @@ It was proposed in \citet{Snijders04}, where further discussion may be found.
 The values of the degree of certainty will generally be low, because
 which tie to create or to drop normally will have a very large
 degree of `chance variability'.
-They are calculated by  \sfn{sienaRI} as \texttt{RHActors}
+They are calculated by  \sfn{interpret\_size} as \texttt{RHActors}
 (see the help page). The mean over actors is printed by the print method
-for \sfn{sienaRI}.
+for \sfn{interpret\_size}.
 
-Note that the values given by \sfn{sienaRI} refer to each of the waves,
+Note that the values given by \sfn{interpret\_size} refer to each of the periods,
 including the first wave; for this purpose, $x$ in (\ref{explained})
-is taken as the observed network (and behaviour...) at each wave.
+is taken as the observed network (and behaviour...) at the start of each period.
 
 
 \subsubsection{Standard deviation of change statistics}
@@ -16957,13 +17342,13 @@ comparable quantities,
 These express the parameters $\beta_k$, for different $k$ and a common $x$,
 on a common scale.
 
-These standard deviations are computed by \sfn{sienaRI} as \texttt{sigma}
-and  printed by the print method for \sfn{sienaRI} if \texttt{printSigma = TRUE}.
+These standard deviations are computed by \sfn{interpret\_size} as \texttt{sigma}
+and  printed by the print method for \sfn{interpret\_size} if \texttt{printSigma = TRUE}.
 The change statistics themselves are potentially a lot of numbers
 ($n^2 \times M \times K$, where $M$ is the number of waves and $K$
 the number of effects in the model), and are only retained in the object
-produced by \sfn{sienaRI} if \texttt{getChangeStats = TRUE};
-see the help page for \sfn{sienaRI}.
+produced by \sfn{interpret\_size} if \texttt{getChangeStats = TRUE};
+see the help page for \sfn{interpret\_size}.
 
 \newpage
 \section{Error messages}
@@ -17411,12 +17796,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type
-\verb|R CMD check RSiena_1.5.6.tar.gz|\\
+\verb|R CMD check RSiena_1.6.0.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.5.6.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.6.0.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -18010,498 +18395,6 @@ mention the effectGroup in \sfn{effectsDocumentation.r}.
 
 \appendix
 \newpage
-\section{Appendix: List of Functions in Order of Execution}
-
-    This appendix
-    provides a description of the functions that constitute the
-    \RS package. This is intended as a quick reference or catalogue for the
-    user to employ Stochastic Actor Oriented Models (SAOM) to analyze network
-    dynamics in \Rn.
-
-    The functions are presented in execution order (more or less as
-    they would be used in practice). A list of useful \R
-    functions to read and prepare the data set is also included at the
-    beginning. In all cases examples on how to use these functions are provided.
-    In the `syntax' column,
-    when arguments of functions are followed by = and a single option,
-    this is the default option.
-
-    The descriptions provided are suitable for beginner and intermediate \R and
-    Siena users. For the advanced specifications of the functions the user
-    should refer to the help by typing `?funName' in the \R console, where
-    `funName' is the name of the function.
-
-    We consider that the model estimation is composed by 6 stages:
-\begin{enumerate}
-    \item Getting started
-    \item Get the data the right format or check that it is in the correct
-      format
-    \item Data specification
-    \item Model specification
-    \item   Model estimation
-    \item   Working with the results
-\end{enumerate}
-
-Tables \ref{tab:FuncExR} and \ref{tab:ListSienaExec} present the list of useful
-\R functions and the list of \RS functions in execution order, respectively.
-%\begin{footnotesize}
-\begin{sidewaystable}
-\begin{threeparttable}
-\begin{small}
-\centering
-        \begin{tabular}{c | l | p{3cm} | p{3cm} | p{12cm} }
-        \multicolumn{1}{c}{\textbf{Stage}} & \multicolumn{1}{c}{\textbf{Name}}
- &                          \multicolumn{1}{c}{\textbf{Syntax}} &
- \multicolumn{1}{c}{\textbf{Examples}} &
-\multicolumn{1}{c}{\textbf{Description}} \\
-        \hline
-        1   &getwd  &getwd()        & &
-Returns the name of the current working directory.
-                Does not require arguments\\
-                \hline
-        1 & list.files &    list.files(dir) &
-list.files ("C:/User/ \newline MyDocuments/
-\newline
-MySiena") &    Returns a character vector
-with the names of the files in the directory `dir'. If no argument is
-provided, `dir' is the current working directory.\\
-\hline 1   &setwd\tnote{*} &setwd(dir) &setwd("C:/MyDocuments/ MySiena") &
-    Sets the working directory to `dir'. In this context the working
- directory should be where the data is saved\\
-\hline 1   &install.packages\tnote{*} &    install.packages() & &It is used to
-install packages. If no arguments are provided it opens a GUI
- to select a mirror site and the packages that we want to download and
- install. This is not necessary if the package has already been installed.\\
-\hline 1   &library\tnote{*} & library(package) &  library(RSiena) &
-Loads the library named `package'. \\
-\hline 1   &read.table &   read.table(file, header = FALSE, \newline sep = "",
-\newline
-quote=``{\''}'',...) &  net1 $<$-- read.table(
-\newline
-"network1.dat", header = FALSE) & Reads
-a file in table format and creates a data frame from it. The argument `file'
-is the file containing the data. In the case of adjacency matrices, the file
-should have the same number of columns and rows. `header' is a logical
-argument indicating whether the first row of the data contains the column
-names. `sep' is the field separator character
- (such as space, comma, etc.). See the help on the function to specify
-other arguments\\
-\hline 2 &  as.matrix   &as.matrix(x, ...)   &net1 $<$-- \newline as.matrix(net1) &
-Transforms an object `x' into a matrix. Siena works with matrices and
-not with data frames\\
-\hline 2&  class &   class(x)  & class(net1)  & Returns the type of object that
-`x' is\\
-\hline
-2&   dim  & dim(x)  & dim(net1) &  Returns the dimension of object `x'\\
-\hline 4 &   fix\tnote{*}  & fix(x) &  fix(effects) &  Allows editing the
-object `x'
- by opening a window and it replaces the old object by the edited `x'\\
-\hline
-\end{tabular}
-\caption[Functions from \R in order of execution] {Useful functions from \R in
-execution order} \label{tab:FuncExR}
-\begin{tablenotes}
-\item [*] Also available via a menu option
-\end{tablenotes}
-\end{small}
-\end{threeparttable}
-\end{sidewaystable}
-%\end{footnotesize}
-
-
-\begin{landscape}
-\begin{small}
-%\begin{longtable}{c | p{3cm} | p{5.2cm} | p{4.2cm} | p{8.5cm} }
-\begin{longtable}{c | p{3.8cm} | p{4.5cm} | p{4.0cm} | p{7.4cm} }
-\caption[List of \RS Functions: Execution] {List of \RS Functions in order of
-Execution}
-\label{tab:ListSienaExec} \\
-\hline
-
-\multicolumn{1}{c}{\textbf{Stage}} & \multicolumn{1}{c}{\textbf{Name}} &
-\multicolumn{1}{c}{\textbf{Syntax}} & \multicolumn{1}{c}{\textbf{Examples}} &
-\multicolumn{1}{c}{\textbf{Description}} \\
-\hline
-\endfirsthead
-
-\multicolumn{5}{c}%
-{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
-\hline \multicolumn{1}{c}{\textbf{Stage}} & \multicolumn{1}{c}{\textbf{Name}} &
-\multicolumn{1}{c}{\textbf{Syntax}} & \multicolumn{1}{c}{\textbf{Examples}} &
-\multicolumn{1}{c}{\textbf{Description}} \\
-\hline
-\endhead
-
-\hline \multicolumn{5}{|r|}{{\tiny{Continued...}}} \\
-\hline
-\endfoot
-
-\hline \hline
-\endlastfoot
-
-1 & installGui &    installGui()    &
-    &Starts the installer for the standalone version of \rs.
-Only for Windows. Does not require arguments\\
-\hline
-
-3   &sienaNodeSet   &sienaNodeSet (n, \newline
-nodeSetName = "Actors", \newline
-names = NULL) & &
-Creates a Siena node set which can be used as the nodes
- in a siena network. `n' is the number of actors or nodes; `nodeSetName'
- is a character string to name the node set (defaults to `Actors') and
-`names' is a string vector with length n with the names of each node
-(optional)\\
-\hline
-
-3 & sienaDependent & sienaDependent (netarray, type = \newline
-c("oneMode", "bipartite",\newline
-"behavior"), \newline
-nodeSet = "Actors", \newline
-sparse = is.list (netarray)) & sienaDependent(array(
-c(net1,net2,net3), dim = c(dim(net1),3))) & Creates a Siena network object by
-forming an array of network observations represented as matrices, arrays or
-sparse matrices. `netarray' is a matrix (type = "behavior" only) or array of
-values or list of sparse matrices of type `dgTMatrix'; `type' is either
-`one mode' (default), `bipartite' or `behaviour'; `nodeSet' is the name
-of the node set.  It is a vector with two strings for a bipartite network;
-`sparse' is logical and it is set to TRUE if the data is in sparse matrix
-format,  FALSE otherwise\\
-\hline
-
-3 &coCovar & coCovar(val, \newline
-nodeSet = "Actors") & cons $<$-- \newline
-as.matrix( read.table \newline
-("cons.DAT")) \newline cons1 $<$--\newline
- coCovar (cons[,1]) & Creates a constant
-covariate object, where val is the vector of covariate values and nodeSet is
-the name of the actors' set.  The dimension of val should be (1, \#
-Actors)\\
-\hline
-
-3 & varCovar & varCovar(val, \newline
-nodeSet = "Actors") & chan $<$-- as.matrix \newline
-(read.table ("chan.DAT")) \newline chan $<$-- \newline
-varCovar (chan[,1]) & Creates a
-changing covariate object where `val' is a matrix with the covariate values
-with one row for each actor and one column for each period; `nodeSet' is the
-name of the set of actors \\
-\hline
-
-3& coDyadCovar &coDyadCovar(val, \newline
-nodeSets = \newline
-c("Actors", "Actors")) & &
-Creates a constant dyadic covariate object where `val' is a matrix of the
-same dimension as the network observations and nodeSets are the sets of actors
-with
-which the constant covariate is associated\\
-\hline
-
-3 &varDyadCovar & varDyadCovar(val, \newline
-nodeSets = \newline
-c("Actors", "Actors")) &
-&Creates a changing dyadic covariate object where `val' is an array of
-matrices. Each matrix has the same dimension of the actor set and `val' has
-one less matrices than observations of the network; `nodeSets' are the sets
-of actors to which the varying covariate object is associated\\
-\hline
-
-3 & sienaCompositionChange &
-
-sienaCompositionChange( changelist,\newline
-nodeSet = "Actors", \newline
-option = 1) & & Creates a list of events describing the moments
-in which each actor is present in the network: `changelist' is a list with an
-entry for each actor in the node set. Each entry is a vector indicating
-intervals in which an actor is present in the network. `nodeSet' is the name
-of the set of actors corresponding to these composition changes and `option'
-(defaults to 1) is an integer controlling the processing of the network entries
-for the actors not currently present. See help(sienaCompositionChange) for
-details on this\\
-\hline
-
-%3 & sienaCompositionChangeFromFile & \newline
-%sienaCompositionChangeFromFile ( filename, \newline
-%nodeSet = "Actors", \newline
-%fileobj = NULL, option=1) & & Creates a list of events
-%describing the changes over time in the actor set from a file. `filename' %is
-%the name of the file containing change information (one line per actor) each
-%line is a series of space delimited numbers indicating intervals. `fileobj'
-%is the result of readLines on `filename'. `nodeSet' is the name of the %set
-%of actors. `option' (defaults to 1) has the same
-%description that in  sienaCompositionChange\\
-%\hline
-
-3 & sienaDataCreate & sienaDataCreate(...,\newline nodeSets = NULL, \newline
-getDocumentation = FALSE) &
-MyData $<$-- \newline
-sienaDataCreate (net, \newline cons1, cons2, cons3, \newline
-chan, dyad) & Creates a siena object from networks, covariates,
-composition and behaviour objects: .`...'  represents the objects of class
-`sienaDependent', `coCovar', `varCovar', `coDyadCovar', `varDyadCovar',
-`compositionChange'. `nodeSets' is a list of Siena node sets. Default is a
-single set named `Actors' with length equal to the number of rows in the
-first object of class `SienaNet', it has to match the nodeSet supplied when
-the arguments are created; `getDocumentation' is a flag to allow
-documentation for internal functions,  not for use by users\\
-\hline
-
-%3 & sienaDataCreateFromSession & \newline
-%sienaDataCreateFromSession( \newline
-%filename = NULL, \newline
-%session = NULL, \newline
-%modelName = "Siena", ...) & myobj $<$-- \newline
-%sienaDataCreateFromSession  \newline
-%("Session.csv") & Reads a SIENA session from a file and creates a
-%Siena Data object or group. `file' is the session file; `session' is the
-%input session if the function is called from siena01Gui(); `modelName' is %the
-%project's name; `...' refers to other
-%arguments used by siena01Gui()\\
-%\hline
-
-3 & sienaGroupCreate & sienaGroupCreate (objlist, \newline
-singleOK = FALSE, \newline
-getDocumentation = FALSE) & sienaGroupCreate (list( \newline
-MyData1, MyData2)) & Creates
-an object of class `sienaGroup' from a list of Siena data objects:
-`objlist' is a list of objects of class `siena'; `singleOK' is a boolean
-variable to indicate if it is OK to have just one object; `getDocumentation'
-is a flag to  allow documentation of internal functions, not for use by users\\
-
-4 & effectsDocumentation &
-
-effectsDocumentation() & & Prints a html or
-\LaTeX\ table with the  effects details\\
-\hline
-
-4 & getEffects& getEffects(x, nintn = 10, \newline
-behNintn = 4, \newline
-getDocumentation = FALSE) &
-MyEff $<$-- getEffects (\newline
-MyData, nint = 2, \newline
-behNint = 1) & Creates a siena effects
-objects (a data frame) that contains a list of the effects that can be included
-in the model.  Type fix(MyEff) to edit the effects through a GUI (e.g.
-Including them or excluding them, changing their names, initial values, fixing
-them, etc.) The arguments are a siena or a siena group object `x', the number
-of lines for user defined network interactions `nint' and the number of lines
-for user defined behaviour interactions `behNintn'. `getDocumentation' is a
-flag to allow documentation for
-internal functions, not to  be used by users\\
-\hline
-
-4 & includeEffects & includeEffects(myeff, ..., \newline include = TRUE, \newline
-name = myeff{\,\$}name[1], type =  "eval", \newline
-interaction1 = "",\newline
-interaction2 = "") & {MyEff$<$--includeEffects(MyEff, transTrip, balance)
-\flushleft MyEff$<$--includeEffects(MyEff, sameX, \newline
-sameXRecip, \newline
-interaction1 = "gender")}
- &The function is a
-way to select the effects to be included. `myeff' is an effects object, as
-created by getEffects. It is necessary to indicate the short names to identify
-the effects to be included (argument ...).
-Use myeff{\,\$\,}shortName to get a list
-of the short names of possible effects to include and myeff{\,\$}effectName to get
-the full name of the effects. This information can also be found in the
-documentation created by effectsDocumentation. The "include = TRUE" indicates
-that we want to include the `...' effects in the model, it can be set to
-FALSE to exclude effects from the model. `name' is the name of the network
-for which effects are being included. `type' is to include `eval'
-(evaluation function effects) or `endow' (endowment function effects).
-`interaction1' and `interaction2' are names of siena objects (where needed)
-to completely identify the effects e.g. covariate name or behavior variable
-name. Use myeff{\,\$}effectName[myeff{\,\$}include]
-to get the names of the included
-effects. It returns a new effects object, so it is important to assign it to a
-name\\
-\hline
-
-4   & includeInteraction &  includeInteraction(myeff, ..., include = TRUE,
-\newline
-name = myeff{\,\$}name[1], \newline
-type = "eval", \newline
-interaction1 = rep("", 3),\newline
-interaction2 = rep("", 3)) &  MyEff$<$--includeInteraction( MyEff, \newline
-transTrip, egoX, \newline
-interaction1 = c("","beh"))     &This function provides an interface to
-allow easy update of  an unspecified interaction row in a Siena effects object.
-`myeff' is  a Siena  effects object as created by getEffects. To specify the
-effects to interact,  list their short names instead of `...'; `include' is
-a boolean variable,  default TRUE to include the interaction, it can be
-switched to FALSE to turn off  an interaction. `name' is the name of network
-for which interactions are being  defined. Defaults to the first in the effects
-object. `type' is the type of  effects to be interacted: currently only
-`eval' or `endow'. `interaction1'  is a vector of siena objects where
-needed to completely identify the effect e.g.  covariate name or behavior
-variable name. Trailing blanks may be omitted.  `interaction2'  is a vector
-of siena objects where needed to completely  identify the effect e.g. covariate
-name or behavior variable name.  Trailing blanks may be omitted. \\
-\hline
-
-4 & setEffect &setEffect(myeff, shortName, \newline
-parameter = 0, fix = FALSE, \newline
-test = FALSE, \newline
-initialValue = 0, \newline
-include = TRUE, name = myeff{\,\$}name[1], \newline
-type = "eval", \newline
-interaction1 = "", \newline
-interaction2 = "") & MyEff $<$-- \newline
-setEffect(MyEff, transTrip,
-initialValue = 3, \newline
-include = TRUE) & Interface to change the attributes of a particular
-effect. The required arguments are an effect object (`myeff'), the short name
-of the effect to modify (`shortName') and a required integer value that
-defaults to zero (`parameter'). Depending on what it is desired to be
-modified we can supply: "fix = TRUE", if we wish to fix that parameter; "test
-= TRUE" if we wish to test that parameter; "initialValue = 2" (or any desired
-number) to modify the effect's initial value (Defaults to zero); "include = TRUE
-or FALSE" depending on whether we want to include/exclude the effect (defaults
-to TRUE). The arguments `name', `type' and `interaction1' and
-`interaction2' are defined as in includeInteraction  and includeEffects.\\
-\hline
-
-5 & print01Report & print01Report(data, modelname = "Siena",\newline
-session = NULL, \newline
-getDocumentation = FALSE) & print01Report(MyData) & Prints a
-report of a Siena data object and its default effects. We need to supply a
-Siena data object (`data') a siena effects object (`myeff') and a model
-name (`modelname') that defaults to `Siena'. It creates and saves a file
-named `modelname.txt' (Siena.txt) that contains preliminary information
-on the data.\\
-\hline
-
-5 & sienaAlgorithmCreate & sienaAlgorithmCreate(\newline
-fn = simstats0c,\newline
-%usesimstats0c = \newline deparse(substitute(fn)) == \newline "simstats0c",
-% \newline
-projname = "Siena", \newline
-MaxDegree = 0, \newline
-useStdInits = FALSE, n3 = 1000, \newline
-nsub = 4, maxlike = FALSE, \newline
-diag = !maxlike, \newline
-condvarno = 0, \newline
-condname = "", firstg = 0.2, \newline
-cond = NA, findiff = FALSE, \newline
-seed = NULL) &
-
-
-MyAlgorithm $<$-- sienaAlgorithmCreate \newline
-(projname = \newline
-"MyProject") & Creates a siena algorithm
-object that can be used to call \textsf{siena07}. `fn' is function to do one
-simulation in the Robbins-Monro algorithm.
-%`usesimstats0c' is boolean, if true the standard algorithm
-% is being used which can be used with multiple processes.
-% Just used for validation.
-`projname' is character string name of
-project. No embedded spaces. `MaxDegree' is a named vector of maximum degree
-values for corresponding networks. `useStdInits' is a boolean variable, if
-TRUE, the initial values in the effects object will be ignored and default
-values used instead. `n3' is the number of iterations in phase 3 (defaults to
-1000). `nsub' is the number of subphases in phase 2 (defaults to 4).
-`maxlike', boolean to indicate whether to use maximum likelihood method or
-straightforward simulation (defaults to false). `diag' is boolean to indicate
-if the complete estimated derivative matrix should be used; `condvarno', if
-conditional estimation is used the parameter is the sequential number of the
-network or behaviour variable on which to condition. `condname' is the name
-of the dependent variable on which to condition (only use condname or condvar,
-not both). `firstg' initial value of gain parameter in the Robbins-Monro
-procedure. `cond' is boolean, If TRUE, use conditional simulation. If
-missing, decision is deferred until \textsf{siena07} is called, when it is set to TRUE
-if there is only one dependent variable, FALSE otherwise. `findiff' is
-boolean, if TRUE, estimate derivatives using finite differences and if FALSE,
-use scores. `seed' is an integer referring to the starting value of random
-seed. Not used if parallel
-testing.\\
-\hline
-
-5 & siena07 & siena07(x, batch = FALSE, \newline
-verbose = FALSE, silent = FALSE,\newline
-useCluster = FALSE, \newline
-nbrNodes = 2, \newline
-initC = FALSE, \newline
-clusterString = \newline
-rep("localhost", nbrNodes), \newline
-tt = NULL, \newline
-parallelTesting = FALSE, ...) & ans $<$-- \newline
-siena07(MyModel,
-data = MyData, effects = MyEff, batch = FALSE, \newline
-verbose = TRUE, \newline
-useCluster = TRUE,\newline
-nbrNodes = 2
-% , \newline initC=TRUE
-)
-& Estimates parameters using Robbins-Monro algorithm.
- Note that the particular
-model to be used is passed on as the algorithm object, and data for the model
-must be passed by using named arguments. `x' is a model object; `batch' is
-a boolean variable to indicate if it is desired to open the GUI of Siena
-simulation; `verbose' is a boolean variable to produce output on the console;
-`silent' is also a boolean variable, if true, no output is printed to the
-console; `useCluster' is a boolean variable to indicate if it is desired to
-use a cluster of processes; `nbrNodes' is the number of processes to use if
-useCluster is TRUE; `
-%`initC' is boolean: set to TRUE if the simulation will
-%use C routines (currently always needed). Only relevant if using multiple
-%processes, to ensure all copies are initialised correctly.
-`clusterString'
-is the definition of clusters, default set up to use the local machine only;
-%`tt' is a tcltk toplevel window used if called from the model options screen;
-%`parallelTesting' is boolean, if TRUE, sets up random numbers to parallel
-%those in Siena 3. `...'  Arguments for the simulation function, such as the
-%data, effects, etc.
-\newline
-\textsf{siena07} returns an object of class sienaFit (let's say ans). The
-main attributes are ans{\,\$}theta, which are the estimated coefficients;
-ans{\,\$}covtheta is the estimated covariance matrix of theta;
-ans{\,\$}dfra is the
-matrix of estimated derivatives; ans{\,\$}targets and ans{\,\$} targets2 are the
-observed statistics and the observed statistic by wave, respectively;
-ans{\,\$}ssc are the score function contributions for each wave for each simulation
-in phase 3: ans{\,\$}sims is the simulated networks as edgelists.
-Use names(ans) to
-obtain more characteristics; only recommended if you are
-proficient in \rs.\\
-\hline
-
-6 & print.sienaFit & print(x, tstat = TRUE, ...) & print(ans) & The function
-prints a table containing the estimated parameter values, standard errors and
-(optionally) $t$-statistics for convergence. If `x' is a summary(sienaFit) it
-prints on the console all the summary elements. `tstat' is a boolean
-argument, set to TRUE if it is desired for the $t$-statistics for convergence to
-be added to the report\\
-\hline
-
-6 & summary.sienaFit & summary(x,...) & summary(ans) & Prints a table
-containing the estimated parameter values, standard errors and $t$-statistics for
-convergence together with the covariance matrix of the estimates, the
-derivative matrix of expected statistics D by parameters, and the covariance
-matrix of the expected statistics D.  The only required argument is a
-`sienaFit' object `x', as produced by \textsf{siena07}.\\
-\hline
-
-6 & xtable.sienaFit & xtable(x, caption = NULL, \newline
-label = NULL, align = NULL, \newline
-digits = NULL,\newline
- display = NULL, ...) & sienaxtab $<$-- \newline
- xtable(ans, \newline
-caption = "My Table", \newline
-digits = 2).  &Creates an object of class xtable.sienaFit which inherits
-from class xtable and passes an extra arguments to the print.xtable.
-The argument is a sienaFit object `x'. \\
-\hline
-
-
-\end{longtable}
-\end{small}
-\end{landscape}
-
-%\section{List of Functions in Alphabetical Order}
-
-%\input{ListFunctionsCleanrr}
-
-
 
 \section{Appendix: Changes compared to earlier versions}
 
@@ -18531,7 +18424,7 @@ news(package="packageName")
 \iffalse
 \template
 
-\item 2025-mm-dd GitHub, package version 1.x.x.
+\item 2026-mm-dd GitHub, package version 1.x.x.
 
 Changes in RSiena:
 \begin{itemize}
@@ -18551,6 +18444,73 @@ Changes in RSiena:
 
 \fi
 
+
+
+\item 2026-01-02 GitHub, package version 1.6.0
+
+Changes in RSiena:
+\begin{itemize}
+\item New function names:
+   \begin{itemize}
+   \item Overhaul of naming system of exported functions.
+        Old function names still are available.
+        See Chapter~\ref{S_names}.
+   \item Chapter 3 was inserted in the manual to explain 
+    the new function names.
+   \item Class name \texttt{siena} for siena data sets
+     replaced by \texttt{sienadata}. 
+    \end{itemize}
+\item Coding:
+   \begin{itemize}
+    \item Completely refactored diffusion rate effects.
+    \item For \sfn {sienaRI}: corrected contributions for the 
+    first potential ministep in each period, and dropped calculation of the
+    first ministep after the last observation wave, and the
+    RI measure at the last observation moment. \\
+    Further see the \texttt{NEWS.md} file.
+    \end{itemize}
+\item New effects:
+   \begin{itemize}
+  \item New distance 2 exposure diffusion rate effects \texttt{totInExposureDist2},
+  \texttt{totAInExposureDist2}, \texttt{anyInExposureDist2}, 
+  behavior effects \texttt{totPopAlt},
+  \texttt{totGroup}, \texttt{indegAvGroup}, \texttt{indegtotGroup}, 
+  \texttt{totGwdspFFAlt}, \texttt{totGwdspFBAlt\_nc} (Daniel Gotthardt).
+  \item New behavior effects without centering \texttt{quad\_nc},
+  \texttt{avInAltDist2\_nc}, \texttt{totInAltDist2\_nc}, \\
+  \texttt{avTinaltDist2\_nc}, \texttt{totAInAltDist2\_nc},
+  \texttt{totGwdspFFAlt\_nc}, \texttt{totGwdspFBAlt\_nc}.
+ \item New effects \texttt{avSameXAlt}, \texttt{totSameXAlt}, 
+ \texttt{avSameXInAlt}, \texttt{totSameXInalt},
+  \texttt{avXRecAlt}, \texttt{totXRecAlt}, \texttt{avSameXRecAlt}, 
+  \texttt{totSameXRecAlt},
+  \texttt{avAltSameX}, \texttt{totAltSameX}, \texttt{avRecAltSameX}, 
+  \texttt{totRecAltSameX}.
+  \item New effects \texttt{avInAltAltX}, \texttt{totInAltAltX}, 
+  \texttt{avRecAltAltX}, \texttt{totRecAltAltX},
+    \texttt{avInAltSameX}, \texttt{totInAltSameX}.
+    \end{itemize}
+\item Improvements of functionality:
+   \begin{itemize}
+    \item Distinguished between three algorithm objects. 
+    See Chapter~\ref{S_names}.
+    \end{itemize}
+\item Bug corrections:
+   \begin{itemize}
+  \item \texttt{checkImpossibleChanges}  restricted to networks.
+  \item \texttt{checkZeroChanges}  adapted to also cover behavioral variables.
+    \end{itemize}
+\item Documentation:
+   \begin{itemize}
+  \item A new subsection was added to \texttt{Siena\_algorithms}  to explain the new
+    construction of diffusion rate effects (Daniel Gotthardt).
+   \item Appendix A of this manual, "List of Functions in Order of Execution",
+    was dropped
+    and the author of this appendix, Paulina Preciado Lopez, was
+    accordingly dropped from the list of authors of the manual.
+    Greetings, Paulina!
+    \end{itemize}
+\end{itemize}
 
 
 \item 2025-10-28 GitHub, package version 1.5.6.
@@ -18592,7 +18552,7 @@ Changes in RSiena:
     \item Option \texttt{returnChangeContributions=TRUE} added to
         \sfn{siena07}, allowing users to extract the
         \texttt{changeContributions} to the \sfn{sienaFit} object.
-    \item \sfn{sienaRIDynamics} reinstated based on the above new option,
+    \item \sfn{interpret\_size\_dynamics} reinstated based on the above new option,
         replacing the original code.
   \item \sfn{selectionTable} got an attribute \texttt{quad} indicating
     whether the plot is a quadratic function.
@@ -18600,7 +18560,7 @@ Changes in RSiena:
     \sfn{siena07} by setting an argument \texttt{returnChangeContributions=TRUE}.
     If used together with \texttt{nsub=0} and \texttt{prevAns} or modified initial
     values in the effects object, especially useful for post-estimation,
-    e.g. in \sfn{sienaRIDynamics}.
+    e.g. in \sfn{interpret\_size\_dynamics}.
     \end{itemize}
 \item New effects:
    \begin{itemize}

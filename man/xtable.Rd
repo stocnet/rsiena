@@ -32,15 +32,16 @@ function (x, ...)
     xtable::xtable(x, ...)
   }
 \dontrun{
-myalgorithm <- sienaAlgorithmCreate(nsub=2, n3=100)
-mynet1 <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
-mydata <- sienaDataCreate(mynet1)
-myeff <- getEffects(mydata)
-ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE)
+myalgo <- set_algorithm_saom(nsub=2, n3=100, seed=1293)
+mynet <- as_dependent_rsiena(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
+mydata <- make_data_rsiena(mynet)
+myeff <- make_specification(mydata)
+ans <- siena(mydata, effects=myeff, control_algo=myalgo, batch=TRUE)
 ans
 summary(ans)
-xtable(ans, type="html", file="ans.html")}
+xtable(ans, type="html", file="ans.html")
+}
 }
 % Add one or more standard keywords, see file "KEYWORDS" in the
 % R documentation directory.
-\keyword{ print }
+\keyword{print}

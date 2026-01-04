@@ -18,12 +18,13 @@ namespace siena
 {
 
 /**
- * Popularity alter effect (see manual).
+ * Average and total Popularity alter effect (see manual). Also the effect of 
+ * the (average) number of two-in-stars originating from ego.
  */
 class PopularityAlterEffect : public NetworkDependentBehaviorEffect
 {
 public:
-	PopularityAlterEffect(const EffectInfo * pEffectInfo);
+	PopularityAlterEffect(const EffectInfo * pEffectInfo, bool divide);
 
 	virtual double calculateChangeContribution(int actor,
 		int difference);
@@ -31,6 +32,8 @@ public:
 
 private:
 	double averageInDegree(int i) const;
+	// divide indicates whether there will be division by the outdegree
+	bool ldivide {};
 };
 
 }

@@ -40,7 +40,7 @@ on Friendship Evolution.
 See \url{https://www.stats.ox.ac.uk/~snijders/siena/BaerveldtData.html}
 }
 \examples{
-mynet <- sienaDependent(array(c(N3401, HN3401), dim=c(45, 45, 2)))
-mydata <- sienaDataCreate(mynet)
+mynet <- as_dependent_rsiena(array(c(N3401, HN3401), dim=c(45, 45, 2)))
+mydata <- make_data_rsiena(mynet)
 }
 \keyword{datasets}

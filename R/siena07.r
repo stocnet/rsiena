@@ -10,17 +10,264 @@
 ## * Also contains utility functions used within siena07
 ## ****************************************************************************/
 
+##@siena estimation
+siena <- function(data = NULL, effects = NULL,
+	control_model = NULL, control_algo = NULL, control_out = NULL,
+	thetaBound = 50,
+	batch = FALSE, verbose = FALSE, silent = TRUE,
+	initC = TRUE,
+	nbrNodes = 1,
+	clusterString = rep("localhost", nbrNodes),
+	clusterType = c("PSOCK", "FORK"), cl = NULL, ...)
+{
+	exitfn <- function()
+	{
+		 if (!is.batch())
+		{
+		  tcltk::tkdestroy(tkvars$tt)
+		}
+		## close the report file
+		Report(closefiles=TRUE)
+		RNGkind("default")
+	}
+	on.exit(exitfn())
+
+	checking <- any(grepl("_R_CHECK", names(Sys.getenv())))
+
+	dataName <- deparse(substitute(data))
+	if (dataName=="")
+	{
+		dataName <- "Siena"
+	}
+
+	if (!inherits(effects, "sienaEffects"))
+	{
+		stop("effects should be an RSiena effects object")
+	}
+	if (!inherits(data, "sienadata") && !inherits(data, "siena"))
+	{
+		stop("data should be a siena data structure")
+	}
+# "siena" is added here, because in pre-1.6.0 versions
+# this was the class name that now is defined as "sienadata".
+
+
+	if (is.null(control_model))
+	{
+		control_model <- set_model_saom()
+	}
+	if (is.null(control_algo))
+	{
+		control_algo <- set_algorithm_saom()
+	}
+	if (is.null(control_out))
+	{
+		control_out <- set_output_saom()
+	}
+	if (is.null(control_out$outputName))
+	{
+		if (checking)
+		{
+			control_out$outputName <- tempfile("Siena")
+#			cat('siena will create/use an output file',
+#				paste('Siena','.txt',sep=''),'.\n')
+#			cat('This is a temporary file for this R session.\n')
+		}
+		else
+		{
+			control_out$outputName <- paste(dataName, "_out", sep="")
+			cat('siena will create/use an output file',
+				paste(control_out$outputName,'.txt',sep=''),'.\n')
+		}
+		control_out$projname <- control_out$outputName
+	}
+	if (control_algo$maxlike)
+	{
+		if (!is.null(control_model$MaxDegree))
+		{
+			if (control_model$MaxDegree > 0)
+			{
+				stop("maxlike and MaxDegree are incompatible")
+			}
+		}
+		if (control_algo$FinDiff.method)
+		{
+			stop("Finite differences estimation of derivatives",
+				"is not possible with maximum likelihood estimation")
+		}
+	}
+
+	# If the user is passing clusters through -cl- then change the
+	# useCluster to TRUE, and assign the -nbrNodes- to number of nodes
+	useCluster <- ((nbrNodes >= 2) | (!is.null(cl)))
+	if (!useCluster & length(cl))
+	{
+		useCluster <- TRUE
+		nbrNodes   <- length(cl)
+	}
+
+	time0 <-  proc.time()['elapsed']
+	z <- list() ## z is the object for all control information which may change.
+	z$newNames <- TRUE
+	z$thetaBound <- thetaBound
+
+	if (control_algo$maxlike)
+	{
+		if (!is.null(control_model$MaxDegree))
+		{
+			stop("maxlike and MaxDegree are incompatible")
+		}
+		if (control_algo$FinDiff.method)
+		{
+			stop("Finite differences estimation of derivatives",
+				"is not possible with maximum likelihood estimation")
+		}
+	}
+	x <- c(control_model, control_algo, control_out)
+	z$returnThetas <- control_out$returnThetas
+
+	parallelTesting <- FALSE
+	clusterIter <- !control_algo$maxlike
+			# clusterIter = clustering for parallelization goes by iteration
+	if (useCluster)
+	{
+		if (!length(cl))
+		{
+			clusterType <- match.arg(clusterType)
+			if (.Platform$OS.type == "windows" && clusterType != "PSOCK")
+			{
+				stop("cannot use forking processes on Windows")
+			}
+		}
+		if (clusterIter)
+		{
+			x$firstg <- control_algo$firstg * sqrt(nbrNodes)
+			z$int <- nbrNodes
+			z$int2 <- 1
+		}
+		else
+		{
+			z$int <- 1
+			z$int2 <- nbrNodes
+		}
+	}
+	else
+	{
+		z$int <- 1
+		z$int2 <- 1
+	}
+	if (!is.null(control_algo$randomSeed))
+	{
+		set.seed(control_algo$randomSeed, kind="default")
+		seed <- control_algo$randomSeed
+	}
+	else
+	{
+		newseed <- NULL
+		seed <- NULL
+	}
+
+	x$targets <- control_algo$targets
+	z$x <- x
+# x is designed to be readonly. Only z is returned.
+
+	## set the global is.batch
+	batchUse <- batch
+	if (!batch)
+	{
+		if (!requireNamespace("tcltk", quietly = TRUE))
+		{
+				batchUse <- TRUE
+				message("Package tcltk not available, forcing use of batch mode")
+		}
+		else
+		{
+			if (.Platform$OS.type != "windows")
+			{
+				if (!capabilities("X11"))
+				{
+					batchUse <- TRUE
+					message("No X11 device available, forcing use of batch mode")
+				}
+			}
+		}
+		if(nzchar(Sys.getenv("RSIENA_TESTING")))
+		{
+			silent <- TRUE
+		}
+	}
+	is.batch(batchUse)
+	## open the output file
+	Report(openfiles=TRUE, projname=control_out$projname, verbose=verbose, silent=silent)
+	z <- InitReports(z, seed, newseed)
+
+	## reset the globals for interrupts
+	NullChecks()
+
+	## create the screen
+	tt <- NULL # this is set from a keyword in siena07; here the default, NULL
+	if (!is.batch())
+	{
+		tkvars <- siena07Gui(tt=tt)
+		z$tkvars <- tkvars
+		z$pb <- list(pb=tkvars$pb, pbval=0, pbmax=1)
+	}
+	else
+	{
+		z$pb <- list(pb=NULL, pbval=0, pbmax=1)
+	}
+
+	## create theta values for phase 3, if necessary
+	if (is.null(control_algo$thetaValues))
+	{
+		z$thetaValues <- NULL
+		z$thetaFromFile <- FALSE
+	}
+	else
+	{
+		z$thetaValues <- control_algo$thetaValues
+		z$thetaFromFile <- TRUE
+	}				   	
+	z <- robmon(z, x, useCluster, nbrNodes, initC, clusterString,
+		clusterIter, clusterType, cl, data=data, effects=effects,
+#		returnDeps=control_out$returnDeps, 
+		returnChains=control_out$returnChains,
+		returnDataFrame=control_out$returnDataFrame,
+		returnChangeContributions=control_out$returnChangeContributions, ...)
+	time1 <-  proc.time()['elapsed']
+	Report(c("Total computation time", round(time1 - time0, digits=2),
+			"seconds.\n"), outf)
+	z$compTime <- round(time1 - time0, digits=2)
+
+	if (useCluster)
+	{
+		# Only stop cluster if it wasn't provided by the user
+		#	  if (!length(cl))
+		#		  stopCluster(z$cl)
+
+		## need to reset the random number type to the normal one
+		assign(".Random.seed", z$oldRandomNumbers, pos=1)
+	}
+
+	class(z) <- "sienaFit"
+	attr(z, "version") <- packageDescription(pkgname, fields = "Version")
+	z$tkvars <- NULL
+	z$pb <- NULL
+	z
+}
+
+
 ##@siena07 siena07
-siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
+siena07 <- function(alg, batch = FALSE, verbose = FALSE, silent = FALSE,
 	useCluster = FALSE, nbrNodes = 2,
 	thetaValues = NULL,
     returnThetas = FALSE,
 	thetaBound = 50,
 	targets = NULL,
-	initC=TRUE,
-	clusterString=rep("localhost", nbrNodes), tt=NULL,
-	parallelTesting=FALSE, clusterIter=!x$maxlike,
-	clusterType=c("PSOCK", "FORK"), cl=NULL, ...)
+	initC = TRUE,
+	clusterString = rep("localhost", nbrNodes), tt = NULL,
+	parallelTesting = FALSE, clusterIter = !alg$maxlike,
+	clusterType = c("PSOCK", "FORK"), cl = NULL, ...)
 {
 	exitfn <- function()
 	{
@@ -43,6 +290,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	}
 
 	time0 <-  proc.time()['elapsed']
+	x <- alg
 	z <- NULL ## z is the object for all control information which may change.
 	## x is designed to be readonly. Only z is returned.
 	z$x <- x
@@ -213,7 +461,7 @@ siena07 <- function(x, batch = FALSE, verbose = FALSE, silent=FALSE,
 	time1 <-  proc.time()['elapsed']
 	Report(c("Total computation time", round(time1 - time0, digits=2),
 			"seconds.\n"), outf)
-z$compTime <- round(time1 - time0, digits=2)
+	z$compTime <- round(time1 - time0, digits=2)
 
 	if (useCluster)
 	{
@@ -516,4 +764,81 @@ errorHandler <- function()
 		options(show.error.messages=FALSE)
 		options(error=tkErrorMessage)
 	}
+}
+
+##@coef.sienaFit method for sienaFit
+coef.sienaFit <- function(object, dropRates=TRUE, shortenNames=TRUE, ...)
+{
+	result <- object$theta
+	names(result) <- fromObjectToText(object$requestedEffects$effectName)
+	if (dropRates)
+	{
+		return(result[!object$requestedEffects$basicRate])
+	}
+	else
+	{
+		return(result)
+	}
+}
+
+##@vcov.sienaFit method for sienaFit
+vcov.sienaFit <- function(object, dropRates=TRUE, shortenNames=TRUE, ...)
+{
+	result <- object$covtheta
+	colnames(result) <- fromObjectToText(object$requestedEffects$effectName)
+	rownames(result) <- colnames(result)
+	if (dropRates)
+	{
+		return(result[!object$requestedEffects$basicRate,!object$requestedEffects$basicRate])
+	}
+	else
+	{
+		return(result)
+	}
+}
+
+fromObjectToText <- function(a, type='notex'){
+# This is an extended version of the function in sienatable.r
+	b <- as.character(a)
+	if (type == 'tex')
+	{
+		b <- gsub('->', '$\\rightarrow$', fixed=TRUE, b)
+		b <- gsub('<-', '$\\leftarrow$', fixed=TRUE, b)
+		b <- gsub('<>', '$\\leftrightarrow$', fixed=TRUE, b)
+		b <- gsub('=>', '$\\Rightarrow$', fixed=TRUE, b)
+		b <- gsub('>=', '$\\geq$', fixed=TRUE, b)
+		b <- gsub('<=', '$\\leq$', fixed=TRUE, b)
+		b <- gsub('sqrt', '$\\sqrt{}$', fixed=TRUE, b)
+		b <- gsub('&', '.', fixed=TRUE, b)
+	}
+# Note: R changes \\ to \ but still displays \\ in printing the string.
+	b <- gsub(" (density)", "", fixed=TRUE, b)
+	b <- gsub("ocity", "", fixed=TRUE, b)
+	b <- gsub("itive", "", fixed=TRUE, b)
+	b <- gsub("iated", "", fixed=TRUE, b)
+	b <- gsub("constant ", "", fixed=TRUE, b)
+	b <- gsub("period ", "", fixed=TRUE, b)
+	b <- gsub("degree", "deg", fixed=TRUE, b)
+	b <- gsub("arity", "", fixed=TRUE, b)
+	b <- gsub("ativity", "", fixed=TRUE, b)
+	b <- gsub("ivity", "", fixed=TRUE, b)
+	b <- gsub("erence", "", fixed=TRUE, b)
+	b <- gsub(" at ", " ", fixed=TRUE, b)
+	b <- gsub(" of ", " ", fixed=TRUE, b)
+	b <- gsub(" by ", " ", fixed=TRUE, b)
+	b <- gsub("weighted", "wght", fixed=TRUE, b)
+	b <- gsub("weight", "wght", fixed=TRUE, b)
+	b <- gsub(" -> ", ">", fixed=TRUE, b)
+	b <- gsub(" <- ", "<", fixed=TRUE, b)
+	b <- gsub(" <> ", "=", fixed=TRUE, b)
+	b <- gsub(" - ", "-", fixed=TRUE, b)
+	b <- gsub(" * ", "*", fixed=TRUE, b)
+	b <- gsub(" x ", "*", fixed=TRUE, b)
+	b <- gsub("ilarity", "", fixed=TRUE, b)
+	b <- gsub('^(1/1)', '1', fixed=TRUE, b)
+	b <- gsub('^(1/2)', '(sqrt)', fixed=TRUE, b)
+	b <- gsub('^', '', fixed=TRUE, b)
+	b <- gsub('_', '-', fixed=TRUE, b)
+	b <- gsub('#', '.', fixed=TRUE, b)
+	b
 }

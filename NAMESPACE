@@ -1,23 +1,30 @@
 useDynLib(RSiena, .registration = TRUE, .fixes="C_")
 
 export(
-	coCovar, coDyadCovar, getEffects, model.create, print01Report, siena07,
+	coCovar, coDyadCovar, varCovar, varDyadCovar, as_covariate_rsiena,
+	sienaNet, sienaDependent, as_dependent_rsiena,
+	getEffects, print01Report, siena07, siena,
 	sienaCompositionChange, updateTheta, updateSpecification,
-	sienaCompositionChangeFromFile, sienaDataCreate, sienaGroupCreate,
-	sienaModelCreate, sienaAlgorithmCreate, sienaNet, sienaDependent,
-	sienaNodeSet, xtable.sienaFit, varCovar, varDyadCovar, setEffect,
+	sienaCompositionChangeFromFile, sienaDataCreate, make_data_rsiena,
+	sienaGroupCreate, make_group_rsiena,
+	sienaModelCreate, sienaAlgorithmCreate, 
+	set_model_saom, set_algorithm_saom, set_output_saom, 
+	sienaNodeSet, as_nodeset_rsiena, xtable.sienaFit, setEffect,
 	includeEffects, includeInteraction, includeGMoMStatistics, 
    effectsDocumentation, sienaDataConstraint, print.xtable.sienaFit, 
-   siena08, iwlsm, sienaTimeTest,
-	includeTimeDummy, sienaGOF, descriptives.sienaGOF, sienaRI,
-   sienaRIDynamics, sparseMatrixExtraction, networkExtraction, behaviorExtraction,
+	siena08, meta_siena, iwlsm, sienaTimeTest,
+	includeTimeDummy, sienaGOF, descriptives, interpret_size,
+	interpret_size_dynamics, sparseMatrixExtraction, networkExtraction, behaviorExtraction,
 	OutdegreeDistribution, IndegreeDistribution, BehaviorDistribution,
 	TriadCensus, mixedTriadCensus, dyadicCov, egoAlterCombi,
-	siena.table, xtable, score.Test, Wald.RSiena, Multipar.RSiena, 
+	siena_table, xtable, score.Test, Wald.RSiena, Multipar.RSiena, 
    testSame.RSiena, funnelPlot, meta.table,
-   influenceTable, selectionTable
-)
-
+	influenceTable, selectionTable,
+    as_composition_rsiena,as_composition_file_rsiena, make_constraint, 
+	make_specification, set_effect, set_interaction, 
+   update_theta, update_specification, 
+	test_parameter, write_result, test_time, test_gof,
+	interpret_selection, interpret_influence)
 importFrom("Matrix", "Matrix", "sparseMatrix", "spMatrix", "drop0", 
            "rankMatrix", "mat2triplet")
 importFrom("lattice", "xyplot", "trellis.par.get", "trellis.par.set", "bwplot",
@@ -45,25 +52,34 @@ importFrom("utils", "browseURL", "edit",
            "flush.console", "getFromNamespace", "object.size",
            "packageDescription", "read.csv",
            "read.table", "write.csv", "write.table")
+S3method(print, sienadata)
 S3method(print, siena)
+S3method(make_specification, sienadata)
+S3method(make_specification, siena)
+S3method(make_specification, sienaGroup)
+S3method(make_constraint, sienadata)
+S3method(make_constraint, siena)
+S3method(make_constraint, sienaGroup)
 S3method(print, sienaGroup)
 S3method(print, sienaDependent)
 S3method(print, sienaFit)
-S3method(print, summary.sienaFit)
-S3method(print, sienaAlgorithm)
 S3method(summary, sienaFit)
+S3method(coef, sienaFit)
+S3method(vcov, sienaFit)
+S3method(test_parameter, sienaFit)
+S3method(write_result, sienaFit)
+S3method(print, summary.sienaFit)
+S3method(write_result, sienaFit)
+S3method(test_time, sienaFit)
+S3method(test_gof, sienaFit)
+S3method(interpret_selection, sienaFit)
+S3method(interpret_influence, sienaFit)
+S3method(interpret_size, sienaFit)
+S3method(print, sienaAlgorithm)
 S3method(print, sienaMeta)
 S3method(print, summary.sienaMeta)
 S3method(summary, sienaMeta)
 S3method(plot, sienaMeta)
-S3method(predict, iwlsm)
-S3method(print, iwlsm)
-S3method(print, summary.iwlsm)
-S3method(summary, iwlsm)
-S3method(iwlsm, formula)
-S3method(iwlsm, default)
-S3method(se.contrast, iwlsm)
-S3method(vcov, iwlsm)
 S3method(addAttributes, coCovar)
 S3method(addAttributes, varCovar)
 S3method(addAttributes, coDyadCovar)
@@ -75,18 +91,32 @@ S3method(print, summary.sienaTimeTest)
 S3method(plot, sienaTimeTest)
 S3method(print, sienaEffects)
 S3method(summary, sienaEffects)
+S3method(set_effect, sienaEffects)
+S3method(set_interaction, sienaEffects)
 S3method(print, summary.sienaEffects)
 S3method(edit, sienaEffects)
+S3method(interpret_size, sienaEffects)
+S3method(update_theta, sienaEffects)
+S3method(update_specification, sienaEffects)
+S3method(print, xtable.sienaFit)
 S3method(summary, sienaGOF)
 S3method(print, sienaGOF)
 S3method(plot, sienaGOF)
+S3method(descriptives, sienaGOF)
 S3method(summary, sienaRI)
 S3method(print, sienaRI)
 S3method(plot, sienaRI)
 S3method(summary, sienaRIDynamics)
 S3method(print, sienaRIDynamics)
 S3method(plot, sienaRIDynamics)
-S3method(print, xtable.sienaFit)
+S3method(predict, iwlsm)
+S3method(print, iwlsm)
+S3method(print, summary.iwlsm)
+S3method(summary, iwlsm)
+S3method(iwlsm, formula)
+S3method(iwlsm, default)
+S3method(se.contrast, iwlsm)
+S3method(vcov, iwlsm)
 S3method(print, chains.data.frame)
 S3method(print, influenceTable)
 S3method(print, selectionTable)

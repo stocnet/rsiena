@@ -9,7 +9,8 @@ Function to create a table of documentation of effect names, short names etc.
 }
 \usage{
 effectsDocumentation(effects = NULL, type = "html", display = (type=="html"),
-     filename = ifelse(is.null(effects), "effects", deparse(substitute(effects))))
+     filename = ifelse(is.null(effects), "effects", 
+                                         deparse(substitute(effects))))
 }
 %- maybe also "usage" for other objects documented here.
 \arguments{
@@ -58,8 +59,9 @@ effectsDocumentation(effects = NULL, type = "html", display = (type=="html"),
 \value{
   Nothing returned. Output files are created in the current working directory.
 }
-\seealso{\code{\link{getEffects}}, \code{\link{includeEffects}},
-    \code{\link{summary.sienaEffects}}, \code{\link{includeInteraction}}.}
+\seealso{\code{\link{make_specification}}, \code{\link{includeEffects}},
+    \code{\link{summary.sienaEffects}}, \cr
+    \code{\link{includeInteraction}}.}
 \references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley, Tom A.B. Snijders}
 \examples{
@@ -67,4 +69,4 @@ effectsDocumentation(effects = NULL, type = "html", display = (type=="html"),
 }
 % Add one or more standard keywords, see file "KEYWORDS" in the
 % R documentation directory.
-\keyword{ print }
+\keyword{print}

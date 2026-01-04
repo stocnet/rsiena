@@ -92,16 +92,6 @@ private:
 	void calculateBehaviorRateStatistics(BehaviorLongitudinalData * pBehaviorData);
 	void calculateContinuousStatistics(ContinuousLongitudinalData * pContinuousData);
 	void calculateContinuousRateStatistics(ContinuousLongitudinalData * pContinuousData);
-	// Functions to calculate value of diffusion rate effect
-	// note: calculateDiffusionRateEffect is also a function in DependentVariable (almost the same...)
-	double calculateDiffusionRateEffect(BehaviorLongitudinalData *
-		pBehaviorData, const Network * pStructural, int i,
-		std::string effectName, int internalEffectParameter);
-	double calculateDiffusionRateEffect(BehaviorLongitudinalData *
-		pBehaviorData, const Network * pStructural,
-		const ConstantCovariate * pConstantCovariate,
-		const ChangingCovariate * pChangingCovariate,
-		int i, std::string effectName, int internalEffectParameter);
 
 	// The data to be used for calculating the statistics
 	const Data * lpData;

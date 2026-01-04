@@ -3316,7 +3316,7 @@ sum(colSums(s502)* (rowSums(s502))) #  360 OK
 sum(colSums(s502)*(rowSums(s502)> 3)) # 20 OK
 
 ################################################################################
-### check  avAlt_cc, quad_cc and their counterparts avAlt, quad  
+### check  avAlt_cc, quad_cc and their counterparts avAlt, quad
 ################################################################################
 
 # make example analysis w/ s50 data:
@@ -3355,7 +3355,7 @@ gm <- mean(s50a[,1:2]) # grand mean over both observations
 avAlt <- function(n, b){
 # calculates peers' average behavior;
 # n = adjacency matrix senders (rows) by receivers (cols)
-# b = behavior vector 	
+# b = behavior vector
 	n %*% b / rowSums(n)
 }
 
@@ -3366,3 +3366,893 @@ sum((s50a[,2]-cc) * (avAlt(s501, s50a[,2])-cc), na.rm=TRUE) # 31.97667 ok
 # calculate targets quad and quad_cc manually:
 sum((s50a[,2]-gm)^2) # 71.105 ok
 sum((s50a[,2]-cc)^2) # 70.5 ok
+
+################################################################################
+### check avGroup
+################################################################################
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+p <- 1
+mymodel <- setEffect(mymodel,avGroup, name='mybeh', parameter=p)
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+(mbh <- mean(mybeh))
+sum(mybeh[,,2] - mbh)# OK linear shape
+sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
+
+# for avGroup effect:
+## The target statistic equals the sum of over s_i^beh =
+#, substracting c_p from  the mean for p > 0.5
+
+c_p <- ifelse(p <= 0.5, 0, p - mbh)
+sum((mybeh[,,2]-mbh)*(mean((mybeh[,,2]-mbh))-c_p)) # 15.34 OK
+
+################################################################################
+### check totGroup
+################################################################################
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+p <- 1
+mymodel <- setEffect(mymodel,totGroup, name='mybeh', parameter=p)
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+(mbh <- mean(mybeh))
+sum(mybeh[,,2] - mbh)# OK linear shape
+sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
+
+# for totGroup effect:
+## The target statistic equals the sum of over s_i^beh =
+#, substracting c_p from  the mean for p > 0.5
+
+c_p <- ifelse(p <= 0.5, 0, p - mbh)
+sum((mybeh[,,2]-mbh)*(sum((mybeh[,,2]-mbh))-c_p)) # 56.745 OK
+
+################################################################################
+### check avGroupEgoX and totGroupEgoX
+################################################################################
+
+# Model test for totGroupEgoX
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- includeEffects(mymodel, totGroupEgoX,
+                      name='mynet', interaction1='mybeh')
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets # does not converge well
+
+(mbh <- mean(mybeh))
+
+adj <- mynet[, , 2] # adjacency matrix for the period
+beh <- mybeh[, , 1] - mbh # covariate vector for the period
+
+group_total <- sum(beh)
+total_ties <- sum(adj)
+total_ties * group_total
+
+# Model test for avGroupEgoX
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- includeEffects(mymodel, avGroupEgoX, name='mynet', interaction1='mybeh')
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel)) # does not converge well
+ans$targets
+
+adj <- mynet[, , 2] # adjacency matrix for the period
+beh <- mybeh[, , 1]-mbh # covariate vector for the period
+
+group_mean <- mean(beh, na.rm = TRUE)
+outdeg <- rowSums(adj)
+
+sum(outdeg * group_mean) # avGroupEgoX ok
+
+################################################################################
+### check indegAvGroup
+################################################################################
+
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+p <- 1
+mymodel <- setEffect(mymodel,indegAvGroup,
+                      name='mybeh', interaction1='mynet', parameter=p)
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE))
+ans$targets
+(mbh <- mean(mybeh))
+sum(mybeh[,,2] - mbh) # OK linear shape
+sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
+
+# for indegAvGroup effect:
+## The target statistic equals the sum over s_i^beh, weighted by
+##substracting c_p from the mean for p > 0.5
+
+c_p <- ifelse(p <= 0.5, 0, p - mbh)
+sum( (mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) / 
+  sum(colSums(mynet[,,1])) ) - c_p )) # 15.74569 OK
+
+## Test for three networks without shape effects
+
+mynet <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+mybeh <- sienaDependent(s50a[,1:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+p <- 1
+mymodel <- includeEffects (mymodel, linear, quad,  name='mybeh', include=FALSE)
+
+mymodel <- setEffect(mymodel,indegAvGroup,
+                     name='mybeh', interaction1='mynet', parameter=p)
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE))
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE,
+                prevAns = ans, returnDeps=TRUE))
+ans$targets
+(mbh <- mean(mybeh))
+c_p <- ifelse(p <= 0.5, 0, p - mbh)
+sum((mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) / sum(colSums(mynet[,,1])) ) - c_p )) +
+  sum((mybeh[,,3]-mbh) * (( sum((mybeh[,,3]-mbh) * colSums(mynet[,,2])) / sum(colSums(mynet[,,2])) ) - c_p )) # 28.37791 ok
+
+
+################################################################################
+### check indegTotGroup
+################################################################################
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+p <- 1
+mymodel <- setEffect(mymodel,indegTotGroup,
+                      name='mybeh', interaction1='mynet', parameter=p)
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE))
+ans$targets
+(mbh <- mean(mybeh))
+sum(mybeh[,,2] - mbh) # OK linear shape
+sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
+
+# for indegtotGroup effect:
+## The target statistic equals the sum over s_i^beh, weighted by
+##substracting c_p from the mean for p > 0.5
+
+c_p <- ifelse(p <= 0.5, 0, p - mbh)
+sum( (mybeh[,,2]-mbh) * (sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) - c_p )) # 159.575 ok
+
+
+## Test for three networks without shape effects
+
+mynet <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+mybeh <- sienaDependent(s50a[,1:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+p <- 1
+mymodel <- includeEffects (mymodel, linear, quad,  name='mybeh', include=FALSE)
+
+mymodel <- setEffect(mymodel,indegTotGroup,
+                     name='mybeh', interaction1='mynet', parameter=p)
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE))
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE,
+                prevAns = ans, returnDeps=TRUE))
+ans$targets
+
+(mbh <- mean(mybeh))
+c_p <- ifelse(p <= 0.5, 0, p - mbh)
+sum( (mybeh[,,2]-mbh) * ( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) - c_p )) +
+sum( (mybeh[,,3]-mbh) * ( sum((mybeh[,,3]-mbh) * colSums(mynet[,,2])) - c_p )) # 456.7178 ok
+
+################################################################################
+### check totInAltDist2 and totInAltDist2_nc
+################################################################################
+
+## These helpers are used for multiple checks below
+instars <- function(mat){
+  matrix_vals <- mat
+  matrix_vals[] <- 0
+  for (i in 1:nrow(mat)){
+    for (j in 1:nrow(mat)){
+      a_row <- mat[i, c(-i, -j)]
+      b_row <- mat[j, c(-i, -j)]
+      matrix_vals[i, j] <- sum(a_row * b_row)
+    }
+  }
+  diag(matrix_vals) <- 0
+  return(matrix_vals)
+}
+
+divi <- function(x, y) {
+  ifelse(y == 0, 0, x / y)
+}
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel,totInAltDist2, name='mybeh', interaction1 = "mynet")
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+(mbh <- mean(mybeh))
+sum(mybeh[,,2] - mbh)# OK linear shape
+sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
+
+# for totInAltDist2 effect:
+## The target statistic equals the sum of over s_i^beh =
+## v_i * sum(v_h) over all two-in-star alters h of i,
+## weighted by the number of common two-out-stars
+
+instarmat <- instars(mynet[,,1])
+weighted <- (mybeh[,,2]-mbh) %*% instarmat
+sum((mybeh[,,2] - mbh)*weighted) # totInAltDist2 114.183 ok
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel,totInAltDist2_nc, name='mybeh', interaction1 = "mynet")
+mymodel
+(ans2 <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans2$targets # different from totInAltDist2
+
+(mbh <- mean(mybeh))
+sum(mybeh[,,2] - mbh)# OK linear shape
+sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
+
+# for totInAltDist2_nc effect:
+## The sum as above, but without centering of behavior
+
+# weighted <- divi((mybeh[,,2]) %*% instarmat, (mybeh[,,2])  %*%  (instarmat > 0))
+weighted <- mybeh[,,2] %*% instarmat
+sum((mybeh[,,2])*weighted) # totInAltDist2_nc 3402 ok
+
+################################################################################
+### check totAInAltDist2 and totAInAltDist2_nc
+################################################################################
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel,totAInAltDist2, name='mybeh', interaction1 = "mynet")
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+(mbh <- mean(mybeh))
+sum(mybeh[,,2] - mbh)# OK linear shape
+sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
+
+# for totAInAltDist2 effect:
+## The target statistic equals the sum of over s_i^beh =
+## v_i * sum(v_h) over all two-in-star alters h of i,
+## weighted by the number of common two-out-stars
+## divided by the indegree of i's alter j
+
+beh <- mybeh[, , 2]-mbh
+adj <- mynet[, , 1]
+n <- nrow(adj)
+indeg <- colSums(adj)
+stat <- numeric(n)
+for (i in 1:n) {
+  xi <- adj[i, ]
+  denom <- indeg - xi
+  denom[denom == 0] <- NA
+  for (h in setdiff(1:n, i)) {
+    xhj <- adj[h, ]
+    contrib <- xi * xhj / denom
+    contrib[is.na(contrib)] <- 0
+    stat[i] <- stat[i] + (beh[h]) * sum(contrib)
+  }
+}
+sum(beh * stat) # totAInAltDist2 42.3332 ok
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel,totAInAltDist2_nc, name='mybeh', interaction1 = "mynet")
+mymodel
+(ans2 <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans2$targets # different from totAInAltDist2
+
+(mbh <- mean(mybeh))
+sum(mybeh[,,2] - mbh)# OK linear shape
+sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
+
+# for totAInAltDist2_nc effect:
+## The sum as above, but without centering of behavior
+
+beh <- mybeh[, , 2]
+adj <- mynet[, , 1]
+n <- nrow(adj)
+indeg <- colSums(adj)
+stat <- numeric(n)
+for (i in 1:n) {
+  xi <- adj[i, ]
+  denom <- indeg - xi
+  denom[denom == 0] <- NA
+  for (h in setdiff(1:n, i)) {
+    xhj <- adj[h, ]
+    contrib <- xi * xhj / denom
+    contrib[is.na(contrib)] <- 0
+    stat[i] <- stat[i] + (beh[h]) * sum(contrib)
+  }
+}
+sum(beh * stat) # totAInAltDist2_nc 1318.7 ok
+
+################################################################################
+### check avTInAltDist2 and avTInAltDist2_nc
+################################################################################
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel,avTInAltDist2, name='mybeh', interaction1 = "mynet")
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+(mbh <- mean(mybeh))
+sum(mybeh[,,2] - mbh)# OK linear shape
+sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
+
+# for avInAltDist2 effect:
+## The target statistic equals the sum of over s_i^beh =
+## v_i * sum(v_h) over all two-in-star alters h of i,
+## weighted by the number of common two-out-stars
+## divided by the outdegree of i
+
+instarmat <- instars(mynet[, , 1])
+weighted_beh <- (mybeh[, , 2]-mbh) %*% instarmat
+outdegree <- rowSums(mynet[, , 1])
+weighted_beh <- divi(weighted_beh, outdegree)
+
+sum((mybeh[, , 2]-mbh) * weighted_beh) # 34.24184 ok
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel,avTInAltDist2_nc, name='mybeh', interaction1 = "mynet")
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+(mbh <- mean(mybeh))
+sum(mybeh[,,2] - mbh)# OK linear shape
+sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
+
+# for avInAltDist2_nc effect:
+## as above, but without centering of behavior
+
+instarmat <- instars(mynet[, , 1])
+weighted_beh <- (mybeh[, , 2]) %*% instarmat
+outdegree <- rowSums(mynet[, , 1])
+weighted_beh <- divi(weighted_beh, outdegree)
+
+sum((mybeh[, , 2]) * weighted_beh) # 1275.383 ok
+
+################################################################################
+### check avInAltdist2 and avInAltdist2_nc
+################################################################################
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel,avInAltDist2, name='mybeh', interaction1 = "mynet")
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+(mbh <- mean(mybeh))
+sum(mybeh[,,2] - mbh)# OK linear shape
+sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
+
+# for avInAltDist2 effect:
+## The target statistic equals the sum of over s_i^beh =
+## v_i * sum(v_h) over all two-in-star alters h of i,
+## weighted by the number of common two-out-stars
+## divided by the outdegree of i
+
+adj <- mynet[, , 1]
+beh <- mybeh[, , 2] - mbh
+n <- nrow(adj)
+indeg <- colSums(adj)
+stat <- numeric(n)
+for (i in 1:n) {
+  xi <- adj[i, ]
+  denom <- indeg - xi
+  denom[denom == 0] <- NA
+  for (h in setdiff(1:n, i)) {
+    xhj <- adj[h, ]
+    contrib <- xi * xhj / denom
+    contrib[is.na(contrib)] <- 0
+    stat[i] <- stat[i] + beh[h] * sum(contrib)
+  }
+}
+outdegree <- rowSums(mynet[, , 1])
+stat <- divi(stat, outdegree)
+sum(beh * stat) # 15.34422 ok
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel,avInAltDist2_nc, name='mybeh', interaction1 = "mynet")
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+(mbh <- mean(mybeh))
+sum(mybeh[,,2] - mbh)# OK linear shape
+sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
+
+# for avInAltDist2_nc effect:
+## as above, but without centering of behavior
+
+adj <- mynet[, , 1]
+beh <- mybeh[, , 2]
+n <- nrow(adj)
+indeg <- colSums(adj)
+stat <- numeric(n)
+for (i in 1:n) {
+  xi <- adj[i, ]
+  denom <- indeg - xi
+  denom[denom == 0] <- NA
+  for (h in setdiff(1:n, i)) {
+    xhj <- adj[h, ]
+    contrib <- xi * xhj / denom
+    contrib[is.na(contrib)] <- 0
+    stat[i] <- stat[i] + beh[h] * sum(contrib)
+  }
+}
+outdegree <- rowSums(mynet[, , 1])
+stat <- divi(stat, outdegree)
+sum(beh * stat) # 514.7194 ok
+
+################################################################################
+### check totGwdspFBAlt and totGwdspFBAlt_nc
+################################################################################
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel,totGwdspFBAlt, name='mybeh', interaction1 = "mynet")
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+(mbh <- mean(mybeh))
+
+## The target statistic equals sum of over s_i^beh =
+## z_i * sum(z_h) over all two-in-star alters h of i,
+## weighted by the the geometrically weighted number of common two-out-stars
+
+instarmat <- instars(mynet[, , 1])
+alpha <- 0.69
+weight_mat <- exp(alpha) * (1 - (1 - exp(-alpha))^instarmat)
+weighted_beh <- (mybeh[, , 2] - mbh) %*% weight_mat
+sum((mybeh[, , 2] - mbh) * weighted_beh) # 89.68582 ok
+
+
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel,totGwdspFBAlt_nc, name='mybeh', interaction1 = "mynet")
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets # different from totGwdspFBAlt
+
+(mbh <- mean(mybeh))
+
+## same as above but without centering of behavior
+
+instarmat <- instars(mynet[, , 1])
+alpha <- 0.69
+weight_mat <- exp(alpha) * (1 - (1 - exp(-alpha))^instarmat)
+weighted_beh <- (mybeh[, , 2]) %*% weight_mat
+sum((mybeh[, , 2]) * weighted_beh) # 3118.14 ok
+
+################################################################################
+### check totGwdspFFAlt and totGwdspFFAlt_nc
+################################################################################
+
+# Helper function for forward two-paths
+forward_twopaths <- function(adj) {
+  # For each i, j: number of k such that i->k and k->j
+  mat <- adj %*% adj
+  diag(mat) <- 0
+  return(mat)
+}
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel,totGwdspFFAlt, name='mybeh', interaction1 = "mynet")
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42, nsub=2, n3=100)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+# geometrically weighted number of two-paths weighted
+# behavior over alters in distance 2
+
+(mbh <- mean(mybeh))
+adj <- mynet[, , 1]
+alpha <- 0.69
+twopath_mat <- forward_twopaths(adj)
+weight_mat <- exp(alpha) * (1 - (1 - exp(-alpha))^twopath_mat)
+weighted_beh <- (mybeh[, , 2] - mbh) %*% weight_mat
+sum((mybeh[, , 2] - mbh) * weighted_beh) # 87.40375 ok
+
+
+mynet <- sienaDependent(array(c(s501,s502, s503), dim=c(50, 50, 3)))
+mybeh <- sienaDependent(s50a[,1:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel,totGwdspFFAlt_nc, name='mybeh', interaction1 = "mynet")
+mymodel <- includeEffects(mymodel, quad_nc, name = "mybeh")
+mymodel <- includeEffects(mymodel, quad,
+    name = "mybeh", include = FALSE)
+mymodel
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42, nsub=2, n3=100)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets # different from totGwdspFFAlt
+
+
+## same as above but without centering of behavior
+alpha <- 0.69
+twopath_mat1 <- forward_twopaths(mynet[, , 1])
+weight_mat1 <- exp(alpha) * (1 - (1 - exp(-alpha))^twopath_mat1)
+stat1 <- sum(mybeh[, , 2] * (mybeh[, , 2] %*% weight_mat1))
+
+twopath_mat2 <- forward_twopaths(mynet[, , 2])
+weight_mat2 <- exp(alpha) * (1 - (1 - exp(-alpha))^twopath_mat2)
+stat2 <- sum(mybeh[, , 3] * (mybeh[, , 3] %*% weight_mat2))
+
+stat2   #  2691.373
+stat1 + stat2 # 5025.376 OK
+
+
+## Check Contributions
+
+staticChangeContributions <- RSiena:::getChangeContributions(data=mydata, effects=mymodel)
+
+## Check if it works for density
+
+conts <- staticChangeContributions[[1]][[1]][[1]] # period 2, effect 1 (density)
+conts <- do.call(rbind, conts)
+adj <- mynet[, , 1]
+manual_contribs <- 1-2*adj
+diag(manual_contribs) <- 0
+all.equal(manual_contribs, conts) # TRUE
+
+## Trying to manually compute contributions for totGwdspFFAlt_nc
+## and compare with extracted ones
+# period 2, effect 5 (totGwdspFFAlt_nc)
+conts <- staticChangeContributions[[1]][[1]][[5]]
+conts <- do.call(rbind, conts)
+
+n <- nrow(adj)
+alpha <- 0.69
+twopath_mat <- forward_twopaths(adj)
+weight_mat <- exp(alpha) * (1 - (1 - exp(-alpha))^twopath_mat)
+manual_contribs <- matrix(NA, n, 3)
+for (ego in 1:n) {
+  current_value <- mybeh[, , 1][ego]
+  for (delta in c(-1, 0, 1)) {
+    newval <- current_value + delta
+    col <- delta + 2
+    if (newval < 1 || newval > 5) {
+      manual_contribs[ego, col] <- NA
+    } else {
+      change_stat <- sum(mybeh[, , 1][-ego] * weight_mat[ego, -ego])
+      manual_contribs[ego, col] <- delta * change_stat
+    }
+  }
+}
+
+all.equal(manual_contribs, conts) # TRUE
+
+## Also check period 2
+
+conts <- staticChangeContributions[[1]][[2]][[1]]
+# period 2, effect 1 (density)
+conts <- do.call(rbind, conts)
+adj <- mynet[, , 2]
+manual_contribs <- 1-2*adj
+diag(manual_contribs) <- 0
+all.equal(manual_contribs, conts) # TRUE
+
+conts <- staticChangeContributions[[1]][[2]][[5]]
+# period 2, effect 5 (totGwdspFFAlt_nc)
+conts <- do.call(rbind, conts)
+
+adj <- mynet[, , 2]
+n <- nrow(adj)
+alpha <- 0.69
+twopath_mat <- forward_twopaths(adj)
+weight_mat <- exp(alpha) * (1 - (1 - exp(-alpha))^twopath_mat)
+manual_contribs <- matrix(NA, n, 3)
+for (ego in 1:n) {
+  current_value <- mybeh[, , 2][ego]
+  for (delta in c(-1, 0, 1)) {
+    newval <- current_value + delta
+    col <- delta + 2
+    if (newval < 1 || newval > 5) {
+      manual_contribs[ego, col] <- NA
+    } else {
+      change_stat <- sum(mybeh[, , 2][-ego] * weight_mat[ego, -ego])
+      manual_contribs[ego, col] <- delta * change_stat
+    }
+  }
+}
+
+all.equal(manual_contribs, conts) # TRUE
+
+
+################################################################################
+### check popAlt and totPopAlt
+################################################################################
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mycontrols <- sienaAlgorithmCreate(projname=NULL)
+
+# popAlt
+mymodel <- includeEffects(mymodel, popAlt, name='mybeh', interaction1='mynet')
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+(mbh <- mean(mybeh))
+
+indeg <- colSums(mynet[, , 1])
+outdeg <- rowSums(mynet[, , 1])
+avg_popularity <- vapply(1:nrow(mynet[, , 1]), function(i) {
+  alters <- which(mynet[, , 1][i, ] != 0)
+  if (length(alters) > 0) {
+    mean(indeg[alters])
+  } else {
+    0
+  }
+}, FUN.VALUE=1)
+
+sum((mybeh[,,2] - mbh)*avg_popularity) # popAlt 26.611 ok
+
+# totPopAlt
+mymodel <- getEffects(mydata)
+mymodel <- includeEffects(mymodel, totPopAlt, name='mybeh', interaction1='mynet')
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+popalt_stat <- vapply(1:nrow(s502), function(i) {
+  alters <- which(s502[i, ] != 0)
+  sum(indeg[alters])
+}, FUN.VALUE=1)
+
+sum((mybeh[,,2] - mbh)*popalt_stat) # totPopAlt 99.22 ok
+
+
+################################################################################
+### check avXAlt, totXAlt, avXInAlt, totXInalt, avXRecAlt, totXRecAlt,
+###       avSameXAlt, totSameXAlt,avSameXInAlt, totSameXInalt,
+###       avSameXRecAlt, totSameXRecAlt
+################################################################################
+
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,1:2])
+mycov <- coCovar(s50s[,1])
+mydata <- sienaDataCreate(mynet, mybeh, mycov)
+mymodel <- sienaAlgorithmCreate(projname=NULL, nsub=2, n3=300, seed=123)
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, avXAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050  12.2949
+mybeh[,,]
+meanbeh <- mean(mybeh)
+sum(mybeh[,1,2]-meanbeh) # 5.5 OK linear
+sum((mybeh[,1,2]-meanbeh)^2) # 71.1050  OK quad
+
+cova <- mydata$cCovars[[1]]
+degs <- rowSums(s502)
+inv  <- function(x){ifelse(x==0, 0, 1/x)}
+ddegs <- diag(inv(degs))
+rowSums( ddegs %*% s502)
+sum((mybeh[,,2] - meanbeh) * ( (ddegs %*%mynet[,,1]) %*% cova)) #  12.2949 OK
+
+myeff2 <- getEffects(mydata)
+myeff2 <- setEffect(myeff2, totXAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
+myeff2 <- setEffect(myeff2, outdeg, name="mybeh", interaction1="mynet")
+(ans2 <- siena07(mymodel, data=mydata, effects=myeff2))
+ans2$targets
+# [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050   25.1600  12.2949  40.8392
+sum((mybeh[,,2] - meanbeh) * ( mynet[,,1] %*% cova)) #  40.8392 OK
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, avXInAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
+(ans <- siena07(mymodel, data=mydata, effects=myeff, thetaBound=200))
+ans$targets
+# [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050  16.80043
+
+cova <- mydata$cCovars[[1]]
+degs <- colSums(s502)
+ddegs <- diag(inv(degs))
+colSums( s502 %*% ddegs )
+sum((mybeh[,,2] - meanbeh) * ( (ddegs %*%t(mynet[,,1])) %*% cova)) #  16.80043 OK
+
+myeff2 <- getEffects(mydata)
+myeff2 <- setEffect(myeff2, totXInAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
+(ans2 <- siena07(mymodel, data=mydata, effects=myeff2))
+ans2$targets
+# [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050  48.5592
+sum((mybeh[,,2] - meanbeh) * (t(mynet[,,1]) %*% cova)) #  48.5592 OK
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, avXRecAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050   14.32523
+
+snet <- mynet[,,1] * t(mynet[,,1])
+cova <- mydata$cCovars[[1]]
+degs <- colSums(snet)
+ddegs <- diag(inv(degs))
+colSums( snet %*% ddegs )
+sum((mybeh[,,2] - meanbeh) * ( (ddegs %*%snet ) %*% cova)) #  14.32523 OK
+
+myeff2 <- getEffects(mydata)
+myeff2 <- setEffect(myeff2, totXRecAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
+(ans2 <- siena07(mymodel, data=mydata, effects=myeff2))
+ans2$targets
+# [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050 23.904
+sum((mybeh[,,2] - meanbeh) * (snet %*% cova)) #  23.904 OK
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, avSameXAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050 -6.106333
+
+cova <- mydata$cCovars[[1]]
+coveq <- 1*outer(cova,cova,"==")
+degs <- rowSums(s502)
+inv  <- function(x){ifelse(x==0, 0, 1/x)}
+divi <- function(x,y){ifelse(y==0, 0, x/y)}
+ddegs <- diag(inv(degs))
+rowSums( ddegs %*% s502)
+sum((mybeh[,,2] - meanbeh) * divi(rowSums( mynet[,,1] * coveq), rowSums(mynet[,,1]))) #   -6.106333 OK
+
+myeff2 <- getEffects(mydata)
+myeff2 <- setEffect(myeff2, totSameXAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
+(ans2 <- siena07(mymodel, data=mydata, effects=myeff2))
+ans2$targets
+# [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050   25.1600   -5.170
+sum((mybeh[,,2] - meanbeh) * rowSums( mynet[,,1] * coveq)) #  -5.170 OK
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, avSameXInAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050  -7.843833
+cova <- mydata$cCovars[[1]]
+coveq <- 1*outer(cova,cova,"==")
+degs <- colSums(s502)
+ddegs <- diag(inv(degs))
+rowSums( ddegs %*% t(s502))
+sum((mybeh[,,2] - meanbeh) * divi(rowSums( t(mynet[,,1]) * coveq), colSums(mynet[,,1]))) # -7.843833 OK
+
+myeff2 <- getEffects(mydata)
+myeff2 <- setEffect(myeff2, totSameXInAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
+(ans2 <- siena07(mymodel, data=mydata, effects=myeff2))
+ans2$targets
+# [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050   25.1600  -12.170
+sum((mybeh[,,2] - meanbeh) * (rowSums( t(mynet[,,1]) * coveq))) # -12.170 OK
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, avSameXRecAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050    -6.733333
+cova <- mydata$cCovars[[1]]
+coveq <- 1*outer(cova,cova,"==")
+snet <- mynet[,,1] * t(mynet[,,1])
+degs <- colSums(s502)
+ddegs <- diag(inv(degs))
+rowSums( ddegs %*% t(s502))
+sum((mybeh[,,2] - meanbeh) * divi(rowSums( snet * coveq), rowSums(snet))) #  -6.733333 OK
+
+myeff2 <- getEffects(mydata)
+myeff2 <- setEffect(myeff2, totSameXRecAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
+(ans2 <- siena07(mymodel, data=mydata, effects=myeff2))
+ans2$targets
+# [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050   25.1600  -13.480
+sum((mybeh[,,2] - meanbeh) * (rowSums( snet * coveq))) # -13.48 OK
+
+################################################################################
+### check avAltSameX, totAltSameX, avRecAltSameX, totRecAltSameX
+################################################################################
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,1:2])
+mycov <- coCovar(s50s[,1])
+mydata <- sienaDataCreate(mynet, mybeh, mycov)
+mymodel <- sienaAlgorithmCreate(projname=NULL, nsub=2, n3=300, seed=1447)
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, avAltSameX, name="mybeh", interaction1="mycov", interaction2="mynet")
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+#  106.00000 122.00000  90.00000  27.00000   5.50000  71.10500 -13.48000  26.10557
+
+divi <- function(x,y){ifelse(y==0, 0, x/y)}
+cova <- mydata$cCovars[[1]]
+coveq <- 1*outer(cova,cova,"==")
+meanbeh <- mean(mybeh)
+sum( (mybeh[,,2] - meanbeh) *
+	divi((s502*coveq) %*% (mybeh[,,2] - meanbeh) , rowSums(s502*coveq))) # 26.10557 OK
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, totAltSameX, name="mybeh", interaction1="mycov", interaction2="mynet")
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+# 1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050  45.8183
+sum( (mybeh[,,2] - meanbeh) * (s502*coveq) %*% (mybeh[,,2] - meanbeh))
+# 45.8183 OK
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, avRecAltSameX, name="mybeh", interaction1="mycov", interaction2="mynet")
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+#  106.00000 122.00000  90.00000  27.00000   5.50000  71.10500  17.52373
+
+snet <- mynet[,,1] * t(mynet[,,1])
+sum( (mybeh[,,2] - meanbeh) *
+	divi((snet*coveq) %*% (mybeh[,,2] - meanbeh) , rowSums(snet*coveq))) #  17.52373 OK
+
+myeff <- getEffects(mydata)
+myeff <- setEffect(myeff, totRecAltSameX, name="mybeh", interaction1="mycov", interaction2="mynet")
+(ans <- siena07(mymodel, data=mydata, effects=myeff))
+ans$targets
+#  [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050  33.7252
+
+snet <- mynet[,,1] * t(mynet[,,1])
+sum( (mybeh[,,2] - meanbeh) * (snet*coveq) %*% (mybeh[,,2] - meanbeh))
+# 33.7252 OK

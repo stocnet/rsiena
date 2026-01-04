@@ -122,7 +122,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 	}
 	if (!initC) ## i.e. first time round
 	{
-		if (!inherits(data,"siena"))
+		if (!inherits(data,"sienadata"))
 		{
 			stop("not valid siena data object")
 		}
@@ -444,7 +444,8 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		z$qq <- z$pp
 
 		## unpack data and put onto f anything we may need next time round.
-		f <- lapply(data, function(xx, x) unpackData(xx, x), x=x)
+#		f <- lapply(data, function(xx, x) unpackData(xx, x), x=x)
+		f <- lapply(data, function(xx) unpackData(xx))
 		attr(f, "netnames") <- attr(data, "netnames")
 		attr(f, "symmetric") <- attr(data, "symmetric")
 		attr(f, "allUpOnly") <- attr(data, "allUpOnly")
@@ -1981,7 +1982,7 @@ unpackVDyad<- function(dyvCovar, observations)
 }
 
 ##@unpackData siena07 Reformat data for C++
-unpackData <- function(data, x)
+unpackData <- function(data)
 {
     f <- NULL
     observations<- data$observations
@@ -2122,6 +2123,12 @@ updateTheta <- function(effects, prevAns, varName=NULL)
 	effects
 }
 
+update_theta  <- function(x, ...) UseMethod("update_theta", x)
+
+##@updateTheta.sienaEffects Copy theta values from previous fit
+update_theta.sienaEffects <- function(x, prevAns, varName=NULL, ...){
+	updateTheta(x, prevAns=prevAns, varName=varName)
+}
 
 ##@ numberIntn siena07 sienaBayes, number of network interaction effects used for getEffects
 numberIntn <- function(myeff){

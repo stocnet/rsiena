@@ -928,7 +928,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "avGroupEgoX")
 	{
-		pEffect = new AverageGroupEgoEffect(pEffectInfo);
+		pEffect = new AverageGroupEgoEffect(pEffectInfo, true);
+	}
+	else if (effectName == "totGroupEgoX")
+	{
+		pEffect = new AverageGroupEgoEffect(pEffectInfo, false);
 	}
 	else if (effectName == "cycle4")
 	{
@@ -2031,6 +2035,10 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new QuadraticShapeCcEffect(pEffectInfo);
 	}
+		else if (effectName == "quad_nc")
+	{
+		pEffect = new QuadraticShapeNCEffect(pEffectInfo);
+	}
 	else if (effectName == "constant")
 	{
 		pEffect = new ConstantEffect(pEffectInfo);
@@ -2083,6 +2091,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "totInSim")
 	{
 		pEffect = new SimilarityIndegreeEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "indegAvGroup")
+	{
+		pEffect = new IndegreeWeightedAverageGroupEffect(pEffectInfo, true);
+	}
+	else if (effectName == "indegTotGroup")
+	{
+		pEffect = new IndegreeWeightedAverageGroupEffect(pEffectInfo, false);
 	}
 	else if (effectName == "indeg")
 	{
@@ -2281,7 +2297,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "popAlt")
 	{
-		pEffect = new PopularityAlterEffect(pEffectInfo);
+		pEffect = new PopularityAlterEffect(pEffectInfo, true);
+	}
+	else if (effectName == "totPopAlt")
+	{
+		pEffect = new PopularityAlterEffect(pEffectInfo, false);
 	}
 	else if (effectName == "avSimRecPop")
 	{
@@ -2302,7 +2322,23 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
     else if (effectName == "avSimVarAlt")
     {
         pEffect = new VarianceAlterSimilarityEffect(pEffectInfo, true, false, false);
-    }
+	}
+		else if (effectName == "totGwdspFFAlt")
+	{
+		pEffect = new TotalGwdspAlterEffect(pEffectInfo, true);
+	}
+	else if (effectName == "totGwdspFBAlt")
+	{
+		pEffect = new TotalGwdspAlterEffect(pEffectInfo, false);
+	}
+	else if (effectName == "totGwdspFFAlt_nc")
+	{
+		pEffect = new TotalGwdspAlterNCEffect(pEffectInfo, true);
+	}
+	else if (effectName == "totGwdspFBAlt_nc")
+	{
+		pEffect = new TotalGwdspAlterNCEffect(pEffectInfo, false);
+	}
 	else if (effectName == "avAlt")
 	{
 		if (pContinuousData)
@@ -2324,7 +2360,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "avGroup")
 	{
-		pEffect = new AverageGroupEffect(pEffectInfo);
+		pEffect = new AverageGroupEffect(pEffectInfo, true);
+	}
+		else if (effectName == "totGroup")
+	{
+		pEffect = new AverageGroupEffect(pEffectInfo, false);
 	}
 	else if (effectName == "totAlt")
 	{
@@ -2424,6 +2464,22 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new AverageAlterInDist2Effect(pEffectInfo, false, true);
 	}
+	else if (effectName == "avInAltDist2_nc")
+	{
+		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, true, true);
+	}
+	else if (effectName == "totInAltDist2_nc")
+	{
+		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "avTInAltDist2_nc")
+	{
+		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, true, false);
+	}
+	else if (effectName == "totAInAltDist2_nc")
+	{
+		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, false, true);
+	}
     else if (effectName == "varAlt")
     {
         pEffect = new VarianceAlterEffect(pEffectInfo);
@@ -2518,13 +2574,29 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new AltersCovariateAvSimEffect(pEffectInfo);
 	}
-	else if (effectName == "totAltAltX")
-	{
-		pEffect = new AltersCovariateAvAltEffect(pEffectInfo, false);
-	}
 	else if (effectName == "avAltAltX")
 	{
-		pEffect = new AltersCovariateAvAltEffect(pEffectInfo, true);
+		pEffect = new AltersCovariateAvAltEffect(pEffectInfo, true, false);
+	}
+	else if (effectName == "totAltAltX")
+	{
+		pEffect = new AltersCovariateAvAltEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "avAltSameX")
+	{
+		pEffect = new AltersCovariateAvAltEffect(pEffectInfo, true, true);
+	}
+	else if (effectName == "totAltSameX")
+	{
+		pEffect = new AltersCovariateAvAltEffect(pEffectInfo, false, true);
+	}
+	else if (effectName == "avRecAltSameX")
+	{
+		pEffect = new AltersCovariateAvRecAltEffect(pEffectInfo, true, true);
+	}
+	else if (effectName == "totRecAltSameX")
+	{
+		pEffect = new AltersCovariateAvRecAltEffect(pEffectInfo, false, true);
 	}
 	else if (effectName == "AltsAvAlt")
 	{
@@ -2540,19 +2612,51 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "avXAlt")
 	{
-		pEffect = new AltersCovariateAverageEffect(pEffectInfo,true);
+		pEffect = new AltersCovariateAverageEffect(pEffectInfo,true,false,true);
 	}
 	else if (effectName == "totXAlt")
 	{
-		pEffect = new AltersCovariateAverageEffect(pEffectInfo,false);
+		pEffect = new AltersCovariateAverageEffect(pEffectInfo,false,false,true);
 	}
 	else if (effectName == "avXInAlt")
 	{
-		pEffect = new InAltersCovariateAverageEffect(pEffectInfo,true);
+		pEffect = new AltersCovariateAverageEffect(pEffectInfo,true,false,false);
 	}
 	else if (effectName == "totXInAlt")
 	{
-		pEffect = new InAltersCovariateAverageEffect(pEffectInfo,false);
+		pEffect = new AltersCovariateAverageEffect(pEffectInfo,false,false,false);
+	}
+	else if (effectName == "avXRecAlt")
+	{
+		pEffect = new RecAltersCovariateAverageEffect(pEffectInfo,true,false);
+	}
+	else if (effectName == "totXRecAlt")
+	{
+		pEffect = new RecAltersCovariateAverageEffect(pEffectInfo,false,false);
+	}
+	else if (effectName == "avSameXAlt")
+	{
+		pEffect = new AltersCovariateAverageEffect(pEffectInfo,true,true,true);
+	}
+	else if (effectName == "totSameXAlt")
+	{
+		pEffect = new AltersCovariateAverageEffect(pEffectInfo,false,true,true);
+	}
+	else if (effectName == "avSameXInAlt")
+	{
+		pEffect = new AltersCovariateAverageEffect(pEffectInfo,true,true,false);
+	}
+	else if (effectName == "totSameXInAlt")
+	{
+		pEffect = new AltersCovariateAverageEffect(pEffectInfo,false,true,false);
+	}
+	else if (effectName == "avSameXRecAlt")
+	{
+		pEffect = new RecAltersCovariateAverageEffect(pEffectInfo,true,true);
+	}
+	else if (effectName == "totSameXRecAlt")
+	{
+		pEffect = new RecAltersCovariateAverageEffect(pEffectInfo,false,true);
 	}
 	else if (effectName == "avXAltDist2")
 	{

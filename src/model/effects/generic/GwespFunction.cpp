@@ -36,7 +36,7 @@ GwespFunction::GwespFunction(string networkName,
 	this->lpTable = pTable;
 	if (this->lparameter < 0)
 	{
-		throw runtime_error("Gwdsp must have nonnegative internal effect parameter");
+		throw runtime_error("Gwesp must have nonnegative internal effect parameter");
 	}
 }
 

@@ -29,7 +29,9 @@ class AltersCovariateAvAltEffect :
 public CovariateAndNetworkBehaviorEffect
 {
 public:
-	AltersCovariateAvAltEffect(const EffectInfo * pEffectInfo, bool divide);
+	AltersCovariateAvAltEffect(const EffectInfo * pEffectInfo, 
+						bool divide, bool same);
+	virtual void preprocessEgo(int ego);
 
 	virtual double calculateChangeContribution(int actor,
 		int difference);
@@ -42,6 +44,9 @@ protected:
 private:
 	// divide indicates whether there will be division by the outdegree
 	bool ldivide{};
+	// same indicates whether there will be restriction to same covariate
+	bool lsame{};
+	double lTotalAlterValue{};
 };
 
 }

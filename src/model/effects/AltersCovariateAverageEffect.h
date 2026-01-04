@@ -3,7 +3,7 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: AltersCovariateAverageBehaviorEffect.h
+ * File: AltersCovariateAverageEffect.h
  *
  * Description: This file contains the definition of the
  * AltersCovariateAverageEffect class.
@@ -23,15 +23,16 @@ namespace siena
 // ----------------------------------------------------------------------------
 
 /**
- * Alters covariate average effect (see manual)
- *
+ * Alters covariate average alter effect 
  */
 class AltersCovariateAverageEffect :
 public CovariateAndNetworkBehaviorEffect
 {
 public:
-	AltersCovariateAverageEffect(const EffectInfo * pEffectInfo, bool divide);
+	AltersCovariateAverageEffect(const EffectInfo * pEffectInfo, 
+			bool divide, bool same, bool outgoing);
 
+	virtual void preprocessEgo(int ego);
 	virtual double calculateChangeContribution(int actor,
 		int difference);
 	virtual double egoEndowmentStatistic(int ego, const int * difference,
@@ -43,8 +44,13 @@ protected:
 private:
 	// divide indicates whether there will be division by the outdegree
 	bool ldivide{};
+	// same indicates whether the influence will be from same-X alters
+	bool lsame{};
+	// outgoing indicates whether the influence will be from out-alters
+	bool loutgoing{};
+	double lTotalAlterValue{};
 };
 
 }
 
-#endif /*ALTERSCOVARIATEAVERAGEEFFECT_H_*/
+#endif /*AltersCovariateAverageEffect_H_*/

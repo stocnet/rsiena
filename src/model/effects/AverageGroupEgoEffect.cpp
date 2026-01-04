@@ -36,7 +36,7 @@ namespace siena
  * @param[in] pEffectInfo the effect descriptor
  * @param[in] squared indicates if the covariate values must be squared
  */
-AverageGroupEgoEffect::AverageGroupEgoEffect(const EffectInfo * pEffectInfo) :
+AverageGroupEgoEffect::AverageGroupEgoEffect(const EffectInfo * pEffectInfo, bool divide) :
 	CovariateDependentNetworkEffect(pEffectInfo)
 {
 //	this->lcenterMean = (pEffectInfo->internalEffectParameter() <= 0.5);
@@ -48,6 +48,9 @@ AverageGroupEgoEffect::AverageGroupEgoEffect(const EffectInfo * pEffectInfo) :
 //	{
 //		this->lcenteringValue = 0.0;
 //	}
+	this->ldivide = divide;
+	// Indicates whether there will be division by the number of actors.
+
 }
 
 
@@ -124,7 +127,14 @@ void AverageGroupEgoEffect::preprocessEgo(int ego)
  */
 double AverageGroupEgoEffect::calculateContribution(int alter) const
 {
-	return this->lGroupMean;
+	if(ldivide)
+	{
+		return this->lGroupMean;
+	}
+	else
+	{
+		return this->lGroupMean * this->lnm;
+	}
 }
 
 
@@ -143,7 +153,14 @@ bool AverageGroupEgoEffect::egoEffect() const
  */
 double AverageGroupEgoEffect::tieStatistic(int alter)
 {
-	return this->lGroupMean;
+	if(ldivide)
+	{
+		return this->lGroupMean;
+	}
+	else
+	{
+		return this->lGroupMean * this->lnm;
+	}
 }
 
 /**
@@ -153,7 +170,14 @@ double AverageGroupEgoEffect::tieStatistic(int alter)
  */
 double AverageGroupEgoEffect::egoStatistic(int ego,	const Network * pNetwork)
 {
-	return pNetwork->outDegree(ego) * this->lGroupMean;
+	if(ldivide)
+	{
+		return pNetwork->outDegree(ego) * this->lGroupMean;
+	}
+	else
+	{
+		return pNetwork->outDegree(ego) * this->lGroupMean * this->lnm;
+	}
 }
 
 }

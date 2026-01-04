@@ -12,9 +12,24 @@
 ##	*
 ##	****************************************************************************/
 
+
+test_gof <- function(object, ...) UseMethod("test_gof", object)
+
+##@test_gof.sienaFit gof method for sienaFit
+test_gof.sienaFit <- function(object, auxiliaryFunction,
+		period=NULL, verbose=FALSE, join=TRUE, twoTailed=FALSE,
+		cluster=NULL, robust=FALSE,
+		groupName="Data1", varName, tested=NULL, iterations=NULL,
+		giveNAWarning=TRUE, ...)
+{
+	sienaGOF(object, auxiliaryFunction, period, verbose, join, twoTailed,
+		cluster, robust, groupName, varName, tested, iterations,
+		giveNAWarning, ...)
+}
+
 ##@sienaGOF siena07 Does test for goodness of fit
 sienaGOF <- function(
-		sienaFitObject,	auxiliaryFunction,
+		object,	auxiliaryFunction,
 		period=NULL, verbose=FALSE, join=TRUE, twoTailed=FALSE,
 		cluster=NULL, robust=FALSE,
 		groupName="Data1", varName, tested=NULL, iterations=NULL,
@@ -23,18 +38,18 @@ sienaGOF <- function(
 	## require(MASS)
 	## require(Matrix)
 	##	Check input
-	# fitList indicates whether the sienaFitObject is a list of
+	# fitList indicates whether the object is a list of
 	# sienaFit objects, or a single such object.
 	fitList <- FALSE
-	if (inherits(sienaFitObject, "sienaFit"))
+	if (inherits(object, "sienaFit"))
 	{
-		sFO <- sienaFitObject
+		sFO <- object
 	}
 	else
 	{
-		if (all(vapply(sienaFitObject, function(x){inherits(x, "sienaFit")}, FUN.VALUE=TRUE)))		
+		if (all(vapply(object, function(x){inherits(x, "sienaFit")}, FUN.VALUE=TRUE)))
 		{
-			sFO <- sienaFitObject[[1]]
+			sFO <- object[[1]]
 # If fitList, it is assumed that all elements of this list
 # have the same specification, and the first one is used
 # to deduce this information.
@@ -42,14 +57,14 @@ sienaGOF <- function(
 			if (!inherits(sFO, "sienaFit"))
 			{
 				stop("The first parameter of sienaGOF must be a sienaFit object or a list of such objects")
-			}	
+			}
 			if (length(period) > 1)
 			{
 				stop("For operating on a list of sienaFit objects, only a single period can be used.")
 			}
 		}
 	}
-	
+
 	if (sFO$maxlike)
 	{
 		stop(
@@ -92,9 +107,9 @@ sienaGOF <- function(
 # There might be more than one varName:
 	if (is.null(sFO$f[[groupName]]$depvars[[varName[1]]]))
 	{
-		stop("There is a mismatch between the sienaFitObject and the groupName or varName.")
+		stop("There is a mismatch between the object and the groupName or varName.")
 	}
-	
+
 	groups <- length(sFO$f$groupNames)
 	if (fitList)
 	{
@@ -131,7 +146,7 @@ sienaGOF <- function(
 		}
 		if (fitList)
 		{
-			message("The data for analysis is a list of ", length(sienaFitObject),
+			message("The data for analysis is a list of ", length(object),
 						" sienaFit objects.")
 		}
 	}
@@ -143,27 +158,27 @@ sienaGOF <- function(
 			period <- 1
 		}
 		per <- period # can only be a single number
-		auxFunction <- function(i, sienaFitObject, j, groupName, varName, ...){
-			auxiliaryFunction(i, sienaFitObject[[j]]$f,
-						sienaFitObject[[j]]$sims, per, groupName, varName, ...)}
-		period <- seq_along(sienaFitObject) 
+		auxFunction <- function(i, object, j, groupName, varName, ...){
+			auxiliaryFunction(i, object[[j]]$f,
+						object[[j]]$sims, per, groupName, varName, ...)}
+		period <- seq_along(object)
 		# from now on, period will denote the rank number of the sienaFit object.
-	}	
+	}
 	else
 	{
 		if (is.null(period) )
 		{
-			period <- 1:(attr(sienaFitObject$f[[1]]$depvars[[1]], "netdims")[3] - 1)
+			period <- 1:(attr(object$f[[1]]$depvars[[1]], "netdims")[3] - 1)
 		}
-		auxFunction <- function(i, sienaFitObject, j, groupName, varName, ...){
-			auxiliaryFunction(i, sienaFitObject$f,
-						sienaFitObject$sims, j, groupName, varName, ...)}
+		auxFunction <- function(i, object, j, groupName, varName, ...){
+			auxiliaryFunction(i, object$f,
+						object$sims, j, groupName, varName, ...)}
 	}
 
 	obsStatsByPeriod <- lapply(period, function (j) {
 						matrix(
 						auxFunction(NULL,
-								sienaFitObject, j, groupName, varName, ...)
+								object, j, groupName, varName, ...)
 								, nrow=1)
 				})
 
@@ -183,7 +198,7 @@ sienaGOF <- function(
 	attr(obsStats,"auxiliaryStatisticName") <-
 			deparse(substitute(auxiliaryFunction))
 	attr(obsStats,"joint") <- join
-	
+
 
 	##	Calculate the simulated auxiliary statistics
 	if (verbose)
@@ -202,7 +217,7 @@ sienaGOF <- function(
 		ttcSimulation <- system.time(simStatsByPeriod <-
 			lapply(period, function (j) {
 				simStatsByPeriod <- parLapply(cluster, 1:iterations,
-					function (i){auxFunction(i, sienaFitObject,
+					function (i){auxFunction(i, object,
 										j, groupName, varName, ...)})
 				simStatsByPeriod <- matrix(unlist(simStatsByPeriod), ncol=iterations)
 				dimnames(simStatsByPeriod)[[1]] <-	plotKey
@@ -227,7 +242,7 @@ sienaGOF <- function(
 										" calculations\r")
 								flush.console()
 								}
-								auxFunction(i, sienaFitObject,
+								auxFunction(i, object,
 										j, groupName, varName, ...)
 						})
 					if (verbose)
@@ -345,7 +360,7 @@ sienaGOF <- function(
 				Rank=arank)
 		class(ret) <- "sienaGofTest"
 		attr(ret, "version") <- packageDescription(pkgname, fields = "Version")
-		attr(ret,"sienaFitName") <- deparse(substitute(sienaFitObject))
+		attr(ret,"sienaFitName") <- deparse(substitute(object))
 		attr(ret,"auxiliaryStatisticName") <-
 				attr(obsStats,"auxiliaryStatisticName")
 		attr(ret, "key") <- plotKey
@@ -372,7 +387,7 @@ sienaGOF <- function(
 			t(apply(simStatsByPeriod[[i]],1, function(x){x - ExpStat[[i]]}))})
 
 	OneStepSpecs <- matrix(0, ncol=sum(tested),
-			nrow=length(sienaFitObject$theta))
+			nrow=length(object$theta))
 	if (robust) {
 		covInvByPeriod <- lapply(period, function(i) ginv(
 							cov.rob(simStatsByPeriod[[i]]) ))
@@ -392,7 +407,7 @@ sienaGOF <- function(
 			})
 
 	if (sum(tested) > 0) {
-		effectsObject <- sienaFitObject$requestedEffects
+		effectsObject <- object$requestedEffects
 		for (i in period) {
 			names(OneStepMHD_old[[i]]) <-
 					effectsObject$effectName[tested]
@@ -415,24 +430,24 @@ sienaGOF <- function(
 			counterTestEffects <- counterTestEffects + 1
 			effectsToInclude <- !tested
 			effectsToInclude[index] <- TRUE
-			theta0 <- sienaFitObject$theta
+			theta0 <- object$theta
 			names(theta0) <- effectsObject$effectName
 			theta0 <- theta0[effectsToInclude]
 			obsSuffStats <-
-					t(sienaFitObject$targets2[effectsToInclude, , drop=FALSE])
-			G <- sienaFitObject$sf2[, , effectsToInclude, drop=FALSE] -
+					t(object$targets2[effectsToInclude, , drop=FALSE])
+			G <- object$sf2[, , effectsToInclude, drop=FALSE] -
 					rep(obsSuffStats, each=iterations)
 			sigma <- cov(apply(G, c(1, 3), sum), use="pairwise.complete.obs")
-			SF <- sienaFitObject$ssc[ , , effectsToInclude, drop=FALSE]
+			SF <- object$ssc[ , , effectsToInclude, drop=FALSE]
 			dimnames(SF)[[3]] <- effectsObject$effectName[effectsToInclude]
 			dimnames(G) <- dimnames(SF)
-			if (!(sienaFitObject$maxlike || sienaFitObject$FinDiff.method))
+			if (!(object$maxlike || object$FinDiff.method))
 			{
 				D <- derivativeFromScoresAndDeviations(SF, G, , , , TRUE, )
 			}
 			else
 			{
-				DF <- sienaFitObject$
+				DF <- object$
 						sdf2[ , , effectsToInclude, effectsToInclude,
 						drop=FALSE]
 				D <- t(apply(DF, c(3, 4), mean))
@@ -444,9 +459,9 @@ sienaGOF <- function(
 			redundant <- rep(FALSE, length(doTests))
 			mmThetaDelta <- as.numeric(ScoreTest(length(doTests), D,
 							sigma, fra, doTests, redundant,
-							maxlike=sienaFitObject$maxlike)$oneStep )
+							maxlike=object$maxlike)$oneStep )
 
-      # \mu'_\theta(X)	  
+      # \mu'_\theta(X)
 			JacobianExpStat_old <- lapply(period, function (i) {
 				t(SF[1:iterations,i,]) %*% simStatsByPeriod[[i]]/ iterations	 })
 			JacobianExpStat <- lapply(period, function (i) {
@@ -696,7 +711,7 @@ plot.sienaGOF <- function (x, center=FALSE, scale=FALSE, violin=TRUE,
 						(sum(is.nan(rbind(sims,obs)[,i])) == 0) }) &
 				(diag(var(rbind(sims,obs)))!=0)
 		if (any((diag(var(rbind(sims,obs)))==0)))
-		{	
+		{
 			cat("Note: some statistics are not plotted because their variance is 0.\n")
 			cat("This holds for the statistic")
 			if (sum(diag(var(rbind(sims,obs)))==0) > 1){cat("s")}
@@ -900,9 +915,13 @@ plot.sienaGOF <- function (x, center=FALSE, scale=FALSE, violin=TRUE,
 			main=main)
 }
 
+
+
+descriptives <- function(x, ...) UseMethod("descriptives", x)
+
 ##@descriptives.sienaGOF siena07 Gives numerical values in the plot.
 descriptives.sienaGOF <- function (x, center=FALSE, scale=FALSE,
-			perc=.05, key=NULL, period=1, showAll=FALSE)
+			perc=.05, key=NULL, period=1, showAll=FALSE, ...)
 {
 # adapted excerpt from plot.sienaGOF
 	if (attr(x,"joined"))
@@ -1572,8 +1591,8 @@ dyadicCov <-  function (i, obsData, sims, period, groupName, varName, dc){
 	ttmdyv
 }
 
-egoAlterCombi <- function (i, obsData, sims, period, groupName, varName, 
-     trafo=NULL) 
+egoAlterCombi <- function (i, obsData, sims, period, groupName, varName,
+     trafo=NULL)
 {
 # An auxiliary function calculating the number of ties
 # for each ego-alter combination of values of the dependent variable;
@@ -1586,25 +1605,29 @@ egoAlterCombi <- function (i, obsData, sims, period, groupName, varName,
 	}
 	varName1 <- varName[1]
 	varName2 <- varName[2]
-	m <- sparseMatrixExtraction(i, obsData, sims, period, groupName, 
+	m <- sparseMatrixExtraction(i, obsData, sims, period, groupName,
 		varName1)
-	x <- behaviorExtraction(i, obsData, sims, period, groupName, 
+	x <- behaviorExtraction(i, obsData, sims, period, groupName,
 		varName2)
 	m <- m[!is.na(x), !is.na(x)]
 	x <- x[!is.na(x)]
-	brange <- attr(obsData[[groupName]]$depvars[[varName2]], 
-			"behRange")[1]:attr(obsData[[groupName]]$depvars[[varName2]], 
+	brange <- attr(obsData[[groupName]]$depvars[[varName2]],
+			"behRange")[1]:attr(obsData[[groupName]]$depvars[[varName2]],
 			"behRange")[2]
-	combi.egoalter <- outer(10*trafo(x), trafo(x) ,'+')		
-	possible.pairs <- 
+	combi.egoalter <- outer(10*trafo(x), trafo(x) ,'+')
+	possible.pairs <-
 		sort(unique(as.vector(outer(10*trafo(brange), trafo(brange), '+'))))
+	if ((length(possible.pairs) >= 100) && is.null(i))
+	{
+	warning("The transformation used for egoAlterCombi has too many values.")
+	}
 	tmeax <- table((m * combi.egoalter)@x, useNA = "no")
-	ppnames <- as.character(possible.pairs)	
+	ppnames <- as.character(possible.pairs)
 	teax <- setNames(0*possible.pairs, ppnames)
 	teax[dimnames(tmeax)[[1]]] <- tmeax
 	# pad names with leading 0s, if necessary:
 	pp.names <- ifelse(nchar(ppnames)==1, paste("0",ppnames,sep=""),ppnames)
-	names(teax) <- pp.names	
+	names(teax) <- pp.names
 	teax
 }
 

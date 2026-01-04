@@ -4,10 +4,17 @@
 \alias{sienaFit}
 \alias{xtable.sienaFit}
 \alias{print.xtable.sienaFit}
-\alias{siena.table}
+\alias{siena_table}
 \alias{print.sienaFit}
 \alias{summary.sienaFit}
-\title{Methods for processing sienaFit objects, produced by \code{\link{siena07}}.
+\alias{write_result.sienaFit}
+\alias{write_result}
+\alias{coef}
+\alias{coef.sienaFit}
+\alias{vcov}
+\alias{vcov.sienaFit}
+\title{Methods for processing sienaFit objects,
+         produced by \code{\link{siena}}
 }
 \usage{
 \method{print}{sienaFit}(x, tstat=TRUE, ...)
@@ -16,19 +23,32 @@
 
 \method{print}{summary.sienaFit}(x, matrices=TRUE, ...)
 
-\method{xtable}{sienaFit}(x, caption = NULL, label = NULL, align = NULL,
-                digits = NULL, display = NULL, ...)
+\method{coef}{sienaFit}(object, dropRates=TRUE, shortenNames=TRUE, ...)
 
-siena.table(x, type="tex", file=paste(deparse(substitute(x)), ".", type,sep=""),
-            vertLine=TRUE, tstatPrint=FALSE, sig=FALSE, d=3, nfirst=NULL)
+\method{vcov}{sienaFit}(object, dropRates=TRUE, shortenNames=TRUE, ...)
+
+\method{write_result}{sienaFit}(x, type="tex",
+    fileName=paste(deparse(substitute(x)),".",type,sep=""),
+    vertLine=TRUE, tstatPrint=FALSE, sig=FALSE, d=3, ...)
+
+\method{xtable}{sienaFit}(x, caption = NULL, label = NULL, align = NULL,
+    digits = NULL, display = NULL, ...)
+
+siena_table(x, type="tex",
+    fileName=paste(deparse(substitute(x)), ".", type,sep=""),
+    vertLine=TRUE, tstatPrint=FALSE, sig=FALSE, d=3, nfirst=NULL)
 }
 \arguments{
-  \item{object}{An object of class \code{\link{sienaFit}}, produced by
-    \code{\link{siena07}}. For \code{siena.table}, objects of class
-    \code{sienaBayes} are also permitted.}
   \item{x}{An object of class \code{sienaFit}, or
-    \code{summary.sienaFit} as appropriate. For \code{siena.table},
+    \code{summary.sienaFit} as appropriate. For \code{siena_table},
     objects of class \code{sienaBayes} are also permitted.}
+  \item{object}{An object of class \code{\link{sienaFit}}, produced by
+    \code{\link{siena}}. For \code{siena_table}, objects of class
+    \code{sienaBayes} are also permitted.}
+  \item{dropRates}{Logical. Should the results for the basic rate parameters
+    also be given?}
+  \item{shortenNames}{Logical. Should the effect names
+    be shortened?}
   \item{matrices}{Boolean: whether also to print in the summary the
    covariance matrix of the estimates, the derivative matrix of expected
    statistics X by parameters, and the covariance matrix of the statistics.}
@@ -36,15 +56,15 @@ siena.table(x, type="tex", file=paste(deparse(substitute(x)), ".", type,sep=""),
      will not be added to the report.}
   \item{type}{Type of output to produce; must be either \code{"tex"} or
     \code{"html"}.}
-  \item{file}{Name of the file; defaults to the name of the \code{sienaFit}
+  \item{fileName}{Name of the file; defaults to the name of the \code{sienaFit}
     object. "" indicates output to the console.}
   \item{vertLine}{Boolean: add vertical lines separating the columns in
-    \code{siena.table}.}
+    \code{siena_table}.}
   \item{tstatPrint}{Boolean: add a column of significance t values (parameter
-    estimate/standard error estimate) to \code{siena.table}.}
+    estimate/standard error estimate) to \code{siena_table}.}
   \item{sig}{Boolean: adds symbols (daggers and asterisks) indicating
-    significance levels for the parameter estimates to \code{siena.table}.}
-  \item{d}{The number of decimals places used in \code{siena.table}.}
+    significance levels for the parameter estimates to \code{siena_table}.}
+  \item{d}{The number of decimals places used in \code{siena_table}.}
   \item{caption}{
     See documentation for \code{\link[xtable]{xtable}}.}
   \item{label}{
@@ -66,6 +86,9 @@ siena.table(x, type="tex", file=paste(deparse(substitute(x)), ".", type,sep=""),
   \code{sienaFit} objects.
 }
 \value{
+  Function \code{coef.sienaFit} gives the estimated parameters,
+  and \code{vcov.sienaFit} their estimated variance-covariance matrix.
+
   The function \code{print.sienaFit} prints a table containing estimated
   parameter values, standard errors and (optionally)
   t-statistics for convergence.
@@ -80,7 +103,7 @@ siena.table(x, type="tex", file=paste(deparse(substitute(x)), ".", type,sep=""),
   \code{xtable.sienaFit} which inherits from class \code{xtable} and
   passes an extra arguments to the \code{print.xtable}.
 
-  The function \code{siena.table} outputs a latex or html table of
+  The function \code{siena_table} outputs a latex or html table of
   the estimates and standards errors of a \code{\link{sienaFit}} object.
   The table will be written to a file in the current directory and
   has a footnote reporting the maximum of the convergence t-ratios.
@@ -93,19 +116,24 @@ siena.table(x, type="tex", file=paste(deparse(substitute(x)), ".", type,sep=""),
 }
 \author{Ruth Ripley, Charlotte Greenan, Tom Snijders}
 
-\seealso{\code{\link[xtable]{xtable}}, \code{\link[xtable]{print.xtable}},
-  \code{\link{siena07}}}
+\seealso{\code{\link[xtable]{xtable}},
+ \code{\link[xtable]{print.xtable}}, \code{\link{siena}}}
 \examples{
-myalgorithm <- sienaAlgorithmCreate(nsub=2, n3=100, projname=NULL)
-mynet1 <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
-mydata <- sienaDataCreate(mynet1)
-myeff <- getEffects(mydata)
-ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE)
+myalgorithm <- set_algorithm_saom(nsub=2, n3=100)
+mynet <-  as_dependent_rsiena(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
+mydata <- make_data_rsiena(mynet)
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, outAct)
+ans <- siena(mydata, effects=myeff,
+                     control_algo=myalgorithm, batch=TRUE)
 ans
+coef(ans)
+round(vcov(ans), 4)
+round(sqrt(diag(vcov(ans))), 4)
 summary(ans)
 \dontrun{
 xtable(ans, type="html", file="ans.html")
-siena.table(ans, type="html", tstat=TRUE, d=2)
+write_result(ans, type="html", tstat=TRUE, d=2)
 }
 }
 \keyword{methods}

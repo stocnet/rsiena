@@ -28,8 +28,9 @@ print01Report(data, modelname = "Siena", getDocumentation=FALSE)
 \author{Ruth Ripley }
 
 \examples{
-mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
-mydata <- sienaDataCreate(mynet1)
+mynet1 <- as_dependent_rsiena(
+             array(c(s501, s502, s503), dim=c(50, 50, 3)))
+mydata <- make_data_rsiena(mynet1)
 \dontrun{
 print01Report(mydata, modelname="mydescription")
 }

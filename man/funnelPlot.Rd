@@ -43,26 +43,28 @@ funnelPlot(anslist, k, threshold=NULL, origin=TRUE,
 }
 \author{Tom Snijders
 }
-\seealso{\code{\link{siena08}}, \code{\link{print.sienaMeta}}}
+\seealso{\code{\link{meta_siena}}, \code{\link{print.sienaMeta}}}
 
 \examples{
 # A meta-analysis for three groups does not make much sense.
 # But using three groups shows the idea.
-
-Group1 <- sienaDependent(array(c(N3401, HN3401), dim=c(45, 45, 2)))
-Group3 <- sienaDependent(array(c(N3403, HN3403), dim=c(37, 37, 2)))
-Group4 <- sienaDependent(array(c(N3404, HN3404), dim=c(33, 33, 2)))
-dataset.1 <- sienaDataCreate(Friends = Group1)
-dataset.3 <- sienaDataCreate(Friends = Group3)
-dataset.4 <- sienaDataCreate(Friends = Group4)
-OneAlgorithm <- sienaAlgorithmCreate(projname = NULL, nsub=1, n3=50, seed=123)
-effects.1 <- getEffects(dataset.1)
-effects.3 <- getEffects(dataset.3)
-effects.4 <- getEffects(dataset.4)
-ans.1 <- siena07(OneAlgorithm, data=dataset.1, effects=effects.1, batch=TRUE)
-ans.3 <- siena07(OneAlgorithm, data=dataset.3, effects=effects.3, batch=TRUE)
-ans.4 <- siena07(OneAlgorithm, data=dataset.4, effects=effects.4, batch=TRUE)
+Group1 <- as_dependent_rsiena(array(c(N3401, HN3401), dim=c(45, 45, 2)))
+Group3 <- as_dependent_rsiena(array(c(N3403, HN3403), dim=c(37, 37, 2)))
+Group4 <- as_dependent_rsiena(array(c(N3404, HN3404), dim=c(33, 33, 2)))
+dataset.1 <- make_data_rsiena(Friends = Group1)
+dataset.3 <- make_data_rsiena(Friends = Group3)
+dataset.4 <- make_data_rsiena(Friends = Group4)
+OneAlgorithm <- set_algorithm_saom(nsub=1, n3=50, seed=123)
+effects.1 <- make_specification(dataset.1)
+effects.3 <- make_specification(dataset.3)
+effects.4 <- make_specification(dataset.4)
+ans.1 <- siena(dataset.1, effects=effects.1, 
+							control_algo=OneAlgorithm, batch=TRUE)
+ans.3 <- siena(dataset.3, effects=effects.3, 
+							control_algo=OneAlgorithm, batch=TRUE)
+ans.4 <- siena(dataset.4, effects=effects.4, 
+							control_algo=OneAlgorithm, batch=TRUE)
 funnelPlot(list(ans.1, ans.3, ans.4), k=2)
 funnelPlot(list(ans.1, ans.3, ans.4), k=2, origin=FALSE)
 }
-\keyword{ plot }
+\keyword{plot}

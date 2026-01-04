@@ -47,8 +47,8 @@ meta.table(x, d=3, option=2,
 }
 \value{
  The function \code{print.sienaMeta} prints details of the merged
- estimates of the meta-analysis carried out by \code{\link{siena08}},
- with test statistics. See the help page for \code{\link{siena08}}
+ estimates of the meta-analysis carried out by \code{\link{meta_siena}},
+ with test statistics. See the help page for \code{\link{meta_siena}}
  for what is produced by this function.
 
  The function \code{summary.sienaMeta} prints details as for the
@@ -57,8 +57,8 @@ meta.table(x, d=3, option=2,
 
  Output from either can be directed to a file by using the argument
  \code{file}. It will be appended to any existing file of the same
- name: \code{projname.txt}  where \code{projname} is the value of the
- argument to \code{siena08}.
+ name: \code{outputName.txt}  where \code{outputName} is the value of the
+ argument to \code{meta_siena}.
 
  The function \code{meta.table} writes a combined table of results
  for all parameters to a LaTeX file in (as default) the current working
@@ -70,7 +70,7 @@ meta.table(x, d=3, option=2,
  significance threshold 0.05. It returns an object of class \code{trellis},
  of the \pkg{lattice} package. Effects for which a score test
  was requested are not plotted.\cr
- Another funnel plot, not using \code{\link{siena08}},
+ Another funnel plot, not using \code{\link{meta_siena}},
  is available as \code{\link{funnelPlot}}.
 }
 \references{ 
@@ -84,7 +84,7 @@ on Friendship Evolution.
 }
 \author{Ruth Ripley, Tom Snijders
 }
-\seealso{\code{\link{siena08}}}
+\seealso{\code{\link{meta_siena}}}
 
 \examples{
 \dontrun{
@@ -92,30 +92,28 @@ on Friendship Evolution.
 # for generalizing to a population of networks,
 # but it the Fisher combinations of p-values are meaningful.
 # But using three groups shows the idea.
-
-Group1 <- sienaDependent(array(c(N3401, HN3401), dim=c(45, 45, 2)))
-Group3 <- sienaDependent(array(c(N3403, HN3403), dim=c(37, 37, 2)))
-Group4 <- sienaDependent(array(c(N3404, HN3404), dim=c(33, 33, 2)))
-dataset.1 <- sienaDataCreate(Friends = Group1)
-dataset.3 <- sienaDataCreate(Friends = Group3)
-dataset.4 <- sienaDataCreate(Friends = Group4)
-OneAlgorithm <- sienaAlgorithmCreate(projname = "SingleGroups")
-effects.1 <- getEffects(dataset.1)
-effects.3 <- getEffects(dataset.3)
-effects.4 <- getEffects(dataset.4)
-effects.1 <- includeEffects(effects.1, transTrip)
-effects.1 <- setEffect(effects.1, transRecTrip, fix=TRUE, test=TRUE)
-effects.3 <- includeEffects(effects.3, transTrip)
-effects.3 <- setEffect(effects.3, transRecTrip, fix=TRUE, test=TRUE)
-effects.4 <- includeEffects(effects.4, transTrip)
-effects.4 <- setEffect(effects.4, transRecTrip, fix=TRUE, test=TRUE)
-ans.1 <- siena07(OneAlgorithm, data=dataset.1, effects=effects.1, batch=TRUE)
-ans.3 <- siena07(OneAlgorithm, data=dataset.3, effects=effects.3, batch=TRUE)
-ans.4 <- siena07(OneAlgorithm, data=dataset.4, effects=effects.4, batch=TRUE)
+Group1 <- as_dependent_rsiena(array(c(N3401, HN3401), dim=c(45, 45, 2)))
+Group3 <- as_dependent_rsiena(array(c(N3403, HN3403), dim=c(37, 37, 2)))
+Group4 <- as_dependent_rsiena(array(c(N3404, HN3404), dim=c(33, 33, 2)))
+dataset.1 <- make_data_rsiena(Friends = Group1)
+dataset.3 <- make_data_rsiena(Friends = Group3)
+dataset.4 <- make_data_rsiena(Friends = Group4)
+effects.1 <- make_specification(dataset.1)
+effects.3 <- make_specification(dataset.3)
+effects.4 <- make_specification(dataset.4)
+effects.1 <- set_effect(effects.1, transTrip)
+effects.1 <- set_effect(effects.1, transRecTrip, fix=TRUE, test=TRUE)
+effects.3 <- set_effect(effects.3, transTrip)
+effects.3 <- set_effect(effects.3, transRecTrip, fix=TRUE, test=TRUE)
+effects.4 <- set_effect(effects.4, transTrip)
+effects.4 <- set_effect(effects.4, transRecTrip, fix=TRUE, test=TRUE)
+ans.1 <- siena(dataset.1, effects=effects.1, batch=TRUE)
+ans.3 <- siena(dataset.3, effects=effects.3, batch=TRUE)
+ans.4 <- siena(dataset.4, effects=effects.4, batch=TRUE)
 ans.1
 ans.3
 ans.4
-meta <- siena08(ans.1, ans.3, ans.4)
+meta <- meta_siena(ans.1, ans.3, ans.4)
 print(meta, reportEstimates=FALSE)
 print(meta)
 summary(meta)
@@ -124,17 +122,18 @@ summary(meta)
 (neff <- sum(sapply(meta, function(x){ifelse(is.list(x),
         !is.null(x$cjplus),FALSE)})))
 Fishers <- t(sapply(1:neff,
-        function(i){c(meta[[i]]$cjplus, meta[[i]]$cjminus,
-                        meta[[i]]$cjplusp, meta[[i]]$cjminusp, 2*meta[[i]]$n1 )}))
+     function(i){c(meta[[i]]$cjplus, meta[[i]]$cjminus,
+                   meta[[i]]$cjplusp, meta[[i]]$cjminusp, 2*meta[[i]]$n1 )}))
 Fishers <- as.data.frame(Fishers, row.names=names(meta)[1:neff])
 names(Fishers) <- c('Fplus', 'Fminus', 'pplus', 'pminus', 'df')
 Fishers
+round(Fishers, 4)
 # For plotting:
 plo <- plot(meta, layout = c(3,1))
 plo
 plo[3]
 # Show effects of bound (bounding at 0.4 is not reasonable, just for example)
-meta <- siena08(ans.1, ans.3, ans.4, bound=0.4)
+meta <- meta_siena(ans.1, ans.3, ans.4, bound=0.4)
 plot(meta, which=c(2,3), layout=c(2,1))
 plot(meta, which=c(2,3), layout=c(2,1), useBound=FALSE)
 meta.table(meta, option=3, file='')

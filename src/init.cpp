@@ -33,7 +33,7 @@ static const R_CallMethodDef CallEntries[] = {
    CALLDEF(DyadicCovariates, 2),
    CALLDEF(effects, 2),
    CALLDEF(ExogEvent, 2),
-   CALLDEF(forwardModel, 16),
+   CALLDEF(forwardModel, 17),
    CALLDEF(getChainProbabilities, 8),
    CALLDEF(getTargets, 6),
    CALLDEF(interactionEffects, 2),
