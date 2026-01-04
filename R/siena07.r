@@ -44,6 +44,13 @@ siena <- function(data = NULL, effects = NULL,
 	{
 		stop("effects should be an RSiena effects object")
 	}
+	if (!inherits(data, "sienadata") && !inherits(data, "siena"))
+	{
+		stop("data should be a siena data structure")
+	}
+# "siena" is added here, because in pre-1.6.0 versions
+# this was the class name that now is defined as "sienadata".
+
 
 	if (is.null(control_model))
 	{

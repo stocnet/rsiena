@@ -58,8 +58,12 @@ sienaRI <- function(data, ans=NULL, theta=NULL, effects=NULL,
 		if(sum(effects$include==TRUE &
 				(effects$type =="endow"|effects$type =="creation")) > 0)
 		{
-			stop("interpret_size does not yet work for models containing endowment or
-				creation effects")
+stop("interpret_size does not yet work for models containing endowment or creation effects")
+		}
+		if (any(effects$include==TRUE &
+				(effects$shortName %in% c("unspInt", "behUnspInt", "contUnspInt"))))
+		{
+			stop("interpret_size does not work for models containing interaction effects")
 		}
 		effs <- effects
 		if (!is.numeric(theta))

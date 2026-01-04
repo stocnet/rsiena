@@ -37,8 +37,7 @@
 }
 \usage{
 \method{interpret_size}{sienaFit}(x, data, getChangeStats=FALSE, ...)
-\method{interpret_size}{sienaEffects}(x, data, theta,
-              getChangeStats=FALSE, ...)
+\method{interpret_size}{sienaEffects}(x, data, theta, getChangeStats=FALSE, ...)
 \method{print}{sienaRI}(x, printSigma=FALSE,\dots)
 \method{plot}{sienaRI}(x, actors = NULL, col = NULL, addPieChart = FALSE,
               radius = 1, width = NULL, height = NULL, legend = TRUE,
@@ -55,7 +54,7 @@
            from a call to \code{interpret_size}.}
   \item{data}{\code{siena} data object representing the analyzed data and
               resulting from a call to \code{\link{make_data_rsiena}}.}
-  \item{theta}{Vector of parameter values of evaluation effects 
+  \item{theta}{Vector of parameter values of evaluation effects
                included in the model.
                Length of \code{theta} has to be equal to the number of
                included evaluation effects in the effects object \code{x}.}

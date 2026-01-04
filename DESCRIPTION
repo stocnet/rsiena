@@ -3,7 +3,7 @@ Package: RSiena
 Type: Package
 Title: Siena - Simulation Investigation for Empirical Network Analysis
 Version: 1.6.0
-Date: 2026-01-02
+Date: 2026-01-04
 Authors@R: c(person("Tom A.B.", "Snijders", role = c("aut", "ctb"), comment = c(ORCID = "0000-0003-3157-4157")),
               person("Ruth M.", "Ripley", role = "aut"),
               person("Krists", "Boitmanis", role = c( "aut","ctb")),
