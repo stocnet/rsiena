@@ -413,13 +413,16 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 			}
 			if (returnChains)
 			{
-
-				SEXP thisChain =
-					getChainList(*(pEpochSimulation->pChain()));
-
-				SET_VECTOR_ELT(VECTOR_ELT(chains, group), period,
-					thisChain);
-
+				SEXP thisChain;
+				if (returnDataFrame)
+				{
+					thisChain = getChainDFPlus(*(pEpochSimulation->pChain()), true);
+				}
+				else
+				{
+					thisChain = getChainList(*(pEpochSimulation->pChain()));
+				}
+				SET_VECTOR_ELT(VECTOR_ELT(chains, group), period, thisChain);
 			}
 			if(returnChangeContributions)
 			{

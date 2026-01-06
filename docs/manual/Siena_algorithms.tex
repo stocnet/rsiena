@@ -1574,6 +1574,24 @@ A dyadic or ego effect should be defined with a \nnm{tieStatistic()}
 rather than an \nnm{egoStatistic()}.
 
 
+\subsection{Endowment and creation effects for behavior}
+
+Function \nnm{StatisticCalculator::calculateBehaviorStatistics} contains the line
+\begin{verbatim}
+ difference[i] =
+	pBehaviorData->value(this->lperiod, i) - currentState[i];
+\end{verbatim}
+This means that \texttt{difference[i]} is +1 if the simulated value is lower,
+and --1 if the simulated value is higher than the observed value at the
+start of the period.
+
+Therefore, in all functions \texttt{egoEndowmentStatistic},\\
+the condition \texttt{ (difference[ego] > 0)} is required.  
+
+In function \nnm{BehaviorEffect::creationStatistic}, \\
+the negative value
+of \texttt{egoEndowmentStatistic} is returned.
+
 
 \subsection{Interaction effects for behavior}
 
@@ -6366,7 +6384,7 @@ if ef3 is defined then it is a three-effect interaction.
 The values ef1, ef2, ef3 refer to the index number
 of the effects (or whatever identified is convenient;
 I suppose the index number is a good way of referring to it).
-\item  Csiena: Effects must have a tag �kind� with values
+\item  Csiena: Effects must have a tag “kind” with values
 {ego, dyadic, interaction, other}.
 Ego effects are those depending only on the value of ego
 on an actor variable (actor covariate or dependent behavior variable).

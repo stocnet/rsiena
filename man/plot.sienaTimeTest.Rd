@@ -10,7 +10,7 @@
      scale=.2, plevels=c(.1, .05, .025), ...)
 }
 \arguments{
-  \item{x}{ A sienaTimeTest object returned by \code{sienaTimeTest}. }
+  \item{x}{ A sienaTimeTest object returned by \code{\link{test_time}}. }
   \item{pairwise}{ A Boolean value corresponding to whether the user
   would like a pairwise plot of the simulated statistics to assess
   correlation among the effects (\code{pairwise=TRUE}), or a plot of the
@@ -62,22 +62,24 @@
 
 }
 \author{Josh Lospinoso}
-\seealso{\code{\link{siena07}}, \code{\link{sienaTimeTest}},
+\seealso{\code{\link{siena}}, \code{\link{test_time}},
   \code{\link[lattice]{xyplot}}}
 \examples{
 \dontrun{
-myalgorithm <- sienaAlgorithmCreate(nsub=2, n3=500)
+## Estimate a restricted model
+myalgo <- set_algorithm_saom(nsub=2, n3=200)
 # It makes no sense to put together the following data set,
 # but just for demonstration:
-mynet1 <- sienaDependent(array(c(s501, s502, s503, s501, s503, s502), dim=c(50, 50, 6)))
-mydata <- sienaDataCreate(mynet1)
-myeff <- getEffects(mydata)
-myeff <- includeEffects(myeff, transTrip)
+mynet1 <- as_dependent_rsiena(
+          array(c(s501, s502, s503, s501, s503, s502), dim=c(50, 50, 6)))
+mydata <- make_data_rsiena(mynet1)
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, transTrip)
 myeff <- includeTimeDummy(myeff, density, timeDummy="all")
 myeff <- includeTimeDummy(myeff, recip, timeDummy="2,3,5")
 myeff <- includeTimeDummy(myeff, transTrip, timeDummy="2,3")
-(ansp <- siena07(myalgorithm, data=mydata, effects=myeff))
-ttp <- sienaTimeTest(ansp)
+(ansp <- siena(mydata, effects=myeff, batch=TRUE, control_algo=myalgo))
+ttp <- test_time(ansp)
 summary(ttp)
 
 ## Pairwise plots show

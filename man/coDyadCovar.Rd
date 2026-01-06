@@ -1,12 +1,14 @@
 \name{coDyadCovar}
 \alias{coDyadCovar}
-\title{Function to create a constant dyadic covariate object.}
+\title{Function to create a constant dyadic covariate object}
 \description{
-  This function creates a constant dyadic covariate object from a matrix.
+  This function creates a constant dyadic covariate object from a matrix.\cr
+   This function now is superseded by function \code{\link{as_covariate_rsiena}}.
 }
 \usage{
 coDyadCovar(val, centered=TRUE, nodeSets=c("Actors", "Actors"),
-     warn=TRUE, sparse=inherits(val,"TsparseMatrix"), type=c("oneMode", "bipartite"))
+     warn=TRUE, sparse=inherits(val,"TsparseMatrix"), 
+     type=c("oneMode", "bipartite"))
 }
 \arguments{
   \item{val}{Matrix of covariate values. May be sparse, of type
@@ -29,13 +31,14 @@ coDyadCovar(val, centered=TRUE, nodeSets=c("Actors", "Actors"),
 }
 \value{
    Returns the covariate as an object of class "coDyadCovar", in which
-  form it can be used as an argument to \code{\link{sienaDataCreate}}.
+  form it can be used as an argument to \code{\link{make_data_rsiena}}.
 }
 \references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley}
-\seealso{\code{\link{sienaDataCreate}}, \code{\link{varDyadCovar}},
- \code{\link{coCovar}}, \code{\link{varCovar}}}
+\seealso{\code{\link{as_covariate_rsiena}},
+                    \code{\link{as_nodeset_rsiena}}}
 \examples{
-mydyadvar <- coDyadCovar(s503)
+mydyadvar <- as_covariate_rsiena(s503, type="oneMode")
+class(mydyadvar)
 }
 \keyword{classes}

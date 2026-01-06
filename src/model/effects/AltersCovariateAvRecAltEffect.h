@@ -3,14 +3,15 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: AltersCovariateAvAltEffect.h
+ * File: alterscovariateavrecalteffect.h
  *
  * Description: This file contains the definition of the
- * AltersCovariateAvAltEffect class.
+ * AltersCovariateAvRecAltEffect class.
+ * Made on the basis of AltersCovariateAvAltEffect.
  *****************************************************************************/
 
-#ifndef ALTERSCOVARIATEAVALTEFFECT_H_
-#define ALTERSCOVARIATEAVALTEFFECT_H_
+#ifndef ALTERSCOVARIATEAVRECALTEFFECT_H_
+#define ALTERSCOVARIATEAVRECALTEFFECT_H_
 
 #include "CovariateAndNetworkBehaviorEffect.h"
 
@@ -23,14 +24,14 @@ namespace siena
 // ----------------------------------------------------------------------------
 
 /**
- * Alters covariate average similarity effect (not in manual)
+ * Alters covariate average alter effect 
  */
-class AltersCovariateAvAltEffect :
+class AltersCovariateAvRecAltEffect :
 public CovariateAndNetworkBehaviorEffect
 {
 public:
-	AltersCovariateAvAltEffect(const EffectInfo * pEffectInfo, 
-						bool divide, bool same);
+	AltersCovariateAvRecAltEffect(const EffectInfo * pEffectInfo, 
+			bool divide, bool same);
 	virtual void preprocessEgo(int ego);
 
 	virtual double calculateChangeContribution(int actor,
@@ -44,11 +45,11 @@ protected:
 private:
 	// divide indicates whether there will be division by the outdegree
 	bool ldivide{};
-	// same indicates whether there will be restriction to same covariate
+	// same indicates whether the influence will be from same-X alters
 	bool lsame{};
 	double lTotalAlterValue{};
 };
 
 }
 
-#endif /*ALTERSCOVARIATEAVALTEFFECT_H_*/
+#endif /*ALTERSCOVARIATEAVRECALTEFFECT_H_*/

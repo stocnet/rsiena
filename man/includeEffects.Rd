@@ -5,15 +5,16 @@
 }
 \description{
   This function can be used for model specification  
-  by modifying a Siena effects object.
+  by modifying a Siena effects object.\cr
+  This function now is superseded by \code{\link{set_effect}}.
 }
 \usage{
-includeEffects(myeff, ..., include = TRUE, name = myeff$name[1], type = "eval",
- interaction1 = "", interaction2 = "", fix=FALSE, test=FALSE, character=FALSE,
- verbose = TRUE)
+includeEffects(myeff, ..., include = TRUE, name = myeff$name[1], 
+ type = "eval", interaction1 = "", interaction2 = "", 
+ fix=FALSE, test=FALSE, character=FALSE, verbose = TRUE)
 }
 \arguments{
-  \item{myeff}{a Siena effects object as created by \code{\link{getEffects}}
+  \item{myeff}{a Siena effects object as created by \code{\link{make_specification}}
 }
   \item{\dots}{
 short names to identify the effects which should be included or excluded.}
@@ -38,7 +39,7 @@ short names to identify the effects which should be included or excluded.}
 \item{character}{Boolean: are the effect names character strings or not.}
   \item{verbose}{Boolean: should the print of altered effects be produced.}
 }
-\details{Recall from the help page for \code{\link{getEffects}}
+\details{Recall from the help page for \code{\link{make_specification}}
    that a Siena effects object (class \code{sienaEffects} or
    \code{sienaGroupEffects}) is a \code{\link{data.frame}};
    the rows in the data frame are the effects for this data set;
@@ -65,7 +66,7 @@ short names to identify the effects which should be included or excluded.}
   in a more detailed way, but applies to one effect at the time.
 
   Further information about Siena effects objects is given
-  in the help page for \code{\link{getEffects}}.
+  in the help page for \code{\link{make_specification}}.
 
   A list of all effects available in a given effects object (e.g.,
   \code{myeff}), including their names of dependent variables,
@@ -86,21 +87,22 @@ short names to identify the effects which should be included or excluded.}
 }
 \references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley }
-\seealso{
-  \code{\link{getEffects}}, \code{\link{setEffect}},
-  \code{\link{includeInteraction}},
+\seealso{\code{\link{set_effect}},
+  \code{\link{make_specification}}, 
+  \code{\link{set_interaction}},
   \code{\link{includeGMoMStatistics}},
-  \code{\link{updateSpecification}},
+  \code{\link{update_specification}},
   \code{\link{print.sienaEffects}}, \code{\link{effectsDocumentation}}
 }
 
 \examples{
-mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
-mybeh  <- sienaDependent(s50a, type="behavior")
-mydata <- sienaDataCreate(mynet1, mybeh)
-myeff <- getEffects(mydata)
-myeff <- includeEffects(myeff, transTrip, balance)
-myeff <- includeEffects(myeff, avAlt, name="mybeh", interaction1="mynet1")
+   
+mynet <- as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+mybeh  <- as_dependent_rsiena(s50a, type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, avAlt, depvar="mybeh", covar1="mynet")
+myeff <- set_effect(myeff, list(transTrip, outAct))
 myeff
 }
-\keyword{ classes }
+\keyword{classes}

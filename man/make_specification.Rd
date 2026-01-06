@@ -1,28 +1,41 @@
-\name{getEffects}
+\name{make_specification}
 \alias{getEffects}
 \alias{sienaEffects}
 \alias{sienaGroupEffects}
+\alias{make_specification}
+\alias{make_specification.sienadata}
+\alias{make_specification.sienaGroup}
 \title{Function to create a Siena effects object}
 \description{
   Creates a basic list of effects for all dependent
-  variables in the input siena object.
+  variables in the input siena object.\cr
+  The functions \code{make_specification} and \code{getEffects}
+  are identical. \cr
+  The first name is preferred, 
+  the other is kept for backward compatibility.
 }
 \usage{
-getEffects(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePeriodSde=FALSE)
+\method{make_specification}{sienadata}(x, nintn = 10, behNintn=4, onePeriodSde=FALSE, ...)
+
+\method{make_specification}{sienaGroup}(x, nintn = 10, behNintn=4, onePeriodSde=FALSE, ...)
+
+getEffects(x, nintn = 10, behNintn=4, getDocumentation=FALSE, 
+           onePeriodSde=FALSE)
 }
 \arguments{
-  \item{x}{an object of class `siena" or `sienaGroup"}
+  \item{x}{an object of class "sienadata" or "sienaGroup"}
   \item{nintn}{Number of user-defined network interactions
        that can later be created.}
   \item{behNintn}{Number of user-defined behavior interactions
        that can later be created.}
-  \item{getDocumentation}{Flag to allow documentation of internal
-  functions, not for use by users.}
   \item{onePeriodSde}{Flag to indicate that the stochastic
        differential equation (SDE) model dZ(t) = [aZ(t) + b] dt + g dW(t)
        should be used, instead of the regular SDE with a scale parameter.
        This is only relevant in case the model includes a continuous
        dependent variable and one period is studied.}
+  \item{getDocumentation}{Flag to allow documentation of internal
+       functions, not for use by users.}
+  \item{...}{Additional arguments, not used now.}
 }
 \details{
 Creates a data frame of effects for use in siena model estimation.
@@ -69,7 +82,7 @@ for data set \code{x}.\cr
   \item{interactionType}{Defines "dyadic" or "ego" or "OK" effects, used in
     \code{\link{includeInteraction}}}
   \item{local}{whether a local effect; used for the option \code{localML}
-    in \code{\link{sienaAlgorithmCreate}}}
+    in \code{\link{set_algorithm_saom}}}
   \item{effectFn}{here NULL, but could be replaced by a function later}
   \item{statisticFn}{here NULL, but could be replaced by a function
     later}
@@ -86,8 +99,8 @@ for data set \code{x}.\cr
   \code{shortName}, \code{period} and \code{group} uniquely identifies a
   basic rate effect.
 
-  The columns not used for identifying the effect define how the effect is used
-  for the estimation.
+  The columns not used for identifying the effect define 
+  how the effect is used for the estimation.
 
   The columns \code{initialValue} and \code{parm} should not be confused:
   \code{initialValue} gives the initial value for the parameter to be estimated,
@@ -106,32 +119,33 @@ for data set \code{x}.\cr
 
   As from version 1.3.24, effects object have a "version" attribute.
   Effects objects including interaction effects created by
-  \code{\link{includeInteraction}} are not necessarily compatible
+  \code{\link{set_interaction}} are not necessarily compatible
   between versions of \code{RSiena}. Therefore it is recommended,
   for effects objects including any interaction effects,
   to create them again when changing to a new version of \code{RSiena}.
   If an effects object including any interaction effects is used from an
   old version of \code{RSiena}, this will lead to a warning when running
-  \code{\link{siena07}}. \cr
+  \code{\link{siena}}. 
 }
 \references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley, Tom Snijders}
-\seealso{\code{\link{sienaDataCreate}}, \code{\link{sienaGroupCreate}},
-        \code{\link{includeEffects}}, \code{\link{setEffect}},
+\seealso{\code{\link{make_data_rsiena}}, \code{\link{make_group_rsiena}},
+        \code{\link{set_effect}}, \cr
         \code{\link{includeGMoMStatistics}},
         \code{\link{updateSpecification}},
-        \code{\link{print.sienaEffects}},
-		\code{\link{effectsDocumentation}}}
+        \code{\link{print.sienaEffects}}, \cr
+        \code{\link{effectsDocumentation}}}
 \examples{
-mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
-mybeh <- sienaDependent(s50a, type="behavior")
-mycovar <- coCovar(rnorm(50))
-mydyadcovar <- coDyadCovar(matrix(as.numeric(rnorm(2500) > 2), nrow=50))
-mydata <- sienaDataCreate(mynet1, mybeh, mycovar, mydyadcovar)
-myeff <- getEffects(mydata)
+mynet1 <- as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+mybeh <- as_dependent_rsiena(s50a, type="behavior")
+mycovar <- as_covariate_rsiena(rnorm(50))
+mydyadcovar <- as_covariate_rsiena(
+                        matrix(as.numeric(rnorm(2500) > 2), nrow=50))
+mydata <- make_data_rsiena(mynet1, mybeh, mycovar, mydyadcovar)
+myeff <- make_specification(mydata)
 myeff
 }
 
 % Add one or more standard keywords, see file "KEYWORDS" in the
 % R documentation directory.
-\keyword{classes}
+\keyword{classes,methods}

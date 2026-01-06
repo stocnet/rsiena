@@ -1,7 +1,6 @@
 ##@getActorStatistics. Use as RSiena:::getTheActorStatistics
 getTheActorStatistics <- function(algorithm, data, effects) {
-    pData <- sienaSetupDataForCpp(algorithm,
-                                    data,
+    pData <- sienaSetupDataForCpp(data,
                                     includeBehavior = TRUE,
                                     includeBipartite = FALSE)
     effects <- effects[effects$include, ]

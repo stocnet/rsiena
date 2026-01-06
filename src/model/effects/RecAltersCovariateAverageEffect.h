@@ -3,14 +3,15 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: InAltersCovariateAverageBehaviorEffect.h
+ * File: RecAltersCovariateAverageEffect.h
  *
  * Description: This file contains the definition of the
- * InAltersCovariateAverageEffect class.
+ * RecAltersCovariateAverageEffect class.
+ * Made on the basis of AltersCovariateAvAltEffect.
  *****************************************************************************/
 
-#ifndef INALTERSCOVARIATEAVERAGEEFFECT_H_
-#define INALTERSCOVARIATEAVERAGEEFFECT_H_
+#ifndef RECALTERSCOVARIATEAVERAGEEFFECT_H_
+#define RECALTERSCOVARIATEAVERAGEEFFECT_H_
 
 #include "CovariateAndNetworkBehaviorEffect.h"
 
@@ -23,14 +24,15 @@ namespace siena
 // ----------------------------------------------------------------------------
 
 /**
- * In-alters covariate average effect (see manual)
- *
+ * Alters covariate average alter effect 
  */
-class InAltersCovariateAverageEffect :
+class RecAltersCovariateAverageEffect :
 public CovariateAndNetworkBehaviorEffect
 {
 public:
-	InAltersCovariateAverageEffect(const EffectInfo * pEffectInfo, bool divide);
+	RecAltersCovariateAverageEffect(const EffectInfo * pEffectInfo, 
+			bool divide, bool same);
+	virtual void preprocessEgo(int ego);
 
 	virtual double calculateChangeContribution(int actor,
 		int difference);
@@ -42,9 +44,12 @@ protected:
 
 private:
 	// divide indicates whether there will be division by the outdegree
-	bool ldivide {};
+	bool ldivide{};
+	// same indicates whether the influence will be from same-X alters
+	bool lsame{};
+	double lTotalAlterValue{};
 };
 
 }
 
-#endif /*INALTERSCOVARIATEAVERAGEEFFECT_H_*/
+#endif /*RECALTERSCOVARIATEAVERAGEEFFECT_H_*/

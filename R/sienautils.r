@@ -99,8 +99,15 @@ sienaCompositionChangeFromFile <- function(filename, nodeSet="Actors",
     attr(out, "ccOption") <- option
     out
 }
-##@sienaNodeSet Create
-sienaNodeSet <- function(n, nodeSetName="Actors", names=NULL)
+
+##@as_composition_rsiena Create
+as_composition_rsiena <- sienaCompositionChange
+
+##@as_composition_rsiena Create
+as_composition_file_rsiena <- sienaCompositionChangeFromFile
+
+##@as_nodeset_rsiena Create
+as_nodeset_rsiena <- function(n, nodeSetName="Actors", names=NULL)
 {
     if (!is.numeric(n))
 	{
@@ -121,6 +128,93 @@ sienaNodeSet <- function(n, nodeSetName="Actors", names=NULL)
         names(out) <- names
 	}
     out
+}
+
+sienaNodeSet <- as_nodeset_rsiena
+
+
+##@as_covariate_rsiena create covariate
+as_covariate_rsiena <- function(val, type="monadic", centered=TRUE, 
+								nodeSet="Actors", warn=TRUE, 
+								imputationValues=NULL)
+# Defines val as a covariate.
+# It figures out whether it is a monadic or dyadic covariate,
+# and if dyadic, whether it is a list of sparse matrices.
+{
+	if ((is.null(dim(val)) | (length(dim(val))==1)) &  (type=="monadic")) # Then val should be a numeric vector
+	{
+		if (is.null(centered))
+		{
+			centered <- TRUE
+		}
+		return(coCovar(val, centered=centered, nodeSet=nodeSet, warn=warn, 
+								imputationValues=imputationValues))
+	}
+	else
+	{
+		if (length(dim(val))==2) # Then val should be a numeric matrix
+		{
+			if (is.null(centered))
+			{
+				centered <- TRUE
+			}
+			if (type=="monadic")
+			{
+				return(varCovar(val, centered=centered, nodeSet=nodeSet, 
+								warn=warn, imputationValues=imputationValues))
+			}
+			else if (type %in% c("oneMode", "bipartite")) 
+							# then it is a dyadic covariate
+			{
+				if (dim(val)[1] == dim(val)[2])
+				{
+					if (length(nodeSet)==1)
+					{
+						nodeSet <- c(nodeSet, nodeSet)
+					}
+					else if (type=="oneMode")
+					{
+	stop("The one-mode dyadic covariate should be represented by a square matrix")
+					}
+				}
+				return(coDyadCovar(val, centered=centered, nodeSets=nodeSet, 
+											warn=warn, type=type))
+# The check of sparse should follow from the default in coDyadCovar
+			}
+			else
+			{
+stop("For a matrix of values, a type (monadic, oneMode or bipartite) should be given")
+			}
+		}
+		else
+		{
+			if ((length(dim(val))==3) | is.list(val)) 
+			# Then val is a 3-dimensional array or list and the covariate should be dyadic
+			{
+				if (length(nodeSet)==1)
+				{
+					nodeSet <- c(nodeSet, nodeSet)
+				}
+				symmetric <- ifelse(is.list(val), (dim(val[[1]]) == dim(val[[2]])),
+												 (dim(val)[1] == dim(val)[2]))
+				if ((!symmetric) & (type=="oneMode"))
+				{
+		stop("The one-mode dyadic covariate should be represented by square matrices")
+				}
+				if (is.list(val) & is.null(centered))
+				{
+					centered <- FALSE
+				}
+				return(varDyadCovar(val, centered=centered, nodeSets=nodeSet, 
+															warn=warn, type=type))
+# The check of sparse should follow from the default in coDyadCovar
+			}
+			else
+			{
+				stop("For this value, impossible to choose between covariate types")
+			}		
+		}
+	}
 }
 
 ##@coCovar Create
@@ -410,6 +504,7 @@ varDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
     attr(out, "vardims") <- vardims
     out
 }
+
 ##@sienaDependent Create
 sienaDependent <- function(netarray, type=c("oneMode","bipartite","behavior",
 					"continuous"), nodeSet="Actors", sparse=is.list(netarray),
@@ -423,7 +518,7 @@ sienaDependent <- function(netarray, type=c("oneMode","bipartite","behavior",
     {
         if (!is.array(netarray))
 		{
-            stop("netarray must be an array or a list of sparse matrices")
+            stop("The first argument must be an matrix, array, or list of sparse matrices")
 		}
         netdims <- dim(netarray)
         if (length(netdims) == 2) ## assume behavior network
@@ -441,11 +536,11 @@ sienaDependent <- function(netarray, type=c("oneMode","bipartite","behavior",
       #  require(Matrix)
         if (!is.list(netarray))
 		{
-            stop("netarray must be an array or a list of sparse matrices")
+            stop("The first argument must be an array or a list of sparse matrices")
 		}
         if (!all(sapply(netarray, function(x){inherits(x,"TsparseMatrix", which = FALSE)})))
 		{
-            stop("not a list of sparse triples matrices")
+            stop("this is not a list of sparse triples matrices")
 		}
         netdims <- sapply(netarray, dim) ## dimensions of network in columns
         if (any(netdims != netdims[, 1]))
@@ -505,7 +600,7 @@ sienaDependent <- function(netarray, type=c("oneMode","bipartite","behavior",
     }
     if (!is.character(nodeSet))
 	{
-        stop ("nodeset should be a character string")
+        stop ("nodeSet should be a character string")
 	}
     if (type == "bipartite")
     {
@@ -530,7 +625,7 @@ sienaDependent <- function(netarray, type=c("oneMode","bipartite","behavior",
 		}
         if (!is.character(nodeSet))
 		{
-            stop ("nodeset should be a character string")
+            stop ("nodeSet should be a character string")
 		}
     }
     if (type != "behavior" && type != "continuous")
@@ -591,24 +686,34 @@ sienaDependent <- function(netarray, type=c("oneMode","bipartite","behavior",
     obj
 }
 
-##@sienaNet Create
+##@sienaNet sienaDependent synonym
 sienaNet <- sienaDependent
 
+##@as_dependent_rsiena sienaDependent synonym
+as_dependent_rsiena <- sienaDependent
+
 ##@sienaDataConstraint DataCreate
-sienaDataConstraint <- function(x, net1, net2, type=c("higher",
-                                                "disjoint", "atLeastOne"),
-                                 value=FALSE)
+sienaDataConstraint <- function(x, net1, net2, 
+		type, value=FALSE)
 {
-    type <- match.arg(type)
+ #   type <- match.arg(type)
     net1 <- deparse(substitute(net1))
-    net2 <- deparse(substitute(net2))
+    net2 <- deparse(substitute(net2))	
+	sienaDataConstraintFromStrings(x, net1, net2, type, value)
+}
+
+
+##@sienaDataConstraintFromStrings DataCreate
+sienaDataConstraintFromStrings <- function(x, net1, net2, 
+		type, value=FALSE)
+{
     pairname <- paste(net1, net2, sep=",")
     atts <- attr(x, type)
     if (is.null(atts))
     {
         stop("No constraints calculated: Need to recreate data object")
     }
-    if (!pairname %in% names(atts))
+    if (!(pairname %in% names(atts)))
     {
         stop("No such constraint found")
     }
@@ -629,3 +734,29 @@ sienaDataConstraint <- function(x, net1, net2, type=c("higher",
 	}
     x
 }
+
+make_constraint <- function(x, ...) UseMethod("make_constraint", x)
+
+##@make_constraint  method for siena data objects
+make_constraint.sienadata <- function(x, net1, net2, 
+		type, value=FALSE, ...)
+{
+    net1 <- deparse(substitute(net1))
+    net2 <- deparse(substitute(net2))	
+	sienaDataConstraintFromStrings(x, net1, net2, type, value)
+}
+
+##@make_constraint  method for sienaGroup data objects
+make_constraint.sienaGroup <- function(x, net1, net2, 
+		type, value=FALSE, ...)
+{
+    net1 <- deparse(substitute(net1))
+    net2 <- deparse(substitute(net2))	
+	sienaDataConstraintFromStrings(x, net1, net2, type, value)
+}
+
+## extra for backward compatibility with siena objects
+## created before version 1.6:
+
+##@make_constraint.siena Methods
+make_constraint.siena <- make_constraint.sienadata

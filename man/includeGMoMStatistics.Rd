@@ -8,30 +8,31 @@
   by modifying a Siena effects object.
 }
 \usage{
-  includeGMoMStatistics(myeff, ..., include=TRUE, name=myeff$name[1],
-                        interaction1="", interaction2="",
+  includeGMoMStatistics(myeff, ..., include=TRUE, 
+                        depvar=myeff$name[1], covar1="", covar2="",
                         character=FALSE, verbose=TRUE)
 }
 \arguments{
-  \item{myeff}{a Siena effects object as created by \code{\link{getEffects}}
+  \item{myeff}{a Siena effects object as created by 
+      \code{\link{make_specification}}.
   }
   \item{\dots}{
     short names to identify the GMoM statistics which should be included or
     excluded.}
   \item{include}{Boolean; default TRUE, but can be switched to FALSE to
     turn off an effect.}
-  \item{name}{Name of dependent variable (network or behavior) for which
+  \item{depvar}{Name of dependent variable (network or behavior) for which
     statistics are being included. Defaults to the first in the effects object.}
-  \item{interaction1}{
+  \item{covar1}{
     Name of siena object where needed to completely identify the
     effects e.g. covariate name or behavior variable name.}
-  \item{interaction2}{
+  \item{covar2}{
     Name of siena object where needed to completely identify the
     effects e.g. covariate name or behavior variable name.}
   \item{character}{Boolean: are the statistic names character strings or not.}
   \item{verbose}{Boolean: should the print of altered statistic be produced.}
 }
-\details{The names \code{interaction1} and \code{interaction2} refer to
+\details{The names \code{covar1} and \code{covar2} refer to
    the dependence of the GMoM statistics on other variables in the data set.
   The arguments should identify the GMoM statistic completely.
   The type does not have to be specified, as it is \code{gmm} for all
@@ -52,19 +53,18 @@
 \author{Viviana Amati.
 }
 \seealso{
-  \code{\link{getEffects}},
-  \code{\link{includeEffects}},
-  \code{\link{setEffect}},
-  \code{\link{includeInteraction}},
+  \code{\link{make_specification}},
+  \code{\link{set_effect}},
+  \code{\link{set_interaction}},
   \code{\link{print.sienaEffects}}
 }
 
 \examples{
-  mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
-  mybeh  <- sienaDependent(s50a, type="behavior")
-  mydata <- sienaDataCreate(mynet1, mybeh)
-  myeff <- getEffects(mydata)
-  myeff <- includeGMoMStatistics(myeff, egoX_gmm, interaction1="mybeh")
+  mynet1 <- as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+  mybeh  <- as_dependent_rsiena(s50a, type="behavior")
+  mydata <- make_data_rsiena(mynet1, mybeh)
+  myeff <- make_specification(mydata)
+  myeff <- includeGMoMStatistics(myeff, egoX_gmm, covar1="mybeh")
   myeff
 }
-\keyword{ classes }
+\keyword{classes}

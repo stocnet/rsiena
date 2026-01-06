@@ -9,40 +9,50 @@
 ## * significance of additional time dummies interacted with effects, and
 ## * sienaTimeFix, which is called to set up time dummy interacted effects.
 ## ****************************************************************************/
+
+test_time <- function(x, ...) UseMethod("test_time")
+
+##@test_time.sienaFit method for sienaFit
+test_time.sienaFit <- function(x, effects=NULL, excludedEffects=NULL,
+			condition=FALSE, ...)
+{
+	sienaTimeTest(x, effects, excludedEffects, condition)
+}
+
 ##@sienaTimeTest siena07 Does test for time homogeneity of effects
-sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
+sienaTimeTest <- function (x, effects=NULL, excludedEffects=NULL,
 	condition=FALSE)
 {
-	if (!inherits(sienaFit, "sienaFit"))
+	if (!inherits(x, "sienaFit"))
 	{
 		stop("not a legitimate sienaFit object")
 	}
-	if (!sienaFit$OK)
+	if (!x$OK)
 	{
 		stop("Error end of estimation algorithm")
 	}
-	else if (sienaFit$termination == "UserInterrupt")
+	else if (x$termination == "UserInterrupt")
 	{
 		stop("User interrupted run, object possibly incomplete")
 	}
-	if (!is.null(sienaFit$gmm))
+	if (!is.null(x$gmm))
 	{
-		if (sienaFit$gmm)
+		if (x$gmm)
 		{
 			stop("sienaTimeTest cannot be applied to results of GMoM estimation")
 		}
 	}
-	if (!is.null(sienaFit$sf2.byIteration))
+	if (!is.null(x$sf2.byIteration))
 	{
-		if (!sienaFit$sf2.byIteration)
+		if (!x$sf2.byIteration)
 		{
 			stop("sienaTimeTest needs sf2 by iterations (use lessMem=FALSE)")
 		}
 	}
-	waveNumbers <- attr(sienaFit$f, "periodNos")
+	waveNumbers <- attr(x$f, "periodNos")
 	nWaves <- length(waveNumbers)
 
-	fitEffects <- sienaFit$requestedEffects
+	fitEffects <- x$requestedEffects
 
 	## There must be more than 2 periods (more than 1 wave)
 	## to do a time test!
@@ -53,9 +63,9 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 	}
 	## if this is a maximum likelihood fit or finite differences we need
 	## the optional objects sdf2
-	if (sienaFit$maxlike || sienaFit$FinDiff.method)
+	if (x$maxlike || x$FinDiff.method)
 	{
-		if (is.null(sienaFit$sdf2[[1]][[1]]))
+		if (is.null(x$sdf2[[1]][[1]]))
 		{
 			stop("rerun siena07 with the byWave option TRUE")
 		}
@@ -87,7 +97,7 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 		use <- !fitEffects$basicRate
 	}
 
-	## if (sienaFit$maxlike || sienaFit$FinDiff.method)
+	## if (x$maxlike || x$FinDiff.method)
 	## {
 	##     stop("Not yet implemented for finite differences or maxlike")
 	## }
@@ -149,14 +159,14 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 		}
 	}	
 	##  nEffects, nSims, nameslist, nDummies convert commonly used ingredients
-	##  from sienaFit into an easily accessed form based on the screens
+	##  from x into an easily accessed form based on the screens
 	##  set up above
 	nEffects <- sum(!toTest$toTest)
 	## add row indices in D to the rows to be tested
 	toTest$rowInD[toTest$toTest] <- nEffects + 1:sum(toTest$toTest)
 	toTest <- toTest[order(toTest$rowInD), ]
 
-	nSims <- sienaFit$Phase3nits
+	nSims <- x$Phase3nits
 	nameslist <- list(Iteration=paste("it", 1:nSims, sep=""),
 		Wave=paste("Wave", waveNumbers, sep=""),
 		Effect=fitEffects$effectName[estimatedInFit]
@@ -170,15 +180,15 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 	toTest$dummyNames[ttt] <- paste("(*)Dummy", toTest$period[ttt], ":",
 		toTest$effectName[ttt], type[ttt], sep="")
 
-	## obsStats, moment, scores are the crucial ingredients from sienaFit which
+	## obsStats, moment, scores are the crucial ingredients from x which
 	## screen for the base effects and make the rest of the code clean
 	## be careful as the original logical vectors cannot be used once rows
 	## have been extracted.
-	obsStats <- t(sienaFit$targets2[estimatedInFit, , drop=FALSE])
-	moment <- sienaFit$sf2[, , estimatedInFit, drop=FALSE] -
+	obsStats <- t(x$targets2[estimatedInFit, , drop=FALSE])
+	moment <- x$sf2[, , estimatedInFit, drop=FALSE] -
 		rep(obsStats, each=nSims)
 	G <- array(0, dim=c(nSims, nWaves, nEffects + nDummies))
-	## Set the base effects G equal to the moments from sienaFit
+	## Set the base effects G equal to the moments from x
 	G[, , 1:nEffects] <- moment
 	## copy over the others
 	subs1 <- cbind(rep(1:nSims, nDummies), rep(toTest$period1[ttt], each=nSims),
@@ -195,9 +205,9 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 	{
 		sigma <- matrix(sigma,1,1)
 	}
-	if (!(sienaFit$maxlike || sienaFit$FinDiff.method))
+	if (!(x$maxlike || x$FinDiff.method))
 	{
-		scores <- sienaFit$ssc[ , , estimatedInFit, drop=FALSE]
+		scores <- x$ssc[ , , estimatedInFit, drop=FALSE]
 		SF <- array(0, dim=c(nSims, nWaves, nEffects + nDummies))
 		SF[, , 1:nEffects] <- scores
 		SF[subs1] <- scores[subs2]
@@ -207,19 +217,19 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 	}
 	else
 	{
-		if (sienaFit$FinDiff.method)
+		if (x$FinDiff.method)
 		{
-			##sienaFit$sdf2 is a list of arrays, one for each iteration
-			derivs <- t(sapply(sienaFit$sdf2, function(x)
-					x[, estimatedInFit, estimatedInFit, drop=FALSE]))
+			##x$sdf2 is a list of arrays, one for each iteration
+			derivs <- t(sapply(x$sdf2, function(xr)
+					xr[, estimatedInFit, estimatedInFit, drop=FALSE]))
 		}
 		else
 		{
-			##sienaFit$sdf2 is a list of lists of Matrix objects
+			##x$sdf2 is a list of lists of Matrix objects
 			derivs <-
-				t(sapply(sienaFit$sdf2, function(xx)
-						array(t(sapply(xx, function(x)
-									as.matrix(x[estimatedInFit,
+				t(sapply(x$sdf2, function(xx)
+						array(t(sapply(xx, function(xr)
+									as.matrix(xr[estimatedInFit,
 										estimatedInFit,
 										drop=FALSE]))),
 						dim=c(nWaves, nEffects, nEffects))))
@@ -347,17 +357,17 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 			if (rankSigma < dim(sigma)[1])
 			{
 				cat("After these exclusions, there still are linear dependencies.\n")
-				cat("Advice: use sienaTimeTest with a smaller set of effects.\n")
+				cat("Advice: use test_time with a smaller set of effects.\n")
 				cat("Look in the help page for the use of the <effects> parameter.\n\n")
-				stop("Please rerun sienaTimeTest with appropriate excluded effects.")
+				stop("Please rerun test_time with appropriate excluded effects.")
 			}
 		}
 		else
 		{
 			cat("Automatic discovery of dependencies had no effect.\n")
-			cat("Advice: use sienaTimeTest with a smaller set of effects.\n")
+			cat("Advice: use test_time with a smaller set of effects.\n")
 			cat("Look in the help page for the use of the <effects> parameter.\n\n")
-			stop("Please rerun sienaTimeTest with appropriate excluded effects.")
+			stop("Please rerun test_time with appropriate excluded effects.")
 		}
 	}
 	## We have now set up all of the ingredients properly, so we may proceed
@@ -366,7 +376,7 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 	doTests <- toTest$toTest
 	redundant <- rep(FALSE, length(doTests))
 	jointTest <- ScoreTest(nrow(toTest), D, sigma, fra, doTests, redundant,
-		maxlike=sienaFit$maxlike)
+		maxlike=x$maxlike)
 	jointTestP <- 1 - pchisq(jointTest$testresOverall, nDummies)
 	if (! condition)
 	{
@@ -379,7 +389,7 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 				doTests <- rep(FALSE, nEffects + nDummies)
 				doTests[nEffects + i] <- TRUE
 				test <- ScoreTest(nrow(toTest), D, sigma,
-					fra, doTests, redundant, maxlike=sienaFit$maxlike)
+					fra, doTests, redundant, maxlike=x$maxlike)
 				test$testresulto[1]
 			}
 			)
@@ -390,33 +400,33 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 		rownames(jointTestP) <- "Joint Significant Test"
 		colnames(jointTestP) <- "p-Val"
 	}
-	thetaOneStep <- c(sienaFit$theta[estimatedInFit, drop=FALSE], rep(0, nDummies)) +
+	thetaOneStep <- c(x$theta[estimatedInFit, drop=FALSE], rep(0, nDummies)) +
 		jointTest$oneStep
 	## Define the null hypothesis for the later tests (effect-wise and group-wise)
 	## as the null hypothesis tested in the overall test:
 	nullHyp <- 	!toTest$toTest
-	effectTest <- as.vector(by(toTest, toTest$baseEffect, function (x)
+	effectTest <- as.vector(by(toTest, toTest$baseEffect, function (xr)
 				{
 					doTests <- rep(FALSE, nEffects + nDummies)
-					if (any(x$toTest))
+					if (any(xr$toTest))
 					{
 						if (!condition)
 						{
 							## Control for all estimated effects.
-							doTests[toTest$baseEffect == (x$baseEffect[1]) &
+							doTests[toTest$baseEffect == (xr$baseEffect[1]) &
 								toTest$toTest] <- TRUE
 							testresult <- partial.scoreTest(D, sigma, fra,
-								doTests, nullHyp, maxlike=sienaFit$maxlike)
+								doTests, nullHyp, maxlike=x$maxlike)
 							testresult
 						}
 						else
 						{
 							## Control for everything.
-							doTests[toTest$baseEffect == (x$baseEffect[1]) &
+							doTests[toTest$baseEffect == (xr$baseEffect[1]) &
 								toTest$toTest] <- TRUE
 							redundant <- rep(FALSE, length(doTests))
 							test <- ScoreTest(nEffects + nDummies, D, sigma,
-								fra, doTests, redundant, maxlike=sienaFit$maxlike)
+								fra, doTests, redundant, maxlike=x$maxlike)
 							test$testresOverall
 						}
 					}
@@ -435,10 +445,10 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 	colnames(effectTestP) <- c("chi-sq.", "df", "p-value")
 	pvalues <-
 		round(c(2 * (1 -
-					pnorm(abs(sienaFit$theta[estimatedInFit] /
-							sqrt(diag(sienaFit$covtheta)[estimatedInFit])))),
+					pnorm(abs(x$theta[estimatedInFit] /
+							sqrt(diag(x$covtheta)[estimatedInFit])))),
 				individualTestP), 3)
-	thetaStar <- cbind(c(sienaFit$theta[estimatedInFit], rep(0, nDummies)),
+	thetaStar <- cbind(c(x$theta[estimatedInFit], rep(0, nDummies)),
 		thetaOneStep, pvalues)
 	colnames(thetaStar) <- c("Initial Est.", "One Step Est.", "p-Value")
 	rownames(thetaStar) <- dimnames(G)[[3]]
@@ -455,16 +465,16 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 		ifelse(toTest$period == 1, 0, toTest$OneStepEst[toTest$baseEffect])
 	toTest$dummysd <- abs(toTest$OneStepEst / qnorm(1 - toTest$p.value / 2))
 	toTest$dummysd[toTest$period == 1] <-
-		sqrt(diag(sienaFit$covtheta))[estimatedInFit][toTest$period == 1]
+		sqrt(diag(x$covtheta))[estimatedInFit][toTest$period == 1]
 
 	# Added by Tom: groupwise tests.
-	cef <- attr(sienaFit$f,"condEffects")
+	cef <- attr(x$f,"condEffects")
 	if (inherits(cef,"sienaGroupEffects"))
 	{
 		# This is a multi-group result
 		groupsKind <- "Group"
-		groupSizes <- attr(sienaFit$f,"groupPeriods") - 1
-		nGroups <- sienaFit$f$nGroup
+		groupSizes <- attr(x$f,"groupPeriods") - 1
+		nGroups <- x$f$nGroup
 		if (nGroups != length(groupSizes)) {stop("No good group sizes 1.")}
 		groups <- rep(1:nGroups, groupSizes)
 		if (nWaves != length(groups)) {stop("No good group sizes 2.")}
@@ -473,19 +483,19 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 	else
 	{
 		groupsKind <- "Period"
-		nGroups <- sienaFit$observations-1
+		nGroups <- x$observations-1
 		toTest$whichGroup <- toTest$period
 	}
 	groupTest <-
-		as.vector(by(toTest, toTest$whichGroup, function (x)
+		as.vector(by(toTest, toTest$whichGroup, function (xr)
 				{
 					doTests <- rep(FALSE, nEffects + nDummies)
-					if (any(x$toTest))
+					if (any(xr$toTest))
 					{
-						doTests[toTest$whichGroup == (x$whichGroup[1]) &
+						doTests[toTest$whichGroup == (xr$whichGroup[1]) &
 							toTest$toTest] <- TRUE
 						testresult <- partial.scoreTest(D, sigma, fra, doTests,
-							nullHyp, maxlike=sienaFit$maxlike)
+							nullHyp, maxlike=x$maxlike)
 						testresult
 					}
 					else
@@ -509,7 +519,7 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 			A[i, which((toTest$baseEffect==remainingEffects[i]) & (!nullHyp))] <- 1
 		}		
 		groupTest[1] <- transformed.scoreTest(D, sigma, fra, A,
-			nullHyp, maxlike=sienaFit$maxlike)
+			nullHyp, maxlike=x$maxlike)
 		dim(groupTest) <- c(nGroups, 1)
 		groupTestP <- matrix(NA, nGroups, 3)
 		groupTestP[,1] <- round(groupTest[,1], 2)
@@ -526,7 +536,7 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 		cat('No first dummy tested ...\n')
 	}
 	returnObj <- list(
-		sienaFitName=deparse(substitute(sienaFit)),
+		sienaFitName=deparse(substitute(x)),
 		JointTest=jointTestP,
 		EffectTest=effectTestP,
 		IndividualTest=thetaStar,
@@ -547,7 +557,7 @@ sienaTimeTest <- function (sienaFit, effects=NULL, excludedEffects=NULL,
 		DummyStdErr=sqrt(diag(jointTest$covMatrix)),
 		OriginalEffects=nEffects,
 		OriginalThetaStderr=
-			sqrt(diag(sienaFit$covtheta))[estimatedInFit],
+			sqrt(diag(x$covtheta))[estimatedInFit],
 		ToTest=toTest,
 		ScreenedEffects=which(!use),
 		RequestedExclusions=exclusions,
@@ -697,7 +707,7 @@ print.summary.sienaTimeTest <- function(x, ...)
 		tmp[!is.na(x$EffectTestStatistics)])
 	cat("\nIf you would like to fit time dummies to your model,")
 	cat("\nuse the includeTimeDummy function.")
-	cat("\nType \"?sienaTimeTest\" for more information on this output.\n")
+	cat("\nType \"?test_time\" for more information on this output.\n")
 	invisible(x)
 }
 ##@print.sienaTimeTest siena07 print method for sienaTimeTest objects
@@ -1236,8 +1246,8 @@ sienaTimeFix <- function(effects, data=NULL, getDocumentation=FALSE)
 	}
 }
 ##@includeTimeDummy DataCreate
-includeTimeDummy <- function(myeff, ..., timeDummy="all", name=myeff$name[1],
-	type="eval", interaction1="", interaction2="", include=TRUE,
+includeTimeDummy <- function(myeff, ..., timeDummy="all", depvar=myeff$name[1],
+	type="eval", covar1="", covar2="", include=TRUE,
 	character=FALSE)
 {
 	if (character)
@@ -1260,11 +1270,22 @@ includeTimeDummy <- function(myeff, ..., timeDummy="all", name=myeff$name[1],
 	{
 		effectNames <- dots
 	}
+	if (hasArg("name"))
+	{
+		stop("The name of the dependent variable now should be given as 'depvar', not 'name'.
+     See the help file for includeTimeDummy.  ")
+	}
+	if ((hasArg("interaction1")) | (hasArg("interaction2")))
+	{
+		stop("The name of the explanatory variable now should be given 
+     as 'covar1' and 'covar2', not 'interaction1' and 'interaction2'.
+     See the help file for includeTimeDummy.  ")
+	}
 	use <- myeff$shortName %in% effectNames &
 		myeff$type==type &
-		myeff$name==name &
-		myeff$interaction1 == interaction1 &
-		myeff$interaction2 == interaction2
+		myeff$name==depvar &
+		myeff$interaction1 == covar1 &
+		myeff$interaction2 == covar2
 	if (any(use))
 	{
 		myeff[use, "timeDummy"] <- timeDummy

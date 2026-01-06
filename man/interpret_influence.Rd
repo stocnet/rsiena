@@ -1,4 +1,6 @@
-\name{influenceTable}
+\name{interpret_influence}
+\alias{interpret_influence}
+\alias{interpret_influence.sienaFit}
 \alias{influenceTable}
 \alias{influencetable}
 \alias{influence.Table}
@@ -9,10 +11,15 @@
  which may be helpful for the interpretation of results
  for network and behavior dynamics,
  for an estimation result represented by a
- \code{sienaFit} object created by \code{\link{siena07}}.
+ \code{sienaFit} object created by \code{\link{siena}}.
 }
 
 \usage{
+\method{interpret_influence}{sienaFit}(x, xd, netname, behname,
+    as.matrix=FALSE, levls=NULL, levls.alt=levls,
+    out.ego=1, silent=FALSE, nfirst=x$nwarm+1,
+    include.endow=FALSE, include.creation=FALSE, ...)
+
 influenceTable(x, xd, netname, behname,
     as.matrix=FALSE, levls=NULL, levls.alt=levls,
     out.ego=1, silent=FALSE, nfirst=x$nwarm+1,
@@ -20,14 +27,14 @@ influenceTable(x, xd, netname, behname,
 }
 \arguments{
   \item{x}{An object of class \code{\link{sienaFit}}, produced by a
-    call to \code{\link{siena07}} for a model including
+    call to \code{\link{siena}} for a model including
     a behavioral dependent variable;
     or an object of class \code{\link{sienaMeta}}, produced by a
-    call to \code{\link{siena08}};
+    call to \code{\link{meta_siena}};
     or an object of class \code{sienaBayesFit}, produced by a
     call to \code{sienaBayes}.  }
   \item{xd}{If \code{x} is of class \code{\link{sienaFit}},
-    a \code{\link{siena}} data set used to produce \code{x}.\cr
+    a \code{\link{sienadata}} data set used to produce \code{x}.\cr
     If \code{x} is of class \code{\link{sienaMeta}} or \code{sienaBayesFit},
     one of the data sets used to produce \code{x}; preferable a representative
     one.}
@@ -48,6 +55,7 @@ influenceTable(x, xd, netname, behname,
   \item{include.creation}{boolean, used only for models utilizing influence and
          creation effects: by specifying \code{include.creation=TRUE},                                         #
         the sum of evaluation and creation effects is used.}
+  \item{\dots}{Other arguments.}
 }
 \details{
  This functions is used for constructing influence tables
@@ -96,17 +104,17 @@ influenceTable(x, xd, netname, behname,
   See the manual, Sections 13.2 and 13.4.
 }
 \author{Tom Snijders}
-\seealso{\code{\link{siena07}}, \code{\link{siena08}} }
+\seealso{\code{\link{siena}}, \code{\link{meta_siena}} }
 \examples{
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mybeh  <- sienaDependent(s50a[,1:2], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-myeff <- getEffects(mydata)
-myeff <- includeEffects(myeff, avAlt, name="mybeh", interaction1="mynet")
-myalgorithm <- sienaAlgorithmCreate(nsub=2, n3=100, seed=1291)
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mybeh  <- as_dependent_rsiena(s50a[,1:2], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, avAlt, depvar="mybeh", covar1="mynet")
+myalgo <- set_algorithm_saom(nsub=2, n3=100, seed=1291)
 # nsub=2, n3=100 is used here for having a brief computation, not for practice.
-ans <- siena07(myalgorithm, data=mydata, effects=myeff, silent=TRUE, batch=TRUE)
-influenceTable(ans, mydata, "mynet", "mybeh")
+(ans <- siena(mydata, effects=myeff, control_algo=myalgo, 
+                                            silent=TRUE, batch=TRUE))
+interpret_influence(ans, mydata, "mynet", "mybeh")
 }
-
-\keyword{models}
+\keyword{models, methods}

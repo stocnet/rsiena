@@ -1,29 +1,38 @@
-\name{sienaDependent}
+\name{as_dependent_rsiena}
 \alias{sienaDependent}
 \alias{sienaNet}
+\alias{as_dependent_rsiena}
 \title{Function to create a dependent variable for a Siena model}
 \description{
   Creates a Siena dependent variable: either a network,  
   created from a matrix or array or list of sparse matrix of triples;   
   or a behavior variable, created from a matrix.\cr   
-  \code{sienaDependent()} and \code{sienaNet()} are identical   
-  functions; the second name was used from the start of the   
-  \code{RSiena} package, but the first name    
-  indicates more precisely the purpose of this function.
+  \code{as_dependent_rsiena()}, \code{sienaDependent()} and \code{sienaNet()} 
+  are identical functions. The first name is preferred, 
+  the two others are kept for backward compatibility.
 }
 \usage{
-sienaDependent(netarray, type=c("oneMode", "bipartite", "behavior", "continuous"),
-nodeSet="Actors", sparse=is.list(netarray), allowOnly=TRUE, imputationValues=NULL)
+as_dependent_rsiena(netarray, 
+      type=c("oneMode", "bipartite", "behavior", "continuous"),
+      nodeSet="Actors", sparse=is.list(netarray), 
+      allowOnly=TRUE, imputationValues=NULL)
 
-sienaNet(netarray, type=c("oneMode", "bipartite", "behavior", "continuous"),
-nodeSet="Actors", sparse=is.list(netarray), allowOnly=TRUE, imputationValues=NULL)
+sienaDependent(netarray, 
+      type=c("oneMode", "bipartite", "behavior", "continuous"),
+      nodeSet="Actors", sparse=is.list(netarray), 
+      allowOnly=TRUE, imputationValues=NULL)
+
+sienaNet(netarray, 
+      type=c("oneMode", "bipartite", "behavior", "continuous"),
+      nodeSet="Actors", sparse=is.list(netarray), 
+      allowOnly=TRUE, imputationValues=NULL)
 }
 \arguments{
   \item{netarray}{\code{type="behavior"} or \code{"continuous"}: matrix
     (actors \eqn{\times}{*} waves).\cr
     \code{type="oneMode"} or \code{"bipartite"}: array of values or list of
     sparse matrices of type \code{"TsparseMatrix"},
-	see the \code{\link[Matrix]{Matrix}} package;
+    see the \code{\link[Matrix]{Matrix}} package;
     if an array is used, it should have dimensions:
     for a one-mode network, \eqn{n \times n \times M}{n * n * M},
     and for a two-mode network \eqn{n \times m \times M}{n * m * M},
@@ -51,7 +60,7 @@ nodeSet="Actors", sparse=is.list(netarray), allowOnly=TRUE, imputationValues=NUL
     For normal operation when this is the case for all periods, usually
     TRUE is the appropriate option. When it is only the case for some of the
     periods, and for data sets that will be part of a multi-group object
-    created by \code{\link{sienaGroupCreate}}, FALSE usually is preferable.}
+    created by \code{\link{make_group_rsiena}}, FALSE usually is preferable.}
   \item{imputationValues}{for \code{behavior} or \code{continuous} dependent variables,
     a matrix with imputation values can be included that will be used instead
     of the default imputation values.}
@@ -73,13 +82,14 @@ nodeSet="Actors", sparse=is.list(netarray), allowOnly=TRUE, imputationValues=NUL
 }
 \references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/} .}
 \author{Ruth Ripley and Tom A.B. Snijders}
-\seealso{\code{\link{sienaDataCreate}}, \code{\link{sienaNodeSet}},
-   \code{\link{sienaDataConstraint}}}
+\seealso{\code{\link{make_data_rsiena}}, \code{\link{as_nodeset_rsiena}},
+      \code{\link{make_constraint.sienadata}}}
 \examples{
-mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
-mybeh <- sienaDependent(s50a, type="behavior")
-## note that the following example works although the node sets do not yet exist!
-mynet3 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)),
+mynet1 <- as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+mybeh <- as_dependent_rsiena(s50a, type="behavior")
+## note that the following example works 
+## although the node sets do not yet exist!
+mynet3 <- as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)),
        type="bipartite", nodeSet=c("senders", "receivers"))
 ## sparse matrix input
 ## To show this, we first go back from the adjacency matrices to edgelists.
@@ -90,19 +100,21 @@ library(Matrix)
 sp501 <- as(Matrix(s501), "TsparseMatrix")
 sp502 <- as(Matrix(s502), "TsparseMatrix")
 sp503 <- as(Matrix(s503), "TsparseMatrix")
-## If you are interested in the internal structure of these sparse matrices,
-## you can request
+## If you are interested in the internal structure 
+## of these sparse matrices, you can request
 str(sp501)
 ## Slot @i is the row, @j is the column, and @x the value;
 ## here the values all are 1.
 ## Slots @i and @j do not contain information about the number of nodes,
 ## so that is supplied additionally by @Dim.
 mymatlist <- list(sp501, sp502, sp503)
-mynet.sp <- sienaDependent(mymatlist)
+mynet.sp <- as_dependent_rsiena(mymatlist)
 # For a bipartite (two-mode) network:
-senders <- sienaNodeSet(50, nodeSetName="senders")
-receivers <- sienaNodeSet(30, nodeSetName="receivers")
-mynet <- sienaDependent(array(c(s501[,1:30], s502[,1:30]), dim=c(50, 30, 2)),
-      nodeSet=c("senders", "receivers"))
+senders <- as_nodeset_rsiena(50, nodeSetName="senders")
+receivers <- as_nodeset_rsiena(30, nodeSetName="receivers")
+mynet <- as_dependent_rsiena(
+          array(c(s501[,1:30], s502[,1:30]), dim=c(50, 30, 2)),
+          nodeSet=c("senders", "receivers"))
+mynet
 }
 \keyword{classes}

@@ -41,10 +41,23 @@ shortBayesResults <- function(x, nfirst=NULL){
 	dfr
 }
 
-##@siena.table siena07 Saves latex or html table of estimates
+write_result <- function(x, ...) UseMethod("write_result", x)
+
+##@write_result.sienaFit method for siena.Fit
+write_result.sienaFit <- function(x, type='tex',
+	fileName=paste(deparse(substitute(x)),'.',type,sep=""),
+	vertLine=TRUE, tstatPrint=FALSE,
+	sig=FALSE, d=3, ...)
+{
+	siena_table(x, type=type, fileName=fileName,
+		vertLine=vertLine, tstatPrint=tstatPrint, sig=sig, d=d, ...)
+}
+
+
+##@siena_table siena07 Saves latex or html table of estimates
 ## for a sienaFit or sienaBayesFit object
-siena.table <- function(x, type='tex',
-	file=paste(deparse(substitute(x)),'.',type,sep=""),
+siena_table <- function(x, type='tex',
+	fileName=paste(deparse(substitute(x)),'.',type,sep=""),
 	vertLine=TRUE, tstatPrint=FALSE,
 	sig=FALSE, d=3, nfirst=NULL)
 {
@@ -74,7 +87,6 @@ siena.table <- function(x, type='tex',
 	}
 
 	objectName <- deparse(substitute(x))
-	fileName <- file
 	fromBayes <- FALSE
 	xkind.string <- "sienaFit"
 	tstat <- tstatPrint

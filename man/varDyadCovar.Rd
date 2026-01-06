@@ -2,7 +2,8 @@
 \alias{varDyadCovar}
 \title{Function to create a changing dyadic covariate object.}
 \description{
-  This function creates a changing dyadic covariate object from an array.
+  This function creates a changing dyadic covariate object from an array. \cr
+   It now is superseded by function \code{\link{as_covariate_rsiena}}.
 }
 \usage{
 varDyadCovar(val, centered=TRUE, nodeSets=c("Actors", "Actors"),
@@ -39,17 +40,16 @@ varDyadCovar(val, centered=TRUE, nodeSets=c("Actors", "Actors"),
 }
 \value{
   Returns the covariate as an object of class "varDyadCovar", in which
-  form it can be used as an argument to \code{SienaDataCreate}.
+  form it can be used as an argument to \code{\link{make_data_rsiena}}.
 }
 \references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley}
-\seealso{\code{\link{sienaDataCreate}}, \code{\link{coDyadCovar}},
-\code{\link{coCovar}}, \code{\link{varCovar}},
-\code{\link{sienaNodeSet}}}
+\seealso{\code{\link{as_covariate_rsiena}}, 
+                \code{\link{as_nodeset_rsiena}}}
 \examples{
-
-mydyadvar <- varDyadCovar(array(c(s501, s502), dim=c(50, 50, 2)))
-
+mydyadvar <- as_covariate_rsiena(array(c(s501, s502), dim=c(50, 50, 2)),
+                                type="oneMode")
+class(mydyadvar)
 }
 % Add one or more standard keywords, see file "KEYWORDS" in the
 % R documentation directory.

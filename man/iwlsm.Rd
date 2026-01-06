@@ -45,7 +45,7 @@ psi.iwlsm(u, k, deriv = 0, w, sj2, hh)
   \item{subset}{
     An index vector specifying the cases to be used in fitting.
   }
-  \item{ses}{Estimated variance of the responses. Will be paseed to
+  \item{ses}{Estimated variance of the responses. Will be passed to
 	\code{psi} as sj2
   }
   \item{na.action}{
@@ -136,7 +136,8 @@ psi.iwlsm(u, k, deriv = 0, w, sj2, hh)
   packages \code{MASS}. It alternates between weighted
   least squares and estimation of variance on the basis of a common
   variance. The function \code{psi.iwlsm} calculates the weights
-  for the next iteration. Used by \code{siena08} to combine estimates
+  for the next iteration. 
+  Used by \code{\link{meta_siena}} to combine estimates
   from different \code{sienaFits}.
 }
 \value{
@@ -178,27 +179,33 @@ psi.iwlsm(u, k, deriv = 0, w, sj2, hh)
     case they may prove useful.
 }
 \seealso{
-  \code{\link{siena08}}, \code{\link{sienaMeta}}, \code{\link{sienaFit}}
+  \code{\link{meta_siena}}, \code{\link{sienaMeta}}, 
+  \code{\link{sienaFit}}
   }
   \examples{
 \dontrun{
 ##not enough data here for a sensible example, but shows the idea.
-myalgorithm <- sienaAlgorithmCreate(nsub=2, n3=100)
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mydata1 <- sienaDataCreate(mynet1)
-mydata2 <- sienaDataCreate(mynet2)
-myeff1 <- getEffects(mydata1)
-myeff2 <- getEffects(mydata2)
-myeff1 <- setEffect(myeff1, transTrip, fix=TRUE, test=TRUE)
-myeff2 <- setEffect(myeff2, transTrip, fix=TRUE, test=TRUE)
-myeff1 <- setEffect(myeff1, cycle3, fix=TRUE, test=TRUE)
-myeff2 <- setEffect(myeff2, cycle3, fix=TRUE, test=TRUE)
-ans1 <- siena07(myalgorithm, data=mydata1, effects=myeff1, batch=TRUE)
-ans2 <- siena07(myalgorithm, data=mydata2, effects=myeff2, batch=TRUE)
-meta <- siena08(ans1, ans2)
+Group1 <- as_dependent_rsiena(array(c(N3401, HN3401), dim=c(45, 45, 2)))
+Group3 <- as_dependent_rsiena(array(c(N3403, HN3403), dim=c(37, 37, 2)))
+Group4 <- as_dependent_rsiena(array(c(N3404, HN3404), dim=c(33, 33, 2)))
+dataset.1 <- make_data_rsiena(Friends = Group1)
+dataset.3 <- make_data_rsiena(Friends = Group3)
+dataset.4 <- make_data_rsiena(Friends = Group4)
+effects.1 <- make_specification(dataset.1)
+effects.3 <- make_specification(dataset.3)
+effects.4 <- make_specification(dataset.4)
+effects.1 <- set_effect(effects.1, transTrip)
+effects.1 <- set_effect(effects.1, transRecTrip, fix=TRUE, test=TRUE)
+effects.3 <- set_effect(effects.3, transTrip)
+effects.3 <- set_effect(effects.3, transRecTrip, fix=TRUE, test=TRUE)
+effects.4 <- set_effect(effects.4, transTrip)
+effects.4 <- set_effect(effects.4, transRecTrip, fix=TRUE, test=TRUE)
+ans.1 <- siena(dataset.1, effects=effects.1, batch=TRUE)
+ans.3 <- siena(dataset.3, effects=effects.3, batch=TRUE)
+ans.4 <- siena(dataset.4, effects=effects.4, batch=TRUE)
+meta <- meta_siena(ans.1, ans.3, ans.4)
 metadf <- split(meta$thetadf, meta$thetadf$effects)[[1]]
-metalm <- iwlsm(theta ~ tconv, metadf, ses=se^2)
+(metalm <- iwlsm(theta ~ tconv, metadf, ses=se^2))
 }
 }
 \keyword{models }

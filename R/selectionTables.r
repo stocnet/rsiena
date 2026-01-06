@@ -547,3 +547,22 @@ print.selectionTable <- function(x, ...)
 	invisible(x)
 }
 
+
+	
+interpret_selection <- function(x, ...) UseMethod("interpret_selection", x)
+
+##@interpret_influence.sienaFit method for siena.Fit
+interpret_selection.sienaFit <- function(x, xd, name, vname,
+                    as.matrix=FALSE,
+                    levls=NULL, levls.alt=levls, nfirst=x$nwarm+1,
+                    multiplier=1,
+					include.endow=FALSE, include.creation=FALSE,
+					silent=FALSE, ...)
+{ 	
+		selectionTable(x, xd, name, vname,
+                    as.matrix=FALSE,
+                    levls=NULL, levls.alt=levls, nfirst=x$nwarm+1,
+                    multiplier=1,
+					include.endow=FALSE, include.creation=FALSE,
+					silent=FALSE, ...)
+}

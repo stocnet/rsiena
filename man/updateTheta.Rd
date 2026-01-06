@@ -1,23 +1,37 @@
-\name{updateTheta}
+\name{update_theta}
+\alias{update_theta}
 \alias{updateTheta}
+\alias{update_theta.sienaEffects}
+\alias{update_specification}
 \alias{updateSpecification}
+\alias{update_specification.sienaEffects}
 \title{
 A function to update the initial values of theta, and a function
 to update an effects object.
 }
 \description{
-  \code{updateTheta} copies the final values of any matching selected effects
+  \code{update_theta} copies the final values of any matching selected effects
   from a \code{\link{sienaFit}} object to a Siena effects object.\cr
-  \code{updateSpecification} includes in a Siena effects object
-  a set of effects that are included in another effects object.
+  \code{update_specification} includes in a Siena effects object
+  a set of effects that are included in another effects object.\cr
+  The functions \code{update_theta} and
+  \code{updateTheta} are identical;\cr
+  the same holds for
+  \code{update_specification} and \code{updateSpecification}.
+  The first of these names are preferred,
+  the others are kept for backward compatibility.
 }
 \usage{
+\method{update_theta}{sienaEffects}(x, prevAns, varName=NULL, ...)
+\method{update_specification}{sienaEffects}(x, effects.from,
+         effects.extra=NULL, name.to=NULL, name.from=NULL, ...)
+
 updateTheta(effects, prevAns, varName=NULL)
 updateSpecification(effects.to, effects.from,
-                          effects.extra=NULL, name.to=NULL, name.from=NULL)
+         effects.extra=NULL, name.to=NULL, name.from=NULL)
 }
 \arguments{
-  \item{effects}{Object of class \code{\link{sienaEffects}}.}
+  \item{x}{Object of class \code{\link{sienaEffects}}.}
   \item{prevAns}{Object of class \code{\link{sienaFit}}
     as returned by \code{\link{siena07}}.}
   \item{varName}{Character string or vector of character strings;
@@ -29,19 +43,22 @@ updateSpecification(effects.to, effects.from,
   \item{name.to}{Character string, name of dependent variable in \code{object.to}.}
   \item{name.from}{Character string, name of dependent variable in
        \code{object.from}.}
+  \item{effects}{Object of class \code{\link{sienaEffects}}.}
+  \item{...}{Additional arguments, not used now.}
 }
 \details{
   The initial values of any selected effects
   in the input effects object which match an effect estimated in
-  \code{prevAns} will be updated by \code{updateTheta}.
+  \code{prevAns} will be updated by \code{update_theta}.
   If the previous run was conditional, the estimated rate parameters for
   the dependent variable on which the run was conditioned are added to
   the final value of theta. If \code{varName} is not \code{NULL},
   this update is restricted to effects for the dependent variable/s
   specified by \code{varName}.
   \cr
-  By \code{updateSpecification}, the effects included in \code{effects.from}
-  are also included in \code{effects.to}; if \code{name.to} and/or
+  By \code{update_specification}, the effects included in \code{effects.from}
+  are also included in \code{x} (for \code{update_specification}) \code{effects.to}
+  (for \code{updateSpecification}); if \code{name.to} and/or
   \code{name.from} is specified, this is restricted to effects
   for those dependent variables.\cr
   If \code{effects.from} contains interaction effects, the corresponding
@@ -54,33 +71,35 @@ updateSpecification(effects.to, effects.from,
 \value{
   Updated effects object.
 }
-\note{Using \code{updateTheta} explicitly before calling \code{\link{siena07}}
+\note{Using \code{update_theta} explicitly before calling \code{\link{siena}}
   rather than using it via the argument
-  \code{prevAns} of \code{\link{siena07}} will not permit the use of
-  the previous derivative matrix.
-  In most cases, using \code{\link{siena07}} with \code{prevAns} will be more
-  efficient.
+  \code{prevAns} of \code{\link{siena}} will not permit the use of
+  the previous derivative matrix for option \code{Dolby}.
+  In most cases, using \code{\link{siena}} with \code{prevAns}
+  will therefore be more efficient;
+  but sometimes the use of  \code{update_theta} gives better results.
 }
 \references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley, Tom A.B. Snijders}
-
-\seealso{\code{\link{siena07}}, \code{\link{getEffects}}
+\seealso{
+    \code{\link{siena}}, \code{\link{make_specification}}
 }
 \examples{
 ## For updateTheta:
-mynet1 <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
-mydata <- sienaDataCreate(mynet1)
-myeff1 <- getEffects(mydata)
-myeff1 <- includeEffects(myeff1, transTrip)
-myeff1 <- includeInteraction(myeff1, recip, inPop)
-myalgorithm <- sienaAlgorithmCreate(nsub=1, n3=100, projname=NULL)
-ans <- siena07(myalgorithm, data=mydata, effects=myeff1, batch=TRUE)
+mynet1 <- as_dependent_rsiena(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
+mydata <- make_data_rsiena(mynet1)
+myeff1 <- make_specification(mydata)
+myeff1 <- set_effect(myeff1, transTrip)
+myeff1 <- set_interaction(myeff1, list(recip, inPop))
+myalgo <- set_algorithm_saom(nsub=1, n3=100, seed=1291)
+(ans <- siena(mydata, effects=myeff1, control_algo=myalgo,
+                                          batch=TRUE))
 ans$theta
-(myeff <- updateTheta(myeff1, ans))
+(myeff <- update_theta(myeff1, ans))
 ##
 ## For updateSpecification:
-myeff2 <- getEffects(mydata)
-myeff2 <- includeEffects(myeff2, outAct)
-updateSpecification(myeff2, myeff1)
+myeff2 <- make_specification(mydata)
+myeff2 <- set_effect(myeff2, outAct)
+update_specification(myeff2, myeff1)
 }
-\keyword{ models }
+\keyword{models}

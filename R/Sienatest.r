@@ -9,70 +9,51 @@
 # * score tests.
 # *
 # *****************************************************************************/
-##@InstabilityAnalysis siena07 Not currently used
-InstabilityAnalysis<- function(z)
+
+test_parameter <- function(x, ...) UseMethod("test_parameter", x)
+
+##@test_parameter.sienaFit test_parameter method for all tests for sienaFit 
+test_parameter.sienaFit <- function(x, method=NULL, 
+										tested=NULL, tested2=NULL, ...)
 {
-	##I think this is not correct, because of scaling. cond number of var matrix of X
-	## can be obtained via svd(data) (which is stored in z$sf). Square of ratio
-	## of smallest to largest singular value.
-	Report('Instability Analysis\n')
-	constant <- z$diver
-	test <- z$test
-	covtheta <- z$covtheta
-	covZ <- z$msf
-	covth <- covtheta[!(test|constant), !(test|constant)]
-	covth <- MatrixNorm(covth)
-	eigenv <- eigen(covth,symmetric=TRUE)$values
-	ma <- max(eigenv)
-	mi <- min(eigenv)
-	if (mi!=0)
+	if (is.null(method))
 	{
-		cond.n <- ma / mi
+		if (inherits(tested,"matrix")) 
+		{
+			Wald.RSiena(tested, x)
+		}
+		else if (is.vector(tested)) 		
+		{
+			Multipar.RSiena(x, tested)
+		}
+		else if (tested=="all")
+		{
+			Multipar.RSiena(x, which(!x$test))
+		}
+		else
+		{
+			stop("keyword 'tested' is not given properly")
+		}
 	}
-	Report('Instability analysis\n', lf)
-	Report('--------------------\n\n', lf)
-	Report('Variance-covariance matrix of parameter estimates', lf)
-	##if (global boolean1 )
-	## Report(' (without coordinates that are kept constant):\n',lf)
-	##else
-	Report(c(':\n\nCondition number = ',format(cond.n, width=4, nsmall=4,
-				digits=1),
-			' \n\n'),sep='',lf)
-	Report(c('Eigen Values  ', format(eigenv, width=6, nsmall=6, digits=1)), lf)
-	Report('\n\n',lf)
-	covZ <- MatrixNorm(covZ)
-	eigenvZ <-eigen(covZ, symmetric=TRUE)$values
-	ma <- max(eigenvZ)
-	mi <- min(eigenvZ)
-	if (mi!=0)
+	else if (method=="score")
 	{
-		cond.n <- ma / mi
+		if (is.null(tested))
+		{
+			tested <- x$test
+		}
+		score.Test(x, tested=tested)
 	}
-	Report('Variance-covariance matrix of X',lf)
-	Report(c(':\n\nCondition number = ', format(cond.n, width=4, nsmall=4,
-				digits=1),
-			' \n\n'), sep='', lf)
-	Report(c('Eigen Values  ', format(eigenvZ, width=6, nsmall=6, digits=1)), lf)
-	Report(c('\n\n',date(),'\n'),sep='',lf)
-	mysvd <- svd(z$sf)$d
-	ma <- max(mysvd)
-	mi <- min(mysvd)
-	cond.n <- (ma/mi)^2
-	Report(c(':\n\nCondition number2 = ',
-			format(cond.n, width=4, nsmall=4, digits=1),
-			' \n\n'), sep='', lf)
-	Report(c('Singular Values  ', format(mysvd, width=6, nsmall=6, digits=1)), lf)
-	Report(c('\n\n', date(), '\n'), sep='', lf)
+	else if (method=="same")
+	{
+		testSame.RSiena(x, tested, tested2)
+	}
+	else
+	{
+		stop(paste("There is no test_parameter.sienaFit with method = ", method))
+	}
 }
 
-##@MatrixNorm siena07 Not currently used. May be incorrect.
-MatrixNorm <- function(mat)
-{
-	tmp <- apply(mat, 2, function(x) x / sqrt(crossprod(x)))
-	##or  sweep(mat,2,apply(mat,2,function(x)x/sqrt(crossprod(x))
-	tmp
-}
-##@TestOutput siena07 Print report
+##@TestOutput siena07 Print test report
 TestOutput <- function(z, x)
 {
 	testn <- sum(z$test)
@@ -321,30 +302,30 @@ theEfNames <- function(ans){
 	res
 }
 
-##@scoreTest Calculate score test
-score.Test <- function(ans, test=ans$test)
-	# use: ans must be a sienaFit object;
-	# test must be a boolean vector with length equal to the number of parameters of ans,
-	# or a vector of integer numbers between 1 and ans$pp.
+##@scoreTest Calculate score tested
+score.Test <- function(x, tested=x$test)
+	# use: x must be a sienaFit object;
+	# tested must be a boolean vector with length equal to the number of parameters of x,
+	# or a vector of integer numbers between 1 and x$pp.
 {
-	if ((is.numeric(test)) || (is.integer(test)))
+	if ((is.numeric(tested)) || (is.integer(tested)))
 	{
-		if (max(test) > ans$pp)
+		if (max(tested) > x$pp)
 		{
 			stop(paste('The maximum requested coordinate is too high:',
-					max(test)))
+					max(tested)))
 		}
-		test <- (1:ans$pp) %in% test
+		tested <- (1:x$pp) %in% tested
 	}
-	if (sum(test) <= 0) stop(paste('Something should be tested, but the total requested is',
-			sum(test)))
-	if (length(test) != ans$pp) stop('Dimensions of test must agree')
-	if (any(test & (!ans$fix))) warning('Warning: some tested parameters were not fixed; do you know what you are doing??? \n')
-	fra <- colMeans(ans$sf, na.rm=TRUE)
-	redundant <- (ans$fix & (!test))
-	tests <- EvaluateTestStatistic(ans$maxlike, test, redundant, ans$dfra, ans$msf, fra)
+	if (sum(tested) <= 0) stop(paste('Something should be tested, but the total requested is',
+			sum(tested)))
+	if (length(tested) != x$pp) stop('Dimensions of tested must agree')
+	if (any(tested & (!x$fix))) warning('Warning: some tested parameters were not fixed; do you know what you are doing??? \n')
+	fra <- colMeans(x$sf, na.rm=TRUE)
+	redundant <- (x$fix & (!tested))
+	tests <- EvaluateTestStatistic(x$maxlike, tested, redundant, x$dfra, x$msf, fra)
 	teststat <- tests$cvalue
-	df <- sum(test)
+	df <- sum(tested)
 	if (df == 1)
 	{
 		onesided <- tests$oneSided
@@ -354,22 +335,22 @@ score.Test <- function(ans, test=ans$test)
 		onesided <- NULL
 	}
 	pval <- 1 - pchisq(teststat, df)
-	efnames <- theEfNames(ans)[test]
-	t.ans <- list(chisquare=teststat, df=df, pvalue=pval, onesided=onesided, efnames=efnames)
-	class(t.ans) <- "sienaTest"
-	attr(t.ans, "version") <- packageDescription(pkgname, fields = "Version")
-	t.ans
+	efnames <- theEfNames(x)[tested]
+	t_x <- list(chisquare=teststat, df=df, pvalue=pval, onesided=onesided, efnames=efnames)
+	class(t_x) <- "sienaTest"
+	attr(t_x, "version") <- packageDescription(pkgname, fields = "Version")
+	t_x
 }
 
 ##@Wald.RSiena  Calculate Wald test statistics
-Wald.RSiena <- function(A, ans)
+Wald.RSiena <- function(A, x)
 {
 	if (is.vector(A)){A <- matrix(A, nrow=1)}
-	if (dim(A)[2] != ans$pp){stop(paste('A must have', ans$pp, 'columns.'))}
-	sigma <- ans$covtheta
+	if (dim(A)[2] != x$pp){stop(paste('A must have', x$pp, 'columns.'))}
+	sigma <- x$covtheta
 	if (any(is.na(sigma))) {
 		# happens when some coordinates were fixed
-		# in the call of siena07 leading to ans;
+		# in the call of siena07 leading to x;
 		# then the non-used part of sigma,
 		# which partially consists of NA,
 		# is replaced by the identity matrix.
@@ -378,7 +359,7 @@ Wald.RSiena <- function(A, ans)
 		sigma[, zero.cols] <- 0
 		diag(sigma)[zero.cols] <- 1
 	}
-	th <- A %*% ans$theta
+	th <- A %*% x$theta
 	covmat <- A %*% sigma %*% t(A)
 	chisq <- drop(t(th) %*% solve(covmat) %*% th)
 	df <- nrow(A)
@@ -391,44 +372,43 @@ Wald.RSiena <- function(A, ans)
 	{
 		onesided <- NULL
 	}
-	t.ans <- list(chisquare=chisq, df=df, pvalue=pval, onesided=onesided)
-	class(t.ans) <- "sienaTest"
-	attr(t.ans, "version") <- packageDescription(pkgname, fields = "Version")
-	t.ans
+	t_x <- list(chisquare=chisq, df=df, pvalue=pval, onesided=onesided)
+	class(t_x) <- "sienaTest"
+	attr(t_x, "version") <- packageDescription(pkgname, fields = "Version")
+	t_x
 }
 
 ##@Multipar.RSiena  Calculate Wald test statistic for hypothesis that subvector = 0.
-Multipar.RSiena <- function(ans, ...)
+Multipar.RSiena <- function(x, tested)
 {
-	p <- length(ans$theta)
-	tested <- c(...)
-	efnames <- theEfNames(ans)[tested]
+	p <- length(x$theta)
+	efnames <- theEfNames(x)[tested]
 	k <- length(tested)
 	A <- matrix(0, nrow=k, ncol=p)
 	A[cbind(1:k,tested)] <- 1
-	t.ans <- Wald.RSiena(A, ans)
-	t.ans$efnames <- efnames
-	t.ans
+	t_x <- Wald.RSiena(A, x)
+	t_x$efnames <- efnames
+	t_x
 }
 
 ##@testSame.RSiena Test that two subvectors of parameter are identical
-testSame.RSiena <- function(ans, e1, e2){
+testSame.RSiena <- function(x, e1, e2){
 	if (length(e1) != length(e2))
 	{
 		stop('Tested parameters should have the same length')
 	}
-	p <- ans$pp
+	p <- x$pp
 	if ((min(e1) < 1) | (min(e2) < 1) | (max(e1) > p) | (max(e2) > p))
 	{
 		stop(paste('Tested parameters should have numbers between 1 and', p))
 	}
-	if (any(ans$fixed[c(e1,e2)]))
+	if (any(x$fixed[c(e1,e2)]))
 	{
 		stop('Fixed parameters cannot be tested')
 	}
 	t <- length(e1)
-	efnames1 <- theEfNames(ans)[e1]
-	efnames2 <- theEfNames(ans)[e2]
+	efnames1 <- theEfNames(x)[e1]
+	efnames2 <- theEfNames(x)[e2]
 	if (t > 1)
 	{
 		max.width <- max(c(nchar(efnames1)))
@@ -438,9 +418,9 @@ testSame.RSiena <- function(ans, e1, e2){
 	mat <- matrix(0,t,p)
 	for (i in seq_along(1:t)){mat[i,e1[i]] <- 1}
 	for (i in seq_along(1:t)){mat[i,e2[i]] <- -1}
-	t.ans <- Wald.RSiena(mat, ans)
-	t.ans$efnames <- efnames
-	t.ans
+	t_x <- Wald.RSiena(mat, x)
+	t_x$efnames <- efnames
+	t_x
 }
 
 ##@print.sienaTest Methods

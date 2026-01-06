@@ -9,18 +9,11 @@
 # * in sequences of simulated mini-steps
 # *****************************************************************************/
 
-##@sienaRIDynamics
-sienaRIDynamics <- function(data, 
-	ans=NULL, 
-	theta=NULL, 
-	algorithm=NULL, 
-	effects=NULL, 
-	depvar = NULL, 
-	intervalsPerPeriod=10, 
-	n3 = NULL, 
-	useChangeContributions = FALSE,
-	silent = TRUE,
-	seed = NULL)
+##@interpret_size_dynamics
+interpret_size_dynamics <- function(data, ans=NULL, theta=NULL, 
+				algorithm=NULL, effects=NULL, depvar=NULL, intervalsPerPeriod=NULL, 
+				n3 = NULL, useChangeContributions = FALSE,
+				silent = TRUE, seed = NULL)
 {
 	if (!inherits(data, "siena"))
 	{
@@ -41,6 +34,10 @@ sienaRIDynamics <- function(data,
 		}
 	} else {
 		depvar <- attr(data$depvars,"names")[1]
+	}
+	if (!inherits(data, "sienadata"))
+	{
+		stop("data is not a legitimate Siena data specification")
 	}
     if(!is.null(intervalsPerPeriod) && !is.numeric(intervalsPerPeriod)){
         intervalsPerPeriod <- NULL

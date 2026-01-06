@@ -9,6 +9,138 @@
 ## * class sienaEffects
 ## *
 ## ****************************************************************************/
+
+set_effect <- function(x, ...) UseMethod("set_effect", x)
+
+##@set_effect.sienaEffects Methods new names
+# points to setEffect and includeEffects
+set_effect.sienaEffects <- function(x, shortNames, type="eval",
+			depvar=x$name[1], covar1="", covar2="",
+			effect1=0, effect2=0, effect3=0, period=1, group=1, 
+			parameter=NULL, initialValue = 0, random=FALSE,
+			timeDummy = ",", 
+			include=TRUE, fix=FALSE, test=FALSE, verbose=TRUE, ...)
+{
+	if (!hasArg(shortNames))
+	{
+		stop("Function set_effect needs one or more shortNames")
+	}
+# Test whether the shortNames are given as characters that are not objects:
+	suppressWarnings(notObjects <- inherits(try(shortNames[[1]], silent=TRUE), 
+										"try-error"), classes = "warning")
+	if (notObjects)
+	{
+		if (length(substitute(shortNames))==1)
+		{
+			shn1 <- substitute(shortNames)
+		}
+		else
+		{
+			shn1 <- substitute(shortNames)[-1]
+		}
+		shn2 <- sapply(shn1, function(x) deparse(x))	
+	}
+	else
+	{
+		if (length(shortNames)==1)
+		{
+			shn2 <- shortNames
+		}
+# else test whether the shortNames are {names of objects} or {character strings}:
+# (of course those objects also must be character strings)
+		else if (is.symbol(substitute(shortNames)[[2]])) # names of objects
+		{
+			shn2 <- unlist(shortNames)
+		}
+		else # character strings
+		{
+			shn1 <- substitute(shortNames)[-1]
+			shn2 <- sapply(shn1, function(x) x)	
+		}
+	}
+	if (length(shn2) == 0)
+	{
+		stop("Some shortNames are needed")
+	}
+	else if (length(shn2) == 1)
+	{
+		setEffect(x, shn2, parameter = parameter,
+			fix=fix, test=test, random=random, initialValue = initialValue,
+			timeDummy = timeDummy, include = include,
+			name = depvar, type = type, interaction1 = covar1, interaction2 = covar2, 
+			effect1=effect1, effect2=effect2, effect3=effect3,
+			period=period, group=group, character=TRUE, verbose = verbose)
+	}
+	else
+	{
+		if (hasArg(parameter))
+		{
+			warning("For more than one shortName, function set_effect does not consider parameters")
+		}		
+		includeEffects(x, shn2, include = TRUE, name = depvar, type = type,
+			interaction1 = covar1, interaction2 = covar2, fix=fix, test=test, character=TRUE,
+			verbose = verbose)
+	}
+}
+
+
+set_interaction <- function(x, ...) UseMethod("set_interaction", x)
+
+##@set_interaction.sienaEffects Methods new names
+set_interaction.sienaEffects <- function(x, shortNames, type="eval",
+			depvar=x$name[1], covar1=rep("", 3), covar2=rep("", 3), 
+			initialValue = 0, random=FALSE,
+			include=TRUE, fix=FALSE, test=FALSE, verbose=TRUE, ...)
+{
+# Same beginning as set_effect;
+# I (TS) did not succeed in making this part into a common function.
+	if (!hasArg(shortNames))
+	{
+		stop("Function set_interaction needs a list of two or three shortNames")
+	}
+# Test whether the shortNames are given as characters that are not objects:
+	suppressWarnings(notObjects <- inherits(try(shortNames[[1]], silent=TRUE), 
+										"try-error"), classes = "warning")
+	if (notObjects)
+	{
+		if (length(substitute(shortNames))==1)
+		{
+			shn1 <- substitute(shortNames)
+		}
+		else
+		{
+			shn1 <- substitute(shortNames)[-1]
+		}
+		shn2 <- sapply(shn1, function(x) deparse(x))	
+	}
+	else
+	{
+		if (length(shortNames)==1)
+		{
+			shn2 <- shortNames
+		}
+# else test whether the shortNames are {names of objects} or {character strings}:
+# (of course those objects also must be character strings)
+		else if (is.symbol(substitute(shortNames)[[2]])) # names of objects
+		{
+			shn2 <- unlist(shortNames)
+		}
+		else # character strings
+		{
+			shn1 <- substitute(shortNames)[-1]
+			shn2 <- sapply(shn1, function(x) x)	
+		}
+	}
+	if (hasArg("parameter"))
+	{
+		warning("Function set_interaction does not consider parameters")
+	}		
+	includeInteraction(x, shn2, include = include, name = depvar,
+    type = type, interaction1 = covar1, interaction2 =covar2,
+    fix=fix, test=test, random=random, initialValue=initialValue,
+    character = TRUE, verbose = verbose)
+}
+
 ##@print.sienaEffects Methods
 print.sienaEffects <- function(x, fileName=NULL, includeOnly=TRUE, 
     expandDummies=FALSE, includeRandoms=FALSE, dropRates=FALSE, includeShortNames=FALSE, ...)
@@ -453,3 +585,13 @@ updateSpecification <- function(effects.to, effects.from,
     }
     effects.to
 }
+
+update_specification <- function(x, ...) UseMethod("update_specification", x)
+
+##@update_specification Methods add specified effects from other effects object
+update_specification.sienaEffects <- function(x, effects.from,
+					effects.extra=NULL, name.to=NULL, name.from=NULL, ...){
+	updateSpecification(effects.to=x, effects.from=effects.from,
+		effects.extra=effects.extra, name.to=name.to, name.from=name.from)
+}
+

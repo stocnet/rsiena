@@ -1,14 +1,27 @@
-\name{sienaCompositionChange}
+\name{as_composition_rsiena}
 \Rdversion{1.1}
 \alias{sienaCompositionChange}
 \alias{sienaCompositionChangeFromFile}
+\alias{as_composition_rsiena}
+\alias{as_composition_file_rsiena}
 \title{
 Functions to create a Siena composition change object
 }
 \description{Used to create a list of events describing the changes    
-  over time of a Siena actor set.
+  over time of a Siena actor set.\cr  
+  The functions \code{as_composition_rsiena} and 
+  \code{sienaCompositionChange} \cr
+  are identical; the same holds for 
+  \code{as_composition_file_rsiena} and \cr
+  \code{sienaCompositionChangeFromFile}. 
+  The first of these names are preferred, 
+  the others are kept for backward compatibility.
 }
 \usage{
+as_composition_rsiena(changelist, nodeSet = "Actors", option = 1)
+as_composition_file_rsiena(filename, nodeSet = "Actors",
+    fileobj=NULL, option = 1)
+
 sienaCompositionChange(changelist, nodeSet = "Actors", option = 1)
 sienaCompositionChangeFromFile(filename, nodeSet = "Actors",
     fileobj=NULL, option = 1)
@@ -71,7 +84,10 @@ sienaCompositionChangeFromFile(filename, nodeSet = "Actors",
   actor was there at the start and left at wave 2 (giving valid data for wave 2),
   came back halfway between waves 3 and 4, and gave valid data still at wave 4;
   if there would be more than 4 waves in the data set, this entry would also
-  mean that the actor left at wave 4.
+  mean that the actor left at wave 4.\cr
+  Function \code{as_composition_rsiena} reads input from a list, \cr
+  and \code{as_composition_file_rsiena} from a file.
+  Further, they do the same.  
 \cr
   For data sets including a composition change object, estimation
   by Method of Moments is forced to be unconditional, overriding
@@ -94,21 +110,21 @@ sienaCompositionChangeFromFile(filename, nodeSet = "Actors",
    }
 \author{Ruth Ripley }
 \seealso{
- \code{\link{sienaNodeSet}},
- \code{\link{sienaDataCreate}}
+ \code{\link{as_nodeset_rsiena}},
+ \code{\link{make_data_rsiena}}
 }
 \examples{
   clist <- list(c(1, 3), c(1.4, 2.5))
   #or
   clist <- list(c("1", "3"), c("1.4", "2.5"))
 
-  compChange <- sienaCompositionChange(clist)
+  compChange <- as_composition_rsiena(clist)
 
-  s50net <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+  s50net <- as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)))
   s50list <- rep(list(c(1,3)), 50)
   # This is a trivial composition change: all actors are present in all waves.
-  compChange <- sienaCompositionChange(s50list)
-  s50data <- sienaDataCreate(s50net, compChange)
+  compChange <- as_composition_rsiena(s50list)
+  s50data <- make_data_rsiena(s50net, compChange)
   s50data
 
   \dontrun{
@@ -118,9 +134,9 @@ sienaCompositionChangeFromFile(filename, nodeSet = "Actors",
   ## file will be
   ## 1 3
   ## 1.4 2.5
-  compChange <- sienaCompositionChangeFromFile("cc.dat")
+  compChange <- as_composition_file_rsiena("cc.dat")
   }
 }
 % Add one or more standard keywords, see file "KEYWORDS" in the
 % R documentation directory.
-\keyword{ classes }
+\keyword{classes}

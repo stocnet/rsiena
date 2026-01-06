@@ -96,8 +96,8 @@ includeEffects <- function(myeff, ..., include=TRUE, name=myeff$name[1],
 }
 
 ##@includeInteraction DataCreate
-includeInteraction <- function(myeff, ...,
-				include=TRUE, name=myeff$name[1],
+includeInteraction <- function(x, ...,
+				include=TRUE, name=x$name[1],
 				type="eval", interaction1=rep("", 3), interaction2=rep("", 3),
 				fix=FALSE, test=FALSE, random=FALSE,
 				initialValue=0,
@@ -136,11 +136,11 @@ includeInteraction <- function(myeff, ...,
 	shortName <- shortNames[1]
 	interact1 <- interaction1[1]
 	interact2 <- interaction2[1]
-	use <- myeff$shortName == shortName &
-	myeff$type==type &
-	myeff$name==name &
-	myeff$interaction1 == interact1 &
-	myeff$interaction2 == interact2
+	use <- x$shortName == shortName &
+	x$type==type &
+	x$name==name &
+	x$interaction1 == interact1 &
+	x$interaction2 == interact2
 	if (sum(use) == 0)
 	{
 		stop("First effect not found")
@@ -149,16 +149,16 @@ includeInteraction <- function(myeff, ...,
 	{
 		stop("First effect not unique")
 	}
-	effect1 <- myeff[use, "effectNumber"]
+	effect1 <- x[use, "effectNumber"]
 	## find the second underlying effect
 	shortName <- shortNames[2]
 	interact1 <- ifelse (length(interaction1) > 1, interaction1[2], "")
 	interact2 <- ifelse (length(interaction2) > 1, interaction2[2], "")
-	use <- myeff$shortName == shortName &
-	myeff$type==type &
-	myeff$name==name &
-	myeff$interaction1 == interact1 &
-	myeff$interaction2 == interact2
+	use <- x$shortName == shortName &
+	x$type==type &
+	x$name==name &
+	x$interaction1 == interact1 &
+	x$interaction2 == interact2
 	if (sum(use) == 0)
 	{
 		stop("Second effect not found")
@@ -167,18 +167,18 @@ includeInteraction <- function(myeff, ...,
 	{
 		stop("Second effect not unique")
 	}
-	effect2 <- myeff[use, "effectNumber"]
+	effect2 <- x[use, "effectNumber"]
 	## find the third underlying effect, if any
 	if (length(shortNames) > 2)
 	{
 		shortName <- shortNames[3]
 		interact1 <- ifelse (length(interaction1) > 2, interaction1[3], "")
 		interact2 <- ifelse (length(interaction2) > 2, interaction2[3], "")
-		use <- myeff$shortName == shortName &
-		myeff$type==type &
-		myeff$name==name &
-		myeff$interaction1 == interact1 &
-		myeff$interaction2 == interact2
+		use <- x$shortName == shortName &
+		x$type==type &
+		x$name==name &
+		x$interaction1 == interact1 &
+		x$interaction2 == interact2
 		if (sum(use) == 0)
 		{
 			stop("Third effect not found")
@@ -187,22 +187,22 @@ includeInteraction <- function(myeff, ...,
 		{
 			stop("Third effect not unique")
 		}
-		effect3 <- myeff[use, "effectNumber"]
+		effect3 <- x[use, "effectNumber"]
 	}
 	else
 	{
 		effect3 <- 0
 	}
     ## interaction effects not yet implemented for continuous behavior
- #   if (any(myeff$netType[c(effect1, effect2, effect3)] == "continuous"))
+ #   if (any(x$netType[c(effect1, effect2, effect3)] == "continuous"))
  #   {
  #       stop("Interaction effects not yet implemented for continuous behavior")
  #   }
 	## does the effect already exist?
-	intn <- (myeff$effect1 == effect1) & (myeff$effect2 == effect2)
+	intn <- (x$effect1 == effect1) & (x$effect2 == effect2)
 	if (effect3 > 0)
 	{
-		intn <- intn & (myeff$effect3 == effect3)
+		intn <- intn & (x$effect3 == effect3)
 	}
 	# intn indicates the rows of the effects object with this interaction
 	if (sum(intn) >= 2)
@@ -217,13 +217,13 @@ includeInteraction <- function(myeff, ...,
 	if ((include) && (sum(intn) == 0))
 	{
 		# The interaction must be created
-		ints <- myeff[myeff$name == name & myeff$shortName %in%
+		ints <- x[x$name == name & x$shortName %in%
 			c("unspInt", "behUnspInt", "contUnspInt") &
-			(is.na(myeff$effect1) | myeff$effect1 == 0)&
-			myeff$type == type, ]
+			(is.na(x$effect1) | x$effect1 == 0)&
+			x$type == type, ]
 		if (nrow(ints) == 0)
 		{
-			baseEffect<- myeff[myeff$name == name, ][1, ]
+			baseEffect<- x[x$name == name, ][1, ]
 			if (baseEffect$netType == "behavior")
 			{
 				stop("Use getEffects() with a larger value for behNintn.")
@@ -234,17 +234,17 @@ includeInteraction <- function(myeff, ...,
 			}
 		}
 		ints <- ints[1, ]
-		intn <- myeff$effectNumber == ints$effectNumber
+		intn <- x$effectNumber == ints$effectNumber
 	}
 	if (include)
 	{
-		myeff[intn, "include"] <- include
-		myeff[intn, c("effect1", "effect2", "effect3")] <-
+		x[intn, "include"] <- include
+		x[intn, c("effect1", "effect2", "effect3")] <-
 			c(effect1, effect2, effect3)
-		myeff[intn, "fix"] <- fix
-		myeff[intn, "test"] <- test
-		myeff[intn, "randomEffects"] <- random
-		myeff[intn, "initialValue"] <- initialValue
+		x[intn, "fix"] <- fix
+		x[intn, "test"] <- test
+		x[intn, "randomEffects"] <- random
+		x[intn, "initialValue"] <- initialValue
 	}
 	else
 	{
@@ -254,11 +254,11 @@ includeInteraction <- function(myeff, ...,
 		}
 		else
 		{
-			myeff[intn, "include"] <- FALSE
+			x[intn, "include"] <- FALSE
 		}
 	}
 #
-	myeff <- fixUpEffectNames(myeff)
+	x <- fixUpEffectNames(x)
 	if (verbose)
 	{
 		intn2 <- intn
@@ -268,19 +268,19 @@ includeInteraction <- function(myeff, ...,
 		{
 			intn[effect3] <- TRUE
 		}
-		myeff2 <- myeff[intn,]	
+		myeff2 <- x[intn,]	
 		print.sienaEffects(myeff2, includeOnly=FALSE, includeRandoms=random,
 								includeShortNames=TRUE)
 	}
-	myeff
+	x
 }
 
 ##@setEffect DataCreate
-setEffect <- function(myeff, shortName, parameter=NULL,
+setEffect <- function(x, shortName, parameter=NULL,
 					fix=FALSE, test=FALSE, random=FALSE,
 					initialValue=0,
 					timeDummy=",",
-					include=TRUE, name=myeff$name[1],
+					include=TRUE, name=x$name[1],
 					type="eval", interaction1="", interaction2="",
 					effect1=0, effect2=0, effect3=0,
 					period=1, group=1, character=FALSE, verbose=TRUE)
@@ -304,17 +304,17 @@ setEffect <- function(myeff, shortName, parameter=NULL,
 	{
 	    stop("\n To include a GMoM statistic use the function includeGMoMStatistics.")
 	}
-	use <- myeff$shortName == shortName &
-			myeff$name == name &
-			myeff$type == type &
-			myeff$interaction1 == interaction1 &
-			myeff$interaction2 == interaction2 &
-			(is.na(myeff$period) | myeff$period == period) &
-			myeff$group == group
+	use <- x$shortName == shortName &
+			x$name == name &
+			x$type == type &
+			x$interaction1 == interaction1 &
+			x$interaction2 == interaction2 &
+			(is.na(x$period) | x$period == period) &
+			x$group == group
 	if (shortName %in% c("unspInt", "behUnspInt", "contUnspInt"))
 	{
-		use <- use & (myeff$include) & (myeff$effect1 == effect1) &
-			(myeff$effect2 == effect2) & (myeff$effect3 == effect3)
+		use <- use & (x$include) & (x$effect1 == effect1) &
+			(x$effect2 == effect2) & (x$effect3 == effect3)
 	}
 	if (sum(use) == 0)
 	{
@@ -338,58 +338,58 @@ setEffect <- function(myeff, shortName, parameter=NULL,
 	}
 	if (!is.null(parameter)) 
 	{
-		olderParameter <- myeff[use, "parm"]
-		myeff[use, "parm"] <- parameter
+		olderParameter <- x[use, "parm"]
+		x[use, "parm"] <- parameter
 	}
-	myeff[use, "include"] <- include
-	myeff[use, "fix"] <- fix
-	myeff[use, "test"] <- test
-	myeff[use, "initialValue"] <- initialValue
-	myeff[use, "timeDummy"] <- timeDummy
-	myeff[use, "randomEffects"] <- random
-	if (grepl("#", myeff[use, "effectName"], fixed=TRUE))
+	x[use, "include"] <- include
+	x[use, "fix"] <- fix
+	x[use, "test"] <- test
+	x[use, "initialValue"] <- initialValue
+	x[use, "timeDummy"] <- timeDummy
+	x[use, "randomEffects"] <- random
+	if (grepl("#", x[use, "effectName"], fixed=TRUE))
 	{
 # This means the original names in row[use,] in allEffects.csv were not yet changed
-		myeff[use, "effectName"] <- 
-              gsub("#", myeff[use, "parm"], myeff[use, "effectName"], fixed=TRUE)
-		myeff[use, "functionName"] <- 
-              gsub("#", myeff[use, "parm"], myeff[use, "functionName"], fixed=TRUE)
+		x[use, "effectName"] <- 
+              gsub("#", x[use, "parm"], x[use, "effectName"], fixed=TRUE)
+		x[use, "functionName"] <- 
+              gsub("#", x[use, "parm"], x[use, "functionName"], fixed=TRUE)
 	}
 	else if (!is.null(parameter))
     {
 # replace what originally were strings "1/#" or "(#)" or "= #" or  "+ #" or "- #" or "#-" 
 # Other original uses of # will not be replaced!
 		oldParameter <- paste("1/", olderParameter, sep="")
-		newParameter <- paste("1/", myeff[use, "parm"], sep="")
-		myeff[use,] <- replace.myeff(myeff, use, oldParameter, newParameter)
+		newParameter <- paste("1/", x[use, "parm"], sep="")
+		x[use,] <- replace.myeff(x, use, oldParameter, newParameter)
 		oldParameter <- paste("(", olderParameter, ")", sep="")
-		newParameter <- paste("(", myeff[use, "parm"], ")", sep="")
-		myeff[use,] <- replace.myeff(myeff, use, oldParameter, newParameter)
+		newParameter <- paste("(", x[use, "parm"], ")", sep="")
+		x[use,] <- replace.myeff(x, use, oldParameter, newParameter)
 		oldParameter <- paste("= ", olderParameter, sep="")
-		newParameter <- paste("= ", myeff[use, "parm"], sep="")
-		myeff[use,] <- replace.myeff(myeff, use, oldParameter, newParameter)
+		newParameter <- paste("= ", x[use, "parm"], sep="")
+		x[use,] <- replace.myeff(x, use, oldParameter, newParameter)
 		oldParameter <- paste("+ ", olderParameter, sep="")
-		newParameter <- paste("+ ", myeff[use, "parm"], sep="")
-		myeff[use,] <- replace.myeff(myeff, use, oldParameter, newParameter)
+		newParameter <- paste("+ ", x[use, "parm"], sep="")
+		x[use,] <- replace.myeff(x, use, oldParameter, newParameter)
 		oldParameter <- paste("- ", olderParameter, sep="")
-		newParameter <- paste("- ", myeff[use, "parm"], sep="")
-		myeff[use,] <- replace.myeff(myeff, use, oldParameter, newParameter)
+		newParameter <- paste("- ", x[use, "parm"], sep="")
+		x[use,] <- replace.myeff(x, use, oldParameter, newParameter)
 		oldParameter <- paste(olderParameter, "-", sep="")
-		newParameter <- paste(myeff[use, "parm"], "-", sep="")
-		myeff[use,] <- replace.myeff(myeff, use, oldParameter, newParameter)
+		newParameter <- paste(x[use, "parm"], "-", sep="")
+		x[use,] <- replace.myeff(x, use, oldParameter, newParameter)
 	}
 	if (verbose)
 	{		
-		myeff2 <- myeff[use,]		
+		myeff2 <- x[use,]		
 		print.sienaEffects(myeff2, includeOnly=FALSE, includeRandoms=random,
 								includeShortNames=TRUE)
 	}
-	myeff
+	x
 }
 
 ##@includeGMoMStatistics DataCreate
-includeGMoMStatistics <- function(myeff, ..., include=TRUE, name=myeff$name[1],
-                                  interaction1="", interaction2="",
+includeGMoMStatistics <- function(myeff, ..., include=TRUE, depvar=myeff$name[1],
+                                  covar1="", covar2="",
                                   character=FALSE, verbose=TRUE)
 {
   if (character)
@@ -412,11 +412,22 @@ includeGMoMStatistics <- function(myeff, ..., include=TRUE, name=myeff$name[1],
   {
     effectNames <- dots
   }
+  if (hasArg("name"))
+  {
+		stop("The name of the dependent variable now should be given as 'depvar', not 'name'.
+      See the help file for includeGMoMStatistics.  ")
+  }
+  if (hasArg("interaction1") | hasArg("interaction2"))
+  {
+		stop("The name of the explanatory variable now should be given 
+    as 'covar1' and 'covar2', not 'interaction1' and 'interaction2'.
+    See the help file for includeGMoMStatistics.  ")
+  }
   use <- myeff$shortName %in% effectNames &
     myeff$type=="gmm" &
-    myeff$name==name &
-    myeff$interaction1 == interaction1 &
-    myeff$interaction2 == interaction2
+    myeff$name==depvar &
+    myeff$interaction1 == covar1 &
+    myeff$interaction2 == covar2
   myeff[use, "include"] <- include
   myeff[use, "test"] <- FALSE
   myeff[use, "fix"] <- TRUE
@@ -425,9 +436,9 @@ includeGMoMStatistics <- function(myeff, ..., include=TRUE, name=myeff$name[1],
   {
     cat(paste("There is no GMoM statistic with short name "))
     cat(paste(effectNames,", \n", sep=""))
-    cat(paste("and with interaction1 = <",interaction1,">, ", sep=""))
-    cat(paste("interaction2 = <",interaction2,">, ", sep=""))
-    cat(paste("for dependent variable",name,".\n"))
+    cat(paste("and with interaction1 = <",covar1,">, ", sep=""))
+    cat(paste("interaction2 = <",covar2,">, ", sep=""))
+    cat(paste("for dependent variable",depvar,".\n"))
   }
   else
   {

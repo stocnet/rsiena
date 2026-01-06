@@ -10,6 +10,7 @@
  *****************************************************************************/
 
 #include <stdexcept>
+#include <cmath>
 
 #include "AltersCovariateAvAltEffect.h"
 #include "data/Data.h"
@@ -31,11 +32,63 @@ namespace siena
  * Constructor.
  */
 AltersCovariateAvAltEffect::AltersCovariateAvAltEffect(
-	const EffectInfo * pEffectInfo, bool divide) :
+	const EffectInfo * pEffectInfo, bool divide, bool same) :
 	CovariateAndNetworkBehaviorEffect(pEffectInfo)
 {
 	this->ldivide = divide;
 	// Indicates whether there will be division by the outdegree of ego
+	this->lsame = same;
+	// Indicates whether there will be restriction to same covariate
+}
+
+/**
+ * Does the necessary preprocessing work for calculating the tie flip
+ * contributions for a specific ego. This method must be invoked before
+ * calling NetworkEffect::calculateTieFlipContribution(...).
+ */
+void AltersCovariateAvAltEffect::preprocessEgo(int ego)
+{
+// do not repeat all this:	CovariateAndNetworkBehaviorEffect::preprocessEgo(ego);
+    this->lTotalAlterValue = 0;
+	const Network * pNetwork = this->pNetwork();
+
+	if (pNetwork->outDegree(ego) > 0)
+	{
+		double totalAlterValue = 0;
+		double covEgo = this->covariateValue(ego);
+		int neighborCount = 0;
+
+		for (IncidentTieIterator iter = pNetwork->outTies(ego);
+			iter.valid();
+			iter.next())
+		{
+			int j = iter.actor();                // identifies alter
+			if (this->lsame)
+			{
+				if (fabs(this->covariateValue(j) - covEgo) < 1e-6)
+				{
+					totalAlterValue +=  this->centeredValue(j);
+					neighborCount++;
+				}
+			}
+			else
+			{
+				totalAlterValue +=  this->centeredValue(j) * this->covariateValue(j);
+				neighborCount++;
+			}
+		}
+		if  (neighborCount > 0)
+		{
+			if (this->ldivide)
+			{
+				this->lTotalAlterValue = totalAlterValue / neighborCount;
+			}
+			else
+			{
+			this->lTotalAlterValue = totalAlterValue;
+			}
+		}
+	}	
 }
 
 
@@ -46,35 +99,7 @@ AltersCovariateAvAltEffect::AltersCovariateAvAltEffect(
 double AltersCovariateAvAltEffect::calculateChangeContribution(int actor,
 	int difference)
 {
-	double contribution = 0;
-	const Network * pNetwork = this->pNetwork();
-
-	if (pNetwork->outDegree(actor) > 0)
-	{
-
-		double totalAlterValue = 0;
-
-		for (IncidentTieIterator iter = pNetwork->outTies(actor);
-			iter.valid();
-			iter.next())
-		{
-			int j = iter.actor();                // identifies alter
-			double alterValue = this->centeredValue(j) * this->covariateValue(j);
-			totalAlterValue += alterValue;
-		}
-
-		if (this->ldivide)
-		{
-			contribution = difference * totalAlterValue /
-				pNetwork->outDegree(actor);
-		}
-		else
-		{
-			contribution = difference * totalAlterValue;
-		}
-	}
-
-	return contribution;
+	return difference * this->lTotalAlterValue;
 }
 
 /**
@@ -86,6 +111,7 @@ double AltersCovariateAvAltEffect::egoStatistic(int ego, double * currentValues)
 	double statistic = 0;
 	const Network * pNetwork = this->pNetwork();
 	int neighborCount = 0;
+	double covEgo = this->covariateValue(ego);
 
 	for (IncidentTieIterator iter = pNetwork->outTies(ego);
 		 iter.valid();
@@ -96,17 +122,34 @@ double AltersCovariateAvAltEffect::egoStatistic(int ego, double * currentValues)
 		if (!this->missing(this->period(), j) &&
 			!this->missing(this->period() + 1, j) &&
 			!this->missingCovariate(j,this->period()))
-		{
-			statistic += currentValues[j] * this->covariateValue(j);
-			neighborCount++;
+		{	
+			if (this->lsame)
+			{
+				if (fabs(this->covariateValue(j) - covEgo) < 1e-6)
+				{
+					statistic += currentValues[j];
+					neighborCount++;
+				}
+			}
+			else
+			{
+				statistic += currentValues[j] * this->covariateValue(j);
+				neighborCount++;
+			}			
 		}
 	}
 
-	if ((neighborCount > 0) && (this->ldivide))
+	if (neighborCount > 0) 
 	{
-		statistic *= currentValues[ego] / neighborCount;
+		if (this->ldivide)
+		{
+			statistic *= currentValues[ego] / neighborCount;
+		}
+		else
+		{
+			statistic *= currentValues[ego];
+		}
 	}
-
 	return statistic;
 }
 
@@ -120,9 +163,11 @@ double AltersCovariateAvAltEffect::egoEndowmentStatistic(int ego,
 	double * currentValues)
 {
 	double statistic = 0;
+	int neighborCount = 0;
+	double covEgo = this->covariateValue(ego);
 	const Network * pNetwork = this->pNetwork();
 
-	if (difference[ego] > 0 && !this->missingDummy(ego) && (pNetwork->outDegree(ego) > 0)) // otherwise, nothing to calculate...
+	if ((difference[ego] > 0) && !this->missingDummy(ego) && (pNetwork->outDegree(ego) > 0)) // otherwise, nothing to calculate...
 	{
 		double totalAlterValue = 0;
 
@@ -131,18 +176,31 @@ double AltersCovariateAvAltEffect::egoEndowmentStatistic(int ego,
 				iter.next())
 		{
 			int j = iter.actor();                // identifies alter
-			double alterValue = this->centeredValue(j) * this->covariateValue(j);
-			totalAlterValue += alterValue;
+			if (this->lsame)
+			{
+				if (fabs(this->covariateValue(j) - covEgo) < 1e-6)
+				{
+					totalAlterValue += currentValues[j];
+					neighborCount++;
+				}
+			}
+			else
+			{
+				totalAlterValue += currentValues[j] * this->covariateValue(j);
+				neighborCount++;
+			}			
 		}
 
-		if (this->ldivide)
+		if (neighborCount > 0)
 		{
-			statistic -= difference[ego] * totalAlterValue /
-				pNetwork->outDegree(ego);
-		}
-		else
-		{
-			statistic -= difference[ego] * totalAlterValue;
+			if (this->ldivide)
+			{
+				statistic = - difference[ego] * totalAlterValue / neighborCount;
+			}
+			else
+			{
+				statistic = - difference[ego] * totalAlterValue;
+			}
 		}
 	}
 	return statistic;

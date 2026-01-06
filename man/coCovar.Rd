@@ -2,10 +2,12 @@
 \alias{coCovar}
 \title{Function to create a constant covariate object}
 \description{
-  This function creates a constant covariate object from a vector.  
+  This function creates a constant covariate object from a vector.  \cr
+   This function now is superseded by function \code{\link{as_covariate_rsiena}}.
   }
 \usage{
-coCovar(val, centered=TRUE, nodeSet="Actors", warn=TRUE, imputationValues=NULL)
+coCovar(val, centered=TRUE, nodeSet="Actors", warn=TRUE, 
+        imputationValues=NULL)
 }
 \arguments{
   \item{val}{Vector of covariate values}
@@ -39,9 +41,10 @@ coCovar(val, centered=TRUE, nodeSet="Actors", warn=TRUE, imputationValues=NULL)
 }
 \references{See \url{https://www.stats.ox.ac.uk/~snijders/siena/}}
 \author{Ruth Ripley}
-\seealso{\code{\link{sienaDataCreate}}, \code{\link{varCovar}},
-\code{\link{coDyadCovar}}, \code{\link{varDyadCovar}},
-\code{\link{sienaNodeSet}}}
+\seealso{\code{\link{as_covariate_rsiena}},
+\code{\link{sienaDataCreate}}, \code{\link{varCovar}},
+\code{\link{coDyadCovar}}, \cr
+\code{\link{varDyadCovar}}, \code{\link{sienaNodeSet}}}
 \examples{
 
 myconstCovar <- coCovar(s50a[,1])

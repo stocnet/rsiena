@@ -9,21 +9,18 @@
 # * for potential decisions of actors at observation moments.
 # *****************************************************************************/
 
-##@sienaRI
-sienaRI <- function(data, 
-	ans=NULL, 
-	theta=NULL, 
-	algorithm=NULL, 
-	effects=NULL,
+##@interpret_size
+sienaRI <- function(data, ans=NULL, theta=NULL, effects=NULL,
 	getChangeStats=FALSE)
 {
-	if (!inherits(data, "siena"))
+	if (!inherits(data, "sienadata") && !inherits(data, "siena"))
 	{
 		stop("not a legitimate Siena data specification")
 	}
 	datatypes <- sapply(data$depvars, function(x){attr(x,"type")})
 	if (any(datatypes == "bipartite"))
 	{
+#		stop("interpret_size works only for dependent variables of type 'oneMode' or 'behavior'")
 	}
 	## add option to read previously calculated changeContributions? not relevant?
 	if(!is.null(ans))  
@@ -32,20 +29,21 @@ sienaRI <- function(data,
 		{
 			stop(paste("ans is not a legitimate Siena fit object", sep=""))
 		}
-		# if(!is.null(algorithm)||!is.null(theta)||!is.null(effects))
+		# if (!is.null(theta)||!is.null(effects))
 		# {
 		# 	warning(paste("some informations are multiply defined \n",
-		# 			"results will be based on 'theta', 'algorithm', and 
-		# 			'effects'\n", "stored in 'ans' (as 'ans$theta', 'ans$x', 
-		# 			'ans$effects')\n", sep=""))
+		# 			"results will be based on 'theta' and 'effects'\n",
+		# 			"stored in 'ans' (as 'ans$theta','ans$effects')\n", sep=""))
+		# }
+		# if (sum(ans$effects$include==TRUE &
+		# 		(ans$effects$type =="endow"|ans$effects$type =="creation")) > 0)
+		# {
+		# 	stop("interpret_size does not yet work for models containing endowment or creation effects")
 		# }
 		# We are now taking passed values instead of those from ans
 		# Does not need a warning as this should be expected behavior?
 		if(is.null(theta)){
 			theta <- ans$theta
-		}
-		if(is.null(algorithm)){
-			algorithm <- ans$x
 		}
 		# does not work when interactions are present WITHOUT base effects
 		if(is.null(effects)){
@@ -69,11 +67,6 @@ sienaRI <- function(data,
         }
 		}
 	}
-	if (!inherits(algorithm, "sienaAlgorithm"))
-	{
-		stop(paste("algorithm is not a legitimate Siena algorithm 
-			specification", sep=""))
-	}
 	if (!inherits(effects, "sienaEffects"))
 	{
 		stop(paste("effects is not a legitimate Siena effects object", sep=""))
@@ -81,7 +74,7 @@ sienaRI <- function(data,
 	if(sum(effects$include==TRUE &
 				(effects$type =="endow"|effects$type =="creation")) > 0)
 	{
-		stop("sienaRI does not yet work for models containing endowment or 
+		stop("interpret_size does not yet work for models containing endowment or 
 			creation effects")
 	}
 	if (!is.numeric(theta))
@@ -96,13 +89,12 @@ sienaRI <- function(data,
 				parameters has to match number of effects")
 		}
 		warning(paste("length of theta does not match the number of 
-			objective function effects\n", "theta is treated as if 
-				containing rate parameters"))
+			objective function effects\n", 
+			"theta is treated as if containing rate parameters"))
 	}
 	contributions <- getStaticChangeContributions(
 		ans = ans,
 		data = data,
-		algorithm = algorithm, 
 		effects = effects,
 		depvar = NULL,
 		returnDataFrame = FALSE
@@ -161,14 +153,14 @@ expectedRelativeImportance <- function(conts, effects, theta, data=NULL,
 			{
 				if (dim(depNetwork)[2] >= actors)
 				{
-					stop("sienaRI does not work for bipartite networks with 
+					stop("interpret_size does not work for bipartite networks with
 						second mode >= first mode")
 				}
 				choices <- dim(depNetwork)[2] + 1
 			}
 			else
 			{
-				stop("sienaRI does not work for dependent variables of type 
+				stop("interpret_size does not work for dependent variables of type
 					'continuous'")
 			}
 
@@ -181,7 +173,7 @@ expectedRelativeImportance <- function(conts, effects, theta, data=NULL,
 			{
 				depNetwork[,,1][is.na(depNetwork[,,1])] <- attr(depNetwork, 'modes')[1]
 			}
-			# impute for next period;
+			# impute for next periods;
 			# this may be undesirable for structurals immediately followed by NA...
 			for (m in 2:dim(depNetwork)[3]){depNetwork[,,m][is.na(depNetwork[,,m])] <-
 				depNetwork[,,m-1][is.na(depNetwork[,,m])]}
@@ -194,8 +186,8 @@ expectedRelativeImportance <- function(conts, effects, theta, data=NULL,
 			structurals <- (depNetwork >= 10)
 			if (networkTypes[eff] == "oneMode"){
 				if (attr(depNetwork, 'symmetric')){
-					message('\nNote that for symmetric networks, 
-						effect sizes are for modelType 2 
+					message('\nNote that for symmetric networks,
+						effect sizes are for modelType 2
 						(forcing).')
 					}
 				}
@@ -268,8 +260,8 @@ expectedRelativeImportance <- function(conts, effects, theta, data=NULL,
 						function(x){matrix(x[[1]], nrow=effNumber+1,
 							ncol=choices, byrow=F)})
 				# distributions is a list, length = number of actors
-				# distributions[[i]] is for actor i, a matrix of dim (effects + 1) 
-				# * (actors as alters) giving the probability of toggling the 
+				# distributions[[i]] is for actor i, a matrix of dim (effects + 1)
+				# * (actors as alters) giving the probability of toggling the
 				# tie variable to the alters;
 				# the first row is for the unchanged parameter vector theta,
 				# each of the following has put one element of theta to 0.
@@ -284,8 +276,8 @@ expectedRelativeImportance <- function(conts, effects, theta, data=NULL,
 					toggleProbabilities[,,w] <-
 						t(vapply(distributions, function(x){x[1,]}, rep(0,choices)))
 				}
-				# toggleProbabilities is an array referring to ego * choices * 
-				# period, giving the probability of ego in a ministep at the 
+				# toggleProbabilities is an array referring to ego * choices *
+				# period, giving the probability of ego in a ministep at the
 				# start of the period to make this choice.
 				# For oneMode networks choices are alters;
 				# for  bipartite choices are second mode nodes,and the last is "no change";
@@ -559,7 +551,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 				legendColumns <- as.integer(legendColumns)
 			}else{
 				legendColumns <- NULL
-				warning("legendColumns has to be of type 'numeric' \n used default settings")
+warning("legendColumns has to be of type 'numeric' \n used default settings")
 			}
 		}
 		if(is.null(legendColumns))
@@ -573,7 +565,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 				legendHeight <- legendHeight
 			}else{
 				legendHeight <- NULL
-				warning("legendHeight has to be of type 'numeric' \n used default settings")
+warning("legendHeight has to be of type 'numeric' \n used default settings")
 			}
 		}
 		if(is.null(legendHeight))
@@ -589,7 +581,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 			height <- height
 		}else{
 			height <- NULL
-			warning("height has to be of type 'numeric' \n used default settings")
+warning("height has to be of type 'numeric' \n used default settings")
 		}
 	}
 	if(is.null(height))
@@ -604,7 +596,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 			width <- width
 		}else{
 			width <- NULL
-			warning("width has to be of type 'numeric' \n used default settings")
+warning("width has to be of type 'numeric' \n used default settings")
 		}
 	}
 	if(is.null(width))
@@ -624,7 +616,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 			cex.legend <- cex.legend
 		}else{
 			cex.legend <- NULL
-			warning("cex.legend has to be of type 'numeric' \n used default settings")
+warning("cex.legend has to be of type 'numeric' \n used default settings")
 		}
 	}
 	if(is.null(cex.legend))
@@ -639,7 +631,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 			cex.names <- cex.names
 		}else{
 			cex.names <- NULL
-			warning("cex.names has to be of type 'numeric' \n used default settings")
+warning("cex.names has to be of type 'numeric' \n used default settings")
 		}
 	}
 	if(is.null(cex.names))
@@ -654,7 +646,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 			rad <- radius
 		}else{
 			rad <- NULL
-			warning("radius has to be of type 'numeric' \n used default settings")
+		warning("radius has to be of type 'numeric' \n used default settings")
 		}
 	}
 	if(is.null(radius))
