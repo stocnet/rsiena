@@ -25,6 +25,17 @@ docs/manual/TexAux/
 NEWSnew.md
 man/Show.*
 
+
+check/*
+docs/manual/*.aux
+docs/manual/*.bbl
+docs/manual/*.blg
+docs/manual/*.log
+docs/manual/*.out
+docs/manual/*.toc
+docs/manual/*.fdb_latexmk
+docs/manual/*.fls
+
 # Logfiles
 
 *.txt
