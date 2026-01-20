@@ -216,10 +216,10 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.6.0.
+This version was renewed for \RS version 1.6.1.
 
 In version 1.6, the names of \RS functions have undergone
-important changes. 
+important changes.
 \end{abstract}
 
 
@@ -1187,7 +1187,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.6.0).
+  identified by a version number (e.g.\ 1.6.1).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -1235,27 +1235,27 @@ are in the same help pages in the R system.
 For many functions this is just a name change.
 The main differences are the following.
 \begin{enumerate}
-  \item The algorithm now does not have to be specified for 
+  \item The algorithm now does not have to be specified for
         standard use. The name of the output text file generated
         by the estimation is called \texttt{dataName\_out.txt},
-        where \texttt{dataName} is the name of the data object.        
+        where \texttt{dataName} is the name of the data object.
   \item Constructing the algorithm is split into three functions:
         \begin{enumerate}
         \item \sfn{set\_model\_saom} for defining the general model
              (e.g., \texttt{modelType});
-        \item \sfn{set\_algorithm\_saom} for defining the 
+        \item \sfn{set\_algorithm\_saom} for defining the
               method and algorithm for estimation (e.g., settings of the
               Robbins-Monro algorithm, maximum likelihood estimation);
-        \item \sfn{set\_output\_saom} for defining the output to be    
+        \item \sfn{set\_output\_saom} for defining the output to be
                created (e.g., different name for the text output file).
-        \end{enumerate}  
-  \item The estimation function now is called \sfn{siena} 
+        \end{enumerate}
+  \item The estimation function now is called \sfn{siena}
         instead of \sfn{siena07}.
         Its first argument is the data set; omitting the algorithm objects
-        is usual, and will lead to a default estimation. 
-  \item Constructing covariates is done by one function, 
+        is usual, and will lead to a default estimation.
+  \item Constructing covariates is done by one function,
         \sfn{as\_covariate\_rsiena}; the distinction between monadic and dyadic,
-        and between changing or time-constant, is made by the 
+        and between changing or time-constant, is made by the
         structure of the input object and the further arguments
         (see the table below).
   \item Including effects is done by one function, \sfn{set\_effect}.\\
@@ -1265,7 +1265,7 @@ The main differences are the following.
         and \texttt{covar2}, replacing the earlier (less fortunate)
         names \texttt{name}, \texttt{interaction1}, and \texttt{interaction2}.
   \item For defining interactions, the function \sfn{set\_interaction}
-        requires to give the \texttt{shortNames} of the two or three 
+        requires to give the \texttt{shortNames} of the two or three
         interacting effects in a list.
 \end{enumerate}
 
@@ -1273,11 +1273,11 @@ In departure of the general rule that the old names are retained
 in view of compatibility, the following names were canceled:
 \begin{enumerate}[resume]
   \item The names \sfn{sienaRI} and \sfn{sienaRIDynamics}
-        are not retained, and replaced by \sfn{interpret\_size} and   
-        \sfn{interpret\_size\_dynamics}; these functions still are not 
+        are not retained, and replaced by \sfn{interpret\_size} and
+        \sfn{interpret\_size\_dynamics}; these functions still are not
         final.
   \item The name \sfn{siena.table} is not retained but replaced
-         by  \sfn{siena\_table}; 
+         by  \sfn{siena\_table};
          however, the new (and preferred) name is \sfn{write\_result}.
   \item \sfn{model.create}, an alias for \sfn{sienaAlgorithmCreate},
         was dropped.
@@ -1285,7 +1285,7 @@ in view of compatibility, the following names were canceled:
 
 The following table gives the correspondence between the old and new names.
 The `how' column indicates by the letter `A' that the change is
-just an alias, or can be treated as such; the letter `C' 
+just an alias, or can be treated as such; the letter `C'
 indicates that the arguments also changed.
 
 \begin{center}
@@ -1331,7 +1331,7 @@ Old name  & new name & how \\
  sienaBayes             &  multi\_siena             &  ? \\
  simulateData           &  simulate                 &  ?  \\
 \hline
-                                     
+
 \end{tabular}
 
  $\bigotimes$  = old name not retained.
@@ -2989,7 +2989,8 @@ The basic list of these and other effects is as follows.
                 ties effect ($\alpha = 0$) and for the transitive
                 triplets effect ($\alpha = \infty$). The default for gwesp
                 is  $\alpha = 0.69$, corresponding to an internal effect
-                parameter of 69.
+                parameter of 69 (see Section~\ref{S_effpar} for internal effect
+                parameters).
       \item[d.] There are various other effects that may express network closure,
                 such as the \emph{balance} effect, the
                 \emph{Jaccard similarity effects} for incoming and for outgoing ties,
@@ -3112,7 +3113,8 @@ The basic list of these and other effects is as follows.
      `because' of their high current out-degrees.
      This also leads to dispersion in out-degrees of the actors.
 \item The \emph{ reciprocal degree activity effect} (where internal effect
-     parameter with value 2 will be the `sqrt' version).
+     parameter with value 2 will be the `sqrt' version;
+     see Section~\ref{S_effpar} for internal effect parameters).
      This reflects tendencies for
      actors with high reciprocal degrees (number of other actors
      to whom the actor has incoming as well as outgoing ties) to send out extra outgoing ties
@@ -4107,6 +4109,7 @@ be said to be interacting with the dependent variable (network or behavior).
 \subsubsection{Internal effect parameters for interaction effects}
 \label{intint}
 
+Internal effect parametes are treated in Section~\ref{S_effpar}.
 Function \sfn{setEffect} has a keyword \texttt{parameter} to set the
 internal effect parameter, but the function  \sfn{includeInteraction} does not
 have this keyword. The reason is that the internal effect parameters for the
@@ -9620,6 +9623,10 @@ homophily-like tendencies.
 There are some specific effects for two-mode networks, e.g.,
 the four-cycle effect.
 
+
+\subsubsection{Internal effect parameters}
+\label{S_effpar}
+
 \hypertarget{T_effpar}{
 Some of the effects contain a number which is denoted in this section
 by $p$, and called in this manual an \emph{internal effect parameter}.
@@ -9634,9 +9641,13 @@ These are set or modified by the \texttt{setEffect} function, e.g.,
 \begin{verbatim}
 myeffects <- setEffect(myeffects, gwespFF, parameter = 69)
 \end{verbatim}
-%These numbers can be determined by the user
-%by changing the \textsf{{\em pname}.mo} file
-%described in Section~\ref{S_mo3file}.
+The value of the internal effect parameter is mirrored in the
+effect name shown in \RS results; e.g., the effect mentioned here
+will be represented as\\
+\texttt{GWESP I->K->J (69)} \ ;\\
+as another example, when the internal effect parameter refers to taking a square root,
+this will be reflected by \texttt{sqrt} in the effect name.
+
 
 \subsection{Network evolution}
 The model of network evolution consists of the model of actors'
@@ -17796,12 +17807,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type
-\verb|R CMD check RSiena_1.6.0.tar.gz|\\
+\verb|R CMD check RSiena_1.6.1.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.6.0.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.6.1.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -18291,10 +18302,13 @@ Recall that effectGroups are used in the file \texttt{allEffects.csv}
 and in function \sfn{effects.r}.
 
 In the function \textsf{getEffects} in file \sfn{effects.r}, some additional
-measures are taken for effects in effectGroup \sfn{covarBipartiteEff}.
+measures are taken for effects in effectGroup \sfn{covarBipartiteObjective},
+because this effect group does not differentiate between effects of covariates
+defined on the first or on the second mode.
 This implies that for adding such effects, it will be necessary to see whether
 this function (i.e., \textsf{getEffects}) also must be modified;
-this will have to be done in function \sfn{covarBipartiteEff}.
+this will have to be done 
+in function \sfn{covarBipartiteEff} in file \sfn{effects.r}.
 (Note: it would be preferable perhaps to have separate effect classes
 for covariates on the first and on the second mode, as done for the effect
 groups in the following paragraphs.)
@@ -18445,6 +18459,15 @@ Changes in RSiena:
 \fi
 
 
+\item 2026-01-20 GitHub, package version 1.6.1
+
+Changes in RSiena:
+\begin{itemize}
+\item New effects:
+   \begin{itemize}
+   \item Effects \texttt{sameXOutAct}, \texttt{diffXOutAct}, \texttt{crossXOutAct} also implemented for two-mode networks.
+    \end{itemize}
+\end{itemize}
 
 \item 2026-01-02 GitHub, package version 1.6.0
 
@@ -18455,15 +18478,15 @@ Changes in RSiena:
    \item Overhaul of naming system of exported functions.
         Old function names still are available.
         See Chapter~\ref{S_names}.
-   \item Chapter 3 was inserted in the manual to explain 
+   \item Chapter 3 was inserted in the manual to explain
     the new function names.
    \item Class name \texttt{siena} for siena data sets
-     replaced by \texttt{sienadata}. 
+     replaced by \texttt{sienadata}.
     \end{itemize}
 \item Coding:
    \begin{itemize}
     \item Completely refactored diffusion rate effects.
-    \item For \sfn {sienaRI}: corrected contributions for the 
+    \item For \sfn {sienaRI}: corrected contributions for the
     first potential ministep in each period, and dropped calculation of the
     first ministep after the last observation wave, and the
     RI measure at the last observation moment. \\
@@ -18472,27 +18495,27 @@ Changes in RSiena:
 \item New effects:
    \begin{itemize}
   \item New distance 2 exposure diffusion rate effects \texttt{totInExposureDist2},
-  \texttt{totAInExposureDist2}, \texttt{anyInExposureDist2}, 
+  \texttt{totAInExposureDist2}, \texttt{anyInExposureDist2},
   behavior effects \texttt{totPopAlt},
-  \texttt{totGroup}, \texttt{indegAvGroup}, \texttt{indegtotGroup}, 
+  \texttt{totGroup}, \texttt{indegAvGroup}, \texttt{indegtotGroup},
   \texttt{totGwdspFFAlt}, \texttt{totGwdspFBAlt\_nc} (Daniel Gotthardt).
   \item New behavior effects without centering \texttt{quad\_nc},
   \texttt{avInAltDist2\_nc}, \texttt{totInAltDist2\_nc}, \\
   \texttt{avTinaltDist2\_nc}, \texttt{totAInAltDist2\_nc},
   \texttt{totGwdspFFAlt\_nc}, \texttt{totGwdspFBAlt\_nc}.
- \item New effects \texttt{avSameXAlt}, \texttt{totSameXAlt}, 
+ \item New effects \texttt{avSameXAlt}, \texttt{totSameXAlt},
  \texttt{avSameXInAlt}, \texttt{totSameXInalt},
-  \texttt{avXRecAlt}, \texttt{totXRecAlt}, \texttt{avSameXRecAlt}, 
+  \texttt{avXRecAlt}, \texttt{totXRecAlt}, \texttt{avSameXRecAlt},
   \texttt{totSameXRecAlt},
-  \texttt{avAltSameX}, \texttt{totAltSameX}, \texttt{avRecAltSameX}, 
+  \texttt{avAltSameX}, \texttt{totAltSameX}, \texttt{avRecAltSameX},
   \texttt{totRecAltSameX}.
-  \item New effects \texttt{avInAltAltX}, \texttt{totInAltAltX}, 
+  \item New effects \texttt{avInAltAltX}, \texttt{totInAltAltX},
   \texttt{avRecAltAltX}, \texttt{totRecAltAltX},
     \texttt{avInAltSameX}, \texttt{totInAltSameX}.
     \end{itemize}
 \item Improvements of functionality:
    \begin{itemize}
-    \item Distinguished between three algorithm objects. 
+    \item Distinguished between three algorithm objects.
     See Chapter~\ref{S_names}.
     \end{itemize}
 \item Bug corrections:

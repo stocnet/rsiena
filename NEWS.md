@@ -1,3 +1,15 @@
+2026-01-20
+
+# RSiena 1.6.1
+
+## Changes in RSiena:
+### New effects
+  * Effects `sameXOutAct`, `diffXOutAct`, `crossXOutAct` also implemented
+    for two-mode networks.
+  * Parameter values 0 and -1 added for `outAct` and `inPop`. 
+### Coding
+  * <math.h> replaced by <cmath> in C++ code.
+
 2026-01-04
 
 # RSiena 1.6.0
