@@ -1352,12 +1352,12 @@ It is necessary to redefine either \nnm{egoStatistic} or \nnm{tieStatistic}.
 For main effects, the redefined \nnm{tieStatistic} is not used
 if there also is a redefined \nnm{egoStatistic}.
 However, for network interaction effects of dyadic and ego effects,
-defined in Sections~\ref{S_dyadic} and~\ref{S_ego}, 
-the \nnm{tieStatistics} are calculated 
+defined in Sections~\ref{S_dyadic} and~\ref{S_ego},
+the \nnm{tieStatistics} are calculated
 as the products of the corresponding main
-effects (this happens in \nnm{NetworkInteractionEffect.cpp}). 
-Therefore, to be able to use a network effect in interactions, 
-it is necessary to redefine the \nnm{tieStatistic}. 
+effects (this happens in \nnm{NetworkInteractionEffect.cpp}).
+Therefore, to be able to use a network effect in interactions,
+it is necessary to redefine the \nnm{tieStatistic}.
 
 The "number of distances equal to 2" effect is an example of an effect
 where decomposition (\ref{sum_tiestat}) is not straightforward,
@@ -1586,7 +1586,7 @@ and --1 if the simulated value is higher than the observed value at the
 start of the period.
 
 Therefore, in all functions \texttt{egoEndowmentStatistic},\\
-the condition \texttt{ (difference[ego] > 0)} is required.  
+the condition \texttt{ (difference[ego] > 0)} is required.
 
 In function \nnm{BehaviorEffect::creationStatistic}, \\
 the negative value
@@ -1632,7 +1632,7 @@ the change as\[
   \textrm{difference}  * s_{ik_1}^{Z0}(x,z) \, s_{ik_2}^{Z0}(x,z)  \ .
 \]
 
-I have I hope this is correct. I have multiplied together the terms for each ego
+I hope this is correct. I have multiplied together the terms for each ego
 and then divided by the value or difference until only one value or difference
 is retained.
 
@@ -1888,9 +1888,9 @@ are used.
 Functions \nnm{StatisticCalculator::calculateNetworkRateStatistics} and
 \nnm{StatisticCalculator::calculateBehaviorRateStatistics}
 in \nnm{StatisticCalculator.cpp}
-calculate the rate functions. In addition to calculating rate statistics, 
-RSiena also computes scores for rate effects. These scores are calculated in 
-functions such as \nnm{getStatistics} in \texttt{siena07internals.cpp} and in 
+calculate the rate functions. In addition to calculating rate statistics,
+RSiena also computes scores for rate effects. These scores are calculated in
+functions such as \nnm{getStatistics} in \texttt{siena07internals.cpp} and in
 methods of \nnm{DependentVariable} and \nnm{EpochSimulation}.
 
 The \texttt{RateX} effect is defined in a funny way.
@@ -1899,29 +1899,30 @@ It is identified by being the only rate effect of type "covariate",
 together with the dependent variable name and the explanatory variable,
 given by the parameter "interaction1".
 
-\subsection{Diffusion rate effects}
+\subsection{Diffusion rate effects\protect\footnote{This 
+    section was contributed by Daniel Gotthardt.}}
 
-Diffusion rate effects can be added and modified more easily than other rate 
-effects, as they are implemented as a distinct class, \nnm{DiffusionRateEffect}, 
-which inherits from \nnm{BehaviorRateEffect}. The method 
-\nnm{DiffusionRateEffect::calculateRateContribution} returns the value used in 
-the calculation of rates, scores, and statistics in both \nnm{DependentVariable} 
-and \nnm{StatisticCalculator}, each of which creates its own instances of 
+Diffusion rate effects can be added and modified more easily than other rate
+effects, as they are implemented as a distinct class, \nnm{DiffusionRateEffect},
+which inherits from \nnm{BehaviorRateEffect}. The method
+\nnm{DiffusionRateEffect::calculateRateContribution} returns the value used in
+the calculation of rates, scores, and statistics in both \nnm{DependentVariable}
+and \nnm{StatisticCalculator}, each of which creates its own instances of
 diffusion rate effects.
 
-The contribution to the rate function is calculated by\\ 
-\nnm{DiffusionRateEffect::proximityValue}, which must be defined in each 
-diffusion rate class (or is otherwise pure virtual). To create a new 
-\nnm{DiffusionRateEffect}, one should define a new class inheriting from 
-\nnm{DiffusionRateEffect} and implement the mathematical definition of the 
-rate effect in the \nnm{proximityValue} method. New diffusion rate effects 
-must also be explicitly constructed and initialized in 
-\nnm{DependentVariable::initializeRateFunction} and 
-\nnm{StatisticCalculator::calculateBehaviorRateStatistics}. Additionally, 
-they must be registered as known diffusion rate effects in the \nnm{getStatistics} 
+The contribution to the rate function is calculated by\\
+\nnm{DiffusionRateEffect::proximityValue}, which must be defined in each
+diffusion rate class (or is otherwise pure virtual). To create a new
+\nnm{DiffusionRateEffect}, one should define a new class inheriting from
+\nnm{DiffusionRateEffect} and implement the mathematical definition of the
+rate effect in the \nnm{proximityValue} method. New diffusion rate effects
+must also be explicitly constructed and initialized in
+\nnm{DependentVariable::initializeRateFunction} and
+\nnm{StatisticCalculator::calculateBehaviorRateStatistics}. Additionally,
+they must be registered as known diffusion rate effects in the \nnm{getStatistics}
 function in \texttt{siena07internals.cpp}.
 
-Further refactoring of all rate effects and their construction and storage may 
+Further refactoring of all rate effects and their construction and storage may
 be possible to make the code more uniform and easier to maintain.
 
 

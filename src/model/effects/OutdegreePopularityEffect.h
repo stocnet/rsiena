@@ -67,6 +67,8 @@ private:
 	bool lcentered {};
 	bool lthreshold {};
 	bool ltrunc {};
+	bool luseStart {};
+	bool luseBoth {};
 	double lp {};
 	double lcentering {};
 	string lvariableName {};
