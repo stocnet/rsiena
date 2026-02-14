@@ -100,7 +100,7 @@ predictDynamic <- function(
     sum.fun = mean,
     na.rm = TRUE,
     n3 = 1000,
-    useChangeContributions = TRUE,
+    useChangeContributions = FALSE,
     uncertainty = TRUE,
     useCluster = FALSE,
     nbrNodes = 1,
@@ -136,13 +136,15 @@ predictDynamic <- function(
         effects = effects,
         type = type,
         depvar = depvar,
-        n3 = n3
+        n3 = n3,
+        useChangeContributions = FALSE, # estimator toggles this for EXPECTED only
+        silent = silent
     )
 
     sienaPostestimate(
         predictFun = predictFun,
         predictArgs = predictArgs,
-        outcome = c("changeProb", "tieProb"),
+        outcome = type,
         level = level,
         condition = condition,
         sum.fun = sum.fun,
@@ -226,6 +228,10 @@ sienaPostestimate <- function(
     gc_each_sim = FALSE,
     memory_scale = NULL
 ) {
+    if (length(outcome) != 1L) {
+        stop("'outcome' must be a single column name.")
+    }
+
     estimator <- makeEstimator(
         predictFun = predictFun,
         predictArgs = predictArgs,
@@ -237,7 +243,8 @@ sienaPostestimate <- function(
     )
 
     if (!is.null(useChangeContributions)) {
-        expect <- estimator(theta_hat, useChangeContributions = useChangeContributions)
+        expect <- estimator(theta_hat, 
+          useChangeContributions = useChangeContributions)
     } else {
         expect <- estimator(theta_hat)
     }
@@ -474,6 +481,7 @@ agg <- function(ME,
                 condition = NULL,
                 sum.fun = mean,
                 na.rm = TRUE) {
+  if (length(ME) != 1L) stop("'ME' must be a single column name.")
   levels <- list(
     none = character(0),
     period = "period",

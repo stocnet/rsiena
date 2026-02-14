@@ -285,7 +285,6 @@ getDynamicChangeContributions <- function(ans = NULL,
                                           theta=NULL, 
                                           data = NULL, 
                                           algorithm = NULL,
-                                          control_algo = NULL, 
                                           effects = NULL,
                                           depvar = NULL,
                                           n3 = NULL, 
@@ -315,12 +314,7 @@ getDynamicChangeContributions <- function(ans = NULL,
     using the number of chains stored in 'ans'.")
   }
   if(!useChangeContributions) # could be extracted to a separate function
-  {
-    if (is.null(algorithm) && !is.null(control_algo)) {
-      algorithm <- control_algo
-    }
-
-    ## algorithm should not be necessary anymore when using new siena() function
+  {    ## algorithm should not be necessary anymore when using new siena() function
     if (is.null(algorithm))
     {
       stop("Must provide 'algorithm' when useChangeContributions=FALSE.")
@@ -368,27 +362,20 @@ getDynamicChangeContributions <- function(ans = NULL,
         stop("theta is not a legitimate parameter vector")
       }
     }
-    control_algorithm <- algorithm
-
-    # Prepare control_algo for simulating only phase 3
-    control_algorithm$nsub <- 0
+    algorithm$nsub <- 0
     if (!is.null(n3)) 
     {
-      control_algorithm$n3 <- as.integer(n3)
+      algorithm$n3 <- as.integer(n3)
     }
     if(!is.null(seed))
     {
       if(is.numeric(seed))
       {
-        control_algorithm$randomSeed <- as.integer(seed)
+        algorithm$seed <- as.integer(seed)
       } else {
         warning("'seed' has to be of type 'numeric' \n used default settings")
       }
     }
-
-    control_algorithm$returnDeps <- FALSE
-    control_algorithm$returnChangeContributions <- TRUE
-    control_algorithm$returnDataFrame <- returnDataFrame
 
     # Update effects initial values with provided theta to sample chains from
     # specificed parameter values in phase 3 of siena07
@@ -401,13 +388,16 @@ getDynamicChangeContributions <- function(ans = NULL,
         theta <- c(ans$rate, theta) # if unconditional estimation?
     }
     effects$initialValue[effects$include] <- theta
-    ans <- siena(
-      data=data, 
-      effects=effects,
-      control_algo = control_algorithm,
-      initC=FALSE, # why?
-      silent = silent)
-  }
+    ans <- siena07(
+        algorithm, 
+        data=data, 
+        effects=effects,
+        initC=FALSE, # why?
+        returnDeps=FALSE, 
+        returnChangeContributions=TRUE, 
+        returnDataFrame = returnDataFrame,
+        silent = silent)
+    }
 
   changeContributions <- ans$changeContributions
 
