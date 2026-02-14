@@ -24,7 +24,7 @@ sienaAMEDynamic <- function(
     sum.fun = mean,
     na.rm = TRUE,
     n3 = 500,
-    useChangeContributions = TRUE,
+    useChangeContributions = FALSE, # should only be used for static case
     uncertainty = TRUE,
     nsim = 100,
     useCluster = FALSE,
@@ -37,10 +37,21 @@ sienaAMEDynamic <- function(
     combine_batch = TRUE,
     keep_batch = FALSE,
     verbose = TRUE,
-    mainEffect = "riskDifference", # or "RiskRatio"
-    details = FALSE
+    mainEffect = "riskDifference",
+    details = FALSE,
+    memory_scale = NULL
 ){
     type <- match.arg(type)
+    if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
+
+    if (is.null(memory_scale)) {
+        memory_scale <- compute_memory_scale(
+            data = data,
+            depvar = depvar,
+            dynamic = TRUE,
+            n3 = n3
+        )
+    }
     if(!second){
         diffName <- ifelse(mainEffect == "riskDifference", 
             "firstDiff", 
@@ -60,7 +71,7 @@ sienaAMEDynamic <- function(
             type = type,
             depvar = depvar,
             n3 = n3,
-            useChangeContributions = FALSE,
+            useChangeContributions = useChangeContributions,
             mainEffect = mainEffect,
             details = details
         )
@@ -89,27 +100,13 @@ sienaAMEDynamic <- function(
             type = type,
             depvar = depvar,
             n3 = n3,
-            useChangeContributions = FALSE,
+            useChangeContributions = useChangeContributions,
             mainEffect = mainEffect,
             details = details
         )
         ME <- "secondDiff"
     }
     
-    if (is.null(batch_size)) {
-    n_actors <- nrow(data$depvars[[1]])
-    # Heuristic: smaller batches for larger networks
-    if (n_actors < 50) {
-        batch_size <- 10
-    } else if (n_actors < 100) {
-        batch_size <- 5
-    } else {
-        batch_size <- 2
-    }
-    # Ensure batch_size is at least nbrNodes, but not more than nsim
-    batch_size <- min(max(batch_size, nbrNodes), nsim)
-    }
-
     sienaPostestimate(
         predictFun = diffFun,
         predictArgs = predictArgs,
@@ -118,8 +115,8 @@ sienaAMEDynamic <- function(
         condition = condition,
         sum.fun = sum.fun,
         na.rm = na.rm,
-        theta_hat = ans[["theta"]],
-        cov_theta = ans[["covtheta"]],
+        theta_hat = ans$theta,
+        cov_theta = ans$covtheta,
         uncertainty = uncertainty,
         nsim = nsim,
         useCluster = useCluster,
@@ -132,7 +129,8 @@ sienaAMEDynamic <- function(
         batch_size = batch_size,
         keep_batch = keep_batch,
         verbose = verbose,
-        useChangeContributions = useChangeContributions
+        useChangeContributions = useChangeContributions,
+        memory_scale = memory_scale
     )
 }
 
@@ -176,9 +174,19 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
 
     df <- widenDynamicContribution(df)
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
-    df <- addProbabilityColumn(df, group_vars=c("chain", "period", "ministep"), type = type)
-    df <- subset(df, df[["density"]] != 0)
-    df <- cbind(df, calculateFirstDiff(
+    df <- addProbabilityColumn(df, 
+        group_vars = c("chain", "period", "ministep"), 
+        type = type
+    )
+
+    if (requireNamespace("data.table", quietly = TRUE) && 
+        data.table::is.data.table(df)) {
+        df <- df[df[["density"]] != 0]
+    } else {
+        df <- df[df[["density"]] != 0, , drop = FALSE]
+    }
+
+    fd <- calculateFirstDiff(
         densityValue = df[["density"]],
         changeProb = df[["changeProb"]],
         changeUtil = df[["changeUtil"]],
@@ -196,8 +204,14 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
         details = details,
         calcRiskRatio = calcRiskRatio,
         mainEffect = mainEffect
-      )
     )
+    if (requireNamespace("data.table", quietly = TRUE) && data.table::is.data.table(df)) {
+        df[, (names(fd)) := fd]
+    } else {
+        df[names(fd)] <- fd
+    }
+    rm(fd)
+
     df <- conditionalReplace(df, df[["density"]] == -1, setdiff(effectNames, "density"), function(x) x * -1)
     df
 }
@@ -216,6 +230,7 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
     mod_effectNames2 = NULL,
     n3 = NULL,
     useChangeContributions = FALSE,
+    calcRiskRatio = FALSE,
     mainEffect = "riskDifference",
     details = FALSE
 ){
@@ -232,7 +247,6 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
     }
     thetaNoRate <- theta[effectNames]
 
-
     df <- getDynamicChangeContributions(
         ans = ans,
         data = data,
@@ -246,10 +260,16 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
     )  
     df <- widenDynamicContribution(df)
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
-    df <- addProbabilityColumn(df, group_vars = c("chain", "period", "ministep"), type = type)
-    df <- subset(df, df[["density"]] != 0)
-    df <- cbind(df, calculateSecondDiff(
-        densityValue = df[["density"]], 
+    df <- addProbabilityColumn(df, 
+        group_vars = c("chain", "period", "ministep"), type = type)
+    if (requireNamespace("data.table", quietly = TRUE) && 
+        data.table::is.data.table(df)) {
+        df <- df[df[["density"]] != 0]
+    } else {
+        df <- df[df[["density"]] != 0, , drop = FALSE]
+    }
+    sd <- calculateSecondDiff(
+        densityValue = df[["density"]],
         changeProb = df[["changeProb"]],
         changeUtil = df[["changeUtil"]],
         effectName1 = effectName1, diff1 = diff1, contrast1 = contrast1,
@@ -267,13 +287,20 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
         effectNames = effectNames,
         theta = thetaNoRate,
         type = type,
-        tieProb = df[["tieProb"]], # if not tieProb NULL?
+        tieProb = df[["tieProb"]],
         details = details,
         calcRiskRatio = calcRiskRatio,
         mainEffect = mainEffect
-        )
     )
 
-  df <- conditionalReplace(df, df[["density"]] == -1, setdiff(effectNames, "density"), function(x) x * -1)
-  df
+    if (requireNamespace("data.table", quietly = TRUE) && data.table::is.data.table(df)) {
+        df[, (names(sd)) := sd]
+    } else {
+        df[names(sd)] <- sd
+    }
+    rm(sd)
+
+    df <- conditionalReplace(df, df[["density"]] == -1, 
+        setdiff(effectNames, "density"), function(x) x * -1)
+    df
 }

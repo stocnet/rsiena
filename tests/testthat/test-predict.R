@@ -211,7 +211,7 @@ test_that("predict.sienaFit with custom interactions & without main effect (base
   with_mocked_bindings(
     {
       pred_df <- predict(
-        ans = ans2,
+        object = ans2,
         newdata = mydata2,
         effects = mymodel2,
         uncertainty = FALSE

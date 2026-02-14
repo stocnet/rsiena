@@ -11,18 +11,16 @@
 
 getStaticChangeContributions <- function(ans = NULL,
                                          data,
-                                         algorithm = NULL,
                                          effects = NULL,
                                          depvar = NULL,
                                          returnDataFrame = FALSE) {
   # Flexible argument handling
   if (!is.null(ans)) {
-    if (is.null(algorithm)) algorithm <- ans$x
     if (is.null(effects)) effects <- ans$requestedEffects 
     # does not work for interactions without base effects?
   }
-  if (is.null(data) || is.null(algorithm) || is.null(effects)) {
-    stop("Must provide either 'ans' or all of 'algorithm' and 'effects'.")
+  if (is.null(data) || is.null(effects)) {
+    stop("Must provide either 'ans' or all of 'data' and 'effects'.")
   }
   # Remove rate effects
   noRate <- effects$type != "rate"
@@ -37,15 +35,15 @@ getStaticChangeContributions <- function(ans = NULL,
   }
 
   # Prepare for C++ call
-  if (!is.null(algorithm$settings)) {
-    stop('not implemented: RI together with settings')
-  } else {
-    pData <- sienaSetupDataForCpp(algorithm,
-                                  data,
-                                  includeBehavior = TRUE,
-                                  includeBipartite = FALSE)
-    setup <- sienaSetupEffectsForCpp(pData, data, effects)
-  }
+  # Settings can not be checked without algorithm?
+  # if (!is.null(algorithm$settings)) {
+  #   stop('not implemented: RI together with settings')
+  # } else {
+  pData <- sienaSetupDataForCpp(data,
+                                includeBehavior = TRUE,
+                                includeBipartite = FALSE)
+  setup <- sienaSetupEffectsForCpp(pData, data, effects)
+  #}
 
   staticChangeContributions <- .Call(C_getStaticChangeContributions, PACKAGE = pkgname,
                                      pData, setup$pModel, setup$myeffects,
@@ -119,10 +117,10 @@ getStaticChangeContributions <- function(ans = NULL,
 }
 
 ##@sienaSetupDataForCpp Use as RSiena:::sienaSetupDataForCpp
-sienaSetupDataForCpp <- function(algorithm, data, 
+sienaSetupDataForCpp <- function(data, 
                              includeBehavior = TRUE, 
                              includeBipartite = TRUE) {
-    f <- unpackData(data, algorithm)
+    f <- unpackData(data)
     pData <- .Call(C_setupData, PACKAGE=pkgname,
                    list(as.integer(f$observations)),
                    list(f$nodeSets))
@@ -286,7 +284,8 @@ widenStaticContribution <- function(changeContributions){
 getDynamicChangeContributions <- function(ans = NULL, 
                                           theta=NULL, 
                                           data = NULL, 
-                                          algorithm = NULL, 
+                                          algorithm = NULL,
+                                          control_algo = NULL, 
                                           effects = NULL,
                                           depvar = NULL,
                                           n3 = NULL, 
@@ -317,13 +316,19 @@ getDynamicChangeContributions <- function(ans = NULL,
   }
   if(!useChangeContributions) # could be extracted to a separate function
   {
+    if (is.null(algorithm) && !is.null(control_algo)) {
+      algorithm <- control_algo
+    }
+
+    ## algorithm should not be necessary anymore when using new siena() function
     if (is.null(algorithm))
     {
       stop("Must provide 'algorithm' when useChangeContributions=FALSE.")
     } 
     else
     {
-      if (!inherits(algorithm, "sienaAlgorithm")) 
+      if (!inherits(algorithm, "sienaAlgorithm") && 
+        !inherits(algorithm, "sienaAlgorithmSettings")) 
       {
         stop("algorithm is not a legitimate Siena algorithm specification")
       }
@@ -333,7 +338,7 @@ getDynamicChangeContributions <- function(ans = NULL,
       stop("Must provide 'data' when useChangeContributions=FALSE ")
     } else 
     {
-      if (!inherits(data, "siena")) {
+      if (!inherits(data, "sienadata") && !inherits(data, "siena")) {
         stop("'data' is not a legitimate Siena data specification")
       }
     }
@@ -363,21 +368,28 @@ getDynamicChangeContributions <- function(ans = NULL,
         stop("theta is not a legitimate parameter vector")
       }
     }
-    # Prepare algorithm for simulating only phase 3
-    algorithm$nsub <- 0
+    control_algorithm <- algorithm
+
+    # Prepare control_algo for simulating only phase 3
+    control_algorithm$nsub <- 0
     if (!is.null(n3)) 
     {
-      algorithm$n3 <- as.integer(n3)
+      control_algorithm$n3 <- as.integer(n3)
     }
     if(!is.null(seed))
     {
       if(is.numeric(seed))
       {
-        algorithm$seed <- as.integer(seed)
+        control_algorithm$randomSeed <- as.integer(seed)
       } else {
         warning("'seed' has to be of type 'numeric' \n used default settings")
       }
     }
+
+    control_algorithm$returnDeps <- FALSE
+    control_algorithm$returnChangeContributions <- TRUE
+    control_algorithm$returnDataFrame <- returnDataFrame
+
     # Update effects initial values with provided theta to sample chains from
     # specificed parameter values in phase 3 of siena07
     include <- effects[["include"]]
@@ -389,14 +401,11 @@ getDynamicChangeContributions <- function(ans = NULL,
         theta <- c(ans$rate, theta) # if unconditional estimation?
     }
     effects$initialValue[effects$include] <- theta
-    ans <- siena07(
-      algorithm, 
+    ans <- siena(
       data=data, 
       effects=effects,
+      control_algo = control_algorithm,
       initC=FALSE, # why?
-      returnDeps=FALSE, 
-      returnChangeContributions=TRUE, 
-      returnDataFrame = returnDataFrame,
       silent = silent)
   }
 

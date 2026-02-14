@@ -207,7 +207,6 @@ test_that("getStaticChangeContributions with custom interactions & without main 
   stat_dt <- getStaticChangeContributions(
       ans = ans2,
       data = mydata2,
-      algorithm = mycontrols2,
       effects = mymodel2,
       depvar = "mynet2",
       returnDataFrame = TRUE
@@ -224,7 +223,6 @@ test_that("getStaticChangeContributions with custom interactions & without main 
       stat_df <- getStaticChangeContributions(
           ans = ans2,
           data = mydata2,
-          algorithm = mycontrols2,
           effects = mymodel2,
           depvar = "mynet2",
           returnDataFrame = TRUE

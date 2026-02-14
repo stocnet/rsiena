@@ -192,7 +192,8 @@ myalgo2 <- set_algorithm_saom(nsub=1, n3=32, seed=1777, cond=TRUE)
 (ans2 <- siena(mydata, effects=mymodel, control_algo=myalgo2,
             control_out=myout, batch=TRUE))
 
-RIDynamics2 <- interpret_size_dynamics(mydata, ans=ans2, effects=mymodel)
+RIDynamics2 <- interpret_size_dynamics(mydata, ans=ans2, effects=mymodel,
+             algorithm=myalgo2)
 RIDynamics2
 
 

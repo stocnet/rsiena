@@ -109,6 +109,22 @@ sienaRI <- function(data, ans=NULL, theta=NULL, effects=NULL,
 	RIValues
 }
 
+interpret_size <- function(x, ...) UseMethod("interpret_size", x)
+
+##@interpret_size  method for sienaEffects objects
+interpret_size.sienaEffects <- function(x, data,
+		theta, getChangeStats=FALSE, ...)
+{
+    sienaRI(data, theta=theta, effects=x,
+					getChangeStats=getChangeStats)
+}
+
+##@interpret_size  method for sienaFit objects
+interpret_size.sienaFit <- function(x, data, getChangeStats=FALSE, ...)
+{
+    sienaRI(data=data, ans=x, getChangeStats=getChangeStats)
+}
+
 expectedRelativeImportance <- function(conts, effects, theta, data=NULL,
 	getChangeStatistics=FALSE, effectNames = NULL)
 {

@@ -24,7 +24,15 @@ docs/manual/TexAux/
 *.Rproj
 NEWSnew.md
 man/Show.*
-
+check/*
+docs/manual/*.aux
+docs/manual/*.bbl
+docs/manual/*.blg
+docs/manual/*.fdb_latexmk
+docs/manual/*.fls
+docs/manual/*.log
+docs/manual/*.out
+docs/manual/*.toc
 # Logfiles
 
 *.txt

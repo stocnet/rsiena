@@ -15,7 +15,7 @@ interpret_size_dynamics <- function(data, ans=NULL, theta=NULL,
 				n3 = NULL, useChangeContributions = FALSE,
 				silent = TRUE, seed = NULL)
 {
-	if (!inherits(data, "siena"))
+	if (!inherits(data, "siena") && !inherits(data, "sienadata"))
 	{
 		stop("not a legitimate Siena data specification")
 	}

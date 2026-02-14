@@ -22,47 +22,51 @@ predict.sienaFit <- function(
     batch_size = NULL,
     keep_batch = FALSE,
     verbose = TRUE,
+    memory_scale = NULL,
     ...
-    ){
-        type <- match.arg(type)
-        # depvar restriction is not necessary anymore?
-        if (is.null(depvar)) depvar <- names(newdata[["depvars"]])[1]
-        staticContributions <- getStaticChangeContributions(
-            ans = object,
-            data = newdata,
-            effects = effects,
-            depvar = depvar,
-            returnDataFrame = TRUE
-        )
-        probFun <- predictProbability
-        predictArgs <- list(
-            ans = object,
-            staticContributions = staticContributions,
-            type = type
-        )
-        sienaPostestimate(
-            predictFun = probFun,
-            predictArgs = predictArgs,
-            outcome = type,
-            level = level,
-            condition = condition,
-            sum.fun = sum.fun,
-            na.rm = na.rm,
-            theta_hat = object[["theta"]], # change into coef
-            cov_theta = object[["covtheta"]], # change into cov
-            uncertainty = uncertainty,
-            nsim = nsim,
-            useCluster = useCluster,
-            nbrNodes = nbrNodes,
-            clusterType = clusterType,
-            cluster = cluster,
-            batch_dir = batch_dir,
-            prefix = prefix,
-            combine_batch = combine_batch,
-            batch_size = batch_size,
-            keep_batch = keep_batch,
-            verbose = verbose
-        )
+  ){
+      type <- match.arg(type)
+      if (is.null(depvar)) depvar <- names(newdata[["depvars"]])[1]
+      if (is.null(memory_scale)) {
+        memory_scale <- compute_memory_scale(newdata, depvar, dynamic = FALSE)
+      }
+      staticContributions <- getStaticChangeContributions(
+          ans = object,
+          data = newdata,
+          effects = effects,
+          depvar = depvar,
+          returnDataFrame = TRUE
+      )
+      probFun <- predictProbability
+      predictArgs <- list(
+          ans = object,
+          staticContributions = staticContributions,
+          type = type
+      )
+      sienaPostestimate(
+          predictFun = probFun,
+          predictArgs = predictArgs,
+          outcome = type,
+          level = level,
+          condition = condition,
+          sum.fun = sum.fun,
+          na.rm = na.rm,
+          theta_hat = object[["theta"]], # change into coef
+          cov_theta = object[["covtheta"]], # change into cov
+          uncertainty = uncertainty,
+          nsim = nsim,
+          useCluster = useCluster,
+          nbrNodes = nbrNodes,
+          clusterType = clusterType,
+          cluster = cluster,
+          batch_dir = batch_dir,
+          prefix = prefix,
+          combine_batch = combine_batch,
+          batch_size = batch_size,
+          keep_batch = keep_batch,
+          verbose = verbose,
+          memory_scale = memory_scale
+      )
 }
 
 predictProbability <- function(ans, staticContributions, theta, type = "changeProb") {
@@ -106,48 +110,60 @@ predictDynamic <- function(
     batch_dir = "temp",
     prefix = "simBatch_b",
     combine_batch = TRUE,
-    batch_size = 10,
+    batch_size = NULL,
     keep_batch = FALSE,
     verbose = TRUE,
-    silent = TRUE
-    ){
-        type <- match.arg(type)
-        if (is.null(depvar)) depvar <- names(newdata[["depvars"]])[1]
-        predictDynamicArgs <- list(
-            ans = ans,
+    silent = TRUE,
+    memory_scale = NULL
+){
+    type <- match.arg(type)
+    if (is.null(depvar)) depvar <- names(newdata[["depvars"]])[1]
+
+    if (is.null(memory_scale)) {
+        memory_scale <- compute_memory_scale(
             data = newdata,
-            effects = effects,
-            algorithm = algorithm,
-            type = type,
             depvar = depvar,
-            n3 = n3,
-            useChangeContributions = FALSE,
-            silent = silent
+            dynamic = TRUE,
+            n3 = n3
         )
-        sienaPostestimate(
-            predictFun = predictProbabilityDynamic,
-            predictArgs = predictDynamicArgs,
-            outcome = type,
-            level = level,
-            condition = condition,
-            sum.fun = sum.fun,
-            na.rm = na.rm,
-            theta_hat = ans[["theta"]],
-            cov_theta = ans[["covtheta"]],
-            uncertainty = uncertainty,
-            nsim = nsim,
-            useCluster = useCluster,
-            nbrNodes = nbrNodes,
-            clusterType = clusterType,
-            cluster = cluster,
-            batch_dir = batch_dir,
-            prefix = prefix,
-            combine_batch = combine_batch,
-            batch_size = batch_size,
-            keep_batch = keep_batch,
-            verbose = verbose,
-            useChangeContributions = useChangeContributions
-        )
+    }
+
+    predictFun <- predictProbabilityDynamic
+    predictArgs <- list(
+        ans = ans,
+        data = newdata,
+        algorithm = algorithm,
+        effects = effects,
+        type = type,
+        depvar = depvar,
+        n3 = n3
+    )
+
+    sienaPostestimate(
+        predictFun = predictFun,
+        predictArgs = predictArgs,
+        outcome = c("changeProb", "tieProb"),
+        level = level,
+        condition = condition,
+        sum.fun = sum.fun,
+        na.rm = na.rm,
+        theta_hat = ans$theta,
+        cov_theta = ans$covtheta,
+        uncertainty = uncertainty,
+        nsim = nsim,
+        useCluster = useCluster,
+        nbrNodes = nbrNodes,
+        clusterType = clusterType,
+        cluster = cluster,
+        batch_dir = batch_dir,
+        prefix = prefix,
+        combine_batch = combine_batch,
+        batch_size = batch_size,
+        keep_batch = keep_batch,
+        verbose = verbose,
+        useChangeContributions = useChangeContributions,
+        memory_scale = memory_scale
+    )
 }
 
 predictProbabilityDynamic <- function(ans, data, theta, algorithm, effects,
@@ -202,10 +218,13 @@ sienaPostestimate <- function(
     batch_dir = "temp",
     prefix = "simBatch_b",
     combine_batch = TRUE,
-    batch_size = 50,
+    batch_size = NULL,
     keep_batch = FALSE,
     verbose = TRUE,
-    useChangeContributions = NULL
+    useChangeContributions = NULL,
+    gc_each_batch = TRUE,
+    gc_each_sim = FALSE,
+    memory_scale = NULL
 ) {
     estimator <- makeEstimator(
         predictFun = predictFun,
@@ -222,19 +241,16 @@ sienaPostestimate <- function(
     } else {
         expect <- estimator(theta_hat)
     }
-    if (!uncertainty) {
-        return(expect)
-    }
-    if (!useCluster) {
-        clusterType <- "FORK"
-        nbrNodes <- 1
-    }
+
+    if (!uncertainty) return(expect)
+
+    if (is.null(memory_scale)) memory_scale <- 1L
 
     uncert <- drawSim(
-        estimator = estimator,
+      estimator = estimator,
         theta_hat = theta_hat,
         cov_theta = cov_theta,
-        nbrNodes = nbrNodes,
+        nbrNodes = if (useCluster) nbrNodes else 1L,
         nsim = nsim,
         clusterType = clusterType,
         cluster = cluster,
@@ -243,9 +259,12 @@ sienaPostestimate <- function(
         combine_batch = combine_batch,
         batch_size = batch_size,
         keep_batch = keep_batch,
-        verbose = verbose
+        verbose = verbose,
+        gc_each_batch = gc_each_batch,
+        gc_each_sim = gc_each_sim,
+        memory_scale = memory_scale
     )
-    # is this efficient for data.table?
+
     uncert <- agg(outcome, uncert, level = level, condition = condition, sum.fun = summarizeValue)
     mergeEstimates(expect, uncert, level = level, condition = condition)
 }
@@ -288,116 +307,165 @@ drawSim <- function(
     batch_size = NULL,
     combine_batch = TRUE,
     keep_batch = FALSE,
-    verbose = TRUE){
+    verbose = TRUE,
+    gc_each_batch = TRUE,
+    gc_each_sim = FALSE,
+    memory_scale = 1
+) {
+    if (nbrNodes > 1) {
+        clusterType <- match.arg(clusterType)
+    } else {
+        clusterType <- "FORK"
+    }
 
-  if(nbrNodes > 1){
-    clusterType <- match.arg(clusterType) ## maybe add explicit single core
-  }
-  # Add non batch options later?
-  if (!dir.exists(batch_dir)) dir.create(batch_dir, recursive = TRUE)
+    if (!dir.exists(batch_dir)) dir.create(batch_dir, recursive = TRUE)
+
+    batch_size <- resolve_batch_size(
+        nsim = nsim,
+        nbrNodes = nbrNodes,
+        batch_size = batch_size,
+        memory_scale = memory_scale
+    )
+    nbatches <- ceiling(nsim / batch_size)
   
-  if(is.null(batch_size)) batch_size <- floor(nsim/nbrNodes)
-  ## not really set up correctly yet - true number of simulations is generally not nsim this way!
-  nbatches <- ceiling(nsim / batch_size)
-  
-  # Cluster logic
-  cluster_created <- FALSE
-  cl <- cluster
-  if(clusterType == "PSOCK"){
-    if (is.null(cl)) {
-      cl <- parallel::makeCluster(nbrNodes, type = clusterType)
-      cluster_created <- TRUE
-      if (verbose) message("Created new parallel cluster with ", nbrNodes, " cores.")
-    } else {
-      if (verbose) message("Using existing cluster.")
-    }
-    # Export necessary variables and functions to the cluster
-    parallel::clusterExport(cl, c("estimator", "theta_hat", "cov_theta", 
-      "widenStaticContribution", "addUtilityColumn", "addProbabilityColumn", 
-      "conditionalReplace", "softmax_arma"), 
-      envir=environment())
-    # Make sure that all clusters have all dependencies available 
-    parallel::clusterEvalQ(cl, {
-      library(data.table) # this might not be allowed on CRAN?
-    })
-  } else {
-    if (.Platform$OS.type == "windows") {
-      if (nbrNodes > 1){
-        warning("FORK/mclapply: parallel execution not available on Windows; running serially.")
-        nbrNodes <- 1
+    # Cluster logic
+    cluster_created <- FALSE
+    cl <- cluster
+    use_psock <- (clusterType == "PSOCK" && nbrNodes > 1)
+    use_fork  <- (clusterType == "FORK"  && nbrNodes > 1 && .Platform$OS.type != "windows")
+    serial_mode <- !(use_psock || use_fork)
+
+    if (use_psock) {
+      if (is.null(cl)) {
+        cl <- parallel::makeCluster(nbrNodes, type = clusterType)
+        cluster_created <- TRUE
+        if (verbose) {
+          message("Created new parallel cluster with ", nbrNodes, " cores.")
+        }
       }
-    }
-  }
-  
-  if (verbose) message("Starting batch simulations (", nbatches, " batches of up to ", batch_size, ") ...")
-  
-  for (b in seq_len(nbatches)) {
-    first_sim <- 1 + (b - 1) * batch_size
-    last_sim  <- min(b * batch_size, nsim)
-    batch     <- first_sim:last_sim
-    
-    if (verbose) message(sprintf("[Batch %d/%d] Simulations %d-%d", b, nbatches, first_sim, last_sim))
-    # Use the argument list to call estimator in the cluster
-    if(clusterType == "PSOCK"){
-      batch_result <- parallel::parLapply(cl, batch, function(i) {
-        if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads(1)
-        theta_sim <- MASS::mvrnorm(1, mu = theta_hat, Sigma = cov_theta)
-        sim <- do.call(estimator, list(theta = theta_sim))
-        sim[,"sim"] <- i
-        sim
-      })
-    } else {
-      batch_result <- parallel::mclapply(batch, function(i){
-        if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads(1)
-        theta_sim <- MASS::mvrnorm(1, mu = theta_hat, Sigma = cov_theta)
-        sim <- do.call(estimator, list(theta = theta_sim))
-        sim[,"sim"] <- i
-        sim
-      },
-      mc.cores = nbrNodes
+      parallel::clusterExport(cl, 
+        c("estimator", "theta_hat", "cov_theta"), 
+        envir = environment()
       )
+      parallel::clusterEvalQ(cl, { 
+          if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads(1) 
+      })
     }
-
-    file_name <- file.path(batch_dir, sprintf("%s%03d.rds", prefix, b))
-    saveRDS(batch_result, file = file_name)
-    rm(batch_result)
-    if (verbose) message(sprintf("Saved batch file '%s' (%d%% complete)", file_name, round(100 * last_sim/nsim)))
-  }
-  
-  if (cluster_created) {
-    parallel::stopCluster(cl)
-    if (verbose) message("Stopped internal cluster.")
-  }
-  
-  if (verbose) message("All batches complete. Now combining and cleaning up...")
-  
-  if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads()
-  if(combine_batch){
-    # Combine all batches
-    batch_files <- list.files(batch_dir, pattern = sprintf("^%s\\d{3}\\.rds$", prefix), full.names = TRUE)
-    batch_files <- sort(batch_files)
-    combined_results <- vector("list", nsim)
     
-    for (b in seq_along(batch_files)) {
-      file_name <- batch_files[b]
-      results <- readRDS(file_name)
-      first <- 1 + (b - 1) * batch_size
-      last  <- min(b * batch_size, nsim)
-      combined_results[first:last] <- results
-      if(!keep_batch){
-        file.remove(file_name)
-        if (verbose) message(sprintf("Deleted batch %d (%d-%d)", b, first, last))
+    if (verbose) message("Starting batch simulations (", nbatches, 
+      " batches of up to ", batch_size, ") ...")
+    
+    for (b in seq_len(nbatches)) {
+      first_sim <- 1 + (b - 1) * batch_size
+      last_sim  <- min(b * batch_size, nsim)
+      batch     <- first_sim:last_sim
+
+      if (use_psock) {
+        batch_result <- parallel::parLapply(cl, batch, function(i) {
+          theta_sim <- MASS::mvrnorm(1, mu = theta_hat, Sigma = cov_theta)
+          sim <- do.call(estimator, list(theta = theta_sim))
+          sim[, "sim"] <- i
+          sim
+        })
+      } else if (use_fork) {
+        batch_result <- parallel::mclapply(batch, function(i) {
+          if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads(1)
+          theta_sim <- MASS::mvrnorm(1, mu = theta_hat, Sigma = cov_theta)
+          sim <- do.call(estimator, list(theta = theta_sim))
+          sim[, "sim"] <- i
+          sim
+        }, mc.cores = nbrNodes)
+      } else {
+        batch_result <- vector("list", length(batch))
+        for (k in seq_along(batch)) {
+          i <- batch[k]
+          theta_sim <- MASS::mvrnorm(1, mu = theta_hat, Sigma = cov_theta)
+          sim <- do.call(estimator, list(theta = theta_sim))
+          sim[, "sim"] <- i
+          batch_result[[k]] <- sim
+          if (gc_each_sim) gc(verbose = FALSE)
+        }
+      }
+
+      file_name <- file.path(batch_dir, sprintf("%s%03d.rds", prefix, b))
+      saveRDS(batch_result, file = file_name)
+      rm(batch_result)
+      if (gc_each_batch) gc(verbose = FALSE)
+    }
+    
+    if (cluster_created) {
+      parallel::stopCluster(cl)
+      if (verbose) message("Stopped internal cluster.")
+    }
+    
+    if (verbose) message("All batches complete. Now combining and cleaning up...")
+    
+    if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads()
+    if(combine_batch){
+      # Combine all batches
+      batch_files <- list.files(batch_dir, 
+        pattern = sprintf("^%s\\d{3}\\.rds$", prefix), full.names = TRUE)
+      batch_files <- sort(batch_files)
+      combined_results <- vector("list", nsim)
+      
+      for (b in seq_along(batch_files)) {
+        file_name <- batch_files[b]
+        results <- readRDS(file_name)
+        first <- 1 + (b - 1) * batch_size
+        last  <- min(b * batch_size, nsim)
+        combined_results[first:last] <- results
+        if(!keep_batch){
+          file.remove(file_name)
+          if (verbose) message(sprintf("Deleted batch %d (%d-%d)", b, first, last))
+        }
+      }
+      if (verbose) message("Returning combined results.")
+      if (requireNamespace("data.table", quietly = TRUE)) {
+        return(data.table::rbindlist(combined_results))
+      } else {
+        out <- do.call(rbind, combined_results)
+        rownames(out) <- NULL
+        return(out)
       }
     }
-    if (verbose) message("Returning combined results.")
-    if (requireNamespace("data.table", quietly = TRUE)) {
-      return(data.table::rbindlist(combined_results))
+}
+
+compute_memory_scale <- function(data, depvar, dynamic = FALSE, n3 = NULL,
+                                 cell_ref = 5000L, n3_ref = 500L) {
+    dv <- data$depvars[[depvar]]
+
+    n_actor <- if (!is.null(dim(dv))) {
+        as.integer(nrow(dv))
     } else {
-      out <- do.call(rbind, combined_results)
-      rownames(out) <- NULL
-      return(out)
+        as.integer(length(dv))
     }
-  }
+
+    n_choice <- if (!is.null(dim(dv)) && length(dim(dv)) >= 2) {
+        as.integer(ncol(dv))
+    } else {
+        3L
+    }
+
+    size_scale <- max(1L, ceiling((n_actor * n_choice) / as.integer(cell_ref)))
+
+    if (isTRUE(dynamic)) {
+        n3_val <- if (is.null(n3)) 1L else as.integer(n3)
+        n3_scale <- max(1L, ceiling(n3_val / as.integer(n3_ref)))
+    } else {
+        n3_scale <- 1L
+    }
+
+    as.integer(max(1L, size_scale * n3_scale))
+}
+
+resolve_batch_size <- function(nsim, nbrNodes = 1L, batch_size = NULL, memory_scale = 1L) {
+    if (!is.null(batch_size)) {
+        return(min(max(1L, as.integer(batch_size)), as.integer(nsim)))
+    }
+
+    base_batch <- floor(as.integer(nsim) / max(1L, as.integer(nbrNodes)))
+    auto_batch <- max(1L, floor(base_batch / max(1L, as.integer(memory_scale))))
+    min(auto_batch, as.integer(nsim))
 }
 
 agg <- function(ME,
@@ -474,16 +542,27 @@ calculateUtility <- function(mat, theta) {
 }
 
 addUtilityColumn <- function(df, effectNames, theta) {
+  available_effects <- effectNames[effectNames %in% names(df)]
+  if (!length(available_effects)) {
+    stop("No requested effect columns found in data for utility calculation")
+  }
+
+  if (!is.null(names(theta))) {
+    theta_use <- theta[available_effects]
+  } else {
+    theta_use <- theta[seq_along(available_effects)]
+  }
+
   if (requireNamespace("data.table", quietly = TRUE) && 
       data.table::is.data.table(df)) {
     df[, ("changeUtil") := calculateUtility(
       as.matrix(.SD), 
-      theta), 
-      .SDcols = effectNames]
+      theta_use), 
+      .SDcols = available_effects]
   } else {
     df[["changeUtil"]] <- calculateUtility(
-      as.matrix(df[, effectNames, drop = FALSE]), 
-      theta)
+      as.matrix(df[, available_effects, drop = FALSE]), 
+      theta_use)
     return(df)
   }
 }

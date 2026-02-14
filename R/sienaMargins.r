@@ -1,11 +1,12 @@
 sienaAME <- function(
     ans,
     data,
-    effects = NULL, # needed for custom interactions
+    effects = NULL,
+    depvar = NULL,
     effectName1,
     diff1 = NULL,
     contrast1 = NULL,
-    interaction1 = FALSE, # clashes with what interaction1 means in siena
+    interaction1 = FALSE,
     int_effectNames1 = NULL,
     mod_effectNames1 = NULL,
     effectName2 = NULL,
@@ -29,15 +30,24 @@ sienaAME <- function(
     batch_dir = "temp",
     prefix = "simBatch_b",
     combine_batch = TRUE,
-    batch_size = 50,
+    batch_size = NULL,
     keep_batch = FALSE,
     verbose = TRUE,
-    mainEffect = "riskDifference", # or "RiskRatio"
-    details = FALSE
+    mainEffect = "riskDifference",
+    details = FALSE,
+    memory_scale = NULL
 ){
     type <- match.arg(type)
-    # might not be necessary to restrict to one depvar, but let's keep it for now
     if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
+
+    if (is.null(memory_scale)) {
+        memory_scale <- compute_memory_scale(
+            data = data,
+            depvar = depvar,
+            dynamic = FALSE
+        )
+    }
+
     staticContributions <- getStaticChangeContributions(ans = ans, 
       data = data, 
       effects = effects,
@@ -84,16 +94,17 @@ sienaAME <- function(
             details = details
         )
     }
+    
     sienaPostestimate(
-        predictFun = diffFun,
+      predictFun = diffFun,
         predictArgs = predictArgs,
-        outcome = diffName,
+      outcome = diffName,
         level = level,
         condition = condition,
         sum.fun = sum.fun,
         na.rm = na.rm,
-        theta_hat = ans[["theta"]],
-        cov_theta = ans[["covtheta"]],
+        theta_hat = ans$theta,
+        cov_theta = ans$covtheta,
         uncertainty = uncertainty,
         nsim = nsim,
         useCluster = useCluster,
@@ -105,7 +116,8 @@ sienaAME <- function(
         combine_batch = combine_batch,
         batch_size = batch_size,
         keep_batch = keep_batch,
-        verbose = verbose
+        verbose = verbose,
+        memory_scale = memory_scale
     )
 }
 
@@ -135,29 +147,41 @@ predictFirstDiff <- function(ans, theta, staticContributions,
   df <- addUtilityColumn(df, effectNames, thetaNoRate)
   df <- addProbabilityColumn(df, group_vars = c("period", "ego"), type = type)
   
-  df <- subset(df, df[["density"]] != 0)
-  df <- cbind(df, calculateFirstDiff(
+  if (requireNamespace("data.table", quietly = TRUE) && data.table::is.data.table(df)) {
+    df <- df[df[["density"]] != 0]
+  } else {
+    df <- df[df[["density"]] != 0, , drop = FALSE]
+  }
+
+  fd <- calculateFirstDiff(
       densityValue = df[["density"]],
       changeProb = df[["changeProb"]],
       changeUtil = df[["changeUtil"]],
-      effectName = effectName, 
+      effectName = effectName,
       effectContribution = df[[effectName]],
       diff = diff, contrast = contrast,
       interaction = interaction,
       int_effectNames = int_effectNames,
-      mod_effectNames = mod_effectNames, 
+      mod_effectNames = mod_effectNames,
       modContribution = df[[mod_effectNames]],
       effectNames = effectNames,
       theta = thetaNoRate,
-      type = type, 
+      type = type,
       tieProb = df[["tieProb"]],
       details = details,
       calcRiskRatio = calcRiskRatio,
       mainEffect = mainEffect
-    )
   )
 
-  df <- conditionalReplace(df, df[["density"]] == -1, setdiff(effectNames, "density"), function(x) x * -1)
+  if (requireNamespace("data.table", quietly = TRUE) && data.table::is.data.table(df)) {
+    df[, (names(fd)) := fd]
+  } else {
+    df[names(fd)] <- fd
+  }
+  rm(fd)
+
+  df <- conditionalReplace(df, df[["density"]] == -1, 
+  setdiff(effectNames, "density"), function(x) x * -1)
   df
 }
 
@@ -190,8 +214,14 @@ predictSecondDiff <- function(ans, theta, staticContributions,
     df <- widenStaticContribution(staticContributions)
     df <- addUtilityColumn(df, effectNames, thetaNoRate)
     df <- addProbabilityColumn(df, group_vars = c("period", "ego"), type = type)
-    df <- subset(df, df[["density"]] != 0)
-    df <- cbind(df,  calculateSecondDiff(
+
+    if (requireNamespace("data.table", quietly = TRUE) && data.table::is.data.table(df)) {
+      df <- df[df[["density"]] != 0]
+    } else {
+      df <- df[df[["density"]] != 0, , drop = FALSE]
+    }
+
+    sd <- calculateSecondDiff(
         densityValue = df[["density"]], 
         changeProb = df[["changeProb"]],
         changeUtil = df[["changeUtil"]],
@@ -214,8 +244,14 @@ predictSecondDiff <- function(ans, theta, staticContributions,
         details = details,
         calcRiskRatio = calcRiskRatio,
         mainEffect = mainEffect
-      )
     )
+    if (requireNamespace("data.table", quietly = TRUE) && data.table::is.data.table(df)) {
+      df[, (names(sd)) := sd]
+    } else {
+      df[names(sd)] <- sd
+    }
+    rm(sd)
+
     df <- conditionalReplace(df, df[["density"]] == -1, setdiff(effectNames, "density"), function(x) x * -1)
     df
 }
