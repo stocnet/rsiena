@@ -290,7 +290,8 @@ mymodel2 <- getEffects(mydata2)
 mymodel2 <- includeEffects(mymodel2, density, recip, transTies)
 ans2 <- siena07(mycontrols2, data=mydata2, effects=mymodel2, batch=TRUE,
      silent=TRUE)
-RIDynamics2 <-  interpret_size_dynamics(mydata2, ans=ans2)
+RIDynamics2 <-  interpret_size_dynamics(mydata2, ans=ans2, useChangeContributions=FALSE,
+     algorithm = mycontrols2)
 RIDynamics2
 
 ### Don't use ans but previously estimated coefficients ----
@@ -303,7 +304,8 @@ mycontrols3 <- sienaAlgorithmCreate(nsub=2, n3=60, cond=TRUE, seed = 4242)
 ans3 <- siena07(mycontrols3, data=mydata2, effects=mymodel2, batch=TRUE, 
      silent=TRUE)
 
-RIDynamics4 <- interpret_size_dynamics(mydata2, ans=ans3, effects = mymodel2)
+RIDynamics4 <- interpret_size_dynamics(mydata2, ans=ans3, effects = mymodel2, 
+     useChangeContributions=FALSE, algorithm=mycontrols3)
 RIDynamics4
 
 ##test23
@@ -334,7 +336,7 @@ RIDynamics5
 net_steps <- sapply(ans4$changeContributions[[1]][[1]][[1]], 
      function(ministep) attr(ministep, "networkName")) %in%  "mynet3"
 any(net_steps) # TRUE as expected
-RIDynamics6 <- interpret_size_dynamics(mydata3, ans=ans4, depvar="mynet3")
+RIDynamics6 <- interpret_size_dynamics(mydata3, ans=ans4, depvar="mynet3", useChangeContributions=TRUE)
 RIDynamics6
 
 ## delete output file

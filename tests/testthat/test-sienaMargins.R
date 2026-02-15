@@ -82,6 +82,42 @@ test_that("sienaAME static (base R fallback, uncertainty)", {
   )
 })
 
+test_that("sienaAME static (base R fallback, uncertainty MCSE + optional CI)", {
+  with_mocked_bindings(
+    {
+      ame_static_uncert <- sienaAME(
+        ans = ans,
+        data = mydata,
+        effectName1 = "recip",
+        contrast1 = c(0, 1),
+        type = "tieProb",
+        depvar = "mynet",
+        level = "period",
+        condition = c("density"),
+        nsim = 20,
+        uncertainty = TRUE,
+        uncertainty_mcse = TRUE,
+        uncertainty_mcse_batches = 4,
+        uncertainty_sd = TRUE,
+        uncertainty_ci = FALSE,
+        verbose = FALSE
+      )
+
+      expect_true(is.data.frame(ame_static_uncert))
+      expect_true("Mean" %in% names(ame_static_uncert))
+      expect_true("SE" %in% names(ame_static_uncert))
+      expect_true("cases" %in% names(ame_static_uncert))
+      expect_true("mcse_Mean" %in% names(ame_static_uncert))
+      expect_true("mcse_SE" %in% names(ame_static_uncert))
+      expect_false("q_025" %in% names(ame_static_uncert))
+      expect_false("q_975" %in% names(ame_static_uncert))
+      expect_false("Median" %in% names(ame_static_uncert))
+    },
+    requireNamespace = function(pkg, ...) FALSE,
+    .package = "base"
+  )
+})
+
 test_that("sienaAME static (data.table, uncertainty)", {
   skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
   library(data.table)

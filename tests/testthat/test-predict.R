@@ -36,6 +36,35 @@ test_that("predict.sienaFit (base R fallback)", {
   )
 })
 
+test_that("predict.sienaFit (base R fallback, optional MCSE + no CI)", {
+  with_mocked_bindings(
+    {
+      pred_df <- predict(
+        object = ans,
+        newdata = mydata,
+        type = "tieProb",
+        nsim = 20,
+        condition = "transTrip",
+        level = "period",
+        uncertainty = TRUE,
+        uncertainty_mcse = TRUE,
+        uncertainty_mcse_batches = 4,
+        uncertainty_sd = TRUE,
+        uncertainty_ci = FALSE,
+        verbose = FALSE
+      )
+      expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
+      expect_true("mcse_Mean" %in% names(pred_df))
+      expect_true("mcse_SE" %in% names(pred_df))
+      expect_false("q_025" %in% names(pred_df))
+      expect_false("q_975" %in% names(pred_df))
+      expect_false("Median" %in% names(pred_df))
+    },
+    requireNamespace = function(pkg, ...) FALSE,
+    .package="base"
+  )
+})
+
 test_that("predict.sienaFit (data.table)", {
   skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
   library(data.table)
@@ -65,7 +94,7 @@ test_that("predict.sienaFit (data.table)", {
 #     uncertainty = TRUE,
 #     useCluster = TRUE,
 #     clusterType = "PSOCK",
-#     nbrNodes = 6
+#     nbrNodes = 2
 #   )
 #   expect_null(parallel:::getDefaultCluster())
 #   expect_true("data.table" %in% class(pred_dt) && is.data.frame(pred_dt))
@@ -124,13 +153,13 @@ test_that("predictDynamic with FORK clustertype (base R fallback)", {
         algorithm = mycontrols,
         type = "tieProb",
         n3 = 60,
-        nsim = 6,
+        nsim = 2,
         condition = "transTrip",
         level = "period",
         uncertainty = TRUE,
         useCluster = TRUE,
         clusterType = "FORK",
-        nbrNodes = 6,
+        nbrNodes = 2,
         silent = FALSE
       )
       expect_null(parallel:::getDefaultCluster())
@@ -156,6 +185,38 @@ test_that("predictDynamic (base R fallback)", {
         condition = "density"
       )
       expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
+    },
+    requireNamespace = function(pkg, ...) FALSE,
+    .package="base"
+  )
+})
+
+test_that("predictDynamic (base R fallback, optional MCSE + no SD)", {
+  with_mocked_bindings(
+    {
+      pred_df <- predictDynamic(
+        ans = ans,
+        newdata = mydata,
+        effects = mymodel,
+        algorithm = mycontrols,
+        type = "tieProb",
+        n3 = 60,
+        nsim = 20,
+        condition = "density",
+        uncertainty = TRUE,
+        uncertainty_mcse = TRUE,
+        uncertainty_mcse_batches = 4,
+        uncertainty_sd = FALSE,
+        uncertainty_ci = TRUE,
+        verbose = FALSE
+      )
+      expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
+      expect_true("mcse_Mean" %in% names(pred_df))
+      expect_false("SE" %in% names(pred_df))
+      expect_false("mcse_SE" %in% names(pred_df))
+      expect_true("q_025" %in% names(pred_df))
+      expect_true("q_975" %in% names(pred_df))
+      expect_true("Median" %in% names(pred_df))
     },
     requireNamespace = function(pkg, ...) FALSE,
     .package="base"

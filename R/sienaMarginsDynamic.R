@@ -27,6 +27,11 @@ sienaAMEDynamic <- function(
     useChangeContributions = FALSE, # should only be used for static case
     uncertainty = TRUE,
     nsim = 100,
+    uncertainty_sd = TRUE,
+    uncertainty_ci = TRUE,
+    uncertainty_probs = c(0.025, 0.5, 0.975),
+    uncertainty_mcse = FALSE,
+    uncertainty_mcse_batches = NULL,
     useCluster = FALSE,
     nbrNodes = 1,
     clusterType = c("PSOCK", "FORK"),
@@ -39,7 +44,9 @@ sienaAMEDynamic <- function(
     verbose = TRUE,
     mainEffect = "riskDifference",
     details = FALSE,
-    memory_scale = NULL
+    memory_scale = NULL,
+    batch_unit_budget = 5e6,
+    dynamic_ministep_factor = 10
 ){
     type <- match.arg(type)
     if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
@@ -52,6 +59,20 @@ sienaAMEDynamic <- function(
             n3 = n3
         )
     }
+        if (is.null(batch_size)) {
+            auto_batch <- auto_batch_from_budget(
+                data = data,
+                depvar = depvar,
+                nsim = nsim,
+                nbrNodes = nbrNodes,
+                useCluster = useCluster,
+                dynamic = TRUE,
+                n3 = n3,
+                unit_budget = batch_unit_budget,
+                dynamic_ministep_factor = dynamic_ministep_factor
+            )
+            batch_size <- auto_batch$batch_size
+        }
     if(!second){
         diffName <- ifelse(mainEffect == "riskDifference", 
             "firstDiff", 
@@ -119,6 +140,11 @@ sienaAMEDynamic <- function(
         cov_theta = ans$covtheta,
         uncertainty = uncertainty,
         nsim = nsim,
+        uncertainty_sd = uncertainty_sd,
+        uncertainty_ci = uncertainty_ci,
+        uncertainty_probs = uncertainty_probs,
+        uncertainty_mcse = uncertainty_mcse,
+        uncertainty_mcse_batches = uncertainty_mcse_batches,
         useCluster = useCluster,
         nbrNodes = nbrNodes,
         clusterType = clusterType,

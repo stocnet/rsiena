@@ -213,13 +213,15 @@ mymodel2 <- set_effect(mymodel2, list(inPop, outAct, transTrip))
 (ans3 <- siena(mydata2, effects=mymodel2, control_algo=myalgo4,
             control_out=myout,  batch=TRUE))
 
-RIDynamics4 <- interpret_size_dynamics(mydata2, ans=ans3, depvar="mybeh")
+RIDynamics4 <- interpret_size_dynamics(mydata2, ans=ans3, depvar="mybeh",
+                 useChangeContributions=TRUE)
 RIDynamics4
 
 RI5 <- interpret_size(ans3, data=mydata2)
 \dontrun{
 RIDynamics5 <- interpret_size_dynamics(mydata2, ans=ans3,
-                                       depvar="mynet2", n3 = 50)
+                                       depvar="mynet2", n3 = 50, 
+                                       useChangeContributions=TRUE)
 RIDynamics5
 plot(RIDynamics5, staticRI=RI5[[1]])
 }

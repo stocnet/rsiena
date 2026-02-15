@@ -14,6 +14,11 @@ predict.sienaFit <- function(
     useCluster = FALSE,
     nbrNodes = 1,
     nsim = 1000,
+    uncertainty_sd = TRUE,
+    uncertainty_ci = TRUE,
+    uncertainty_probs = c(0.025, 0.5, 0.975),
+    uncertainty_mcse = FALSE,
+    uncertainty_mcse_batches = NULL,
     clusterType = c("PSOCK", "FORK"),
     cluster = NULL,
     batch_dir = "temp",
@@ -23,12 +28,27 @@ predict.sienaFit <- function(
     keep_batch = FALSE,
     verbose = TRUE,
     memory_scale = NULL,
+    batch_unit_budget = 5e6,
+    dynamic_ministep_factor = 10,
     ...
   ){
       type <- match.arg(type)
       if (is.null(depvar)) depvar <- names(newdata[["depvars"]])[1]
       if (is.null(memory_scale)) {
         memory_scale <- compute_memory_scale(newdata, depvar, dynamic = FALSE)
+      }
+      if (is.null(batch_size)) {
+        auto_batch <- auto_batch_from_budget(
+          data = newdata,
+          depvar = depvar,
+          nsim = nsim,
+          nbrNodes = nbrNodes,
+          useCluster = useCluster,
+          dynamic = FALSE,
+          unit_budget = batch_unit_budget,
+          dynamic_ministep_factor = dynamic_ministep_factor
+        )
+        batch_size <- auto_batch$batch_size
       }
       staticContributions <- getStaticChangeContributions(
           ans = object,
@@ -55,6 +75,11 @@ predict.sienaFit <- function(
           cov_theta = object[["covtheta"]], # change into cov
           uncertainty = uncertainty,
           nsim = nsim,
+          uncertainty_sd = uncertainty_sd,
+          uncertainty_ci = uncertainty_ci,
+          uncertainty_probs = uncertainty_probs,
+          uncertainty_mcse = uncertainty_mcse,
+          uncertainty_mcse_batches = uncertainty_mcse_batches,
           useCluster = useCluster,
           nbrNodes = nbrNodes,
           clusterType = clusterType,
@@ -105,6 +130,11 @@ predictDynamic <- function(
     useCluster = FALSE,
     nbrNodes = 1,
     nsim = 100,
+    uncertainty_sd = TRUE,
+    uncertainty_ci = TRUE,
+    uncertainty_probs = c(0.025, 0.5, 0.975),
+    uncertainty_mcse = FALSE,
+    uncertainty_mcse_batches = NULL,
     clusterType = c("PSOCK", "FORK"),
     cluster = NULL,
     batch_dir = "temp",
@@ -114,7 +144,9 @@ predictDynamic <- function(
     keep_batch = FALSE,
     verbose = TRUE,
     silent = TRUE,
-    memory_scale = NULL
+    memory_scale = NULL,
+    batch_unit_budget = 5e6,
+    dynamic_ministep_factor = 10
 ){
     type <- match.arg(type)
     if (is.null(depvar)) depvar <- names(newdata[["depvars"]])[1]
@@ -126,6 +158,20 @@ predictDynamic <- function(
             dynamic = TRUE,
             n3 = n3
         )
+    }
+    if (is.null(batch_size)) {
+      auto_batch <- auto_batch_from_budget(
+        data = newdata,
+        depvar = depvar,
+        nsim = nsim,
+        nbrNodes = nbrNodes,
+        useCluster = useCluster,
+        dynamic = TRUE,
+        n3 = n3,
+        unit_budget = batch_unit_budget,
+        dynamic_ministep_factor = dynamic_ministep_factor
+      )
+      batch_size <- auto_batch$batch_size
     }
 
     predictFun <- predictProbabilityDynamic
@@ -153,6 +199,11 @@ predictDynamic <- function(
         cov_theta = ans$covtheta,
         uncertainty = uncertainty,
         nsim = nsim,
+      uncertainty_sd = uncertainty_sd,
+      uncertainty_ci = uncertainty_ci,
+      uncertainty_probs = uncertainty_probs,
+      uncertainty_mcse = uncertainty_mcse,
+      uncertainty_mcse_batches = uncertainty_mcse_batches,
         useCluster = useCluster,
         nbrNodes = nbrNodes,
         clusterType = clusterType,
@@ -213,6 +264,11 @@ sienaPostestimate <- function(
     cov_theta,
     uncertainty = TRUE,
     nsim = 1000,
+  uncertainty_sd = TRUE,
+  uncertainty_ci = TRUE,
+  uncertainty_probs = c(0.025, 0.5, 0.975),
+  uncertainty_mcse = FALSE,
+  uncertainty_mcse_batches = NULL,
     useCluster = FALSE,
     nbrNodes = 1,
     clusterType = c("PSOCK", "FORK"),
@@ -272,8 +328,142 @@ sienaPostestimate <- function(
         memory_scale = memory_scale
     )
 
-    uncert <- agg(outcome, uncert, level = level, condition = condition, sum.fun = summarizeValue)
+    uncertainty_summary_fun <- make_uncertainty_summarizer(
+      return_sd = uncertainty_sd,
+      return_ci = uncertainty_ci,
+      probs = uncertainty_probs,
+      return_mcse = uncertainty_mcse,
+      mcse_batches = uncertainty_mcse_batches
+    )
+    uncert <- agg(outcome, uncert, level = level, condition = condition, sum.fun = uncertainty_summary_fun)
     mergeEstimates(expect, uncert, level = level, condition = condition)
+}
+
+make_uncertainty_summarizer <- function(
+    return_sd = TRUE,
+    return_ci = TRUE,
+    probs = c(0.025, 0.5, 0.975),
+    return_mcse = FALSE,
+    mcse_batches = NULL
+) {
+  if (length(probs) != 3L) {
+    stop("'uncertainty_probs' must be length 3: lower, median, upper.")
+  }
+  probs <- as.numeric(probs)
+  if (any(!is.finite(probs)) || any(probs <= 0) || any(probs >= 1)) {
+    stop("'uncertainty_probs' must be strictly between 0 and 1.")
+  }
+
+  function(x, na.rm = TRUE) {
+    if (na.rm) x <- x[!is.na(x)]
+    n <- length(x)
+
+    out <- list(
+      Mean = if (n) mean(x) else NA_real_
+    )
+
+    if (isTRUE(return_sd)) {
+      out[["SE"]] <- if (n >= 2L) stats::sd(x) else NA_real_
+    }
+
+    if (isTRUE(return_ci)) {
+      if (n) {
+        qu <- unname(stats::quantile(x, probs = probs, na.rm = FALSE))
+        out[["Median"]] <- qu[2]
+        out[["q_025"]] <- qu[1]
+        out[["q_975"]] <- qu[3]
+      } else {
+        out[["Median"]] <- NA_real_
+        out[["q_025"]] <- NA_real_
+        out[["q_975"]] <- NA_real_
+      }
+    }
+
+    out[["cases"]] <- n
+
+    if (isTRUE(return_mcse)) {
+      out <- c(out, compute_mcse_from_draws(
+        x = x,
+        return_sd = return_sd,
+        return_ci = return_ci,
+        probs = probs,
+        batches = mcse_batches
+      ))
+    }
+
+    out
+  }
+}
+
+compute_mcse_from_draws <- function(x,
+                                   return_sd = TRUE,
+                                   return_ci = TRUE,
+                                   probs = c(0.025, 0.5, 0.975),
+                                   batches = NULL) {
+  n <- length(x)
+  if (n < 2L) {
+    out <- list(mcse_Mean = NA_real_)
+    if (isTRUE(return_sd)) out[["mcse_SE"]] <- NA_real_
+    if (isTRUE(return_ci)) {
+      out[["mcse_Median"]] <- NA_real_
+      out[["mcse_q_025"]] <- NA_real_
+      out[["mcse_q_975"]] <- NA_real_
+    }
+    return(out)
+  }
+
+  # Batch MCSE: split into B batches, compute the statistic per batch,
+  # then MCSE(stat) = sd(stat_b) / sqrt(B).
+  if (is.null(batches)) {
+    B <- max(2L, min(as.integer(floor(sqrt(n))), n))
+  } else {
+    B <- as.integer(batches)
+    if (!is.finite(B) || B < 2L) {
+      stop("'uncertainty_mcse_batches' must be NULL or an integer >= 2.")
+    }
+    B <- min(B, n)
+  }
+
+  m <- as.integer(floor(n / B))
+  if (m < 1L) {
+    # Should be unreachable given B <= n, but keep defensive.
+    B <- n
+    m <- 1L
+  }
+  n_use <- as.integer(B * m)
+  x_use <- x[seq_len(n_use)]
+
+  batch_stats_mean <- numeric(B)
+  batch_stats_sd <- if (isTRUE(return_sd)) numeric(B) else NULL
+  batch_stats_q <- if (isTRUE(return_ci)) matrix(NA_real_, nrow = B, ncol = 3L) else NULL
+
+  for (b in seq_len(B)) {
+    idx <- ((b - 1L) * m + 1L):(b * m)
+    xb <- x_use[idx]
+    batch_stats_mean[b] <- mean(xb)
+    if (isTRUE(return_sd)) {
+      batch_stats_sd[b] <- if (m >= 2L) stats::sd(xb) else NA_real_
+    }
+    if (isTRUE(return_ci)) {
+      batch_stats_q[b, ] <- unname(stats::quantile(xb, probs = probs, na.rm = FALSE))
+    }
+  }
+
+  out <- list(
+    mcse_Mean = stats::sd(batch_stats_mean) / sqrt(B)
+  )
+
+  if (isTRUE(return_sd)) {
+    out[["mcse_SE"]] <- stats::sd(batch_stats_sd) / sqrt(B)
+  }
+
+  if (isTRUE(return_ci)) {
+    out[["mcse_q_025"]] <- stats::sd(batch_stats_q[, 1]) / sqrt(B)
+    out[["mcse_Median"]] <- stats::sd(batch_stats_q[, 2]) / sqrt(B)
+    out[["mcse_q_975"]] <- stats::sd(batch_stats_q[, 3]) / sqrt(B)
+  }
+
+  out
 }
 
 makeEstimator <- function(predictFun, predictArgs, outcome,
@@ -463,6 +653,93 @@ compute_memory_scale <- function(data, depvar, dynamic = FALSE, n3 = NULL,
     }
 
     as.integer(max(1L, size_scale * n3_scale))
+}
+
+  infer_depvar_dims <- function(data, depvar) {
+    dv <- data$depvars[[depvar]]
+    dv_dim <- dim(dv)
+
+    n_ego <- if (!is.null(dv_dim) && length(dv_dim) >= 1L) {
+      as.integer(dv_dim[1])
+    } else {
+      as.integer(length(dv))
+    }
+
+    n_choice <- if (!is.null(dv_dim) && length(dv_dim) >= 2L) {
+      as.integer(dv_dim[2])
+    } else {
+      1L
+    }
+
+    n_periods <- if (!is.null(dv_dim) && length(dv_dim) >= 3L) {
+      max(1L, as.integer(dv_dim[3] - 1L))
+    } else {
+      1L
+    }
+
+    list(n_ego = n_ego, n_choice = n_choice, n_periods = n_periods)
+  }
+
+  auto_batch_from_budget <- function(data,
+                     depvar,
+                     nsim,
+                     nbrNodes = 1L,
+             useCluster = FALSE,
+                     dynamic = FALSE,
+                     n3 = NULL,
+                     unit_budget = 5e6,
+                     dynamic_ministep_factor = 10) {
+    dims <- infer_depvar_dims(data, depvar)
+    base_batch <- as.integer(nsim)
+
+    units_per_sim <- as.numeric(dims$n_ego) *
+      as.numeric(dims$n_choice) *
+      as.numeric(dims$n_periods)
+
+    if (isTRUE(dynamic)) {
+      n3_val <- if (is.null(n3)) 1L else max(1L, as.integer(n3))
+      units_per_sim <- units_per_sim * as.numeric(dynamic_ministep_factor) * as.numeric(n3_val)
+    }
+
+    max_batch_by_budget <- floor(as.numeric(unit_budget) / units_per_sim)
+    batch_size_raw <- min(base_batch, as.integer(max_batch_by_budget))
+    batch_size_raw <- max(1L, batch_size_raw)
+    batch_size <- adjust_batch_for_cores(
+      batch_size = batch_size_raw,
+      nsim = nsim,
+      nbrNodes = nbrNodes,
+      useCluster = useCluster
+    )
+
+    list(
+      batch_size = batch_size,
+      units_per_sim = units_per_sim,
+      max_batch_by_budget = max_batch_by_budget,
+      base_batch = base_batch
+    )
+  }
+
+adjust_batch_for_cores <- function(batch_size,
+                                   nsim,
+                                   nbrNodes = 1L,
+                                   useCluster = FALSE) {
+    b <- as.integer(batch_size)
+    n <- as.integer(nsim)
+    k <- as.integer(nbrNodes)
+
+    b <- min(max(1L, b), n)
+    if (!isTRUE(useCluster) || k <= 1L) {
+      return(b)
+    }
+    if (n < k) {
+      return(b)
+    }
+
+    b2 <- (b %/% k) * k
+    if (b2 < k) {
+      b2 <- k
+    }
+    min(max(1L, b2), n)
 }
 
 resolve_batch_size <- function(nsim, nbrNodes = 1L, batch_size = NULL, memory_scale = 1L) {

@@ -83,6 +83,43 @@ test_that("sienaAMEDynamic (base R fallback)", {
   )
 })
 
+test_that("sienaAMEDynamic (base R fallback, uncertainty MCSE + optional SD)", {
+  with_mocked_bindings(
+    {
+      margins_dynamic <- sienaAMEDynamic(
+        ans = ans,
+        data = mydata,
+        effectName1 = "transTrip",
+        diff1 = 1,
+        effects = mymodel,
+        algorithm = mycontrols,
+        n3 = 60,
+        nsim = 20,
+        type = "tieProb",
+        condition = "density",
+        uncertainty = TRUE,
+        uncertainty_mcse = TRUE,
+        uncertainty_mcse_batches = 4,
+        uncertainty_sd = FALSE,
+        uncertainty_ci = TRUE,
+        verbose = FALSE
+      )
+
+      expect_true(is.data.frame(margins_dynamic))
+      expect_true("Mean" %in% names(margins_dynamic))
+      expect_true("cases" %in% names(margins_dynamic))
+      expect_true("mcse_Mean" %in% names(margins_dynamic))
+      expect_false("SE" %in% names(margins_dynamic))
+      expect_false("mcse_SE" %in% names(margins_dynamic))
+      expect_true("q_025" %in% names(margins_dynamic))
+      expect_true("q_975" %in% names(margins_dynamic))
+      expect_true("Median" %in% names(margins_dynamic))
+    },
+    requireNamespace = function(pkg, ...) FALSE,
+    .package = "base"
+  )
+})
+
 test_that("sienaAMEDynamic (data.table)", {
   skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
   library(data.table)
