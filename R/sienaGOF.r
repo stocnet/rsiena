@@ -194,12 +194,17 @@ sienaGOF <- function(
 	}
 	plotKey <- names(auxiliaryFunction(NULL, sFO$f,
 				sFO$sims, 1, groupName, varName, ...))
+	EA <- attr(auxiliaryFunction(NULL, sFO$f,
+				sFO$sims, 1, groupName, varName, ...), "EgoAlter")
+	EA <- ifelse(is.null(EA), FALSE, EA)
 	class(obsStats) <- "observedAuxiliaryStatistics"
 	attr(obsStats,"auxiliaryStatisticName") <-
 			deparse(substitute(auxiliaryFunction))
 	attr(obsStats,"joint") <- join
-
-
+	if (attr(obsStats,"auxiliaryStatisticName") == "egoAlterCombi")
+	{
+		EA <- TRUE
+	}
 	##	Calculate the simulated auxiliary statistics
 	if (verbose)
 	{
@@ -550,6 +555,7 @@ sienaGOF <- function(
 	attr(res, "twoTailed") <- twoTailed
 	attr(res, "joined") <- join
 	attr(res, "nmissings") <- nmissings
+	attr(res, "EgoAlter") <- EA
 	res
 }
 
@@ -1628,6 +1634,7 @@ egoAlterCombi <- function (i, obsData, sims, period, groupName, varName,
 	# pad names with leading 0s, if necessary:
 	pp.names <- ifelse(nchar(ppnames)==1, paste("0",ppnames,sep=""),ppnames)
 	names(teax) <- pp.names
+	attr(teax, "EgoAlter") <- TRUE
 	teax
 }
 

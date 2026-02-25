@@ -45,10 +45,20 @@ write_result <- function(x, ...) UseMethod("write_result", x)
 
 ##@write_result.sienaFit method for siena.Fit
 write_result.sienaFit <- function(x, type='tex',
-	fileName=paste(deparse(substitute(x)),'.',type,sep=""),
+	fileName=NULL,
 	vertLine=TRUE, tstatPrint=FALSE,
 	sig=FALSE, d=3, ...)
-{
+{	
+	if (is.null(fileName))
+	{
+		fileName <- deparse(substitute(x))
+# Check if it looks like a pipe chain 
+		if (any((grepl("%>%|\\|>", fileName))))
+		{
+			stop("Cannot auto-generate filename from piped data. Please provide filename explicitly.") 
+		}
+	}
+	fileName <- paste(fileName, '.', type, sep="")
 	siena_table(x, type=type, fileName=fileName,
 		vertLine=vertLine, tstatPrint=tstatPrint, sig=sig, d=d, ...)
 }
@@ -57,7 +67,7 @@ write_result.sienaFit <- function(x, type='tex',
 ##@siena_table siena07 Saves latex or html table of estimates
 ## for a sienaFit or sienaBayesFit object
 siena_table <- function(x, type='tex',
-	fileName=paste(deparse(substitute(x)),'.',type,sep=""),
+	fileName=NULL,
 	vertLine=TRUE, tstatPrint=FALSE,
 	sig=FALSE, d=3, nfirst=NULL)
 {
@@ -87,6 +97,14 @@ siena_table <- function(x, type='tex',
 	}
 
 	objectName <- deparse(substitute(x))
+	if (is.null(fileName))
+	{	
+		if (grepl("%>%|\\|>", objectName)) 
+		{
+			stop("Cannot auto-generate filename from piped data. Please provide filename explicitly.") 
+		}
+		fileName <- paste(objectName,'.',type,sep="")
+	}
 	fromBayes <- FALSE
 	xkind.string <- "sienaFit"
 	tstat <- tstatPrint

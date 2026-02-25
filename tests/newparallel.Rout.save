@@ -18,36 +18,33 @@ Type 'q()' to quit R.
 > library(RSiena)
 > 
 > # When new effects are added, the numbering of effects changes.
-> # This will have consequences for the output of includeInteraction,
+> # This will have consequences for the output of set_interaction,
 > # and will require adaptation of parallel.Rout.save.
 > 
 > ##test3
-> mynet1 <- sienaDependent(array(c(tmp3, tmp4),dim=c(32, 32, 2)))
-> mydata <- sienaDataCreate(mynet1)
-> myeff<- getEffects(mydata)
-> mymodel<- sienaAlgorithmCreate(findiff=TRUE, fn = simstats0c,
-+                        cond=FALSE, nsub=2, n3=50, seed=3)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> mynet1 <- as_dependent_rsiena(array(c(tmp3, tmp4),dim=c(32, 32, 2)))
+> mydata <- make_data_rsiena(mynet1)
+> myeff<- make_specification(mydata)
 > print('test3')
 [1] "test3"
-> ans<- siena07(mymodel, data=mydata, effects=myeff,
-+      batch=TRUE, parallelTesting=TRUE, silent=TRUE)
-> #,dll='../siena/src/RSiena.dll')
+> alg_alg <- set_algorithm_saom(cond=FALSE, seed=3, n3=50, nsub=2, findiff=TRUE)
+> ans <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg)
 > ans
 Estimates, standard errors and convergence t-ratios
 
                                       Estimate   Standard   Convergence 
                                                    Error      t-ratio   
-  1. rate basic rate parameter mynet1  3.0186  ( 0.5581   )    0.0134   
-  2. eval outdegree (density)         -1.1374  ( 0.2723   )    0.1044   
-  3. eval reciprocity                  1.7459  ( 0.2854   )   -0.1847   
+  1. rate basic rate parameter mynet1  3.0698  ( 0.5547   )    0.1595   
+  2. eval outdegree (density)         -1.1423  ( 0.2848   )   -0.1137   
+  3. eval reciprocity                  1.7361  ( 0.5143   )   -0.0993   
 
-Overall maximum convergence ratio:    0.3838 
+Overall maximum convergence ratio:    0.2337 
 
 
-Total of 407 iteration steps.
+Total of 388 iteration steps.
 
-> (myeff <- includeEffects(myeff, transTrip, cycle4))
+> (myeff <- set_effect(myeff, list(transTrip, cycle4)))
   effectNumber effectName          shortName include fix   test  initialValue
 1  20          transitive triplets transTrip TRUE    FALSE FALSE          0  
 2 215          4 cycles (#)        cycle4    TRUE    FALSE FALSE          0  
@@ -60,22 +57,20 @@ Total of 407 iteration steps.
 3 reciprocity                 TRUE    FALSE FALSE    0.00000   0   
 4 transitive triplets         TRUE    FALSE FALSE    0.00000   0   
 5 4 cycles (#)                TRUE    FALSE FALSE    0.00000   1   
-> (myeff <- includeEffects(myeff, cycle4, include=FALSE))
+> (myeff <- set_effect(myeff, cycle4, include=FALSE))
   effectNumber effectName   shortName include fix   test  initialValue parm
-1 215          4 cycles (#) cycle4    FALSE   FALSE FALSE          0   1   
+1 215          4 cycles (1) cycle4    FALSE   FALSE FALSE          0   1   
   effectName                  include fix   test  initialValue parm
 1 basic rate parameter mynet1 TRUE    FALSE FALSE    4.80941   0   
 2 outdegree (density)         TRUE    FALSE FALSE   -0.56039   0   
 3 reciprocity                 TRUE    FALSE FALSE    0.00000   0   
 4 transitive triplets         TRUE    FALSE FALSE    0.00000   0   
 > ##test4
-> mymodel$cconditional <- TRUE
-> mymodel$condvarno<- 1
 > print('test4')
 [1] "test4"
-> ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
-+               parallelTesting=TRUE, silent=TRUE)
-> ##, verbose=TRUE)#,dll='../siena/src/RSiena.dll')
+> alg_alg <- set_algorithm_saom(cond=TRUE, condvarno=1, seed=3, n3=50, nsub=2, findiff=TRUE)
+> ans <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg)
 > ans
 Estimates, standard errors and convergence t-ratios
 
@@ -83,44 +78,42 @@ Estimates, standard errors and convergence t-ratios
                                            Error      t-ratio   
 
 Rate parameters: 
-  0       Rate parameter       3.2640  ( 0.5554   )             
+  0       Rate parameter       2.9533  ( 0.4791   )             
 
 Other parameters: 
-  1. eval outdegree (density) -1.7460  ( 0.4314   )   0.1523    
-  2. eval reciprocity          1.4356  ( 0.4395   )   0.2525    
-  3. eval transitive triplets  0.3126  ( 0.1201   )   0.0971    
+  1. eval outdegree (density) -1.7534  ( 0.2358   )   -0.0834   
+  2. eval reciprocity          1.2997  ( 0.5033   )   -0.1789   
+  3. eval transitive triplets  0.3194  ( 0.0656   )   -0.0896   
 
-Overall maximum convergence ratio:    0.2753 
+Overall maximum convergence ratio:    0.1834 
 
 
-Total of 231 iteration steps.
+Total of 283 iteration steps.
 
 > ##test5
-> mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
-> mydata <- sienaDataCreate(mynet1)
-> myeff<- getEffects(mydata)
-> mymodel<- sienaAlgorithmCreate(fn = simstats0c,  nsub=2, n3=50,
-+                        cond=FALSE, seed=5)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> mynet1 <- as_dependent_rsiena(array(c(tmp3,tmp4),dim=c(32,32,2)))
+> mydata <- make_data_rsiena(mynet1)
+> myeff<- make_specification(mydata)
 > print('test5')
 [1] "test5"
-> ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
-+               parallelTesting=TRUE, silent=TRUE)
+> alg_alg <- set_algorithm_saom(cond=FALSE, seed=5, n3=50, nsub=2)
+> ans <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg)
 > ans
 Estimates, standard errors and convergence t-ratios
 
                                       Estimate   Standard   Convergence 
                                                    Error      t-ratio   
-  1. rate basic rate parameter mynet1  3.0451  ( 0.5078   )    0.0103   
-  2. eval outdegree (density)         -1.1448  ( 0.1690   )   -0.2193   
-  3. eval reciprocity                  1.7883  ( 0.3820   )   -0.0597   
+  1. rate basic rate parameter mynet1  3.0198  ( 0.5691   )   -0.0973   
+  2. eval outdegree (density)         -1.1275  ( 0.2091   )   -0.1174   
+  3. eval reciprocity                  1.7130  ( 0.4671   )   -0.3867   
 
-Overall maximum convergence ratio:    0.2334 
+Overall maximum convergence ratio:    0.4386 
 
 
-Total of 588 iteration steps.
+Total of 388 iteration steps.
 
-> (myeff <- includeEffects(myeff, recip, inPop))
+> (myeff <- set_effect(myeff, list(recip, inPop)))
   effectNumber effectName            shortName include fix   test  initialValue
 1 14           reciprocity           recip     TRUE    FALSE FALSE          0  
 2 77           indegree - popularity inPop     TRUE    FALSE FALSE          0  
@@ -132,7 +125,7 @@ Total of 588 iteration steps.
 2 outdegree (density)         TRUE    FALSE FALSE   -0.56039   0   
 3 reciprocity                 TRUE    FALSE FALSE    0.00000   0   
 4 indegree - popularity       TRUE    FALSE FALSE    0.00000   0   
-> (myeff <- includeEffects(myeff, outAct, fix=TRUE, test=TRUE))
+> (myeff <- set_effect(myeff, outAct, fix=TRUE, test=TRUE))
   effectNumber effectName           shortName include fix  test initialValue
 1 114          outdegree - activity outAct    TRUE    TRUE TRUE          0  
   parm
@@ -143,7 +136,7 @@ Total of 588 iteration steps.
 3 reciprocity                 TRUE    FALSE FALSE    0.00000   0   
 4 indegree - popularity       TRUE    FALSE FALSE    0.00000   0   
 5 outdegree - activity        TRUE    TRUE  TRUE     0.00000   0   
-> (myeff <- includeInteraction(myeff, recip, inPop, fix=TRUE, test=TRUE))
+> (myeff <- set_interaction(myeff, list(recip, inPop), fix=TRUE, test=TRUE))
   effectNumber effectName                          shortName include fix  
 1  14          reciprocity                         recip     TRUE    FALSE
 2  77          indegree - popularity               inPop     TRUE    FALSE
@@ -166,127 +159,122 @@ Total of 588 iteration steps.
 4  0       0     
 5  0       0     
 6 14      77     
-> ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
-+               parallelTesting=TRUE, silent=TRUE)
+> alg_alg <- set_algorithm_saom(cond=FALSE, seed=5, n3=50, nsub=2)
+> ans <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg)
 > ans
 Estimates, standard errors and convergence t-ratios
 
                                               Estimate   Standard   Convergence 
                                                            Error      t-ratio   
-  1. rate basic rate parameter mynet1          3.0375  ( 0.6487   )   -0.1316   
-  2. eval outdegree (density)                 -1.4598  ( 0.4672   )   -0.0938   
-  3. eval reciprocity                          1.8008  ( 0.5119   )    0.0402   
-  4. eval indegree - popularity                0.0541  ( 0.0655   )   -0.1327   
-  5. eval outdegree - activity                 0.0000  (     NA   )   -1.1184   
-  6. eval reciprocity x indegree - popularity  0.0000  (     NA   )    0.3944   
+  1. rate basic rate parameter mynet1          3.0424  ( 0.9594   )   -0.1552   
+  2. eval outdegree (density)                 -1.4955  ( 0.7696   )    0.0287   
+  3. eval reciprocity                          1.8151  ( 0.6975   )    0.1263   
+  4. eval indegree - popularity                0.0584  ( 0.1312   )    0.0686   
+  5. eval outdegree - activity                 0.0000  (     NA   )   -0.8654   
+  6. eval reciprocity x indegree - popularity  0.0000  (     NA   )    0.6026   
 
-Overall maximum convergence ratio:    0.2102 
+Overall maximum convergence ratio:    0.2770 
 
 
 Score test for 2 parameters:
-chi-squared = 11.43, p = 0.0033.
+chi-squared = 10.97, p = 0.0042.
 
 Total of 612 iteration steps.
 
-> score.Test(ans)
+> test_parameter(ans, method='score')
 Tested effects:
  outdegree - activity eval 
  reciprocity x indegree - popularity eval 
-chi-squared = 11.43, d.f. = 2;  p = 0.003. 
+chi-squared = 10.97, d.f. = 2;  p = 0.004. 
 > ##test6
-> mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
-> mydata <- sienaDataCreate(mynet1)
-> myeff<- getEffects(mydata)
-> mymodel<- sienaAlgorithmCreate(fn = simstats0c,  nsub=2, n3=50,
-+                        cond=FALSE, doubleAveraging=0,seed=5)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> mynet1 <- as_dependent_rsiena(array(c(tmp3,tmp4),dim=c(32,32,2)))
+> mydata <- make_data_rsiena(mynet1)
+> myeff<- make_specification(mydata)
 > print('test6')
 [1] "test6"
-> ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
-+               parallelTesting=TRUE, silent=TRUE)
+> alg_alg <- set_algorithm_saom(cond=FALSE, seed=5, n3=50, nsub=2)
+> ans <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg)
 > ans
 Estimates, standard errors and convergence t-ratios
 
                                       Estimate   Standard   Convergence 
                                                    Error      t-ratio   
-  1. rate basic rate parameter mynet1  3.0451  ( 0.5078   )    0.0103   
-  2. eval outdegree (density)         -1.1448  ( 0.1690   )   -0.2193   
-  3. eval reciprocity                  1.7883  ( 0.3820   )   -0.0597   
+  1. rate basic rate parameter mynet1  3.0198  ( 0.5691   )   -0.0973   
+  2. eval outdegree (density)         -1.1275  ( 0.2091   )   -0.1174   
+  3. eval reciprocity                  1.7130  ( 0.4671   )   -0.3867   
 
-Overall maximum convergence ratio:    0.2334 
+Overall maximum convergence ratio:    0.4386 
 
 
-Total of 588 iteration steps.
+Total of 388 iteration steps.
 
-> myeff <- includeEffects(myeff, recip, include=FALSE)
+> myeff <- set_effect(myeff, recip, include=FALSE)
   effectNumber effectName  shortName include fix   test  initialValue parm
 1 14           reciprocity recip     FALSE   FALSE FALSE          0   0   
-> myeff <- includeEffects(myeff, recip, type='endow')
+> myeff <- set_effect(myeff, recip, type="endow")
   effectNumber effectName  shortName include fix   test  initialValue parm
 1 15           reciprocity recip     TRUE    FALSE FALSE          0   0   
   type 
 1 endow
-> myeff <- includeEffects(myeff, recip, type='creation')
+> myeff <- set_effect(myeff, recip, type="creation")
   effectNumber effectName  shortName include fix   test  initialValue parm
 1 16           reciprocity recip     TRUE    FALSE FALSE          0   0   
   type    
 1 creation
-> ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
-+               parallelTesting=TRUE, silent=TRUE)
+> alg_alg <- set_algorithm_saom(cond=FALSE, seed=5, n3=50, nsub=2)
+> ans <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg)
 > ans
 Estimates, standard errors and convergence t-ratios
 
                                        Estimate   Standard   Convergence 
                                                     Error      t-ratio   
-  1. rate  basic rate parameter mynet1  3.1508  ( 0.5674   )   -0.0293   
-  2. eval  outdegree (density)         -1.0976  ( 0.1952   )   -0.0648   
-  3. endow reciprocity                  2.3709  ( 0.9090   )    0.0125   
-  4. creat reciprocity                  1.0175  ( 0.7842   )   -0.0142   
+  1. rate  basic rate parameter mynet1  3.2037  ( 0.7959   )    0.0117   
+  2. eval  outdegree (density)         -1.1100  ( 0.2160   )    0.2028   
+  3. endow reciprocity                  2.4576  ( 0.6958   )    0.0000   
+  4. creat reciprocity                  0.9772  ( 0.8937   )   -0.0088   
 
-Overall maximum convergence ratio:    0.0827 
+Overall maximum convergence ratio:    0.2566 
 
 
 Total of 595 iteration steps.
 
-> testSame.RSiena(ans, 3, 4)
+> test_parameter(ans, method='same', tested=3, tested2=4)
 Tested effects:
  reciprocity endow  ==  reciprocity creation 
-chi-squared = 0.91, d.f. = 1; one-sided Z = 0.95; two-sided p = 0.341. 
+chi-squared = 1.52, d.f. = 1; one-sided Z = 1.23; two-sided p = 0.218. 
 > ##test7
-> mynet1 <- sienaDependent(array(c(tmp3,tmp4),dim=c(32,32,2)))
-> mydata <- sienaDataCreate(mynet1)
-> myeff<- getEffects(mydata)
-> mymodel<- sienaAlgorithmCreate(fn = simstats0c,  nsub=2, n3=50,
-+                        cond=FALSE,  diagonalize=0.5, seed=5)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> mynet1 <- as_dependent_rsiena(array(c(tmp3,tmp4),dim=c(32,32,2)))
+> mydata <- make_data_rsiena(mynet1)
+> myeff<- make_specification(mydata)
 > print('test7')
 [1] "test7"
-> ans<- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
-+               parallelTesting=TRUE, silent=TRUE)
-> ##, verbose=TRUE)#,dll='../siena/src/RSiena.dll')
+> alg_alg <- set_algorithm_saom(cond=FALSE, seed=5, n3=50, nsub=2,
++          diagonalize=0.5)
+> ans <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg)
 > ans
 Estimates, standard errors and convergence t-ratios
 
                                       Estimate   Standard   Convergence 
                                                    Error      t-ratio   
-  1. rate basic rate parameter mynet1  3.0258  ( 0.5063   )   -0.1656   
-  2. eval outdegree (density)         -1.1558  ( 0.1821   )    0.0801   
-  3. eval reciprocity                  1.8464  ( 0.3633   )    0.2701   
+  1. rate basic rate parameter mynet1  3.0591  ( 0.6416   )    0.0106   
+  2. eval outdegree (density)         -1.1450  ( 0.1639   )   -0.0612   
+  3. eval reciprocity                  1.7681  ( 0.3874   )    0.0769   
 
-Overall maximum convergence ratio:    0.3630 
+Overall maximum convergence ratio:    0.1380 
 
 
-Total of 545 iteration steps.
+Total of 588 iteration steps.
 
 > ##test8
-> mymodel<- sienaAlgorithmCreate(fn = simstats0c,  nsub=1, n3=50,
-+                        cond=TRUE, condvarno=1, seed=5)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
 > print('test8')
 [1] "test8"
-> ans <- siena07(mymodel, data=mydata, effects=myeff,  batch=TRUE,
-+               parallelTesting=TRUE, silent=TRUE)
-> ##, verbose=TRUE)#,dll='../siena/src/RSiena.dll')
+> alg_alg <- set_algorithm_saom(cond=TRUE, condvarno=1, seed=5, n3=50, nsub=1)
+> ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg)
 > ans
 Estimates, standard errors and convergence t-ratios
 
@@ -294,40 +282,38 @@ Estimates, standard errors and convergence t-ratios
                                            Error      t-ratio   
 
 Rate parameters: 
-  0       Rate parameter       3.0998  ( 0.5110   )             
+  0       Rate parameter       3.1505  ( 0.4774   )             
 
 Other parameters: 
-  1. eval outdegree (density) -1.1509  ( 0.2244   )   -0.1080   
-  2. eval reciprocity          1.7982  ( 0.4363   )    0.0185   
+  1. eval outdegree (density) -1.1472  ( 0.2246   )   -0.0311   
+  2. eval reciprocity          1.8028  ( 0.4532   )   -0.0069   
 
-Overall maximum convergence ratio:    0.1564 
+Overall maximum convergence ratio:    0.0360 
 
 
-Total of 240 iteration steps.
+Total of 322 iteration steps.
 
 > ##test9
-> mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
-> mynet2 <- sienaDependent(s50a,type='behavior')
-> mydata <- sienaDataCreate(mynet1, mynet2)
-> myeff <- getEffects(mydata)
-> myeff <- setEffect(myeff, linear, initialValue=0.34699930338, name="mynet2")
+> mynet1 <- as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+> mynet2 <- as_dependent_rsiena(s50a,type='behavior')
+> mydata <- make_data_rsiena(mynet1, mynet2)
+> myeff <- make_specification(mydata)
+> myeff <- set_effect(myeff, linear, depvar="mynet2", initialValue=0.34699930338)
   effectNumber effectName          shortName include fix   test  initialValue
 1 501          mynet2 linear shape linear    TRUE    FALSE FALSE      0.347  
   parm
 1 0   
-> myeff <- setEffect(myeff, avAlt, name="mynet2", interaction1="mynet1")
+> myeff <- set_effect(myeff, avAlt, depvar="mynet2", covar1="mynet1")
   effectNumber effectName           shortName include fix   test  initialValue
 1 590          mynet2 average alter avAlt     TRUE    FALSE FALSE          0  
   parm
 1 0   
-> ##myeff$initialValue[98] <- 0.34699930338 ## siena3 starting values differ
 > ##test10
 > print('test10')
 [1] "test10"
-> mymodel$cconditional <- TRUE
-> mymodel$condvarno<- 1
-> ans <- siena07(mymodel, data=mydata, effects=myeff, batch=TRUE,
-+                parallelTesting=TRUE, silent=TRUE)
+> alg_alg <- set_algorithm_saom(cond=TRUE, condvarno=1, seed=5, n3=50, nsub=1)
+> ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg)
 > ##, verbose=TRUE)
 > ans
 Estimates, standard errors and convergence t-ratios
@@ -336,22 +322,22 @@ Estimates, standard errors and convergence t-ratios
                                                                Error      t-ratio   
 
 Rate parameters: 
-  0.1      Rate parameter cond. variable period 1  6.0629  ( 1.2683   )             
-  0.2      Rate parameter cond. variable period 2  4.4421  ( 0.6116   )             
+  0.1      Rate parameter cond. variable period 1  5.8103  ( 0.7403   )             
+  0.2      Rate parameter cond. variable period 2  4.5543  ( 0.7708   )             
 
 Other parameters: 
 Network Dynamics 
-  1.  eval outdegree (density)                    -2.4172  ( 0.1896   )   -0.0951   
-  2.  eval reciprocity                             2.9130  ( 0.3222   )    0.0078   
+  1.  eval outdegree (density)                    -2.3913  ( 0.0975   )    0.0906   
+  2.  eval reciprocity                             2.8698  ( 0.2220   )    0.1073   
 
 Behavior Dynamics
-  3.  rate rate mynet2 (period 1)                  1.3101  ( 0.4665   )    0.0888   
-  4.  rate rate mynet2 (period 2)                  1.6253  ( 0.5829   )   -0.0653   
-  5.  eval mynet2 linear shape                     0.4125  ( 0.2154   )   -0.0459   
-  6.  eval mynet2 quadratic shape                 -0.5443  ( 0.4127   )   -0.0480   
-  7.  eval mynet2 average alter                    1.2691  ( 1.1516   )   -0.0736   
+  3.  rate rate mynet2 (period 1)                  1.2689  ( 1.1717   )   -0.0772   
+  4.  rate rate mynet2 (period 2)                  1.6974  ( 2.1304   )    0.0253   
+  5.  eval mynet2 linear shape                     0.4371  ( 0.5900   )   -0.0391   
+  6.  eval mynet2 quadratic shape                 -0.5566  ( 0.5986   )    0.0188   
+  7.  eval mynet2 average alter                    1.2848  ( 1.6650   )    0.0042   
 
-Overall maximum convergence ratio:    0.2577 
+Overall maximum convergence ratio:    0.1481 
 
 
 Total of 335 iteration steps.
@@ -359,29 +345,28 @@ Total of 335 iteration steps.
 > ##test11
 > print('test11')
 [1] "test11"
-> mymodel<- sienaAlgorithmCreate(fn = simstats0c,  nsub=1, n3=50,
-+                        behModelType=c(mynet2=2), seed=6)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> (ans <- siena07(mymodel, data=mydata, effects=myeff, batch=TRUE,
-+                parallelTesting=TRUE, silent=TRUE))
+> alg_model <- set_model_saom(behModelType=c(mynet2=2))
+> alg_alg <- set_algorithm_saom(seed=6, n3=50, nsub=1)
+> (ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          control_model=alg_model, control_algo=alg_alg))
 Estimates, standard errors and convergence t-ratios
 
                                           Estimate   Standard   Convergence 
                                                        Error      t-ratio   
 Network Dynamics 
-  1. rate constant mynet1 rate (period 1)  5.7911  ( 1.8273   )   -0.2276   
-  2. rate constant mynet1 rate (period 2)  4.5005  ( 0.8629   )   -0.1708   
-  3. eval outdegree (density)             -2.3618  ( 0.1201   )   -0.2746   
-  4. eval reciprocity                      2.8187  ( 0.1675   )   -0.2688   
+  1. rate constant mynet1 rate (period 1)  5.9609  ( 1.0328   )    0.1582   
+  2. rate constant mynet1 rate (period 2)  4.5993  ( 0.8131   )    0.0531   
+  3. eval outdegree (density)             -2.3805  ( 0.1343   )    0.0268   
+  4. eval reciprocity                      2.8455  ( 0.2840   )    0.0363   
 
 Behavior Dynamics
-  5. rate rate mynet2 (period 1)           1.3221  ( 0.4155   )    0.0399   
-  6. rate rate mynet2 (period 2)           1.7863  ( 0.5585   )   -0.0260   
-  7. eval mynet2 linear shape              0.3724  ( 0.2906   )   -0.0873   
-  8. eval mynet2 quadratic shape          -0.5723  ( 0.3959   )   -0.1168   
-  9. eval mynet2 average alter             1.2012  ( 0.7552   )    0.0420   
+  5. rate rate mynet2 (period 1)           1.2525  ( 0.4668   )   -0.3548   
+  6. rate rate mynet2 (period 2)           1.8061  ( 0.3492   )    0.2479   
+  7. eval mynet2 linear shape              0.3727  ( 0.2649   )   -0.1504   
+  8. eval mynet2 quadratic shape          -0.5577  ( 0.2171   )    0.2893   
+  9. eval mynet2 average alter             1.1833  ( 0.6218   )    0.2040   
 
-Overall maximum convergence ratio:    0.5329 
+Overall maximum convergence ratio:    0.6102 
 
 
  Behavioral Model Type:
@@ -394,27 +379,27 @@ Total of 340 iteration steps.
 > print('test12')
 [1] "test12"
 > use<- 1:30
-> mynet1 <- sienaDependent(array(c(s501[use,], s502[use,], s503[use,]),
+> mynet1 <- as_dependent_rsiena(array(c(s501[use,], s502[use,], s503[use,]),
 +                          dim=c(length(use), 50,3)), type='bipartite',
 +                          nodeSet=c('Senders','receivers'))
-> receivers <- sienaNodeSet(50,'receivers')
-> senders <- sienaNodeSet(30,'Senders')
-> myvar1 <- coCovar(s50a[1:30,2], nodeSet='Senders')
-> mydata <- sienaDataCreate(mynet1, myvar1, nodeSets=list(senders, receivers))
-> myeff <- getEffects(mydata)
-> myeff <- includeEffects(myeff, inPop)
+> receivers <- as_nodeset_rsiena(50,'receivers')
+> senders <- as_nodeset_rsiena(30,'Senders')
+> myvar1 <- as_covariate_rsiena(s50a[1:30,2], nodeSet='Senders')
+> mydata <- make_data_rsiena(mynet1, myvar1, nodeSets=list(senders, receivers))
+> myeff <- make_specification(mydata)
+> myeff <- set_effect(myeff, inPop)
   effectNumber effectName            shortName include fix   test  initialValue
 1 18           indegree - popularity inPop     TRUE    FALSE FALSE          0  
   parm
 1 0   
-> myeff <- setEffect(myeff, altInDist2, interaction1="myvar1", parameter=1)
+> myeff <- set_effect(myeff, altInDist2, covar1="myvar1", parameter=1)
   effectNumber effectName             shortName  include fix   test 
 1 119          myvar1 in-alter dist 2 altInDist2 TRUE    FALSE FALSE
   initialValue parm
 1          0   1   
-> ans <- siena07(sienaModelCreate(n3=50, nsub=2, seed=1),
-+                data=mydata, effects=myeff, batch=TRUE, silent=TRUE)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> alg_alg <- set_algorithm_saom(seed=1, n3=50, nsub=2)
+> ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg)
 > ans
 Estimates, standard errors and convergence t-ratios
 
@@ -435,7 +420,7 @@ Overall maximum convergence ratio:    7.2880
 
 Total of 588 iteration steps.
 
-> tt <- sienaTimeTest(ans)
+> tt <- test_time(ans)
 > summary(tt)
 Joint significance test of time heterogeneity:
 chi-squared =   4.24, d.f. = 3, p= 0.2365, 
@@ -478,25 +463,25 @@ Type "?test_time" for more information on this output.
 > print('test13')
 [1] "test13"
 > use<- 1:30
-> mynet1 <- sienaDependent(array(c(s502[,use], s503[,use]),
+> mynet1 <- as_dependent_rsiena(array(c(s502[,use], s503[,use]),
 +                          dim=c(50, length(use), 2)), type='bipartite',
 +                          nodeSet=c('Senders','receivers'))
-> receivers <- sienaNodeSet(30,'receivers')
-> senders <- sienaNodeSet(50,'Senders')
-> myvar1 <- coCovar(s50a[1:50,2], nodeSet='Senders')
-> mydata <- sienaDataCreate(mynet1, myvar1, nodeSets=list(senders, receivers))
-> myeff <- getEffects(mydata)
-> myeff <- setEffect(myeff, altInDist2, interaction1="myvar1", parameter=1)
+> receivers <- as_nodeset_rsiena(30,'receivers')
+> senders <- as_nodeset_rsiena(50,'Senders')
+> myvar1 <- as_covariate_rsiena(s50a[1:50,2], nodeSet='Senders')
+> mydata <- make_data_rsiena(mynet1, myvar1, nodeSets=list(senders, receivers))
+> myeff <- make_specification(mydata)
+> myeff <- set_effect(myeff, altInDist2, covar1="myvar1", parameter=1)
   effectNumber effectName             shortName  include fix   test 
 1 118          myvar1 in-alter dist 2 altInDist2 TRUE    FALSE FALSE
   initialValue parm
 1          0   1   
-> myeff <- setEffect(myeff, egoX, interaction1="myvar1")
+> myeff <- set_effect(myeff, egoX, covar1="myvar1")
   effectNumber effectName shortName include fix   test  initialValue parm
 1 97           myvar1 ego egoX      TRUE    FALSE FALSE          0   0   
-> (ans <- siena07(sienaModelCreate(n3=50, nsub=2, seed=1),
-+                data=mydata, effects=myeff, batch=TRUE, silent=TRUE))
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> alg_alg <- set_algorithm_saom(seed=1, n3=50, nsub=2)
+> (ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg))
 Estimates, standard errors and convergence t-ratios
 
                                  Estimate   Standard   Convergence 
@@ -518,17 +503,18 @@ Total of 588 iteration steps.
 > ##test14
 > print('test14')
 [1] "test14"
-> net <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
-> dataset <- sienaDataCreate(net)
-> myeff <- getEffects(dataset)
-> myeff <- includeEffects(myeff, inPop)
+> net <- as_dependent_rsiena(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
+> dataset <- make_data_rsiena(net)
+> myeff <- make_specification(dataset)
+> myeff <- set_effect(myeff, inPop)
   effectNumber effectName            shortName include fix   test  initialValue
 1 77           indegree - popularity inPop     TRUE    FALSE FALSE          0  
   parm
 1 0   
-> algo <- sienaAlgorithmCreate(nsub=1, n3=20, maxlike=TRUE, seed=15, mult=1, prML=1)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> (ans <- siena07(algo, data=dataset, effects=myeff, batch=TRUE, silent=TRUE))
+> alg_alg <- set_algorithm_saom(maxlike=TRUE, cond=FALSE, seed=15, n3=20, nsub=1,
++          diagonalize=0, mult=1)
+> (ans  <- siena(data=dataset, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg))
 Estimated by Maximum Likelihood
 
 Estimates, standard errors and convergence t-ratios
@@ -548,11 +534,11 @@ Total of 266 iteration steps.
 > ##test 15
 > print('test15')
 [1] "test15"
-> mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
-> mynet2 <- sienaDependent(s50a,type='behavior')
-> mydata <- sienaDataCreate(mynet1, mynet2)
-> myeff <- getEffects(mydata)
-> (myeff <- includeEffects(myeff, transTrip))
+> mynet1 <- as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+> mynet2 <- as_dependent_rsiena(s50a,type='behavior')
+> mydata <- make_data_rsiena(mynet1, mynet2)
+> myeff <- make_specification(mydata)
+> (myeff <- set_effect(myeff, transTrip))
   effectNumber effectName          shortName include fix   test  initialValue
 1 22           transitive triplets transTrip TRUE    FALSE FALSE          0  
   parm
@@ -567,7 +553,7 @@ Total of 266 iteration steps.
 7 mynet2 rate mynet2 (period 2)          TRUE    FALSE FALSE    0.84939   0   
 8 mynet2 mynet2 linear shape             TRUE    FALSE FALSE    0.32237   0   
 9 mynet2 mynet2 quadratic shape          TRUE    FALSE FALSE    0.00000   0   
-> (myeff <- includeEffects(myeff, egoX, simX, interaction1="mynet2"))
+> (myeff <- set_effect(myeff, list(egoX, simX), covar1="mynet2"))
   effectNumber effectName        shortName include fix   test  initialValue
 1 278          mynet2 ego        egoX      TRUE    FALSE FALSE          0  
 2 324          mynet2 similarity simX      TRUE    FALSE FALSE          0  
@@ -586,7 +572,7 @@ Total of 266 iteration steps.
 9  mynet2 rate mynet2 (period 2)          TRUE    FALSE FALSE    0.84939   0   
 10 mynet2 mynet2 linear shape             TRUE    FALSE FALSE    0.32237   0   
 11 mynet2 mynet2 quadratic shape          TRUE    FALSE FALSE    0.00000   0   
-> (myeff <- includeEffects(myeff, avSim, name="mynet2", interaction1="mynet1"))
+> (myeff <- set_effect(myeff, avSim, depvar="mynet2", covar1="mynet1"))
   effectNumber effectName                shortName include fix   test 
 1 534          mynet2 average similarity avSim     TRUE    FALSE FALSE
   initialValue parm
@@ -653,10 +639,9 @@ Total of 266 iteration steps.
 11 mynet2 mynet2 quadratic shape          Regular  
 12 mynet2 mynet2 average similarity       Regular  
 13 mynet1 mynet2 similarity               GMoM     
-> algo <- sienaAlgorithmCreate(nsub=1, n3=100, gmm=TRUE, seed=6)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> (ans <- siena07(algo, data=mydata, effects=myeff, batch=TRUE,
-+                 parallelTesting=TRUE, silent=TRUE))
+> alg_alg <- set_algorithm_saom(gmm=TRUE, seed=6, n3=100, nsub=1)
+> (ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg))
 Estimated by Generalized Method of Moments
 
 Estimates, standard errors and convergence t-ratios
@@ -664,25 +649,25 @@ Estimates, standard errors and convergence t-ratios
                                            Estimate   Standard   Convergence 
                                                         Error      t-ratio   
 Network Dynamics 
-   1. rate constant mynet1 rate (period 1)  5.6736  ( 0.6951   )   -0.7532   
-   2. rate constant mynet1 rate (period 2)  4.3793  ( 0.7939   )   -0.2401   
-   3. eval outdegree (density)             -2.5281  ( 0.1238   )    3.0663   
-   4. eval reciprocity                      2.7731  ( 0.2046   )    3.2600   
-   5. eval transitive triplets              0.4332  ( 0.0824   )   -0.8205   
-   6. eval mynet2 ego                       0.0220  ( 0.0772   )    1.7040   
-   7. eval mynet2 similarity                0.8670  ( 0.3446   )    1.4465   
+   1. rate constant mynet1 rate (period 1)  5.5632  ( 1.2970   )   -1.0930   
+   2. rate constant mynet1 rate (period 2)  4.3687  ( 0.6412   )   -1.6447   
+   3. eval outdegree (density)             -2.5981  ( 0.1535   )    1.1781   
+   4. eval reciprocity                      2.6870  ( 0.2324   )    1.8862   
+   5. eval transitive triplets              0.3907  ( 0.0737   )   -2.3790   
+   6. eval mynet2 ego                       0.0371  ( 0.0979   )    0.6639   
+   7. eval mynet2 similarity                1.1255  ( 0.4169   )    1.5314   
 
 Behavior Dynamics
-   8. rate rate mynet2 (period 1)           1.2663  ( 0.3007   )    1.0844   
-   9. rate rate mynet2 (period 2)           1.6833  ( 0.3537   )   -0.9834   
-  10. eval mynet2 linear shape              0.3607  ( 0.2267   )    0.5830   
-  11. eval mynet2 quadratic shape          -0.1885  ( 0.1240   )   -0.8490   
-  12. eval mynet2 average similarity        1.4133  ( 1.6348   )   -0.1432   
+   8. rate rate mynet2 (period 1)           1.1603  ( 0.4551   )    0.1277   
+   9. rate rate mynet2 (period 2)           1.6443  ( 0.4689   )    0.1219   
+  10. eval mynet2 linear shape              0.4098  ( 0.1531   )    0.4140   
+  11. eval mynet2 quadratic shape          -0.1597  ( 0.1557   )    0.4469   
+  12. eval mynet2 average similarity        0.7157  ( 2.2581   )   -0.6514   
 
-Overall maximum convergence ratio:    5.7962 
+Overall maximum convergence ratio:    5.3403 
 
 
-Total of 757 iteration steps.
+Total of 605 iteration steps.
 
 > ##test16
 > print('test16')
@@ -690,9 +675,9 @@ Total of 757 iteration steps.
 > set.seed(123) # simulate behavior data according to dZ(t) = [-0.1 Z + 1] dt + 1 dW(t)
 > y1 <- rnorm(50, 0,3)
 > y2 <- exp(-0.1) * y1 + (1-exp(-0.1)) * 1/ -0.1 + rnorm(50, 0, (exp(-0.2)- 1) / -0.2 * 1^2)
-> friend <- sienaDependent(array(c(s501, s502), dim = c(50,50,2)))
-> behavior <- sienaDependent(matrix(c(y1,y2), 50,2), type = "continuous")
-> (mydata <- sienaDataCreate(friend, behavior))
+> friend <- as_dependent_rsiena(array(c(s501, s502), dim = c(50,50,2)))
+> behavior <- as_dependent_rsiena(matrix(c(y1,y2), 50,2), type = "continuous")
+> (mydata <- make_data_rsiena(friend, behavior))
 Dependent variables:  friend, behavior 
 Number of observations: 2 
 
@@ -711,7 +696,7 @@ Observations       2
 Nodeset            Actors        
 Range              -6.242 - 6.507
 
-> (myeff <- getEffects(mydata, onePeriodSde = TRUE))
+> (myeff <- make_specification(mydata, onePeriodSde = TRUE))
 SDE init parameters:  -0.1117176 -0.864023 0.8576913 
 SDE par stand errors: 0.04669358 0.1223113 0.08791327 
   name     effectName                  include fix   test  initialValue parm
@@ -722,10 +707,9 @@ SDE par stand errors: 0.04669358 0.1223113 0.08791327
 5 behavior wiener (behavior.behavior)  TRUE    FALSE FALSE    0.85769   0   
 6 behavior feedback from behavior      TRUE    FALSE FALSE   -0.11172   0   
 7 behavior intercept                   TRUE    FALSE FALSE   -0.86402   0   
-> algorithmMoM <- sienaAlgorithmCreate(nsub=1, n3=20, seed=321)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> (ans <- siena07(algorithmMoM, data = mydata, effects = myeff, batch=TRUE,
-+                                                 silent=TRUE))
+> alg_alg <- set_algorithm_saom(seed=321, n3=20, nsub=1)
+> (ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg))
 SDE init parameters:  -0.1117176 -0.864023 0.8576913 
 SDE par stand errors: 0.04669358 0.1223113 0.08791327 
 Estimates, standard errors and convergence t-ratios
@@ -756,8 +740,8 @@ Total of 305 iteration steps.
 > sm2 <- 1*(s50s[,3] >= 2)
 > sm2 <- pmax(sm1,sm2)
 > sm2[c(33,28,29,44)] <- 1
-> mybeh <- sienaDependent(cbind(sm1,sm2), type="behavior")
-> (mydata <- sienaDataCreate(mynet, mybeh))
+> mybeh <- as_dependent_rsiena(cbind(sm1,sm2), type="behavior")
+> (mydata <- make_data_rsiena(mynet, mybeh))
 For dependent variable mybeh, in some periods,
 there are only increases, or only decreases.
 This will be respected in the simulations. 
@@ -782,11 +766,9 @@ Nodeset            Actors
 Range              0 - 1   
 
 "uponly":  mybeh:    all periods
-> mymodel <- sienaAlgorithmCreate(projname=NULL, seed=1234, firstg=0.001, nsub=1, n3=10)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> myeff <- getEffects(mydata)
-> (myeff <- setEffect(myeff,avExposure,type='rate',parameter=2,
-+                             name='mybeh',interaction1='mynet'))
+> myeff <- make_specification(mydata)
+> (myeff <- set_effect(myeff, avExposure, type="rate", depvar="mybeh",
++          covar1="mynet", parameter=2))
   effectNumber effectName                            shortName  include fix  
 1 489          average exposure effect on rate mybeh avExposure TRUE    FALSE
   test  initialValue parm
@@ -803,7 +785,9 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 3 0   
 4 0   
 5 2   
-> (ans <- siena07(mymodel, data=mydata, effects=myeff, batch=TRUE, silent=TRUE))
+> alg_alg <- set_algorithm_saom(seed=1234, n3=10, nsub=1, firstg=0.001)
+> (ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg))
 Estimates, standard errors and convergence t-ratios
 
                                                 Estimate   Standard   Convergence 
@@ -825,20 +809,19 @@ Total of 290 iteration steps.
 > ##test18
 > print('test18')
 [1] "test18"
-> myalgorithm <- sienaAlgorithmCreate(nsub=1, n3=10, seed=1293)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> mynet1 <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
-> cova <- coCovar(1:32)
-> cova2 <- coCovar(rep(0,32), warn=FALSE)
-> mydata <- sienaDataCreate(mynet1, cova)
-> mydata2 <- sienaDataCreate(mynet1, cova=cova2)
-> mygroup <- sienaGroupCreate(list(mydata,mydata2))
-> myeff <- getEffects(mygroup)
-> myeff <- setEffect(myeff, simX, interaction1='cova')
+> mynet1 <- as_dependent_rsiena(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
+> cova <- as_covariate_rsiena(1:32)
+> cova2 <- as_covariate_rsiena(rep(0,32), warn=FALSE)
+> mydata <- make_data_rsiena(mynet1, cova)
+> mydata2 <- make_data_rsiena(mynet1, cova=cova2)
+> mygroup <- make_group_rsiena(list(mydata,mydata2))
+> myeff <- make_specification(mygroup)
+> myeff <- set_effect(myeff, simX, covar1="cova")
   effectNumber effectName      shortName include fix   test  initialValue parm
 1 324          cova similarity simX      TRUE    FALSE FALSE          0   0   
-> (ans <- siena07(myalgorithm, data=mygroup, effects=myeff, batch=TRUE,
-+                               silent=TRUE))
+> alg_alg <- set_algorithm_saom(seed=1293, n3=10, nsub=1)
+> (ans  <- siena(data=mygroup, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg))
 Estimates, standard errors and convergence t-ratios
 
                                    Estimate   Standard   Convergence 
@@ -861,30 +844,28 @@ Total of 285 iteration steps.
 > ##test19
 > print('test19')
 [1] "test19"
-> myalgorithm <- sienaAlgorithmCreate(nsub=1, n3=20, seed=1943)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-> alc <- coCovar(s50a[,1])
-> smoke <- coCovar(s50s[,1])
-> mydata <- sienaDataCreate(mynet, alc, smoke)
-> myeff <- getEffects(mydata)
-> myeff <- setEffect(myeff, gwespFF)
+> mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+> alc <- as_covariate_rsiena(s50a[,1])
+> smoke <- as_covariate_rsiena(s50s[,1])
+> mydata <- make_data_rsiena(mynet, alc, smoke)
+> myeff <- make_specification(mydata)
+> myeff <- set_effect(myeff, gwespFF)
   effectNumber effectName             shortName include fix   test 
 1 55           GWESP I -> K -> J (69) gwespFF   TRUE    FALSE FALSE
   initialValue parm
 1          0   69  
-> myeff <- setEffect(myeff, gwespFF, parameter=20)
+> myeff <- set_effect(myeff, gwespFF, parameter=20)
   effectNumber effectName             shortName include fix   test 
 1 55           GWESP I -> K -> J (20) gwespFF   TRUE    FALSE FALSE
   initialValue parm
 1          0   20  
-> myeff <- setEffect(myeff, outTrunc, parameter=2, include=FALSE)
+> myeff <- set_effect(myeff, outTrunc, parameter=2, include=FALSE)
   effectNumber effectName         shortName include fix   test  initialValue
 1 132          outdegree-trunc(2) outTrunc  FALSE   FALSE FALSE          0  
   parm
 1 2   
-> myeff <- includeInteraction(myeff, outTrunc, egoX, egoX,
-+                         interaction1=c("","smoke","alc"))
+> myeff <- set_interaction(myeff, list(outTrunc, egoX, egoX), covar1=c("",
++          "smoke", "alc"))
   effectNumber effectName                               shortName include fix  
 1 132          outdegree-trunc(2)                       outTrunc  FALSE   FALSE
 2 278          alc ego                                  egoX      FALSE   FALSE
@@ -895,8 +876,9 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 2 FALSE          0   0      0       0       0    
 3 FALSE          0   0      0       0       0    
 4 FALSE          0   0    132     462     278    
-> (ans <- siena07(myalgorithm, data=mydata, effects=myeff, batch=TRUE,
-+                               silent=TRUE))
+> alg_alg <- set_algorithm_saom(seed=1943, n3=20, nsub=1)
+> (ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg))
 Estimates, standard errors and convergence t-ratios
 
                                                    Estimate   Standard   Convergence 
@@ -919,18 +901,14 @@ Total of 297 iteration steps.
 > ##test20
 > print('test20')
 [1] "test20"
-> myalgorithm1 <- sienaAlgorithmCreate(nsub=2, n3=50, seed=1293)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> myalgorithm2 <- sienaAlgorithmCreate(nsub=2, n3=50, gmm=TRUE, seed=1293)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-> mynet2 <- sienaDependent(array(c(s503, s502), dim=c(50, 50, 2)))
-> mydata <- sienaDataCreate(mynet1, mynet2)
-> myeff <- getEffects(mydata)
-> myeff <- includeEffects(myeff, crprod, name='mynet2', interaction1='mynet1')
+> mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+> mynet2 <- as_dependent_rsiena(array(c(s503, s502), dim=c(50, 50, 2)))
+> mydata <- make_data_rsiena(mynet1, mynet2)
+> myeff <- make_specification(mydata)
+> myeff <- set_effect(myeff, crprod, depvar="mynet2", covar1="mynet1")
   effectNumber effectName     shortName include fix   test  initialValue parm
 1 752          mynet2: mynet1 crprod    TRUE    FALSE FALSE          0   0   
-> myeff <- setEffect(myeff, from, name='mynet1', interaction1='mynet2')
+> myeff <- set_effect(myeff, from, depvar="mynet1", covar1="mynet2")
   effectNumber effectName                        shortName include fix   test 
 1 367          mynet1: from mynet2 agreement (0) from      TRUE    FALSE FALSE
   initialValue parm
@@ -973,8 +951,9 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 7 mynet2 mynet2: reciprocity               Regular  
 8 mynet2 mynet2: mynet1                    Regular  
 9 mynet1 mynet1: from mynet2 agreement (#) GMoM     
-> (ans <- siena07(myalgorithm1, data=mydata, effects=myeff[myeff$type!="gmm",],
-+                 batch=TRUE, silent=TRUE))
+> alg_alg <- set_algorithm_saom(seed=1293, n3=50, nsub=2)
+> (ans  <- siena(data=mydata, effects=myeff[myeff$type != "gmm", ], batch=TRUE,
++          silent=TRUE, control_algo=alg_alg))
 Estimates, standard errors and convergence t-ratios
 
                                             Estimate   Standard   Convergence 
@@ -993,8 +972,9 @@ Overall maximum convergence ratio:    0.8311
 
 Total of 451 iteration steps.
 
-> (ans1 <- siena07(myalgorithm2, data=mydata, effects=myeff,
-+                  batch=TRUE, silent=TRUE))
+> alg_alg <- set_algorithm_saom(gmm=TRUE, seed=1293, n3=50, nsub=2)
+> (ans1  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg))
 Estimated by Generalized Method of Moments
 
 Estimates, standard errors and convergence t-ratios
@@ -1015,8 +995,9 @@ Overall maximum convergence ratio:    1.3483
 
 Total of 405 iteration steps.
 
-> (ans2 <- siena07(myalgorithm2, data=mydata, effects=myeff, prevAns=ans1, batch=TRUE,
-+                  silent=TRUE))
+> alg_alg <- set_algorithm_saom(gmm=TRUE, seed=1293, n3=50, nsub=2)
+> (ans2  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
++          prevAns=ans1, control_algo=alg_alg))
 Estimated by Generalized Method of Moments
 
 Estimates, standard errors and convergence t-ratios
@@ -1040,33 +1021,23 @@ Total of 590 iteration steps.
 > 
 > ##test21
 > # Run simple test model ----
-> mynet <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
-> mydata <- sienaDataCreate(mynet)
-> mymodel <- getEffects(mydata)
+> mynet <- as_dependent_rsiena(array(c(s501, s502, s503), dim = c(50, 50, 3)))
+> mydata <- make_data_rsiena(mynet)
+> mymodel <- make_specification(mydata)
 > ## TransitiveTriplets model
-> mymodel <- includeEffects(mymodel, transTrip, name = "mynet")
+> mymodel <- set_effect(mymodel, transTrip, depvar="mynet")
   effectNumber effectName          shortName include fix   test  initialValue
 1 21           transitive triplets transTrip TRUE    FALSE FALSE          0  
   parm
 1 0   
-> # Test returnChangeContributions when running siena07 directly ----
-> mycontrols <- sienaAlgorithmCreate( 
-+      nsub=1, 
-+      n3=60, 
-+      cond = FALSE, 
-+      seed = 42
-+      )
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
+> # Test returnChangeContributions when running siena directly ----
 > 
 > print('test21')
 [1] "test21"
-> ans <- siena07(
-+   mycontrols,
-+   data = mydata,
-+   effects = mymodel,
-+   returnChangeContributions = TRUE,
-+   silent=TRUE, batch=TRUE 
-+ )
+> alg_out <- set_output_saom(returnChangeContributions=TRUE)
+> alg_alg <- set_algorithm_saom(cond=FALSE, seed=42, n3=60, nsub=1)
+> ans  <- siena(data=mydata, effects=mymodel, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg, control_out=alg_out)
 > length(ans$changeContributions) # 60 as expected
 [1] 60
 > head(ans$changeContributions[[1]][[1]][[1]])
@@ -1231,19 +1202,10 @@ attr(,"networkType")
 > 
 > # Test returnChangeContributions when setting nsub = 0 and prevAns = ans, 
 > #using batch mode
-> mycontrols$nsub <- 0
-> ans2 <- siena07(
-+   mycontrols,
-+   data=mydata,
-+   effects=mymodel,
-+   batch=TRUE,
-+   prevAns = ans,
-+   returnChangeContributions = TRUE)
-
-Start phase 0 
-theta:  6.496  5.161 -2.659  2.435  0.604 
-
-Start phase 3 
+> alg_out <- set_output_saom(returnChangeContributions=TRUE)
+> alg_alg <- set_algorithm_saom(cond=FALSE, seed=42, n3=60, nsub=1)
+> ans2  <- siena(data=mydata, effects=mymodel, batch=TRUE, prevAns=ans,
++          control_algo=alg_alg, control_out=alg_out)
 > length(ans$changeContributions) # 60 chains as expected
 [1] 60
 > head(ans$changeContributions[[1]][[1]][[1]])
@@ -1403,14 +1365,12 @@ attr(,"networkName")
 attr(,"networkType")
 [1] "oneMode"
 
-> 
 > ##test22
-> # Test sienaRIDynamics ----
+> # Test interpret_size_dynamics ----
 > ## Unconditional Estimation ----
 > ### Use changeContributions from ans ----
 > print('test22')
 [1] "test22"
-> 
 > RIDynamics1 <- interpret_size_dynamics(data=mydata, 
 +      ans=ans, 
 +      useChangeContributions=TRUE, 
@@ -1453,14 +1413,13 @@ Period 2:
   2. eval reciprocity                               0.3105    0.3045    0.3047    0.3072    0.3038  
   3. eval transitive triplets                       0.1300    0.1261    0.1219    0.1190    0.1261  
 
-> 
 > ### Unconditional Estimation with model rerun
 > mycontrols2 <- sienaAlgorithmCreate(nsub=2, n3=60, cond=FALSE, seed = 84)
 If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> mynet2 <- sienaDependent(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
-> mydata2 <- sienaDataCreate(mynet2)
-> mymodel2 <- getEffects(mydata2)
-> mymodel2 <- includeEffects(mymodel2, density, recip, transTies)
+> mynet2 <- as_dependent_rsiena(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
+> mydata2 <- make_data_rsiena(mynet2)
+> mymodel2 <- make_specification(mydata2)
+> mymodel2 <- set_effect(mymodel2, list(density, recip, transTies))
   effectNumber effectName          shortName include fix   test  initialValue
 1 11           outdegree (density) density   TRUE    FALSE FALSE   -0.56039  
 2 14           reciprocity         recip     TRUE    FALSE FALSE    0.00000  
@@ -1469,8 +1428,9 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 1 0   
 2 0   
 3 0   
-> ans2 <- siena07(mycontrols2, data=mydata2, effects=mymodel2, batch=TRUE,
-+      silent=TRUE)
+> alg_alg <- set_algorithm_saom(cond=FALSE, seed=84, n3=60, nsub=2)
+> ans2  <- siena(data=mydata2, effects=mymodel2, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg)
 > RIDynamics2 <-  interpret_size_dynamics(mydata2, ans=ans2)
 > RIDynamics2
 
@@ -1495,7 +1455,6 @@ Period 1:
   2. eval reciprocity                               0.2016    0.1941    0.1915    0.1884    0.1860  
   3. eval transitive ties                           0.3806    0.4032    0.3924    0.4044    0.4184  
 
-> 
 > ### Don't use ans but previously estimated coefficients ----
 > RIDynamics3 <- interpret_size_dynamics(data=mydata2, theta=c(ans2$rate,ans2$theta),
 +              algorithm=mycontrols2, effects=mymodel2, intervalsPerPeriod=10)
@@ -1522,13 +1481,10 @@ Period 1:
   2. eval reciprocity                               0.2016    0.1941    0.1915    0.1884    0.1860  
   3. eval transitive ties                           0.3806    0.4032    0.3924    0.4044    0.4184  
 
-> 
 > ## Conditional Estimation ----
-> mycontrols3 <- sienaAlgorithmCreate(nsub=2, n3=60, cond=TRUE, seed = 4242)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> ans3 <- siena07(mycontrols3, data=mydata2, effects=mymodel2, batch=TRUE, 
-+      silent=TRUE)
-> 
+> alg_alg <- set_algorithm_saom(cond=TRUE, condvarno=1, seed=4242, n3=60, nsub=2)
+> ans3  <- siena(data=mydata2, effects=mymodel2, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg)
 > RIDynamics4 <- interpret_size_dynamics(mydata2, ans=ans3, effects = mymodel2)
 > RIDynamics4
 
@@ -1553,16 +1509,13 @@ Period 1:
   2. eval reciprocity                               0.1982    0.1933    0.1902    0.1892    0.1940  
   3. eval transitive ties                           0.3990    0.3920    0.4081    0.4166    0.4075  
 
-> 
 > ##test23
-> ## Test sienaRIDynamics with behavior variable ----
-> mycontrols3 <- sienaAlgorithmCreate(nsub=2, n3=60, seed = 8484)
-If you use this algorithm object, siena07 will create/use an output file Siena.txt .
-> mynet3 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
-> mybeh <- sienaDependent(s50a, type="behavior")
-> mydata3 <- sienaDataCreate(mynet3, mybeh)
-> mymodel3 <- getEffects(mydata3)
-> mymodel3 <- includeEffects(mymodel3, density, recip, transTies, transTrip)
+> ## Test interpret_size_dynamics with behavior variable ----
+> mynet3 <- as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+> mybeh <- as_dependent_rsiena(s50a, type="behavior")
+> mydata3 <- make_data_rsiena(mynet3, mybeh)
+> mymodel3 <- make_specification(mydata3)
+> mymodel3 <- set_effect(mymodel3, list(density, recip, transTies, transTrip))
   effectNumber effectName          shortName include fix   test  initialValue
 1 13           outdegree (density) density   TRUE    FALSE FALSE    -1.4677  
 2 16           reciprocity         recip     TRUE    FALSE FALSE     0.0000  
@@ -1575,8 +1528,10 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 4 0   
 > print('test23')
 [1] "test23"
-> ans4 <- siena07(mycontrols3, data=mydata3, effects=mymodel3, batch=TRUE,
-+                 returnChangeContributions=TRUE, silent=TRUE)
+> alg_out <- set_output_saom(returnChangeContributions=TRUE)
+> alg_alg <- set_algorithm_saom(seed=8484, n3=60, nsub=2)
+> ans4  <- siena(data=mydata3, effects=mymodel3, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg, control_out=alg_out)
 > length(ans4$changeContributions) # 60 chains as expected
 [1] 60
 > length(ans4$changeContributions[[1]][[1]]) # 2 periods as expected
@@ -1585,7 +1540,6 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 +      function(ministep) attr(ministep, "networkName")) %in%  "mybeh"
 > any(beh_steps) # TRUE as expected
 [1] TRUE
-> 
 > ministeps <- ans4$changeContributions[[1]][[1]][[1]]
 > getDepvarName <- function(ministep) attr(ministep, "networkName")
 > beh_steps <- Filter(function(ministep) getDepvarName(ministep)  == "mybeh", 
@@ -1671,11 +1625,59 @@ Period 2:
   3. eval transitive triplets                       0.0720    0.0675    0.0723    0.0735    0.0735  
   4. eval transitive ties                           0.1031    0.0955    0.1014    0.1025    0.1006  
 
-> 
-> ## delete output file
-> if (file.exists('Siena.txt')){unlink('Siena.txt')}
-> if (file.exists('.txt')){unlink('.txt')}
+> ##test24
+> mynet1 <- as_dependent_rsiena(array(c(tmp3,tmp4),dim=c(32,32,2)))
+> mydata <- make_data_rsiena(mynet1)
+> myeff<- make_specification(mydata)
+> myeff <- set_effect(myeff, list(recip, inPop, outAct))
+  effectNumber effectName            shortName include fix   test  initialValue
+1  14          reciprocity           recip     TRUE    FALSE FALSE          0  
+2  77          indegree - popularity inPop     TRUE    FALSE FALSE          0  
+3 114          outdegree - activity  outAct    TRUE    FALSE FALSE          0  
+  parm
+1 0   
+2 0   
+3 0   
+> thv <- matrix(NA, 10, 5)
+> thv[,1] <- 3 +0.1*(1:10)
+> thv[,2] <- c(-2, -2.4, -2.3, -2.5, -2 + (1:6)*0.15)
+> thv[,3] <- rep(2, 10)
+> thv[,4] <- 0.02 * (1:10)
+> thv[,5] <- 0.02 * (10:1) 
+> myalg <- set_algorithm_saom(nsub=2, n3=50, cond=FALSE, seed=5, simOnly=TRUE,
++ 				thetaValue=thv)
+> print('test24')
+[1] "test24"
+> (ans <- siena(mymodel, data=mydata, effects=myeff, control_algo=myalg, batch=TRUE, silent=TRUE))
+Parameter values used for simulations
+
+                                      Mean      Standard      
+                                        value   Deviation     
+  1. rate basic rate parameter mynet1  3.910  ( 0.2234    )   
+  2. eval outdegree (density)         -1.241  ( 0.3541    )   
+  3. eval reciprocity                  2.000  ( 0.0000    )   
+  4. eval indegree - popularity        0.182  ( 0.0447    )   
+  5. eval outdegree - activity         0.038  ( 0.0447    )   
+
+Simulated means and standard deviations
+  1. Amount of network change                                  81.400    9.891 
+  2. Number of ties                                           195.600   11.704 
+  3. Number of reciprocated ties                               92.080    8.050 
+  4. Sum of squared indegrees                                1491.480  202.356 
+  5. Sum of squared outdegrees                               2135.400  220.912 
+
+
+Simulated statistics are in x$sf, where x is the created object.
+
+Total of 605 iteration steps.
+
+> ## delete output files
+> if (file.exists('mydata_out.txt')){unlink('mydata_out.txt')}
+> if (file.exists('mydata2_out.txt')){unlink('mydata2_out.txt')}
+> if (file.exists('mydata3_out.txt')){unlink('mydata3_out.txt')}
+> if (file.exists('mygroup_out.txt')){unlink('mygroup_out.txt')}
+> if (file.exists('dataset_out.txt')){unlink('dataset_out.txt')}
 > 
 > proc.time()
    user  system elapsed 
-  37.81    0.76   38.65 
+  37.06    0.45   37.81 
