@@ -362,65 +362,68 @@ transformCommand <- function(funName, oldscript, i, logfile)
 		newFunName <- paste("z", funName, sep="")
 	# is the call distributed over several lines?
 		TheLines <- findTheLines(i, oldscript)
+		newline <-  Reduce(paste, TheLines[[1]])
+#		newline <-  str_squish(Reduce(paste, TheLines[[1]]))
 		ii <- TheLines[[2]]
 		if (ii > length(oldscript))
 		{
-			break
-		}
-#		newline <-  str_squish(Reduce(paste, TheLines[[1]]))
-		newline <-  Reduce(paste, TheLines[[1]])
-		theparts <- strsplit(newline, "<-", fixed=TRUE)
-		if (is.list(theparts))
-		{
-			theparts <- theparts[[1]]
-		}
-		if (length(theparts)==1) # No occurrence of "<-" in newline
-		{ 
-			assignment <- FALSE
-			newcommand <- newline
+			newline <- paste("### The folliwng command is incomplete: ", newline, sep="")
 		}
 		else
 		{
-			assignment <- TRUE
-			newcommand <- theparts[2]
-		}
-		newcommand <- sub(funName, newFunName, newcommand)
-		newcommand1 <- balanceParentheses(newcommand)
-		if ((funName=="siena07") || (funName=="sienaBayes"))
-# zsiena07 and zsienaBayes can produce a string vector with more than one element
-		{
-# Suppose that siena07 or sienaBayes is used in a function with a "..." argument:
-			newcommand1 <- sub(", ...", "", newcommand1, fixed=TRUE)
-			newcommand1 <- sub(",...", "", newcommand1, fixed=TRUE)
-			thelines <- eval(parse(text=newcommand1))
-			thelines$siena_text <- balanceParentheses(paste(theparts[1], "<-",
-							thelines$siena_text, collapse=""))
-			thelines$siena_text <- shortentext(thelines$siena_text)
-# the other components of thelines were shortened in zsiena07 and zsienaBayes
-			newline <- unlist(thelines)
-		}
-		else
-		{
-			newcommand <- unlist(eval(parse(text=newcommand1)))
-			if (assignment)
+			theparts <- strsplit(newline, "<-", fixed=TRUE)
+			if (is.list(theparts))
 			{
-				newline <- paste(theparts[1], "<- ", newcommand, sep="")
+				theparts <- theparts[[1]]
+			}
+			if (length(theparts)==1) # No occurrence of "<-" in newline
+			{ 
+				assignment <- FALSE
+				newcommand <- newline
 			}
 			else
 			{
-				newline <- newcommand
+				assignment <- TRUE
+				newcommand <- theparts[2]
 			}
-			newline1 <- balanceParentheses (newline)
-			newline <- shortentext(newline1)
-		}
-		write(paste("\nline ", i, "to", ii, '; found and transformed', funName),
+			newcommand <- sub(funName, newFunName, newcommand)
+			newcommand1 <- balanceParentheses(newcommand)
+			if ((funName=="siena07") || (funName=="sienaBayes"))
+# zsiena07 and zsienaBayes can produce a string vector with more than one element
+			{
+# Suppose that siena07 or sienaBayes is used in a function with a "..." argument:
+				newcommand1 <- sub(", ...", "", newcommand1, fixed=TRUE)
+				newcommand1 <- sub(",...", "", newcommand1, fixed=TRUE)
+				thelines <- eval(parse(text=newcommand1))
+				thelines$siena_text <- balanceParentheses(paste(theparts[1], "<-",
+							thelines$siena_text, collapse=""))
+				thelines$siena_text <- shortentext(thelines$siena_text)
+# the other components of thelines were shortened in zsiena07 and zsienaBayes
+				newline <- unlist(thelines)
+			}
+			else
+			{
+				newcommand <- unlist(eval(parse(text=newcommand1)))
+				if (assignment)
+				{
+					newline <- paste(theparts[1], "<- ", newcommand, sep="")
+				}
+				else
+				{
+					newline <- newcommand
+				}
+				newline1 <- balanceParentheses (newline)
+				newline <- shortentext(newline1)
+			}
+			write(paste("\nline ", i, "to", ii, '; found and transformed', funName),
 							file=logfile, append=TRUE)
-		i <- ii
-		if (funName=="simulateData")
-		{
-			write("NOTE SCRIPT For simulate, nsim=100 is arbitrary; please modify." ,
+			i <- ii
+			if (funName=="simulateData")
+			{
+				write("NOTE SCRIPT For simulate, nsim=100 is arbitrary; please modify." ,
 								file=logfile, append=TRUE)
-			cat("NOTE: For simulate (replacing simulateData), nsim=100 is arbitrary; please modify.\n" )
+				cat("NOTE: For simulate (replacing simulateData), nsim=100 is arbitrary; please modify.\n" )
+			}
 		}
 		write("lines \r", file=logfile, append=TRUE)
 	}
