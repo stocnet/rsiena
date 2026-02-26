@@ -50,6 +50,6 @@ print01Report(data, modelname="Siena", getDocumentation=FALSE)
 mynet1 <- as_dependent_rsiena(
              array(c(s501, s502, s503), dim=c(50, 50, 3)))
 mydata <- make_data_rsiena(mynet1)
-write_report(mydata)
+write_report(mydata, outputName=tempfile())
 }
 \keyword{print}
