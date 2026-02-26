@@ -44,6 +44,11 @@ siena08 <- function(..., projname="sienaMeta", bound=10, alpha=0.05, maxit=20)
 	if (fitList)
 	{
 		listName <- deparse(substitute(fitList))
+# Check if it looks like a pipe chain 
+		if (any(grepl("%>%|\\|>", listName)))
+		{
+			stop("Cannot auto-generate filename from piped data. Please apply this function to an object with a name.") 
+		}
 		dep <- paste(listName, seq(along=fitList), sep='')
 	}
 	else

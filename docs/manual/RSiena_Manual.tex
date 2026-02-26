@@ -216,7 +216,7 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.6.1.
+This version was renewed for \RS version 1.6.2.
 
 In version 1.6, the names of \RS functions have undergone
 important changes.
@@ -1187,7 +1187,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.6.1).
+  identified by a version number (e.g.\ 1.6.2).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -1266,7 +1266,9 @@ The main differences are the following.
         names \texttt{name}, \texttt{interaction1}, and \texttt{interaction2}.
   \item For defining interactions, the function \sfn{set\_interaction}
         requires to give the \texttt{shortNames} of the two or three
-        interacting effects in a list.
+        interacting effects in a list.\\
+        Like for \sfn{set\_effect}, argument names now are
+        \texttt{depvar}, \texttt{covar1}, and \texttt{covar2}.
 \end{enumerate}
 
 In departure of the general rule that the old names are retained
@@ -1283,12 +1285,12 @@ in view of compatibility, the following names were canceled:
         was dropped.
 \end{enumerate}
 
-The following table gives the correspondence between the old and new names.
-The `how' column indicates by the letter `A' that the change is
-just an alias, or can be treated as such; the letter `C'
-indicates that the arguments also changed.
+\noindent
+Table \ref{T_newnames} gives the correspondence between the old and new names.
+\bigskip
 
-\begin{center}
+\begin{table}
+  \centering
 \begin{tabular}{lll}
 Old name  & new name & how \\
 \hline
@@ -1312,8 +1314,8 @@ Old name  & new name & how \\
                         & set\_output\_saom          &  \\
  sienaDataConstraint    & make\_constraint           &  A \\
  siena07                & siena                      &  C \\
- siena08                & meta\_siena                &  C \\
- siena.table  $\bigotimes$          & write\_result              &  A \\
+ siena08                & meta\_siena                &  A \\
+ siena.table  $\bigotimes$      & write\_result      &  A \\
  Multipar.RSiena        & test\_parameter            &  A \\
  Wald.RSiena            & test\_parameter            & C \\
  testSame               & test\_parameter(..., method="same", ...)    & C \\
@@ -1324,24 +1326,63 @@ Old name  & new name & how \\
  selectionTable         & interpret\_selection       &  A \\
  influenceTable         & interpret\_influence       &  A \\
  sienaRI  $\bigotimes$  & interpret\_size            &  C \\
- sienaRIDynamics $\bigotimes$& interpret\_size\_dynamics  &  C   \\
+ sienaRIDynamics $\bigotimes$& interpret\_size\_dynamics  &  A   \\
+ updateTheta            & update\_theta              &  A \\
+ updateSpecification    & update\_specification       &  A \\
 \hline                  &
 \emph{and for \textsf{multiSiena} } : \\
 \hline
- sienaBayes             &  multi\_siena             &  ? \\
- simulateData           &  simulate                 &  ?  \\
+ sienaBayes   $\bigotimes$           &  multi\_siena             &  C \\
+ simulateData  $\bigotimes$          &  simulate                 &  C  \\
+ glueBayes    $\bigotimes$           &  multi\_glue              & A  \\
+ extract.sienaBayes $\bigotimes$     & extract\_sienaBayesFit       & A  \\
+ extract.posteriorMeans $\bigotimes$ & extract\_posteriorMeans   & A  \\
 \hline
-
 \end{tabular}
+  \caption{Correspondence between old and new function names.\protect\newline
+  `how' column: `A' means that the change is
+just an alias, or can be treated as such;  `C' 
+indicates that the arguments also changed.
+ $\bigotimes$ means that the function with the old name is not retained.}
+ \label{T_newnames}
+\end{table}
 
- $\bigotimes$  = old name not retained.
-\end{center}
+\RS contains function \sfn{transformScript}, which 
+transforms R scripts with calls of \RS and \MS
+functions to scripts utilizing the new names.
+See its help page!
+\smallskip
 
+If and when errors in this script occur, it is good to understand
+how the script operates.
+It passes three times through the script:
+\begin{enumerate}
+  \item The first time, to replace the names of functions in category
+    'A' in Table~\ref{T_newnames}.
+  \item In the second pass,   calls of \RS and
+     \MS functions in category 'C' 
+     are transformed to calls utilizing the new names.\\
+     The only \RS functions in the script
+     that are executed themselves here are calls of \sfn{sienaAlgorithmCreate};
+     their results are used for transforming
+     calls of \sfn{siena07} and \sfn{sienaBayes}.
+     All  function calls in category 'C' except those of
+      \sfn{sienaAlgorithmCreate} are replaced with 
+      calls of the new functions.
+  \item In the final pass, if any old function names are left and used
+     without being a function call (i.e., without being
+     followed by "(")), they are replaced with the new names.
+\end{enumerate}
 
+\noindent
+Function \sfn{transformScript} also produces a log file.
+If it leads to an error, it may be helpful to use\\
+\texttt{traceback()}\\
+immediately after the error occurs; and to look at
+the log file, which will have line numbers until the last
+line that was treated.
 
-
-
-\newpage
+\clearpage
 
 \section{Steps of modelling}
 \label{S_parts}
@@ -11341,6 +11382,15 @@ number of actors with the same covariate value as $i$ who also have a tie to $j$
                 {\sum_h I\{v_i = v_h \}} $;\\
  for internal effect parameter $p=4$, the square root of the ratio of sums is taken;
 
+
+\item[$\bigodot$]
+  the analogue of the \texttt{sameXOutAct} effect (see below)
+  (restricting indegree popularity to only within $V$-groups)
+  is the interaction of \texttt{(sameXInPop)} with \texttt{sameX},
+  for the same covariate:\\
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\,I\{v_i = v_j \} \sum_h x_{hj}\, I\{v_i = v_h \} $;\\
+
+
  \item {\em indegree popularity from different covariate}
 \texttt{(diffXInPop)} defined by the
  number of incoming ties received by those to whom $i$ is tied
@@ -17807,12 +17857,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type
-\verb|R CMD check RSiena_1.6.1.tar.gz|\\
+\verb|R CMD check RSiena_1.6.2.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.6.1.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.6.2.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -18307,7 +18357,7 @@ because this effect group does not differentiate between effects of covariates
 defined on the first or on the second mode.
 This implies that for adding such effects, it will be necessary to see whether
 this function (i.e., \textsf{getEffects}) also must be modified;
-this will have to be done 
+this will have to be done
 in function \sfn{covarBipartiteEff} in file \sfn{effects.r}.
 (Note: it would be preferable perhaps to have separate effect classes
 for covariates on the first and on the second mode, as done for the effect
@@ -18458,6 +18508,14 @@ Changes in RSiena:
 
 \fi
 
+\item 2026-25-02 GitHub, package version 1.6.2.
+
+Changes in RSiena:
+\begin{itemize}
+\item New function \sfn{transformScript}.
+\item New method \sfn{write\_report} for \sfn{sienadata} objects,
+    replacing \sfn{print01Report} (which still is retained).
+\end{itemize}
 
 \item 2026-01-20 GitHub, package version 1.6.1
 

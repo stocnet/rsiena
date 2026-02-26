@@ -14,6 +14,7 @@
 siena <- function(data = NULL, effects = NULL,
 	control_model = NULL, control_algo = NULL, control_out = NULL,
 	thetaBound = 50,
+	returnDeps = FALSE,
 	batch = FALSE, verbose = FALSE, silent = TRUE,
 	initC = TRUE,
 	nbrNodes = 1,
@@ -35,7 +36,7 @@ siena <- function(data = NULL, effects = NULL,
 	checking <- any(grepl("_R_CHECK", names(Sys.getenv())))
 
 	dataName <- deparse(substitute(data))
-	if (dataName=="")
+	if (dataName=="") # impossible?
 	{
 		dataName <- "Siena"
 	}
@@ -75,6 +76,10 @@ siena <- function(data = NULL, effects = NULL,
 		}
 		else
 		{
+			if (grepl("%>%|\\|>", dataName))
+			{
+				stop("For piped data, you need to give an outputName in the output control object.")
+			}				
 			control_out$outputName <- paste(dataName, "_out", sep="")
 			cat('siena will create/use an output file',
 				paste(control_out$outputName,'.txt',sep=''),'.\n')
@@ -124,6 +129,9 @@ siena <- function(data = NULL, effects = NULL,
 		}
 	}
 	x <- c(control_model, control_algo, control_out)
+# Note that, if this call of siena comes from sienaBayes,
+# there will be components control_algo$fromBayes
+# and control_algo$ddfra
 	z$returnThetas <- control_out$returnThetas
 
 	parallelTesting <- FALSE
@@ -230,7 +238,7 @@ siena <- function(data = NULL, effects = NULL,
 	}				   	
 	z <- robmon(z, x, useCluster, nbrNodes, initC, clusterString,
 		clusterIter, clusterType, cl, data=data, effects=effects,
-#		returnDeps=control_out$returnDeps, 
+		returnDeps=returnDeps, 
 		returnChains=control_out$returnChains,
 		returnDataFrame=control_out$returnDataFrame,
 		returnChangeContributions=control_out$returnChangeContributions, ...)

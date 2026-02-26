@@ -2,8 +2,8 @@ Encoding: UTF-8
 Package: RSiena
 Type: Package
 Title: Siena - Simulation Investigation for Empirical Network Analysis
-Version: 1.6.1
-Date: 2026-01-20
+Version: 1.6.2
+Date: 2026-02-26
 Authors@R: c(person("Tom A.B.", "Snijders", role = c("aut", "ctb"), comment = c(ORCID = "0000-0003-3157-4157")),
               person("Ruth M.", "Ripley", role = "aut"),
               person("Krists", "Boitmanis", role = c( "aut","ctb")),
@@ -46,4 +46,3 @@ NeedsCompilation: yes
 BuildResaveData: no
 URL: https://www.stats.ox.ac.uk/~snijders/siena/
 BugReports: https://github.com/stocnet/rsiena/issues
-Config/testthat/edition: 3
