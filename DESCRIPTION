@@ -46,4 +46,3 @@ NeedsCompilation: yes
 BuildResaveData: no
 URL: https://www.stats.ox.ac.uk/~snijders/siena/
 BugReports: https://github.com/stocnet/rsiena/issues
-Config/testthat/edition: 3

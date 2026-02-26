@@ -325,6 +325,7 @@ myalg <- set_algorithm_saom(nsub=2, n3=50, cond=FALSE, seed=5, simOnly=TRUE,
 print('test24')
 (ans <- siena(mymodel, data=mydata, effects=myeff, control_algo=myalg, batch=TRUE, silent=TRUE))
 ## delete output files
+if (file.exists('mydata_report.txt')){unlink('mydata_report.txt')}
 if (file.exists('mydata_out.txt')){unlink('mydata_out.txt')}
 if (file.exists('mydata2_out.txt')){unlink('mydata2_out.txt')}
 if (file.exists('mydata3_out.txt')){unlink('mydata3_out.txt')}

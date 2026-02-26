@@ -1672,6 +1672,7 @@ Simulated statistics are in x$sf, where x is the created object.
 Total of 605 iteration steps.
 
 > ## delete output files
+> if (file.exists('mydata_report.txt')){unlink('mydata_report.txt')}
 > if (file.exists('mydata_out.txt')){unlink('mydata_out.txt')}
 > if (file.exists('mydata2_out.txt')){unlink('mydata2_out.txt')}
 > if (file.exists('mydata3_out.txt')){unlink('mydata3_out.txt')}
