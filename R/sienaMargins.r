@@ -22,6 +22,7 @@ sienaAME <- function(
     sum.fun = mean,
     na.rm = TRUE,
     uncertainty = TRUE,
+    uncertainty_mode = c("batch", "stream"),
     nsim = 1000,
     uncertainty_sd = TRUE,
     uncertainty_ci = TRUE,
@@ -43,6 +44,7 @@ sienaAME <- function(
     memory_scale = NULL,
     batch_unit_budget = 5e6
 ){
+  uncertainty_mode <- match.arg(uncertainty_mode)
     type <- match.arg(type)
     if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
 
@@ -125,6 +127,7 @@ sienaAME <- function(
         theta_hat = ans$theta,
         cov_theta = ans$covtheta,
         uncertainty = uncertainty,
+        uncertainty_mode = uncertainty_mode,
         nsim = nsim,
         uncertainty_sd = uncertainty_sd,
         uncertainty_ci = uncertainty_ci,

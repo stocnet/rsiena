@@ -65,6 +65,31 @@ test_that("predict.sienaFit (base R fallback, optional MCSE + no CI)", {
   )
 })
 
+test_that("predict.sienaFit (base R fallback, streaming uncertainty)", {
+  with_mocked_bindings(
+    {
+      pred_df <- predict(
+        object = ans,
+        newdata = mydata,
+        type = "tieProb",
+        nsim = 10,
+        condition = "transTrip",
+        level = "period",
+        uncertainty = TRUE,
+        uncertainty_mode = "stream",
+        verbose = FALSE
+      )
+      expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
+      expect_true("Mean" %in% names(pred_df))
+      expect_true("SE" %in% names(pred_df))
+      expect_true("q_025" %in% names(pred_df))
+      expect_true("q_975" %in% names(pred_df))
+    },
+    requireNamespace = function(pkg, ...) FALSE,
+    .package="base"
+  )
+})
+
 test_that("predict.sienaFit (data.table)", {
   skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
   library(data.table)
@@ -217,6 +242,33 @@ test_that("predictDynamic (base R fallback, optional MCSE + no SD)", {
       expect_true("q_025" %in% names(pred_df))
       expect_true("q_975" %in% names(pred_df))
       expect_true("Median" %in% names(pred_df))
+    },
+    requireNamespace = function(pkg, ...) FALSE,
+    .package="base"
+  )
+})
+
+test_that("predictDynamic (base R fallback, streaming uncertainty)", {
+  with_mocked_bindings(
+    {
+      pred_df <- predictDynamic(
+        ans = ans,
+        newdata = mydata,
+        effects = mymodel,
+        algorithm = mycontrols,
+        type = "tieProb",
+        n3 = 60,
+        nsim = 6,
+        condition = "density",
+        uncertainty = TRUE,
+        uncertainty_mode = "stream",
+        verbose = FALSE
+      )
+      expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
+      expect_true("Mean" %in% names(pred_df))
+      expect_true("SE" %in% names(pred_df))
+      expect_true("q_025" %in% names(pred_df))
+      expect_true("q_975" %in% names(pred_df))
     },
     requireNamespace = function(pkg, ...) FALSE,
     .package="base"
