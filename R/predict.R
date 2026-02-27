@@ -11,6 +11,7 @@ predict.sienaFit <- function(
     sum.fun = mean,
     na.rm = TRUE,
     uncertainty = TRUE,
+    uncertainty_mode = c("batch", "stream"),
     useCluster = FALSE,
     nbrNodes = 1,
     nsim = 1000,
@@ -32,6 +33,7 @@ predict.sienaFit <- function(
     dynamic_ministep_factor = 10,
     ...
   ){
+      uncertainty_mode <- match.arg(uncertainty_mode)
       type <- match.arg(type)
       if (is.null(depvar)) depvar <- names(newdata[["depvars"]])[1]
       if (is.null(memory_scale)) {
@@ -74,6 +76,7 @@ predict.sienaFit <- function(
           theta_hat = object[["theta"]], # change into coef
           cov_theta = object[["covtheta"]], # change into cov
           uncertainty = uncertainty,
+          uncertainty_mode = uncertainty_mode,
           nsim = nsim,
           uncertainty_sd = uncertainty_sd,
           uncertainty_ci = uncertainty_ci,
@@ -127,6 +130,7 @@ predictDynamic <- function(
     n3 = 1000,
     useChangeContributions = FALSE,
     uncertainty = TRUE,
+    uncertainty_mode = c("batch", "stream"),
     useCluster = FALSE,
     nbrNodes = 1,
     nsim = 100,
@@ -148,6 +152,7 @@ predictDynamic <- function(
     batch_unit_budget = 5e6,
     dynamic_ministep_factor = 10
 ){
+  uncertainty_mode <- match.arg(uncertainty_mode)
     type <- match.arg(type)
     if (is.null(depvar)) depvar <- names(newdata[["depvars"]])[1]
 
@@ -198,6 +203,7 @@ predictDynamic <- function(
         theta_hat = ans$theta,
         cov_theta = ans$covtheta,
         uncertainty = uncertainty,
+        uncertainty_mode = uncertainty_mode,
         nsim = nsim,
       uncertainty_sd = uncertainty_sd,
       uncertainty_ci = uncertainty_ci,
@@ -263,6 +269,7 @@ sienaPostestimate <- function(
     theta_hat,
     cov_theta,
     uncertainty = TRUE,
+    uncertainty_mode = c("batch", "stream"),
     nsim = 1000,
   uncertainty_sd = TRUE,
   uncertainty_ci = TRUE,
@@ -284,6 +291,7 @@ sienaPostestimate <- function(
     gc_each_sim = FALSE,
     memory_scale = NULL
 ) {
+  uncertainty_mode <- match.arg(uncertainty_mode)
     if (length(outcome) != 1L) {
         stop("'outcome' must be a single column name.")
     }
@@ -309,8 +317,36 @@ sienaPostestimate <- function(
 
     if (is.null(memory_scale)) memory_scale <- 1L
 
-    uncert <- drawSim(
-      estimator = estimator,
+    uncertainty_summary_fun <- make_uncertainty_summarizer(
+      return_sd = uncertainty_sd,
+      return_ci = uncertainty_ci,
+      probs = uncertainty_probs,
+      return_mcse = uncertainty_mcse,
+      mcse_batches = uncertainty_mcse_batches
+    )
+
+    if (identical(uncertainty_mode, "stream")) {
+      uncert <- drawSim_stream(
+        estimator = estimator,
+        outcome = outcome,
+        level = level,
+        condition = condition,
+        uncertainty_summary_fun = uncertainty_summary_fun,
+        theta_hat = theta_hat,
+        cov_theta = cov_theta,
+        nbrNodes = if (useCluster) nbrNodes else 1L,
+        nsim = nsim,
+        clusterType = clusterType,
+        cluster = cluster,
+        batch_size = batch_size,
+        verbose = verbose,
+        gc_each_batch = gc_each_batch,
+        gc_each_sim = gc_each_sim,
+        memory_scale = memory_scale
+      )
+    } else {
+      uncert <- drawSim(
+        estimator = estimator,
         theta_hat = theta_hat,
         cov_theta = cov_theta,
         nbrNodes = if (useCluster) nbrNodes else 1L,
@@ -326,16 +362,9 @@ sienaPostestimate <- function(
         gc_each_batch = gc_each_batch,
         gc_each_sim = gc_each_sim,
         memory_scale = memory_scale
-    )
-
-    uncertainty_summary_fun <- make_uncertainty_summarizer(
-      return_sd = uncertainty_sd,
-      return_ci = uncertainty_ci,
-      probs = uncertainty_probs,
-      return_mcse = uncertainty_mcse,
-      mcse_batches = uncertainty_mcse_batches
-    )
-    uncert <- agg(outcome, uncert, level = level, condition = condition, sum.fun = uncertainty_summary_fun)
+      )
+      uncert <- agg(outcome, uncert, level = level, condition = condition, sum.fun = uncertainty_summary_fun)
+    }
     mergeEstimates(expect, uncert, level = level, condition = condition)
 }
 
@@ -549,13 +578,27 @@ drawSim <- function(
       })
     }
     
-    if (verbose) message("Starting batch simulations (", nbatches, 
-      " batches of up to ", batch_size, ") ...")
+    if (verbose) {
+      message(
+        "Starting simulations: nsim=", nsim,
+        ", batch_size=", batch_size,
+        ", batches=", nbatches,
+        ". (Last batch may be smaller.)"
+      )
+    }
     
     for (b in seq_len(nbatches)) {
       first_sim <- 1 + (b - 1) * batch_size
       last_sim  <- min(b * batch_size, nsim)
       batch     <- first_sim:last_sim
+      if (verbose) {
+        message(
+          sprintf(
+            "Batch %d/%d: simulations %d-%d (%d sims)",
+            b, nbatches, first_sim, last_sim, length(batch)
+          )
+        )
+      }
 
       if (use_psock) {
         batch_result <- parallel::parLapply(cl, batch, function(i) {
@@ -588,6 +631,11 @@ drawSim <- function(
       saveRDS(batch_result, file = file_name)
       rm(batch_result)
       if (gc_each_batch) gc(verbose = FALSE)
+      if (verbose) {
+        done <- last_sim
+        pct <- round(100 * done / nsim)
+        message(sprintf("Completed batch %d/%d (%d/%d sims, %d%%)", b, nbatches, done, nsim, pct))
+      }
     }
     
     if (cluster_created) {
@@ -618,13 +666,147 @@ drawSim <- function(
       }
       if (verbose) message("Returning combined results.")
       if (requireNamespace("data.table", quietly = TRUE)) {
-        return(data.table::rbindlist(combined_results))
+        return(data.table::rbindlist(combined_results, use.names = TRUE, fill = TRUE))
       } else {
         out <- do.call(rbind, combined_results)
         rownames(out) <- NULL
         return(out)
       }
     }
+}
+
+drawSim_stream <- function(
+    estimator,
+    outcome,
+    level,
+    condition,
+    uncertainty_summary_fun,
+    theta_hat,
+    cov_theta,
+    nbrNodes = 1,
+    nsim = 1000,
+    clusterType = c("PSOCK", "FORK"),
+    cluster = NULL,
+    batch_size = NULL,
+    verbose = TRUE,
+    gc_each_batch = TRUE,
+    gc_each_sim = FALSE,
+    memory_scale = 1
+) {
+    if (nbrNodes > 1) {
+        clusterType <- match.arg(clusterType)
+    } else {
+        clusterType <- "FORK"
+    }
+
+    batch_size <- resolve_batch_size(
+        nsim = nsim,
+        nbrNodes = nbrNodes,
+        batch_size = batch_size,
+        memory_scale = memory_scale
+    )
+    nbatches <- ceiling(nsim / batch_size)
+
+    group_vars <- get_group_vars(level = level, condition = condition)
+
+    cluster_created <- FALSE
+    cl <- cluster
+    use_psock <- (clusterType == "PSOCK" && nbrNodes > 1)
+    use_fork  <- (clusterType == "FORK"  && nbrNodes > 1 && .Platform$OS.type != "windows")
+
+    if (use_psock) {
+      if (is.null(cl)) {
+        cl <- parallel::makeCluster(nbrNodes, type = clusterType)
+        cluster_created <- TRUE
+        if (verbose) {
+          message("Created new parallel cluster with ", nbrNodes, " cores.")
+        }
+      }
+      parallel::clusterExport(cl,
+        c("estimator", "theta_hat", "cov_theta"),
+        envir = environment()
+      )
+      parallel::clusterEvalQ(cl, {
+          if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads(1)
+      })
+    }
+
+    if (verbose) {
+      message(
+        "Starting streaming simulations: nsim=", nsim,
+        ", batch_size=", batch_size,
+        ", batches=", nbatches,
+        ". (Last batch may be smaller.)"
+      )
+    }
+
+    stream_state <- new.env(parent = emptyenv(), hash = TRUE)
+    group_state <- new.env(parent = emptyenv(), hash = TRUE)
+
+    for (b in seq_len(nbatches)) {
+      first_sim <- 1 + (b - 1) * batch_size
+      last_sim  <- min(b * batch_size, nsim)
+      batch     <- first_sim:last_sim
+
+      if (verbose) {
+        message(
+          sprintf(
+            "Batch %d/%d: simulations %d-%d (%d sims)",
+            b, nbatches, first_sim, last_sim, length(batch)
+          )
+        )
+      }
+
+      if (use_psock) {
+        batch_result <- parallel::parLapply(cl, batch, function(i) {
+          theta_sim <- MASS::mvrnorm(1, mu = theta_hat, Sigma = cov_theta)
+          do.call(estimator, list(theta = theta_sim))
+        })
+      } else if (use_fork) {
+        batch_result <- parallel::mclapply(batch, function(i) {
+          if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads(1)
+          theta_sim <- MASS::mvrnorm(1, mu = theta_hat, Sigma = cov_theta)
+          do.call(estimator, list(theta = theta_sim))
+        }, mc.cores = nbrNodes)
+      } else {
+        batch_result <- vector("list", length(batch))
+        for (k in seq_along(batch)) {
+          theta_sim <- MASS::mvrnorm(1, mu = theta_hat, Sigma = cov_theta)
+          batch_result[[k]] <- do.call(estimator, list(theta = theta_sim))
+          if (gc_each_sim) gc(verbose = FALSE)
+        }
+      }
+
+      for (sim_df in batch_result) {
+        update_stream_state(
+          stream_state = stream_state,
+          group_state = group_state,
+          sim_df = sim_df,
+          outcome = outcome,
+          group_vars = group_vars
+        )
+      }
+
+      rm(batch_result)
+      if (gc_each_batch) gc(verbose = FALSE)
+      if (verbose) {
+        done <- last_sim
+        pct <- round(100 * done / nsim)
+        message(sprintf("Completed batch %d/%d (%d/%d sims, %d%%)", b, nbatches, done, nsim, pct))
+      }
+    }
+
+    if (cluster_created) {
+      parallel::stopCluster(cl)
+      if (verbose) message("Stopped internal cluster.")
+    }
+
+    finalize_stream_state(
+      stream_state = stream_state,
+      group_state = group_state,
+      group_vars = group_vars,
+      uncertainty_summary_fun = uncertainty_summary_fun
+    )
 }
 
 compute_memory_scale <- function(data, depvar, dynamic = FALSE, n3 = NULL,
@@ -653,6 +835,83 @@ compute_memory_scale <- function(data, depvar, dynamic = FALSE, n3 = NULL,
     }
 
     as.integer(max(1L, size_scale * n3_scale))
+}
+
+get_group_vars <- function(level = "none", condition = NULL) {
+  levels <- list(
+    none = character(0),
+    period = "period",
+    ego = c("period", "ego"),
+    egoChoice = c("period", "ego", "choice"),
+    chain = c("period", "chain"),
+    ministep = c("period", "chain", "ministep"),
+    ministepChoice = c("period", "chain", "ministep", "choice")
+  )
+  c(levels[[level]], condition)
+}
+
+make_group_key <- function(df, group_vars) {
+  if (requireNamespace("data.table", quietly = TRUE) && data.table::is.data.table(df)) {
+    df <- as.data.frame(df)
+  }
+  if (!length(group_vars)) {
+    rep("__all__", nrow(df))
+  } else {
+    do.call(paste, c(df[group_vars], sep = "\r"))
+  }
+}
+
+update_stream_state <- function(stream_state,
+                                group_state,
+                                sim_df,
+                                outcome,
+                                group_vars) {
+  if (length(outcome) != 1L) stop("'outcome' must be a single column name.")
+
+  if (requireNamespace("data.table", quietly = TRUE) && data.table::is.data.table(sim_df)) {
+    sim_df <- as.data.frame(sim_df)
+  }
+
+  keys <- make_group_key(sim_df, group_vars)
+  vals <- sim_df[[outcome]]
+
+  for (i in seq_along(vals)) {
+    key <- keys[[i]]
+    old <- if (exists(key, envir = stream_state, inherits = FALSE)) {
+      get(key, envir = stream_state, inherits = FALSE)
+    } else {
+      numeric(0)
+    }
+    assign(key, c(old, vals[[i]]), envir = stream_state)
+
+    if (!exists(key, envir = group_state, inherits = FALSE) && length(group_vars)) {
+      assign(key, sim_df[i, group_vars, drop = FALSE], envir = group_state)
+    }
+  }
+}
+
+finalize_stream_state <- function(stream_state,
+                                  group_state,
+                                  group_vars,
+                                  uncertainty_summary_fun) {
+  keys <- ls(stream_state, all.names = TRUE)
+  if (!length(keys)) {
+    return(data.frame())
+  }
+
+  rows <- lapply(keys, function(key) {
+    draws <- get(key, envir = stream_state, inherits = FALSE)
+    summary_vals <- as.data.frame(as.list(uncertainty_summary_fun(draws, na.rm = TRUE)), stringsAsFactors = FALSE)
+    if (length(group_vars)) {
+      grp <- get(key, envir = group_state, inherits = FALSE)
+      cbind(grp, summary_vals)
+    } else {
+      summary_vals
+    }
+  })
+  out <- do.call(rbind, rows)
+  rownames(out) <- NULL
+  out
 }
 
   infer_depvar_dims <- function(data, depvar) {
@@ -759,16 +1018,7 @@ agg <- function(ME,
                 sum.fun = mean,
                 na.rm = TRUE) {
   if (length(ME) != 1L) stop("'ME' must be a single column name.")
-  levels <- list(
-    none = character(0),
-    period = "period",
-    ego = c("period", "ego"),
-    egoChoice = c("period", "ego", "choice"),
-    chain = c("period", "chain"),
-    ministep = c("period", "chain", "ministep"),
-    ministepChoice = c("period", "chain", "ministep", "choice")
-  )
-  group_vars <- c(levels[[level]], condition)
+  group_vars <- get_group_vars(level = level, condition = condition)
 
   # Helper for complex output (vector/list output from sum.fun)
   expand_summary <- function(val) {
