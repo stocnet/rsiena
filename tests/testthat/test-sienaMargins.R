@@ -435,7 +435,7 @@ ans3 <- siena07(
   returnDataFrame = TRUE
 )
 
-test_that("predict.sienaFit with custom interactions (data.table)", {
+test_that("sienaAME with custom interactions (data.table)", {
   skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
   library(data.table)
 
@@ -489,39 +489,42 @@ test_that("sienaAME static moderator (data.table)", {
     is.data.frame(ame_static_moderator))
 })
 
+## not done yet: 
+# test_that("sienaAME errors if interaction is present but main effect is missing", {
+#   mynet4 <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
+#   mydata4 <- sienaDataCreate(mynet4)
+#   mymodel4 <- getEffects(mydata4)
+#   # Only include interaction, not both main effects
+#   mymodel4 <- includeInteraction(mymodel4, recip, inPop, name = "mynet4")
+#   mymodel4 <- includeEffects(mymodel4,inPop, include = FALSE)
 
-# ame_dynamic_moderator
-
-# test1 <- sienaAME(
-#     ans = ans,
-#     data = mydata,
-#     effectName1 = "recip",
-#     contrast1 = c(0,1), #be more explicit about lower and hihger?
-#     second = TRUE,
-#     effectName2 = "transTrip",
-#     diff2 = 1,
-#     effects = mymodel,
-#     type = "tieProb",
-#     depvar = "mynet1",
-#     level = "period",
-#     nsim = 100,  # keep small for speed
-#     uncertainty = FALSE,
-#     verbose = TRUE
-# )
-
-# test2 <- sienaAME(
-#     ans = ans,
-#     data = mydata,
-#     effectName1 = "transTrip",
-#     diff1 = 1,
-#     second = TRUE,
-#     effectName2 = "recip",
-#     contrast2 = c(0,1), #be more explicit about lower and hihger?
-#     effects = mymodel,
-#     type = "tieProb",
-#     depvar = "mynet1",
-#     level = "period",
-#     nsim = 100,  # keep small for speed
-#     uncertainty = TRUE,
-#     verbose = TRUE
-# )
+#   mycontrols4 <- sienaAlgorithmCreate(projname=NULL, n3 = 50, cond = FALSE)
+#   ans4 <- siena07(
+#     mycontrols4,
+#     data = mydata4,
+#     effects = mymodel4,
+#     returnChangeContributions = TRUE,
+#     returnDataFrame = TRUE
+#   )
+#   # Now test that sienaAME fails due to missing main effects
+#   expect_error(
+#   sienaAME(
+#       ans = ans4,
+#       data = mydata,
+#       effects = mymodel4,
+#       effectName1 = "recip",
+#       contrast1 = c(0,1),
+#       interaction1 = TRUE,
+#       int_effectNames1 = "unspInt",
+#       mod_effectNames1 = "inPop",
+#       type = "tieProb",
+#       depvar = "mynet3",
+#       level = "period",
+#       condition = "inPop",
+#       nsim = 5,
+#       uncertainty = TRUE,
+#       verbose = TRUE
+#     ),
+#     regexp = "Requires full effects object when interaction effects are present without base effects|main effect"
+#   )
+# })

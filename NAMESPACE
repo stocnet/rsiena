@@ -25,11 +25,13 @@ export(
 	make_specification, set_effect, set_interaction, 
    update_theta, update_specification, 
 	test_parameter, write_result, test_time, test_gof,
-	interpret_selection, interpret_influence)
+	interpret_selection, interpret_influence,
+   sienaAME, sienaAMEDynamic
+)
 
-# importFrom("data.table", "rbindlist", "as.data.table", ":=",
-#            "setDTthreads", "dcast", ".N", ".I", ".SD")
-#importClassesFrom("data.table", "data.table")
+importFrom("data.table", "rbindlist", "as.data.table", ":=",
+           "setDTthreads", "dcast", ".N", ".I", ".SD")
+importClassesFrom("data.table", "data.table")
 import("data.table")
 importFrom("Rcpp", sourceCpp, evalCpp)
 importFrom("Matrix", "Matrix", "sparseMatrix", "spMatrix", "drop0", 
