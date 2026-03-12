@@ -1,6 +1,5 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 #include <RcppArmadillo.h>
-#include <unordered_map>
 
 using namespace Rcpp;
 using namespace RcppArmadillo;
@@ -62,30 +61,127 @@ using namespace RcppArmadillo;
 //   );
 // }
 
+static void softmax_inplace(const double* x, double* out, int n) {
+  double mx = *std::max_element(x, x + n);
+  double s = 0.0;
+  for (int i = 0; i < n; i++) { out[i] = std::exp(x[i] - mx); s += out[i]; }
+  for (int i = 0; i < n; i++) out[i] /= s;
+}
+
 // [[Rcpp::export]]
 arma::vec softmax_arma(const arma::vec& x) {
-  double max_x = x.max();
-  arma::vec expx = arma::exp(x - max_x);
-  return expx / arma::sum(expx);
+  arma::vec out(x.n_elem);
+  softmax_inplace(x.memptr(), out.memptr(), x.n_elem);
+  return out;
 }
 
 // [[Rcpp::export]]
 arma::vec softmax_arma_by_group(const arma::vec& x, const arma::ivec& group) {
   int n = x.n_elem;
-  arma::vec out(n);
-  std::unordered_map<int, std::vector<int>> group_map;
-  for (int i = 0; i < n; ++i)
-    group_map[group[i]].push_back(i);
-
-  for (auto& kv : group_map) {
-    auto& idxs = kv.second;
-    arma::vec subv(idxs.size());
-    for (size_t j = 0; j < idxs.size(); ++j)
-      subv[j] = x[idxs[j]];
-    arma::vec soft = softmax_arma(subv);
-    for (size_t j = 0; j < idxs.size(); ++j)
-      out[idxs[j]] = soft[j];
+  arma::vec out(n);          // one allocation for everything
+  int start = 0;
+  while (start < n) {
+    int g = group[start], end = start + 1;
+    while (end < n && group[end] == g) end++;           // find group boundary
+    softmax_inplace(x.memptr() + start,                 // pointer into input slice
+                    out.memptr() + start,               // pointer into output slice
+                    end - start);                       // group size
+    start = end;
   }
+  return out;
+}
 
+// [[Rcpp::export]]
+arma::vec softmax_rcpp_grouped(const arma::vec& x,
+                                const arma::ivec& g1,
+                                const arma::ivec& g2,
+                                const arma::ivec& g3) {
+  int n = x.n_elem;
+  arma::vec out(n);
+  int start = 0;
+  while (start < n) {
+    int end = start + 1;
+    while (end < n && g1[end] == g1[start] &&
+                      g2[end] == g2[start] &&
+                      g3[end] == g3[start]) end++;
+    softmax_inplace(x.memptr() + start, out.memptr() + start, end - start);
+    start = end;
+  }
+  return out;
+}
+
+// [[Rcpp::export]]
+arma::vec softmax_rcpp_grouped_mat(const arma::vec& x, const arma::imat& G) {
+  int n = x.n_elem, ncols = G.n_cols;
+  arma::vec out(n);
+  std::vector<const int*> cols(ncols);
+  for (int c = 0; c < ncols; c++) cols[c] = G.colptr(c);  // contiguous per column
+  int start = 0;
+  while (start < n) {
+    int end = start + 1;
+    while (end < n) {
+      bool same = true;
+      for (int c = 0; c < ncols && same; c++)
+        if (cols[c][end] != cols[c][start]) same = false;
+      if (!same) break;
+      end++;
+    }
+    softmax_inplace(x.memptr() + start, out.memptr() + start, end - start);
+    start = end;
+  }
+  return out;
+}
+
+// [[Rcpp::export]]
+arma::vec softmax_rcpp_grouped_lst(const arma::vec& x, const Rcpp::List& G) {
+  int n = x.n_elem, ncols = G.size();
+  arma::vec out(n);
+  std::vector<const int*> cols(ncols);
+  for (int c = 0; c < ncols; c++) {
+    Rcpp::IntegerVector v = G[c];   // zero-copy wrap of existing R SEXP data
+    cols[c] = v.begin();
+  }
+  int start = 0;
+  while (start < n) {
+    int end = start + 1;
+    while (end < n) {
+      bool same = true;
+      for (int c = 0; c < ncols && same; c++)
+        if (cols[c][end] != cols[c][start]) same = false;
+      if (!same) break;
+      end++;
+    }
+    softmax_inplace(x.memptr() + start, out.memptr() + start, end - start);
+    start = end;
+  }
+  return out;
+}
+
+// [[Rcpp::export]]
+arma::vec softmax_rcpp_grouped_cols(const Rcpp::DataFrame& data,
+                                   const std::string& val_col,
+                                   const Rcpp::CharacterVector& group_cols) {
+  Rcpp::NumericVector x_r = data[val_col];
+  const double* x = x_r.begin();
+  int n = x_r.size(), ncols = group_cols.size();
+  arma::vec out(n);
+  std::vector<const int*> cols(ncols);
+  for (int c = 0; c < ncols; c++) {
+    Rcpp::IntegerVector v = data[Rcpp::as<std::string>(group_cols[c])];
+    cols[c] = v.begin();
+  }
+  int start = 0;
+  while (start < n) {
+    int end = start + 1;
+    while (end < n) {
+      bool same = true;
+      for (int c = 0; c < ncols && same; c++)
+        if (cols[c][end] != cols[c][start]) same = false;
+      if (!same) break;
+      end++;
+    }
+    softmax_inplace(x + start, out.memptr() + start, end - start);
+    start = end;
+  }
   return out;
 }

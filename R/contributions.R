@@ -13,18 +13,17 @@ getStaticChangeContributions <- function(ans = NULL,
                                          data,
                                          effects = NULL,
                                          depvar = NULL,
-                                         returnDataFrame = FALSE) {
+                                         returnDataFrame = FALSE,
+                                         returnWide = FALSE) {
   # Flexible argument handling
   if (!is.null(ans)) {
     if (is.null(effects)) effects <- ans$requestedEffects 
-    # does not work for interactions without base effects?
   }
   if (is.null(data) || is.null(effects)) {
     stop("Must provide either 'ans' or all of 'data' and 'effects'.")
   }
-  # Remove rate effects
   noRate <- effects$type != "rate"
-  effects <- effects[noRate, ] # not sure if correct
+  effects <- effects[noRate, ]
   effectNames <- effects[effects$include == TRUE, "shortName"]
   effectDepvars <- effects[effects$include == TRUE, "name"]
   effectNetTypes <- effects[effects$include == TRUE, "netType"]
@@ -50,11 +49,57 @@ getStaticChangeContributions <- function(ans = NULL,
                                      parallelrun = FALSE)
   #attr(staticChangeContributions, "effectNames") <- effects$shortName
 
-  if (!returnDataFrame) {
+  if (!returnDataFrame && !returnWide) {
     return(staticChangeContributions)
   }
 
   staticChangeContributions_effectNames <- attr(staticChangeContributions, "effectNames")
+
+  if (returnWide) {
+    results <- list()
+    for (dv in depvar) {
+      effect_idx     <- which(effectDepvars == dv)
+      effectNames_dv <- effectNames[effect_idx]
+      match_idx      <- match(effectNames_dv, staticChangeContributions_effectNames)
+      n_effects      <- length(match_idx)
+      n_egos  <- dim(data[["depvars"]][[dv]])[1]
+      netType <- unique(effectNetTypes[effectDepvars == dv])
+      n_choices <- if (netType == "oneMode") dim(data[["depvars"]][[dv]])[2L]
+                   else if (netType == "behavior") 3L
+                   else stop("Unsupported netType: ", netType)
+      for (g in seq_along(staticChangeContributions)) {
+        n_periods <- length(staticChangeContributions[[g]])
+        arr <- array(NA_real_, dim = c(n_periods, n_effects, n_egos, n_choices))
+        for (p in seq_len(n_periods)) {
+          for (e in seq_len(n_effects)) {
+            arr[p, e, , ] <- do.call(rbind,
+              staticChangeContributions[[g]][[p]][[match_idx[e]]])
+          }
+        }
+        arr <- aperm(arr, c(4L, 3L, 1L, 2L))
+        N   <- n_periods * n_egos * n_choices
+        contrib_mat <- matrix(arr, nrow = N, ncol = n_effects)
+        colnames(contrib_mat) <- effectNames_dv
+        period_vec <- rep(seq_len(n_periods), each = n_egos * n_choices)
+        ego_vec    <- rep(rep(seq_len(n_egos), each = n_choices), times = n_periods)
+        choice_vec <- rep(seq_len(n_choices), times = n_periods * n_egos)
+        group_id   <- rep(seq_len(n_periods * n_egos), each = n_choices)
+        results[[paste0("g", g, "_", dv)]] <- list(
+          contrib_mat = contrib_mat,
+          period      = period_vec,
+          ego         = ego_vec,
+          choice      = choice_vec,
+          group_id    = group_id,
+          n_choices   = as.integer(n_choices),
+          group       = as.integer(g),
+          networkName = dv,
+          effectNames = effectNames_dv
+        )
+      }
+    }
+    return(results)
+  }
+
   results <- list()
   for (dv in depvar) {
     effect_idx <- which(effectDepvars == dv)
@@ -116,168 +161,35 @@ getStaticChangeContributions <- function(ans = NULL,
   }
 }
 
-##@sienaSetupDataForCpp Use as RSiena:::sienaSetupDataForCpp
-sienaSetupDataForCpp <- function(data, 
-                             includeBehavior = TRUE, 
-                             includeBipartite = TRUE) {
-    f <- unpackData(data)
-    pData <- .Call(C_setupData, PACKAGE=pkgname,
-                   list(as.integer(f$observations)),
-                   list(f$nodeSets))
-    reg.finalizer(pData, clearData, onexit = FALSE)
-    .Call(C_OneMode, PACKAGE=pkgname, pData, list(f$nets))
-    if (includeBipartite && !is.null(f$bipartites)) {
-        .Call(C_Bipartite, PACKAGE=pkgname, pData, list(f$bipartites))
-    }
-    if (includeBehavior && !is.null(f$behavs)) {
-        .Call(C_Behavior, PACKAGE=pkgname, pData, list(f$behavs))
-    }
-    .Call(C_ConstantCovariates, PACKAGE=pkgname, pData, list(f$cCovars))
-    .Call(C_ChangingCovariates, PACKAGE=pkgname, pData, list(f$vCovars))
-    .Call(C_DyadicCovariates, PACKAGE=pkgname, pData, list(f$dycCovars))
-    .Call(C_ChangingDyadicCovariates, PACKAGE=pkgname, pData, list(f$dyvCovars))
-    # if (is.null(f$exog) || !is.list(f$exog)) {
-	# 	f$exog <- vector("list", length(f$depvars))
-	# }
-	# ## split the names of the constraints
-	# higher <- attr(f, "allHigher")
-	# disjoint <- attr(f, "allDisjoint")
-	# atLeastOne <- attr(f, "allAtLeastOne")
-	# froms <- sapply(strsplit(names(higher), ","), function(x)x[1])
-	# tos <- sapply(strsplit(names(higher), ","), function(x)x[2])
-	# .Call(C_Constraints, PACKAGE=pkgname,
-	# 	pData, froms[higher], tos[higher],
-	# 	froms[disjoint], tos[disjoint],
-	# 	froms[atLeastOne], tos[atLeastOne])
-	# siena07 only does this with !initC
-    return(pData)
-}
-
-##@sienaSetupEffectsForCpp Use as RSiena:::sienaSetupEffectsForCpp
-sienaSetupEffectsForCpp <- function(pData, data, effects) {
-    effects$setting <- rep("", nrow(effects))
-    storage.mode(effects$parm) <- 'integer'
-    storage.mode(effects$group) <- 'integer'
-    storage.mode(effects$period) <- 'integer'
-	## find any effects not included which are needed for interactionst
-	tmpEffects <- effects[effects$include, ]
-	interactionNos <- unique(c(tmpEffects$effect1, tmpEffects$effect2,
-			tmpEffects$effect3))
-	interactionNos <- interactionNos[interactionNos > 0]
-	interactions <- effects$effectNumber %in%
-		interactionNos
-	effects$requested <- effects$include
-	# requestedEffects <- effects[effects$include, ] 
-
-	effects$include[interactions] <- TRUE
-	effects <- effects[effects$include, ]
-
-    effects$effectPtr <- rep(NA, nrow(effects))
-
-    myeffects <- split(effects, effects$name)
-	myCompleteEffects <- myeffects
-	## remove interaction effects and save till later
-	basicEffects <-
-		lapply(myeffects, function(x)
-			{
-				x[!x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt"), ]
-			}
-			)
-	basicEffectsl <-
-		lapply(myeffects, function(x)
-			{
-				!x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt")
-			}
-			)
-
-	interactionEffects <-
-		lapply(myeffects, function(x)
-			{
-				x[x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt"), ]
-			}
-			)
-	interactionEffectsl <-
-		lapply(myeffects, function(x)
-			{
-				x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt")
-			}
-			)
-    ans <- .Call(C_effects, PACKAGE=pkgname, pData, basicEffects)
-    pModel <- ans[[1]][[1]]
-    reg.finalizer(pModel, clearModel, onexit = FALSE)
-    for (i in 1:length(ans[[2]])) ## ans[[2]] is a list of lists of
-        ## pointers to effects. Each list corresponds to one
-        ## dependent variable
-    {
-		effectPtr <- ans[[2]][[i]]
-		basicEffects[[i]]$effectPtr <- effectPtr
-		interactionEffects[[i]]$effect1 <-
-			basicEffects[[i]]$effectPtr[match(interactionEffects[[i]]$effect1,
-				basicEffects[[i]]$effectNumber)]
-		interactionEffects[[i]]$effect2 <-
-			basicEffects[[i]]$effectPtr[match(interactionEffects[[i]]$effect2,
-				basicEffects[[i]]$effectNumber)]
-		interactionEffects[[i]]$effect3 <-
-			basicEffects[[i]]$effectPtr[match(interactionEffects[[i]]$effect3,
-				basicEffects[[i]]$effectNumber)]
-    }
-	ans <- .Call(C_interactionEffects, PACKAGE=pkgname,
-		pModel, interactionEffects)
-		## copy these pointers to the interaction effects and then insert in
-	## effects object in the same rows for later use
-	for (i in 1:length(ans[[1]])) ## ans is a list of lists of
-		## pointers to effects. Each list corresponds to one
-		## dependent variable
-	{
-		if (nrow(interactionEffects[[i]]) > 0)
-		{
-			effectPtr <- ans[[1]][[i]]
-			interactionEffects[[i]]$effectPtr <- effectPtr
-		}
-		myCompleteEffects[[i]][basicEffectsl[[i]], ] <- basicEffects[[i]]
-		myCompleteEffects[[i]][interactionEffectsl[[i]],] <-
-			interactionEffects[[i]]
-		##myeffects[[i]] <- myeffects[[i]][order(myeffects[[i]]$effectNumber),]
-	}
-	## remove the effects only created as underlying effects
-	## for interaction effects. first store the original for use next time
-	myeffects <- lapply(myCompleteEffects, function(x)
-		{
-			x[x$requested, ]
-		}
-	)
-    list(pModel = pModel, myeffects = myeffects)
-}
-
-widenStaticContribution <- function(changeContributions){
-  ## currently only works for dynamic case and data has to be pre filtered to only one depvar
-  if (all(c("effectname", "contribution") %in% names(changeContributions))) {
-    if (requireNamespace("data.table", quietly = TRUE)) {
-        changeContributions <- data.table::dcast(
-          changeContributions, group + period + ego + choice ~ effectname,
-          value.var = "contribution"
-        )
-      } else {
-        ## in the dynamic case, this might lose some information that we should keep
-        needed <- c("group", 
-          "period", 
-          "ego", 
-          "choice", 
-          "effectname", 
-          "contribution")
-        changeContributions <- changeContributions[, needed]
-        changeContributions <- reshape(
-          changeContributions,
-          idvar = c("group", "period", "ego", "choice"),
-          timevar = "effectname", v.names = "contribution",
-          direction = "wide"
-        )
-        colnames(changeContributions) <- sub("^contribution\\.", "", 
-          colnames(changeContributions))
-      }
-    }
-  changeContributions
-}
+# widenStaticContribution <- function(changeContributions){
+#   ## currently only works for dynamic case and data has to be pre filtered to only one depvar
+#   if (all(c("effectname", "contribution") %in% names(changeContributions))) {
+#     if (requireNamespace("data.table", quietly = TRUE)) {
+#         changeContributions <- data.table::dcast(
+#           changeContributions, group + period + ego + choice ~ effectname,
+#           value.var = "contribution"
+#         )
+#       } else {
+#         ## in the dynamic case, this might lose some information that we should keep
+#         needed <- c("group", 
+#           "period", 
+#           "ego", 
+#           "choice", 
+#           "effectname", 
+#           "contribution")
+#         changeContributions <- as.data.frame(changeContributions)[, needed, drop = FALSE]
+#         changeContributions <- reshape(
+#           changeContributions,
+#           idvar = c("group", "period", "ego", "choice"),
+#           timevar = "effectname", v.names = "contribution",
+#           direction = "wide"
+#         )
+#         colnames(changeContributions) <- sub("^contribution\\.", "", 
+#           colnames(changeContributions))
+#       }
+#     }
+#   changeContributions
+# }
 
 ## extracts dynamic contributions from ans or simulates sequences ministeps to 
 ## generate them. Changed and extracted from sienaRIDynamics
@@ -290,8 +202,13 @@ getDynamicChangeContributions <- function(ans = NULL,
                                           n3 = NULL, 
                                           useChangeContributions = FALSE, 
                                           returnDataFrame = FALSE,
+                                          returnWide = FALSE,
+                                          batch = TRUE,
                                           silent = TRUE,
                                           seed = NULL) {
+  if(returnWide && returnDataFrame) stop("Can not return wide data.frame")
+  # Set silent according to batch if not explicitly set
+  if (is.null(silent)) silent <- batch
   # Flexible argument handling allows either extracted pre
   # calculated contributions from ans or simulating them
 
@@ -301,12 +218,12 @@ getDynamicChangeContributions <- function(ans = NULL,
 			      contain 'changeContributions'. Will rerun siena07 to generate them.")
             useChangeContributions <- FALSE
   }
-  if (useChangeContributions && !returnDataFrame && 
+  if (useChangeContributions && (!returnDataFrame || returnWide) && 
     (is.data.frame(ans$changeContributions) || 
       is.data.frame(ans$changeContributions[[1]]))) 
   {
-            stop("useChangeContributions=TRUE & returnDataFrame=FALSE; but
-              'ans$changeContributions' contains data.frames")
+            stop("useChangeContributions=TRUE but 'ans$changeContributions' contains 
+              data.frames; cannot use for returnDataFrame=FALSE or returnWide=TRUE")
   }
   if (useChangeContributions && is.null(n3)) 
   {
@@ -396,14 +313,24 @@ getDynamicChangeContributions <- function(ans = NULL,
         returnDeps=FALSE, 
         returnChangeContributions=TRUE, 
         returnDataFrame = returnDataFrame,
+        batch = batch,
         silent = silent)
     }
 
   changeContributions <- ans$changeContributions
 
-  if (!returnDataFrame) { # could be extracted to a separate function
-    return(changeContributions) # what exactly is the list format?
-  } else {
+  if (!returnDataFrame && !returnWide) {
+    return(changeContributions)
+  }
+  if (returnWide) {
+    if (is.null(effects))
+      stop("'effects' must be provided when returnWide = TRUE")
+    if (is.null(depvar))
+      stop("'depvar' must be provided when returnWide = TRUE (use a single depvar name)")
+    effectNames <- getEffectNamesNoRate(effects, depvar)
+    return(flattenContributionsWide(changeContributions, effectNames, depvar))
+  }
+  { # returnDataFrame = TRUE
     if (is.list(changeContributions) && !is.data.frame(changeContributions[[1]])) 
     {
       warning("SIENA backend returned nested lists, not data.frames; 
@@ -461,7 +388,7 @@ widenDynamicContribution <- function(changeContributions){
           "choice", 
           "effectname", 
           "contribution")
-        changeContributions <- changeContributions[, needed]
+        changeContributions <- as.data.frame(changeContributions)[, needed, drop = FALSE]
         changeContributions <- reshape(
           changeContributions,
           idvar = c("chain", "group", "period", "ministep", "choice"),

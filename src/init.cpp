@@ -15,6 +15,8 @@ extern "C"
 */
  SEXP _RSiena_softmax_arma(SEXP);
  SEXP _RSiena_softmax_arma_by_group(SEXP, SEXP);
+ SEXP _RSiena_softmax_rcpp_grouped_lst(SEXP, SEXP);
+
 
   /*
   From tools::package_native_routine_registration_skeleton.
@@ -51,8 +53,10 @@ static const R_CallMethodDef CallEntries[] = {
    CALLDEF(setupData, 2),
    CALLDEF(setupModelOptions, 12),
    CALLDEF(flattenChangeContributionsList, 1),
+   CALLDEF(flattenChangeContributionsWide, 3),
    {"_RSiena_softmax_arma",            (DL_FUNC) &_RSiena_softmax_arma,            1},
    {"_RSiena_softmax_arma_by_group",   (DL_FUNC) &_RSiena_softmax_arma_by_group,   2},
+   {"_RSiena_softmax_rcpp_grouped_lst", (DL_FUNC) &_RSiena_softmax_rcpp_grouped_lst, 2},
    {NULL, NULL, 0}
 };
 

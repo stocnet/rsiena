@@ -9,3 +9,19 @@ softmax_arma_by_group <- function(x, group) {
     .Call(`_RSiena_softmax_arma_by_group`, x, group)
 }
 
+softmax_rcpp_grouped <- function(x, g1, g2, g3) {
+    .Call(`_RSiena_softmax_rcpp_grouped`, x, g1, g2, g3)
+}
+
+softmax_rcpp_grouped_mat <- function(x, G) {
+    .Call(`_RSiena_softmax_rcpp_grouped_mat`, x, G)
+}
+
+softmax_rcpp_grouped_lst <- function(x, G) {
+    .Call(`_RSiena_softmax_rcpp_grouped_lst`, x, G)
+}
+
+softmax_rcpp_grouped_cols <- function(data, val_col, group_cols) {
+    .Call(`_RSiena_softmax_rcpp_grouped_cols`, data, val_col, group_cols)
+}
+

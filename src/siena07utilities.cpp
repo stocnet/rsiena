@@ -1262,4 +1262,159 @@ SEXP flattenChangeContributionsList(SEXP changeContributionChains)
     return df;
 }
 
+SEXP flattenChangeContributionsWide(SEXP changeContributionChains,
+                                    SEXP effectNames,
+                                    SEXP depvar)
+{
+    int nEffSel = Rf_length(effectNames);
+    int nChains = Rf_length(changeContributionChains);
+
+    /* depvar filter: keep only ministeps whose networkName attr is in depvar */
+    bool filterDepvar = (!Rf_isNull(depvar) && TYPEOF(depvar) == STRSXP
+                         && Rf_length(depvar) > 0);
+    auto keepNet = [&](SEXP mat) -> bool {
+        if (!filterDepvar) return true;
+        SEXP nn = Rf_getAttrib(mat, Rf_install("networkName"));
+        if (Rf_isNull(nn) || TYPEOF(nn) != STRSXP || Rf_length(nn) == 0)
+            return false;
+        const char * net = CHAR(STRING_ELT(nn, 0));
+        for (int d = 0; d < Rf_length(depvar); ++d)
+            if (strcmp(net, CHAR(STRING_ELT(depvar, d))) == 0) return true;
+        return false;
+    };
+
+    /* --- discover raw effect order from first non-null kept ministep ------ */
+    SEXP rawEffNames = R_NilValue;
+    for (int ch = 0; ch < nChains && rawEffNames == R_NilValue; ++ch) {
+        SEXP cl = VECTOR_ELT(changeContributionChains, ch);
+        for (int g = 0; g < Rf_length(cl) && rawEffNames == R_NilValue; ++g) {
+            SEXP gl = VECTOR_ELT(cl, g);
+            for (int p = 0; p < Rf_length(gl) && rawEffNames == R_NilValue; ++p) {
+                SEXP pl = VECTOR_ELT(gl, p);
+                for (int m = 0; m < Rf_length(pl); ++m) {
+                    SEXP mat = VECTOR_ELT(pl, m);
+                    if (Rf_isNull(mat) || !keepNet(mat)) continue;
+                    rawEffNames = Rf_getAttrib(mat, Rf_install("effectNames"));
+                    break;
+                }
+            }
+        }
+    }
+
+    /* --- build match_idx[e] = row in raw mat for effectNames[e] ----------- */
+    std::vector<int> match_idx(nEffSel, -1);
+    if (rawEffNames != R_NilValue) {
+        int nRaw = Rf_length(rawEffNames);
+        for (int e = 0; e < nEffSel; ++e) {
+            const char * want = CHAR(STRING_ELT(effectNames, e));
+            for (int r = 0; r < nRaw; ++r) {
+                if (strcmp(want, CHAR(STRING_ELT(rawEffNames, r))) == 0) {
+                    match_idx[e] = r;
+                    break;
+                }
+            }
+        }
+    }
+
+    /* --- first pass: count total rows ------------------------------------- */
+    int totalRows = 0;
+    for (int ch = 0; ch < nChains; ++ch) {
+        SEXP cl = VECTOR_ELT(changeContributionChains, ch);
+        for (int g = 0; g < Rf_length(cl); ++g) {
+            SEXP gl = VECTOR_ELT(cl, g);
+            for (int p = 0; p < Rf_length(gl); ++p) {
+                SEXP pl = VECTOR_ELT(gl, p);
+                for (int m = 0; m < Rf_length(pl); ++m) {
+                    SEXP mat = VECTOR_ELT(pl, m);
+                    if (Rf_isNull(mat) || !keepNet(mat)) continue;
+                    totalRows += Rf_ncols(mat); /* one row per choice option */
+                }
+            }
+        }
+    }
+
+    /* --- allocate --------------------------------------------------------- */
+    SEXP contrib_mat = PROTECT(Rf_allocMatrix(REALSXP, totalRows, nEffSel));
+    SEXP chain_sxp   = PROTECT(Rf_allocVector(INTSXP, totalRows));
+    SEXP group_sxp   = PROTECT(Rf_allocVector(INTSXP, totalRows));
+    SEXP period_sxp  = PROTECT(Rf_allocVector(INTSXP, totalRows));
+    SEXP mstep_sxp   = PROTECT(Rf_allocVector(INTSXP, totalRows));
+    SEXP choice_sxp  = PROTECT(Rf_allocVector(INTSXP, totalRows));
+    SEXP grpid_sxp   = PROTECT(Rf_allocVector(INTSXP, totalRows));
+
+    double * rmat = REAL(contrib_mat);
+    int    * rch  = INTEGER(chain_sxp);
+    int    * rg   = INTEGER(group_sxp);
+    int    * rp   = INTEGER(period_sxp);
+    int    * rm   = INTEGER(mstep_sxp);
+    int    * rc   = INTEGER(choice_sxp);
+    int    * rgid = INTEGER(grpid_sxp);
+
+    /* --- second pass: fill ------------------------------------------------ */
+    int row = 0;
+    int grp = 0;
+    for (int ch = 0; ch < nChains; ++ch) {
+        SEXP cl = VECTOR_ELT(changeContributionChains, ch);
+        for (int g = 0; g < Rf_length(cl); ++g) {
+            SEXP gl = VECTOR_ELT(cl, g);
+            for (int p = 0; p < Rf_length(gl); ++p) {
+                SEXP pl = VECTOR_ELT(gl, p);
+                for (int m = 0; m < Rf_length(pl); ++m) {
+                    SEXP mat = VECTOR_ELT(pl, m);
+                    if (Rf_isNull(mat) || !keepNet(mat)) continue;
+                    int nEff    = Rf_nrows(mat);
+                    int nChoice = Rf_ncols(mat);
+                    double * src = REAL(mat); /* col-major: src[e + nEff*c] */
+                    grp++;
+                    for (int c = 0; c < nChoice; ++c) {
+                        for (int e = 0; e < nEffSel; ++e) {
+                            /* contrib_mat col-major: rmat[row + totalRows*e] */
+                            rmat[row + totalRows * e] =
+                                (match_idx[e] >= 0)
+                                    ? src[match_idx[e] + nEff * c]
+                                    : NA_REAL;
+                        }
+                        rch[row]  = ch + 1;
+                        rg[row]   = g  + 1;
+                        rp[row]   = p  + 1;
+                        rm[row]   = m  + 1;
+                        rc[row]   = c  + 1;
+                        rgid[row] = grp;
+                        row++;
+                    }
+                }
+            }
+        }
+    }
+
+    /* --- set colnames on contrib_mat -------------------------------------- */
+    SEXP dimnames = PROTECT(Rf_allocVector(VECSXP, 2));
+    SET_VECTOR_ELT(dimnames, 0, R_NilValue);
+    SET_VECTOR_ELT(dimnames, 1, effectNames);
+    Rf_setAttrib(contrib_mat, R_DimNamesSymbol, dimnames);
+
+    /* --- assemble result list --------------------------------------------- */
+    SEXP result = PROTECT(Rf_allocVector(VECSXP, 7));
+    SET_VECTOR_ELT(result, 0, contrib_mat);
+    SET_VECTOR_ELT(result, 1, chain_sxp);
+    SET_VECTOR_ELT(result, 2, group_sxp);
+    SET_VECTOR_ELT(result, 3, period_sxp);
+    SET_VECTOR_ELT(result, 4, mstep_sxp);
+    SET_VECTOR_ELT(result, 5, choice_sxp);
+    SET_VECTOR_ELT(result, 6, grpid_sxp);
+
+    SEXP nms = PROTECT(Rf_allocVector(STRSXP, 7));
+    SET_STRING_ELT(nms, 0, Rf_mkChar("contrib_mat"));
+    SET_STRING_ELT(nms, 1, Rf_mkChar("chain"));
+    SET_STRING_ELT(nms, 2, Rf_mkChar("group"));
+    SET_STRING_ELT(nms, 3, Rf_mkChar("period"));
+    SET_STRING_ELT(nms, 4, Rf_mkChar("ministep"));
+    SET_STRING_ELT(nms, 5, Rf_mkChar("choice"));
+    SET_STRING_ELT(nms, 6, Rf_mkChar("group_id"));
+    Rf_setAttrib(result, R_NamesSymbol, nms);
+
+    UNPROTECT(10);
+    return result;
+}
+
 } // namespace siena

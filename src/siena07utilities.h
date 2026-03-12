@@ -77,6 +77,8 @@ namespace siena
 	SEXP getChainList(const Chain & chain);
 	SEXP getDynamicChangeContributionsList(const Chain & chain, SEXP EFFECTSLIST);
 	SEXP flattenChangeContributionsList(SEXP changeContributionChains);
+	SEXP flattenChangeContributionsWide(SEXP changeContributionChains,
+	                                    SEXP effectNames, SEXP depvar);
 	SEXP createRObjectAttributes(SEXP EFFECTSLIST, SEXP & stats);
 	Chain * makeChainFromList(Data * pData, SEXP CHAIN, int period);
 	MiniStep * makeMiniStepFromList(Data * pData, SEXP MINISTEP);

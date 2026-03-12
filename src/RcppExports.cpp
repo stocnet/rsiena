@@ -34,3 +34,54 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// softmax_rcpp_grouped
+arma::vec softmax_rcpp_grouped(const arma::vec& x, const arma::ivec& g1, const arma::ivec& g2, const arma::ivec& g3);
+RcppExport SEXP _RSiena_softmax_rcpp_grouped(SEXP xSEXP, SEXP g1SEXP, SEXP g2SEXP, SEXP g3SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::ivec& >::type g1(g1SEXP);
+    Rcpp::traits::input_parameter< const arma::ivec& >::type g2(g2SEXP);
+    Rcpp::traits::input_parameter< const arma::ivec& >::type g3(g3SEXP);
+    rcpp_result_gen = Rcpp::wrap(softmax_rcpp_grouped(x, g1, g2, g3));
+    return rcpp_result_gen;
+END_RCPP
+}
+// softmax_rcpp_grouped_mat
+arma::vec softmax_rcpp_grouped_mat(const arma::vec& x, const arma::imat& G);
+RcppExport SEXP _RSiena_softmax_rcpp_grouped_mat(SEXP xSEXP, SEXP GSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::imat& >::type G(GSEXP);
+    rcpp_result_gen = Rcpp::wrap(softmax_rcpp_grouped_mat(x, G));
+    return rcpp_result_gen;
+END_RCPP
+}
+// softmax_rcpp_grouped_lst
+arma::vec softmax_rcpp_grouped_lst(const arma::vec& x, const Rcpp::List& G);
+RcppExport SEXP _RSiena_softmax_rcpp_grouped_lst(SEXP xSEXP, SEXP GSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type G(GSEXP);
+    rcpp_result_gen = Rcpp::wrap(softmax_rcpp_grouped_lst(x, G));
+    return rcpp_result_gen;
+END_RCPP
+}
+// softmax_rcpp_grouped_cols
+arma::vec softmax_rcpp_grouped_cols(const Rcpp::DataFrame& data, const std::string& val_col, const Rcpp::CharacterVector& group_cols);
+RcppExport SEXP _RSiena_softmax_rcpp_grouped_cols(SEXP dataSEXP, SEXP val_colSEXP, SEXP group_colsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::DataFrame& >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type val_col(val_colSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::CharacterVector& >::type group_cols(group_colsSEXP);
+    rcpp_result_gen = Rcpp::wrap(softmax_rcpp_grouped_cols(data, val_col, group_cols));
+    return rcpp_result_gen;
+END_RCPP
+}

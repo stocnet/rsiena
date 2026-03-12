@@ -2193,6 +2193,139 @@ checkVersion <- function(dat, effs){
 	defaultEffects 
 }
 
+##@sienaSetupDataForCpp Use as RSiena:::sienaSetupDataForCpp
+sienaSetupDataForCpp <- function(data, 
+                             includeBehavior = TRUE, 
+                             includeBipartite = TRUE) {
+    f <- unpackData(data)
+    pData <- .Call(C_setupData, PACKAGE=pkgname,
+                   list(as.integer(f$observations)),
+                   list(f$nodeSets))
+    reg.finalizer(pData, clearData, onexit = FALSE)
+    .Call(C_OneMode, PACKAGE=pkgname, pData, list(f$nets))
+    if (includeBipartite && !is.null(f$bipartites)) {
+        .Call(C_Bipartite, PACKAGE=pkgname, pData, list(f$bipartites))
+    }
+    if (includeBehavior && !is.null(f$behavs)) {
+        .Call(C_Behavior, PACKAGE=pkgname, pData, list(f$behavs))
+    }
+    .Call(C_ConstantCovariates, PACKAGE=pkgname, pData, list(f$cCovars))
+    .Call(C_ChangingCovariates, PACKAGE=pkgname, pData, list(f$vCovars))
+    .Call(C_DyadicCovariates, PACKAGE=pkgname, pData, list(f$dycCovars))
+    .Call(C_ChangingDyadicCovariates, PACKAGE=pkgname, pData, list(f$dyvCovars))
+    # if (is.null(f$exog) || !is.list(f$exog)) {
+	# 	f$exog <- vector("list", length(f$depvars))
+	# }
+	# ## split the names of the constraints
+	# higher <- attr(f, "allHigher")
+	# disjoint <- attr(f, "allDisjoint")
+	# atLeastOne <- attr(f, "allAtLeastOne")
+	# froms <- sapply(strsplit(names(higher), ","), function(x)x[1])
+	# tos <- sapply(strsplit(names(higher), ","), function(x)x[2])
+	# .Call(C_Constraints, PACKAGE=pkgname,
+	# 	pData, froms[higher], tos[higher],
+	# 	froms[disjoint], tos[disjoint],
+	# 	froms[atLeastOne], tos[atLeastOne])
+	# siena07 only does this with !initC
+    return(pData)
+}
+
+##@sienaSetupEffectsForCpp Use as RSiena:::sienaSetupEffectsForCpp
+sienaSetupEffectsForCpp <- function(pData, data, effects) {
+    effects$setting <- rep("", nrow(effects))
+    storage.mode(effects$parm) <- 'integer'
+    storage.mode(effects$group) <- 'integer'
+    storage.mode(effects$period) <- 'integer'
+	## find any effects not included which are needed for interactionst
+	tmpEffects <- effects[effects$include, ]
+	interactionNos <- unique(c(tmpEffects$effect1, tmpEffects$effect2,
+			tmpEffects$effect3))
+	interactionNos <- interactionNos[interactionNos > 0]
+	interactions <- effects$effectNumber %in%
+		interactionNos
+	effects$requested <- effects$include
+	# requestedEffects <- effects[effects$include, ] 
+
+	effects$include[interactions] <- TRUE
+	effects <- effects[effects$include, ]
+
+    effects$effectPtr <- rep(NA, nrow(effects))
+
+    myeffects <- split(effects, effects$name)
+	myCompleteEffects <- myeffects
+	## remove interaction effects and save till later
+	basicEffects <-
+		lapply(myeffects, function(x)
+			{
+				x[!x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt"), ]
+			}
+			)
+	basicEffectsl <-
+		lapply(myeffects, function(x)
+			{
+				!x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt")
+			}
+			)
+
+	interactionEffects <-
+		lapply(myeffects, function(x)
+			{
+				x[x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt"), ]
+			}
+			)
+	interactionEffectsl <-
+		lapply(myeffects, function(x)
+			{
+				x$shortName %in% c("unspInt", "behUnspInt", "contUnspInt")
+			}
+			)
+    ans <- .Call(C_effects, PACKAGE=pkgname, pData, basicEffects)
+    pModel <- ans[[1]][[1]]
+    reg.finalizer(pModel, clearModel, onexit = FALSE)
+    for (i in 1:length(ans[[2]])) ## ans[[2]] is a list of lists of
+        ## pointers to effects. Each list corresponds to one
+        ## dependent variable
+    {
+		effectPtr <- ans[[2]][[i]]
+		basicEffects[[i]]$effectPtr <- effectPtr
+		interactionEffects[[i]]$effect1 <-
+			basicEffects[[i]]$effectPtr[match(interactionEffects[[i]]$effect1,
+				basicEffects[[i]]$effectNumber)]
+		interactionEffects[[i]]$effect2 <-
+			basicEffects[[i]]$effectPtr[match(interactionEffects[[i]]$effect2,
+				basicEffects[[i]]$effectNumber)]
+		interactionEffects[[i]]$effect3 <-
+			basicEffects[[i]]$effectPtr[match(interactionEffects[[i]]$effect3,
+				basicEffects[[i]]$effectNumber)]
+    }
+	ans <- .Call(C_interactionEffects, PACKAGE=pkgname,
+		pModel, interactionEffects)
+		## copy these pointers to the interaction effects and then insert in
+	## effects object in the same rows for later use
+	for (i in 1:length(ans[[1]])) ## ans is a list of lists of
+		## pointers to effects. Each list corresponds to one
+		## dependent variable
+	{
+		if (nrow(interactionEffects[[i]]) > 0)
+		{
+			effectPtr <- ans[[1]][[i]]
+			interactionEffects[[i]]$effectPtr <- effectPtr
+		}
+		myCompleteEffects[[i]][basicEffectsl[[i]], ] <- basicEffects[[i]]
+		myCompleteEffects[[i]][interactionEffectsl[[i]],] <-
+			interactionEffects[[i]]
+		##myeffects[[i]] <- myeffects[[i]][order(myeffects[[i]]$effectNumber),]
+	}
+	## remove the effects only created as underlying effects
+	## for interaction effects. first store the original for use next time
+	myeffects <- lapply(myCompleteEffects, function(x)
+		{
+			x[x$requested, ]
+		}
+	)
+    list(pModel = pModel, myeffects = myeffects)
+}
+
 ##@addSettingseffects siena07 add extra rate effects for settings model
 # addSettingsEffects <- function(effects, x)
 # {
