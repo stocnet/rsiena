@@ -4,6 +4,7 @@ library(Rcpp)
 library(RcppArmadillo)
 library(microbenchmark)
 library(data.table)
+has_peakRAM <- requireNamespace("peakRAM", quietly = TRUE)
 sourceCpp("src/rcppUtilities.cpp")
 
 ## Recursive softmax formula, adjusted from https://rpubs.com/FJRubio/softmax.
@@ -23,39 +24,129 @@ softmax <- function(par = NULL, recursive = TRUE) {
   val
 }
 
-softmax_grouped_R_df <- function(data) {
-  group <- interaction(data$sim, data$period,data$ego, drop = TRUE)
-  data$changeProb <- ave(data$changeUtil, group, FUN=softmax, recursive = FALSE)
+softmax_R_grouped_R_df <- function(data) {
+  grp <- cumsum(c(TRUE, diff(data$ego) != 0 | 
+                        diff(data$period) != 0 | 
+                        diff(data$sim) != 0))
+  data$changeProb <- ave(data$changeUtil, grp, 
+                         FUN = function(x) softmax(x, recursive = FALSE))
   data
 }
-softmax_grouped_R_arma_df <- function(data) {
-  group <- interaction(data$sim, data$period,data$ego, drop = TRUE)  # group for Rcpp
-  data$changeProb <- ave(data$changeUtil, group, FUN=softmax_arma)
-  data
-}
-softmax_grouped_data_table_df <- function(data){
+
+softmax_R_grouped_R_dt <- function(data){
   dt <- as.data.table(data)
   dt[, changeProb := {
       softmax(changeUtil, recursive = FALSE)
     }, by = .(sim, period, ego)]
-  as.data.frame(dt)
+  dt
 }
 
-softmax_grouped_data_table_arma_df <- function(data){
+softmax_arma_grouped_R_df <- function(data) {
+  grp <- cumsum(c(TRUE, diff(data$ego) != 0 | 
+                        diff(data$period) != 0 | 
+                        diff(data$sim) != 0))
+  data$changeProb <- ave(data$changeUtil, grp, FUN = softmax_arma)
+  data
+}
+
+softmax_arma_grouped_R_dt <- function(data){
   dt <- as.data.table(data)
   dt[, changeProb := {
       softmax_arma(changeUtil)
     }, by = .(sim, period, ego)]
-  as.data.frame(dt)
+  dt
 }
 
 softmax_arma_by_group_df <- function(data){
-  group <- interaction(data$sim, data$period,data$ego, drop = TRUE)  # group for Rcpp
-  group_int <- as.integer(group)
-  data$changeProb <- softmax_arma_by_group(data$changeUtil,group_int)
+  grp <- cumsum(c(TRUE, diff(data$ego) != 0 | 
+                        diff(data$period) != 0 | 
+                        diff(data$sim) != 0))
+  data$changeProb <- softmax_arma_by_group(data$changeUtil, grp)
   data
 }
 
+softmax_arma_by_group_dt <- function(data) {
+  grp <- cumsum(c(1L, diff(data$sim) != 0L | 
+                      diff(data$period) != 0L | 
+                      diff(data$ego) != 0L))
+  set(data, j = "changeProb", value = softmax_arma_by_group(data$changeUtil, grp))
+  data
+}
+
+# best df-native implementation — no data.table required
+softmax_rcpp_grouped_df <- function(data) {
+  data$changeProb <- softmax_rcpp_grouped(
+    data$changeUtil, data$sim, data$period, data$ego)
+  data
+}
+
+# dt variant with set() for completenessƒ
+softmax_rcpp_grouped_dt <- function(data) {
+  set(data, j = "changeProb", value = softmax_rcpp_grouped(
+    data$changeUtil, data$sim, data$period, data$ego))
+  data
+}
+
+softmax_rcpp_grouped_mat_df <- function(data) {
+  G <- cbind(data[["sim"]], data[["period"]], data[["ego"]])
+  data$changeProb <- softmax_rcpp_grouped_mat(data$changeUtil, G)
+  data
+}
+
+softmax_rcpp_grouped_mat_dt <- function(data) {
+  G <- cbind(data[["sim"]], data[["period"]], data[["ego"]])
+  set(data, j = "changeProb", value = softmax_rcpp_grouped_mat(data$changeUtil, G))
+  data
+}
+
+# List-based: zero-copy on R side (list wrapper only, no cbind allocation)
+softmax_rcpp_grouped_lst_df <- function(data) {
+  G <- list(data[["sim"]], data[["period"]], data[["ego"]])
+  data$changeProb <- softmax_rcpp_grouped_lst(data$changeUtil, G)
+  data
+}
+
+softmax_rcpp_grouped_lst_dt <- function(data) {
+  G <- list(data[["sim"]], data[["period"]], data[["ego"]])
+  set(data, j = "changeProb", value = softmax_rcpp_grouped_lst(data$changeUtil, G))
+  data
+}
+
+# DataFrame-direct: C++ extracts column pointers itself — cleanest production API
+softmax_rcpp_grouped_direct_df <- function(data) {
+  data$changeProb <- softmax_rcpp_grouped_cols(data, "changeUtil", c("sim", "period", "ego"))
+  data
+}
+
+softmax_rcpp_grouped_direct_dt <- function(data) {
+  set(data, j = "changeProb",
+      value = softmax_rcpp_grouped_cols(data, "changeUtil", c("sim", "period", "ego")))
+  data
+}
+
+run_memory_profile <- function(fn_names, fns, df, dt, logfile) {
+  log_benchmark(logfile, "\nMemory profile (peak RAM per call):")
+  results <- lapply(fn_names, function(nm) {
+    fn <- fns[[nm]]
+    gc(verbose = FALSE)
+    input <- if (grepl("_dt$", nm)) copy(dt) else df
+    if (has_peakRAM) {
+      pr <- peakRAM::peakRAM(fn(input))
+      data.frame(method = nm,
+                 peak_ram_mb = round(pr$Peak_RAM_Used_MiB, 2),
+                 stringsAsFactors = FALSE)
+    } else {
+      fn(input)
+      data.frame(method = nm,
+                 peak_ram_mb = NA_real_,
+                 stringsAsFactors = FALSE)
+    }
+  })
+  res <- do.call(rbind, results)
+  capture.output(print(res, row.names = FALSE), file = logfile, append = TRUE)
+  if (!has_peakRAM)
+    log_benchmark(logfile, "  (install 'peakRAM' for peak RAM measurements)")
+}
 
 log_benchmark <- function(logfile, ...) {
   cat(..., "\n", file=logfile, append=TRUE)
@@ -63,8 +154,8 @@ log_benchmark <- function(logfile, ...) {
 compare_changeProb_log <- function(df_list, tol = 1e-10, outfile=NULL) {
   combos <- combn(names(df_list), 2, simplify = FALSE)
     for (pair in combos) {
-    a <- df_list[[pair[1]]][, "changeProb"]
-    b <- df_list[[pair[2]]][, "changeProb"]
+    a <- as.numeric(df_list[[pair[1]]]$changeProb)
+    b <- as.numeric(df_list[[pair[2]]]$changeProb)
     max_diff <- max(abs(a - b), na.rm = TRUE)
     pass <- max_diff < tol
     msg <- sprintf("%-35s vs %-35s : max abs diff = %.2e : %s",
@@ -75,16 +166,35 @@ compare_changeProb_log <- function(df_list, tol = 1e-10, outfile=NULL) {
   }
 }
 
+best_opponents <- c(
+  "softmax_arma_grouped_R_dt",
+  "softmax_rcpp_grouped_df",
+  "softmax_rcpp_grouped_dt",
+  "softmax_rcpp_grouped_lst_df",
+  "softmax_rcpp_grouped_lst_dt",
+  "softmax_rcpp_grouped_direct_df",
+  "softmax_rcpp_grouped_direct_dt"
+)
+
 run_softmax_benchmarks <- function(
   n_sim, n_period, n_ego, n_choice,
-  logfile = "tests/benchmarks/softmax_benchmark.txt",
+  logfile = "tests/benchmarks/results/softmax_benchmark.txt",
   compare = TRUE,
   fn_names = c(
-    "softmax_grouped_R_df",
-    "softmax_grouped_R_arma_df",
+    "softmax_R_grouped_R_df",
+    "softmax_R_grouped_R_dt",
+    "softmax_arma_grouped_R_df",
+    "softmax_arma_grouped_R_dt",
     "softmax_arma_by_group_df",
-    "softmax_grouped_data_table_df",
-    "softmax_grouped_data_table_arma_df"
+    "softmax_arma_by_group_dt",
+    "softmax_rcpp_grouped_df",
+    "softmax_rcpp_grouped_dt",
+    "softmax_rcpp_grouped_mat_df",
+    "softmax_rcpp_grouped_mat_dt",
+    "softmax_rcpp_grouped_lst_df",
+    "softmax_rcpp_grouped_lst_dt",
+    "softmax_rcpp_grouped_direct_df",
+    "softmax_rcpp_grouped_direct_dt"
   )
 ) {
   # Create directory if needed
@@ -100,14 +210,16 @@ run_softmax_benchmarks <- function(
   changeUtil <- rnorm(N)
   sim <- rep(1:n_sim, each = N / n_sim)
   df <- data.frame(sim = sim, period = period, ego = ego, choice = choice, changeUtil = changeUtil)
-
+  dt <- as.data.table(df)
   # Prepare functions to benchmark
   fns <- mget(fn_names, mode = "function", inherits = TRUE)
   names(fns) <- fn_names
   
-  # Compose the expression list for microbenchmark dynamically
   expr_list <- setNames(
-    lapply(fns, function(fn) bquote(.(fn)(df))),
+    lapply(fn_names, function(nm) {
+      fn <- fns[[nm]]
+      if (grepl("_dt$", nm)) bquote(.(fn)(dt)) else bquote(.(fn)(df))
+    }),
     fn_names
   )
   # Now, evaluate these in microbenchmark (parse works for names; bquote/quote for actual calls)
@@ -120,34 +232,35 @@ run_softmax_benchmarks <- function(
   ms <- summary(mb)[,c("expr","mean")]
   capture.output(print(ms, row.names=FALSE), file=logfile, append=TRUE)
   
-  # Run all selected implementations for correctness check
-  out_list <- setNames(
-    lapply(fns, function(fn) fn(df)),
-    nm = names(fns)
-  )
-  
-  if(compare){
-      log_benchmark(logfile, "\nCorrectness check (max abs. diff < 1e-10):")
-      compare_changeProb_log(out_list, tol = 1e-10, outfile = logfile)
+  if (compare) {
+    out_list <- setNames(
+      lapply(fn_names, function(nm) {
+        fn <- fns[[nm]]
+        input <- if (grepl("_dt$", nm)) copy(dt) else df
+        fn(input)
+      }),
+      nm = fn_names
+    )
+    log_benchmark(logfile, "\nCorrectness check (max abs. diff < 1e-10):")
+    compare_changeProb_log(out_list, tol = 1e-10, outfile = logfile)
   }
+
+  run_memory_profile(fn_names, fns, df, dt, logfile)
 }
 
 run_softmax_benchmarks(
   n_sim=1, n_period=3, n_ego=100, n_choice=100, 
-  logfile='tests/benchmarks/softmax_benchmark_nsim1.txt'
+  logfile='tests/benchmarks/results/softmax_benchmark_nsim1.txt'
 )
 
 run_softmax_benchmarks(
   n_sim=200, n_period=3, n_ego=100, n_choice=100, 
-  logfile='tests/benchmarks/softmax_benchmark_nsim200.txt'
+  logfile='tests/benchmarks/results/softmax_benchmark_nsim200.txt',
+  fn_names=best_opponents, compare=FALSE
 )
 
 run_softmax_benchmarks(
   n_sim=10000, n_period=3, n_ego=50, n_choice=50,
-  logfile='tests/benchmarks/softmax_benchmark_nsim10000.txt',
-    fn_names=c(
-    "softmax_arma_by_group_df",
-    "softmax_grouped_data_table_df",
-    "softmax_grouped_data_table_arma_df"
-  )
+  logfile='tests/benchmarks/results/softmax_benchmark_nsim10000.txt',
+  fn_names=best_opponents, compare=FALSE
 )
