@@ -46,7 +46,7 @@ sienaAME <- function(
     mainEffect = "riskDifference",
     details = FALSE,
     memory_scale = NULL,
-    batch_unit_budget = 5e6,
+    batch_unit_budget = 2.5e8,
     dynamic_ministep_factor = 10
 ) {
     if (inherits(data, "sienaGroup"))

@@ -126,7 +126,7 @@ predict.sienaFit <- function(
 plan_batch <- function(data, depvar, nsim,
                        nbrNodes = 1L, useCluster = FALSE,
                        dynamic = FALSE, n3 = NULL,
-                       unit_budget = 5e6,
+                       unit_budget = 2.5e8,
                        dynamic_ministep_factor = 10,
                        memory_scale = NULL) {
   dv     <- data$depvars[[depvar]]
@@ -142,10 +142,13 @@ plan_batch <- function(data, depvar, nsim,
     n3_val <- if (is.null(n3)) 1L else max(1L, as.integer(n3))
     units_per_call <- units * as.numeric(dynamic_ministep_factor) * as.numeric(n3_val)
   } else {
+    n3_val <- 1L
     units_per_call <- units
   }
 
-  units_per_agg <- max(1.0, as.numeric(n_ego) * as.numeric(n_per))
+
+  units_per_agg <- max(1.0, units * as.numeric(n3_val) *
+                              if (dynamic) as.numeric(dynamic_ministep_factor) else 1.0)
 
   budget_for_agg <- as.numeric(unit_budget) - effective_workers * units_per_call
 
@@ -156,7 +159,8 @@ plan_batch <- function(data, depvar, nsim,
         unit_budget, effective_workers, units_per_call
       ))
     }
-    max_batch <- as.integer(nsim)
+
+    max_batch <- max(1L, as.integer(floor(as.numeric(unit_budget) / units_per_agg)))
   } else {
     max_batch <- max(1L, as.integer(floor(budget_for_agg / units_per_agg)))
   }
