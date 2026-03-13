@@ -185,3 +185,120 @@ arma::vec softmax_rcpp_grouped_cols(const Rcpp::DataFrame& data,
   }
   return out;
 }
+
+// // [[Rcpp::export]]
+// Rcpp::List flattenChangeContributionsWide_rcpp(
+//     Rcpp::List chains,
+//     Rcpp::CharacterVector effectNames,
+//     Rcpp::Nullable<Rcpp::CharacterVector> depvar_sxp = R_NilValue)
+// {
+//     int nEffSel = effectNames.size();
+//     int nChains = chains.size();
+
+//     bool filterDepvar = depvar_sxp.isNotNull();
+//     Rcpp::CharacterVector depvar;
+//     if (filterDepvar) depvar = depvar_sxp;
+
+//     auto keepNet = [&](Rcpp::RObject obj) -> bool {
+//         if (!filterDepvar) return true;
+//         if (!obj.hasAttribute("networkName")) return false;
+//         std::string net = Rcpp::as<std::string>(obj.attr("networkName"));
+//         for (int d = 0; d < (int)depvar.size(); d++)
+//             if (net == Rcpp::as<std::string>(depvar[d])) return true;
+//         return false;
+//     };
+
+//     /* discover raw effect order from first non-null kept ministep */
+//     Rcpp::CharacterVector rawEffNames;
+//     bool foundRaw = false;
+//     for (int ch = 0; ch < nChains && !foundRaw; ch++) {
+//         Rcpp::List cl = chains[ch];
+//         for (int g = 0; g < cl.size() && !foundRaw; g++) {
+//             Rcpp::List gl = cl[g];
+//             for (int p = 0; p < gl.size() && !foundRaw; p++) {
+//                 Rcpp::List pl = gl[p];
+//                 for (int m = 0; m < pl.size(); m++) {
+//                     Rcpp::RObject obj = pl[m];
+//                     if (obj.isNULL() || !keepNet(obj)) continue;
+//                     if (obj.hasAttribute("effectNames")) {
+//                         rawEffNames = obj.attr("effectNames");
+//                         foundRaw = true;
+//                     }
+//                     break;
+//                 }
+//             }
+//         }
+//     }
+
+//     /* match_idx[e] = row in raw mat for effectNames[e] */
+//     std::vector<int> match_idx(nEffSel, -1);
+//     for (int e = 0; e < nEffSel; e++) {
+//         std::string want = Rcpp::as<std::string>(effectNames[e]);
+//         for (int r = 0; r < (int)rawEffNames.size(); r++)
+//             if (want == Rcpp::as<std::string>(rawEffNames[r]))
+//                 { match_idx[e] = r; break; }
+//     }
+
+//     /* count pass */
+//     int totalRows = 0;
+//     for (int ch = 0; ch < nChains; ch++) {
+//         Rcpp::List cl = chains[ch];
+//         for (int g = 0; g < cl.size(); g++) {
+//             Rcpp::List gl = cl[g];
+//             for (int p = 0; p < gl.size(); p++) {
+//                 Rcpp::List pl = gl[p];
+//                 for (int m = 0; m < pl.size(); m++) {
+//                     Rcpp::RObject obj = pl[m];
+//                     if (obj.isNULL() || !keepNet(obj)) continue;
+//                     totalRows += Rcpp::NumericMatrix(obj).ncol();
+//                 }
+//             }
+//         }
+//     }
+
+//     /* allocate */
+//     Rcpp::NumericMatrix contrib(totalRows, nEffSel);
+//     Rcpp::IntegerVector chain_v(totalRows), group_v(totalRows),
+//                         period_v(totalRows), mstep_v(totalRows),
+//                         choice_v(totalRows), grpid_v(totalRows);
+
+//     /* fill pass */
+//     int row = 0, grp = 0;
+//     for (int ch = 0; ch < nChains; ch++) {
+//         Rcpp::List cl = chains[ch];
+//         for (int g = 0; g < cl.size(); g++) {
+//             Rcpp::List gl = cl[g];
+//             for (int p = 0; p < gl.size(); p++) {
+//                 Rcpp::List pl = gl[p];
+//                 for (int m = 0; m < pl.size(); m++) {
+//                     Rcpp::RObject obj = pl[m];
+//                     if (obj.isNULL() || !keepNet(obj)) continue;
+//                     Rcpp::NumericMatrix mat(obj);
+//                     int nEff = mat.nrow(), nChoice = mat.ncol();
+//                     grp++;
+//                     for (int c = 0; c < nChoice; c++) {
+//                         for (int e = 0; e < nEffSel; e++)
+//                           contrib(row, e) = (match_idx[e] >= 0 && match_idx[e] < nEff)
+//                               ? mat(match_idx[e], c) : NA_REAL;
+//                         chain_v[row] = ch + 1;  group_v[row] = g + 1;
+//                         period_v[row] = p + 1;  mstep_v[row] = m + 1;
+//                         choice_v[row] = c + 1;  grpid_v[row] = grp;
+//                         row++;
+//                     }
+//                 }
+//             }
+//         }
+//     }
+
+//     Rcpp::colnames(contrib) = effectNames;
+
+//     return Rcpp::List::create(
+//         Rcpp::Named("contrib_mat") = contrib,
+//         Rcpp::Named("chain")       = chain_v,
+//         Rcpp::Named("group")       = group_v,
+//         Rcpp::Named("period")      = period_v,
+//         Rcpp::Named("ministep")    = mstep_v,
+//         Rcpp::Named("choice")      = choice_v,
+//         Rcpp::Named("group_id")    = grpid_v
+//     );
+// }

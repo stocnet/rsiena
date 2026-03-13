@@ -85,3 +85,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// // flattenChangeContributionsWide_rcpp
+// Rcpp::List flattenChangeContributionsWide_rcpp(Rcpp::List chains, Rcpp::CharacterVector effectNames, Rcpp::Nullable<Rcpp::CharacterVector> depvar_sxp);
+// RcppExport SEXP _RSiena_flattenChangeContributionsWide_rcpp(SEXP chainsSEXP, SEXP effectNamesSEXP, SEXP depvar_sxpSEXP) {
+// BEGIN_RCPP
+//     Rcpp::RObject rcpp_result_gen;
+//     Rcpp::RNGScope rcpp_rngScope_gen;
+//     Rcpp::traits::input_parameter< Rcpp::List >::type chains(chainsSEXP);
+//     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type effectNames(effectNamesSEXP);
+//     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::CharacterVector> >::type depvar_sxp(depvar_sxpSEXP);
+//     rcpp_result_gen = Rcpp::wrap(flattenChangeContributionsWide_rcpp(chains, effectNames, depvar_sxp));
+//     return rcpp_result_gen;
+// END_RCPP
+// }

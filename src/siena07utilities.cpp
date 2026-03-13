@@ -851,10 +851,15 @@ SEXP getChainList(const Chain& chain)
  */
 SEXP getDynamicChangeContributionsList(const Chain& chain, SEXP EFFECTSLIST)
 {
-	// get the column names from the names attribute
-	SEXP cols;
-	PROTECT(cols = Rf_install("names"));
-	SEXP Names = Rf_getAttrib(VECTOR_ELT(EFFECTSLIST, 0), cols);
+	/* Intern attribute key symbols once — Rf_install results are permanent,
+	 * they live in R's global symbol table and are never collected by GC,
+	 * so PROTECT is not needed. */
+	SEXP colsSym        = Rf_install("names");
+	SEXP netTypeSym     = Rf_install("networkType");
+	SEXP netNameSym     = Rf_install("networkName");
+	SEXP effectNamesSym = Rf_install("effectNames");
+	SEXP effectTypesSym = Rf_install("effectTypes");
+	SEXP Names = Rf_getAttrib(VECTOR_ELT(EFFECTSLIST, 0), colsSym);
 
 	int netTypeCol; /* net type */
 	int nameCol; /* network name */
@@ -889,10 +894,7 @@ SEXP getDynamicChangeContributionsList(const Chain& chain, SEXP EFFECTSLIST)
 		BehaviorChange * pBehaviorChange = dynamic_cast<BehaviorChange *>(pMiniStep);
 		SEXP MINISTEPCONTRIBUTIONS = 0;
 		SEXP EFFECTS;
-		SEXP NETTYPE;
-		PROTECT(NETTYPE = Rf_allocVector(STRSXP, 1));
-		SEXP netType;
-		PROTECT(netType = Rf_install("networkType"));
+		SEXP NETTYPE = PROTECT(Rf_allocVector(STRSXP, 1));
 		if (pNetworkChange || pBehaviorChange)
 		{
 			const char * netwName;
@@ -912,10 +914,7 @@ SEXP getDynamicChangeContributionsList(const Chain& chain, SEXP EFFECTSLIST)
 					VECTOR_ELT(EFFECTSLIST, ii),nameCol), 0));
 				if (strcmp(netwName, networkName) == 0)
 				{
-					SEXP NETNAME;
-					PROTECT(NETNAME = Rf_allocVector(STRSXP, 1));
-					SEXP netName;
-					PROTECT(netName = Rf_install("networkName"));
+					SEXP NETNAME = PROTECT(Rf_allocVector(STRSXP, 1));
 					SET_STRING_ELT(NETNAME, 0, Rf_mkChar(networkName));
 					EFFECTS = VECTOR_ELT(EFFECTSLIST, ii);
 					map<const EffectInfo *, vector<double> >* contributions;
@@ -946,14 +945,8 @@ SEXP getDynamicChangeContributionsList(const Chain& chain, SEXP EFFECTSLIST)
 						length, choices));
 					double * rcontr;
 					rcontr = REAL(MINISTEPCONTRIBUTIONS);
-					SEXP EFFECTNAMES;
-					PROTECT(EFFECTNAMES = Rf_allocVector(STRSXP,length));
-					SEXP effectNames;
-					PROTECT(effectNames = Rf_install("effectNames"));
-					SEXP EFFECTTYPES;
-					PROTECT(EFFECTTYPES = Rf_allocVector(STRSXP,length));
-					SEXP effectTypes;
-					PROTECT(effectTypes = Rf_install("effectTypes"));
+					SEXP EFFECTNAMES = PROTECT(Rf_allocVector(STRSXP, length));
+					SEXP EFFECTTYPES = PROTECT(Rf_allocVector(STRSXP, length));
 					int rates = 0;
 					for (int i = 0; i < numberOfEffects; i++)
 					{
@@ -970,10 +963,10 @@ SEXP getDynamicChangeContributionsList(const Chain& chain, SEXP EFFECTSLIST)
 									Rf_mkChar(pEffectInfo->effectName().c_str()));
 							SET_STRING_ELT(EFFECTTYPES, i-rates, 
 									Rf_mkChar(effectType));
-							vector<double> values = (*contributions)[pEffectInfo];
+							const vector<double>& values = contributions->at(pEffectInfo);
 							for(int a = 0; a < choices; a++)
 							{
-								rcontr[i - rates + a * length] = values.at(a);
+								rcontr[i - rates + a * length] = values[a];  
 							}
 						}
 						else
@@ -981,19 +974,19 @@ SEXP getDynamicChangeContributionsList(const Chain& chain, SEXP EFFECTSLIST)
 							rates = rates+1;
 						}
 					}
-					Rf_setAttrib(MINISTEPCONTRIBUTIONS, effectNames, EFFECTNAMES);
-					Rf_setAttrib(MINISTEPCONTRIBUTIONS, effectTypes, EFFECTTYPES);
-					Rf_setAttrib(MINISTEPCONTRIBUTIONS, netName, NETNAME);
-					UNPROTECT(7);
+					Rf_setAttrib(MINISTEPCONTRIBUTIONS, effectNamesSym, EFFECTNAMES);
+					Rf_setAttrib(MINISTEPCONTRIBUTIONS, effectTypesSym, EFFECTTYPES);
+					Rf_setAttrib(MINISTEPCONTRIBUTIONS, netNameSym, NETNAME);
+					UNPROTECT(4); /* NETNAME, MINISTEPCONTRIBUTIONS, EFFECTNAMES, EFFECTTYPES */
 				}
 			}
 		}
-		Rf_setAttrib(MINISTEPCONTRIBUTIONS, netType, NETTYPE);
+		Rf_setAttrib(MINISTEPCONTRIBUTIONS, netTypeSym, NETTYPE);
 		SET_VECTOR_ELT(CHANGECONTRIBUTIONS, m, MINISTEPCONTRIBUTIONS);
 		pMiniStep = pMiniStep->pNext();
-		UNPROTECT(2);
+		UNPROTECT(1); /* NETTYPE */
 	}
-	UNPROTECT(2);
+	UNPROTECT(1); /* CHANGECONTRIBUTIONS */
 	return CHANGECONTRIBUTIONS;
 }
 
@@ -1185,6 +1178,10 @@ SEXP flattenChangeContributionsList(SEXP changeContributionChains)
     SEXP value_sxp       = PROTECT(Rf_allocVector(REALSXP, totalRows));
 
     // * Second pass: fill *
+	SEXP netNameSym3     = Rf_install("networkName");
+	SEXP effectNamesSym3 = Rf_install("effectNames");
+	SEXP effectTypesSym3 = Rf_install("effectTypes");
+
     int idx = 0;
     for (int g = 0; g < nGroups; ++g) {
         SEXP groupList = VECTOR_ELT(changeContributionChains, g);
@@ -1195,9 +1192,9 @@ SEXP flattenChangeContributionsList(SEXP changeContributionChains)
             for (int m = 0; m < nMinisteps; ++m) {
                 SEXP mat = VECTOR_ELT(periodList, m);
                 if (Rf_isNull(mat)) continue;
-                SEXP netNameAttr = Rf_getAttrib(mat, Rf_install("networkName"));
-                SEXP effNames = Rf_getAttrib(mat, Rf_install("effectNames"));
-                SEXP effTypes = Rf_getAttrib(mat, Rf_install("effectTypes"));
+				SEXP netNameAttr = Rf_getAttrib(mat, netNameSym3);
+				SEXP effNames    = Rf_getAttrib(mat, effectNamesSym3);
+				SEXP effTypes    = Rf_getAttrib(mat, effectTypesSym3);
                 int nEff = Rf_nrows(mat);
                 int nChoice = Rf_ncols(mat);
                 SEXP networkNameChar = (netNameAttr != R_NilValue && TYPEOF(netNameAttr)==STRSXP && Rf_length(netNameAttr)>0)
@@ -1272,9 +1269,12 @@ SEXP flattenChangeContributionsWide(SEXP changeContributionChains,
     /* depvar filter: keep only ministeps whose networkName attr is in depvar */
     bool filterDepvar = (!Rf_isNull(depvar) && TYPEOF(depvar) == STRSXP
                          && Rf_length(depvar) > 0);
+	SEXP netNameSym2     = Rf_install("networkName");
+	SEXP effectNamesSym2 = Rf_install("effectNames");
+
     auto keepNet = [&](SEXP mat) -> bool {
         if (!filterDepvar) return true;
-        SEXP nn = Rf_getAttrib(mat, Rf_install("networkName"));
+        SEXP nn = Rf_getAttrib(mat, netNameSym2);
         if (Rf_isNull(nn) || TYPEOF(nn) != STRSXP || Rf_length(nn) == 0)
             return false;
         const char * net = CHAR(STRING_ELT(nn, 0));
@@ -1294,7 +1294,7 @@ SEXP flattenChangeContributionsWide(SEXP changeContributionChains,
                 for (int m = 0; m < Rf_length(pl); ++m) {
                     SEXP mat = VECTOR_ELT(pl, m);
                     if (Rf_isNull(mat) || !keepNet(mat)) continue;
-                    rawEffNames = Rf_getAttrib(mat, Rf_install("effectNames"));
+                    rawEffNames = Rf_getAttrib(mat, effectNamesSym2);
                     break;
                 }
             }
@@ -1370,8 +1370,8 @@ SEXP flattenChangeContributionsWide(SEXP changeContributionChains,
                         for (int e = 0; e < nEffSel; ++e) {
                             /* contrib_mat col-major: rmat[row + totalRows*e] */
                             rmat[row + totalRows * e] =
-                                (match_idx[e] >= 0)
-                                    ? src[match_idx[e] + nEff * c]
+								(match_idx[e] >= 0 && match_idx[e] < nEff)
+									? src[match_idx[e] + nEff * c]
                                     : NA_REAL;
                         }
                         rch[row]  = ch + 1;

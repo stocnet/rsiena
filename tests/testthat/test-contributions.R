@@ -278,6 +278,99 @@ test_that("getDynamicChangeContributions with custom interactions & without main
   )
 })
 
+# ── thetaValues / simOnly batch approach ─────────────────────────────────────
+# sienaAlgorithmCreate(simOnly=TRUE, thetaValues=...) runs a single siena07
+# call with one initializeFRAN + terminateFRAN for all theta draws. Phase3
+# assigns thetaValues[nit,] to zsmall$theta at each iteration and stores the
+# chain in z$changeContributions[[nit]]. Verify:
+#   (a) all N3 * NSIM chains are returned and none are NULL,
+#   (b) thetaUsed records the correct theta per block, and
+#   (c) chains from different theta blocks have different values.
 
+test_that("thetaValues batch returns all chains non-NULL", {
+  N3   <- 5L
+  NSIM <- 2L
+  set.seed(7)
+  theta_draws <- MASS::mvrnorm(NSIM, mu = ans$theta, Sigma = ans$covtheta)
 
+  tv <- do.call(rbind, lapply(seq_len(NSIM), function(i) {
+    matrix(rep(theta_draws[i, ], each = N3), nrow = N3)
+  }))
 
+  alg_batch <- sienaAlgorithmCreate(projname = NULL, nsub = 0,
+                                     n3 = nrow(tv), cond = FALSE,
+                                     simOnly = TRUE, seed = 11)
+  eff_batch <- mymodel
+  eff_batch$initialValue[eff_batch$include] <- theta_draws[1, ]
+
+  ans_batch <- siena07(alg_batch, data = mydata, effects = eff_batch,
+                        batch = TRUE, silent = TRUE, thetaValues = tv,
+                        returnChangeContributions = TRUE)
+
+  cc <- ans_batch$changeContributions
+  expect_length(cc, N3 * NSIM)
+  expect_true(all(!sapply(cc, is.null)))
+})
+
+test_that("thetaValues batch records correct theta per block", {
+  N3   <- 5L
+  NSIM <- 2L
+  set.seed(7)
+  theta_draws <- MASS::mvrnorm(NSIM, mu = ans$theta, Sigma = ans$covtheta)
+
+  tv <- do.call(rbind, lapply(seq_len(NSIM), function(i) {
+    matrix(rep(theta_draws[i, ], each = N3), nrow = N3)
+  }))
+
+  alg_batch <- sienaAlgorithmCreate(projname = NULL, nsub = 0,
+                                     n3 = nrow(tv), cond = FALSE,
+                                     simOnly = TRUE, seed = 11)
+  eff_batch <- mymodel
+  eff_batch$initialValue[eff_batch$include] <- theta_draws[1, ]
+
+  ans_batch <- siena07(alg_batch, data = mydata, effects = eff_batch,
+                        batch = TRUE, silent = TRUE, thetaValues = tv,
+                        returnChangeContributions = TRUE)
+
+  for (i in seq_len(NSIM)) {
+    rows <- ((i - 1) * N3 + 1):(i * N3)
+    block <- ans_batch$thetaUsed[rows, , drop = FALSE]
+    expected <- matrix(rep(theta_draws[i, ], each = N3), nrow = N3)
+    expect_equal(block, expected, ignore_attr = TRUE,
+                 label = paste("thetaUsed block", i))
+  }
+})
+
+test_that("thetaValues batch: chains from different theta blocks differ", {
+  N3   <- 5L
+  NSIM <- 2L
+  set.seed(7)
+  # Use theta draws that are far apart so chains are almost certainly different
+  theta_draws <- rbind(
+    ans$theta + 2,
+    ans$theta - 2
+  )
+
+  tv <- do.call(rbind, lapply(seq_len(NSIM), function(i) {
+    matrix(rep(theta_draws[i, ], each = N3), nrow = N3)
+  }))
+
+  alg_batch <- sienaAlgorithmCreate(projname = NULL, nsub = 0,
+                                     n3 = nrow(tv), cond = FALSE,
+                                     simOnly = TRUE, seed = 11)
+  eff_batch <- mymodel
+  eff_batch$initialValue[eff_batch$include] <- theta_draws[1, ]
+
+  ans_batch <- siena07(alg_batch, data = mydata, effects = eff_batch,
+                        batch = TRUE, silent = TRUE, thetaValues = tv,
+                        returnChangeContributions = TRUE)
+
+  cc <- ans_batch$changeContributions
+  # Extract first ministep matrix from block 1 and block 2
+  get_mat <- function(chain) chain[[1]][[1]][[1]]
+  mat1 <- get_mat(cc[[1]])
+  mat2 <- get_mat(cc[[N3 + 1]])
+
+  expect_identical(dim(mat1), dim(mat2))          # same structure
+  expect_false(identical(mat1, mat2))             # different values
+})

@@ -208,10 +208,9 @@ getDynamicChangeContributions <- function(ans = NULL,
                                           seed = NULL) {
   if(returnWide && returnDataFrame) stop("Can not return wide data.frame")
   # Set silent according to batch if not explicitly set
-  if (is.null(silent)) silent <- batch
+
   # Flexible argument handling allows either extracted pre
   # calculated contributions from ans or simulating them
-
   if (useChangeContributions && (is.null(ans) || is.null(ans$changeContributions))) 
   {
             warning("useChangeContributions=TRUE, but 'ans' does not 
@@ -305,6 +304,8 @@ getDynamicChangeContributions <- function(ans = NULL,
         theta <- c(ans$rate, theta) # if unconditional estimation?
     }
     effects$initialValue[effects$include] <- theta
+
+    if (is.null(silent)) silent <- batch
     ans <- siena07(
         algorithm, 
         data=data, 
@@ -349,6 +350,8 @@ getDynamicChangeContributions <- function(ans = NULL,
       )
       if (!is.null(depvar))
       {
+        # in current implementation, each chain contains contributions for only one depvar, 
+        # but we keep the filtering here in case this changes in the future
         changeContributions <- changeContributions[changeContributions[["networkName"]] 
           %in% depvar, , drop=FALSE]
       }
@@ -370,37 +373,38 @@ getDynamicChangeContributions <- function(ans = NULL,
   }
 }
 
-## Not doing this might reduce run time quite a bit! -> code would need to be adjusted though
-widenDynamicContribution <- function(changeContributions){
-  ## currently only works for dynamic case and data has to be pre filtered to only one depvar
-  if (all(c("effectname", "contribution") %in% names(changeContributions))) {
-    if (requireNamespace("data.table", quietly = TRUE)) {
-        changeContributions <- data.table::dcast(
-          changeContributions, chain + group + period + ministep + choice ~ effectname,
-          value.var = "contribution"
-        )
-      } else {
-        ## in the dynamic case, this might lose some information that we should keep
-        needed <- c("chain", 
-          "group", 
-          "period", 
-          "ministep", 
-          "choice", 
-          "effectname", 
-          "contribution")
-        changeContributions <- as.data.frame(changeContributions)[, needed, drop = FALSE]
-        changeContributions <- reshape(
-          changeContributions,
-          idvar = c("chain", "group", "period", "ministep", "choice"),
-          timevar = "effectname", v.names = "contribution",
-          direction = "wide"
-        )
-        colnames(changeContributions) <- sub("^contribution\\.", "", 
-          colnames(changeContributions))
-      }
-    }
-  changeContributions
-}
+# Not used currently
+# ## Not doing this might reduce run time quite a bit! -> code would need to be adjusted though
+# widenDynamicContribution <- function(changeContributions){
+#   ## currently only works for dynamic case and data has to be pre filtered to only one depvar
+#   if (all(c("effectname", "contribution") %in% names(changeContributions))) {
+#     if (requireNamespace("data.table", quietly = TRUE)) {
+#         changeContributions <- data.table::dcast(
+#           changeContributions, chain + group + period + ministep + choice ~ effectname,
+#           value.var = "contribution"
+#         )
+#       } else {
+#         ## in the dynamic case, this might lose some information that we should keep
+#         needed <- c("chain", 
+#           "group", 
+#           "period", 
+#           "ministep", 
+#           "choice", 
+#           "effectname", 
+#           "contribution")
+#         changeContributions <- as.data.frame(changeContributions)[, needed, drop = FALSE]
+#         changeContributions <- reshape(
+#           changeContributions,
+#           idvar = c("chain", "group", "period", "ministep", "choice"),
+#           timevar = "effectname", v.names = "contribution",
+#           direction = "wide"
+#         )
+#         colnames(changeContributions) <- sub("^contribution\\.", "", 
+#           colnames(changeContributions))
+#       }
+#     }
+#   changeContributions
+# }
 
 # Wrapper to use in R code (RCPP style)
 flattenChangeContributionsList <- function(x) {
