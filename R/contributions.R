@@ -27,6 +27,8 @@ getStaticChangeContributions <- function(ans = NULL,
   effectNames <- effects[effects$include == TRUE, "shortName"]
   effectDepvars <- effects[effects$include == TRUE, "name"]
   effectNetTypes <- effects[effects$include == TRUE, "netType"]
+  effectTypes <- effects[effects$include == TRUE, "type"]
+
 
   depvars_available <- names(data$depvars)
   if (is.null(depvar)) {
@@ -44,112 +46,157 @@ getStaticChangeContributions <- function(ans = NULL,
   setup <- sienaSetupEffectsForCpp(pData, data, effects)
   #}
 
-  staticChangeContributions <- .Call(C_getStaticChangeContributions, PACKAGE = pkgname,
-                                     pData, setup$pModel, setup$myeffects,
-                                     parallelrun = FALSE)
+  staticChangeContributions <- .Call(
+    C_getStaticChangeContributions, 
+    PACKAGE = pkgname,
+    pData, setup$pModel, setup$myeffects,
+    parallelrun = FALSE
+  )
   #attr(staticChangeContributions, "effectNames") <- effects$shortName
 
   if (!returnDataFrame && !returnWide) {
     return(staticChangeContributions)
   }
 
-  staticChangeContributions_effectNames <- attr(staticChangeContributions, "effectNames")
+  staticChangeContributions_effectNames <- attr(staticChangeContributions,
+    "effectNames")
 
   if (returnWide) {
-    results <- list()
+    # Accumulate across all groups for one depvar into a single unified struct.
+    if (length(depvar) != 1L)
+      stop("returnWide = TRUE requires exactly one depvar; got ",
+           length(depvar), ". Call once per depvar.")
+    all_contribMat <- list()
+    all_period     <- list()
+    all_ego        <- list()
+    all_choice     <- list()
+    all_group_id   <- list()
+    all_group      <- list()
+    effectNames_out <- NULL
+    thetaIdx_out    <- NULL
+    group_id_offset <- 0L
+
     for (dv in depvar) {
-      effect_idx     <- which(effectDepvars == dv)
-      effectNames_dv <- effectNames[effect_idx]
-      match_idx      <- match(effectNames_dv, staticChangeContributions_effectNames)
-      n_effects      <- length(match_idx)
-      n_egos  <- dim(data[["depvars"]][[dv]])[1]
-      netType <- unique(effectNetTypes[effectDepvars == dv])
-      n_choices <- if (netType == "oneMode") dim(data[["depvars"]][[dv]])[2L]
-                   else if (netType == "behavior") 3L
-                   else stop("Unsupported netType: ", netType)
+      effectIdx      <- which(effectDepvars == dv)
+      effectNamesDv  <- effectNames[effectIdx]
+      compositeNames <- paste(effectNamesDv, effectTypes[effectIdx], sep = "_")
+      nEffects       <- length(effectIdx)
+      nEgos          <- dim(data[["depvars"]][[dv]])[1]
+      netType        <- unique(effectNetTypes[effectDepvars == dv])
+      nChoices       <- if (netType == "oneMode") dim(data[["depvars"]][[dv]])[2L]
+                        else if (netType == "behavior") 3L
+                        else stop("Unsupported netType: ", netType)
+
+      if (is.null(effectNames_out)) {
+        effectNames_out <- compositeNames
+        thetaIdx_out    <- effectIdx
+      } else {
+        effectNames_out <- c(effectNames_out, compositeNames)
+        thetaIdx_out    <- c(thetaIdx_out, effectIdx)
+      }
+
       for (g in seq_along(staticChangeContributions)) {
-        n_periods <- length(staticChangeContributions[[g]])
-        arr <- array(NA_real_, dim = c(n_periods, n_effects, n_egos, n_choices))
-        for (p in seq_len(n_periods)) {
-          for (e in seq_len(n_effects)) {
+        nPeriods <- length(staticChangeContributions[[g]])
+        arr <- array(NA_real_, dim = c(nPeriods, nEffects, nEgos, nChoices))
+        for (p in seq_len(nPeriods)) {
+          for (e in seq_len(nEffects)) {
             arr[p, e, , ] <- do.call(rbind,
-              staticChangeContributions[[g]][[p]][[match_idx[e]]])
+              staticChangeContributions[[g]][[p]][[effectIdx[e]]])
           }
         }
         arr <- aperm(arr, c(4L, 3L, 1L, 2L))
-        N   <- n_periods * n_egos * n_choices
-        contrib_mat <- matrix(arr, nrow = N, ncol = n_effects)
-        colnames(contrib_mat) <- effectNames_dv
-        period_vec <- rep(seq_len(n_periods), each = n_egos * n_choices)
-        ego_vec    <- rep(rep(seq_len(n_egos), each = n_choices), times = n_periods)
-        choice_vec <- rep(seq_len(n_choices), times = n_periods * n_egos)
-        group_id   <- rep(seq_len(n_periods * n_egos), each = n_choices)
-        results[[paste0("g", g, "_", dv)]] <- list(
-          contrib_mat = contrib_mat,
-          period      = period_vec,
-          ego         = ego_vec,
-          choice      = choice_vec,
-          group_id    = group_id,
-          n_choices   = as.integer(n_choices),
-          group       = as.integer(g),
-          networkName = dv,
-          effectNames = effectNames_dv
-        )
+        N          <- nPeriods * nEgos * nChoices
+        contribMat <- matrix(arr, nrow = N, ncol = nEffects)
+        colnames(contribMat) <- compositeNames
+        period_vec <- rep(seq_len(nPeriods), each = nEgos * nChoices)
+        ego_vec    <- rep(rep(seq_len(nEgos), each = nChoices), times = nPeriods)
+        choice_vec <- rep(seq_len(nChoices), times = nPeriods * nEgos)
+        group_id   <- group_id_offset + rep(seq_len(nPeriods * nEgos), each = nChoices)
+
+        all_contribMat[[length(all_contribMat) + 1L]] <- contribMat
+        all_period[[length(all_period) + 1L]]         <- period_vec
+        all_ego[[length(all_ego) + 1L]]               <- ego_vec
+        all_choice[[length(all_choice) + 1L]]         <- choice_vec
+        all_group_id[[length(all_group_id) + 1L]]     <- group_id
+        all_group[[length(all_group) + 1L]]            <- rep(as.integer(g), N)
+        group_id_offset <- group_id_offset + nPeriods * nEgos
       }
     }
-    return(results)
+
+    return(list(
+      contribMat  = do.call(rbind, all_contribMat),
+      period      = unlist(all_period,   use.names = FALSE),
+      ego         = unlist(all_ego,      use.names = FALSE),
+      choice      = unlist(all_choice,   use.names = FALSE),
+      group_id    = unlist(all_group_id, use.names = FALSE),
+      group       = unlist(all_group,    use.names = FALSE),
+      effectNames = effectNames_out,
+      thetaIdx    = thetaIdx_out
+    ))
   }
 
   results <- list()
   for (dv in depvar) {
-    effect_idx <- which(effectDepvars == dv)
-    effectNames_depvar <- effectNames[effect_idx]
-    match_idx <- match(effectNames_depvar, staticChangeContributions_effectNames)
-    n_effects <- length(match_idx)
-    n_egos <- dim(data[["depvars"]][[dv]])[1]
+    effectIdx <- which(effectDepvars == dv)
+    effectNamesDepvar <- effectNames[effectIdx]
+    compositeNames    <- paste(effectNamesDepvar, effectTypes[effectIdx], sep = "_")
+    typeMap           <- setNames(effectTypes[effectIdx], compositeNames)
+    nameMap           <- setNames(effectNamesDepvar, compositeNames)
+    matchIdx <- match(effectNamesDepvar, staticChangeContributions_effectNames)
+    nEffects <- length(matchIdx)
+    nEgos <- dim(data[["depvars"]][[dv]])[1]
     netType <- unique(effectNetTypes[effectDepvars == dv])
     if (netType == "oneMode") {
-      n_choices <- dim(data[["depvars"]][[dv]])[2]
+      nChoices <- dim(data[["depvars"]][[dv]])[2]
     } else if (netType == "behavior") {
-      n_choices <- 3
+      nChoices <- 3
     } else {
       stop("Unsupported netType: ", netType)
     }
     for (g in seq_along(staticChangeContributions)) {
-      group_contrib <- staticChangeContributions[[g]]
-      n_periods <- length(group_contrib)
-      result <- array(NA_real_, dim = c(n_periods, n_effects, n_egos, n_choices),
+      groupContributions <- staticChangeContributions[[g]]
+      nPeriods <- length(groupContributions)
+      result <- array(NA_real_, dim = c(nPeriods, nEffects, nEgos, nChoices),
                       dimnames = list(
-                        period = seq_len(n_periods),
-                        effect = effectNames_depvar,
-                        ego = seq_len(n_egos),
-                        choice = seq_len(n_choices)
+                        period = seq_len(nPeriods),
+                        effect = compositeNames,
+                        ego = seq_len(nEgos),
+                        choice = seq_len(nChoices)
                       ))
-      for (p in seq_len(n_periods)) {
-        for (e in seq_len(n_effects)) {
-          mat <- do.call(rbind, group_contrib[[p]][[match_idx[e]]])
+      for (p in seq_len(nPeriods)) {
+        for (e in seq_len(nEffects)) {
+          mat <- do.call(rbind, groupContributions[[p]][[matchIdx[e]]])
           result[p, e, , ] <- mat
         }
       }
       if (requireNamespace("data.table", quietly = TRUE)) {
         # To resolve R CMD checks not understanding data.table syntax
-        ego <- choice <- period <- group <- networkName <- NULL 
+        ego <- choice <- period <- group <- networkName <- effecttype <- NULL
         DT <- data.table::as.data.table(as.table(result))
         data.table::setnames(DT, c("period", "effectname", "ego", "choice", "contribution"))
+        DT[, effecttype := typeMap[effectname]]
+        DT[, effectname := nameMap[effectname]]
         DT[, ego := as.integer(ego)]
         DT[, choice := as.integer(choice)]
         DT[, period := as.integer(period)]
-        DT[, group := g]
+        DT[, group := as.integer(g)]
         DT[, networkName := dv]
+        data.table::setcolorder(DT, c("group", "period", "networkName",
+                                      "ego", "choice", "effectname",
+                                      "effecttype", "contribution"))
         results[[paste0("g", g, "_", dv)]] <- DT
       } else {
         df <- as.data.frame(as.table(result))
         names(df) <- c("period", "effectname", "ego", "choice", "contribution")
+        df$effecttype <- typeMap[df$effectname]
+        df$effectname <- nameMap[df$effectname]
         df$period <- as.integer(df$period)
         df$ego <- as.integer(df$ego)
         df$choice <- as.integer(df$choice)
-        df$group <- g
+        df$group <- as.integer(g)
         df$networkName <- dv
+        df <- df[, c("group", "period", "networkName", "ego", "choice",
+                     "effectname", "effecttype", "contribution"), drop = FALSE]
         results[[paste0("g", g, "_", dv)]] <- df
       }
     }
@@ -320,16 +367,37 @@ getDynamicChangeContributions <- function(ans = NULL,
 
   changeContributions <- ans$changeContributions
 
-  if (!returnDataFrame && !returnWide) {
-    return(changeContributions)
+if (!returnDataFrame && !returnWide) {
+  if (!is.null(depvar) && is.list(changeContributions) && length(changeContributions) > 0) {
+    # Structure: [[nit]][[group]][[period]][[ministep_matrix]]
+    # Must descend to the ministep level to filter by networkName attribute
+    changeContributions <- lapply(changeContributions, function(chain_nit)
+      lapply(chain_nit, function(chain_group)
+        lapply(chain_group, function(chainPeriod)
+          Filter(function(ms) {
+            nm <- attr(ms, "networkName")
+            is.null(nm) || as.character(nm) %in% depvar
+          }, chainPeriod)
+        )
+      )
+    )
   }
+  return(changeContributions)
+}
   if (returnWide) {
     if (is.null(effects))
       stop("'effects' must be provided when returnWide = TRUE")
     if (is.null(depvar))
       stop("'depvar' must be provided when returnWide = TRUE (use a single depvar name)")
-    effectNames <- getEffectNamesNoRate(effects, depvar)
-    return(flattenContributionsWide(changeContributions, effectNames, depvar))
+      effsNoRate     <- effects[effects$include & effects$type != "rate", ]
+      thetaIdx       <- which(effsNoRate$name == depvar)
+      bareNames      <- effsNoRate$shortName[thetaIdx]
+      compositeNames <- paste(bareNames, effsNoRate$type[thetaIdx], sep = "_")
+      firstMs        <- findFirstMinistepForDepvar(changeContributions, depvar)
+      matchIdx       <- matchRawEffectIdx(compositeNames, firstMs)
+      result         <- flattenContributionsWide(changeContributions, compositeNames, matchIdx, depvar)
+      result$thetaIdx    <- thetaIdx
+      return(result)
   }
   { # returnDataFrame = TRUE
     if (is.list(changeContributions) && !is.data.frame(changeContributions[[1]])) 
@@ -406,7 +474,49 @@ getDynamicChangeContributions <- function(ans = NULL,
 #   changeContributions
 # }
 
+#' R wrapper for C++ flattenChangeContributionsWide.
+#' Converts raw nested ministep list → wide list_wide struct:
+#'   contribMat [N × nEffects], chain, group, period, ministep, choice, group_id
+#' matchIdx: 0-based integer indices into raw ministep matrix rows.
+flattenContributionsWide <- function(changeContributions, effectNames,
+                                     matchIdx, depvar = NULL) {
+  changeContributions <- .Call(C_flattenChangeContributionsWide,
+              changeContributions,
+              as.character(effectNames),
+              as.integer(matchIdx),
+              if (is.null(depvar)) NULL else as.character(depvar))
+  changeContributions$effectNames <- as.character(effectNames)
+  changeContributions
+}
+
+# really better in R but not in c++?
+
+# Find the first ministep matrix for a given depvar in the nested list.
+findFirstMinistepForDepvar <- function(changeContributions, depvar) {
+  for (ch in changeContributions)
+    for (grp in ch)
+      for (per in grp)
+        for (ms in per) {
+          nn <- attr(ms, "networkName")
+          if (is.null(nn) || as.character(nn) %in% depvar) return(ms)
+        }
+  NULL
+}
+
+# Match compositeNames (shortName_type) against attrs of first ministep.
+# Returns 0-based integer indices for C++.
+matchRawEffectIdx <- function(compositeNames, firstMs) {
+  rawNames <- attr(firstMs, "effectNames")
+  rawTypes <- attr(firstMs, "effectTypes")
+  rawComp  <- paste(rawNames, rawTypes, sep = "_")
+  idx      <- match(compositeNames, rawComp) - 1L
+  if (anyNA(idx))
+    stop("Effects not found in ministep matrix: ",
+         paste(compositeNames[is.na(idx)], collapse = ", "))
+  idx
+}
+
 # Wrapper to use in R code (RCPP style)
 flattenChangeContributionsList <- function(x) {
-  .Call("C_flattenChangeContributionsList", x)
+  .Call(C_flattenChangeContributionsList, x)
 }

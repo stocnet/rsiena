@@ -1,121 +1,129 @@
 sienaPostestimate <- function(
     predictFun,
     predictArgs,
-    outcome,
+    outcomeName,
     level = "period",
     condition = NULL,
-    sum.fun = mean,
+    sum_fun = mean,
     na.rm = TRUE,
-    theta_hat,
-    cov_theta,
+    thetaHat,
+    covTheta,
     uncertainty = TRUE,
-    uncertainty_mode = c("batch", "stream"),
+    uncertaintyMode = c("batch", "stream"),
     nsim = 1000,
-    uncertainty_sd = TRUE,
-    uncertainty_ci = TRUE,
-    uncertainty_probs = c(0.025, 0.5, 0.975),
-    uncertainty_mcse = FALSE,
-    uncertainty_mcse_batches = NULL,
+    uncertaintySd = TRUE,
+    uncertaintyCi = TRUE,
+    uncertaintyProbs = c(0.025, 0.5, 0.975),
+    uncertaintyMcse = FALSE,
+    uncertaintymcseBatches = NULL,
     useCluster = FALSE,
     nbrNodes = 1,
     clusterType = c("PSOCK", "FORK"),
     cluster = NULL,
-    batch_dir = "temp",
+    batchDir = "temp",
     prefix = "simBatch_b",
-    combine_batch = TRUE,
-    batch_size = NULL,
-    keep_batch = FALSE,
+    combineBatch = TRUE,
+    batchSize = NULL,
+    keepBatch = FALSE,
     verbose = TRUE,
     useChangeContributions = NULL,
-    gc_each_batch = TRUE,
-    gc_each_sim = FALSE
+    gcEachBatch = TRUE,
+    gcEachSim = FALSE
 ) {
-  uncertainty_mode <- match.arg(uncertainty_mode)
-    if (length(outcome) != 1L) {
-        stop("'outcome' must be a single column name.")
+  uncertaintyMode <- match.arg(uncertaintyMode)
+    if (length(outcomeName) != 1L) {
+        stop("'outcomeName' must be a single column name.")
     }
+
+    if(!is.null(condition)) condition <- resolveCondition(condition)
 
     estimator <- makeEstimator(
         predictFun = predictFun,
         predictArgs = predictArgs,
-        outcome = outcome,
+        outcomeName = outcomeName,
         level = level,
         condition = condition,
-        sum.fun = sum.fun,
+        sum_fun = sum_fun,
         na.rm = na.rm
     )
 
     if (!is.null(useChangeContributions)) {
-        expect <- estimator(theta_hat, 
+        expect <- estimator(thetaHat, 
           useChangeContributions = useChangeContributions)
     } else {
-        expect <- estimator(theta_hat)
+        expect <- estimator(thetaHat)
     }
 
     if (!uncertainty) return(expect)
 
-    uncertainty_summary_fun <- make_uncertainty_summarizer(
-      return_sd = uncertainty_sd,
-      return_ci = uncertainty_ci,
-      probs = uncertainty_probs,
-      return_mcse = uncertainty_mcse,
-      mcse_batches = uncertainty_mcse_batches
+    uncertainty_summary_fun <- makeUncertaintySummarizer(
+      return_sd = uncertaintySd,
+      return_ci = uncertaintyCi,
+      probs = uncertaintyProbs,
+      return_mcse = uncertaintyMcse,
+      mcseBatches = uncertaintymcseBatches
     )
 
-    if (identical(uncertainty_mode, "stream")) {
-      uncert <- drawSim_stream(
+    if (identical(uncertaintyMode, "stream")) {
+      uncert <- drawSimStream(
         estimator = estimator,
-        outcome = outcome,
+        outcomeName = outcomeName,
         level = level,
         condition = condition,
         uncertainty_summary_fun = uncertainty_summary_fun,
-        theta_hat = theta_hat,
-        cov_theta = cov_theta,
+        thetaHat = thetaHat,
+        covTheta = covTheta,
         nbrNodes = if (useCluster) nbrNodes else 1L,
         nsim = nsim,
         clusterType = clusterType,
         cluster = cluster,
-        batch_size = batch_size,
+        batchSize = batchSize,
         verbose = verbose,
-        gc_each_batch = gc_each_batch,
-        gc_each_sim = gc_each_sim
+        gcEachBatch = gcEachBatch,
+        gcEachSim = gcEachSim
       )
     } else {
       uncert <- drawSim(
         estimator = estimator,
-        theta_hat = theta_hat,
-        cov_theta = cov_theta,
+        thetaHat = thetaHat,
+        covTheta = covTheta,
         nbrNodes = if (useCluster) nbrNodes else 1L,
         nsim = nsim,
         clusterType = clusterType,
         cluster = cluster,
-        batch_dir = batch_dir,
+        batchDir = batchDir,
         prefix = prefix,
-        combine_batch = combine_batch,
-        batch_size = batch_size,
-        keep_batch = keep_batch,
+        combineBatch = combineBatch,
+        batchSize = batchSize,
+        keepBatch = keepBatch,
         verbose = verbose,
-        gc_each_batch = gc_each_batch,
-        gc_each_sim = gc_each_sim
+        gcEachBatch = gcEachBatch,
+        gcEachSim = gcEachSim
       )
-      uncert <- agg(outcome, uncert, level = level, condition = condition, sum.fun = uncertainty_summary_fun)
+      uncert <- agg(
+        outcomeName, 
+        uncert, 
+        level = level, 
+        condition = condition, 
+        sum_fun = uncertainty_summary_fun
+      )
     }
     mergeEstimates(expect, uncert, level = level, condition = condition)
 }
 
-make_uncertainty_summarizer <- function(
+makeUncertaintySummarizer <- function(
     return_sd = TRUE,
     return_ci = TRUE,
     probs = c(0.025, 0.5, 0.975),
     return_mcse = FALSE,
-    mcse_batches = NULL
+    mcseBatches = NULL
 ) {
   if (length(probs) != 3L) {
-    stop("'uncertainty_probs' must be length 3: lower, median, upper.")
+    stop("'uncertaintyProbs' must be length 3: lower, median, upper.")
   }
   probs <- as.numeric(probs)
   if (any(!is.finite(probs)) || any(probs <= 0) || any(probs >= 1)) {
-    stop("'uncertainty_probs' must be strictly between 0 and 1.")
+    stop("'uncertaintyProbs' must be strictly between 0 and 1.")
   }
 
   function(x, na.rm = TRUE) {
@@ -146,12 +154,12 @@ make_uncertainty_summarizer <- function(
     out[["cases"]] <- n
 
     if (isTRUE(return_mcse)) {
-      out <- c(out, compute_mcse_from_draws(
+      out <- c(out, computeMcse(
         x = x,
         return_sd = return_sd,
         return_ci = return_ci,
         probs = probs,
-        batches = mcse_batches
+        batches = mcseBatches
       ))
     }
 
@@ -159,7 +167,7 @@ make_uncertainty_summarizer <- function(
   }
 }
 
-compute_mcse_from_draws <- function(x,
+computeMcse <- function(x,
                                    return_sd = TRUE,
                                    return_ci = TRUE,
                                    probs = c(0.025, 0.5, 0.975),
@@ -183,7 +191,7 @@ compute_mcse_from_draws <- function(x,
   } else {
     B <- as.integer(batches)
     if (!is.finite(B) || B < 2L) {
-      stop("'uncertainty_mcse_batches' must be NULL or an integer >= 2.")
+      stop("'uncertaintymcseBatches' must be NULL or an integer >= 2.")
     }
     B <- min(B, n)
   }
@@ -230,8 +238,8 @@ compute_mcse_from_draws <- function(x,
   out
 }
 
-makeEstimator <- function(predictFun, predictArgs, outcome,
-    level = "period", condition = NULL, sum.fun = mean, na.rm = TRUE) {
+makeEstimator <- function(predictFun, predictArgs, outcomeName,
+    level = "period", condition = NULL, sum_fun = mean, na.rm = TRUE) {
     function(theta, useChangeContributions = FALSE) {
         if(!is.null(predictArgs[["useChangeContributions"]])){
           predictArgs[["useChangeContributions"]] <- useChangeContributions
@@ -239,11 +247,11 @@ makeEstimator <- function(predictFun, predictArgs, outcome,
         callArgs <- c(list(theta = theta), predictArgs)
         unit_pred <- do.call(predictFun, callArgs)
         main_result <- agg(
-            ME = outcome,
+            outcomeName = outcomeName,
             data = unit_pred,
             level = level,
             condition = condition,
-            sum.fun = sum.fun,
+            sum_fun = sum_fun,
             na.rm = na.rm
         )
         if (isTRUE(predictArgs$details)) {
@@ -257,41 +265,41 @@ makeEstimator <- function(predictFun, predictArgs, outcome,
 
 drawSim <- function(
     estimator,
-    theta_hat,
-    cov_theta,
+    thetaHat,
+    covTheta,
     nbrNodes = 1,
     nsim = 1000,
     clusterType = c("PSOCK", "FORK"),
     cluster = NULL,
-    batch_dir = "temp",
+    batchDir = "temp",
     prefix = "simBatch_b",
-    batch_size = NULL,
-    combine_batch = TRUE,
-    keep_batch = FALSE,
+    batchSize = NULL,
+    combineBatch = TRUE,
+    keepBatch = FALSE,
     verbose = TRUE,
-    gc_each_batch = TRUE,
-    gc_each_sim = FALSE
+    gcEachBatch = TRUE,
+    gcEachSim = FALSE
 ) {
 
-    cli <- open_cluster(nbrNodes, clusterType, cluster,
-      export_vars  = c("estimator", "theta_hat", "cov_theta"),
+    cli <- openCluster(nbrNodes, clusterType, cluster,
+      export_vars  = c("estimator", "thetaHat", "covTheta"),
       export_envir = environment(),
       verbose      = verbose
     )
-    if (!dir.exists(batch_dir)) dir.create(batch_dir, recursive = TRUE)
-    nbatches <- ceiling(nsim / batch_size) 
+    if (!dir.exists(batchDir)) dir.create(batchDir, recursive = TRUE)
+    nbatches <- ceiling(nsim / batchSize) 
     if (verbose) {
       message(
         "Starting simulations: nsim=", nsim,
-        ", batch_size=", batch_size,
+        ", batchSize=", batchSize,
         ", batches=", nbatches,
         ". (Last batch may be smaller.)"
       )
     }
     
     for (b in seq_len(nbatches)) {
-      first_sim <- 1 + (b - 1) * batch_size
-      last_sim  <- min(b * batch_size, nsim)
+      first_sim <- 1 + (b - 1) * batchSize
+      last_sim  <- min(b * batchSize, nsim)
       batch     <- first_sim:last_sim
       if (verbose) {
         message(
@@ -304,7 +312,7 @@ drawSim <- function(
 
       if (cli$usePSOCK) {
         batch_result <- parallel::parLapply(cli$cl, batch, function(i) {
-          theta_sim <- MASS::mvrnorm(1, mu = theta_hat, Sigma = cov_theta)
+          theta_sim <- MASS::mvrnorm(1, mu = thetaHat, Sigma = covTheta)
           sim <- do.call(estimator, list(theta = theta_sim))
           sim[, "sim"] <- i
           sim
@@ -312,7 +320,7 @@ drawSim <- function(
       } else if (cli$useFORK) {
         batch_result <- parallel::mclapply(batch, function(i) {
           if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads(1)
-          theta_sim <- MASS::mvrnorm(1, mu = theta_hat, Sigma = cov_theta)
+          theta_sim <- MASS::mvrnorm(1, mu = thetaHat, Sigma = covTheta)
           sim <- do.call(estimator, list(theta = theta_sim))
           sim[, "sim"] <- i
           sim
@@ -321,18 +329,18 @@ drawSim <- function(
         batch_result <- vector("list", length(batch))
         for (k in seq_along(batch)) {
           i <- batch[k]
-          theta_sim <- MASS::mvrnorm(1, mu = theta_hat, Sigma = cov_theta)
+          theta_sim <- MASS::mvrnorm(1, mu = thetaHat, Sigma = covTheta)
           sim <- do.call(estimator, list(theta = theta_sim))
           sim[, "sim"] <- i
           batch_result[[k]] <- sim
-          if (gc_each_sim) gc(verbose = FALSE)
+          if (gcEachSim) gc(verbose = FALSE)
         }
       }
 
-      file_name <- file.path(batch_dir, sprintf("%s%03d.rds", prefix, b))
+      file_name <- file.path(batchDir, sprintf("%s%03d.rds", prefix, b))
       saveRDS(batch_result, file = file_name)
       rm(batch_result)
-      if (gc_each_batch) gc(verbose = FALSE)
+      if (gcEachBatch) gc(verbose = FALSE)
       if (verbose) {
         done <- last_sim
         pct <- round(100 * done / nsim)
@@ -340,14 +348,14 @@ drawSim <- function(
       }
     }
     
-    close_cluster(cli, verbose)
+    closteCluster(cli, verbose)
     
     if (verbose) message("All batches complete. Now combining and cleaning up...")
     
     if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads()
-    if(combine_batch){
+    if(combineBatch){
       # Combine all batches
-      batch_files <- list.files(batch_dir, 
+      batch_files <- list.files(batchDir, 
         pattern = sprintf("^%s\\d{3}\\.rds$", prefix), full.names = TRUE)
       batch_files <- sort(batch_files)
       combined_results <- vector("list", nsim)
@@ -355,10 +363,10 @@ drawSim <- function(
       for (b in seq_along(batch_files)) {
         file_name <- batch_files[b]
         results <- readRDS(file_name)
-        first <- 1 + (b - 1) * batch_size
-        last  <- min(b * batch_size, nsim)
+        first <- 1 + (b - 1) * batchSize
+        last  <- min(b * batchSize, nsim)
         combined_results[first:last] <- results
-        if(!keep_batch){
+        if(!keepBatch){
           file.remove(file_name)
           if (verbose) message(sprintf("Deleted batch %d (%d-%d)", b, first, last))
         }
@@ -374,35 +382,37 @@ drawSim <- function(
     }
 }
 
-drawSim_stream <- function(
+drawSimStream <- function(
     estimator,
-    outcome,
+    outcomeName,
     level,
     condition,
     uncertainty_summary_fun,
-    theta_hat,
-    cov_theta,
+    thetaHat,
+    covTheta,
     nbrNodes = 1,
     nsim = 1000,
     clusterType = c("PSOCK", "FORK"),
     cluster = NULL,
-    batch_size = NULL,
+    batchSize = NULL,
     verbose = TRUE,
-    gc_each_batch = TRUE,
-    gc_each_sim = FALSE
+    gcEachBatch = TRUE,
+    gcEachSim = FALSE
 ) {
-    group_vars <- get_group_vars(level = level, condition = condition)
 
-    cli <- open_cluster(nbrNodes, clusterType, cluster,
-      export_vars  = c("estimator", "theta_hat", "cov_theta"),
+    group_vars <- getGroupVars(level = level, condition = condition)
+
+
+    cli <- openCluster(nbrNodes, clusterType, cluster,
+      export_vars  = c("estimator", "thetaHat", "covTheta"),
       export_envir = environment(),
       verbose      = verbose
     )
-    nbatches <- ceiling(nsim / batch_size)
+    nbatches <- ceiling(nsim / batchSize)
     if (verbose) {
       message(
         "Starting streaming simulations: nsim=", nsim,
-        ", batch_size=", batch_size,
+        ", batchSize=", batchSize,
         ", batches=", nbatches,
         ". (Last batch may be smaller.)"
       )
@@ -412,8 +422,8 @@ drawSim_stream <- function(
     group_state <- new.env(parent = emptyenv(), hash = TRUE)
 
     for (b in seq_len(nbatches)) {
-      first_sim <- 1 + (b - 1) * batch_size
-      last_sim  <- min(b * batch_size, nsim)
+      first_sim <- 1 + (b - 1) * batchSize
+      last_sim  <- min(b * batchSize, nsim)
       batch     <- first_sim:last_sim
 
       if (verbose) {
@@ -427,36 +437,36 @@ drawSim_stream <- function(
 
       if (cli$usePSOCK) {
         batch_result <- parallel::parLapply(cli$cl, batch, function(i) {
-          theta_sim <- MASS::mvrnorm(1, mu = theta_hat, Sigma = cov_theta)
+          theta_sim <- MASS::mvrnorm(1, mu = thetaHat, Sigma = covTheta)
           do.call(estimator, list(theta = theta_sim))
         })
       } else if (cli$useFORK) {
         batch_result <- parallel::mclapply(batch, function(i) {
           if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads(1)
-          theta_sim <- MASS::mvrnorm(1, mu = theta_hat, Sigma = cov_theta)
+          theta_sim <- MASS::mvrnorm(1, mu = thetaHat, Sigma = covTheta)
           do.call(estimator, list(theta = theta_sim))
         }, mc.cores = nbrNodes)
       } else {
         batch_result <- vector("list", length(batch))
         for (k in seq_along(batch)) {
-          theta_sim <- MASS::mvrnorm(1, mu = theta_hat, Sigma = cov_theta)
+          theta_sim <- MASS::mvrnorm(1, mu = thetaHat, Sigma = covTheta)
           batch_result[[k]] <- do.call(estimator, list(theta = theta_sim))
-          if (gc_each_sim) gc(verbose = FALSE)
+          if (gcEachSim) gc(verbose = FALSE)
         }
       }
 
       for (sim_df in batch_result) {
-        update_stream_state(
+        updateStream(
           stream_state = stream_state,
           group_state = group_state,
           sim_df = sim_df,
-          outcome = outcome,
+          outcomeName = outcomeName,
           group_vars = group_vars
         )
       }
 
       rm(batch_result)
-      if (gc_each_batch) gc(verbose = FALSE)
+      if (gcEachBatch) gc(verbose = FALSE)
       if (verbose) {
         done <- last_sim
         pct <- round(100 * done / nsim)
@@ -464,9 +474,9 @@ drawSim_stream <- function(
       }
     }
 
-    close_cluster(cli, verbose)
+    closteCluster(cli, verbose)
 
-    finalize_stream_state(
+    finalizeStream(
       stream_state = stream_state,
       group_state = group_state,
       group_vars = group_vars,
@@ -474,7 +484,7 @@ drawSim_stream <- function(
     )
 }
 
-open_cluster <- function(nbrNodes, clusterType, cluster, export_vars, export_envir, verbose) {
+openCluster <- function(nbrNodes, clusterType, cluster, export_vars, export_envir, verbose) {
   clusterType <- if (nbrNodes > 1) match.arg(clusterType, c("PSOCK", "FORK")) else "FORK"
   usePSOCK <- (clusterType == "PSOCK" && nbrNodes > 1)
   useFORK  <- (clusterType == "FORK"  && nbrNodes > 1 && .Platform$OS.type != "windows")
@@ -498,27 +508,27 @@ open_cluster <- function(nbrNodes, clusterType, cluster, export_vars, export_env
   list(cl = cl, cluster_created = cluster_created, usePSOCK = usePSOCK, useFORK = useFORK)
 }
 
-close_cluster <- function(cli, verbose) {
+closteCluster <- function(cli, verbose) {
   if (cli$cluster_created) {
     parallel::stopCluster(cli$cl)
     if (verbose) message("Stopped internal cluster.")
   }
 }
 
-update_stream_state <- function(stream_state,
+updateStream <- function(stream_state,
                                 group_state,
                                 sim_df,
-                                outcome,
+                                outcomeName,
                                 group_vars) {
-  if (length(outcome) != 1L) stop("'outcome' must be a single column name.")
+  if (length(outcomeName) != 1L) stop("'outcomeName' must be a single column name.")
 
 #we should not convert to data.frame, adjust code to handle data.table if needed, but for now we convert to data.frame to avoid issues with list columns in data.table
   if (requireNamespace("data.table", quietly = TRUE) && data.table::is.data.table(sim_df)) {
     sim_df <- as.data.frame(sim_df)
   }
 
-  keys <- make_group_key(sim_df, group_vars)
-  vals <- sim_df[[outcome]]
+  keys <- makeGroupKey(sim_df, group_vars)
+  vals <- sim_df[[outcomeName]]
 
   for (i in seq_along(vals)) {
     key <- keys[[i]]
@@ -535,7 +545,7 @@ update_stream_state <- function(stream_state,
   }
 }
 
-finalize_stream_state <- function(stream_state,
+finalizeStream <- function(stream_state,
                                   group_state,
                                   group_vars,
                                   uncertainty_summary_fun) {
@@ -560,7 +570,7 @@ finalize_stream_state <- function(stream_state,
   out
 }
 
-get_group_vars <- function(level = "none", condition = NULL) {
+getGroupVars <- function(level = "none", condition = NULL) {
   levels <- list(
     none = character(0),
     period = "period",
@@ -573,7 +583,7 @@ get_group_vars <- function(level = "none", condition = NULL) {
   c(levels[[level]], condition)
 }
 
-make_group_key <- function(df, group_vars) {
+makeGroupKey <- function(df, group_vars) {
   # should not convert to data.frame, adjust code to handle data.table if needed, but for now we convert to data.frame to avoid issues with list columns in data.table
   if (requireNamespace("data.table", quietly = TRUE) && data.table::is.data.table(df)) {
     df <- as.data.frame(df)
@@ -589,7 +599,8 @@ getEffectNamesNoRate <- function(effects, depvar) {
     include <- effects[["include"]]
     includedEffects <- effects[include, ]
     keep <- includedEffects[["type"]] != "rate" & includedEffects[["name"]] == depvar
-    includedEffects[["shortName"]][keep]
+    inc <- includedEffects[keep, ]
+    paste(inc[["shortName"]], inc[["type"]], sep = "_")
 }
 
 conditionalReplace <- function(df, row_ids, cols, fun) {
@@ -602,20 +613,20 @@ conditionalReplace <- function(df, row_ids, cols, fun) {
 }
 
 
-agg <- function(ME,
+agg <- function(outcomeName,
                 data,
                 level = "none",
                 condition = NULL,
-                sum.fun = mean,
+                sum_fun = mean,
                 na.rm = TRUE) {
-  if (length(ME) != 1L) stop("'ME' must be a single column name.")
-  group_vars <- get_group_vars(level = level, condition = condition)
-
-  # Helper for complex output (vector/list output from sum.fun)
+  if (length(outcomeName) != 1L) stop("'outcomeName' must be a single column name.")
+  if (!is.null(condition)) condition  <- resolveCondition(condition)
+  group_vars <- getGroupVars(level = level, condition = condition)
+  # Helper for complex output (vector/list output from sum_fun)
   # extract from agg?
   expand_summary <- function(val) {
     if (length(val) == 1 && (is.null(names(val)) || names(val) == "")) {
-      setNames(list(val), ME)
+      setNames(list(val), outcomeName)
     } else {
       as.list(val)
     }
@@ -626,13 +637,13 @@ agg <- function(ME,
     if (!data.table::is.data.table(data)) {
       data <- data.table::as.data.table(data)
     }
-    result <- data[, expand_summary(sum.fun(get(ME), na.rm = na.rm)), 
+    result <- data[, expand_summary(sum_fun(get(outcomeName), na.rm = na.rm)), 
       by = group_vars]
     return(result)
   }
   # ---- Fallback base R: ----
   if (length(group_vars) == 0) {
-    output <- expand_summary(sum.fun(data[[ME]], na.rm = na.rm))
+    output <- expand_summary(sum_fun(data[[outcomeName]], na.rm = na.rm))
     output <- as.data.frame(output)
     return(output)
   }
@@ -640,8 +651,8 @@ agg <- function(ME,
   grouping <- interaction(data[, group_vars, drop = FALSE], drop = TRUE)
   split_data <- split(data, grouping)
   agg_list <- lapply(split_data, function(subdf) {
-    vals <- subdf[[ME]]
-    res <- expand_summary(sum.fun(vals, na.rm = na.rm))
+    vals <- subdf[[outcomeName]]
+    res <- expand_summary(sum_fun(vals, na.rm = na.rm))
     # Add group columns
     group_vals <- subdf[1, group_vars, drop = FALSE]
     cbind(group_vals, as.data.frame(res, stringsAsFactors = FALSE))
@@ -683,35 +694,51 @@ mergeEstimates <- function(df1, df2, level = "none", condition = NULL) {
   }
 }
 
-#' Align theta by name and subset to non-rate effects
+#' Align theta by name and subset to non-rate effects.
+#' effectNames come from contributions structs (shortName_type, no depvar prefix).
+#' theta may be named with depvar-prefixed names (from nameThetaFromEffects).
+#' Positional matching via req handles both formats.
 alignThetaNoRate <- function(theta, effectNames, ans = NULL) {
-    if (is.null(names(theta)) && !is.null(ans)) {
-        # Use requestedEffects (not effects): the latter may include extra base
-        # effects injected for interactions, causing a length mismatch with theta.
-        allNames <- ans$requestedEffects$shortName
-        if (length(allNames) == length(theta)) {
-            names(theta) <- allNames
+    # Fast path: theta is already named with the same format as effectNames
+    if (!is.null(names(theta)) && all(effectNames %in% names(theta))) {
+        return(theta[effectNames])
+    }
+    if (!is.null(ans)) {
+        req <- ans$requestedEffects
+        if (is.data.frame(req)) {
+            noRate   <- req$type != "rate"
+            # Full names (may include depvar prefix): match theta's naming convention
+            fullNm   <- getNamesFromEffects(req)
+            # Short names (shortName_type, no depvar): match contributions effectNames format
+            shortNm  <- paste(req$shortName, req$type, sep = "_")
+            useNoRate <- sum(noRate) == length(theta)
+            src_full  <- if (useNoRate) fullNm[noRate]  else fullNm
+            src_short <- if (useNoRate) shortNm[noRate] else shortNm
+            pos <- match(effectNames, src_full)
+            if (anyNA(pos)) pos <- match(effectNames, src_short)
+            if (!anyNA(pos)) {
+                result        <- theta[pos]
+                names(result) <- effectNames
+                return(result)
+            }
         }
     }
-    if (!is.null(names(theta))) {
-        theta[effectNames]
-    } else {
-        # positional fallback when names cannot be determined
-        theta[seq_along(effectNames)]
-    }
+    theta[seq_along(effectNames)]
 }
 
 #' Attach effect contribution columns from a matrix to a data.frame.
 #' Extracts column-by-column (avoids full-matrix copy).
 #' If \code{flip = TRUE}, negates non-density columns where density == -1.
-.attachContribColumns <- function(out, effectNames, contrib, flip = TRUE) {
-  if (flip && "density" %in% effectNames) {
-    neg1 <- contrib[, "density"] == -1L
+attachContribColumns <- function(out, effectNames, contrib, flip = TRUE) {
+  density_j <- grep("density", effectNames, fixed = TRUE)
+  if (flip && length(density_j) > 0) {
+    neg1 <- contrib[, density_j[1L]] == -1L
+    neg1[is.na(neg1)] <- FALSE          # guard against NA in contrib matrix
     has_neg1 <- any(neg1)
   } else {
     has_neg1 <- FALSE
   }
-  flip_idx <- which(effectNames != "density")
+  flip_idx <- grep("density", effectNames, fixed = TRUE, invert = TRUE)
   for (j in seq_along(effectNames)) {
     col <- contrib[, j]
     if (has_neg1 && j %in% flip_idx) col[neg1] <- -col[neg1]
@@ -720,10 +747,10 @@ alignThetaNoRate <- function(theta, effectNames, ans = NULL) {
   out
 }
 
-#' Extract group-column vectors from a staticContributions struct as a named list.
+#' Extract group-column vectors from a Contributions struct as a named list.
 #' \code{keep} is an optional logical/integer subset vector.
 #' For static, pb$group is scalar (recycled by data.frame()).
-.groupColsList <- function(pb, keep = NULL) {
+groupColsList <- function(pb, keep = NULL) {
   if (!is.null(pb$chain)) {
     if (is.null(keep)) {
       list(chain = pb$chain, group = pb$group, period = pb$period,
@@ -738,8 +765,12 @@ alignThetaNoRate <- function(theta, effectNames, ans = NULL) {
       list(group = pb$group, period = pb$period, ego = pb$ego,
            choice = pb$choice)
     } else {
-      list(group = pb$group, period = pb$period[keep],
+      list(group = pb$group[keep], period = pb$period[keep],
            ego = pb$ego[keep], choice = pb$choice[keep])
     }
   }
+}
+
+resolveCondition <- function(condition) {
+  ifelse(grepl("_", condition, fixed = TRUE), condition, paste0(condition, "_eval"))
 }

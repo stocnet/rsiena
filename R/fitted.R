@@ -13,15 +13,15 @@ fitted.sienaFit <- function(object, ...) {
     # Multiple dependent variables might require 4-dimensional array or long array
     depVars <- object[["f"]][[1]][["depvars"]]
     periods <- object[["periodNos"]]
-    n_periods <- length(periods)
+    nPeriods <- length(periods)
     # check attr(object[["f"]][[1]][["depvars"]][[1]], "type")
     n_chains <- length(object[["sims"]])
     # better way to get info about dependent variables?
     dep1_dims <- attr(object[["f"]][[1]][["depvars"]][[1]], "netdims")
-    n_egos <- dep1_dims[1]
-    n_choices <- dep1_dims[2]
+    nEgos <- dep1_dims[1]
+    nChoices <- dep1_dims[2]
     # what about missing values?
-    arr <- array(0, dim = c(n_egos, n_choices, n_periods))
+    arr <- array(0, dim = c(nEgos, nChoices, nPeriods))
     # Sum over chains first
     for(c in 1:n_chains){
         # dep2 <- object$sims[[c]][[2]]
@@ -30,7 +30,7 @@ fitted.sienaFit <- function(object, ...) {
         for (p in periods) {
             # Convert edge list to adjacency matrix
             # use more efficient methods?
-            mat_new <- matrix(0, n_choices, n_choices)
+            mat_new <- matrix(0, nChoices, nChoices)
             edges <- dep1[[p]]
             mat_new[edges[,1:2]] <- edges[,3]
             arr[,,p] <- arr[,,p] + mat_new

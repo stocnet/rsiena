@@ -16,7 +16,7 @@ make_cc2 <- function(seed = 42) {
   mat <- matrix(c(density, recip), nrow = 9,
                 dimnames = list(NULL, c("density", "recip")))
   list(
-    contrib_mat = mat,
+    contribMat = mat,
     group_id    = rep(1L:3L, each = 3L),
     group       = 1L,
     period      = rep(c(1L, 2L, 1L), each = 3L),
@@ -35,7 +35,7 @@ make_cc3 <- function(seed = 42) {
   mat <- matrix(c(density, recip, transTrip), nrow = 9,
                 dimnames = list(NULL, c("density", "recip", "transTrip")))
   list(
-    contrib_mat = mat,
+    contribMat = mat,
     group_id    = rep(1L:3L, each = 3L),
     group       = 1L,
     period      = rep(c(1L, 2L, 1L), each = 3L),
@@ -63,24 +63,21 @@ test_that("calculateUtility: requires matrix input", {
   expect_error(calculateUtility(c(1, 2, 3), c(1)))
 })
 
-# ── .computeTieProb ───────────────────────────────────────────────────────────
+# ── calculateTieProb ───────────────────────────────────────────────────────────
 
-test_that(".computeTieProb: returns NULL for changeProb type", {
-  expect_null(.computeTieProb(c(0.3, 0.7, 0.5), c(1L, -1L, 0L), "changeProb"))
-})
 
-test_that(".computeTieProb: density==-1 flips, density==0 → NA, density==1 unchanged", {
+test_that("calculateTieProb: density==-1 flips, density==0 → NA, density==1 unchanged", {
   prob        <- c(0.3, 0.7, 0.5)
   density_col <- c(1L, -1L, 0L)
-  result <- .computeTieProb(prob, density_col, "tieProb")
+  result <- calculateTieProb(prob, density_col)
   expect_equal(result[1], 0.3)           # density==1:  no flip
   expect_equal(result[2], 1 - 0.7)      # density==-1: flipped
   expect_true(is.na(result[3]))          # density==0:  NA
 })
 
-test_that(".computeTieProb: all density==1 → no change", {
+test_that("calculateTieProb: all density==1 → no change", {
   prob <- runif(5)
-  result <- .computeTieProb(prob, rep(1L, 5), "tieProb")
+  result <- calculateTieProb(prob, rep(1L, 5))
   expect_equal(result, prob)
 })
 
@@ -108,7 +105,7 @@ test_that("calculateUtilityDiff: interaction adds moderator term", {
     effectName = "recip", diff = 1,
     theta = theta, densityValue = densityValue,
     interaction = TRUE,
-    int_effectNames = "unspInt", mod_effectNames = "transTrip",
+    intEffectNames = "unspInt", modEffectNames = "transTrip",
     modContribution = modContrib,
     effectNames = effectNames
   )
@@ -187,7 +184,7 @@ test_that("calculateFirstDiff: tieProb type returns correct tieProb columns with
   changeUtil    <- rep(0, 3)
   effectContrib <- rep(1L, 3)
   theta         <- c(density = -2, recip = 1.5)
-  tieProb_in    <- .computeTieProb(changeProb, densityValue, "tieProb")
+  tieProb_in    <- calculateTieProb(changeProb, densityValue)
 
   result <- calculateFirstDiff(
     densityValue = densityValue, changeProb = changeProb,
@@ -261,62 +258,62 @@ test_that("calculateSecondDiff: details=TRUE returns broad data.frame", {
                     "changeProb_both", "firstDiff1", "firstDiff2", "secondDiff") %in% names(result)))
 })
 
-# ── .attachContribColumns ────────────────────────────────────────────────────
+# ── attachContribColumns ────────────────────────────────────────────────────
 
-test_that(".attachContribColumns: density==-1 flips other columns; density col unchanged", {
+test_that("attachContribColumns: density==-1 flips other columns; density col unchanged", {
   density <- c(1L, -1L, 0L)
   recip   <- c(2L, 3L, 4L)
   contrib <- matrix(c(density, recip), nrow = 3,
                     dimnames = list(NULL, c("density", "recip")))
   df <- data.frame(x = 1:3)
 
-  result <- .attachContribColumns(df, c("density", "recip"), contrib, flip = TRUE)
+  result <- attachContribColumns(df, c("density", "recip"), contrib, flip = TRUE)
 
   expect_equal(result$density, density)             # density itself not flipped
   expect_equal(result$recip,   c(2L, -3L, 4L))     # density==-1 row → negated
 })
 
-test_that(".attachContribColumns: flip=FALSE leaves all columns unchanged", {
+test_that("attachContribColumns: flip=FALSE leaves all columns unchanged", {
   density <- c(1L, -1L, -1L)
   recip   <- c(2L, 3L, 4L)
   contrib <- matrix(c(density, recip), nrow = 3,
                     dimnames = list(NULL, c("density", "recip")))
   df <- data.frame(x = 1:3)
 
-  result <- .attachContribColumns(df, c("density", "recip"), contrib, flip = FALSE)
+  result <- attachContribColumns(df, c("density", "recip"), contrib, flip = FALSE)
 
   expect_equal(result$recip, c(2L, 3L, 4L))        # no flipping
 })
 
-# ── .groupColsList ───────────────────────────────────────────────────────────
+# ── groupColsList ───────────────────────────────────────────────────────────
 
-test_that(".groupColsList: static (no chain) returns correct names and values", {
+test_that("groupColsList: static (no chain) returns correct names and values", {
   pb <- list(
     group = 1L, period = c(1L, 2L, 3L),
     ego = c(5L, 6L, 7L), choice = c(1L, 0L, 1L)
   )
-  result <- .groupColsList(pb)
+  result <- groupColsList(pb)
   expect_named(result, c("group", "period", "ego", "choice"))
   expect_equal(result$ego, c(5L, 6L, 7L))
 })
 
-test_that(".groupColsList: static with keep subsets correctly", {
+test_that("groupColsList: static with keep subsets correctly", {
   pb <- list(
     group = 1L, period = c(1L, 2L, 3L),
     ego = c(5L, 6L, 7L), choice = c(1L, 0L, 1L)
   )
-  result <- .groupColsList(pb, keep = c(TRUE, FALSE, TRUE))
+  result <- groupColsList(pb, keep = c(TRUE, FALSE, TRUE))
   expect_equal(result$ego,    c(5L, 7L))
   expect_equal(result$period, c(1L, 3L))
 })
 
-test_that(".groupColsList: dynamic (with chain) returns correct names", {
+test_that("groupColsList: dynamic (with chain) returns correct names", {
   pb <- list(
     chain = c(1L, 1L, 2L), group = c(1L, 1L, 1L),
     period = c(1L, 2L, 1L), ministep = c(10L, 20L, 30L),
     choice = c(0L, 1L, 1L)
   )
-  result <- .groupColsList(pb)
+  result <- groupColsList(pb)
   expect_named(result, c("chain", "group", "period", "ministep", "choice"))
   expect_equal(result$ministep, c(10L, 20L, 30L))
 })
@@ -331,17 +328,24 @@ test_that("alignThetaNoRate: named theta — selects by name", {
 })
 
 test_that("alignThetaNoRate: uses requestedEffects (not effects) for name assignment", {
-  theta <- c(2.5, 3.0, -2.38, 3.06, -0.07)
-  effectNames <- c("density", "recip", "unspInt")
+  # theta includes rate params — this is what sienaMargins passes
+  theta <- c(-2.38, 3.06, -0.07)   # rate1, rate2, density, recip, unspInt
+  # effectNames are composite (rate effects filtered out — these are the names to extract)
+  effectNames <- c("density_eval", "recip_eval", "unspInt_eval")
+
   mock_ans <- list(
-    effects          = list(shortName = c("rateX", "rateX", "density", "recip", "outPop", "unspInt")),  # length 6 ≠ 5
-    requestedEffects = list(shortName = c("rateX", "rateX", "density", "recip", "unspInt"))             # length 5 == 5
+    requestedEffects = data.frame(
+      shortName = c("rateX", "rateX", "density", "recip", "unspInt"),
+      type      = c("rate",  "rate",  "eval",    "eval",  "eval"),
+      include   = c(TRUE,    TRUE,    TRUE,       TRUE,    TRUE),
+      stringsAsFactors = FALSE
+    )
   )
   result <- alignThetaNoRate(theta, effectNames, mock_ans)
   expect_named(result, effectNames)
-  expect_equal(unname(result["density"]), -2.38)
-  expect_equal(unname(result["recip"]),    3.06)
-  expect_equal(unname(result["unspInt"]), -0.07)
+  expect_equal(unname(result[["density_eval"]]), -2.38)
+  expect_equal(unname(result[["recip_eval"]]),    3.06)
+  expect_equal(unname(result[["unspInt_eval"]]), -0.07)
 })
 
 test_that("alignThetaNoRate: positional fallback when ans=NULL and theta unnamed", {
@@ -351,36 +355,36 @@ test_that("alignThetaNoRate: positional fallback when ans=NULL and theta unnamed
   expect_equal(unname(result), c(-2, 1.5, 0.5))
 })
 
-# ── plan_batch ───────────────────────────────────────────────────────────────
+# ── planBatch ───────────────────────────────────────────────────────────────
 
-test_that("plan_batch: result is always >= 1 and <= nsim", {
+test_that("planBatch: result is always >= 1 and <= nsim", {
   dv <- array(0, dim = c(50, 50, 3))
   mock_data <- list(depvars = list(mynet = dv))
-  result <- plan_batch(mock_data, "mynet", nsim = 100, dynamic = FALSE)
+  result <- planBatch(mock_data, "mynet", nsim = 100, dynamic = FALSE)
   expect_gte(result, 1L)
   expect_lte(result, 100L)
 })
 
-test_that("plan_batch: nsim=1 always returns 1", {
+test_that("planBatch: nsim=1 always returns 1", {
   dv <- array(0, dim = c(50, 50, 3))
   mock_data <- list(depvars = list(mynet = dv))
-  expect_equal(plan_batch(mock_data, "mynet", nsim = 1L), 1L)
+  expect_equal(planBatch(mock_data, "mynet", nsim = 1L), 1L)
 })
 
-test_that("plan_batch: multi-worker result is multiple of nbrNodes", {
+test_that("planBatch: multi-worker result is multiple of nbrNodes", {
   dv <- array(0, dim = c(10, 10, 3))
   mock_data <- list(depvars = list(net = dv))
-  result <- plan_batch(mock_data, "net", nsim = 50,
+  result <- planBatch(mock_data, "net", nsim = 50,
                        useCluster = TRUE, nbrNodes = 4, dynamic = FALSE)
   expect_equal(result %% 4L, 0L)
   expect_gte(result, 4L)
 })
 
-test_that("plan_batch: memory_scale reduces batch size", {
+test_that("planBatch: memoryScale reduces batch size", {
   dv <- array(0, dim = c(50, 50, 3))
   mock_data <- list(depvars = list(mynet = dv))
-  b1 <- plan_batch(mock_data, "mynet", nsim = 200, dynamic = FALSE)
-  b2 <- plan_batch(mock_data, "mynet", nsim = 200, dynamic = FALSE, memory_scale = 4L)
+  b1 <- planBatch(mock_data, "mynet", nsim = 200, dynamic = FALSE)
+  b2 <- planBatch(mock_data, "mynet", nsim = 200, dynamic = FALSE, memoryScale = 4L)
   expect_lte(b2, b1)
 })
 
@@ -389,12 +393,12 @@ test_that("plan_batch: memory_scale reduces batch size", {
 test_that("predictFirstDiff: density==0 rows excluded; contrib cols present", {
   cc         <- make_cc2()
   theta_use  <- c(density = -2, recip = 1.5)
-  n_valid    <- sum(cc$contrib_mat[, "density"] != 0L)
+  n_valid    <- sum(cc$contribMat[, "density"] != 0L)
 
   result <- predictFirstDiff(
     changeContributions = cc, theta_use = theta_use, type = "changeProb",
     effectName = "recip", diff = 1, contrast = NULL,
-    interaction = FALSE, int_effectNames = NULL, mod_effectNames = NULL,
+    interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
   )
   expect_equal(nrow(result), n_valid)
@@ -411,7 +415,7 @@ test_that("predictFirstDiff: details=TRUE attaches utilDiff, changeProb", {
   result <- predictFirstDiff(
     changeContributions = cc, theta_use = theta_use, type = "changeProb",
     effectName = "recip", diff = 1, contrast = NULL,
-    interaction = FALSE, int_effectNames = NULL, mod_effectNames = NULL,
+    interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     details = TRUE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
   )
   expect_true(all(c("changeUtil", "changeProb") %in% names(result)))
@@ -425,7 +429,7 @@ test_that("predictFirstDiff: tieProb type attaches tieProb col when details=TRUE
   result <- predictFirstDiff(
     changeContributions = cc, theta_use = theta_use, type = "tieProb",
     effectName = "recip", diff = 1, contrast = NULL,
-    interaction = FALSE, int_effectNames = NULL, mod_effectNames = NULL,
+    interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     details = TRUE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
   )
   expect_true("tieProb" %in% names(result))
@@ -440,7 +444,7 @@ test_that("predictFirstDiff: output is data.table when package available", {
   result <- predictFirstDiff(
     changeContributions = cc, theta_use = theta_use, type = "changeProb",
     effectName = "recip", diff = 1, contrast = NULL,
-    interaction = FALSE, int_effectNames = NULL, mod_effectNames = NULL,
+    interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
   )
   expect_true(data.table::is.data.table(result))
@@ -455,7 +459,7 @@ test_that("predictFirstDiff: base R output is plain data.frame", {
       result <- predictFirstDiff(
         changeContributions = cc, theta_use = theta_use, type = "changeProb",
         effectName = "recip", diff = 1, contrast = NULL,
-        interaction = FALSE, int_effectNames = NULL, mod_effectNames = NULL,
+        interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
         details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
       )
       expect_true(is.data.frame(result))
@@ -470,14 +474,14 @@ test_that("predictFirstDiff: base R output is plain data.frame", {
 test_that("predictSecondDiff: density==0 rows excluded; secondDiff col present", {
   cc         <- make_cc3()
   theta_use  <- c(density = -2, recip = 1.5, transTrip = 0.5)
-  n_valid    <- sum(cc$contrib_mat[, "density"] != 0L)
+  n_valid    <- sum(cc$contribMat[, "density"] != 0L)
 
   result <- predictSecondDiff(
     changeContributions = cc, theta_use = theta_use, type = "changeProb",
     effectName1 = "recip",     diff1 = 1, contrast1 = NULL,
-    interaction1 = FALSE, int_effectNames1 = NULL, mod_effectNames1 = NULL,
+    interaction1 = FALSE, intEffectNames1 = NULL, modEffectNames1 = NULL,
     effectName2 = "transTrip", diff2 = 1, contrast2 = NULL,
-    interaction2 = FALSE, int_effectNames2 = NULL, mod_effectNames2 = NULL,
+    interaction2 = FALSE, intEffectNames2 = NULL, modEffectNames2 = NULL,
     details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
   )
   expect_equal(nrow(result), n_valid)
@@ -492,10 +496,206 @@ test_that("predictSecondDiff: details=TRUE attaches utility and prob columns", {
   result <- predictSecondDiff(
     changeContributions = cc, theta_use = theta_use, type = "changeProb",
     effectName1 = "recip",     diff1 = 1, contrast1 = NULL,
-    interaction1 = FALSE, int_effectNames1 = NULL, mod_effectNames1 = NULL,
+    interaction1 = FALSE, intEffectNames1 = NULL, modEffectNames1 = NULL,
     effectName2 = "transTrip", diff2 = 1, contrast2 = NULL,
-    interaction2 = FALSE, int_effectNames2 = NULL, mod_effectNames2 = NULL,
+    interaction2 = FALSE, intEffectNames2 = NULL, modEffectNames2 = NULL,
     details = TRUE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
   )
   expect_true(all(c("changeUtil", "changeProb") %in% names(result)))
+})
+
+# ── getGroupVars ─────────────────────────────────────────────────────────────
+
+test_that("getGroupVars: composite condition appended to level vars", {
+  expect_equal(getGroupVars("period", "transTrip_eval"),
+               c("period", "transTrip_eval"))
+})
+
+test_that("getGroupVars: multiple composite conditions appended", {
+  expect_equal(getGroupVars("ego", c("density_eval", "recip_creation")),
+               c("period", "ego", "density_eval", "recip_creation"))
+})
+
+test_that("getGroupVars: NULL condition returns only level vars", {
+  expect_equal(getGroupVars("period"),      "period")
+  expect_equal(getGroupVars("none"),        character(0))
+})
+
+# ── makeGroupKey ─────────────────────────────────────────────────────────────
+
+test_that("makeGroupKey: composite column name indexes correctly", {
+  df <- data.frame(period = c(1L, 1L, 2L), `transTrip_eval` = c(0, 0, 1),
+                   check.names = FALSE)
+  keys <- makeGroupKey(df, c("period", "transTrip_eval"))
+  expect_length(keys, 3L)
+  expect_equal(keys[1], keys[2])     # same period AND same val → same key
+  expect_false(keys[1] == keys[3])   # different period AND different val → different key
+})
+
+test_that("makeGroupKey: empty group_vars returns __all__", {
+  keys <- makeGroupKey(data.frame(x = 1:3), character(0))
+  expect_true(all(keys == "__all__"))
+})
+
+# ── agg: bare-name resolution ────────────────────────────────────────────────
+
+test_that("agg: bare condition resolves to _eval variant column", {
+  df <- data.frame(period = c(1L, 1L, 2L),
+                   `transTrip_eval` = c(0, 1, 0),
+                   changeProb = c(0.3, 0.7, 0.4),
+                   check.names = FALSE)
+  result <- with_mocked_bindings(
+    agg("changeProb", df, level = "period", condition = "transTrip"),
+    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  )
+  expect_true("transTrip_eval" %in% names(result))
+  expect_false("transTrip"     %in% names(result))
+})
+
+test_that("agg: composite condition passes through unchanged", {
+  df <- data.frame(period = c(1L, 1L, 2L),
+                   `transTrip_eval` = c(0, 1, 0),
+                   changeProb = c(0.3, 0.7, 0.4),
+                   check.names = FALSE)
+  result <- with_mocked_bindings(
+    agg("changeProb", df, level = "period", condition = "transTrip_eval"),
+    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  )
+  expect_true("transTrip_eval" %in% names(result))
+  expect_equal(nrow(result), 3L)   # period + transTrip_eval + changeProb value
+})
+
+test_that("agg: creation/endow composite condition aggregates correctly", {
+  df <- data.frame(period = c(1L, 1L, 2L, 2L),
+                   `recip_creation` = c(0L, 1L, 0L, 1L),
+                   changeProb = c(0.2, 0.8, 0.3, 0.7),
+                   check.names = FALSE)
+  result <- with_mocked_bindings(
+    agg("changeProb", df, level = "period", condition = "recip_creation"),
+    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  )
+  expect_true("recip_creation" %in% names(result))
+  expect_equal(nrow(result), 4L)   # 2 periods × 2 condition values
+})
+
+test_that("agg: co-evolution — separate depvar data aggregates independently", {
+  # Each depvar's prediction data has its own "density_eval" column;
+  # agg() is called separately on each → results must differ.
+  df_a <- data.frame(period = c(1L, 1L), `density_eval` = c(1L, -1L),
+                     changeProb = c(0.8, 0.2), check.names = FALSE)
+  df_b <- data.frame(period = c(1L, 1L), `density_eval` = c(1L, -1L),
+                     changeProb = c(0.6, 0.4), check.names = FALSE)
+  agg_a <- with_mocked_bindings(
+    agg("changeProb", df_a, level = "period", condition = "density_eval"),
+    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  )
+  agg_b <- with_mocked_bindings(
+    agg("changeProb", df_b, level = "period", condition = "density_eval"),
+    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  )
+  expect_false(identical(agg_a$changeProb, agg_b$changeProb))
+})
+
+# ── updateStream / finalizeStream ─────────────────────────────────────────────
+
+test_that("updateStream + finalizeStream: composite condition column works end-to-end", {
+  sim_df <- data.frame(period = c(1L, 1L, 2L, 2L),
+                       `transTrip.eval` = c(0, 1, 0, 1),
+                       changeProb = c(0.3, 0.7, 0.4, 0.6),
+                       check.names = FALSE)
+  group_vars   <- c("period", "transTrip.eval")
+  stream_state <- new.env(parent = emptyenv(), hash = TRUE)
+  group_state  <- new.env(parent = emptyenv(), hash = TRUE)
+
+  # Two draws of the same result (simple smoke test)
+  with_mocked_bindings(
+    {
+      updateStream(stream_state, group_state, sim_df, "changeProb", group_vars)
+      updateStream(stream_state, group_state, sim_df, "changeProb", group_vars)
+    },
+    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  )
+
+  result <- with_mocked_bindings(
+    finalizeStream(stream_state, group_state, group_vars,
+                   uncertainty_summary_fun = function(x, na.rm) list(Mean = mean(x))),
+    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  )
+
+  expect_true(is.data.frame(result))
+  expect_true("transTrip.eval" %in% names(result))
+  expect_true("Mean"           %in% names(result))
+  # 2 periods × 2 condition values = 4 groups
+  expect_equal(nrow(result), 4L)
+  # Mean of two identical draws == draw itself
+  expect_true(all(result$Mean %in% c(0.3, 0.7, 0.4, 0.6)))
+})
+
+test_that("updateStream + finalizeStream: creation/endow condition column works", {
+  sim_df <- data.frame(period = c(1L, 1L),
+                       `recip.creation` = c(0L, 1L),
+                       changeProb = c(0.25, 0.75),
+                       check.names = FALSE)
+  group_vars   <- c("period", "recip.creation")
+  stream_state <- new.env(parent = emptyenv(), hash = TRUE)
+  group_state  <- new.env(parent = emptyenv(), hash = TRUE)
+
+  with_mocked_bindings(
+    updateStream(stream_state, group_state, sim_df, "changeProb", group_vars),
+    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  )
+
+  result <- with_mocked_bindings(
+    finalizeStream(stream_state, group_state, group_vars,
+                   uncertainty_summary_fun = function(x, na.rm) list(Mean = mean(x))),
+    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  )
+
+  expect_true("recip.creation" %in% names(result))
+  expect_equal(nrow(result), 2L)
+})
+
+# ── mergeEstimates ────────────────────────────────────────────────────────────
+
+test_that("mergeEstimates: composite condition merges point estimate with uncertainty", {
+  df1 <- data.frame(period = 1L:2L, `transTrip_eval` = c(0, 1),
+                    changeProb = c(0.3, 0.7), check.names = FALSE)
+  df2 <- data.frame(period = 1L:2L, `transTrip_eval` = c(0, 1),
+                    Mean = c(0.28, 0.72),     check.names = FALSE)
+  result <- with_mocked_bindings(
+    mergeEstimates(df1, df2, level = "period", condition = "transTrip_eval"),
+    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  )
+  expect_true("changeProb"     %in% names(result))
+  expect_true("Mean"           %in% names(result))
+  expect_true("transTrip_eval" %in% names(result))
+  expect_equal(nrow(result), 2L)
+})
+
+# ── attachContribColumns: composite density name ─────────────────────────────
+
+test_that("attachContribColumns: composite 'density_eval' column triggers flip", {
+  density <- c(1L, -1L, 0L)
+  recip   <- c(2L,  3L, 4L)
+  contrib <- matrix(c(density, recip), nrow = 3,
+                    dimnames = list(NULL, c("density_eval", "recip_eval")))
+  result <- attachContribColumns(data.frame(x = 1:3),
+                                 c("density_eval", "recip_eval"),
+                                 contrib, flip = TRUE)
+  # grepl("density", "density_eval") is TRUE → flip applies
+  expect_equal(result[["density_eval"]], density)        # density col unchanged
+  expect_equal(result[["recip_eval"]],   c(2L, -3L, 4L))# density==-1 row negated
+})
+
+test_that("attachContribColumns: 'recip_creation' not confused with density trigger", {
+  density  <- c(1L, -1L, 1L)
+  recip_e  <- c(1L,  1L, 1L)
+  recip_c  <- c(1L,  0L, 1L)   # 0 on deletion rows by construction
+  contrib  <- matrix(c(density, recip_e, recip_c), nrow = 3,
+                     dimnames = list(NULL,
+                       c("density_eval", "recip_eval", "recip_creation")))
+  result <- attachContribColumns(data.frame(x = 1:3),
+                                 colnames(contrib), contrib, flip = TRUE)
+  expect_equal(result[["recip_eval"]],     c(1L, -1L, 1L))
+  expect_equal(result[["recip_creation"]], c(1L,  0L, 1L))  # 0 negated == 0
 })

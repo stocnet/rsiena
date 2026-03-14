@@ -230,13 +230,13 @@ arma::vec softmax_rcpp_grouped_cols(const Rcpp::DataFrame& data,
 //         }
 //     }
 
-//     /* match_idx[e] = row in raw mat for effectNames[e] */
-//     std::vector<int> match_idx(nEffSel, -1);
+//     /* matchIdx[e] = row in raw mat for effectNames[e] */
+//     std::vector<int> matchIdx(nEffSel, -1);
 //     for (int e = 0; e < nEffSel; e++) {
 //         std::string want = Rcpp::as<std::string>(effectNames[e]);
 //         for (int r = 0; r < (int)rawEffNames.size(); r++)
 //             if (want == Rcpp::as<std::string>(rawEffNames[r]))
-//                 { match_idx[e] = r; break; }
+//                 { matchIdx[e] = r; break; }
 //     }
 
 //     /* count pass */
@@ -278,8 +278,8 @@ arma::vec softmax_rcpp_grouped_cols(const Rcpp::DataFrame& data,
 //                     grp++;
 //                     for (int c = 0; c < nChoice; c++) {
 //                         for (int e = 0; e < nEffSel; e++)
-//                           contrib(row, e) = (match_idx[e] >= 0 && match_idx[e] < nEff)
-//                               ? mat(match_idx[e], c) : NA_REAL;
+//                           contrib(row, e) = (matchIdx[e] >= 0 && matchIdx[e] < nEff)
+//                               ? mat(matchIdx[e], c) : NA_REAL;
 //                         chain_v[row] = ch + 1;  group_v[row] = g + 1;
 //                         period_v[row] = p + 1;  mstep_v[row] = m + 1;
 //                         choice_v[row] = c + 1;  grpid_v[row] = grp;
@@ -293,7 +293,7 @@ arma::vec softmax_rcpp_grouped_cols(const Rcpp::DataFrame& data,
 //     Rcpp::colnames(contrib) = effectNames;
 
 //     return Rcpp::List::create(
-//         Rcpp::Named("contrib_mat") = contrib,
+//         Rcpp::Named("contribMat") = contrib,
 //         Rcpp::Named("chain")       = chain_v,
 //         Rcpp::Named("group")       = group_v,
 //         Rcpp::Named("period")      = period_v,

@@ -12,55 +12,57 @@ predict.sienaFit <- function(
     useChangeContributions = FALSE,
     level = "period",
     condition = NULL,
-    sum.fun = mean,
+    sum_fun = mean,
     na.rm = TRUE,
     uncertainty = TRUE,
-    uncertainty_mode = c("batch", "stream"),
+    uncertaintyMode = c("batch", "stream"),
     useCluster = FALSE,
     nbrNodes = 1,
     nsim = 1000,
-    uncertainty_sd = TRUE,
-    uncertainty_ci = TRUE,
-    uncertainty_probs = c(0.025, 0.5, 0.975),
-    uncertainty_mcse = FALSE,
-    uncertainty_mcse_batches = NULL,
+    uncertaintySd = TRUE,
+    uncertaintyCi = TRUE,
+    uncertaintyProbs = c(0.025, 0.5, 0.975),
+    uncertaintyMcse = FALSE,
+    uncertaintymcseBatches = NULL,
     clusterType = c("PSOCK", "FORK"),
     cluster = NULL,
-    batch_dir = "temp",
+    batchDir = "temp",
     prefix = "simBatch_b",
-    combine_batch = TRUE,
+    combineBatch = TRUE,
     batch = TRUE,
     silent = NULL,
-    batch_size = NULL,
-    keep_batch = FALSE,
+    batchSize = NULL,
+    keepBatch = FALSE,
     verbose = TRUE,
-    memory_scale = NULL,
-    batch_unit_budget = 5e8,
-    dynamic_ministep_factor = 10,
+    memoryScale = NULL,
+    batchUnitBudget = 5e8,
+    dynamicMinistepFactor = 10,
     ...
 ) {
-    if (inherits(newdata, "sienaGroup"))
-      stop("predict.sienaFit does not support multi-group data (sienaGroup).")
-    uncertainty_mode <- match.arg(uncertainty_mode)
-    type             <- match.arg(type)
-    if (is.null(depvar)) depvar <- names(newdata[["depvars"]])[1]
-    if (dynamic && is.null(algorithm)) stop("'algorithm' must be provided when dynamic = TRUE")
-    if (dynamic && is.null(silent)) silent <- batch
-    if (is.null(batch_size)) {
-        batch_size <- plan_batch(
-          data = newdata, 
-          depvar = depvar, 
-          nsim = nsim,
-          nbrNodes = nbrNodes, 
-          useCluster = useCluster,
-          dynamic = dynamic, 
-          n3 = n3,
-          unit_budget = batch_unit_budget,
-          dynamic_ministep_factor = dynamic_ministep_factor,
-          memory_scale = memory_scale
-        )
-    }
-    if (dynamic) {
+  if (inherits(newdata, "sienaGroup"))
+    stop("predict.sienaFit does not support multi-group data (sienaGroup).")
+  uncertaintyMode <- match.arg(uncertaintyMode)
+  type             <- match.arg(type)
+
+  if (is.null(depvar)) depvar <- names(newdata[["depvars"]])[1]
+  if (dynamic && is.null(algorithm)) stop("'algorithm' must be provided when dynamic = TRUE")
+  if (dynamic && is.null(silent)) silent <- batch
+  # add option to never batch? but then should do streaming...?
+  if (is.null(batchSize)) {
+      batchSize <- planBatch(
+        data = newdata,
+        depvar = depvar, 
+        nsim = nsim,
+        nbrNodes = nbrNodes, 
+        useCluster = useCluster,
+        dynamic = dynamic, 
+        n3 = n3,
+        unitBudget = batchUnitBudget,
+        dynamicMinistepFactor = dynamicMinistepFactor,
+        memoryScale = memoryScale
+      )
+  }
+  if (dynamic) {
     predictFun  <- predictProbabilityDynamic
     predictArgs <- list(
         ans                    = object,
@@ -74,7 +76,7 @@ predict.sienaFit <- function(
         batch                  = batch,
         silent                 = silent
     )
-    } else {
+  } else {
     # Build the contribution matrix ONCE — reused across all theta draws
     staticContributions <- getStaticChangeContributions(
         ans     = object,
@@ -85,90 +87,96 @@ predict.sienaFit <- function(
     )
     predictFun  <- predictProbabilityStatic
     predictArgs <- list(
-        ans      = object,
         staticContributions = staticContributions,
         type     = type
     )
-    }
+  }
 
-    sienaPostestimate(
-    predictFun               = predictFun,
-    predictArgs              = predictArgs,
-    outcome                  = type,
-    level                    = level,
-    condition                = condition,
-    sum.fun                  = sum.fun,
-    na.rm                    = na.rm,
-    theta_hat                = object[["theta"]],
-    cov_theta                = object[["covtheta"]],
-    uncertainty              = uncertainty,
-    uncertainty_mode         = uncertainty_mode,
-    nsim                     = nsim,
-    uncertainty_sd           = uncertainty_sd,
-    uncertainty_ci           = uncertainty_ci,
-    uncertainty_probs        = uncertainty_probs,
-    uncertainty_mcse         = uncertainty_mcse,
-    uncertainty_mcse_batches = uncertainty_mcse_batches,
-    useCluster               = useCluster,
-    nbrNodes                 = nbrNodes,
-    clusterType              = clusterType,
-    cluster                  = cluster,
-    batch_dir                = batch_dir,
-    prefix                   = prefix,
-    combine_batch            = combine_batch,
-    batch_size               = batch_size,
-    keep_batch               = keep_batch,
-    verbose                  = verbose,
-    useChangeContributions   = if (dynamic) useChangeContributions else NULL
-    )
+  sienaPostestimate(
+  predictFun               = predictFun,
+  predictArgs              = predictArgs,
+  outcomeName              = type,
+  level                    = level,
+  condition                = condition,
+  sum_fun                  = sum_fun,
+  na.rm                    = na.rm,
+  thetaHat                = object[["theta"]],
+  covTheta                = object[["covtheta"]],
+  uncertainty              = uncertainty,
+  uncertaintyMode         = uncertaintyMode,
+  nsim                     = nsim,
+  uncertaintySd           = uncertaintySd,
+  uncertaintyCi           = uncertaintyCi,
+  uncertaintyProbs        = uncertaintyProbs,
+  uncertaintyMcse         = uncertaintyMcse,
+  uncertaintymcseBatches = uncertaintymcseBatches,
+  useCluster               = useCluster,
+  nbrNodes                 = nbrNodes,
+  clusterType              = clusterType,
+  cluster                  = cluster,
+  batchDir                = batchDir,
+  prefix                   = prefix,
+  combineBatch            = combineBatch,
+  batchSize               = batchSize,
+  keepBatch               = keepBatch,
+  verbose                  = verbose,
+  useChangeContributions   = if (dynamic) useChangeContributions else NULL
+  )
 }
 
-plan_batch <- function(data, depvar, nsim,
-                       nbrNodes = 1L, useCluster = FALSE,
-                       dynamic = FALSE, n3 = NULL,
-                       unit_budget = 2.5e8,
-                       dynamic_ministep_factor = 10,
-                       memory_scale = NULL) {
+planBatch <- function(
+  data, 
+  depvar, 
+  nsim,
+  nbrNodes = 1L,
+  useCluster = FALSE,
+  dynamic = FALSE,
+  n3 = NULL,
+  unitBudget = 2.5e8,
+  dynamicMinistepFactor = 10,
+  memoryScale = NULL
+) {
   dv     <- data$depvars[[depvar]]
-  dv_dim <- dim(dv)
-  n_ego  <- if (!is.null(dv_dim) && length(dv_dim) >= 1L) as.integer(dv_dim[1]) else as.integer(length(dv))
-  n_choice   <- if (!is.null(dv_dim) && length(dv_dim) >= 2L) as.integer(dv_dim[2]) else 1L
-  n_per  <- if (!is.null(dv_dim) && length(dv_dim) >= 3L) max(1L, as.integer(dv_dim[3] - 1L)) else 1L
-  units  <- as.numeric(n_ego) * as.numeric(n_choice) * as.numeric(n_per)
+  dvDim <- dim(dv)
+  nEgo  <- if (!is.null(dvDim) && length(dvDim) >= 1L) as.integer(dvDim[1]) else as.integer(length(dv))
+  nChoice   <- if (!is.null(dvDim) && length(dvDim) >= 2L) as.integer(dvDim[2]) else 1L
+  nPer  <- if (!is.null(dvDim) && length(dvDim) >= 3L) max(1L, as.integer(dvDim[3] - 1L)) else 1L
+  units  <- as.numeric(nEgo) * as.numeric(nChoice) * as.numeric(nPer)
 
   effective_workers <- if (isTRUE(useCluster)) max(1L, as.integer(nbrNodes)) else 1L
 
   if (dynamic) {
-    n3_val <- if (is.null(n3)) 1L else max(1L, as.integer(n3))
-    units_per_call <- units * as.numeric(dynamic_ministep_factor) * as.numeric(n3_val)
+    n3Val <- if (is.null(n3)) 1L else max(1L, as.integer(n3))
+    unitsPerCall <- units * as.numeric(dynamicMinistepFactor) * as.numeric(n3Val)
   } else {
-    n3_val <- 1L
-    units_per_call <- units
+    n3Val <- 1L
+    unitsPerCall <- units
   }
 
 
-  units_per_agg <- max(1.0, units * as.numeric(n3_val) *
-                              if (dynamic) as.numeric(dynamic_ministep_factor) else 1.0)
+  unitsPerAgg <- max(1.0, units * as.numeric(n3Val) *
+                        if (dynamic) as.numeric(dynamicMinistepFactor) else 1.0)
 
-  budget_for_agg <- as.numeric(unit_budget) - effective_workers * units_per_call
+  budgetForAgg <- as.numeric(unitBudget) - effective_workers * unitsPerCall
 
-  if (budget_for_agg <= 0) {
+  if (budgetForAgg <= 0) {
     if (effective_workers > 1L) {
       warning(sprintf(
-        "Memory budget (%.0f units) may be insufficient for %d parallel worker(s) at %.0f units each. Consider reducing nbrNodes or increasing batch_unit_budget.",
-        unit_budget, effective_workers, units_per_call
+        "Memory budget (%.0f units) may be insufficient for %d parallel worker(s)
+        at %.0f units each. Consider reducing nbrNodes or increasing batchUnitBudget.",
+        unitBudget, effective_workers, unitsPerCall
       ))
     }
 
-    max_batch <- max(1L, as.integer(floor(as.numeric(unit_budget) / units_per_agg)))
+    maxBatch <- max(1L, as.integer(floor(as.numeric(unitBudget) / unitsPerAgg)))
   } else {
-    max_batch <- max(1L, as.integer(floor(budget_for_agg / units_per_agg)))
+    maxBatch <- max(1L, as.integer(floor(budgetForAgg / unitsPerAgg)))
   }
 
-  batch_raw <- min(as.integer(nsim), max_batch)
+  batch_raw <- min(as.integer(nsim), maxBatch)
 
-  if (!is.null(memory_scale) && as.integer(memory_scale) > 1L)
-    batch_raw <- max(1L, as.integer(floor(batch_raw / as.integer(memory_scale))))
+  if (!is.null(memoryScale) && as.integer(memoryScale) > 1L)
+    batch_raw <- max(1L, as.integer(floor(batch_raw / as.integer(memoryScale))))
 
   k <- if (isTRUE(useCluster) && as.integer(nbrNodes) > 1L) as.integer(nbrNodes) else 1L
   if (k > 1L && as.integer(nsim) >= k) {
@@ -178,82 +186,49 @@ plan_batch <- function(data, depvar, nsim,
   min(max(1L, batch_raw), as.integer(nsim))
 }
 
-#' Per-theta static prediction using staticContributions matrices.
-predictProbabilityStatic <- function(ans,
-                                        staticContributions,
-                                        theta,
-                                        type = "changeProb") {
-  effectNames <- staticContributions[[1]]$effectNames
-  thetaNoRate <- alignThetaNoRate(theta, effectNames, ans)
-
-  results <- vector("list", length(staticContributions))
-  for (i in seq_along(staticContributions)) {
-    staticCont        <- staticContributions[[i]]
-    theta_use <- thetaNoRate[staticCont$effectNames]
-    utility <- calculateUtility(staticCont$contrib_mat, theta_use)
-    prob    <- as.numeric(softmax_arma_by_group(utility, staticCont$group_id))
-    out <- data.frame(.groupColsList(staticCont),
-                      changeUtil = utility, changeProb = prob,
+#' Unified per-theta prediction from a compact contributions struct.
+#' Works for both static (ego/period/choice coords) and dynamic
+#' (chain/ministep/period/choice coords) — groupColsList handles both.
+predictProbability <- function(contributions, theta, type = "changeProb") {
+    theta_use <- theta[contributions$thetaIdx]
+    names(theta_use) <- contributions$effectNames
+    utility    <- calculateUtility(contributions$contribMat, theta_use)
+    changeProb <- calculateChangeProb(utility, contributions$group_id)
+    out <- data.frame(groupColsList(contributions),
+                      changeUtil = utility, changeProb = changeProb,
                       stringsAsFactors = FALSE)
-    out <- .attachContribColumns(out, staticCont$effectNames, staticCont$contrib_mat,
-                                flip = TRUE)
-    tp <- .computeTieProb(prob, staticCont$contrib_mat[, "density"], type)
-    if (!is.null(tp)) out[["tieProb"]] <- tp
-
+    if (type == "tieProb") {
+      out[["tieProb"]] <- calculateTieProb(
+        changeProb,
+        contributions$contribMat[, grep("^density", contributions$effectNames)[1L]]
+      )
+    }
+    out <- attachContribColumns(out, contributions$effectNames,
+                                contributions$contribMat, flip = TRUE)
     if (requireNamespace("data.table", quietly = TRUE)) data.table::setDT(out)
-    results[[i]] <- out
-  }
-  if (requireNamespace("data.table", quietly = TRUE))
-    data.table::rbindlist(results, use.names = TRUE)
-  else {
-    out <- do.call(rbind, results)
-    rownames(out) <- NULL
     out
-  }
 }
 
+#' Per-theta static prediction: build contributions once, reused per theta draw.
+predictProbabilityStatic <- function(staticContributions, theta,
+                                     type = "changeProb") {
+    predictProbability(staticContributions, theta, type)
+}
 
 # ---- Dynamic -------------------------------------------------------
 
-#' Per-theta dynamic prediction using matrix-internal pipeline.
+#' Per-theta dynamic prediction: simulate chains, flatten to compact struct.
 predictProbabilityDynamic <- function(ans, data, theta, algorithm, effects,
-                                         type = "changeProb", depvar,
-                                         n3 = NULL,
-                                         useChangeContributions = FALSE,
-                                         batch = TRUE, silent = TRUE) {
-  dynamicChangeContributions <- getDynamicChangeContributions(
-    ans = ans, theta = theta, data = data, algorithm = algorithm,
-    effects = effects, depvar = depvar, n3 = n3,
-    useChangeContributions = useChangeContributions,
-    returnWide = TRUE, batch = batch, silent = silent
-  )
-  thetaNoRate <- alignThetaNoRate(theta, getEffectNamesNoRate(effects, depvar), ans)
-  theta_use   <- thetaNoRate[dynamicChangeContributions$effectNames]
-  utility <- calculateUtility(dynamicChangeContributions$contrib_mat, theta_use)
-  prob    <- as.numeric(softmax_arma_by_group(utility, dynamicChangeContributions$group_id))
-
-  # Build output table — all computation done in vectors above
-  out <- data.frame(.groupColsList(dynamicChangeContributions),
-                    changeUtil = utility, changeProb = prob,
-                    stringsAsFactors = FALSE)
-  tp <- .computeTieProb(prob, dynamicChangeContributions$contrib_mat[, "density"], type)
-  if (!is.null(tp)) out[["tieProb"]] <- tp
-  out <- .attachContribColumns(out, dynamicChangeContributions$effectNames, dynamicChangeContributions$contrib_mat, flip = TRUE)
-  if (requireNamespace("data.table", quietly = TRUE)) data.table::setDT(out)
-  out
-}
-
-#' R wrapper for C++ flattenChangeContributionsWide.
-#' Converts raw nested ministep list → wide list_wide struct:
-#'   contrib_mat [N × n_effects], chain, group, period, ministep, choice, group_id
-flattenContributionsWide <- function(changeContributions, effectNames,
-                                     depvar = NULL) {
-  changeContributions <- .Call(C_flattenChangeContributionsWide,
-              changeContributions,
-              as.character(effectNames),
-              if (is.null(depvar)) NULL else as.character(depvar))
-  changeContributions$effectNames <- as.character(effectNames)
-  changeContributions
+                                      type = "changeProb", depvar, n3 = NULL,
+                                      useChangeContributions = FALSE,
+                                      batch = TRUE, silent = TRUE) {
+    contributions <- getDynamicChangeContributions(
+      ans = ans, theta = theta, data = data, algorithm = algorithm,
+      effects = effects, depvar = depvar, n3 = n3,
+      useChangeContributions = useChangeContributions,
+      returnWide = TRUE, batch = batch, silent = silent
+    )
+    predictProbability(contributions, theta, type)
 }
 
 # ---- Shared helpers -------------------------------------------------
@@ -263,14 +238,19 @@ calculateUtility <- function(mat, theta) {
   as.numeric(mat %*% theta)
 }
 
-.computeTieProb <- function(prob, density_col, type) {
-  if (type != "tieProb") return(NULL)
-  prob <- prob
-  neg1 <- density_col == -1L
+calculateChangeProb <- function(utility, group_id) {
+  # is as.numeric not already part of the rcpp softmax?
+  as.numeric(softmax_arma_by_group(utility, group_id))
+}
+
+calculateTieProb <- function(prob, density) {
+  neg1 <- !is.na(density) & density == -1L
   prob[neg1] <- 1 - prob[neg1]
-  prob[density_col == 0L] <- NA
+  prob[is.na(density) | density == 0L] <- NA
   prob
 }
+
+
 
 
 # ===========================================================================
@@ -292,34 +272,34 @@ calculateUtility <- function(mat, theta) {
 #     useChangeContributions = FALSE,
 #     level = "period",
 #     condition = NULL,
-#     sum.fun = mean,
+#     sum_fun = mean,
 #     na.rm = TRUE,
 #     uncertainty = TRUE,
-#     uncertainty_mode = c("batch", "stream"),
+#     uncertaintyMode = c("batch", "stream"),
 #     useCluster = FALSE,
 #     nbrNodes = 1,
 #     nsim = 1000,
-#     uncertainty_sd = TRUE,
-#     uncertainty_ci = TRUE,
-#     uncertainty_probs = c(0.025, 0.5, 0.975),
-#     uncertainty_mcse = FALSE,
-#     uncertainty_mcse_batches = NULL,
+#     uncertaintySd = TRUE,
+#     uncertaintyCi = TRUE,
+#     uncertaintyProbs = c(0.025, 0.5, 0.975),
+#     uncertaintyMcse = FALSE,
+#     uncertaintymcseBatches = NULL,
 #     clusterType = c("PSOCK", "FORK"),
 #     cluster = NULL,
-#     batch_dir = "temp",
+#     batchDir = "temp",
 #     prefix = "simBatch_b",
-#     combine_batch = TRUE,
+#     combineBatch = TRUE,
 #     batch = TRUE,
 #     silent = NULL,
-#     batch_size = NULL,
-#     keep_batch = FALSE,
+#     batchSize = NULL,
+#     keepBatch = FALSE,
 #     verbose = TRUE,
-#     memory_scale = NULL,
-#     batch_unit_budget = 5e6,
-#     dynamic_ministep_factor = 10,
+#     memoryScale = NULL,
+#     batchUnitBudget = 5e6,
+#     dynamicMinistepFactor = 10,
 #     ...
 #   ){
-#       uncertainty_mode <- match.arg(uncertainty_mode)
+#       uncertaintyMode <- match.arg(uncertaintyMode)
 #       type <- match.arg(type)
 #       if (is.null(depvar)) depvar <- names(newdata[["depvars"]])[1]
 #       if (dynamic && is.null(algorithm)) {
@@ -327,8 +307,8 @@ calculateUtility <- function(mat, theta) {
 #         # could default now instead
 #       }
 #       if (dynamic && is.null(silent)) silent <- batch
-#       if (is.null(batch_size)) {
-#         batch_size <- plan_batch(
+#       if (is.null(batchSize)) {
+#         batchSize <- planBatch(
 #           data = newdata, 
 #           depvar = depvar, 
 #           nsim = nsim,
@@ -336,9 +316,9 @@ calculateUtility <- function(mat, theta) {
 #           useCluster = useCluster,
 #           dynamic = dynamic, 
 #           n3 = n3,
-#           unit_budget = batch_unit_budget,
-#           dynamic_ministep_factor = dynamic_ministep_factor,
-#           memory_scale = memory_scale
+#           unitBudget = batchUnitBudget,
+#           dynamicMinistepFactor = dynamicMinistepFactor,
+#           memoryScale = memoryScale
 #         )
 #       }
 #       if (dynamic) {
@@ -374,30 +354,30 @@ calculateUtility <- function(mat, theta) {
 #       sienaPostestimate(
 #         predictFun = predictFun,
 #         predictArgs = predictArgs,
-#         outcome = type,
+#         outcomeName = type,
 #         level = level,
 #         condition = condition,
-#         sum.fun = sum.fun,
+#         sum_fun = sum_fun,
 #         na.rm = na.rm,
-#         theta_hat = object[["theta"]], # change into coef
-#         cov_theta = object[["covtheta"]], # change into cov
+#         thetaHat = object[["theta"]], # change into coef
+#         covTheta = object[["covtheta"]], # change into cov
 #         uncertainty = uncertainty,
-#         uncertainty_mode = uncertainty_mode,
+#         uncertaintyMode = uncertaintyMode,
 #         nsim = nsim,
-#         uncertainty_sd = uncertainty_sd,
-#         uncertainty_ci = uncertainty_ci,
-#         uncertainty_probs = uncertainty_probs,
-#         uncertainty_mcse = uncertainty_mcse,
-#         uncertainty_mcse_batches = uncertainty_mcse_batches,
+#         uncertaintySd = uncertaintySd,
+#         uncertaintyCi = uncertaintyCi,
+#         uncertaintyProbs = uncertaintyProbs,
+#         uncertaintyMcse = uncertaintyMcse,
+#         uncertaintymcseBatches = uncertaintymcseBatches,
 #         useCluster = useCluster,
 #         nbrNodes = nbrNodes,
 #         clusterType = clusterType,
 #         cluster = cluster,
-#         batch_dir = batch_dir,
+#         batchDir = batchDir,
 #         prefix = prefix,
-#         combine_batch = combine_batch,
-#         batch_size = batch_size,
-#         keep_batch = keep_batch,
+#         combineBatch = combineBatch,
+#         batchSize = batchSize,
+#         keepBatch = keepBatch,
 #         verbose = verbose,
 #         useChangeContributions = if (dynamic) useChangeContributions else NULL
 #       )
@@ -429,33 +409,33 @@ calculateUtility <- function(mat, theta) {
 #     depvar = NULL,
 #     level = "period",
 #     condition = NULL,
-#     sum.fun = mean,
+#     sum_fun = mean,
 #     na.rm = TRUE,
 #     n3 = 1000,
 #     useChangeContributions = FALSE,
 #     uncertainty = TRUE,
-#     uncertainty_mode = c("batch", "stream"),
+#     uncertaintyMode = c("batch", "stream"),
 #     useCluster = FALSE,
 #     nbrNodes = 1,
 #     nsim = 100,
-#     uncertainty_sd = TRUE,
-#     uncertainty_ci = TRUE,
-#     uncertainty_probs = c(0.025, 0.5, 0.975),
-#     uncertainty_mcse = FALSE,
-#     uncertainty_mcse_batches = NULL,
+#     uncertaintySd = TRUE,
+#     uncertaintyCi = TRUE,
+#     uncertaintyProbs = c(0.025, 0.5, 0.975),
+#     uncertaintyMcse = FALSE,
+#     uncertaintymcseBatches = NULL,
 #     clusterType = c("PSOCK", "FORK"),
 #     cluster = NULL,
-#     batch_dir = "temp",
+#     batchDir = "temp",
 #     prefix = "simBatch_b",
-#     combine_batch = TRUE,
-#     batch_size = NULL,
-#     keep_batch = FALSE,
+#     combineBatch = TRUE,
+#     batchSize = NULL,
+#     keepBatch = FALSE,
 #     verbose = TRUE,
 #     batch = TRUE,
 #     silent = NULL,
-#     memory_scale = NULL,
-#     batch_unit_budget = 5e6,
-#     dynamic_ministep_factor = 10
+#     memoryScale = NULL,
+#     batchUnitBudget = 5e6,
+#     dynamicMinistepFactor = 10
 # ){
 #   predict.sienaFit(
 #     object = ans,
@@ -469,31 +449,31 @@ calculateUtility <- function(mat, theta) {
 #     useChangeContributions = useChangeContributions,
 #     level = level,
 #     condition = condition,
-#     sum.fun = sum.fun,
+#     sum_fun = sum_fun,
 #     na.rm = na.rm,
 #     uncertainty = uncertainty,
-#     uncertainty_mode = uncertainty_mode,
+#     uncertaintyMode = uncertaintyMode,
 #     useCluster = useCluster,
 #     nbrNodes = nbrNodes,
 #     nsim = nsim,
-#     uncertainty_sd = uncertainty_sd,
-#     uncertainty_ci = uncertainty_ci,
-#     uncertainty_probs = uncertainty_probs,
-#     uncertainty_mcse = uncertainty_mcse,
-#     uncertainty_mcse_batches = uncertainty_mcse_batches,
+#     uncertaintySd = uncertaintySd,
+#     uncertaintyCi = uncertaintyCi,
+#     uncertaintyProbs = uncertaintyProbs,
+#     uncertaintyMcse = uncertaintyMcse,
+#     uncertaintymcseBatches = uncertaintymcseBatches,
 #     clusterType = clusterType,
 #     cluster = cluster,
-#     batch_dir = batch_dir,
+#     batchDir = batchDir,
 #     prefix = prefix,
-#     combine_batch = combine_batch,
-#     batch_size = batch_size,
-#     keep_batch = keep_batch,
+#     combineBatch = combineBatch,
+#     batchSize = batchSize,
+#     keepBatch = keepBatch,
 #     verbose = verbose,
 #     batch = batch,
 #     silent = silent,
-#     memory_scale = memory_scale,
-#     batch_unit_budget = batch_unit_budget,
-#     dynamic_ministep_factor = dynamic_ministep_factor
+#     memoryScale = memoryScale,
+#     batchUnitBudget = batchUnitBudget,
+#     dynamicMinistepFactor = dynamicMinistepFactor
 #   )
 # }
 # 
@@ -539,16 +519,16 @@ calculateUtility <- function(mat, theta) {
 # }
 # 
 # addUtilityColumn <- function(df, effectNames, theta) {
-#   available_effects <- effectNames[effectNames %in% names(df)]
-#   if (!length(available_effects)) {
+#   availableEffects <- effectNames[effectNames %in% names(df)]
+#   if (!length(availableEffects)) {
 #     stop("No requested effect columns found in data for utility calculation")
 #   }
 # 
 #   # checked already?
 #   if (!is.null(names(theta))) {
-#     theta_use <- theta[available_effects]
+#     theta_use <- theta[availableEffects]
 #   } else {
-#     theta_use <- theta[seq_along(available_effects)]
+#     theta_use <- theta[seq_along(availableEffects)]
 #   }
 # 
 #   if (requireNamespace("data.table", quietly = TRUE) && 
@@ -556,10 +536,10 @@ calculateUtility <- function(mat, theta) {
 #     df[, ("changeUtil") := calculateUtility(
 #       as.matrix(.SD), 
 #       theta_use), 
-#       .SDcols = available_effects]
+#       .SDcols = availableEffects]
 #   } else {
 #     df[["changeUtil"]] <- calculateUtility(
-#       as.matrix(df[, available_effects, drop = FALSE]), 
+#       as.matrix(df[, availableEffects, drop = FALSE]), 
 #       theta_use)
 #     return(df)
 #   }

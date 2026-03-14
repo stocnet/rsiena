@@ -784,6 +784,51 @@ void StatisticCalculator::calculateNetworkEndowmentStatistics(
 				this->lstatistics[pInfo] =
 					pEffect->endowmentStatistic(pLostTieNetwork);
 			}
+			// Static change contributions for endowment:
+			// contributes calculateContribution(a) when withdrawing an existing tie,
+			// 0 when creating a tie (endowment doesn't apply to tie creation).
+			if (this->lcountStaticChangeContributions)
+			{
+				int egos = pPredictor->n();
+				int alters = pPredictor->m();
+				vector<double *> egosMap(egos);
+				this->lstaticChangeContributions.insert(make_pair(pInfo, egosMap));
+				for (int e = 0; e < egos; e++)
+				{
+					cache.initialize(e);
+					pEffect->initialize(this->lpData, this->lpPredictorState,
+						this->lperiod, &cache);
+					double * contributions = new double[egos];
+					this->lstaticChangeContributions[pInfo].at(e) = contributions;
+					pEffect->preprocessEgo(e);
+					for (int a = 0; a < egos; a++)
+					{
+						if ((a == e) && pNetworkData->oneModeNetwork())
+						{
+							contributions[a] = 0;
+						}
+						else if (a == alters)
+						{
+							contributions[a] = 0;
+						}
+						else if (a > alters)
+						{
+							contributions[a] = R_NaN;
+						}
+						else if (pPredictor->tieValue(e, a))
+						{
+							// existing tie: endowment contributes to withdrawal
+							contributions[a] = pEffect->calculateContribution(a);
+						}
+						else
+						{
+							// no tie: endowment has no contribution to creation
+							// do we need this?
+							contributions[a] = 0;
+						}
+					}
+				}
+			}
 			delete pEffect;
 		}
 
@@ -862,6 +907,52 @@ void StatisticCalculator::calculateNetworkCreationStatistics(
 			{
 				this->lstatistics[pInfo] =
 					pEffect->creationStatistic(pGainedTieNetwork);
+			}
+			// Static change contributions for creation:
+			// contributes calculateContribution(a) when creating a new tie,
+			// 0 when withdrawing an existing tie (creation doesn't apply to withdrawal).
+			// The predictor state is already set to pCurrentLessMissingsEtc.
+			if (this->lcountStaticChangeContributions)
+			{
+				int egos = pCurrentLessMissingsEtc->n();
+				int alters = pCurrentLessMissingsEtc->m();
+				vector<double *> egosMap(egos);
+				this->lstaticChangeContributions.insert(make_pair(pInfo, egosMap));
+				for (int e = 0; e < egos; e++)
+				{
+					cache.initialize(e);
+					pEffect->initialize(this->lpData, this->lpPredictorState,
+						this->lperiod, &cache);
+					double * contributions = new double[egos];
+					this->lstaticChangeContributions[pInfo].at(e) = contributions;
+					pEffect->preprocessEgo(e);
+					for (int a = 0; a < egos; a++)
+					{
+						if ((a == e) && pNetworkData->oneModeNetwork())
+						{
+							contributions[a] = 0;
+						}
+						else if (a == alters)
+						{
+							contributions[a] = 0;
+						}
+						else if (a > alters)
+						{
+							contributions[a] = R_NaN;
+						}
+						else if (!pCurrentLessMissingsEtc->tieValue(e, a))
+						{
+							// no existing tie: creation contributes to tie addition
+							contributions[a] = pEffect->calculateContribution(a);
+						}
+						else
+						{
+							// existing tie: creation has no contribution to withdrawal
+							// do we need this?
+							contributions[a] = 0;
+						}
+					}
+				}
 			}
 			delete pEffect;
 		}

@@ -24,7 +24,7 @@ test_that("predict.sienaFit (base R fallback)", {
         newdata = mydata,
         type = "tieProb",
         nsim = 10,
-        condition = "transTrip",
+        condition = "transTrip_eval",
         level = "egoChoice"
       )
       expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
@@ -42,13 +42,13 @@ test_that("predict.sienaFit (base R fallback, optional MCSE + no CI)", {
         newdata = mydata,
         type = "tieProb",
         nsim = 20,
-        condition = "transTrip",
+        condition = "transTrip_eval",
         level = "period",
         uncertainty = TRUE,
-        uncertainty_mcse = TRUE,
-        uncertainty_mcse_batches = 4,
-        uncertainty_sd = TRUE,
-        uncertainty_ci = FALSE,
+        uncertaintyMcse = TRUE,
+        uncertaintymcseBatches = 4,
+        uncertaintySd = TRUE,
+        uncertaintyCi = FALSE,
         verbose = FALSE
       )
       expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
@@ -74,7 +74,7 @@ test_that("predict.sienaFit (base R fallback, streaming uncertainty)", {
         condition = "transTrip",
         level = "period",
         uncertainty = TRUE,
-        uncertainty_mode = "stream",
+        uncertaintyMode = "stream",
         verbose = FALSE
       )
       expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
@@ -96,7 +96,7 @@ test_that("predict.sienaFit (data.table)", {
     newdata = mydata,
     type = "tieProb",
     nsim = 10,
-    condition = "transTrip",
+    condition = "transTrip_eval",
     level = "period",
     uncertainty = TRUE
   )
@@ -112,7 +112,7 @@ test_that("predict.sienaFit (data.table)", {
 #     newdata = mydata,
 #     type = "tieProb",
 #     nsim = 1000,
-#     condition = "transTrip",
+#     condition = "transTrip.eval",
 #     level = "period",
 #     uncertainty = TRUE,
 #     useCluster = TRUE,
@@ -132,7 +132,7 @@ test_that("predict.sienaFit (data.table)", {
 #         newdata = mydata,
 #         type = "tieProb",
 #         nsim = 10,
-#         condition = "transTrip",
+#         condition = "transTrip.eval",
 #         level = "period",
 #         uncertainty = TRUE,
 #         useCluster = TRUE,
@@ -155,7 +155,7 @@ test_that("Test predict.sienaFit with FORK clustertype (data.table)", {
     newdata = mydata,
     type = "tieProb",
     nsim = 10,
-    condition = "transTrip",
+    condition = "transTrip_eval",
     level = "period",
     uncertainty = TRUE,
     useCluster = TRUE,
@@ -178,7 +178,7 @@ test_that("predictDynamic with FORK clustertype (base R fallback)", {
         type = "tieProb",
         n3 = 60,
         nsim = 2,
-        condition = "transTrip",
+        condition = "transTrip_eval",
         level = "period",
         uncertainty = TRUE,
         useCluster = TRUE,
@@ -206,7 +206,7 @@ test_that("predictDynamic (base R fallback)", {
         type = "tieProb",
         n3 = 60,
         nsim = 4,
-        condition = "density"
+        condition = "density_eval"
       )
       expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
     },
@@ -227,12 +227,12 @@ test_that("predictDynamic (base R fallback, optional MCSE + no SD)", {
         type = "tieProb",
         n3 = 60,
         nsim = 20,
-        condition = "density",
+        condition = "density_eval",
         uncertainty = TRUE,
-        uncertainty_mcse = TRUE,
-        uncertainty_mcse_batches = 4,
-        uncertainty_sd = FALSE,
-        uncertainty_ci = TRUE,
+        uncertaintyMcse = TRUE,
+        uncertaintymcseBatches = 4,
+        uncertaintySd = FALSE,
+        uncertaintyCi = TRUE,
         verbose = FALSE
       )
       expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
@@ -260,9 +260,9 @@ test_that("predictDynamic (base R fallback, streaming uncertainty)", {
         type = "tieProb",
         n3 = 60,
         nsim = 6,
-        condition = "density",
+        condition = "density_eval",
         uncertainty = TRUE,
-        uncertainty_mode = "stream",
+        uncertaintyMode = "stream",
         verbose = FALSE
       )
       expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
@@ -288,7 +288,7 @@ test_that("predictDynamic (data.table)", {
     type = "tieProb",
     n3 = 60,
     nsim = 4,
-    condition = "density"
+    condition = "density_eval"
   )
   expect_true("data.table" %in% class(pred_dt) || is.data.frame(pred_dt))
 })
@@ -318,7 +318,7 @@ test_that("predict.sienaFit with custom interactions & without main effect (data
     newdata =  mydata2,
     effects = mymodel2,
     level = "period",
-    condition = "recip",
+    condition = "recip_eval",
     uncertainty = FALSE
   )
   expect_true("data.table" %in% class(pred_dt) || is.data.frame(pred_dt))
@@ -333,7 +333,7 @@ test_that("predict.sienaFit with custom interactions & without main effect (base
         newdata =  mydata2,
         effects = mymodel2,
         level = "period",
-        condition = "recip",
+        condition = "recip_eval",
         uncertainty = FALSE
       )
       expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
@@ -351,7 +351,7 @@ test_that("predict.sienaFit with custom interactions & uncertainty & without mai
     newdata =  mydata2,
     effects = mymodel2,
     level = "period",
-    condition = "recip",
+    condition = "recip_eval",
     uncertainty = TRUE,
     nsim = 5
   )
@@ -367,7 +367,8 @@ test_that("predict.sienaFit with custom interactions & uncertainty & without mai
         newdata = mydata2,
         effects = mymodel2,
         uncertainty = TRUE,
-        nsim = 5
+        nsim = 5,
+        condition = "recip_eval"
       )
       expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
     },
@@ -397,19 +398,162 @@ test_that("predict.sienaFit interaction without main effect, cond=FALSE (data.ta
 # so that injected base effects for interactions don't cause a length mismatch.
 test_that("alignThetaNoRate uses requestedEffects$shortName, not effects$shortName", {
   # Reproduce the cond=FALSE + interaction-without-main-effect scenario:
-  #   ans$effects has an extra "outPop" row injected for the interaction,
-  #   making effects length 6 while theta length is only 5.
-  #   The fix: use requestedEffects (length 5) for name assignment.
-  theta_uncond <- c(2.5, 3.0, -2.38, 3.06, -0.07)  # rate1, rate2, density, recip, unspInt
-  effectNames <- c("density", "recip", "unspInt")
+  #   ans$effects has 6 rows (2 rate, 4 non-rate including injected outPop).
+  #   ans$requestedEffects has 5 rows (2 rate, 3 non-rate — no outPop).
+  #   ans$theta has 3 elements (one per non-rate in requestedEffects, no rates).
+  #   Using effects:          non-rate count = 4 ≠ 3 = length(theta) → names not set (fallback)
+  #   Using requestedEffects: non-rate count = 3 = 3 = length(theta)  → names set correctly
+  theta_uncond <- c(-2.38, 3.06, -0.07)  # density_eval, recip_eval, unspInt_eval
+  effectNames  <- c("density_eval", "recip_eval", "unspInt_eval")
   mock_ans <- list(
-    effects           = list(shortName = c("rateX", "rateX", "density", "recip", "outPop", "unspInt")),  # 6 != 5
-    requestedEffects  = list(shortName = c("rateX", "rateX", "density", "recip", "unspInt"))             # 5 == 5
+    effects = data.frame(
+      shortName = c("rateX", "rateX", "density", "recip", "outPop", "unspInt"),
+      type      = c("rate",  "rate",  "eval",    "eval",  "eval",   "eval"),
+      include   = rep(TRUE, 6L),
+      stringsAsFactors = FALSE
+    ),
+    requestedEffects = data.frame(
+      shortName = c("rateX", "rateX", "density", "recip", "unspInt"),
+      type      = c("rate",  "rate",  "eval",    "eval",  "eval"),
+      include   = rep(TRUE, 5L),
+      stringsAsFactors = FALSE
+    )
   )
   result <- alignThetaNoRate(theta_uncond, effectNames, mock_ans)
-  # Must return the three eval params by name — not rate params by position
+  # Must return the three eval params by composite name
   expect_named(result, effectNames)
-  expect_equal(unname(result[["density"]]),  -2.38)
-  expect_equal(unname(result[["recip"]]),     3.06)
-  expect_equal(unname(result[["unspInt"]]),  -0.07)
+  expect_equal(unname(result[["density_eval"]]),  -2.38)
+  expect_equal(unname(result[["recip_eval"]]),     3.06)
+  expect_equal(unname(result[["unspInt_eval"]]),  -0.07)
+})
+
+# ---------------------------------------------------------------------------
+# Two-network co-evolution: verify predict.sienaFit gives separate predictions #
+# per network, and that alignThetaNoRate correctly matches parameters to 
+# effects by name (not position) when cond=FALSE + interaction without main effect
+# ---------------------------------------------------------------------------
+mynet_a <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet_b <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mydata_co <- sienaDataCreate(mynet_a, mynet_b)
+mymodel_co <- getEffects(mydata_co)
+mymodel_co <- includeEffects(mymodel_co, transTrip, name = "mynet_a")
+mymodel_co <- includeEffects(mymodel_co, transTrip, name = "mynet_b")
+mycontrols_co <- sienaAlgorithmCreate(projname = NULL, seed = 1, n3 = 60,
+                                      cond = FALSE)
+ans_co <- siena07(
+  mycontrols_co,
+  data    = mydata_co,
+  effects = mymodel_co,
+  returnChangeContributions = TRUE,
+  returnDataFrame = FALSE,
+  silent  = TRUE
+)
+
+# ---------------------------------------------------------------------------
+# Static predict: co-evolution
+# ---------------------------------------------------------------------------
+test_that("predict.sienaFit static: co-evolution networks get separate predictions", {
+  skip_if_not(requireNamespace("data.table", quietly = TRUE))
+  pred_a <- predict.sienaFit(ans_co, newdata = mydata_co, depvar = "mynet_a",
+                              effects = mymodel_co, uncertainty = FALSE)
+  pred_b <- predict.sienaFit(ans_co, newdata = mydata_co, depvar = "mynet_b",
+                              effects = mymodel_co, uncertainty = FALSE)
+  # Different networks → different predicted probabilities
+  expect_false(identical(pred_a$changeProb, pred_b$changeProb))
+  # Basic output structure present
+  expect_true("period"     %in% names(pred_a))
+  expect_true("changeProb" %in% names(pred_a))
+})
+
+# ---------------------------------------------------------------------------
+# Dynamic predict: co-evolution
+# ---------------------------------------------------------------------------
+test_that("predict.sienaFit dynamic: co-evolution networks get separate predictions", {
+  skip_if_not(requireNamespace("data.table", quietly = TRUE))
+  pred_a <- predict.sienaFit(ans_co, newdata = mydata_co, depvar = "mynet_a",
+                              dynamic = TRUE, algorithm = mycontrols_co,
+                              effects = mymodel_co, n3 = 60, nsim = 5,
+                              uncertainty = FALSE)
+  pred_b <- predict.sienaFit(ans_co, newdata = mydata_co, depvar = "mynet_b",
+                              dynamic = TRUE, algorithm = mycontrols_co,
+                              effects = mymodel_co, n3 = 60, nsim = 5,
+                              uncertainty = FALSE)
+  expect_false(identical(pred_a$changeProb, pred_b$changeProb))
+})
+
+# ---------------------------------------------------------------------------
+# Creation / endowment effects: non-unique shortNames *within* a single depvar
+#
+# recip (eval, included by default) + recip (creation) → shortName "recip" twice
+# transTrip (eval) + transTrip (endow) → shortName "transTrip" twice
+#
+# This tests that alignThetaNoRate correctly matches parameters to effects by name
+# (not position) when cond=FALSE + interaction without main effect, so that the
+# right parameters get applied to the right effects for utility and probability calcs.
+# ---------------------------------------------------------------------------
+mynet_cm <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
+mydata_cm <- sienaDataCreate(mynet_cm)
+mymodel_cm <- getEffects(mydata_cm)
+# recip (eval) is already included by default; add the creation variant
+mymodel_cm <- includeEffects(mymodel_cm, recip,     type = "creation")
+# transTrip in both evaluation and endowment flavours
+mymodel_cm <- includeEffects(mymodel_cm, transTrip, type = "eval")
+mymodel_cm <- includeEffects(mymodel_cm, transTrip, type = "endow")
+mycontrols_cm <- sienaAlgorithmCreate(projname = NULL, seed = 3, n3 = 60, cond = FALSE)
+ans_cm <- siena07(
+  mycontrols_cm,
+  data    = mydata_cm,
+  effects = mymodel_cm,
+  returnChangeContributions = TRUE,
+  returnDataFrame = FALSE,
+  silent  = TRUE
+)
+
+# ---------------------------------------------------------------------------
+# Static predict: creation/maintenance — all effect types present, distinct
+# ---------------------------------------------------------------------------
+test_that("predict.sienaFit static: creation/endow effects correctly separated", {
+  skip_if_not(requireNamespace("data.table", quietly = TRUE))
+  # Test via contributions struct (static)
+  wide_cm <- getStaticChangeContributions(
+    ans = ans_cm, data = mydata_cm, effects = mymodel_cm,
+    depvar = "mynet_cm", returnWide = TRUE
+  )
+  # All five effect slots appear as distinct columns
+  expect_true("density_eval"    %in% wide_cm$effectNames)
+  expect_true("recip_eval"      %in% wide_cm$effectNames)
+  expect_true("recip_creation"  %in% wide_cm$effectNames)
+  expect_true("transTrip_eval"  %in% wide_cm$effectNames)
+  expect_true("transTrip_endow" %in% wide_cm$effectNames)
+  # eval and creation columns must differ (different zero-masks)
+  recip_eval_col  <- which(wide_cm$effectNames == "recip_eval")
+  recip_creat_col <- which(wide_cm$effectNames == "recip_creation")
+  expect_false(identical(wide_cm$contribMat[, recip_eval_col],
+                         wide_cm$contribMat[, recip_creat_col]))
+  pred_cm <- predictProbability(wide_cm, theta = c(ans_cm$rate, ans_cm$theta), type = "tieProb")
+  
+})
+
+# ---------------------------------------------------------------------------
+# Dynamic predict: creation/maintenance
+# ---------------------------------------------------------------------------
+test_that("predict.sienaFit dynamic: creation/endow effect columns present", {
+  skip_if_not(requireNamespace("data.table", quietly = TRUE))
+  # Test via the contributions struct (which carries the column names directly)
+  # rather than predict.sienaFit whose aggregated output does not include them.
+  theta_cm <- c(ans_cm$rate, ans_cm$theta)
+  contrib <- getDynamicChangeContributions(
+    ans = ans_cm, data = mydata_cm, algorithm = mycontrols_cm,
+    theta = theta_cm, effects = mymodel_cm, depvar = "mynet_cm",
+    returnWide = TRUE, useChangeContributions = TRUE
+  )
+  expect_true("recip_eval"      %in% contrib$effectNames)
+  expect_true("recip_creation"  %in% contrib$effectNames)
+  expect_true("transTrip_eval"  %in% contrib$effectNames)
+  expect_true("transTrip_endow" %in% contrib$effectNames)
+  # eval and creation columns must differ (creation is 0 for existing ties)
+  recip_eval_col    <- which(contrib$effectNames == "recip_eval")
+  recip_creat_col   <- which(contrib$effectNames == "recip_creation")
+  expect_false(identical(contrib$contribMat[, recip_eval_col],
+                         contrib$contribMat[, recip_creat_col]))
 })

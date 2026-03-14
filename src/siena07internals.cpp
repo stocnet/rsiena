@@ -1637,13 +1637,9 @@ void getStaticChangeContributionstatistics(SEXP EFFECTSLIST,
             if(strcmp(netType, "oneMode") == 0 || strcmp(netType, "bipartite") == 0 ||
                     strcmp(netType, "behavior") == 0)
             {
-// todo At the moment, change contributions cannot be calculated for endowment 
-// or creation effects modifications in the corresponding methods 
-// (calculateNetworkEndowmentStatistics, calculateNetworkCreationStatistics,
-// and calculateBehaviorStatistics) in StatisticCalculator.cpp would be necessary!!!
-//if (strcmp(effectType, "eval") == 0 || strcmp(effectType, "endow") == 0 || 
-// strcmp(effectType, "creation") == 0)
-                if (strcmp(effectType, "eval") == 0)
+                if (strcmp(effectType, "eval") == 0 ||
+                    strcmp(effectType, "endow") == 0 ||
+                    strcmp(effectType, "creation") == 0)
                 {
 					EffectInfo * pEffectInfo = (EffectInfo *) 
 						R_ExternalPtrAddr(VECTOR_ELT(VECTOR_ELT(EFFECTS,pointerCol), i));

@@ -7,65 +7,65 @@ sienaAME <- function(
     diff1 = NULL,
     contrast1 = NULL,
     interaction1 = FALSE,
-    int_effectNames1 = NULL,
-    mod_effectNames1 = NULL,
+    intEffectNames1 = NULL,
+    modEffectNames1 = NULL,
     effectName2 = NULL,
     diff2 = NULL,
     contrast2 = NULL,
     interaction2 = FALSE,
-    int_effectNames2 = NULL,
-    mod_effectNames2 = NULL,
+    intEffectNames2 = NULL,
+    modEffectNames2 = NULL,
     type = c("changeProb", "tieProb"),
     second = FALSE,
     level = "period",
     condition = NULL,
-    sum.fun = mean,
+    sum_fun = mean,
     na.rm = TRUE,
     dynamic = FALSE,
     algorithm = NULL,
     n3 = 500,
     useChangeContributions = FALSE,
     uncertainty = TRUE,
-    uncertainty_mode = c("batch", "stream"),
+    uncertaintyMode = c("batch", "stream"),
     nsim = 1000,
-    uncertainty_sd = TRUE,
-    uncertainty_ci = TRUE,
-    uncertainty_probs = c(0.025, 0.5, 0.975),
-    uncertainty_mcse = FALSE,
-    uncertainty_mcse_batches = NULL,
+    uncertaintySd = TRUE,
+    uncertaintyCi = TRUE,
+    uncertaintyProbs = c(0.025, 0.5, 0.975),
+    uncertaintyMcse = FALSE,
+    uncertaintymcseBatches = NULL,
     useCluster = FALSE,
     nbrNodes = 1,
     clusterType = c("PSOCK", "FORK"),
     cluster = NULL,
-    batch_dir = "temp",
+    batchDir = "temp",
     prefix = "simBatch_b",
-    combine_batch = TRUE,
-    batch_size = NULL,
-    keep_batch = FALSE,
+    combineBatch = TRUE,
+    batchSize = NULL,
+    keepBatch = FALSE,
     verbose = TRUE,
-    mainEffect = "riskDifference",
+    mainEffect = "riskDifference", #allow utility later as well
     details = FALSE,
-    memory_scale = NULL,
-    batch_unit_budget = 2.5e8,
-    dynamic_ministep_factor = 10
+    memoryScale = NULL,
+    batchUnitBudget = 2.5e8,
+    dynamicMinistepFactor = 10
 ) {
     if (inherits(data, "sienaGroup"))
       stop("sienaAME does not support multi-group data (sienaGroup).")
-    uncertainty_mode <- match.arg(uncertainty_mode)
+    uncertaintyMode <- match.arg(uncertaintyMode)
     type <- match.arg(type)
     if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
 
     if (dynamic && is.null(algorithm))
       stop("'algorithm' must be provided when dynamic = TRUE")
 
-    if (is.null(batch_size)) {
-        batch_size <- plan_batch(
+    if (is.null(batchSize)) {
+        batchSize <- planBatch(
         data = data, depvar = depvar, nsim = nsim,
         nbrNodes = nbrNodes, useCluster = useCluster,
         dynamic = dynamic, n3 = n3,
-        unit_budget = batch_unit_budget,
-        dynamic_ministep_factor = dynamic_ministep_factor,
-        memory_scale = memory_scale
+        unitBudget = batchUnitBudget,
+        dynamicMinistepFactor = dynamicMinistepFactor,
+        memoryScale = memoryScale
         )
     }
 
@@ -76,6 +76,31 @@ sienaAME <- function(
     ifelse(mainEffect == "riskDifference", "secondDiff", "secondRiskRatio")
     }
 
+    # ---- resolve all user-supplied effect names once ----
+    if (dynamic) {
+      knownEffectNames <- getEffectNamesNoRate(effects, depvar)
+    } else {
+      staticContributions <- getStaticChangeContributions(
+          ans = ans, data = data, effects = effects, depvar = depvar,
+          returnWide = TRUE
+      )
+      knownEffectNames <- staticContributions$effectNames
+    }
+
+    resolvedNames <- resolveAMEEffectNames(
+      knownEffectNames,
+      effectName1, intEffectNames1, modEffectNames1,
+      effectName2, intEffectNames2, modEffectNames2,
+      second
+    )
+    effectName1     <- resolvedNames$effectName1
+    intEffectNames1 <- resolvedNames$intEffectNames1
+    modEffectNames1 <- resolvedNames$modEffectNames1
+    effectName2     <- resolvedNames$effectName2
+    intEffectNames2 <- resolvedNames$intEffectNames2
+    modEffectNames2 <- resolvedNames$modEffectNames2
+
+    # ---- build predictArgs ----
     if (dynamic) {
       predictArgs <- list(
           ans = ans, data = data, effects = effects,
@@ -87,25 +112,21 @@ sienaAME <- function(
           diffFun <- predictFirstDiffDynamic
           predictArgs <- c(predictArgs, list(
           effectName = effectName1, diff = diff1, contrast = contrast1,
-          interaction = interaction1, int_effectNames = int_effectNames1,
-          mod_effectNames = mod_effectNames1
+          interaction = interaction1, intEffectNames = intEffectNames1,
+          modEffectNames = modEffectNames1
           ))
       } else {
           diffFun <- predictSecondDiffDynamic
           predictArgs <- c(predictArgs, list(
           effectName1 = effectName1, diff1 = diff1, contrast1 = contrast1,
-          interaction1 = interaction1, int_effectNames1 = int_effectNames1,
-          mod_effectNames1 = mod_effectNames1,
+          interaction1 = interaction1, intEffectNames1 = intEffectNames1,
+          modEffectNames1 = modEffectNames1,
           effectName2 = effectName2, diff2 = diff2, contrast2 = contrast2,
-          interaction2 = interaction2, int_effectNames2 = int_effectNames2,
-          mod_effectNames2 = mod_effectNames2
+          interaction2 = interaction2, intEffectNames2 = intEffectNames2,
+          modEffectNames2 = modEffectNames2
           ))
       }
     } else {
-      staticContributions <- getStaticChangeContributions(
-          ans = ans, data = data, effects = effects, depvar = depvar,
-          returnWide = TRUE
-      )
       predictArgs <- list(
           ans = ans, staticContributions = staticContributions,
           type = type, mainEffect = mainEffect, details = details
@@ -114,18 +135,18 @@ sienaAME <- function(
           diffFun <- predictFirstDiffStatic
           predictArgs <- c(predictArgs, list(
           effectName = effectName1, diff = diff1, contrast = contrast1,
-          interaction = interaction1, int_effectNames = int_effectNames1,
-          mod_effectNames = mod_effectNames1
+          interaction = interaction1, intEffectNames = intEffectNames1,
+          modEffectNames = modEffectNames1
           ))
       } else {
           diffFun <- predictSecondDiffStatic
           predictArgs <- c(predictArgs, list(
           effectName1 = effectName1, diff1 = diff1, contrast1 = contrast1,
-          interaction1 = interaction1, int_effectNames1 = int_effectNames1,
-          mod_effectNames1 = mod_effectNames1,
+          interaction1 = interaction1, intEffectNames1 = intEffectNames1,
+          modEffectNames1 = modEffectNames1,
           effectName2 = effectName2, diff2 = diff2, contrast2 = contrast2,
-          interaction2 = interaction2, int_effectNames2 = int_effectNames2,
-          mod_effectNames2 = mod_effectNames2
+          interaction2 = interaction2, intEffectNames2 = intEffectNames2,
+          modEffectNames2 = modEffectNames2
           ))
       }
     }
@@ -133,30 +154,30 @@ sienaAME <- function(
     sienaPostestimate(
     predictFun               = diffFun,
     predictArgs              = predictArgs,
-    outcome                  = diffName,
+    outcomeName              = diffName,
     level                    = level,
     condition                = condition,
-    sum.fun                  = sum.fun,
+    sum_fun                  = sum_fun,
     na.rm                    = na.rm,
-    theta_hat                = ans[["theta"]],
-    cov_theta                = ans[["covtheta"]],
+    thetaHat                = ans[["theta"]],
+    covTheta                = ans[["covtheta"]],
     uncertainty              = uncertainty,
-    uncertainty_mode         = uncertainty_mode,
+    uncertaintyMode         = uncertaintyMode,
     nsim                     = nsim,
-    uncertainty_sd           = uncertainty_sd,
-    uncertainty_ci           = uncertainty_ci,
-    uncertainty_probs        = uncertainty_probs,
-    uncertainty_mcse         = uncertainty_mcse,
-    uncertainty_mcse_batches = uncertainty_mcse_batches,
+    uncertaintySd           = uncertaintySd,
+    uncertaintyCi           = uncertaintyCi,
+    uncertaintyProbs        = uncertaintyProbs,
+    uncertaintyMcse         = uncertaintyMcse,
+    uncertaintymcseBatches = uncertaintymcseBatches,
     useCluster               = useCluster,
     nbrNodes                 = nbrNodes,
     clusterType              = clusterType,
     cluster                  = cluster,
-    batch_dir                = batch_dir,
+    batchDir                = batchDir,
     prefix                   = prefix,
-    combine_batch            = combine_batch,
-    batch_size               = batch_size,
-    keep_batch               = keep_batch,
+    combineBatch            = combineBatch,
+    batchSize               = batchSize,
+    keepBatch               = keepBatch,
     verbose                  = verbose,
     useChangeContributions   = if (dynamic) useChangeContributions else NULL
     )
@@ -165,32 +186,37 @@ sienaAME <- function(
 # ---------------------------------------------------------------------------
 # Backward-compatibility wrapper: sienaAMEDynamic()
 # ---------------------------------------------------------------------------
-sienaAMEDynamic <- function(...) {
+sienaAMEDynamic <- function(...)
+{
   sienaAME(..., dynamic = TRUE)
 }
 
-
+# Core computation shared by both static and dynamic paths.
+# `changeContributions` — unified wide struct (contribMat + coord vectors + effectNames + thetaIdx)
+# `theta_use`           — named numeric vector aligned to changeContributions$effectNames
 predictFirstDiff <- function(changeContributions, theta_use, type,
-    effectName, diff, contrast, interaction, int_effectNames,
-    mod_effectNames, details, calcRiskRatio, mainEffect) {
-
-  utility     <- calculateUtility(changeContributions$contrib_mat, theta_use)
-  prob        <- as.numeric(softmax_arma_by_group(utility, changeContributions$group_id))
-  density_col <- changeContributions$contrib_mat[, "density"]
-  tieProb     <- .computeTieProb(prob, density_col, type)
+    effectName, diff, contrast, interaction, intEffectNames,
+    modEffectNames, details, calcRiskRatio, mainEffect)
+{
+  mat         <- changeContributions$contribMat
+  densityName <- resolveEffectName("density", changeContributions$effectNames)
+  density     <- mat[, densityName]
+  utility    <- calculateUtility(mat, theta_use)
+  changeProb <- calculateChangeProb(utility, changeContributions$group_id)
+  tieProb    <- if (type == "tieProb") calculateTieProb(changeProb, density) else NULL
 
   fd <- calculateFirstDiff(
-    densityValue       = density_col,
-    changeProb         = prob,
+    densityValue       = density,
+    changeProb         = changeProb,
     changeUtil         = utility,
     effectName         = effectName,
-    effectContribution = changeContributions$contrib_mat[, effectName],
+    effectContribution = mat[, effectName],
     diff               = diff,
     contrast           = contrast,
     interaction        = interaction,
-    int_effectNames    = int_effectNames,
-    mod_effectNames    = mod_effectNames,
-    modContribution    = if (!is.null(mod_effectNames)) changeContributions$contrib_mat[, mod_effectNames] else NULL,
+    intEffectNames     = intEffectNames,
+    modEffectNames     = modEffectNames,
+    modContribution    = if (!is.null(modEffectNames)) mat[, modEffectNames] else NULL,
     effectNames        = changeContributions$effectNames,
     theta              = theta_use,
     type               = type,
@@ -200,16 +226,15 @@ predictFirstDiff <- function(changeContributions, theta_use, type,
     mainEffect         = mainEffect
   )
 
-  # Exclude density==0 (no-change) rows from output — calculateFirstDiff already sets them to NA
-  keep   <- density_col != 0L
-  contrib <- changeContributions$contrib_mat[keep, , drop = FALSE]
-  out <- data.frame(.groupColsList(changeContributions, keep), stringsAsFactors = FALSE)
-  out <- .attachContribColumns(out, changeContributions$effectNames, contrib, flip = TRUE)
+  keep   <- density != 0L
+  out    <- data.frame(groupColsList(changeContributions, keep), stringsAsFactors = FALSE)
+  out    <- attachContribColumns(out, changeContributions$effectNames,
+                                 mat[keep, , drop = FALSE], flip = TRUE)
   out[names(fd)] <- lapply(fd, `[`, keep)
 
   if (details) {
     out[["changeUtil"]] <- utility[keep]
-    out[["changeProb"]] <- prob[keep]
+    out[["changeProb"]] <- changeProb[keep]
     if (!is.null(tieProb)) out[["tieProb"]] <- tieProb[keep]
   }
 
@@ -220,36 +245,38 @@ predictFirstDiff <- function(changeContributions, theta_use, type,
 
 predictSecondDiff <- function(changeContributions, theta_use, type,
     effectName1, diff1, contrast1, interaction1,
-    int_effectNames1, mod_effectNames1,
+    intEffectNames1, modEffectNames1,
     effectName2, diff2, contrast2, interaction2,
-    int_effectNames2, mod_effectNames2,
-    details, calcRiskRatio, mainEffect) {
-
-  utility     <- calculateUtility(changeContributions$contrib_mat, theta_use)
-  prob        <- as.numeric(softmax_arma_by_group(utility, changeContributions$group_id))
-  density_col <- changeContributions$contrib_mat[, "density"]
-  tieProb     <- .computeTieProb(prob, density_col, type)
+    intEffectNames2, modEffectNames2,
+    details, calcRiskRatio, mainEffect)
+{
+  mat         <- changeContributions$contribMat
+  densityName <- resolveEffectName("density", changeContributions$effectNames)
+  density     <- mat[, densityName]
+  utility    <- calculateUtility(mat, theta_use)
+  changeProb <- calculateChangeProb(utility, changeContributions$group_id)
+  tieProb    <- if (type == "tieProb") calculateTieProb(changeProb, density) else NULL
 
   sd <- calculateSecondDiff(
-    densityValue        = density_col,
-    changeProb          = prob,
+    densityValue        = density,
+    changeProb          = changeProb,
     changeUtil          = utility,
     effectName1         = effectName1,
-    effectContribution1 = changeContributions$contrib_mat[, effectName1],
+    effectContribution1 = mat[, effectName1],
     diff1               = diff1,
     contrast1           = contrast1,
     interaction1        = interaction1,
-    int_effectNames1    = int_effectNames1,
-    mod_effectNames1    = mod_effectNames1,
-    modContribution1    = if (!is.null(mod_effectNames1)) changeContributions$contrib_mat[, mod_effectNames1] else NULL,
+    intEffectNames1     = intEffectNames1,
+    modEffectNames1     = modEffectNames1,
+    modContribution1    = if (!is.null(modEffectNames1)) mat[, modEffectNames1] else NULL,
     effectName2         = effectName2,
-    effectContribution2 = changeContributions$contrib_mat[, effectName2],
+    effectContribution2 = if (!is.null(effectName2)) mat[, effectName2] else NULL,
     diff2               = diff2,
     contrast2           = contrast2,
     interaction2        = interaction2,
-    int_effectNames2    = int_effectNames2,
-    mod_effectNames2    = mod_effectNames2,
-    modContribution2    = if (!is.null(mod_effectNames2)) changeContributions$contrib_mat[, mod_effectNames2] else NULL,
+    intEffectNames2     = intEffectNames2,
+    modEffectNames2     = modEffectNames2,
+    modContribution2    = if (!is.null(modEffectNames2)) mat[, modEffectNames2] else NULL,
     effectNames         = changeContributions$effectNames,
     theta               = theta_use,
     type                = type,
@@ -259,15 +286,15 @@ predictSecondDiff <- function(changeContributions, theta_use, type,
     mainEffect          = mainEffect
   )
 
-  keep   <- density_col != 0L
-  contrib <- changeContributions$contrib_mat[keep, , drop = FALSE]
-  out <- data.frame(.groupColsList(changeContributions, keep), stringsAsFactors = FALSE)
-  out <- .attachContribColumns(out, changeContributions$effectNames, contrib, flip = TRUE)
+  keep <- density != 0L
+  out  <- data.frame(groupColsList(changeContributions, keep), stringsAsFactors = FALSE)
+  out  <- attachContribColumns(out, changeContributions$effectNames,
+                               mat[keep, , drop = FALSE], flip = TRUE)
   out[names(sd)] <- lapply(sd, `[`, keep)
 
   if (details) {
     out[["changeUtil"]] <- utility[keep]
-    out[["changeProb"]] <- prob[keep]
+    out[["changeProb"]] <- changeProb[keep]
     if (!is.null(tieProb)) out[["tieProb"]] <- tieProb[keep]
   }
 
@@ -276,114 +303,77 @@ predictSecondDiff <- function(changeContributions, theta_use, type,
 }
 
 
-# ---- Static per-theta wrappers -------------------------------------------
+# ---- Thin wrappers (static / dynamic) ----------------------------------------
 
 predictFirstDiffStatic <- function(ans, theta, staticContributions,
     type = "changeProb",
     effectName, diff = NULL, contrast = NULL,
-    interaction = FALSE, int_effectNames = NULL, mod_effectNames = NULL,
-    details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference") {
-
-  effectNames <- staticContributions[[1]]$effectNames
-  thetaNoRate <- alignThetaNoRate(theta, effectNames, ans)
-
-  results <- vector("list", length(staticContributions))
-  for (i in seq_along(staticContributions)) {
-    staticCont <- staticContributions[[i]]
-    theta_use <- thetaNoRate[staticCont$effectNames]
-    results[[i]] <- predictFirstDiff(staticCont, theta_use, type,
-        effectName, diff, contrast, interaction, int_effectNames,
-        mod_effectNames, details, calcRiskRatio, mainEffect)
-  }
-  if (requireNamespace("data.table", quietly = TRUE))
-    data.table::rbindlist(results, use.names = TRUE)
-  else {
-    out <- do.call(rbind, results)
-    rownames(out) <- NULL
-    out
-  }
+    interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
+    details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference")
+{
+  effectNames <- staticContributions$effectNames
+  theta_use   <- alignThetaNoRate(theta, effectNames, ans)[effectNames]
+  predictFirstDiff(changeContributions = staticContributions, theta_use, type,
+      effectName, diff, contrast, interaction, intEffectNames,
+      modEffectNames, details, calcRiskRatio, mainEffect)
 }
 
 predictSecondDiffStatic <- function(ans, theta, staticContributions,
     type = "changeProb",
     effectName1, diff1 = NULL, contrast1 = NULL,
-    interaction1 = FALSE, int_effectNames1 = NULL, mod_effectNames1 = NULL,
-    effectName2, diff2 = NULL, contrast2 = NULL,
-    interaction2 = FALSE, int_effectNames2 = NULL, mod_effectNames2 = NULL,
-    mainEffect = "riskDifference", details = FALSE) {
-
-  effectNames <- staticContributions[[1]]$effectNames
-  thetaNoRate <- alignThetaNoRate(theta, effectNames, ans)
-
-  results <- vector("list", length(staticContributions))
-  for (i in seq_along(staticContributions)) {
-    staticCont <- staticContributions[[i]]
-    theta_use <- thetaNoRate[staticCont$effectNames]
-    results[[i]] <- predictSecondDiff(staticCont, theta_use, type,
-        effectName1, diff1, contrast1, interaction1,
-        int_effectNames1, mod_effectNames1,
-        effectName2, diff2, contrast2, interaction2,
-        int_effectNames2, mod_effectNames2,
-        details, FALSE, mainEffect)
-  }
-  if (requireNamespace("data.table", quietly = TRUE))
-    data.table::rbindlist(results, use.names = TRUE)
-  else {
-    out <- do.call(rbind, results)
-    rownames(out) <- NULL
-    out
-  }
+    interaction1 = FALSE, intEffectNames1 = NULL, modEffectNames1 = NULL,
+    effectName2 = NULL, diff2 = NULL, contrast2 = NULL,
+    interaction2 = FALSE, intEffectNames2 = NULL, modEffectNames2 = NULL,
+    mainEffect = "riskDifference", details = FALSE)
+{
+  effectNames <- staticContributions$effectNames
+  theta_use   <- alignThetaNoRate(theta, effectNames, ans)[effectNames]
+  predictSecondDiff(changeContributions = staticContributions, theta_use, type,
+      effectName1, diff1, contrast1, interaction1, intEffectNames1, modEffectNames1,
+      effectName2, diff2, contrast2, interaction2, intEffectNames2, modEffectNames2,
+      details, FALSE, mainEffect)
 }
-
-
-# ---- Dynamic per-theta wrappers ------------------------------------------
 
 predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
     type = "changeProb", depvar = NULL,
     effectName, diff = NULL, contrast = NULL,
-    interaction = FALSE, int_effectNames = NULL, mod_effectNames = NULL,
+    interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     n3 = NULL, useChangeContributions = FALSE,
-    details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference") {
-
+    details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference")
+{
   if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
-  dynamicChangeContributions <- getDynamicChangeContributions(
+  dynContrib <- getDynamicChangeContributions(
     ans = ans, theta = theta, data = data, algorithm = algorithm,
     effects = effects, depvar = depvar, n3 = n3,
-    useChangeContributions = useChangeContributions,
-    returnWide = TRUE
+    useChangeContributions = useChangeContributions, returnWide = TRUE
   )
-  thetaNoRate <- alignThetaNoRate(theta, getEffectNamesNoRate(effects, depvar), ans)
-  theta_use   <- thetaNoRate[dynamicChangeContributions$effectNames]
-
-  predictFirstDiff(dynamicChangeContributions, theta_use, type,
-      effectName, diff, contrast, interaction, int_effectNames,
-      mod_effectNames, details, calcRiskRatio, mainEffect)
+  effectNames <- dynContrib$effectNames
+  theta_use <- alignThetaNoRate(theta, effectNames, ans)[effectNames]
+  predictFirstDiff(changeContributions = dynContrib, theta_use, type,
+      effectName, diff, contrast, interaction, intEffectNames,
+      modEffectNames, details, calcRiskRatio, mainEffect)
 }
 
 predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
     type = "changeProb", depvar = NULL,
     effectName1, diff1 = NULL, contrast1 = NULL,
-    interaction1 = FALSE, int_effectNames1 = NULL, mod_effectNames1 = NULL,
-    effectName2, diff2 = NULL, contrast2 = NULL,
-    interaction2 = FALSE, int_effectNames2 = NULL, mod_effectNames2 = NULL,
+    interaction1 = FALSE, intEffectNames1 = NULL, modEffectNames1 = NULL,
+    effectName2 = NULL, diff2 = NULL, contrast2 = NULL,
+    interaction2 = FALSE, intEffectNames2 = NULL, modEffectNames2 = NULL,
     n3 = NULL, useChangeContributions = FALSE,
-    calcRiskRatio = FALSE, mainEffect = "riskDifference", details = FALSE) {
-
+    calcRiskRatio = FALSE, mainEffect = "riskDifference", details = FALSE)
+{
   if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
-  dynamicChangeContributions <- getDynamicChangeContributions(
+  dynContrib <- getDynamicChangeContributions(
     ans = ans, theta = theta, data = data, algorithm = algorithm,
     effects = effects, depvar = depvar, n3 = n3,
-    useChangeContributions = useChangeContributions,
-    returnWide = TRUE
+    useChangeContributions = useChangeContributions, returnWide = TRUE
   )
-  thetaNoRate <- alignThetaNoRate(theta, getEffectNamesNoRate(effects, depvar), ans)
-  theta_use   <- thetaNoRate[dynamicChangeContributions$effectNames]
-
-  predictSecondDiff(dynamicChangeContributions, theta_use, type,
-      effectName1, diff1, contrast1, interaction1,
-      int_effectNames1, mod_effectNames1,
-      effectName2, diff2, contrast2, interaction2,
-      int_effectNames2, mod_effectNames2,
+  effectNames <- dynContrib$effectNames
+  theta_use <- alignThetaNoRate(theta, effectNames, ans)[effectNames]
+  predictSecondDiff(changeContributions = dynContrib, theta_use, type,
+      effectName1, diff1, contrast1, interaction1, intEffectNames1, modEffectNames1,
+      effectName2, diff2, contrast2, interaction2, intEffectNames2, modEffectNames2,
       details, calcRiskRatio, mainEffect)
 }
 
@@ -395,8 +385,8 @@ calculateFirstDiff <- function(densityValue,
                                diff = NULL,
                                contrast = NULL, 
                                interaction = FALSE,
-                               int_effectNames = NULL,
-                               mod_effectNames = NULL,
+                               intEffectNames = NULL,
+                               modEffectNames = NULL,
                                modContribution = NULL,
                                effectNames,
                                theta, 
@@ -429,8 +419,8 @@ calculateFirstDiff <- function(densityValue,
     utilDiff <- calculateUtilityDiff(effectName = effectName, diff = diff, 
                                       theta = theta, densityValue = densityValue,
                                       interaction = interaction,
-                                      int_effectNames = int_effectNames,
-                                      mod_effectNames = mod_effectNames,
+                                      intEffectNames = intEffectNames,
+                                      modEffectNames = modEffectNames,
                                       modContribution = modContribution,
                                       effectNames = effectNames)
   }
@@ -495,16 +485,16 @@ calculateSecondDiff <- function(densityValue,
                                 diff1 = NULL, 
                                 contrast1 = NULL,
                                 interaction1 = FALSE,
-                                int_effectNames1 = NULL, # later it would be nice to detect these automatically
-                                mod_effectNames1 = NULL,
+                                intEffectNames1 = NULL, # later it would be nice to detect these automatically
+                                modEffectNames1 = NULL,
                                 modContribution1 = NULL,
                                 effectName2, 
                                 effectContribution2,
                                 diff2 = NULL,
                                 contrast2 = NULL,
                                 interaction2 = FALSE,
-                                int_effectNames2 = NULL, # later it would be nice to detect these automatically
-                                mod_effectNames2 = NULL,
+                                intEffectNames2 = NULL, # later it would be nice to detect these automatically
+                                modEffectNames2 = NULL,
                                 modContribution2 = NULL,
                                 effectNames,
                                 theta,
@@ -522,8 +512,8 @@ calculateSecondDiff <- function(densityValue,
     diff = diff1,
     contrast = contrast1, 
     interaction = interaction1,
-    int_effectNames = int_effectNames1,
-    mod_effectNames = mod_effectNames1,
+    intEffectNames = intEffectNames1,
+    modEffectNames = modEffectNames1,
     modContribution = modContribution1,
     effectNames = effectNames,
     theta = theta, 
@@ -544,8 +534,8 @@ calculateSecondDiff <- function(densityValue,
                                       diff = diff2, theta = theta, 
                                       densityValue = densityValue,
                                       interaction = interaction2,
-                                      int_effectNames = int_effectNames2,
-                                      mod_effectNames = mod_effectNames2,
+                                      intEffectNames = intEffectNames2,
+                                      modEffectNames = modEffectNames2,
                                       modContribution = modContribution2,
                                       effectNames = effectNames)
   expDiff21 <- exp(utilDiff21)
@@ -573,8 +563,8 @@ calculateSecondDiff <- function(densityValue,
     type = type,
     tieProb = tieProb_cf21,
     interaction = interaction1,
-    int_effectNames = int_effectNames1,
-    mod_effectNames = mod_effectNames1,
+    intEffectNames = intEffectNames1,
+    modEffectNames = modEffectNames1,
     modContribution = modContribution1,
     effectNames = effectNames,
     mainEffect = mainEffect,
@@ -626,14 +616,14 @@ calculateSecondDiff <- function(densityValue,
 calculateUtilityDiff <- function(effectName, diff, 
                                  theta, densityValue,
                                  interaction = FALSE,
-                                 int_effectNames = NULL,
-                                 mod_effectNames = NULL,
+                                 intEffectNames = NULL,
+                                 modEffectNames = NULL,
                                  modContribution = NULL,
                                  effectNames = NULL){
   effectNum <- which(effectNames == effectName)
   if(interaction == TRUE){
     moderator_values <- densityValue * modContribution
-    interaction_effectNums <- which(effectNames == int_effectNames)
+    interaction_effectNums <- which(effectNames == intEffectNames)
     util_diff <- densityValue * (diff * theta[effectNum] + 
                               diff * moderator_values * theta[interaction_effectNums])
   } else {
@@ -641,6 +631,40 @@ calculateUtilityDiff <- function(effectName, diff,
   }
   util_diff
  }
+
+# Resolve a user-supplied bare effect shortName to the composite "shortName_type"
+# column name used in contribMat. If it already contains "_" it passes through.
+# If multiple type-variants exist, "_eval" is preferred.
+resolveEffectName <- function(effectName, effectNames) {
+  if (is.null(effectName)) return(NULL)
+  vapply(effectName, function(nm) {
+    if (nm %in% effectNames) return(nm)
+    # Try shortName_eval (most common default type)
+    m <- grep(paste0("(^|_)", nm, "_eval$"), effectNames, perl = TRUE, value = TRUE)
+    if (length(m) > 0L) return(m[1L])
+    # Try any type suffix
+    m <- grep(paste0("(^|_)", nm, "_"), effectNames, perl = TRUE, value = TRUE)
+    if (length(m) > 0L) return(m[1L])
+    stop("Effect '", nm, "' not found in contribMat columns: ",
+         paste(effectNames, collapse = ", "), call. = FALSE)
+  }, character(1L), USE.NAMES = FALSE)
+}
+
+# Helper: resolve the effect-name arguments of sienaAME against a known column
+# list.  Returns a named list with the same structure used in predictArgs.
+resolveAMEEffectNames <- function(effectNames,
+                                  effectName1, intEffectNames1, modEffectNames1,
+                                  effectName2, intEffectNames2, modEffectNames2,
+                                  second) {
+  list(
+    effectName1     = resolveEffectName(effectName1,      effectNames),
+    intEffectNames1 = resolveEffectName(intEffectNames1,  effectNames),
+    modEffectNames1 = resolveEffectName(modEffectNames1,  effectNames),
+    effectName2     = if (second) resolveEffectName(effectName2,     effectNames) else NULL,
+    intEffectNames2 = if (second) resolveEffectName(intEffectNames2, effectNames) else NULL,
+    modEffectNames2 = if (second) resolveEffectName(modEffectNames2, effectNames) else NULL
+  )
+}
 
 
 # ===========================================================================
@@ -657,49 +681,49 @@ calculateUtilityDiff <- function(effectName, diff,
 #     diff1 = NULL,
 #     contrast1 = NULL,
 #     interaction1 = FALSE,
-#     int_effectNames1 = NULL,
-#     mod_effectNames1 = NULL,
+#     intEffectNames1 = NULL,
+#     modEffectNames1 = NULL,
 #     effectName2 = NULL,
 #     diff2 = NULL,
 #     contrast2 = NULL,
 #     interaction2 = FALSE,
-#     int_effectNames2 = NULL,
-#     mod_effectNames2 = NULL,
+#     intEffectNames2 = NULL,
+#     modEffectNames2 = NULL,
 #     type = c("changeProb", "tieProb"),
 #     second = FALSE,
 #     level = "period",
 #     condition = NULL, 
-#     sum.fun = mean,
+#     sum_fun = mean,
 #     na.rm = TRUE,
 #     dynamic = FALSE,
 #     algorithm = NULL,
 #     n3 = 500,
 #     useChangeContributions = FALSE,
 #     uncertainty = TRUE,
-#     uncertainty_mode = c("batch", "stream"),
+#     uncertaintyMode = c("batch", "stream"),
 #     nsim = 1000,
-#     uncertainty_sd = TRUE,
-#     uncertainty_ci = TRUE,
-#     uncertainty_probs = c(0.025, 0.5, 0.975),
-#     uncertainty_mcse = FALSE,
-#     uncertainty_mcse_batches = NULL,
+#     uncertaintySd = TRUE,
+#     uncertaintyCi = TRUE,
+#     uncertaintyProbs = c(0.025, 0.5, 0.975),
+#     uncertaintyMcse = FALSE,
+#     uncertaintymcseBatches = NULL,
 #     useCluster = FALSE,
 #     nbrNodes = 1,
 #     clusterType = c("PSOCK", "FORK"),
 #     cluster = NULL,
-#     batch_dir = "temp",
+#     batchDir = "temp",
 #     prefix = "simBatch_b",
-#     combine_batch = TRUE,
-#     batch_size = NULL,
-#     keep_batch = FALSE,
+#     combineBatch = TRUE,
+#     batchSize = NULL,
+#     keepBatch = FALSE,
 #     verbose = TRUE,
 #     mainEffect = "riskDifference",
 #     details = FALSE,
-#     memory_scale = NULL,
-#     batch_unit_budget = 5e6,
-#     dynamic_ministep_factor = 10
+#     memoryScale = NULL,
+#     batchUnitBudget = 5e6,
+#     dynamicMinistepFactor = 10
 # ){
-#     uncertainty_mode <- match.arg(uncertainty_mode)
+#     uncertaintyMode <- match.arg(uncertaintyMode)
 #     type <- match.arg(type)
 #     if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
 # 
@@ -707,8 +731,8 @@ calculateUtilityDiff <- function(effectName, diff,
 #         stop("'algorithm' must be provided when dynamic = TRUE")
 #     }
 # 
-#     if (is.null(batch_size)) {
-#       batch_size <- plan_batch(
+#     if (is.null(batchSize)) {
+#       batchSize <- planBatch(
 #         data = data, 
 #         depvar = depvar, 
 #         nsim = nsim,
@@ -716,9 +740,9 @@ calculateUtilityDiff <- function(effectName, diff,
 #         useCluster = useCluster,
 #         dynamic = dynamic, 
 #         n3 = n3,
-#         unit_budget = batch_unit_budget,
-#         dynamic_ministep_factor = dynamic_ministep_factor,
-#         memory_scale = memory_scale
+#         unitBudget = batchUnitBudget,
+#         dynamicMinistepFactor = dynamicMinistepFactor,
+#         memoryScale = memoryScale
 #       )
 #     }
 #     # ---- outcome name ----
@@ -740,18 +764,18 @@ calculateUtilityDiff <- function(effectName, diff,
 #             diffFun <- predictFirstDiffDynamic
 #             predictArgs <- c(predictArgs, list(
 #                 effectName = effectName1, diff = diff1, contrast = contrast1,
-#                 interaction = interaction1, int_effectNames = int_effectNames1,
-#                 mod_effectNames = mod_effectNames1
+#                 interaction = interaction1, intEffectNames = intEffectNames1,
+#                 modEffectNames = modEffectNames1
 #             ))
 #         } else {
 #             diffFun <- predictSecondDiffDynamic
 #             predictArgs <- c(predictArgs, list(
 #                 effectName1 = effectName1, diff1 = diff1, contrast1 = contrast1,
-#                 interaction1 = interaction1, int_effectNames1 = int_effectNames1,
-#                 mod_effectNames1 = mod_effectNames1,
+#                 interaction1 = interaction1, intEffectNames1 = intEffectNames1,
+#                 modEffectNames1 = modEffectNames1,
 #                 effectName2 = effectName2, diff2 = diff2, contrast2 = contrast2,
-#                 interaction2 = interaction2, int_effectNames2 = int_effectNames2,
-#                 mod_effectNames2 = mod_effectNames2
+#                 interaction2 = interaction2, intEffectNames2 = intEffectNames2,
+#                 modEffectNames2 = modEffectNames2
 #             ))
 #         }
 #     } else {
@@ -767,18 +791,18 @@ calculateUtilityDiff <- function(effectName, diff,
 #             diffFun <- predictFirstDiffStatic
 #             predictArgs <- c(predictArgs, list(
 #                 effectName = effectName1, diff = diff1, contrast = contrast1,
-#                 interaction = interaction1, int_effectNames = int_effectNames1,
-#                 mod_effectNames = mod_effectNames1
+#                 interaction = interaction1, intEffectNames = intEffectNames1,
+#                 modEffectNames = modEffectNames1
 #             ))
 #         } else {
 #             diffFun <- predictSecondDiffStatic
 #             predictArgs <- c(predictArgs, list(
 #                 effectName1 = effectName1, diff1 = diff1, contrast1 = contrast1,
-#                 interaction1 = interaction1, int_effectNames1 = int_effectNames1,
-#                 mod_effectNames1 = mod_effectNames1,
+#                 interaction1 = interaction1, intEffectNames1 = intEffectNames1,
+#                 modEffectNames1 = modEffectNames1,
 #                 effectName2 = effectName2, diff2 = diff2, contrast2 = contrast2,
-#                 interaction2 = interaction2, int_effectNames2 = int_effectNames2,
-#                 mod_effectNames2 = mod_effectNames2
+#                 interaction2 = interaction2, intEffectNames2 = intEffectNames2,
+#                 modEffectNames2 = modEffectNames2
 #             ))
 #         }
 #     }
@@ -786,30 +810,30 @@ calculateUtilityDiff <- function(effectName, diff,
 #     sienaPostestimate(
 #         predictFun = diffFun,
 #         predictArgs = predictArgs,
-#         outcome = diffName,
+#         outcomeName = diffName,
 #         level = level,
 #         condition = condition,
-#         sum.fun = sum.fun,
+#         sum_fun = sum_fun,
 #         na.rm = na.rm,
-#         theta_hat = ans$theta,
-#         cov_theta = ans$covtheta,
+#         thetaHat = ans$theta,
+#         covTheta = ans$covtheta,
 #         uncertainty = uncertainty,
-#         uncertainty_mode = uncertainty_mode,
+#         uncertaintyMode = uncertaintyMode,
 #         nsim = nsim,
-#         uncertainty_sd = uncertainty_sd,
-#         uncertainty_ci = uncertainty_ci,
-#         uncertainty_probs = uncertainty_probs,
-#         uncertainty_mcse = uncertainty_mcse,
-#         uncertainty_mcse_batches = uncertainty_mcse_batches,
+#         uncertaintySd = uncertaintySd,
+#         uncertaintyCi = uncertaintyCi,
+#         uncertaintyProbs = uncertaintyProbs,
+#         uncertaintyMcse = uncertaintyMcse,
+#         uncertaintymcseBatches = uncertaintymcseBatches,
 #         useCluster = useCluster,
 #         nbrNodes = nbrNodes,
 #         clusterType = clusterType,
 #         cluster = cluster,
-#         batch_dir = batch_dir,
+#         batchDir = batchDir,
 #         prefix = prefix,
-#         combine_batch = combine_batch,
-#         batch_size = batch_size,
-#         keep_batch = keep_batch,
+#         combineBatch = combineBatch,
+#         batchSize = batchSize,
+#         keepBatch = keepBatch,
 #         verbose = verbose,
 #         useChangeContributions = if (dynamic)
 #             useChangeContributions else NULL
@@ -820,8 +844,8 @@ calculateUtilityDiff <- function(effectName, diff,
 #     type = "changeProb",
 #     effectName, diff = NULL, contrast = NULL,
 #     interaction = FALSE,
-#     int_effectNames = NULL,
-#     mod_effectNames = NULL,
+#     intEffectNames = NULL,
+#     modEffectNames = NULL,
 #     details = FALSE,
 #     calcRiskRatio = FALSE,
 #     mainEffect = "riskDifference"
@@ -833,8 +857,8 @@ calculateUtilityDiff <- function(effectName, diff,
 #         group_vars = c("period", "ego"),
 #         type = type, effectName = effectName, diff = diff,
 #         contrast = contrast, interaction = interaction,
-#         int_effectNames = int_effectNames,
-#         mod_effectNames = mod_effectNames,
+#         intEffectNames = intEffectNames,
+#         modEffectNames = modEffectNames,
 #         details = details, calcRiskRatio = calcRiskRatio,
 #         mainEffect = mainEffect)
 # }
@@ -843,12 +867,12 @@ calculateUtilityDiff <- function(effectName, diff,
 #     type = "changeProb",
 #     effectName1, diff1 = NULL, contrast1 = NULL,
 #     interaction1 = FALSE,
-#     int_effectNames1 = NULL,
-#     mod_effectNames1 = NULL,
+#     intEffectNames1 = NULL,
+#     modEffectNames1 = NULL,
 #     effectName2, diff2 = NULL, contrast2 = NULL,
 #     interaction2 = FALSE,
-#     int_effectNames2 = NULL,
-#     mod_effectNames2 = NULL,
+#     intEffectNames2 = NULL,
+#     modEffectNames2 = NULL,
 #     mainEffect = "riskDifference",
 #     details = FALSE
 # ) {
@@ -860,12 +884,12 @@ calculateUtilityDiff <- function(effectName, diff,
 #         type = type,
 #         effectName1 = effectName1, diff1 = diff1, contrast1 = contrast1,
 #         interaction1 = interaction1,
-#         int_effectNames1 = int_effectNames1,
-#         mod_effectNames1 = mod_effectNames1,
+#         intEffectNames1 = intEffectNames1,
+#         modEffectNames1 = modEffectNames1,
 #         effectName2 = effectName2, diff2 = diff2, contrast2 = contrast2,
 #         interaction2 = interaction2,
-#         int_effectNames2 = int_effectNames2,
-#         mod_effectNames2 = mod_effectNames2,
+#         intEffectNames2 = intEffectNames2,
+#         modEffectNames2 = modEffectNames2,
 #         details = details,
 #         calcRiskRatio = FALSE,
 #         mainEffect = mainEffect)
@@ -884,14 +908,14 @@ calculateUtilityDiff <- function(effectName, diff,
 #     diff1 = NULL,
 #     contrast1 = NULL,
 #     interaction1 = FALSE,
-#     int_effectNames1 = NULL,
-#     mod_effectNames1 = NULL,
+#     intEffectNames1 = NULL,
+#     modEffectNames1 = NULL,
 #     effectName2 = NULL,
 #     diff2 = NULL,
 #     contrast2 = NULL,
 #     interaction2 = FALSE,
-#     int_effectNames2 = NULL,
-#     mod_effectNames2 = NULL,
+#     intEffectNames2 = NULL,
+#     modEffectNames2 = NULL,
 #     effects,
 #     algorithm,
 #     type = c("changeProb", "tieProb"),
@@ -899,35 +923,35 @@ calculateUtilityDiff <- function(effectName, diff,
 #     second = FALSE,
 #     level = "none",
 #     condition = NULL,
-#     sum.fun = mean,
+#     sum_fun = mean,
 #     na.rm = TRUE,
 #     n3 = 500,
 #     useChangeContributions = FALSE,
 #     uncertainty = TRUE,
-#     uncertainty_mode = c("batch", "stream"),
+#     uncertaintyMode = c("batch", "stream"),
 #     nsim = 100,
-#     uncertainty_sd = TRUE,
-#     uncertainty_ci = TRUE,
-#     uncertainty_probs = c(0.025, 0.5, 0.975),
-#     uncertainty_mcse = FALSE,
-#     uncertainty_mcse_batches = NULL,
+#     uncertaintySd = TRUE,
+#     uncertaintyCi = TRUE,
+#     uncertaintyProbs = c(0.025, 0.5, 0.975),
+#     uncertaintyMcse = FALSE,
+#     uncertaintymcseBatches = NULL,
 #     useCluster = FALSE,
 #     nbrNodes = 1,
 #     clusterType = c("PSOCK", "FORK"),
 #     cluster = NULL,
-#     batch_dir = "temp",
+#     batchDir = "temp",
 #     prefix = "simBatch_b",
-#     batch_size = NULL,
-#     combine_batch = TRUE,
-#     keep_batch = FALSE,
+#     batchSize = NULL,
+#     combineBatch = TRUE,
+#     keepBatch = FALSE,
 #     verbose = TRUE,
 #     batch = TRUE,
 #     silent = NULL,
 #     mainEffect = "riskDifference",
 #     details = FALSE,
-#     memory_scale = NULL,
-#     batch_unit_budget = 5e6,
-#     dynamic_ministep_factor = 10
+#     memoryScale = NULL,
+#     batchUnitBudget = 5e6,
+#     dynamicMinistepFactor = 10
 # ){
 #     sienaAME(
 #         ans = ans,
@@ -938,47 +962,47 @@ calculateUtilityDiff <- function(effectName, diff,
 #         diff1 = diff1,
 #         contrast1 = contrast1,
 #         interaction1 = interaction1,
-#         int_effectNames1 = int_effectNames1,
-#         mod_effectNames1 = mod_effectNames1,
+#         intEffectNames1 = intEffectNames1,
+#         modEffectNames1 = modEffectNames1,
 #         effectName2 = effectName2,
 #         diff2 = diff2,
 #         contrast2 = contrast2,
 #         interaction2 = interaction2,
-#         int_effectNames2 = int_effectNames2,
-#         mod_effectNames2 = mod_effectNames2,
+#         intEffectNames2 = intEffectNames2,
+#         modEffectNames2 = modEffectNames2,
 #         type = type,
 #         second = second,
 #         level = level,
 #         condition = condition,
-#         sum.fun = sum.fun,
+#         sum_fun = sum_fun,
 #         na.rm = na.rm,
 #         dynamic = TRUE,
 #         algorithm = algorithm,
 #         n3 = n3,
 #         useChangeContributions = useChangeContributions,
 #         uncertainty = uncertainty,
-#         uncertainty_mode = uncertainty_mode,
+#         uncertaintyMode = uncertaintyMode,
 #         nsim = nsim,
-#         uncertainty_sd = uncertainty_sd,
-#         uncertainty_ci = uncertainty_ci,
-#         uncertainty_probs = uncertainty_probs,
-#         uncertainty_mcse = uncertainty_mcse,
-#         uncertainty_mcse_batches = uncertainty_mcse_batches,
+#         uncertaintySd = uncertaintySd,
+#         uncertaintyCi = uncertaintyCi,
+#         uncertaintyProbs = uncertaintyProbs,
+#         uncertaintyMcse = uncertaintyMcse,
+#         uncertaintymcseBatches = uncertaintymcseBatches,
 #         useCluster = useCluster,
 #         nbrNodes = nbrNodes,
 #         clusterType = clusterType,
 #         cluster = cluster,
-#         batch_dir = batch_dir,
+#         batchDir = batchDir,
 #         prefix = prefix,
-#         combine_batch = combine_batch,
-#         batch_size = batch_size,
-#         keep_batch = keep_batch,
+#         combineBatch = combineBatch,
+#         batchSize = batchSize,
+#         keepBatch = keepBatch,
 #         verbose = verbose,
 #         mainEffect = mainEffect,
 #         details = details,
-#         memory_scale = memory_scale,
-#         batch_unit_budget = batch_unit_budget,
-#         dynamic_ministep_factor = dynamic_ministep_factor
+#         memoryScale = memoryScale,
+#         batchUnitBudget = batchUnitBudget,
+#         dynamicMinistepFactor = dynamicMinistepFactor
 #     )
 # }
 # 
@@ -986,8 +1010,8 @@ calculateUtilityDiff <- function(effectName, diff,
 #     type = "changeProb", depvar = NULL,
 #     effectName, diff = NULL, contrast = NULL,
 #     interaction = FALSE,
-#     int_effectNames = NULL,
-#     mod_effectNames = NULL,
+#     intEffectNames = NULL,
+#     modEffectNames = NULL,
 #     n3 = NULL,
 #     useChangeContributions = FALSE,
 #     details = FALSE,
@@ -1015,8 +1039,8 @@ calculateUtilityDiff <- function(effectName, diff,
 #         group_vars = c("chain", "period", "ministep"),
 #         type = type, effectName = effectName, diff = diff,
 #         contrast = contrast, interaction = interaction,
-#         int_effectNames = int_effectNames,
-#         mod_effectNames = mod_effectNames,
+#         intEffectNames = intEffectNames,
+#         modEffectNames = modEffectNames,
 #         details = details, calcRiskRatio = calcRiskRatio,
 #         mainEffect = mainEffect)
 # }
@@ -1026,13 +1050,13 @@ calculateUtilityDiff <- function(effectName, diff,
 #     effectName1, 
 #     diff1 = NULL, contrast1 = NULL,
 #     interaction1 = FALSE,
-#     int_effectNames1 = NULL,
-#     mod_effectNames1 = NULL,
+#     intEffectNames1 = NULL,
+#     modEffectNames1 = NULL,
 #     effectName2,
 #     diff2 = NULL, contrast2 = NULL,
 #     interaction2 = FALSE,
-#     int_effectNames2 = NULL,
-#     mod_effectNames2 = NULL,
+#     intEffectNames2 = NULL,
+#     modEffectNames2 = NULL,
 #     n3 = NULL,
 #     useChangeContributions = FALSE,
 #     calcRiskRatio = FALSE,
@@ -1061,12 +1085,12 @@ calculateUtilityDiff <- function(effectName, diff,
 #         type = type,
 #         effectName1 = effectName1, diff1 = diff1, contrast1 = contrast1,
 #         interaction1 = interaction1,
-#         int_effectNames1 = int_effectNames1,
-#         mod_effectNames1 = mod_effectNames1,
+#         intEffectNames1 = intEffectNames1,
+#         modEffectNames1 = modEffectNames1,
 #         effectName2 = effectName2, diff2 = diff2, contrast2 = contrast2,
 #         interaction2 = interaction2,
-#         int_effectNames2 = int_effectNames2,
-#         mod_effectNames2 = mod_effectNames2,
+#         intEffectNames2 = intEffectNames2,
+#         modEffectNames2 = modEffectNames2,
 #         details = details,
 #         calcRiskRatio = calcRiskRatio,
 #         mainEffect = mainEffect)
@@ -1074,8 +1098,8 @@ calculateUtilityDiff <- function(effectName, diff,
 # 
 # #' Shared core: compute first difference (reuses predictProbability)
 # predictFirstDiff <- function(df, effectNames, thetaNoRate, group_vars,
-#     type, effectName, diff, contrast, interaction, int_effectNames,
-#     mod_effectNames, details, calcRiskRatio, mainEffect) {
+#     type, effectName, diff, contrast, interaction, intEffectNames,
+#     modEffectNames, details, calcRiskRatio, mainEffect) {
 # 
 #     df <- predictProbability(df, effectNames, thetaNoRate, group_vars, type)
 #     df <- removeZeroDensity(df)
@@ -1088,9 +1112,9 @@ calculateUtilityDiff <- function(effectName, diff,
 #         effectContribution = df[[effectName]],
 #         diff = diff, contrast = contrast,
 #         interaction = interaction,
-#         int_effectNames = int_effectNames,
-#         mod_effectNames = mod_effectNames,
-#         modContribution = df[[mod_effectNames]],
+#         intEffectNames = intEffectNames,
+#         modEffectNames = modEffectNames,
+#         modContribution = df[[modEffectNames]],
 #         effectNames = effectNames,
 #         theta = thetaNoRate,
 #         type = type,
@@ -1115,9 +1139,9 @@ calculateUtilityDiff <- function(effectName, diff,
 # predictSecondDiff <- function(df, effectNames, thetaNoRate, group_vars,
 #     type,
 #     effectName1, diff1, contrast1, interaction1,
-#     int_effectNames1, mod_effectNames1,
+#     intEffectNames1, modEffectNames1,
 #     effectName2, diff2, contrast2, interaction2,
-#     int_effectNames2, mod_effectNames2,
+#     intEffectNames2, modEffectNames2,
 #     details, calcRiskRatio, mainEffect) {
 # 
 #     df <- predictProbability(df, effectNames, thetaNoRate, group_vars, type)
@@ -1130,15 +1154,15 @@ calculateUtilityDiff <- function(effectName, diff,
 #         effectName1 = effectName1, diff1 = diff1, contrast1 = contrast1,
 #         effectContribution1 = df[[effectName1]],
 #         interaction1 = interaction1,
-#         int_effectNames1 = int_effectNames1,
-#         mod_effectNames1 = mod_effectNames1,
-#         modContribution1 = df[[mod_effectNames1]],
+#         intEffectNames1 = intEffectNames1,
+#         modEffectNames1 = modEffectNames1,
+#         modContribution1 = df[[modEffectNames1]],
 #         effectName2 = effectName2, diff2 = diff2, contrast2 = contrast2,
 #         effectContribution2 = df[[effectName2]],
 #         interaction2 = interaction2,
-#         int_effectNames2 = int_effectNames2,
-#         mod_effectNames2 = mod_effectNames2,
-#         modContribution2 = df[[mod_effectNames2]],
+#         intEffectNames2 = intEffectNames2,
+#         modEffectNames2 = modEffectNames2,
+#         modContribution2 = df[[modEffectNames2]],
 #         effectNames = effectNames,
 #         theta = thetaNoRate,
 #         type = type,

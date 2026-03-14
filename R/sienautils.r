@@ -760,3 +760,42 @@ make_constraint.sienaGroup <- function(x, net1, net2,
 
 ##@make_constraint.siena Methods
 make_constraint.siena <- make_constraint.sienadata
+
+# Build unique underscore-separated theta names from an effects data.frame.
+# Basic rates: {name}_rate{period}_Rate; non-basic rates: {name}_{shortName}_Rate;
+# other effects: {name}_{shortName}_{type}.
+# append_parm=TRUE adds _{parm} suffix for effects with non-zero parm.
+# Attaches attr(result, "label"): named vector of human-readable labels.
+getNamesFromEffects <- function(effects, append_parm = FALSE) {
+    isBasicRate    <- effects$type == "rate" & effects$shortName == "Rate"
+    isNonBasicRate <- effects$type == "rate" & effects$shortName != "Rate"
+    if (!is.null(effects$name) && !all(is.na(effects$name))) {
+        effectNames <- ifelse(
+            isBasicRate,
+            paste0(effects$name, "_rate", effects$period),
+            ifelse(
+                isNonBasicRate,
+                paste(effects$name, effects$shortName, "rate", sep = "_"),
+                paste(effects$name, effects$shortName, effects$type, sep = "_")
+            )
+        )
+    } else {
+        effectNames <- ifelse(
+            isBasicRate,
+            paste0("rate", effects$period),
+            ifelse(
+                isNonBasicRate,
+                paste(effects$shortName, "rate", sep = "_"),
+                paste(effects$shortName, effects$type, sep = "_")
+            )
+        )
+    }
+    if (append_parm) {
+        hasParm <- !is.na(effects$parm) & effects$parm != 0
+        effectNames[hasParm] <- paste0(effectNames[hasParm], "_", effects$parm[hasParm])
+    }
+    effectNames <- make.unique(effectNames, sep = ".")
+    if (!is.null(effects$effectName) && length(effects$effectName) == length(effectNames))
+        attr(effectNames, "label") <- setNames(fromObjectToText(effects$effectName), effectNames)
+    effectNames
+}

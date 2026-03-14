@@ -37,16 +37,16 @@ residuals.sienaFit <- function(object,
             #     stop("No simulated values found: run siena07 with returnDeps = TRUE.")
             # }
             # n_chains <- length(object[["sims"]])
-            # n_periods <- length(object[["periodNos"]])
+            # nPeriods <- length(object[["periodNos"]])
             # dep1_dims <- attr(object[["f"]][[1]][["depvars"]][[1]], "netdims")
-            # n_egos <- dep1_dims[1]
-            # n_choices <- dep1_dims[2]
-            # sumsq_arr <- array(0, dim = c(n_egos, n_choices, n_periods))
+            # nEgos <- dep1_dims[1]
+            # nChoices <- dep1_dims[2]
+            # sumsq_arr <- array(0, dim = c(nEgos, nChoices, nPeriods))
             # # Collect simulated values
             # for(c in 1:n_chains){
             #     dep1 <- object$sims[[c]][[1]][[1]]
             #     for (p in object[["periodNos"]]) {
-            #         mat_new <- matrix(0, n_egos, n_choices)
+            #         mat_new <- matrix(0, nEgos, nChoices)
             #         edges <- dep1[[p]]
             #         mat_new[edges[,1:2]] <- edges[,3]
             #         sumsq_arr[,,p] <- sumsq_arr[,,p] + mat_new^2
@@ -67,25 +67,25 @@ residuals.sienaFit <- function(object,
             run siena07 with returnDeps = TRUE.")
         }
 
-        n_periods <- length(object[["periodNos"]])
+        nPeriods <- length(object[["periodNos"]])
         n_chains <- length(object[["sims"]])        
         dep1_dims <- attr(object[["f"]][[1]][["depvars"]][[1]], "netdims")
-        n_egos <- dep1_dims[1]
-        n_choices <- dep1_dims[2]
+        nEgos <- dep1_dims[1]
+        nChoices <- dep1_dims[2]
 
         # Flatten observed and fitted to vectors
         observed_vec <- as.vector(observed_values)
         fitted_vec <- as.vector(fitted_values)
         n_obs <- length(observed_vec)            
         chain_mat <- matrix(0, nrow = n_obs, ncol = n_chains)
-        len <- n_egos * n_choices
+        len <- nEgos * nChoices
         for (c in 1:n_chains) {
             dep1 <- object$sims[[c]][[1]][[1]]
             sim_vec <- numeric(length = n_obs)
             idx <- 1
             for (p in object[["periodNos"]]) {
                 edges <- dep1[[p]]
-                mat_new <- matrix(0, n_egos, n_choices)
+                mat_new <- matrix(0, nEgos, nChoices)
                 if (nrow(edges) > 0) {
                     mat_new[edges[,1:2]] <- edges[,3]
                 }
@@ -96,7 +96,7 @@ residuals.sienaFit <- function(object,
         }
         residuals_vec <- getQuantileResiduals(chain_mat, observed_vec, 
             integerResponse = TRUE, method = "PIT", randomized = randomized)
-        residuals <- array(residuals_vec, dim = c(n_egos, n_choices, n_periods))
+        residuals <- array(residuals_vec, dim = c(nEgos, nChoices, nPeriods))
         # if(normalize){
         #     residuals <- qnorm(u)
         # }

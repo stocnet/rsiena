@@ -419,10 +419,16 @@ robmon <- function(z, x, useCluster, nbrNodes, initC, clusterString,
 	}
 #	z$gmm <- FALSE
     z$termination <- 'OK'
+    thetaNames <- getNamesFromEffects(z$requestedEffects)
+    names(z$theta) <- thetaNames
+    names(z$se) <- thetaNames
+    dimnames(z$covtheta) <- list(thetaNames, thetaNames)
+    if (isTRUE(z$cconditional) && !is.null(z$rate)) {
+       names(z$rate) <- getNamesFromEffects(attr(z$f, "condEffects"))
+    }
     if (useCluster)
     {
 		stopCluster(cl)
 	}
     z
 }
-

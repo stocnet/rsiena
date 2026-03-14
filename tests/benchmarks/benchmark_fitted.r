@@ -20,15 +20,15 @@ fitted_dense <- function(object, ...) {
     # Multiple dependent variables might require 4-dimensional array or long array
     depVars <- object[["f"]][[1]][["depvars"]]
     periods <- object[["periodNos"]]
-    n_periods <- length(periods)
+    nPeriods <- length(periods)
     # check attr(object[["f"]][[1]][["depvars"]][[1]], "type")
     n_chains <- length(object[["sims"]])
     # better way to get info about dependent variables?
     dep1_dims <- attr(object[["f"]][[1]][["depvars"]][[1]], "netdims")
-    n_egos <- dep1_dims[1]
-    n_choices <- dep1_dims[2]
+    nEgos <- dep1_dims[1]
+    nChoices <- dep1_dims[2]
     # what about missing values?
-    arr <- array(0, dim = c(n_egos, n_choices, n_periods))
+    arr <- array(0, dim = c(nEgos, nChoices, nPeriods))
     # Sum over chains first
     for(c in 1:n_chains){
         # dep2 <- object$sims[[c]][[2]]
@@ -37,7 +37,7 @@ fitted_dense <- function(object, ...) {
         for (p in periods) {
             # Convert edge list to adjacency matrix
             # use more efficient methods?
-            mat_new <- matrix(0, n_choices, n_choices)
+            mat_new <- matrix(0, nChoices, nChoices)
             edges <- dep1[[p]]
             mat_new[edges[,1:2]] <- edges[,3]
             arr[,,p] <- arr[,,p] + mat_new
@@ -63,15 +63,15 @@ fitted_sparse <- function(object, ...) {
     # Multiple dependent variables might require 4-dimensional array or long array
     depVars <- object[["f"]][[1]][["depvars"]]
     periods <- object[["periodNos"]]
-    n_periods <- length(periods)
+    nPeriods <- length(periods)
     # check attr(object[["f"]][[1]][["depvars"]][[1]], "type")
     n_chains <- length(object[["sims"]])
     # better way to get info about dependent variables?
     dep1_dims <- attr(object[["f"]][[1]][["depvars"]][[1]], "netdims")
-    n_egos <- dep1_dims[1]
-    n_choices <- dep1_dims[2]
+    nEgos <- dep1_dims[1]
+    nChoices <- dep1_dims[2]
     # what about missing values?
-    # arr <- array(0, dim = c(n_egos, n_choices, n_periods))
+    # arr <- array(0, dim = c(nEgos, nChoices, nPeriods))
     # Sum over chains first
     # Convert into sparse matrices to save memory/time
     ans <- lapply(seq_len(n_chains), function(c) {
@@ -79,7 +79,7 @@ fitted_sparse <- function(object, ...) {
         lapply(periods, function(p) {
             edges <- dep1[[p]]
             sparseMatrix(i = edges[,1], j = edges[,2], x = edges[,3], 
-                        dims = c(n_choices, n_choices))
+                        dims = c(nChoices, nChoices))
         })
     })
     ans <- lapply(seq_along(periods), function(ip) {
@@ -105,22 +105,22 @@ fitted_hybrid <- function(object) {
     # Multiple dependent variables might require 4-dimensional array or long array
     depVars <- object[["f"]][[1]][["depvars"]]
     periods <- object[["periodNos"]]
-    n_periods <- length(periods)
+    nPeriods <- length(periods)
     # check attr(object[["f"]][[1]][["depvars"]][[1]], "type")
     n_chains <- length(object[["sims"]])
     # better way to get info about dependent variables?
     dep1_dims <- attr(object[["f"]][[1]][["depvars"]][[1]], "netdims")
-    n_egos <- dep1_dims[1]
-    n_choices <- dep1_dims[2]
+    nEgos <- dep1_dims[1]
+    nChoices <- dep1_dims[2]
   
-    arr <- array(0, dim = c(n_choices, n_choices, length(periods)))
+    arr <- array(0, dim = c(nChoices, nChoices, length(periods)))
     
     for(c in 1:n_chains) {
         dep1 <- object$sims[[c]][[1]][[1]]
         for(ip in seq_along(periods)) {
         p <- periods[ip]
         edges <- dep1[[p]]
-        mat_new <- matrix(0, n_choices, n_choices)
+        mat_new <- matrix(0, nChoices, nChoices)
         i1 <- edges[,1]; i2 <- edges[,2]; vals <- edges[,3]
         mat_new[cbind(i1, i2)] <- vals
         arr[, , ip] <- arr[, , ip] + mat_new
