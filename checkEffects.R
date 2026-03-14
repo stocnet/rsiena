@@ -4256,3 +4256,57 @@ ans$targets
 snet <- mynet[,,1] * t(mynet[,,1])
 sum( (mybeh[,,2] - meanbeh) * (snet*coveq) %*% (mybeh[,,2] - meanbeh))
 # 33.7252 OK
+
+
+################################################################################
+### check parameters 0 and 1 for outPop and inAct
+################################################################################
+
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet)
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, inAct)
+ans <- siena(mydata, effects=myeff)
+ans$targets
+# 116  70 306
+myeff <- set_effect(myeff, inAct, parameter=0)
+(ans <- siena(mydata, effects=myeff))
+ans$targets
+# 116  70 288
+myeff <- set_effect(myeff, inAct, parameter=-1)
+(ans <- siena(mydata, effects=myeff))
+ans$targets
+# 116  70 594
+sum(rowSums(s502)*colSums(s502)) # 306 OK
+sum(rowSums(s502)*colSums(s501)) # 288 OK
+
+algo <- set_algorithm_saom(seed=1234)
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, outPop)
+(ans <- siena(mydata, effects=myeff, control_algo=algo))
+ans$targets
+# 116  70 306
+myeff <- set_effect(myeff, outPop, parameter=0)
+(ans <- siena(mydata, effects=myeff, control_algo=algo))
+ans$targets
+# 116  70 307
+myeff <- set_effect(myeff, outPop, parameter=-1)
+(ans <- siena(mydata, effects=myeff, control_algo=algo))
+ans$targets
+# 116  70 613
+
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, list(inAct, outPop))
+(ans <- siena(mydata, effects=myeff, control_algo=algo))
+ans$targets
+# 116  70 613
+myeff <- set_effect(myeff, inAct, parameter=0)
+myeff <- set_effect(myeff, outPop, parameter=0)
+myeff
+(ans <- siena(mydata, effects=myeff, control_algo=algo))
+ans$targets #  116  70 307 288
+myeff <- set_effect(myeff, inAct, parameter=-1)
+myeff <- set_effect(myeff, outPop, parameter=-1)
+myeff
+(ans <- siena(mydata, effects=myeff, control_algo=algo))
+ans$targets # 116  70 613 594 OK

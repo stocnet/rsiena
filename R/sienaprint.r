@@ -254,6 +254,11 @@ print.sienaDependent <- function(x, ...)
 print.sienaFit <- function(x, tstat=TRUE, ...)
 {
 	objectName <- deparse(substitute(x))
+# Check if it looks like a pipe chain 
+	if (grepl("%>%|\\|>", objectName)) 
+	{
+		stop("Cannot auto-generate filename from piped data. Please apply this print to an object with a name.") 
+	}
 	if (!inherits(x, "sienaFit"))
 	{
         stop("not a legitimate Siena model fit")

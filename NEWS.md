@@ -1,3 +1,40 @@
+2026-02-26
+
+# RSiena 1.6.2
+
+## Changes in RSiena:
+### New function
+  * Function `transformScript`.
+### Function names for exported functions in R
+  * New method `write_report` for `sienadata` objects, 
+    replacing `print01Report` (which still is retained).
+### Functionality
+  * Attribute `EgoAlter` added to `sienaGOF` results,
+    which is `TRUE` currently only for `egoAlterCombi` 
+    (the purpose is to use it for plotting). 
+### Coding
+  * `returnDeps` mentioned explicitly as an argument for `siena`
+    (and not just as an element of ...). 
+  * Some occurrences of deparse(substitute(.)) accompanied by
+    a check and subsequent potential stop in case of 
+    objects resulting from piping.
+  * `sienaAlgorithmCreate` modified for different operation 
+    in case it is called from `transformScript`.
+  * 'parallel.R' in the `tests` directory is replaced by 'newparallel.R' 
+    which uses the new names and no `parallelTesting`. 
+
+2026-01-20
+
+# RSiena 1.6.1
+
+## Changes in RSiena:
+### New effects
+  * Effects `sameXOutAct`, `diffXOutAct`, `crossXOutAct` also implemented
+    for two-mode networks.
+  * Parameter values 0 and -1 added for `outAct` and `inPop`. 
+### Coding
+  * <math.h> replaced by <cmath> in C++ code.
+
 2026-01-04
 
 # RSiena 1.6.0

@@ -61,6 +61,8 @@ private:
 	// Lookup table for fast square root calculations
 	SqrtTable * lsqrtTable;
 	bool lcentered {};
+	bool luseStart {};
+	bool luseBoth {};
 	double lcentering {};
 	string lvariableName {};
 };

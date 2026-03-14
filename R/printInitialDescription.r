@@ -554,7 +554,15 @@ printInitialDescription <- function(data, effects, modelName="Siena",
 
 		Report("\n", outf)
 	}
-	##### start of printInitialDescription function
+	##### start of printInitialDescription function	
+	if (is.null(attr(data, "dataname")))
+	{
+		dataname <- modelName
+	}
+	else # then the call comes originally from write_report.sienadata
+	{
+		dataname <- attr(data, "dataname")
+	}
 	if (getDocumentation)
 	{
 		return(getInternals())
@@ -590,7 +598,7 @@ printInitialDescription <- function(data, effects, modelName="Siena",
 	{
 		initialContinuous()
 	}
-	Report(c("Initialisation of project <<", modelName,
+	Report(c("Initialisation of data set <<", dataname,
 			">> executed succesfully.\n"), sep="", outf)
 }
 

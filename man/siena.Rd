@@ -18,6 +18,7 @@
 siena(data=NULL, effects=NULL,
         control_model=NULL, control_algo=NULL, control_out=NULL,
         thetaBound = 50,
+        returnDeps = FALSE,
         batch = FALSE, verbose = FALSE, silent=TRUE,
         initC=TRUE,
         nbrNodes = 1, clusterString=rep("localhost", nbrNodes),
@@ -49,6 +50,8 @@ siena07(alg, batch=FALSE, verbose=FALSE, silent=FALSE,
    a higher number; if non-numeric input is given, estimation stops.
    In non-interactive use, estimation stops anyway.
    The check is turned off by using \code{thetaBound=Inf}.}
+  \item{returnDeps}{Boolean. Whether to return the simulated networks in
+    Phase 3.}
   \item{batch}{ Desired interface: \code{FALSE} gives a gui
      (graphical user interface implemented as a tcl/tk screen),
      \code{TRUE} gives a small (if \code{verbose=FALSE}) amount of printout
@@ -94,7 +97,8 @@ siena07(alg, batch=FALSE, verbose=FALSE, silent=FALSE,
     \code{prevAns} if a previous reasonable
     provisional estimate was obtained for a similar model;\cr
     the following are ignored by \code{siena}
-    (because included in \code{control_out}) but an be mentioned when using \code{siena07}:\cr
+    (because included here or in \code{control_out}) 
+    but can be mentioned when using \code{siena07}:\cr
     in any case, \code{data} and \code{effects}, as in the examples below;\cr
     possibly also \code{returnDeps} if the simulated dependent variables
     (networks, behaviour) should be returned;\cr
@@ -104,7 +108,7 @@ siena07(alg, batch=FALSE, verbose=FALSE, silent=FALSE,
     this may produce a very big file.}
 }
 \details{
-  This is the main function and workhorse of RSiena.
+  This is the main function and workhorse of \code{RSiena}.
 
   For use of \code{siena07}, it is necessary to specify parameters \code{data}
   (RSiena data set) and \code{effects} (effects object), which are
@@ -442,7 +446,7 @@ alg <- set_algorithm_saom(maxlike=TRUE, nsub=3, n3=100, seed=12534)
 effs <- make_specification(sdat)
 (ans <- siena(sdat, effects=effs, control_algo=alg,
                               batch=TRUE, returnDeps=TRUE))
-# See manual Section 9.1 for information about the following functions
+# See manual Section 10.1 for information about the following functions
 edges.to.adj <- function(x,n){
 # create empty adjacency matrix
     adj <- matrix(0, n, n)

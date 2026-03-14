@@ -1395,6 +1395,7 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 					"degAbsDiffX", "degPosDiffX", "degNegDiffX",
 					"altInDist2", "totInDist2", "simEgoInDist2", 
 					"sameEgoInDist2", "sameXInPop", "diffXInPop",
+					"sameXOutAct", "diffXOutAct", "crossXOutAct",
 					"sameXCycle4", "inPopX", "inActX", "avGroupEgoX", "totGroupEgoX"), ]
 			covRateEffects <- createEffects("covarBipartiteRate", covarname,
 				name=varname,

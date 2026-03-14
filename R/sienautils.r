@@ -699,6 +699,11 @@ sienaDataConstraint <- function(x, net1, net2,
  #   type <- match.arg(type)
     net1 <- deparse(substitute(net1))
     net2 <- deparse(substitute(net2))	
+ # Check if it looks like a pipe chain 
+	if (grepl("%>%|\\|>", net1) ||  grepl("%>%|\\|>", net2))
+	{
+		stop("Cannot auto-generate filename from piped data. Please apply this function to net1 and net2 with a name.") 
+	}
 	sienaDataConstraintFromStrings(x, net1, net2, type, value)
 }
 
@@ -743,6 +748,11 @@ make_constraint.sienadata <- function(x, net1, net2,
 {
     net1 <- deparse(substitute(net1))
     net2 <- deparse(substitute(net2))	
+ # Check if it looks like a pipe chain 
+	if (grepl("%>%|\\|>", net1) ||  grepl("%>%|\\|>", net2))
+	{
+		stop("Cannot auto-generate filename from piped data. Please apply this function to net1 and net2 with a name.") 
+	}
 	sienaDataConstraintFromStrings(x, net1, net2, type, value)
 }
 
@@ -752,6 +762,11 @@ make_constraint.sienaGroup <- function(x, net1, net2,
 {
     net1 <- deparse(substitute(net1))
     net2 <- deparse(substitute(net2))	
+ # Check if it looks like a pipe chain 
+	if (grepl("%>%|\\|>", net1) ||  grepl("%>%|\\|>", net2))
+	{
+		stop("Cannot auto-generate filename from piped data. Please apply this function to net1 and net2 with a name.") 
+	}
 	sienaDataConstraintFromStrings(x, net1, net2, type, value)
 }
 

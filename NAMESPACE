@@ -4,7 +4,7 @@ useDynLib(RSiena, .registration = TRUE)
 export(
 	coCovar, coDyadCovar, varCovar, varDyadCovar, as_covariate_rsiena,
 	sienaNet, sienaDependent, as_dependent_rsiena,
-	getEffects, print01Report, siena07, siena,
+	getEffects, print01Report, write_report, siena07, siena,
 	sienaCompositionChange, updateTheta, updateSpecification,
 	sienaCompositionChangeFromFile, sienaDataCreate, make_data_rsiena,
 	sienaGroupCreate, make_group_rsiena,
@@ -25,7 +25,7 @@ export(
 	make_specification, set_effect, set_interaction, 
    update_theta, update_specification, 
 	test_parameter, write_result, test_time, test_gof,
-	interpret_selection, interpret_influence,
+	interpret_selection, interpret_influence, transformScript,
    sienaAME, sienaAMEDynamic
 )
 
@@ -69,6 +69,7 @@ S3method(make_specification, sienaGroup)
 S3method(make_constraint, sienadata)
 S3method(make_constraint, siena)
 S3method(make_constraint, sienaGroup)
+S3method(write_report, sienadata)
 S3method(print, sienaGroup)
 S3method(print, sienaDependent)
 S3method(print, sienaFit)

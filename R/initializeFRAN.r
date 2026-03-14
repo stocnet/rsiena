@@ -121,7 +121,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 	}
 	if (!initC) ## i.e. first time round
 	{
-		if (!inherits(data,"sienadata"))
+		if ((!inherits(data,"siena")) && (!inherits(data, 'sienadata')))
 		{
 			stop("not valid siena data object")
 		}

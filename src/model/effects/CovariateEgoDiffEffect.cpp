@@ -15,7 +15,7 @@
 #include "model/EffectInfo.h"
 #include "network/Network.h"
 #include "model/variables/NetworkVariable.h"
-#include <math.h>       /* floor */
+#include <cmath> /* round, sqrt, floor */
 
 namespace siena
 {
