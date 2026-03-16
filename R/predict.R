@@ -100,8 +100,8 @@ predict.sienaFit <- function(
   condition                = condition,
   sum_fun                  = sum_fun,
   na.rm                    = na.rm,
-  thetaHat                = object[["theta"]],
-  covTheta                = object[["covtheta"]],
+  thetaHat                = object[["theta"]], # adjust coef to be used
+  covTheta                = object[["covtheta"]], # adjust voctheta to be used
   uncertainty              = uncertainty,
   uncertaintyMode         = uncertaintyMode,
   nsim                     = nsim,
@@ -186,13 +186,14 @@ planBatch <- function(
   min(max(1L, batch_raw), as.integer(nsim))
 }
 
-#' Unified per-theta prediction from a compact contributions struct.
-#' Works for both static (ego/period/choice coords) and dynamic
-#' (chain/ministep/period/choice coords) — groupColsList handles both.
+# Unified per-theta prediction from a compact contributions struct.
+# Works for both static (ego/period/choice coords) and dynamic
+# (chain/ministep/period/choice coords) -- groupColsList handles both.
 predictProbability <- function(contributions, theta, type = "changeProb") {
-    theta_use <- theta[contributions$thetaIdx]
+  # should not be necessary?
+    theta_use <- theta[contributions$effectNames]
     names(theta_use) <- contributions$effectNames
-    utility    <- calculateUtility(contributions$contribMat, theta_use)
+    utility <- calculateUtility(contributions$contribMat, theta_use)
     changeProb <- calculateChangeProb(utility, contributions$group_id)
     out <- data.frame(groupColsList(contributions),
                       changeUtil = utility, changeProb = changeProb,
@@ -200,7 +201,7 @@ predictProbability <- function(contributions, theta, type = "changeProb") {
     if (type == "tieProb") {
       out[["tieProb"]] <- calculateTieProb(
         changeProb,
-        contributions$contribMat[, grep("^density", contributions$effectNames)[1L]]
+        contributions$contribMat[, grep("density", contributions$effectNames, fixed = TRUE)[1L]]
       )
     }
     out <- attachContribColumns(out, contributions$effectNames,
@@ -209,7 +210,7 @@ predictProbability <- function(contributions, theta, type = "changeProb") {
     out
 }
 
-#' Per-theta static prediction: build contributions once, reused per theta draw.
+# Per-theta static prediction: build contributions once, reused per theta draw.
 predictProbabilityStatic <- function(staticContributions, theta,
                                      type = "changeProb") {
     predictProbability(staticContributions, theta, type)
@@ -217,7 +218,7 @@ predictProbabilityStatic <- function(staticContributions, theta,
 
 # ---- Dynamic -------------------------------------------------------
 
-#' Per-theta dynamic prediction: simulate chains, flatten to compact struct.
+# Per-theta dynamic prediction: simulate chains, flatten to compact struct.
 predictProbabilityDynamic <- function(ans, data, theta, algorithm, effects,
                                       type = "changeProb", depvar, n3 = NULL,
                                       useChangeContributions = FALSE,
@@ -249,8 +250,6 @@ calculateTieProb <- function(prob, density) {
   prob[is.na(density) | density == 0L] <- NA
   prob
 }
-
-
 
 
 # ===========================================================================

@@ -25,3 +25,19 @@ softmax_rcpp_grouped_cols <- function(data, val_col, group_cols) {
     .Call(`_RSiena_softmax_rcpp_grouped_cols`, data, val_col, group_cols)
 }
 
+loo_change_probs <- function(contribMat, theta, group_id) {
+    .Call(`_RSiena_loo_change_probs`, contribMat, theta, group_id)
+}
+
+l1d_grouped <- function(ref, loo, group_id) {
+    .Call(`_RSiena_l1d_grouped`, ref, loo, group_id)
+}
+
+kld_grouped <- function(ref, loo, group_id) {
+    .Call(`_RSiena_kld_grouped`, ref, loo, group_id)
+}
+
+mlogit_update <- function(p, delta_u, group_id, perturbType) {
+    .Call(`_RSiena_mlogit_update`, p, delta_u, group_id, perturbType)
+}
+

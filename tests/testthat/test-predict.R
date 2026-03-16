@@ -1,20 +1,9 @@
 # testthat::skip_on_cran()
-
-# library(testthat)
-# library(RSiena)
-
-# Minimal RSiena setup for reproducible test
-mynet <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
-mydata <- sienaDataCreate(mynet)
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, transTrip, name = "mynet")
-mycontrols <- sienaAlgorithmCreate(projname = NULL, n3 = 60, cond = FALSE)
-ans <- siena07(
-  mycontrols,
-  data = mydata,
-  effects = mymodel,
-  returnDeps = TRUE,
-  silent = TRUE)
+# Models: ans, mydata, mymodel, mycontrols     — from helper-models.R (base, with returnDeps=TRUE)
+#         ans_int, mydata_int, mymodel_int      — from helper-models.R (full mode only)
+#         ans_int_uncond                        — from helper-models.R (full mode only)
+#         ans_co, mydata_co, mymodel_co, mycontrols_co — from helper-models.R (full mode only)
+#         ans_cm, mydata_cm, mymodel_cm, mycontrols_cm — from helper-models.R (full mode only)
 
 test_that("predict.sienaFit (base R fallback)", {
   with_mocked_bindings(
@@ -35,6 +24,7 @@ test_that("predict.sienaFit (base R fallback)", {
 })
 
 test_that("predict.sienaFit (base R fallback, optional MCSE + no CI)", {
+  skip_slow()
   with_mocked_bindings(
     {
       pred_df <- predict(
@@ -148,6 +138,7 @@ test_that("predict.sienaFit (data.table)", {
 # })
 
 test_that("Test predict.sienaFit with FORK clustertype (data.table)", {
+  skip_slow()
   skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
   library(data.table)
   pred_dt <- predict(
@@ -167,6 +158,7 @@ test_that("Test predict.sienaFit with FORK clustertype (data.table)", {
 })
 
 test_that("predictDynamic with FORK clustertype (base R fallback)", {
+  skip_slow()
   with_mocked_bindings(
     {
       pred_df <- predict(
@@ -196,6 +188,7 @@ test_that("predictDynamic with FORK clustertype (base R fallback)", {
 
 
 test_that("predictDynamic (base R fallback)", {
+  skip_slow()
   with_mocked_bindings(
     {
       pred_df <- predict(
@@ -216,6 +209,7 @@ test_that("predictDynamic (base R fallback)", {
 })
 
 test_that("predictDynamic (base R fallback, optional MCSE + no SD)", {
+  skip_slow()
   with_mocked_bindings(
     {
       pred_df <- predict(
@@ -249,6 +243,7 @@ test_that("predictDynamic (base R fallback, optional MCSE + no SD)", {
 })
 
 test_that("predictDynamic (base R fallback, streaming uncertainty)", {
+  skip_slow()
   with_mocked_bindings(
     {
       pred_df <- predict(
@@ -277,6 +272,7 @@ test_that("predictDynamic (base R fallback, streaming uncertainty)", {
 })
 
 test_that("predictDynamic (data.table)", {
+  skip_slow()
   skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
   library(data.table)
   pred_dt <- predict(
@@ -293,30 +289,18 @@ test_that("predictDynamic (data.table)", {
   expect_true("data.table" %in% class(pred_dt) || is.data.frame(pred_dt))
 })
 
-# Minimal RSiena setup with manual interactions & not using one of the main effects
-  mynet2 <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
-  mydata2 <- sienaDataCreate(mynet2)
-  mymodel2 <- getEffects(mydata2)
-  # Intentionally do NOT include outPop effect
-  # mymodel2 <- includeEffects(mymodel2, outPop, name = "mynet2")
-  mymodel2 <- includeInteraction(mymodel2, recip, outPop, name = "mynet2")
-  mycontrols2 <- sienaAlgorithmCreate(projname = NULL, seed = 42, n3 = 60)
-  ans2 <- siena07(
-    mycontrols2,
-    data = mydata2,
-    effects = mymodel2,
-    returnChangeContributions = TRUE,
-    returnDataFrame = TRUE
-  )
+# Interaction without main effect — model from helper-models.R (full mode):
+#   ans_int, mydata_int, mymodel_int, mycontrols_int  (depvar = "mynet_int")
   
 test_that("predict.sienaFit with custom interactions & without main effect (data.table),
   cond=FALSE", {
+  skip_slow()
   skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
   library(data.table)
 
-  pred_dt <- predict.sienaFit(ans2,
-    newdata =  mydata2,
-    effects = mymodel2,
+  pred_dt <- predict.sienaFit(ans_int,
+    newdata =  mydata_int,
+    effects = mymodel_int,
     level = "period",
     condition = "recip_eval",
     uncertainty = FALSE
@@ -326,12 +310,13 @@ test_that("predict.sienaFit with custom interactions & without main effect (data
 })
 
 test_that("predict.sienaFit with custom interactions & without main effect (base R fallback)", {
+  skip_slow()
   with_mocked_bindings(
     {
       pred_df <- predict(
-        object = ans2,
-        newdata =  mydata2,
-        effects = mymodel2,
+        object = ans_int,
+        newdata =  mydata_int,
+        effects = mymodel_int,
         level = "period",
         condition = "recip_eval",
         uncertainty = FALSE
@@ -344,12 +329,13 @@ test_that("predict.sienaFit with custom interactions & without main effect (base
 })
 
 test_that("predict.sienaFit with custom interactions & uncertainty & without main effect (data.table)", {
+  skip_slow()
   skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
   library(data.table)
 
-  pred_dt <- predict.sienaFit(ans2,
-    newdata =  mydata2,
-    effects = mymodel2,
+  pred_dt <- predict.sienaFit(ans_int,
+    newdata =  mydata_int,
+    effects = mymodel_int,
     level = "period",
     condition = "recip_eval",
     uncertainty = TRUE,
@@ -360,12 +346,13 @@ test_that("predict.sienaFit with custom interactions & uncertainty & without mai
 })
 
 test_that("predict.sienaFit with custom interactions & uncertainty & without main effect (base R fallback)", {
+  skip_slow()
   with_mocked_bindings(
     {
       pred_df <- predict(
-        object = ans2,
-        newdata = mydata2,
-        effects = mymodel2,
+        object = ans_int,
+        newdata = mydata_int,
+        effects = mymodel_int,
         uncertainty = TRUE,
         nsim = 5,
         condition = "recip_eval"
@@ -380,46 +367,40 @@ test_that("predict.sienaFit with custom interactions & uncertainty & without mai
 # cond=FALSE + interaction without main effect: this is the critical case where
 # alignThetaNoRate must use requestedEffects (not effects) to avoid picking up
 # injected base-effect slots in theta, which would give wrong (uniform) probs.
-mycontrols2_uncond <- sienaAlgorithmCreate(projname = NULL, seed = 42, n3 = 60, cond = FALSE)
-ans2_uncond <- siena07(mycontrols2_uncond, data = mydata2, effects = mymodel2,
-  silent = TRUE)
+# Model from helper-models.R (full mode): ans_int_uncond, mydata_int, mymodel_int
 
 test_that("predict.sienaFit interaction without main effect, cond=FALSE (data.table)", {
+  skip_slow()
   skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
   library(data.table)
-  pred_dt <- predict.sienaFit(ans2_uncond, newdata = mydata2,
-    effects = mymodel2, uncertainty = FALSE, level = "egoChoice")
+  pred_dt <- predict.sienaFit(ans_int_uncond, newdata = mydata_int,
+    effects = mymodel_int, uncertainty = FALSE, level = "egoChoice")
   expect_true("data.table" %in% class(pred_dt) || is.data.frame(pred_dt))
   expect_true(nrow(pred_dt) > 0)
   expect_false(any(is.nan(pred_dt$changeProb)))
 })
 
-# Unit test for alignThetaNoRate: verify it uses requestedEffects (not effects)
-# so that injected base effects for interactions don't cause a length mismatch.
-test_that("alignThetaNoRate uses requestedEffects$shortName, not effects$shortName", {
+# Unit test for nameThetaFromEffects + alignThetaNoRate: verify that the
+# two-step naming approach handles cond=FALSE, interaction-without-main correctly.
+test_that("nameThetaFromEffects + alignThetaNoRate: cond=FALSE interaction scenario", {
   # Reproduce the cond=FALSE + interaction-without-main-effect scenario:
-  #   ans$effects has 6 rows (2 rate, 4 non-rate including injected outPop).
-  #   ans$requestedEffects has 5 rows (2 rate, 3 non-rate — no outPop).
-  #   ans$theta has 3 elements (one per non-rate in requestedEffects, no rates).
-  #   Using effects:          non-rate count = 4 ≠ 3 = length(theta) → names not set (fallback)
-  #   Using requestedEffects: non-rate count = 3 = 3 = length(theta)  → names set correctly
-  theta_uncond <- c(-2.38, 3.06, -0.07)  # density_eval, recip_eval, unspInt_eval
+  #   ans$requestedEffects has 5 rows (2 rate, 3 non-rate — no injected outPop).
+  #   ans$theta has 5 elements (with rate params for cond=FALSE).
+  #   After nameThetaFromEffects, theta carries shortName_type names.
+  #   alignThetaNoRate then selects by effectNames from contributions.
+  theta_uncond <- c(5.1, 4.9, -2.38, 3.06, -0.07)  # rate1, rate2, density, recip, unspInt
   effectNames  <- c("density_eval", "recip_eval", "unspInt_eval")
-  mock_ans <- list(
-    effects = data.frame(
-      shortName = c("rateX", "rateX", "density", "recip", "outPop", "unspInt"),
-      type      = c("rate",  "rate",  "eval",    "eval",  "eval",   "eval"),
-      include   = rep(TRUE, 6L),
-      stringsAsFactors = FALSE
-    ),
-    requestedEffects = data.frame(
-      shortName = c("rateX", "rateX", "density", "recip", "unspInt"),
-      type      = c("rate",  "rate",  "eval",    "eval",  "eval"),
-      include   = rep(TRUE, 5L),
-      stringsAsFactors = FALSE
-    )
+  req_effs <- data.frame(
+    shortName = c("rateX", "rateX", "density", "recip", "unspInt"),
+    type      = c("rate",  "rate",  "eval",    "eval",  "eval"),
+    include   = rep(TRUE, 5L),
+    stringsAsFactors = FALSE
   )
-  result <- alignThetaNoRate(theta_uncond, effectNames, mock_ans)
+  theta_named <- expect_warning(
+    nameThetaFromEffects(theta_uncond, req_effs),
+    "theta has no names"
+  )
+  result <- alignThetaNoRate(theta_named, effectNames)
   # Must return the three eval params by composite name
   expect_named(result, effectNames)
   expect_equal(unname(result[["density_eval"]]),  -2.38)
@@ -429,30 +410,16 @@ test_that("alignThetaNoRate uses requestedEffects$shortName, not effects$shortNa
 
 # ---------------------------------------------------------------------------
 # Two-network co-evolution: verify predict.sienaFit gives separate predictions #
-# per network, and that alignThetaNoRate correctly matches parameters to 
+# per network, and that alignThetaNoRate correctly matches parameters to
 # effects by name (not position) when cond=FALSE + interaction without main effect
+# Model from helper-models.R (full mode): ans_co, mydata_co, mymodel_co, mycontrols_co
 # ---------------------------------------------------------------------------
-mynet_a <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet_b <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mydata_co <- sienaDataCreate(mynet_a, mynet_b)
-mymodel_co <- getEffects(mydata_co)
-mymodel_co <- includeEffects(mymodel_co, transTrip, name = "mynet_a")
-mymodel_co <- includeEffects(mymodel_co, transTrip, name = "mynet_b")
-mycontrols_co <- sienaAlgorithmCreate(projname = NULL, seed = 1, n3 = 60,
-                                      cond = FALSE)
-ans_co <- siena07(
-  mycontrols_co,
-  data    = mydata_co,
-  effects = mymodel_co,
-  returnChangeContributions = TRUE,
-  returnDataFrame = FALSE,
-  silent  = TRUE
-)
 
 # ---------------------------------------------------------------------------
 # Static predict: co-evolution
 # ---------------------------------------------------------------------------
 test_that("predict.sienaFit static: co-evolution networks get separate predictions", {
+  skip_slow()
   skip_if_not(requireNamespace("data.table", quietly = TRUE))
   pred_a <- predict.sienaFit(ans_co, newdata = mydata_co, depvar = "mynet_a",
                               effects = mymodel_co, uncertainty = FALSE)
@@ -469,14 +436,15 @@ test_that("predict.sienaFit static: co-evolution networks get separate predictio
 # Dynamic predict: co-evolution
 # ---------------------------------------------------------------------------
 test_that("predict.sienaFit dynamic: co-evolution networks get separate predictions", {
+  skip_slow()
   skip_if_not(requireNamespace("data.table", quietly = TRUE))
   pred_a <- predict.sienaFit(ans_co, newdata = mydata_co, depvar = "mynet_a",
                               dynamic = TRUE, algorithm = mycontrols_co,
-                              effects = mymodel_co, n3 = 60, nsim = 5,
+                              effects = mymodel_co, n3 = 50, nsim = 5,
                               uncertainty = FALSE)
   pred_b <- predict.sienaFit(ans_co, newdata = mydata_co, depvar = "mynet_b",
                               dynamic = TRUE, algorithm = mycontrols_co,
-                              effects = mymodel_co, n3 = 60, nsim = 5,
+                              effects = mymodel_co, n3 = 50, nsim = 5,
                               uncertainty = FALSE)
   expect_false(identical(pred_a$changeProb, pred_b$changeProb))
 })
@@ -490,44 +458,29 @@ test_that("predict.sienaFit dynamic: co-evolution networks get separate predicti
 # This tests that alignThetaNoRate correctly matches parameters to effects by name
 # (not position) when cond=FALSE + interaction without main effect, so that the
 # right parameters get applied to the right effects for utility and probability calcs.
+# Model from helper-models.R (full mode): ans_cm, mydata_cm, mymodel_cm, mycontrols_cm
 # ---------------------------------------------------------------------------
-mynet_cm <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
-mydata_cm <- sienaDataCreate(mynet_cm)
-mymodel_cm <- getEffects(mydata_cm)
-# recip (eval) is already included by default; add the creation variant
-mymodel_cm <- includeEffects(mymodel_cm, recip,     type = "creation")
-# transTrip in both evaluation and endowment flavours
-mymodel_cm <- includeEffects(mymodel_cm, transTrip, type = "eval")
-mymodel_cm <- includeEffects(mymodel_cm, transTrip, type = "endow")
-mycontrols_cm <- sienaAlgorithmCreate(projname = NULL, seed = 3, n3 = 60, cond = FALSE)
-ans_cm <- siena07(
-  mycontrols_cm,
-  data    = mydata_cm,
-  effects = mymodel_cm,
-  returnChangeContributions = TRUE,
-  returnDataFrame = FALSE,
-  silent  = TRUE
-)
 
 # ---------------------------------------------------------------------------
 # Static predict: creation/maintenance — all effect types present, distinct
 # ---------------------------------------------------------------------------
 test_that("predict.sienaFit static: creation/endow effects correctly separated", {
+  skip_slow()
   skip_if_not(requireNamespace("data.table", quietly = TRUE))
   # Test via contributions struct (static)
   wide_cm <- getStaticChangeContributions(
     ans = ans_cm, data = mydata_cm, effects = mymodel_cm,
     depvar = "mynet_cm", returnWide = TRUE
   )
-  # All five effect slots appear as distinct columns
-  expect_true("density_eval"    %in% wide_cm$effectNames)
-  expect_true("recip_eval"      %in% wide_cm$effectNames)
-  expect_true("recip_creation"  %in% wide_cm$effectNames)
-  expect_true("transTrip_eval"  %in% wide_cm$effectNames)
-  expect_true("transTrip_endow" %in% wide_cm$effectNames)
+  # All five effect slots appear as distinct columns (depvar-prefixed)
+  expect_true("mynet_cm_density_eval"    %in% wide_cm$effectNames)
+  expect_true("mynet_cm_recip_eval"      %in% wide_cm$effectNames)
+  expect_true("mynet_cm_recip_creation"  %in% wide_cm$effectNames)
+  expect_true("mynet_cm_transTrip_eval"  %in% wide_cm$effectNames)
+  expect_true("mynet_cm_transTrip_endow" %in% wide_cm$effectNames)
   # eval and creation columns must differ (different zero-masks)
-  recip_eval_col  <- which(wide_cm$effectNames == "recip_eval")
-  recip_creat_col <- which(wide_cm$effectNames == "recip_creation")
+  recip_eval_col  <- which(wide_cm$effectNames == "mynet_cm_recip_eval")
+  recip_creat_col <- which(wide_cm$effectNames == "mynet_cm_recip_creation")
   expect_false(identical(wide_cm$contribMat[, recip_eval_col],
                          wide_cm$contribMat[, recip_creat_col]))
   pred_cm <- predictProbability(wide_cm, theta = c(ans_cm$rate, ans_cm$theta), type = "tieProb")
@@ -538,6 +491,7 @@ test_that("predict.sienaFit static: creation/endow effects correctly separated",
 # Dynamic predict: creation/maintenance
 # ---------------------------------------------------------------------------
 test_that("predict.sienaFit dynamic: creation/endow effect columns present", {
+  skip_slow()
   skip_if_not(requireNamespace("data.table", quietly = TRUE))
   # Test via the contributions struct (which carries the column names directly)
   # rather than predict.sienaFit whose aggregated output does not include them.
@@ -547,13 +501,103 @@ test_that("predict.sienaFit dynamic: creation/endow effect columns present", {
     theta = theta_cm, effects = mymodel_cm, depvar = "mynet_cm",
     returnWide = TRUE, useChangeContributions = TRUE
   )
-  expect_true("recip_eval"      %in% contrib$effectNames)
-  expect_true("recip_creation"  %in% contrib$effectNames)
-  expect_true("transTrip_eval"  %in% contrib$effectNames)
-  expect_true("transTrip_endow" %in% contrib$effectNames)
+  expect_true("mynet_cm_recip_eval"      %in% contrib$effectNames)
+  expect_true("mynet_cm_recip_creation"  %in% contrib$effectNames)
+  expect_true("mynet_cm_transTrip_eval"  %in% contrib$effectNames)
+  expect_true("mynet_cm_transTrip_endow" %in% contrib$effectNames)
   # eval and creation columns must differ (creation is 0 for existing ties)
-  recip_eval_col    <- which(contrib$effectNames == "recip_eval")
-  recip_creat_col   <- which(contrib$effectNames == "recip_creation")
+  recip_eval_col    <- which(contrib$effectNames == "mynet_cm_recip_eval")
+  recip_creat_col   <- which(contrib$effectNames == "mynet_cm_recip_creation")
   expect_false(identical(contrib$contribMat[, recip_eval_col],
                          contrib$contribMat[, recip_creat_col]))
+})
+
+# ---------------------------------------------------------------------------
+# Integration: theta sign, utility diff, and predicted probability direction
+#
+# Uses ans / mydata / mymodel from helper-models.R (base, always available).
+# No additional model fitting — getStaticChangeContributions just restructures
+# data already stored in ans$changeContributions, so this is always fast.
+#
+# What is tested:
+#   (1) Rate parameters are NOT used in utility computation  — theta is aligned
+#       by name (composite effectName), so rate params (unnamed / differently
+#       named) must not appear in the dot product.
+#   (2) Utility difference is exact: ΔU = Δθ_transTrip × c_transTrip per row.
+#       This would silently fail if the wrong theta element is used.
+#   (3) Sign is correct: higher θ_transTrip → higher changeProb for additions
+#       (density==1) where c_transTrip > 0.
+# ---------------------------------------------------------------------------
+
+test_that("predict: theta sign, utility diff, and probability direction are correct", {
+  # Build the contribution struct once (pure data restructuring, no simulation).
+  contrib <- getStaticChangeContributions(
+    ans = ans, data = mydata, effects = mymodel,
+    depvar = "mynet", returnWide = TRUE
+  )
+
+  tt_col      <- grep("transTrip", contrib$effectNames, fixed = TRUE)
+  density_col <- grep("density",   contrib$effectNames, fixed = TRUE)[1L]
+  stopifnot(length(tt_col) == 1L)   # model has exactly one transTrip effect
+
+  theta_base  <- ans$theta
+  names(theta_base) <- contrib$effectNames  # composite names expected by predictProbability
+
+  # Perturb transTrip upward by a large, clearly detectable amount.
+  delta_tt    <- 5.0
+  theta_high  <- theta_base
+  theta_high[tt_col] <- theta_base[tt_col] + delta_tt
+
+  out_base <- predictProbability(contrib, theta_base)
+  out_high <- predictProbability(contrib, theta_high)
+
+  # (1) utility difference is exactly delta_tt * c_transTrip for every row
+  util_diff_expected <- delta_tt * contrib$contribMat[, tt_col]
+  util_diff_actual   <- out_high$changeUtil - out_base$changeUtil
+  expect_equal(util_diff_actual, util_diff_expected, tolerance = 1e-12,
+    info = "ΔU must equal Δθ * contribution — fails if wrong theta element is used")
+
+  # (2) Softmax monotonicity: E[c_transTrip] (changeProb-weighted) must be
+  #     >= per ego group under theta_high, and strictly > in aggregate.
+  #     This is the fundamental property dE[c]/dtheta = Var_theta(c) >= 0.
+  #     Per-ego equality happens when all choices have identical transTrip
+  #     contributions (Var = 0); the aggregate must strictly increase because
+  #     at least some egos have non-constant transTrip contributions.
+  #     Individual row changeProb can go either way due to softmax competition.
+  tt_contrib <- contrib$contribMat[, tt_col]
+  for (gid in unique(contrib$group_id)) {
+    rows   <- contrib$group_id == gid
+    E_base <- sum(out_base$changeProb[rows] * tt_contrib[rows])
+    E_high <- sum(out_high$changeProb[rows] * tt_contrib[rows])
+    expect_gte(E_high, E_base - 1e-12,
+      label = paste0("E[c_transTrip] must not decrease under theta_high (ego group ", gid, ")"))
+  }
+  # Aggregate must be strictly higher (at least one ego has Var(c_transTrip) > 0)
+  expect_gt(
+    sum(out_high$changeProb * tt_contrib),
+    sum(out_base$changeProb * tt_contrib),
+    label = "aggregate E[c_transTrip] must strictly increase under theta_high"
+  )
+
+  # (3) tieProb direction: mean tieProb over rows with positive transTrip
+  #     contribution must be higher under theta_high.
+  #     changeProb for individual rows can be lower (softmax competition), but
+  #     tieProb aggregated over pairs where transitivity helps must increase.
+  out_base_tp <- predictProbability(contrib, theta_base, type = "tieProb")
+  out_high_tp <- predictProbability(contrib, theta_high, type = "tieProb")
+  pos_tt_rows <- tt_contrib > 0 & !is.na(out_base_tp$tieProb)
+  expect_gt(length(which(pos_tt_rows)), 0L,
+    label = "must have non-NA tieProb rows with positive transTrip contribution")
+  expect_gt(
+    mean(out_high_tp$tieProb[pos_tt_rows]),
+    mean(out_base_tp$tieProb[pos_tt_rows]),
+    label = "mean tieProb for positive-transTrip pairs must increase under theta_high"
+  )
+
+  # (4) probabilities still sum to 1 per ego under both theta values
+  for (gid in unique(contrib$group_id)) {
+    rows <- contrib$group_id == gid
+    expect_equal(sum(out_base$changeProb[rows]), 1, tolerance = 1e-10)
+    expect_equal(sum(out_high$changeProb[rows]), 1, tolerance = 1e-10)
+  }
 })

@@ -106,13 +106,13 @@ residuals.sienaFit <- function(object,
 
 # add resid as alias for residuals
 # based on https://github.com/florianhartig/DHARMa/blob/master/DHARMa/R/helper.R
-#' Calculate Quantile Residuals from Simulations
-#'
-#' @param simulations Matrix: rows = observations, columns = simulations.
-#' @param observed Vector: observed values.
-#' @param integerResponse Logical: is response integer-valued?
-#' @param method "PIT" or "traditional"
-#' @return Vector of quantile residuals
+# Calculate Quantile Residuals from Simulations
+#
+# simulations:     Matrix: rows = observations, columns = simulations.
+# observed:        Vector: observed values.
+# integerResponse: Logical: is response integer-valued?
+# method:          "PIT" or "traditional"
+# Returns vector of quantile residuals
 getQuantileResiduals <- function(simulations, observed, 
     integerResponse = TRUE, method = c("PIT", "traditional"),
     randomized = TRUE) {
@@ -150,13 +150,11 @@ getQuantileResiduals <- function(simulations, observed,
     scaledResiduals
 }
 
-#' Modified ECDF function.
-#'
-#' @details Ensures symmetric ECDF (standard ECDF is <), and 
-#' that 0 / 1 values are only produced if the data is strictly < > 
-#' than the observed data.
-#'
-#' @keywords internal
+# Modified ECDF function.
+#
+# Ensures symmetric ECDF (standard ECDF is <), and
+# that 0 / 1 values are only produced if the data is strictly < >
+# than the observed data.
 DHARMa.ecdf <- function (x)
 {
     x <- sort(x)

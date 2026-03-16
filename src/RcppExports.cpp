@@ -85,3 +85,56 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// loo_change_probs
+arma::mat loo_change_probs(const arma::mat& contribMat, const arma::vec& theta, const arma::ivec& group_id);
+RcppExport SEXP _RSiena_loo_change_probs(SEXP contribMatSEXP, SEXP thetaSEXP, SEXP group_idSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type contribMat(contribMatSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type theta(thetaSEXP);
+    Rcpp::traits::input_parameter< const arma::ivec& >::type group_id(group_idSEXP);
+    rcpp_result_gen = Rcpp::wrap(loo_change_probs(contribMat, theta, group_id));
+    return rcpp_result_gen;
+END_RCPP
+}
+// l1d_grouped
+arma::mat l1d_grouped(const arma::vec& ref, const arma::mat& loo, const arma::ivec& group_id);
+RcppExport SEXP _RSiena_l1d_grouped(SEXP refSEXP, SEXP looSEXP, SEXP group_idSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type ref(refSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type loo(looSEXP);
+    Rcpp::traits::input_parameter< const arma::ivec& >::type group_id(group_idSEXP);
+    rcpp_result_gen = Rcpp::wrap(l1d_grouped(ref, loo, group_id));
+    return rcpp_result_gen;
+END_RCPP
+}
+// kld_grouped
+arma::mat kld_grouped(const arma::vec& ref, const arma::mat& loo, const arma::ivec& group_id);
+RcppExport SEXP _RSiena_kld_grouped(SEXP refSEXP, SEXP looSEXP, SEXP group_idSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type ref(refSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type loo(looSEXP);
+    Rcpp::traits::input_parameter< const arma::ivec& >::type group_id(group_idSEXP);
+    rcpp_result_gen = Rcpp::wrap(kld_grouped(ref, loo, group_id));
+    return rcpp_result_gen;
+END_RCPP
+}
+// mlogit_update
+arma::vec mlogit_update(const arma::vec& p, const arma::vec& delta_u, const arma::ivec& group_id, int perturbType);
+RcppExport SEXP _RSiena_mlogit_update(SEXP pSEXP, SEXP delta_uSEXP, SEXP group_idSEXP, SEXP perturbTypeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type p(pSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type delta_u(delta_uSEXP);
+    Rcpp::traits::input_parameter< const arma::ivec& >::type group_id(group_idSEXP);
+    Rcpp::traits::input_parameter< int >::type perturbType(perturbTypeSEXP);
+    rcpp_result_gen = Rcpp::wrap(mlogit_update(p, delta_u, group_id, perturbType));
+    return rcpp_result_gen;
+END_RCPP
+}

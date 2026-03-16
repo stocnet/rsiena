@@ -26,7 +26,10 @@ export(
    update_theta, update_specification, 
 	test_parameter, write_result, test_time, test_gof,
 	interpret_selection, interpret_influence, transformScript,
-   sienaAME, sienaAMEDynamic
+   sienaEntropy,
+   marginalEffects, entropy,
+   relativeImportance,
+   getChangeStatistics
 )
 
 importFrom("data.table", "rbindlist", "as.data.table", ":=",
@@ -85,6 +88,8 @@ S3method(test_gof, sienaFit)
 S3method(interpret_selection, sienaFit)
 S3method(interpret_influence, sienaFit)
 S3method(interpret_size, sienaFit)
+S3method(relativeImportance, sienaFit)
+S3method(relativeImportance, sienaEffects)
 S3method(print, sienaAlgorithm)
 S3method(print, sienaMeta)
 S3method(print, summary.sienaMeta)
@@ -116,9 +121,6 @@ S3method(descriptives, sienaGOF)
 S3method(summary, sienaRI)
 S3method(print, sienaRI)
 S3method(plot, sienaRI)
-S3method(summary, sienaRIDynamics)
-S3method(print, sienaRIDynamics)
-S3method(plot, sienaRIDynamics)
 S3method(predict, iwlsm)
 S3method(print, iwlsm)
 S3method(print, summary.iwlsm)
@@ -133,6 +135,9 @@ S3method(print, selectionTable)
 S3method(predict, sienaFit)
 S3method(fitted, sienaFit)
 S3method(residuals, sienaFit)
+S3method(marginalEffects, sienaFit)
+S3method(entropy, sienaFit)
+S3method(entropy, default)
 
 
 

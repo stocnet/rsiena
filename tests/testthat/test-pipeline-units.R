@@ -3,7 +3,7 @@
 # Unit tests for pipeline sub-functions in predict.R, sienaMargins.r, postestimate.R.
 # These tests use synthetic data: no siena07() call required.
 # Goal: catch errors early in the computational pipeline before they surface
-# at the integration level (sienaAME / predict.sienaFit).
+# at the integration level (marginalEffects / predict.sienaFit).
 
 # ── Synthetic helper ──────────────────────────────────────────────────────────
 
@@ -48,15 +48,15 @@ make_cc3 <- function(seed = 42) {
 # ── calculateUtility ─────────────────────────────────────────────────────────
 
 test_that("calculateUtility: matrix-vector product (numeric)", {
-  mat   <- matrix(c(1, 2, 3, 4, 5, 6), nrow = 3)
+  contribMat   <- matrix(c(1, 2, 3, 4, 5, 6), nrow = 3)
   theta <- c(0.5, -1)
-  expect_equal(calculateUtility(mat, theta), as.numeric(mat %*% theta))
+  expect_equal(calculateUtility(contribMat, theta), as.numeric(contribMat %*% theta))
 })
 
 test_that("calculateUtility: single-column matrix", {
-  mat   <- matrix(c(1, -1, 0), nrow = 3)
+  contribMat   <- matrix(c(1, -1, 0), nrow = 3)
   theta <- c(-2)
-  expect_equal(calculateUtility(mat, theta), c(-2, 2, 0))
+  expect_equal(calculateUtility(contribMat, theta), c(-2, 2, 0))
 })
 
 test_that("calculateUtility: requires matrix input", {
@@ -322,37 +322,52 @@ test_that("groupColsList: dynamic (with chain) returns correct names", {
 
 test_that("alignThetaNoRate: named theta — selects by name", {
   theta <- c(density = -2, recip = 1.5, transTrip = 0.5)
-  result <- alignThetaNoRate(theta, c("recip", "transTrip"), ans = NULL)
+  result <- alignThetaNoRate(theta, c("recip", "transTrip"))
   expect_named(result, c("recip", "transTrip"))
   expect_equal(unname(result["recip"]), 1.5)
 })
 
-test_that("alignThetaNoRate: uses requestedEffects (not effects) for name assignment", {
-  # theta includes rate params — this is what sienaMargins passes
-  theta <- c(-2.38, 3.06, -0.07)   # rate1, rate2, density, recip, unspInt
-  # effectNames are composite (rate effects filtered out — these are the names to extract)
-  effectNames <- c("density_eval", "recip_eval", "unspInt_eval")
-
-  mock_ans <- list(
-    requestedEffects = data.frame(
-      shortName = c("rateX", "rateX", "density", "recip", "unspInt"),
-      type      = c("rate",  "rate",  "eval",    "eval",  "eval"),
-      include   = c(TRUE,    TRUE,    TRUE,       TRUE,    TRUE),
-      stringsAsFactors = FALSE
-    )
+test_that("nameThetaFromEffects + alignThetaNoRate: cond=FALSE full-theta alignment", {
+  # Simulate a cond=FALSE model where theta includes rate parameters.
+  # nameThetaFromEffects warns and names unnamed theta; alignThetaNoRate then
+  # selects the eval params.
+  theta_raw <- c(-2.38, 5.1, 4.9, 3.06, -0.07)  # density, rate1, rate2, recip, unspInt
+  effs <- data.frame(
+    shortName = c("density", "rateX", "rateX", "recip", "unspInt"),
+    type      = c("eval",    "rate",  "rate",  "eval",  "eval"),
+    stringsAsFactors = FALSE
   )
-  result <- alignThetaNoRate(theta, effectNames, mock_ans)
+  theta_named <- expect_warning(
+    nameThetaFromEffects(theta_raw, effs),
+    "theta has no names"
+  )
+  effectNames <- c("density_eval", "recip_eval", "unspInt_eval")
+  result <- alignThetaNoRate(theta_named, effectNames)
   expect_named(result, effectNames)
   expect_equal(unname(result[["density_eval"]]), -2.38)
   expect_equal(unname(result[["recip_eval"]]),    3.06)
   expect_equal(unname(result[["unspInt_eval"]]), -0.07)
 })
 
-test_that("alignThetaNoRate: positional fallback when ans=NULL and theta unnamed", {
-  theta <- c(-2, 1.5, 0.5)
-  result <- alignThetaNoRate(theta, c("density", "recip", "transTrip"), ans = NULL)
-  # returns first length(effectNames) elements positionally
-  expect_equal(unname(result), c(-2, 1.5, 0.5))
+test_that("nameThetaFromEffects: returns named theta unchanged; warns for unnamed", {
+  # Already-named theta is returned as-is.
+  theta_named <- c(mynet_density_eval = -2, mynet_recip_eval = 1.5, mynet_transTrip_eval = 0.5)
+  effs <- data.frame(
+    shortName = c("density", "recip", "transTrip"),
+    type      = c("eval",    "eval",  "eval"),
+    stringsAsFactors = FALSE
+  )
+  result <- nameThetaFromEffects(theta_named, effs)
+  expect_identical(result, theta_named)  # returned as-is
+
+  # Unnamed theta triggers warning and gets names from getNamesFromEffects fallback.
+  theta_unnamed <- c(-2, 1.5, 0.5)
+  result2 <- expect_warning(
+    nameThetaFromEffects(theta_unnamed, effs),
+    "theta has no names"
+  )
+  expect_named(result2, c("density_eval", "recip_eval", "transTrip_eval"))
+  expect_equal(unname(result2), c(-2, 1.5, 0.5))
 })
 
 # ── planBatch ───────────────────────────────────────────────────────────────
@@ -698,4 +713,125 @@ test_that("attachContribColumns: 'recip_creation' not confused with density trig
                                  colnames(contrib), contrib, flip = TRUE)
   expect_equal(result[["recip_eval"]],     c(1L, -1L, 1L))
   expect_equal(result[["recip_creation"]], c(1L,  0L, 1L))  # 0 negated == 0
+})
+
+# ── creation/endow: utility calculation and theta alignment ──────────────────
+#
+# These tests guard three distinct failure modes:
+#
+#   (A) theta name-mismatch: if effectNames contain "_creation" / "_endow"
+#       but theta is named without the type suffix, theta[effectNames] returns
+#       NAs that silently corrupt the softmax — confirmed here so any future
+#       change that reintroduces position-based indexing is caught.
+#
+#   (B) endow theta is a DISTINCT parameter from eval theta: the utility for a
+#       dissolution choice is c_eval*theta_eval + c_endow*theta_endow, NOT
+#       (c_eval + c_endow)*theta_eval.  When endow = −eval, the latter collapses
+#       to zero regardless of theta_eval, masking the endowment effect entirely.
+#
+#   (C) predictProbability end-to-end with creation/endow composite effectNames:
+#       probabilities must sum to 1 per ego, utility must match manual product,
+#       and no NaN/NA should appear.
+
+# Synthetic creation/endow contributions struct (2 egos × 3 choices = 6 rows)
+# Effects: density (eval), recip (eval + creation), transTrip (eval + endow)
+# Convention: depvarName_shortName_type  (mirrors getStaticChangeContributions returnWide)
+make_cc_cm <- function() {
+  eff_names <- c("net_density_eval", "net_recip_eval", "net_recip_creation",
+                 "net_transTrip_eval", "net_transTrip_endow")
+  # choice: 1=add, -1=drop, 0=no-change  (one of each per ego, 2 egos)
+  density_col    <- c( 1L, -1L,  0L,   1L, -1L,  0L)
+  recip_eval     <- c( 0L,  1L,  0L,   1L,  0L,  0L)
+  recip_creat    <- c( 0L,  0L,  0L,   1L,  0L,  0L)  # only new-tie rows
+  transTrip_eval <- c( 2L,  1L,  0L,   1L,  3L,  0L)
+  transTrip_endow <- c(0L, -1L,  0L,   0L, -3L,  0L)  # endow = -eval on deletion rows
+  mat <- matrix(
+    c(density_col, recip_eval, recip_creat, transTrip_eval, transTrip_endow),
+    nrow = 6, dimnames = list(NULL, eff_names)
+  )
+  list(
+    contribMat  = mat,
+    effectNames = eff_names,
+    group_id    = c(1L, 1L, 1L, 2L, 2L, 2L),
+    group       = 1L,
+    period      = c(1L, 1L, 1L, 1L, 1L, 1L),
+    ego         = c(1L, 1L, 1L, 2L, 2L, 2L),
+    choice      = density_col
+  )
+}
+
+theta_cm <- function()
+  c(net_density_eval = -2.0, net_recip_eval = 1.5, net_recip_creation = 0.8,
+    net_transTrip_eval = 0.5, net_transTrip_endow = -0.3)
+
+# (A) Mismatched theta names → NAs (regression guard: change must be explicit)
+test_that("theta name mismatch on creation/endow names returns NAs — not silent wrong values", {
+  cc          <- make_cc_cm()
+  theta_wrong <- c(net_density = -2, net_recip = 1.5,
+                   net_transTrip = 0.5)         # old-style: no _eval / _creation suffix
+  theta_use   <- theta_wrong[cc$effectNames]
+  expect_true(any(is.na(theta_use)),
+    info = "mismatched names must produce NAs, not silently wrong values")
+})
+
+# (B) endow theta is separate: endow contribution does NOT cancel eval contribution
+test_that("calculateUtility: endow theta is distinct from eval theta — utility is not zero", {
+  # One row: choice == -1 (dissolution), endow = -eval by the invariant
+  c_eval  <-  2.0
+  c_endow <- -2.0
+  theta_eval  <-  0.5
+  theta_endow <- -0.3   # distinct — if accidentally shared, net would be 0
+
+  eff <- c("net_density_eval", "net_tt_eval", "net_tt_endow")
+  mat <- matrix(c(-1L, c_eval, c_endow), nrow = 1,
+                dimnames = list(NULL, eff))
+  theta <- c(net_density_eval = -2, net_tt_eval = theta_eval,
+             net_tt_endow = theta_endow)
+
+  util <- calculateUtility(mat, theta)
+
+  # Correct: -2*(-1) + c_eval*theta_eval + c_endow*theta_endow = 2 + 1.0 - 0.6 = 2.4
+  expected <- -2 * (-1L) + c_eval * theta_eval + c_endow * theta_endow
+  expect_equal(util, expected, tolerance = 1e-14)
+
+  # What you'd get if theta_endow were accidentally set to theta_eval:
+  # c_eval*theta_eval + c_endow*theta_eval = (c_eval + c_endow)*theta_eval = 0 → net = 2
+  wrong_util <- as.numeric(mat %*% c(-2, theta_eval, theta_eval))
+  expect_false(isTRUE(all.equal(util, wrong_util)),
+    info = "endow and eval thetas must produce different utilities")
+})
+
+# (C) predictProbability end-to-end with creation/endow composite effectNames
+test_that("predictProbability: creation/endow effectNames — probabilities sum to 1, no NaN", {
+  cc    <- make_cc_cm()
+  theta <- theta_cm()
+
+  result <- predictProbability(cc, theta)
+
+  # Probabilities per ego (softmax group) must sum to 1
+  expect_equal(sum(result$changeProb[cc$group_id == 1L]), 1, tolerance = 1e-10)
+  expect_equal(sum(result$changeProb[cc$group_id == 2L]), 1, tolerance = 1e-10)
+
+  # Utility must exactly match manual matrix product
+  expected_util <- as.numeric(cc$contribMat %*% theta[cc$effectNames])
+  expect_equal(result$changeUtil, expected_util, tolerance = 1e-14)
+
+  # No NaN or NA
+  expect_false(any(is.nan(result$changeProb)))
+  expect_false(any(is.na(result$changeProb)))
+})
+
+test_that("predictProbability: creation/endow — tieProb type produces NA for no-change rows", {
+  cc    <- make_cc_cm()
+  theta <- theta_cm()
+
+  result <- predictProbability(cc, theta, type = "tieProb")
+
+  # choice == 0L rows → tieProb must be NA
+  no_change <- cc$contribMat[, "net_density_eval"] == 0L
+  expect_true(all(is.na(result$tieProb[no_change])))
+  # choice == -1L rows → tieProb = 1 - changeProb
+  drop_rows <- cc$contribMat[, "net_density_eval"] == -1L
+  expect_equal(result$tieProb[drop_rows],
+               1 - result$changeProb[drop_rows], tolerance = 1e-14)
 })

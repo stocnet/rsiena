@@ -777,7 +777,7 @@ errorHandler <- function()
 coef.sienaFit <- function(object, dropRates=TRUE, shortenNames=TRUE, ...)
 {
 	result <- object$theta
-	names(result) <- fromObjectToText(object$requestedEffects$effectName)
+	# names(result) <- fromObjectToText(object$requestedEffects$effectName)
 	if (dropRates)
 	{
 		return(result[!object$requestedEffects$basicRate])
@@ -792,8 +792,8 @@ coef.sienaFit <- function(object, dropRates=TRUE, shortenNames=TRUE, ...)
 vcov.sienaFit <- function(object, dropRates=TRUE, shortenNames=TRUE, ...)
 {
 	result <- object$covtheta
-	colnames(result) <- fromObjectToText(object$requestedEffects$effectName)
-	rownames(result) <- colnames(result)
+	#colnames(result) <- fromObjectToText(object$requestedEffects$effectName)
+	# rownames(result) <- colnames(result)
 	if (dropRates)
 	{
 		return(result[!object$requestedEffects$basicRate,!object$requestedEffects$basicRate])

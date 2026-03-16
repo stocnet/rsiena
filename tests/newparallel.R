@@ -269,17 +269,21 @@ mymodel2 <- set_effect(mymodel2, list(density, recip, transTies))
 alg_alg <- set_algorithm_saom(cond=FALSE, seed=84, n3=60, nsub=2)
 ans2  <- siena(data=mydata2, effects=mymodel2, batch=TRUE, silent=TRUE,
          control_algo=alg_alg)
-RIDynamics2 <-  interpret_size_dynamics(mydata2, ans=ans2)
+RIDynamics2 <-  interpret_size_dynamics(mydata2, ans=ans2,
+     useChangeContributions=FALSE, algorithm = mycontrols2)
 RIDynamics2
 ### Don't use ans but previously estimated coefficients ----
 RIDynamics3 <- interpret_size_dynamics(data=mydata2, theta=c(ans2$rate,ans2$theta),
              algorithm=mycontrols2, effects=mymodel2, intervalsPerPeriod=10)
 RIDynamics3
+
 ## Conditional Estimation ----
-alg_alg <- set_algorithm_saom(cond=TRUE, condvarno=1, seed=4242, n3=60, nsub=2)
-ans3  <- siena(data=mydata2, effects=mymodel2, batch=TRUE, silent=TRUE,
-         control_algo=alg_alg)
-RIDynamics4 <- interpret_size_dynamics(mydata2, ans=ans3, effects = mymodel2)
+mycontrols3 <- sienaAlgorithmCreate(nsub=2, n3=60, cond=TRUE, seed = 4242)
+ans3 <- siena07(mycontrols3, data=mydata2, effects=mymodel2, batch=TRUE, 
+     silent=TRUE)
+
+RIDynamics4 <- interpret_size_dynamics(mydata2, ans=ans3, effects = mymodel2, 
+     useChangeContributions=FALSE, algorithm=mycontrols3)
 RIDynamics4
 ##test23
 ## Test interpret_size_dynamics with behavior variable ----
@@ -307,7 +311,7 @@ RIDynamics5 <- interpret_size_dynamics(mydata3, ans=ans4, depvar="mybeh",
 RIDynamics5
 net_steps <- Filter(function(ministep) getDepvarName(ministep)  == "mynet3", 
      ans4$changeContributions[[1]][[1]][[1]]) # 1st period, 1st group, 1st chain, network steps
-RIDynamics6 <- interpret_size_dynamics(mydata3, ans=ans4, depvar="mynet3")
+RIDynamics6 <- interpret_size_dynamics(mydata3, ans=ans4, depvar="mynet3", useChangeContributions=TRUE)
 RIDynamics6
 ##test24
 mynet1 <- as_dependent_rsiena(array(c(tmp3,tmp4),dim=c(32,32,2)))

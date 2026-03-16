@@ -16,7 +16,7 @@ stdError <- function(z, x, subphase,...)
 	z
 }
 
-entropy <- function(x)
+entropyWeights <- function(x)
 {
 	y<- x/sum(x)
 	l <- length(y)
@@ -31,7 +31,7 @@ E <- function(t, z, x)
 	z$muLik1 <- getLikelihoods(theta, z, getScores=TRUE,
 	iterSequence= z$iterSeq)
 	z$w1 <- exp(z$muLik1$lik - z$myloglik)
-	z$bridgeEntropy <- entropy(z$w1)
+	z$bridgeEntropy <- entropyWeights(z$w1)
 	
 	z
 }
@@ -128,7 +128,7 @@ eThermo <- function(h,H, z, x)
 	}
 
 	z$w1 <- exp(z$muLik1$lik - z$myloglik)
-	z$bridgeEntropy <- entropy(z$w1)
+	z$bridgeEntropy <- entropyWeights(z$w1)
 	
 	z
 }

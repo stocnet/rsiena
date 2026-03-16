@@ -44,7 +44,8 @@ sienaPostestimate <- function(
         level = level,
         condition = condition,
         sum_fun = sum_fun,
-        na.rm = na.rm
+        na.rm = na.rm,
+        thetaNames = names(thetaHat)
     )
 
     if (!is.null(useChangeContributions)) {
@@ -56,6 +57,17 @@ sienaPostestimate <- function(
 
     if (!uncertainty) return(expect)
 
+
+    # Resolve condition to actual column name now that we have the output shape.
+    # agg() resolves lazily per call, but drawSimStream needs it up-front for
+    # group_vars.  Doing it here keeps all downstream paths consistent.
+    if (!is.null(condition) && !is.null(colnames(expect))) {
+        condition <- tryCatch(
+            resolveEffectName(condition, colnames(expect)),
+            error = function(e) condition
+        )
+    }
+    
     uncertainty_summary_fun <- makeUncertaintySummarizer(
       return_sd = uncertaintySd,
       return_ci = uncertaintyCi,
@@ -238,9 +250,13 @@ computeMcse <- function(x,
   out
 }
 
+# thetaNames should not be necessary anymore?
 makeEstimator <- function(predictFun, predictArgs, outcomeName,
-    level = "period", condition = NULL, sum_fun = mean, na.rm = TRUE) {
+    level = "period", condition = NULL, sum_fun = mean, na.rm = TRUE,
+    thetaNames = NULL) {
     function(theta, useChangeContributions = FALSE) {
+        if (!is.null(thetaNames) && is.null(names(theta)))
+            names(theta) <- thetaNames
         if(!is.null(predictArgs[["useChangeContributions"]])){
           predictArgs[["useChangeContributions"]] <- useChangeContributions
         }
@@ -254,6 +270,19 @@ makeEstimator <- function(predictFun, predictArgs, outcomeName,
             sum_fun = sum_fun,
             na.rm = na.rm
         )
+        # Aggregate mass contrast columns alongside the main outcome
+        massCols <- intersect(c("massCreation", "massDissolution"), names(unit_pred))
+        for (mc in massCols) {
+            mc_agg <- agg(
+                outcomeName = mc,
+                data = unit_pred,
+                level = level,
+                condition = condition,
+                sum_fun = sum_fun,
+                na.rm = na.rm
+            )
+            main_result[[mc]] <- mc_agg[[mc]]
+        }
         if (isTRUE(predictArgs$details)) {
           details <- unit_pred
           return(list(summary = main_result, details = details))
@@ -577,8 +606,9 @@ getGroupVars <- function(level = "none", condition = NULL) {
     ego = c("period", "ego"),
     egoChoice = c("period", "ego", "choice"),
     chain = c("period", "chain"),
-    ministep = c("period", "chain", "ministep"),
-    ministepChoice = c("period", "chain", "ministep", "choice")
+    chainEgo = c("period", "chain", "ego"),
+    ministep = c("period", "chain", "ego","ministep"),
+    ministepChoice = c("period", "chain", "ego","ministep", "choice")
   )
   c(levels[[level]], condition)
 }
@@ -600,7 +630,123 @@ getEffectNamesNoRate <- function(effects, depvar) {
     includedEffects <- effects[include, ]
     keep <- includedEffects[["type"]] != "rate" & includedEffects[["name"]] == depvar
     inc <- includedEffects[keep, ]
-    paste(inc[["shortName"]], inc[["type"]], sep = "_")
+    paste(inc[["name"]], inc[["shortName"]], inc[["type"]], sep = "_")
+}
+
+
+
+# Resolve the perturbation type for a named effect.
+#
+# Used by marginalEffects (and potentially predict) to
+# decide whether a counterfactual shift uses the one-alternative
+# ("alter") or the ego-wide ("ego") mlogit update.
+#
+# Auto-detection relies on the interactionType metadata stored
+# in the wide struct's effectInteractionTypes vector:
+#   "ego"    -> perturbType "ego"
+#   "dyadic" -> perturbType "alter"
+#   anything else (empty, "OK", structural effects) ->
+#             perturbType "alter" (safe default for network effects).
+#
+# effectName: Character: (resolved) composite effect name.
+# effectInteractionTypes: Named character vector; may be NULL.
+# override: Optional user override, one of "alter", "ego", or NULL (auto-detect).
+# Returns character scalar: "alter" or "ego".
+resolvePerturbType <- function(effectName,
+                               effectInteractionTypes = NULL,
+                               override = NULL) {
+    if (!is.null(override)) {
+        override <- match.arg(override, c("alter", "ego"))
+        return(override)
+    }
+    if (is.null(effectInteractionTypes) ||
+        !(effectName %in% names(effectInteractionTypes))) {
+        return("alter")
+    }
+    iType <- effectInteractionTypes[[effectName]]
+    if (identical(iType, "ego")) "ego" else "alter"
+}
+
+
+
+
+
+# Convert perturbType string to the integer code expected by
+# the mlogit_update Rcpp function.
+# perturbType: "alter" or "ego".
+# Returns integer: 0L for "alter", 1L for "ego".
+perturbTypeToInt <- function(perturbType) {
+    switch(perturbType, alter = 0L, ego = 1L,
+           stop("Invalid perturbType: ", perturbType))
+}
+
+# Multinomial-logit probability update with string-based perturbation type.
+#
+# Thin wrapper around the Rcpp mlogit_update that accepts
+# perturbType as "alter" or "ego" (instead of 0L/1L)
+# and returns a plain numeric vector.
+#
+# p:           Numeric vector of baseline probabilities.
+# delta_u:     Numeric vector of utility shifts (same length as p).
+# group_id:    Integer vector of group identifiers.
+# perturbType: Character: "alter" (one-alternative update)
+#              or "ego" (ego-wide renormalization).
+# Returns numeric vector of updated probabilities.
+mlogit_update_r <- function(p, delta_u, group_id, perturbType) {
+    if (is.null(group_id)) group_id <- integer(length(p))
+    as.vector(mlogit_update(p, delta_u, group_id,
+                            perturbTypeToInt(perturbType)))
+}
+
+# Compute ego-level probability-mass contrasts.
+#
+# For ego-wide perturbations, the natural actor-level QOIs are the
+# creation and dissolution probability-mass contrasts
+# Delta P_i+ = sum_{j in C_i} (p'_ij - p_ij) and
+# Delta P_i- = sum_{j in D_i} (p'_ij - p_ij),
+# where the sums run over the creation and dissolution risk sets
+# respectively.
+#
+# firstDiff: Numeric vector of dyad-level first differences
+#            (on whichever scale: changeProb or tieProb).
+# density:   Integer vector: 1 = creation, -1 = dissolution.
+#            Rows with density = 0 should already be removed.
+# ego:       Integer vector of ego identifiers.
+# period:    Integer vector of period identifiers.
+# group:     Integer/character vector of group identifiers.
+# type:      Character: "changeProb" or "tieProb".
+#            Needed to recover change-probability-scale diffs for tieProb mode.
+# Returns a data.frame with columns massCreation and
+#   massDissolution, one value per row (broadcast from ego-level aggregate).
+computeMassContrasts <- function(firstDiff, density, ego, period, group,
+                                 type = "changeProb") {
+    n <- length(firstDiff)
+    massCreation <- rep(NA_real_, n)
+    massDissolution <- rep(NA_real_, n)
+
+    # Convert firstDiff to change-probability scale if needed.
+    # For tieProb, dissolution rows have firstDiff = -(changeProbDiff),
+    # so we flip them back.
+    changeProbDiff <- firstDiff
+    if (type == "tieProb") {
+        diss <- density == -1L
+        changeProbDiff[diss] <- -changeProbDiff[diss]
+    }
+
+    # Build a grouping key for ego × period × group
+    grpKey <- paste(group, period, ego, sep = "\r")
+    ukeys <- unique(grpKey)
+
+    for (k in ukeys) {
+        idx <- which(grpKey == k)
+        cre <- idx[density[idx] ==  1L]
+        dis <- idx[density[idx] == -1L]
+        mc <- if (length(cre)) sum(changeProbDiff[cre], na.rm = TRUE) else 0
+        md <- if (length(dis)) sum(changeProbDiff[dis], na.rm = TRUE) else 0
+        massCreation[idx] <- mc
+        massDissolution[idx] <- md
+    }
+    data.frame(massCreation = massCreation, massDissolution = massDissolution)
 }
 
 conditionalReplace <- function(df, row_ids, cols, fun) {
@@ -620,7 +766,7 @@ agg <- function(outcomeName,
                 sum_fun = mean,
                 na.rm = TRUE) {
   if (length(outcomeName) != 1L) stop("'outcomeName' must be a single column name.")
-  if (!is.null(condition)) condition  <- resolveCondition(condition)
+  if (!is.null(condition)) condition <- resolveEffectName(condition, colnames(data))
   group_vars <- getGroupVars(level = level, condition = condition)
   # Helper for complex output (vector/list output from sum_fun)
   # extract from agg?
@@ -683,6 +829,8 @@ mergeEstimates <- function(df1, df2, level = "none", condition = NULL) {
     ministep = c("period", "chain", "ministep"),
     ministepChoice = c("period", "chain", "ministep", "choice")
   )
+  if (!is.null(condition) && is.data.frame(df1) && ncol(df1) > 0L)
+    condition <- resolveEffectName(condition, colnames(df1))
   group_vars <- c(levels_list[[level]], condition)
   # inefficient for data.table? Even for data.frame this could be more efficient
   # if we avoid the merge and just do a match on the group vars, but for now we
@@ -694,41 +842,24 @@ mergeEstimates <- function(df1, df2, level = "none", condition = NULL) {
   }
 }
 
-#' Align theta by name and subset to non-rate effects.
-#' effectNames come from contributions structs (shortName_type, no depvar prefix).
-#' theta may be named with depvar-prefixed names (from nameThetaFromEffects).
-#' Positional matching via req handles both formats.
-alignThetaNoRate <- function(theta, effectNames, ans = NULL) {
-    # Fast path: theta is already named with the same format as effectNames
-    if (!is.null(names(theta)) && all(effectNames %in% names(theta))) {
-        return(theta[effectNames])
-    }
-    if (!is.null(ans)) {
-        req <- ans$requestedEffects
-        if (is.data.frame(req)) {
-            noRate   <- req$type != "rate"
-            # Full names (may include depvar prefix): match theta's naming convention
-            fullNm   <- getNamesFromEffects(req)
-            # Short names (shortName_type, no depvar): match contributions effectNames format
-            shortNm  <- paste(req$shortName, req$type, sep = "_")
-            useNoRate <- sum(noRate) == length(theta)
-            src_full  <- if (useNoRate) fullNm[noRate]  else fullNm
-            src_short <- if (useNoRate) shortNm[noRate] else shortNm
-            pos <- match(effectNames, src_full)
-            if (anyNA(pos)) pos <- match(effectNames, src_short)
-            if (!anyNA(pos)) {
-                result        <- theta[pos]
-                names(result) <- effectNames
-                return(result)
-            }
-        }
-    }
-    theta[seq_along(effectNames)]
+# Ensure theta has names. If theta is already named, return it unchanged.
+# If unnamed (e.g. user-supplied), warn and generate names from effects using
+# the same convention as getNamesFromEffects() in robmon.r.
+nameThetaFromEffects <- function(theta, effects) {
+    if (!is.null(names(theta))) return(theta)
+    warning("theta has no names; generating names from effects")
+    setNames(theta, getNamesFromEffects(effects))
 }
 
-#' Attach effect contribution columns from a matrix to a data.frame.
-#' Extracts column-by-column (avoids full-matrix copy).
-#' If \code{flip = TRUE}, negates non-density columns where density == -1.
+# Align theta to a contributions effectNames vector via name-based subsetting.
+# theta must already be named (e.g. via nameThetaFromEffects).
+alignThetaNoRate <- function(theta, effectNames) {
+    theta[effectNames]
+}
+
+# Attach effect contribution columns from a matrix to a data.frame.
+# Extracts column-by-column (avoids full-matrix copy).
+# If flip = TRUE, negates non-density columns where density == -1.
 attachContribColumns <- function(out, effectNames, contrib, flip = TRUE) {
   density_j <- grep("density", effectNames, fixed = TRUE)
   if (flip && length(density_j) > 0) {
@@ -747,19 +878,23 @@ attachContribColumns <- function(out, effectNames, contrib, flip = TRUE) {
   out
 }
 
-#' Extract group-column vectors from a Contributions struct as a named list.
-#' \code{keep} is an optional logical/integer subset vector.
-#' For static, pb$group is scalar (recycled by data.frame()).
+# Extract group-column vectors from a Contributions struct as a named list.
+# keep is an optional logical/integer subset vector.
+# For static, pb$group is scalar (recycled by data.frame()).
+# For dynamic, ego is included when present in the struct.
 groupColsList <- function(pb, keep = NULL) {
   if (!is.null(pb$chain)) {
     if (is.null(keep)) {
-      list(chain = pb$chain, group = pb$group, period = pb$period,
-           ministep = pb$ministep, choice = pb$choice)
+      out <- list(chain = pb$chain, group = pb$group, period = pb$period,
+           ego = pb$ego, ministep = pb$ministep, choice = pb$choice)
     } else {
-      list(chain = pb$chain[keep], group = pb$group[keep],
-           period = pb$period[keep], ministep = pb$ministep[keep],
-           choice = pb$choice[keep])
+      out <- list(chain = pb$chain[keep], group = pb$group[keep],
+           period = pb$period[keep], ego = pb$ego[keep],
+           ministep = pb$ministep[keep], choice = pb$choice[keep])
     }
+    # Drop ego if not present (backward compat with old structs)
+    if (is.null(out$ego)) out$ego <- NULL
+    out
   } else {
     if (is.null(keep)) {
       list(group = pb$group, period = pb$period, ego = pb$ego,

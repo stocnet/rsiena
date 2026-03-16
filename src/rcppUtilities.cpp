@@ -302,3 +302,173 @@ arma::vec softmax_rcpp_grouped_cols(const Rcpp::DataFrame& data,
 //         Rcpp::Named("group_id")    = grpid_v
 //     );
 // }
+
+// LOO (leave-one-out) choice probabilities for all effects in one call.
+// For each effect k, zeros theta[k] and recomputes grouped softmax using:
+//   util_k = util_full - contribMat.col(k) * theta[k]   (O(n) per effect)
+// instead of a full matrix multiply (O(n*nEff)) each time.
+// group_id must form contiguous blocks (same assumption as softmax_arma_by_group).
+// Returns an nRows x nEff matrix; column k holds the LOO probs for effect k.
+// [[Rcpp::export]]
+arma::mat loo_change_probs(const arma::mat& contribMat,
+                            const arma::vec& theta,
+                            const arma::ivec& group_id) {
+    int n = contribMat.n_rows, nEff = contribMat.n_cols;
+    std::vector<int> starts;
+    starts.push_back(0);
+    for (int i = 1; i < n; i++)
+        if (group_id[i] != group_id[i-1]) starts.push_back(i);
+    starts.push_back(n);
+    int nG = starts.size() - 1;
+
+    arma::vec util_full = contribMat * theta;  // O(n*nEff), computed once
+    arma::mat out(n, nEff);
+    arma::vec util(n);
+    for (int k = 0; k < nEff; k++) {
+        util = util_full - contribMat.col(k) * theta[k];  // O(n)
+        double* out_col = out.colptr(k);
+        for (int g = 0; g < nG; g++) {
+            int s = starts[g], e = starts[g+1];
+            softmax_inplace(util.memptr() + s, out_col + s, e - s);
+        }
+    }
+    return out;
+}
+
+// L1 distance: sum_j |ref[j] - loo[j,k]|, aggregated by contiguous group.
+// Returns nGroups x nEff; rows with <= 1 valid ref entry are set to NA.
+// [[Rcpp::export]]
+arma::mat l1d_grouped(const arma::vec& ref,
+                       const arma::mat& loo,
+                       const arma::ivec& group_id) {
+    int n = ref.n_elem, nEff = loo.n_cols;
+    std::vector<int> starts;
+    starts.push_back(0);
+    for (int i = 1; i < n; i++)
+        if (group_id[i] != group_id[i-1]) starts.push_back(i);
+    starts.push_back(n);
+    int nG = starts.size() - 1;
+
+    arma::mat out(nG, nEff, arma::fill::zeros);
+    for (int g = 0; g < nG; g++) {
+        int s = starts[g], e = starts[g+1];
+        int valid = 0;
+        for (int r = s; r < e; r++) if (!std::isnan(ref[r])) valid++;
+        if (valid <= 1) {
+            for (int k = 0; k < nEff; k++) out(g, k) = NA_REAL;
+            continue;
+        }
+        for (int k = 0; k < nEff; k++) {
+            double acc = 0.0;
+            const double* lc = loo.colptr(k);
+            for (int r = s; r < e; r++)
+                if (!std::isnan(ref[r]) && !std::isnan(lc[r]))
+                    acc += std::abs(ref[r] - lc[r]);
+            out(g, k) = acc;
+        }
+    }
+    return out;
+}
+
+// KL divergence KL(ref || loo_k), normalised by log(group_size), by group.
+// Returns nGroups x nEff; NA rows when group has <= 1 valid choice.
+// Terms where loo_k == 0 while ref > 0 are dropped (not Inf), matching na.rm.
+// [[Rcpp::export]]
+arma::mat kld_grouped(const arma::vec& ref,
+                       const arma::mat& loo,
+                       const arma::ivec& group_id) {
+    int n = ref.n_elem, nEff = loo.n_cols;
+    std::vector<int> starts;
+    // do we not know size beforehand or pre-allocate with a first pass?
+    starts.push_back(0);
+    for (int i = 1; i < n; i++)
+        if (group_id[i] != group_id[i-1]) starts.push_back(i);
+    starts.push_back(n);
+    int nG = starts.size() - 1;
+
+    arma::mat out(nG, nEff, arma::fill::zeros);
+    for (int g = 0; g < nG; g++) {
+        int s = starts[g], e = starts[g+1];
+        int valid = 0;
+        for (int r = s; r < e; r++) if (!std::isnan(ref[r])) valid++;
+        if (valid <= 1) {
+            for (int k = 0; k < nEff; k++) out(g, k) = NA_REAL;
+            continue;
+        }
+        double logN = std::log((double)valid);
+        for (int k = 0; k < nEff; k++) {
+            double acc = 0.0;
+            const double* lc = loo.colptr(k);
+            for (int r = s; r < e; r++) {
+                if (std::isnan(ref[r]) || std::isnan(lc[r])) continue;
+                if (ref[r] > 0.0 && lc[r] > 0.0)
+                    acc += ref[r] * (std::log(ref[r]) - std::log(lc[r]));
+            }
+            out(g, k) = acc / logN;
+        }
+    }
+    return out;
+}
+
+// Counterfactual mlogit update for marginal effects.
+//
+// Given baseline choice probabilities `p` (from softmax) and a utility
+// shift `delta_u`, compute the counterfactual probability under two modes:
+//
+// perturbType = 0 ("alter" / one-alternative):
+//   p'_j = p_j * exp(d_j) / (1 - p_j + p_j * exp(d_j))
+//   This only re-weights the focal alternative j against "no change".
+//
+// perturbType = 1 ("ego" / ego-wide):
+//   p'_j = p_j * exp(d_j) / sum_{k in group} p_k * exp(d_k)
+//   This re-normalises across all alternatives in the choice set.
+//
+// NA values in delta_u propagate to the output as NA.
+// group_id must form contiguous blocks (same assumption as softmax_arma_by_group).
+// For perturbType = 0 group_id is unused but must be supplied.
+//
+// [[Rcpp::export]]
+arma::vec mlogit_update(const arma::vec& p,
+                        const arma::vec& delta_u,
+                        const arma::ivec& group_id,
+                        int perturbType) {
+    int n = p.n_elem;
+    arma::vec out(n);
+
+    if (perturbType == 0) {
+        // one-alternative update
+        for (int i = 0; i < n; i++) {
+            if (std::isnan(delta_u[i])) {
+                out[i] = NA_REAL;
+            } else {
+                double ed = std::exp(delta_u[i]);
+                out[i] = p[i] * ed / (1.0 - p[i] + p[i] * ed);
+            }
+        }
+    } else {
+        // ego-wide update: re-normalise within each contiguous group
+        int start = 0;
+        while (start < n) {
+            int g = group_id[start], end = start + 1;
+            while (end < n && group_id[end] == g) end++;
+
+            // weighted = p * exp(delta_u) for this group
+            double denom = 0.0;
+            for (int i = start; i < end; i++) {
+                double ed = std::isnan(delta_u[i]) ? 1.0 : std::exp(delta_u[i]);
+                out[i] = p[i] * ed;
+                denom += out[i];
+            }
+            if (denom > 0.0) {
+                for (int i = start; i < end; i++)
+                    out[i] /= denom;
+            }
+            // propagate NA from delta_u
+            for (int i = start; i < end; i++)
+                if (std::isnan(delta_u[i])) out[i] = NA_REAL;
+
+            start = end;
+        }
+    }
+    return out;
+}

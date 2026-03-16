@@ -27,6 +27,10 @@
  If \code{getChangeStats=TRUE}, the arrays of change statistics are
  stored in the \code{sienaRI} object that is created.
 
+ The \code{sienaFit} method delegates the core RI computation to
+ \code{\link{relativeImportance}}, which can also be called directly
+ when only the RI values (plus optional uncertainty) are needed.
+
  It takes the data as well as the complete model specification into account.
  Therefore, necessary arguments are the analysed data given as a
  \code{\link{sienadata}} data object as well as the complete model
@@ -36,16 +40,21 @@
  \code{\link{sienaEffects}} object.
 }
 \usage{
-\method{interpret_size}{sienaFit}(x, data, getChangeStats=FALSE, ...)
-\method{interpret_size}{sienaEffects}(x, data, theta, getChangeStats=FALSE, ...)
-\method{print}{sienaRI}(x, printSigma=FALSE,\dots)
-\method{plot}{sienaRI}(x, actors = NULL, col = NULL, addPieChart = FALSE,
+\method{interpret_size}{sienaFit}(object, data, getChangeStats=FALSE, depvar=NULL,
+                                  uncertainty=FALSE,
+                                  dynamic=FALSE, algorithm=NULL, n3=500,
+                                  useChangeContributions=FALSE,
+                                  dynamicMinistepFactor=10, ...)
+\method{interpret_size}{sienaEffects}(object, data, theta, getChangeStats=FALSE, ...)
+\method{print}{sienaRI}(object, printSigma=FALSE,\dots)
+\method{plot}{sienaRI}(object, actors = NULL, col = NULL, addPieChart = FALSE,
               radius = 1, width = NULL, height = NULL, legend = TRUE,
               legendColumns = NULL, legendHeight = NULL,
-              cex.legend = NULL, cex.names = NULL,\dots)
+              cex.legend = NULL, cex.names = NULL,
+              intervalsPerPeriod = 20, \dots)
 }
 \arguments{
-  \item{x}{for \code{interpret_size.sienaFit}: a \code{sienaFit} object,
+  \item{object}{for \code{interpret_size.sienaFit}: a \code{sienaFit} object,
            resulting from a call of \code{\link{siena}};\cr
            for \code{interpret_size.sienaEffects}: a \code{sienaEffects} object
            that was used for calling \code{\link{siena}};\cr
@@ -57,9 +66,30 @@
   \item{theta}{Vector of parameter values of evaluation effects
                included in the model.
                Length of \code{theta} has to be equal to the number of
-               included evaluation effects in the effects object \code{x}.}
+               included evaluation effects in the effects object \code{object}.}
   \item{getChangeStats}{Boolean: If \code{TRUE}, an array of change statistics
                is added to the \code{interpret_size} object.}
+  \item{depvar}{Character: name of dependent variable to calculate RI for.
+               If \code{NULL}, all dependent variables are used.}
+  \item{uncertainty}{Boolean: If \code{TRUE}, uncertainty quantification
+               (via \code{sienaPostestimate} with theta-draws from
+               \eqn{N(\hat\theta, \Sigma_\theta)}) is computed.
+               This uses the new vectorised \code{predictRelativeImportance}
+               pipeline. Additional arguments controlling uncertainty
+               (e.g., \code{nsim}, \code{useCluster}, \code{nbrNodes}) can
+               be passed via \code{\dots}.}
+  \item{dynamic}{Boolean: If \code{TRUE}, compute relative importance
+               along simulated dynamic chains rather than at observation
+               moments. This replaces \code{\link{interpret_size_dynamics}}
+               which is now deprecated.}
+  \item{algorithm}{\code{sienaAlgorithm} object used for the dynamic
+               simulation. Required when \code{dynamic=TRUE}.}
+  \item{n3}{Integer: number of chains to simulate for dynamic RI
+               (default 500).}
+  \item{useChangeContributions}{Boolean: If \code{TRUE}, reuse change
+               contributions stored in \code{object}.}
+  \item{dynamicMinistepFactor}{Numeric: scaling factor for the number
+               of ministeps to simulate in dynamic mode (default 10).}
   \item{printSigma}{Boolean: If \code{TRUE},
        average within-actor standard deviations of change statistics
        ('\code{sigma}') are included in the print.}
@@ -80,7 +110,13 @@
         value is used. Only effective if \code{legend=TRUE}.}
   \item{cex.legend}{Specifies the relative font size of legend labels.}
   \item{cex.names}{Specifies the relative font size of bar graph labels.}
-  \item{\dots}{Other arguments.}
+  \item{intervalsPerPeriod}{Integer: number of bins for time-series plots
+        of dynamic RI. Default 20. Ignored for static RI.}
+  \item{\dots}{Additional arguments passed to
+    \code{\link{relativeImportance}}, including
+    \code{distFun} (\code{"L1D"} or \code{"KLD"}) and,
+    when \code{uncertainty = TRUE}, arguments for
+    \code{sienaPostestimate} (e.g., \code{nsim}, \code{useCluster}).}
 }
 \details{\code{interpret_size} works only for estimation by the Method of Moments
       using \code{\link{modelType}} 1 (directed networks) or 2
@@ -108,13 +144,33 @@
  an object of class \code{sienaRI}. Otherwise, it returns a list of objects
  of class \code{sienaRI}, each corresponding to one dependent variable.
 
- A returned \code{sienaRI} object stores the expected relative importances of
- effects of one dependent variable at observation moments as defined in
- Section 3.1 of Indlekofer and Brandes (2013).
+ The \code{sienaFit} method returns a new-style \code{sienaRI} object with:
+ \describe{
+    \item{- \code{dependentVariable}}{name of the dependent variable.}
+    \item{- \code{data}}{a flat data.frame (or data.table) with one row per
+          ego-period, containing:
+          columns \code{period}, \code{ego};
+          \code{RI_<effectName>} columns with normalised relative importance;
+          \code{absSum} (total L1 distance before normalisation);
+          \code{sigma_<effectName>} (within-ego SD of change statistics).}
+    \item{- \code{effectNames}}{names of the included evaluation effects.}
+    \item{- \code{shortEffectNames}}{short (internal) effect names,
+          matching the column-name suffixes in \code{data}.}
+    \item{- \code{uncertainty}}{when \code{uncertainty = TRUE}, a
+          data.frame with uncertainty estimates (SE, quantile columns)
+          from \code{sienaPostestimate}; otherwise absent.}
+ }
+ The \code{print} and \code{plot} methods work with both the new format
+ (from the \code{sienaFit} method) and the old nested-list format
+ (from calling \code{sienaRI()} directly or via the \code{sienaEffects}
+ method).
 
-A \code{sienaRI} object is a list with the following components.
-For the components referred to as lists themselves, these are lists
-corresponding to the observation moments.
+ The \code{sienaEffects} method returns the old nested-list format.
+ A returned old-format \code{sienaRI} object stores the expected relative
+ importances of effects of one dependent variable at observation moments as
+ defined in Section 3.1 of Indlekofer and Brandes (2013).
+
+Old-format \code{sienaRI} components:
     \describe{
     \item{- \code{dependentVariable}}{the name of the corresponding
           dependent variable.}
@@ -184,6 +240,8 @@ corresponding to the observation moments.
   \emph{Mathematics and Social Sciences}, \bold{168}, 31--41.
 }
 \author{Natalie Indlekofer, Tom Snijders, Daniel Gotthardt}
+\seealso{\code{\link{relativeImportance}}, \code{\link{interpret_size_dynamics}},
+  \code{\link{sienaEntropy}}}
 \examples{
 myalgo <- set_algorithm_saom(nsub=1, n3=50, seed=1293)
 mynet1 <- as_dependent_rsiena(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
@@ -192,25 +250,38 @@ myeff <- make_specification(mydata)
 myeff <- set_effect(myeff, list(density, recip, outAct, inPop))
 (myeff <- set_effect(myeff, reciAct, parameter=1))
 ans <- siena(mydata, effects=myeff, control_algo=myalgo, batch=TRUE)
+
+## New format (via sienaFit method): data.frame-based RI
 RI <- interpret_size(ans, mydata)
 RI
 print(RI, printSigma=TRUE)
-# average within-ego standard deviations of change statistics by wave:
-RI$sigmas
-# sigma averaged over waves:
-RI$meansigmas
-# to get the change statistics:
-RI.cs <- interpret_size(ans, mydata, getChangeStats=TRUE)
-# For the network at the first wave:
-dim(RI.cs$changeStatistics[[1]])
-# E.g., the change statistics for the first actor (note the 0 first column):
-RI.cs$changeStatistics[[1]][,1,]
-# semi-standardized parameters by wave:
-ans$theta * RI$meansigmas
+# Access the underlying data.frame:
+head(RI$data)
+# RI columns per effect:
+grep("^RI_", names(RI$data), value=TRUE)
+# sigma columns per effect:
+grep("^sigma_", names(RI$data), value=TRUE)
 \dontrun{
 plot(RI, addPieChart=TRUE)
 plot(RI, actors=1:20, addPieChart=TRUE, radius=1.08)
 }
+
+## Legacy format (via sienaEffects method): list-based RI
+theta.eval <- coef(ans, dropRates=TRUE)
+RI_old <- interpret_size(myeff, data=mydata, theta=theta.eval)
+RI_old
+# average within-ego standard deviations of change statistics by wave:
+RI_old$sigmas
+# sigma averaged over waves:
+RI_old$meansigmas
+# to get the change statistics:
+RI_old.cs <- interpret_size(myeff, data=mydata, theta=theta.eval,
+                            getChangeStats=TRUE)
+# For the network at the first wave:
+dim(RI_old.cs$changeStatistics[[1]])
+# semi-standardized parameters by wave:
+theta.eval * RI_old$meansigmas
+
 # For two dependent variables:
 myalgo <- set_algorithm_saom(nsub=1, n3=50, seed=1293)
 mynet2 <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
@@ -220,16 +291,13 @@ myeff2 <- make_specification(mydata2)
 myeff2 <- set_effect(myeff2, list(density, recip, transTies))
 myeff2 <- set_effect(myeff2, avAlt, depvar="mybeh", covar1="mynet2")
 ans2 <- siena(mydata2, effects=myeff2, control_algo=myalgo, batch=TRUE)
-# Use only the parameters for the evaluation function:
-(theta.eval <- coef(ans2, dropRates=TRUE))
-RI <- interpret_size(myeff2, data=mydata2, theta=theta.eval)
-RI[[1]]
-RI[[2]]
-RI[[1]]$sigmas
-RI[[2]]$sigmas
+theta.eval2 <- coef(ans2, dropRates=TRUE)
+RI2 <- interpret_size(myeff2, data=mydata2, theta=theta.eval2)
+RI2[[1]]
+RI2[[2]]
 \dontrun{
-plot(RI[[2]], col = c("red", "green"), legend=FALSE)
-plot(RI[[1]], addPieChart = TRUE, legendColumns=2)
+plot(RI2[[2]], col = c("red", "green"), legend=FALSE)
+plot(RI2[[1]], addPieChart = TRUE, legendColumns=2)
 }
 }
 \keyword{models}

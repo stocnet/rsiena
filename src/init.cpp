@@ -16,6 +16,10 @@ extern "C"
  SEXP _RSiena_softmax_arma(SEXP);
  SEXP _RSiena_softmax_arma_by_group(SEXP, SEXP);
  SEXP _RSiena_softmax_rcpp_grouped_lst(SEXP, SEXP);
+ SEXP _RSiena_loo_change_probs(SEXP, SEXP, SEXP);
+ SEXP _RSiena_l1d_grouped(SEXP, SEXP, SEXP);
+ SEXP _RSiena_kld_grouped(SEXP, SEXP, SEXP);
+ SEXP _RSiena_mlogit_update(SEXP, SEXP, SEXP, SEXP);
 
 
   /*
@@ -53,10 +57,14 @@ static const R_CallMethodDef CallEntries[] = {
    CALLDEF(setupData, 2),
    CALLDEF(setupModelOptions, 12),
    CALLDEF(flattenChangeContributionsList, 1),
-   CALLDEF(flattenChangeContributionsWide, 4),
-   {"_RSiena_softmax_arma",            (DL_FUNC) &_RSiena_softmax_arma,            1},
-   {"_RSiena_softmax_arma_by_group",   (DL_FUNC) &_RSiena_softmax_arma_by_group,   2},
+   CALLDEF(flattenChangeContributionsWide, 2),
+   {"_RSiena_softmax_arma",             (DL_FUNC) &_RSiena_softmax_arma,             1},
+   {"_RSiena_softmax_arma_by_group",    (DL_FUNC) &_RSiena_softmax_arma_by_group,    2},
    {"_RSiena_softmax_rcpp_grouped_lst", (DL_FUNC) &_RSiena_softmax_rcpp_grouped_lst, 2},
+   {"_RSiena_loo_change_probs",         (DL_FUNC) &_RSiena_loo_change_probs,         3},
+   {"_RSiena_l1d_grouped",             (DL_FUNC) &_RSiena_l1d_grouped,             3},
+   {"_RSiena_kld_grouped",             (DL_FUNC) &_RSiena_kld_grouped,             3},
+   {"_RSiena_mlogit_update",            (DL_FUNC) &_RSiena_mlogit_update,            4},
    {NULL, NULL, 0}
 };
 
