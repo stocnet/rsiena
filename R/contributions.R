@@ -80,12 +80,6 @@ getStaticChangeContributions <- function(ans = NULL,
   }
   noRate <- effects$type != "rate"
   effects <- effects[noRate, ]
-  effectNames <- effects[effects$include == TRUE, "shortName"]
-  effectDepvars <- effects[effects$include == TRUE, "name"]
-  effectNetTypes <- effects[effects$include == TRUE, "netType"]
-  effectTypes <- effects[effects$include == TRUE, "type"]
-  effectInteractionTypes <- effects[effects$include == TRUE, "interactionType"]
-
 
   depvars_available <- names(data$depvars)
   if (is.null(depvar)) {
@@ -93,15 +87,10 @@ getStaticChangeContributions <- function(ans = NULL,
   }
 
   # Prepare for C++ call
-  # Settings can not be checked without algorithm?
-  # if (!is.null(algorithm$settings)) {
-  #   stop('not implemented: RI together with settings')
-  # } else {
   pData <- sienaSetupDataForCpp(data,
                                 includeBehavior = TRUE,
                                 includeBipartite = FALSE)
   setup <- sienaSetupEffectsForCpp(pData, data, effects)
-  #}
 
   staticChangeContributions <- .Call(
     C_getStaticChangeContributions, 
@@ -109,11 +98,22 @@ getStaticChangeContributions <- function(ans = NULL,
     pData, setup$pModel, setup$myeffects,
     parallelrun = FALSE
   )
-  #attr(staticChangeContributions, "effectNames") <- effects$shortName
 
   if (!returnDataFrame && !returnWide) {
     return(staticChangeContributions)
   }
+
+  # Derive effect metadata in C++ output order.
+  # sienaSetupEffectsForCpp uses split(effects, effects$name) which sorts
+  # dep var names alphabetically.  The C++ iterates over this split list,
+  # so its output order is: effects for the alphabetically-first dep var,
+  # then the next, etc.  We must use the same ordering here.
+  cppEffects <- do.call(rbind, setup$myeffects)
+  effectNames            <- cppEffects$shortName
+  effectDepvars          <- cppEffects$name
+  effectNetTypes         <- cppEffects$netType
+  effectTypes            <- cppEffects$type
+  effectInteractionTypes <- cppEffects$interactionType
 
   staticChangeContributions_effectNames <- attr(staticChangeContributions,
     "effectNames")
@@ -199,8 +199,7 @@ getStaticChangeContributions <- function(ans = NULL,
     compositeNames <- paste(dv, effectNamesDepvar, effectTypes[effectIdx], sep = "_")
     typeMap <- setNames(effectTypes[effectIdx], compositeNames)
     nameMap <- setNames(effectNamesDepvar, compositeNames)
-    matchIdx <- match(effectNamesDepvar, staticChangeContributions_effectNames)
-    nEffects <- length(matchIdx)
+    nEffects <- length(effectIdx)
     nEgos <- dim(data[["depvars"]][[dv]])[1]
     netType <- unique(effectNetTypes[effectDepvars == dv])
     if (netType == "oneMode") {
@@ -222,7 +221,7 @@ getStaticChangeContributions <- function(ans = NULL,
                       ))
       for (p in seq_len(nPeriods)) {
         for (e in seq_len(nEffects)) {
-          mat <- do.call(rbind, groupContributions[[p]][[matchIdx[e]]])
+          mat <- do.call(rbind, groupContributions[[p]][[effectIdx[e]]])
           result[p, e, , ] <- mat
         }
       }

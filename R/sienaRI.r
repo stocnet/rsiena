@@ -423,7 +423,8 @@ L1D <- function(referenz = NULL, distributions = NULL)
 }
 
 ##@print.sienaRI Methods
-print.sienaRI <- function(object, printSigma = FALSE, ...){
+print.sienaRI <- function(x, printSigma = FALSE, ...){
+	object <- x
 	if (!inherits(object, "sienaRI"))
 	{
 		if (inherits(object[[1]], "sienaRI"))
@@ -555,8 +556,9 @@ summary.sienaRI <- function(object, ...)
 	object
 }
 ##@print.summary.sienaRI Methods
-print.summary.sienaRI <- function(object, ...)
+print.summary.sienaRI <- function(x, ...)
 {
+	object <- x
 	if (!inherits(object, "summary.sienaRI"))
 	{
 		stop("not a legitimate summary of a Siena relative importance of effects object")
@@ -567,11 +569,12 @@ print.summary.sienaRI <- function(object, ...)
 
 
 ##@plot.sienaRI Methods
-plot.sienaRI <- function(object, actors = NULL, col = NULL, addPieChart = FALSE,
+plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 	radius = 1, width = NULL, height = NULL, legend = TRUE,
 	legendColumns = NULL, legendHeight = NULL, cex.legend = NULL,
 	cex.names = NULL, intervalsPerPeriod = 20, ...)
 {
+	object <- x
 	if (!inherits(object, "sienaRI"))
 	{
 		stop("not a legitimate Siena relative importance of effects object")

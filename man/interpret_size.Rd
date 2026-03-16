@@ -1,10 +1,7 @@
 \name{interpret_size}
 \alias{interpret_size}
-\alias{sienaRI}
-\alias{interpret_size}
 \alias{interpret_size.sienaFit}
 \alias{interpret_size.sienaEffects}
-\alias{entropy}
 \alias{plot.interpret_size}
 \alias{print.interpret_size}
 \alias{plot.sienaRI}
@@ -41,13 +38,23 @@
 }
 \usage{
 \method{interpret_size}{sienaFit}(object, data, getChangeStats=FALSE, depvar=NULL,
-                                  uncertainty=FALSE,
-                                  dynamic=FALSE, algorithm=NULL, n3=500,
-                                  useChangeContributions=FALSE,
+                                  effects=NULL, dynamic=FALSE,
+                                  distFun=c("L1D","KLD"), algorithm=NULL,
+                                  n3=500, useChangeContributions=FALSE,
+                                  uncertainty=FALSE, level="ego",
+                                  sum_fun=mean, na.rm=TRUE, nsim=1000,
+                                  uncertaintyMode=c("batch","stream"),
+                                  uncertaintySd=TRUE, uncertaintyCi=TRUE,
+                                  uncertaintyProbs=c(0.025,0.5,0.975),
+                                  useCluster=FALSE, nbrNodes=1,
+                                  clusterType=c("PSOCK","FORK"),
+                                  batchDir="temp", batchSize=NULL,
+                                  keepBatch=FALSE, verbose=TRUE,
+                                  memoryScale=NULL, batchUnitBudget=2.5e8,
                                   dynamicMinistepFactor=10, ...)
 \method{interpret_size}{sienaEffects}(object, data, theta, getChangeStats=FALSE, ...)
-\method{print}{sienaRI}(object, printSigma=FALSE,\dots)
-\method{plot}{sienaRI}(object, actors = NULL, col = NULL, addPieChart = FALSE,
+\method{print}{sienaRI}(x, printSigma=FALSE,\dots)
+\method{plot}{sienaRI}(x, actors = NULL, col = NULL, addPieChart = FALSE,
               radius = 1, width = NULL, height = NULL, legend = TRUE,
               legendColumns = NULL, legendHeight = NULL,
               cex.legend = NULL, cex.names = NULL,
@@ -57,10 +64,9 @@
   \item{object}{for \code{interpret_size.sienaFit}: a \code{sienaFit} object,
            resulting from a call of \code{\link{siena}};\cr
            for \code{interpret_size.sienaEffects}: a \code{sienaEffects} object
-           that was used for calling \code{\link{siena}};\cr
-           for \code{print.sienaRI} and \code{plot.sienaRI}:
-           a \code{sienaRI} object resulting
-           from a call to \code{interpret_size}.}
+           that was used for calling \code{\link{siena}}.}
+  \item{x}{for \code{print.sienaRI} and \code{plot.sienaRI}:
+           a \code{sienaRI} object resulting from a call to \code{interpret_size}.}
   \item{data}{\code{siena} data object representing the analyzed data and
               resulting from a call to \code{\link{make_data_rsiena}}.}
   \item{theta}{Vector of parameter values of evaluation effects
@@ -71,23 +77,38 @@
                is added to the \code{interpret_size} object.}
   \item{depvar}{Character: name of dependent variable to calculate RI for.
                If \code{NULL}, all dependent variables are used.}
-  \item{uncertainty}{Boolean: If \code{TRUE}, uncertainty quantification
-               (via \code{sienaPostestimate} with theta-draws from
-               \eqn{N(\hat\theta, \Sigma_\theta)}) is computed.
-               This uses the new vectorised \code{predictRelativeImportance}
-               pipeline. Additional arguments controlling uncertainty
-               (e.g., \code{nsim}, \code{useCluster}, \code{nbrNodes}) can
-               be passed via \code{\dots}.}
+  \item{effects}{Optional \code{sienaEffects} object. If \code{NULL},
+               uses \code{object$requestedEffects}.}
   \item{dynamic}{Boolean: If \code{TRUE}, compute relative importance
                along simulated dynamic chains rather than at observation
                moments. This replaces \code{\link{interpret_size_dynamics}}
                which is now deprecated.}
+  \item{distFun}{Character: distance function used (\code{"L1D"} or \code{"KLD"}).}
   \item{algorithm}{\code{sienaAlgorithm} object used for the dynamic
                simulation. Required when \code{dynamic=TRUE}.}
   \item{n3}{Integer: number of chains to simulate for dynamic RI
                (default 500).}
   \item{useChangeContributions}{Boolean: If \code{TRUE}, reuse change
                contributions stored in \code{object}.}
+  \item{uncertainty}{Boolean: If \code{TRUE}, uncertainty quantification
+               via theta-draws from \eqn{N(\hat\theta, \Sigma_\theta)} is computed.}
+  \item{level}{Character: aggregation level (\code{"ego"}).}
+  \item{sum_fun}{Function used to aggregate RI values across actors (default \code{mean}).}
+  \item{na.rm}{Boolean: whether to remove \code{NA}s in aggregation (default \code{TRUE}).}
+  \item{nsim}{Integer: number of theta draws for uncertainty quantification (default 1000).}
+  \item{uncertaintyMode}{Character: uncertainty computation mode (\code{"batch"} or \code{"stream"}).}
+  \item{uncertaintySd}{Boolean: include posterior SD in uncertainty output.}
+  \item{uncertaintyCi}{Boolean: include credible interval in uncertainty output.}
+  \item{uncertaintyProbs}{Numeric vector: quantile probabilities for credible intervals.}
+  \item{useCluster}{Boolean: if \code{TRUE}, use a parallel cluster.}
+  \item{nbrNodes}{Integer: number of cluster nodes (default 1).}
+  \item{clusterType}{Character: cluster type (\code{"PSOCK"} or \code{"FORK"}).}
+  \item{batchDir}{Character: directory for batch simulation files (default \code{"temp"}).}
+  \item{batchSize}{Integer or \code{NULL}: number of simulations per batch.}
+  \item{keepBatch}{Boolean: keep batch files after completion (default \code{FALSE}).}
+  \item{verbose}{Boolean: print progress messages (default \code{TRUE}).}
+  \item{memoryScale}{Numeric or \code{NULL}: memory scaling factor.}
+  \item{batchUnitBudget}{Numeric: per-unit memory budget (default \code{2.5e8}).}
   \item{dynamicMinistepFactor}{Numeric: scaling factor for the number
                of ministeps to simulate in dynamic mode (default 10).}
   \item{printSigma}{Boolean: If \code{TRUE},
@@ -112,11 +133,7 @@
   \item{cex.names}{Specifies the relative font size of bar graph labels.}
   \item{intervalsPerPeriod}{Integer: number of bins for time-series plots
         of dynamic RI. Default 20. Ignored for static RI.}
-  \item{\dots}{Additional arguments passed to
-    \code{\link{relativeImportance}}, including
-    \code{distFun} (\code{"L1D"} or \code{"KLD"}) and,
-    when \code{uncertainty = TRUE}, arguments for
-    \code{sienaPostestimate} (e.g., \code{nsim}, \code{useCluster}).}
+  \item{\dots}{Additional arguments passed to \code{\link{relativeImportance}}.}
 }
 \details{\code{interpret_size} works only for estimation by the Method of Moments
       using \code{\link{modelType}} 1 (directed networks) or 2

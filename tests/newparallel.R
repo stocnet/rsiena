@@ -272,9 +272,9 @@ ans2  <- siena(data=mydata2, effects=mymodel2, batch=TRUE, silent=TRUE,
 RIDynamics2 <-  interpret_size_dynamics(mydata2, ans=ans2,
      useChangeContributions=FALSE, algorithm = mycontrols2)
 RIDynamics2
-### Don't use ans but previously estimated coefficients ----
-RIDynamics3 <- interpret_size_dynamics(data=mydata2, theta=c(ans2$rate,ans2$theta),
-             algorithm=mycontrols2, effects=mymodel2, intervalsPerPeriod=10)
+### Use ans with explicit algorithm ----
+RIDynamics3 <- interpret_size_dynamics(data=mydata2, ans=ans2,
+             algorithm=mycontrols2, effects=mymodel2)
 RIDynamics3
 
 ## Conditional Estimation ----

@@ -53,7 +53,8 @@ marginalEffects.sienaFit <- function(
     perturbType2 = NULL,
     memoryScale = NULL,
     batchUnitBudget = 2.5e8,
-    dynamicMinistepFactor = 10
+    dynamicMinistepFactor = 10,
+    ...
 ) {
     if (inherits(data, "sienaGroup"))
       stop("marginalEffects does not support multi-group data (sienaGroup).")

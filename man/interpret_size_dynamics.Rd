@@ -1,7 +1,5 @@
 \name{interpret_size_dynamics}
 \alias{interpret_size_dynamics}
-\alias{sienaRIDynamics}
-\alias{plot.sienaRIDynamics}
 \title{Functions to assess the dynamics of relative importance of effects
        between observation moments}
 \description{
@@ -25,10 +23,7 @@
   interpret_size_dynamics(data, ans=NULL, theta=NULL,
      algorithm=NULL, effects=NULL, depvar=NULL,
      intervalsPerPeriod=NULL, n3 = NULL, useChangeContributions=FALSE,
-     silent=TRUE, seed=NULL)
-  \method{plot}{sienaRIDynamics}(x, staticRI=NULL, col=NULL,
-     ylim=NULL, width=NULL, height=NULL, legend=TRUE,
-     legendColumns=NULL, legendHeight=NULL, cex.legend=NULL, \dots)
+     silent=TRUE, seed=NULL, uncertainty=FALSE, \dots)
 }
 \arguments{
   \item{data}{\code{siena} data object representing the analyzed data and
@@ -79,30 +74,9 @@
     during internal \code{\link{siena}} calls.}
   \item{useChangeContributions}{Logical specifying whether previously extracted change
     contributions should be used instead of rerunning phase 3 simulations.}
-  \item{x}{\code{interpret_size_dynamics} object resulting from a call to \cr
-    \code{interpret_size_dynamics}.}
-  \item{staticRI}{\code{\link{sienaRI}} object corresponding to the same model
-    and data as \code{x}.
-    If \code{staticRI} is specified, the expected relative importances of
-    effects at observation moment are indicated in the plot by circlets
-    at the beginning of each period.}
-  \item{col}{Colors used in the plot. If \code{col=NULL} a default color
-    scheme is used.}
-  \item{ylim}{A vector of two numbers specifying the maximum and minimum
-    value of the y-range visible in the plot. If \code{ylim=NULL} default
-    values are used.}
-  \item{width}{Width of the plot. If \code{width=NULL} a default value is used.}
-  \item{height}{Height of the plot. If \code{height=NULL} a
-    default value is used.}
-  \item{legend}{Boolean: if \code{TRUE} a legend is added to the plot.
-    \code{x$effectNames} are used as labels.}
-  \item{legendColumns}{Number of columns in legend. If
-    \code{legendColumns=NULL} a default value is used.
-    Only effective if \code{legend=TRUE}.}
-  \item{legendHeight}{Height of legend. If \code{legendHeight=NULL}
-    a default value is used. Only effective if \code{legend=TRUE}.}
-  \item{cex.legend}{Specifies the relative font size of legend labels.}
-  \item{\dots}{Other arguments.}
+  \item{uncertainty}{Logical: if \code{TRUE}, uncertainty estimates are
+    included in the output. Default is \code{FALSE}.}
+  \item{\dots}{Further arguments passed to \code{\link{interpret_size}}.}
 }
 \details{
 \code{interpret_size_dynamics} takes the data as well as the complete model
@@ -146,7 +120,7 @@ the value of \code{algorithm$n3} if \code{algorithm} is specified. Otherwise,
 it defaults to the value of \code{ans$n3} if \code{ans} is specified.
 }
 \value{
-\code{interpret_size_dynamics} returns an object of class \code{sienaRIDynamics}.
+\code{interpret_size_dynamics} returns an object of class \code{sienaRI} (with \code{dynamic=TRUE}).
 
  A returned \code{interpret_size_dynamics} object stores the relative importances
    of effects in simulated mini-steps aggregated to \code{intervalsPerPeriod}
@@ -198,9 +172,8 @@ RIDynamics2
 
 
 myalgo3 <- sienaAlgorithmCreate(nsub=1, n3=32, seed=1777, cond=TRUE)
-RIDynamics3 <- interpret_size_dynamics(data=mydata,
-             theta=c(ans2$rate,ans2$theta),
-             algorithm=myalgo3, effects=mymodel, intervalsPerPeriod=4)
+RIDynamics3 <- interpret_size_dynamics(data=mydata, ans=ans2,
+             algorithm=myalgo3, effects=mymodel)
 RIDynamics3
 
 myalgo4 <- set_algorithm_saom(nsub=1, n3=32)

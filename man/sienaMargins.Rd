@@ -1,7 +1,6 @@
 \name{marginalEffects}
 \alias{marginalEffects}
 \alias{marginalEffects.sienaFit}
-\alias{marginalEffects.sienaEffects}
 \title{Marginal Effects for SAOMs}
 \description{
   \code{marginalEffects} computes marginal effects (MEs) for
@@ -41,9 +40,6 @@
     \item \code{marginalEffects.sienaFit}: Full functionality with
           uncertainty quantification via theta draws from
           \eqn{N(\hat\theta, \hat\Sigma_\theta)}.
-    \item \code{marginalEffects.sienaEffects}: Takes a bare effects object
-          with a user-supplied \code{theta} vector and optional
-          \code{covtheta} for uncertainty.
   }
 }
 \usage{
@@ -54,7 +50,6 @@
     effectName2 = NULL, diff2 = NULL, contrast2 = NULL,
     interaction2 = FALSE, intEffectNames2 = NULL,
     modEffectNames2 = NULL,
-    perturbType1 = NULL, perturbType2 = NULL,
     type = c("changeProb", "tieProb"), second = FALSE,
     level = "period", condition = NULL, sum_fun = mean, na.rm = TRUE,
     dynamic = FALSE, algorithm = NULL, n3 = 500,
@@ -69,25 +64,15 @@
     combineBatch = TRUE, batchSize = NULL,
     keepBatch = FALSE, verbose = TRUE,
     mainEffect = "riskDifference", details = FALSE,
+    perturbType1 = NULL, perturbType2 = NULL,
     memoryScale = NULL, batchUnitBudget = 2.5e8,
-    dynamicMinistepFactor = 10)
-
-\method{marginalEffects}{sienaEffects}(object, data, theta,
-    covtheta = NULL, depvar = NULL, effectName1,
-    uncertainty = !is.null(covtheta), ...)
+    dynamicMinistepFactor = 10, ...)
 }
 \arguments{
-  \item{object}{For \code{marginalEffects.sienaFit}: a \code{sienaFit} object
-           resulting from a call to \code{\link{siena}}.
-           For \code{marginalEffects.sienaEffects}: a \code{sienaEffects}
-           object.}
+  \item{object}{A \code{sienaFit} object resulting from a call to \code{\link{siena}}.}
   \item{data}{\code{siena} data object.}
   \item{effects}{Optional \code{sienaEffects} object. If \code{NULL},
-      taken from \code{x$requestedEffects}.}
-  \item{theta}{Parameter vector (required for the \code{sienaEffects} method).}
-  \item{covtheta}{Covariance matrix of the parameter estimates (optional
-      for the \code{sienaEffects} method). When provided, \code{uncertainty}
-      defaults to \code{TRUE} and uncertainty quantification is performed.}
+      taken from \code{object$requestedEffects}.}
   \item{depvar}{Name of dependent variable. Default: first depvar in data.}
   \item{effectName1}{Name of the effect for which the first difference
       is calculated.  This should match a short effect name as used
@@ -139,8 +124,7 @@
   \item{useChangeContributions}{Use pre-stored change contributions from
       \code{ans}.}
   \item{uncertainty}{Logical: whether to compute uncertainty via
-      theta-draws.  For the \code{sienaEffects} method, defaults to
-      \code{TRUE} when \code{covtheta} is supplied.}
+      theta-draws (default \code{TRUE}).}
   \item{uncertaintyMode}{\code{"batch"} or \code{"stream"}.}
   \item{nsim}{Number of theta-draws for uncertainty.}
   \item{uncertaintySd, uncertaintyCi, uncertaintyProbs, uncertaintyMcse,

@@ -30,11 +30,11 @@ relativeImportance(object, \dots)
 
 \method{relativeImportance}{sienaFit}(object, data,
     depvar = NULL, effects = NULL,
+    dynamic = FALSE,
     distFun = c("L1D", "KLD"),
-    uncertainty = FALSE,
-    dynamic = FALSE, algorithm = NULL, n3 = 500,
+    algorithm = NULL, n3 = 500,
     useChangeContributions = FALSE,
-    dynamicMinistepFactor = 10,
+    uncertainty = FALSE,
     level = "ego", sum_fun = mean, na.rm = TRUE,
     nsim = 1000,
     uncertaintyMode = c("batch", "stream"),
@@ -45,6 +45,7 @@ relativeImportance(object, \dots)
     batchDir = "temp", batchSize = NULL,
     keepBatch = FALSE, verbose = TRUE,
     memoryScale = NULL, batchUnitBudget = 2.5e8,
+    dynamicMinistepFactor = 10,
     getChangeStats = FALSE, \dots)
 
 \method{relativeImportance}{sienaEffects}(object, data,
@@ -74,7 +75,7 @@ relativeImportance(object, \dots)
   \item{dynamic}{Logical. If \code{TRUE}, compute RI along simulated
         dynamic ministep chains rather than at observation moments.
         Requires \code{algorithm} to be specified.
-        This mode replaces the deprecated \code{\link{sienaRIDynamics}} and 
+        This mode replaces the deprecated \code{sienaRIDynamics} and 
         the intermediate \code{\link{interpret_size_dynamics}}.}
   \item{algorithm}{\code{sienaAlgorithm} object used for the dynamic
         simulation. Required when \code{dynamic = TRUE}.}
@@ -140,7 +141,7 @@ relativeImportance(object, \dots)
   also stored.
 
   \bold{Dynamic RI (\code{dynamic = TRUE}).}
-  Uses \code{\link{getDynamicChangeContributions}} to simulate ministep
+  Uses \code{getDynamicChangeContributions} to simulate ministep
   chains and computes per-ministep RI values, capturing how effect
   importance evolves over the inter-observation period rather than only
   at the endpoints.

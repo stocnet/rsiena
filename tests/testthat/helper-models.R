@@ -13,7 +13,8 @@
 .in_test_run <- function() {
   any(vapply(sys.calls(), function(x) {
     fn <- tryCatch(deparse(x[[1]], nlines = 1), error = function(e) "")
-    grepl("::test$|::test_dir$|::test_check$", fn)
+    # Match both namespace-qualified (devtools::test) and bare forms (R CMD check).
+    grepl("(^|::)(test|test_dir|test_check)$", fn)
   }, logical(1))) || identical(Sys.getenv("RSENA_LOAD_MODELS"), "1")
 }
 
