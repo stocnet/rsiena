@@ -167,7 +167,7 @@ predictEntropyStatic <- function(staticContributions, theta) {
     }
 
     out <- data.frame(coordCols, R_entropy = rh, stringsAsFactors = FALSE)
-    if (requireNamespace("data.table", quietly = TRUE)) data.table::setDT(out)
+    # if (requireNamespace("data.table", quietly = TRUE)) data.table::setDT(out) # data.table removed
     out
 }
 

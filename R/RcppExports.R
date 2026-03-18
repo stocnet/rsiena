@@ -25,6 +25,10 @@ softmax_rcpp_grouped_cols <- function(data, val_col, group_cols) {
     .Call(`_RSiena_softmax_rcpp_grouped_cols`, data, val_col, group_cols)
 }
 
+grouped_agg_cpp <- function(x, G, na_rm = TRUE, do_mean = TRUE) {
+    .Call(`_RSiena_grouped_agg_cpp`, x, G, na_rm, do_mean)
+}
+
 loo_change_probs <- function(contribMat, theta, group_id) {
     .Call(`_RSiena_loo_change_probs`, contribMat, theta, group_id)
 }

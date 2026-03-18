@@ -20,6 +20,7 @@ extern "C"
  SEXP _RSiena_l1d_grouped(SEXP, SEXP, SEXP);
  SEXP _RSiena_kld_grouped(SEXP, SEXP, SEXP);
  SEXP _RSiena_mlogit_update(SEXP, SEXP, SEXP, SEXP);
+ SEXP _RSiena_grouped_agg_cpp(SEXP, SEXP, SEXP, SEXP);
 
 
   /*
@@ -65,6 +66,7 @@ static const R_CallMethodDef CallEntries[] = {
    {"_RSiena_l1d_grouped",             (DL_FUNC) &_RSiena_l1d_grouped,             3},
    {"_RSiena_kld_grouped",             (DL_FUNC) &_RSiena_kld_grouped,             3},
    {"_RSiena_mlogit_update",            (DL_FUNC) &_RSiena_mlogit_update,            4},
+   {"_RSiena_grouped_agg_cpp",           (DL_FUNC) &_RSiena_grouped_agg_cpp,           4},
    {NULL, NULL, 0}
 };
 

@@ -355,7 +355,7 @@ drawSim <- function(
         })
       } else if (cli$useFORK) {
         batch_result <- parallel::mclapply(batch, function(i) {
-          if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads(1)
+          # if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads(1) # data.table removed
           theta_sim <- MASS::mvrnorm(1, mu = thetaHat, Sigma = covTheta)
           sim <- do.call(estimator, list(theta = theta_sim))
           sim[, "sim"] <- i
@@ -388,7 +388,7 @@ drawSim <- function(
     
     if (verbose) message("All batches complete. Now combining and cleaning up...")
     
-    if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads()
+    # if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads() # data.table removed
     if(combineBatch){
       # Combine all batches
       batch_files <- list.files(batchDir, 
@@ -408,13 +408,14 @@ drawSim <- function(
         }
       }
       if (verbose) message("Returning combined results.")
-      if (requireNamespace("data.table", quietly = TRUE)) {
-        return(data.table::rbindlist(combined_results, use.names = TRUE, fill = TRUE))
-      } else {
+      # data.table removed — use do.call(rbind, ...)
+      # if (requireNamespace("data.table", quietly = TRUE)) {
+      #   return(data.table::rbindlist(combined_results, use.names = TRUE, fill = TRUE))
+      # } else {
         out <- do.call(rbind, combined_results)
         rownames(out) <- NULL
         return(out)
-      }
+      # }
     }
 }
 
@@ -478,7 +479,7 @@ drawSimStream <- function(
         })
       } else if (cli$useFORK) {
         batch_result <- parallel::mclapply(batch, function(i) {
-          if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads(1)
+          # if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads(1) # data.table removed
           theta_sim <- MASS::mvrnorm(1, mu = thetaHat, Sigma = covTheta)
           do.call(estimator, list(theta = theta_sim))
         }, mc.cores = nbrNodes)
@@ -537,9 +538,10 @@ openCluster <- function(nbrNodes, clusterType, cluster, export_vars, export_envi
   }
   if (usePSOCK) {
     parallel::clusterExport(cl, export_vars, envir = export_envir)
-    parallel::clusterEvalQ(cl, {
-      if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads(1)
-    })
+    # data.table removed — no need for setDTthreads
+    # parallel::clusterEvalQ(cl, {
+    #   if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads(1)
+    # })
   }
   list(cl = cl, cluster_created = cluster_created, usePSOCK = usePSOCK, useFORK = useFORK)
 }
@@ -558,10 +560,7 @@ updateStream <- function(stream_state,
                                 group_vars) {
   if (length(outcomeName) != 1L) stop("'outcomeName' must be a single column name.")
 
-#we should not convert to data.frame, adjust code to handle data.table if needed, but for now we convert to data.frame to avoid issues with list columns in data.table
-  if (requireNamespace("data.table", quietly = TRUE) && data.table::is.data.table(sim_df)) {
-    sim_df <- as.data.frame(sim_df)
-  }
+  # data.table removed — sim_df is always a data.frame now
 
   keys <- makeGroupKey(sim_df, group_vars)
   vals <- sim_df[[outcomeName]]
@@ -621,10 +620,7 @@ getGroupVars <- function(level = "none", condition = NULL) {
 }
 
 makeGroupKey <- function(df, group_vars) {
-  # should not convert to data.frame, adjust code to handle data.table if needed, but for now we convert to data.frame to avoid issues with list columns in data.table
-  if (requireNamespace("data.table", quietly = TRUE) && data.table::is.data.table(df)) {
-    df <- as.data.frame(df)
-  }
+  # data.table removed — df is always a data.frame now
   if (!length(group_vars)) {
     rep("__all__", nrow(df))
   } else {
@@ -757,11 +753,12 @@ computeMassContrasts <- function(firstDiff, density, ego, period, group,
 }
 
 conditionalReplace <- function(df, row_ids, cols, fun) {
-  if (requireNamespace("data.table", quietly = TRUE) && data.table::is.data.table(df)) {
-    df[eval(substitute(row_ids)), (cols) := lapply(.SD, fun), .SDcols = cols]
-  } else {
+  # data.table path removed (this function is not called in current code)
+  # if (requireNamespace("data.table", quietly = TRUE) && data.table::is.data.table(df)) {
+  #   df[eval(substitute(row_ids)), (cols) := lapply(.SD, fun), .SDcols = cols]
+  # } else {
     df[row_ids, cols] <- fun(df[row_ids, cols])
-  }
+  # }
   df
 }
 
@@ -776,33 +773,78 @@ detectEgoUnit <- function(data) {
   }
 }
 
+# Encode group columns as a contiguous integer matrix for grouped_agg_cpp.
+# Non-integer/non-numeric columns are factor-encoded.
+# Returns list(G = integer matrix, decode = list of level vectors per column).
+encodeGroupKeys <- function(data, group_vars) {
+  n <- nrow(data)
+  ncols <- length(group_vars)
+  G <- matrix(0L, nrow = n, ncol = ncols)
+  decode <- vector("list", ncols)
+  names(decode) <- group_vars
+  for (j in seq_len(ncols)) {
+    col <- data[[group_vars[j]]]
+    if (is.integer(col)) {
+      G[, j] <- col
+      decode[j] <- list(NULL)  # identity mapping (note: [[j]]<-NULL would delete)
+    } else if (is.numeric(col) && all(col == as.integer(col), na.rm = TRUE)) {
+      G[, j] <- as.integer(col)
+      decode[j] <- list(NULL)
+    } else {
+      f <- factor(col)
+      G[, j] <- as.integer(f)
+      decode[[j]] <- levels(f)
+    }
+  }
+  storage.mode(G) <- "integer"
+  list(G = G, decode = decode)
+}
+
+# Decode integer group key matrix back to original values using decode info.
+decodeGroupKeys <- function(key_mat, group_vars, decode) {
+  out <- data.frame(key_mat)
+  names(out) <- group_vars
+  for (j in seq_along(group_vars)) {
+    if (!is.null(decode[[j]])) {
+      out[[group_vars[j]]] <- decode[[j]][out[[group_vars[j]]]]
+    }
+  }
+  out
+}
+
 # Pre-aggregate outcomeName within each ego-unit: within-ego mean.
 # Returns one row per ego-unit with pre_agg_vars + outcomeName columns.
-# Works for both data.table and data.frame inputs.
 preAggEgo <- function(data, outcomeName, group_vars, ego_id_cols, na.rm) {
   pre_agg_vars <- unique(c(group_vars, ego_id_cols))
 
-  # data.table path (if input is already data.table)
-  if (requireNamespace("data.table", quietly = TRUE) &&
-      data.table::is.data.table(data)) {
-    return(data[, setNames(list(mean(get(outcomeName), na.rm = na.rm)),
-                           outcomeName),
-                by = pre_agg_vars])
-  }
+  # data.table path removed — using Rcpp grouped_agg_cpp for speed
+  # if (requireNamespace("data.table", quietly = TRUE) &&
+  #     data.table::is.data.table(data)) {
+  #   return(data[, setNames(list(mean(get(outcomeName), na.rm = na.rm)),
+  #                          outcomeName),
+  #               by = pre_agg_vars])
+  # }
 
-  # Base R path
-  vals <- data[[outcomeName]]
-  ego_key <- do.call(paste, c(data[pre_agg_vars], sep = "\r"))
-  ukeys <- unique(ego_key)
-  first_idx <- match(ukeys, ego_key)
-  split_vals <- split(vals, ego_key)
-  ego_means <- vapply(split_vals[ukeys],
-                      function(x) mean(x, na.rm = na.rm),
-                      numeric(1))
-  out <- data[first_idx, pre_agg_vars, drop = FALSE]
-  out[[outcomeName]] <- unname(ego_means)
-  rownames(out) <- NULL
+  # Rcpp fast path: use grouped_agg_cpp for contiguous integer keys
+  # Build integer group matrix; data arrives sorted from predictProbability
+  enc <- encodeGroupKeys(data, pre_agg_vars)
+  res <- grouped_agg_cpp(data[[outcomeName]], enc$G, na_rm = na.rm, do_mean = TRUE)
+  out <- decodeGroupKeys(res$key, pre_agg_vars, enc$decode)
+  out[[outcomeName]] <- res$value
   out
+  # old base R fallback (kept for reference)
+  # vals <- data[[outcomeName]]
+  # ego_key <- do.call(paste, c(data[pre_agg_vars], sep = "\r"))
+  # ukeys <- unique(ego_key)
+  # first_idx <- match(ukeys, ego_key)
+  # split_vals <- split(vals, ego_key)
+  # ego_means <- vapply(split_vals[ukeys],
+  #                     function(x) mean(x, na.rm = na.rm),
+  #                     numeric(1))
+  # out <- data[first_idx, pre_agg_vars, drop = FALSE]
+  # out[[outcomeName]] <- unname(ego_means)
+  # rownames(out) <- NULL
+  # out
 }
 
 
@@ -838,19 +880,34 @@ agg <- function(outcomeName,
     }
   }
 
-  # Use data.table if available
-  if (requireNamespace("data.table", quietly = TRUE)) {
-    if (!data.table::is.data.table(data)) {
-      data <- data.table::as.data.table(data)
-    }
-    result <- data[, {
-      res <- expand_summary(sum_fun(get(outcomeName), na.rm = na.rm))
-      if (add_n_egos) res[["n_egos"]] <- .N
-      res
-    }, by = group_vars]
-    return(result)
+  # data.table path removed — use Rcpp fast path for mean/sum, base R for custom sum_fun
+  # if (requireNamespace("data.table", quietly = TRUE)) {
+  #   if (!data.table::is.data.table(data)) {
+  #     data <- data.table::as.data.table(data)
+  #   }
+  #   result <- data[, {
+  #     res <- expand_summary(sum_fun(get(outcomeName), na.rm = na.rm))
+  #     if (add_n_egos) res[["n_egos"]] <- .N
+  #     res
+  #   }, by = group_vars]
+  #   return(result)
+  # }
+
+  # ---- Rcpp fast path for simple mean/sum on grouped integer keys ----
+  is_simple_mean <- identical(sum_fun, mean) || identical(sum_fun, base::mean)
+  if (is_simple_mean && length(group_vars) > 0 && !add_n_egos) {
+    enc <- encodeGroupKeys(data, group_vars)
+    # grouped_agg_cpp requires contiguous groups — sort by encoded keys
+    ord <- do.call(order, as.data.frame(enc$G))
+    G_sorted <- enc$G[ord, , drop = FALSE]
+    x_sorted <- data[[outcomeName]][ord]
+    res <- grouped_agg_cpp(x_sorted, G_sorted, na_rm = na.rm, do_mean = TRUE)
+    out <- decodeGroupKeys(res$key, group_vars, enc$decode)
+    out[[outcomeName]] <- res$value
+    return(out)
   }
-  # ---- Fallback base R: ----
+
+  # ---- Base R path ----
   if (length(group_vars) == 0) {
     output <- expand_summary(sum_fun(data[[outcomeName]], na.rm = na.rm))
     output <- as.data.frame(output)
@@ -858,6 +915,21 @@ agg <- function(outcomeName,
     return(output)
   }
 
+  # Rcpp fast path for grouped mean with n_egos
+  if (is_simple_mean && length(group_vars) > 0 && add_n_egos) {
+    enc <- encodeGroupKeys(data, group_vars)
+    # grouped_agg_cpp requires contiguous groups — sort by encoded keys
+    ord <- do.call(order, as.data.frame(enc$G))
+    G_sorted <- enc$G[ord, , drop = FALSE]
+    x_sorted <- data[[outcomeName]][ord]
+    res <- grouped_agg_cpp(x_sorted, G_sorted, na_rm = na.rm, do_mean = TRUE)
+    out <- decodeGroupKeys(res$key, group_vars, enc$decode)
+    out[[outcomeName]] <- res$value
+    out[["n_egos"]] <- res$count
+    return(out)
+  }
+
+  # General base R path (custom sum_fun or multi-column output)
   grouping <- interaction(data[, group_vars, drop = FALSE], drop = TRUE)
   split_data <- split(data, grouping)
   agg_list <- lapply(split_data, function(subdf) {
@@ -980,9 +1052,10 @@ resolveCondition <- function(condition) {
 # Convert postestimate result to the appropriate S3 class with metadata.
 # If returnDataTable is FALSE and the result is a data.table, convert it.
 stampPostestimate <- function(result, metadata = NULL, returnDataTable = FALSE) {
-  if (!returnDataTable && inherits(result, "data.table")) {
-    result <- as.data.frame(result)
-  }
+  # data.table removed — result is always a data.frame now
+  # if (!returnDataTable && inherits(result, "data.table")) {
+  #   result <- as.data.frame(result)
+  # }
   if (!is.null(metadata)) {
     # Store resolved condition column names from the output
     cond_cols <- grep("_eval$", names(result), value = TRUE)

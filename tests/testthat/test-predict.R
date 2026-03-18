@@ -6,8 +6,7 @@
 #         ans_cm, mydata_cm, mymodel_cm, mycontrols_cm — from helper-models.R (full mode only)
 
 test_that("predict.sienaFit (base R fallback)", {
-  with_mocked_bindings(
-    {
+  # with_mocked_bindings no longer needed — data.table code paths removed
       pred_df <- predict(
         object = ans,
         newdata = mydata,
@@ -17,16 +16,11 @@ test_that("predict.sienaFit (base R fallback)", {
         level = "egoChoice"
       )
       expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
-    },
-    requireNamespace = function(pkg, ...) FALSE,
-    .package="base"
-  )
 })
 
 test_that("predict.sienaFit (base R fallback, optional MCSE + no CI)", {
   skip_slow()
-  with_mocked_bindings(
-    {
+  # with_mocked_bindings no longer needed — data.table code paths removed
       pred_df <- predict(
         object = ans,
         newdata = mydata,
@@ -47,15 +41,10 @@ test_that("predict.sienaFit (base R fallback, optional MCSE + no CI)", {
       expect_false("q_025" %in% names(pred_df))
       expect_false("q_975" %in% names(pred_df))
       expect_false("Median" %in% names(pred_df))
-    },
-    requireNamespace = function(pkg, ...) FALSE,
-    .package="base"
-  )
 })
 
 test_that("predict.sienaFit (base R fallback, streaming uncertainty)", {
-  with_mocked_bindings(
-    {
+  # with_mocked_bindings no longer needed — data.table code paths removed
       pred_df <- predict(
         object = ans,
         newdata = mydata,
@@ -72,15 +61,12 @@ test_that("predict.sienaFit (base R fallback, streaming uncertainty)", {
       expect_true("SE" %in% names(pred_df))
       expect_true("q_025" %in% names(pred_df))
       expect_true("q_975" %in% names(pred_df))
-    },
-    requireNamespace = function(pkg, ...) FALSE,
-    .package="base"
-  )
 })
 
-test_that("predict.sienaFit (data.table)", {
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
+# data.table removed — test now verifies output is always data.frame
+test_that("predict.sienaFit (always data.frame)", {
+  # skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
+  # library(data.table)
   pred_dt <- predict.sienaFit(
     object = ans,
     newdata = mydata,
@@ -90,7 +76,7 @@ test_that("predict.sienaFit (data.table)", {
     level = "period",
     uncertainty = TRUE
   )
-  # stampPostestimate converts to data.frame by default (returnDataTable=FALSE)
+  # Output is always data.frame now (no data.table dependency)
   expect_true(is.data.frame(pred_dt))
   expect_s3_class(pred_dt, "sienaPrediction")
 })
@@ -139,10 +125,11 @@ test_that("predict.sienaFit (data.table)", {
 #   )
 # })
 
-test_that("Test predict.sienaFit with FORK clustertype (data.table)", {
+# data.table removed — test now uses base R only
+test_that("Test predict.sienaFit with FORK clustertype", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
+  # skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
+  # library(data.table)
   pred_dt <- predict(
     object = ans,
     newdata = mydata,
@@ -156,13 +143,13 @@ test_that("Test predict.sienaFit with FORK clustertype (data.table)", {
     nbrNodes = 2
   )
   expect_null(parallel:::getDefaultCluster())
-  expect_true("data.table" %in% class(pred_dt) && is.data.frame(pred_dt))
+  # Output is always data.frame now
+  expect_true(is.data.frame(pred_dt))
 })
 
 test_that("predictDynamic with FORK clustertype (base R fallback)", {
   skip_slow()
-  with_mocked_bindings(
-    {
+  # with_mocked_bindings no longer needed — data.table code paths removed
       pred_df <- predict(
         object = ans,
         newdata = mydata,
@@ -182,17 +169,12 @@ test_that("predictDynamic with FORK clustertype (base R fallback)", {
       )
       expect_null(parallel:::getDefaultCluster())
       expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
-    },
-    requireNamespace = function(pkg, ...) FALSE,
-    .package="base"
-  )
 })
 
 
 test_that("predictDynamic (base R fallback)", {
   skip_slow()
-  with_mocked_bindings(
-    {
+  # with_mocked_bindings no longer needed — data.table code paths removed
       pred_df <- predict(
         object = ans,
         newdata = mydata,
@@ -204,16 +186,11 @@ test_that("predictDynamic (base R fallback)", {
         condition = "density_eval"
       )
       expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
-    },
-    requireNamespace = function(pkg, ...) FALSE,
-    .package="base"
-  )
 })
 
 test_that("predictDynamic (base R fallback, optional MCSE + no SD)", {
   skip_slow()
-  with_mocked_bindings(
-    {
+  # with_mocked_bindings no longer needed — data.table code paths removed
       pred_df <- predict(
         object = ans,
         dynamic = TRUE,
@@ -238,16 +215,11 @@ test_that("predictDynamic (base R fallback, optional MCSE + no SD)", {
       expect_true("q_025" %in% names(pred_df))
       expect_true("q_975" %in% names(pred_df))
       expect_true("Median" %in% names(pred_df))
-    },
-    requireNamespace = function(pkg, ...) FALSE,
-    .package="base"
-  )
 })
 
 test_that("predictDynamic (base R fallback, streaming uncertainty)", {
   skip_slow()
-  with_mocked_bindings(
-    {
+  # with_mocked_bindings no longer needed — data.table code paths removed
       pred_df <- predict(
         object = ans,
         dynamic = TRUE,
@@ -267,16 +239,13 @@ test_that("predictDynamic (base R fallback, streaming uncertainty)", {
       expect_true("SE" %in% names(pred_df))
       expect_true("q_025" %in% names(pred_df))
       expect_true("q_975" %in% names(pred_df))
-    },
-    requireNamespace = function(pkg, ...) FALSE,
-    .package="base"
-  )
 })
 
-test_that("predictDynamic (data.table)", {
+# data.table removed — test now verifies output is always data.frame
+test_that("predictDynamic (always data.frame)", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
+  # skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
+  # library(data.table)
   pred_dt <- predict(
     object = ans,
     dynamic = TRUE,
@@ -288,17 +257,19 @@ test_that("predictDynamic (data.table)", {
     nsim = 4,
     condition = "density_eval"
   )
-  expect_true("data.table" %in% class(pred_dt) || is.data.frame(pred_dt))
+  # Output is always data.frame now
+  expect_true(is.data.frame(pred_dt))
 })
 
 # Interaction without main effect — model from helper-models.R (full mode):
 #   ans_int, mydata_int, mymodel_int, mycontrols_int  (depvar = "mynet_int")
   
-test_that("predict.sienaFit with custom interactions & without main effect (data.table),
+# data.table removed — test now verifies output is always data.frame  
+test_that("predict.sienaFit with custom interactions & without main effect,
   cond=FALSE", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
+  # skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
+  # library(data.table)
 
   pred_dt <- predict.sienaFit(ans_int,
     newdata =  mydata_int,
@@ -307,14 +278,13 @@ test_that("predict.sienaFit with custom interactions & without main effect (data
     condition = "recip_eval",
     uncertainty = FALSE
   )
-  expect_true("data.table" %in% class(pred_dt) || is.data.frame(pred_dt))
+  expect_true(is.data.frame(pred_dt))
 
 })
 
 test_that("predict.sienaFit with custom interactions & without main effect (base R fallback)", {
   skip_slow()
-  with_mocked_bindings(
-    {
+  # with_mocked_bindings no longer needed — data.table code paths removed
       pred_df <- predict(
         object = ans_int,
         newdata =  mydata_int,
@@ -324,16 +294,13 @@ test_that("predict.sienaFit with custom interactions & without main effect (base
         uncertainty = FALSE
       )
       expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
-    },
-    requireNamespace = function(pkg, ...) FALSE,
-    .package="base"
-  )
 })
 
-test_that("predict.sienaFit with custom interactions & uncertainty & without main effect (data.table)", {
+# data.table removed — test now verifies output is always data.frame
+test_that("predict.sienaFit with custom interactions & uncertainty & without main effect", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
+  # skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
+  # library(data.table)
 
   pred_dt <- predict.sienaFit(ans_int,
     newdata =  mydata_int,
@@ -343,14 +310,13 @@ test_that("predict.sienaFit with custom interactions & uncertainty & without mai
     uncertainty = TRUE,
     nsim = 5
   )
-  expect_true("data.table" %in% class(pred_dt) || is.data.frame(pred_dt))
+  expect_true(is.data.frame(pred_dt))
 
 })
 
 test_that("predict.sienaFit with custom interactions & uncertainty & without main effect (base R fallback)", {
   skip_slow()
-  with_mocked_bindings(
-    {
+  # with_mocked_bindings no longer needed — data.table code paths removed
       pred_df <- predict(
         object = ans_int,
         newdata = mydata_int,
@@ -360,10 +326,6 @@ test_that("predict.sienaFit with custom interactions & uncertainty & without mai
         condition = "recip_eval"
       )
       expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
-    },
-    requireNamespace = function(pkg, ...) FALSE,
-    .package="base"
-  )
 })
 
 # cond=FALSE + interaction without main effect: this is the critical case where
@@ -371,13 +333,14 @@ test_that("predict.sienaFit with custom interactions & uncertainty & without mai
 # injected base-effect slots in theta, which would give wrong (uniform) probs.
 # Model from helper-models.R (full mode): ans_int_uncond, mydata_int, mymodel_int
 
-test_that("predict.sienaFit interaction without main effect, cond=FALSE (data.table)", {
+# data.table removed — test now verifies output is always data.frame
+test_that("predict.sienaFit interaction without main effect, cond=FALSE", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
+  # skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
+  # library(data.table)
   pred_dt <- predict.sienaFit(ans_int_uncond, newdata = mydata_int,
     effects = mymodel_int, uncertainty = FALSE, level = "egoChoice")
-  expect_true("data.table" %in% class(pred_dt) || is.data.frame(pred_dt))
+  expect_true(is.data.frame(pred_dt))
   expect_true(nrow(pred_dt) > 0)
   expect_false(any(is.nan(pred_dt$changeProb)))
 })
@@ -422,7 +385,7 @@ test_that("nameThetaFromEffects + alignThetaNoRate: cond=FALSE interaction scena
 # ---------------------------------------------------------------------------
 test_that("predict.sienaFit static: co-evolution networks get separate predictions", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE))
+  # skip_if_not(requireNamespace("data.table", quietly = TRUE)) # data.table removed
   pred_a <- predict.sienaFit(ans_co, newdata = mydata_co, depvar = "mynet_a",
                               effects = mymodel_co, uncertainty = FALSE)
   pred_b <- predict.sienaFit(ans_co, newdata = mydata_co, depvar = "mynet_b",
@@ -439,7 +402,7 @@ test_that("predict.sienaFit static: co-evolution networks get separate predictio
 # ---------------------------------------------------------------------------
 test_that("predict.sienaFit dynamic: co-evolution networks get separate predictions", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE))
+  # skip_if_not(requireNamespace("data.table", quietly = TRUE)) # data.table removed
   pred_a <- predict.sienaFit(ans_co, newdata = mydata_co, depvar = "mynet_a",
                               dynamic = TRUE, algorithm = mycontrols_co,
                               effects = mymodel_co, n3 = 50, nsim = 5,
@@ -468,7 +431,7 @@ test_that("predict.sienaFit dynamic: co-evolution networks get separate predicti
 # ---------------------------------------------------------------------------
 test_that("predict.sienaFit static: creation/endow effects correctly separated", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE))
+  # skip_if_not(requireNamespace("data.table", quietly = TRUE)) # data.table removed
   # Test via contributions struct (static)
   wide_cm <- getStaticChangeContributions(
     ans = ans_cm, data = mydata_cm, effects = mymodel_cm,
@@ -494,7 +457,7 @@ test_that("predict.sienaFit static: creation/endow effects correctly separated",
 # ---------------------------------------------------------------------------
 test_that("predict.sienaFit dynamic: creation/endow effect columns present", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE))
+  # skip_if_not(requireNamespace("data.table", quietly = TRUE)) # data.table removed
   # Test via the contributions struct (which carries the column names directly)
   # rather than predict.sienaFit whose aggregated output does not include them.
   theta_cm <- c(ans_cm$rate, ans_cm$theta)

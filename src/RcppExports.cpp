@@ -85,6 +85,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// grouped_agg_cpp
+Rcpp::List grouped_agg_cpp(const Rcpp::NumericVector& x, const Rcpp::IntegerMatrix& G, bool na_rm, bool do_mean);
+RcppExport SEXP _RSiena_grouped_agg_cpp(SEXP xSEXP, SEXP GSEXP, SEXP na_rmSEXP, SEXP do_meanSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerMatrix& >::type G(GSEXP);
+    Rcpp::traits::input_parameter< bool >::type na_rm(na_rmSEXP);
+    Rcpp::traits::input_parameter< bool >::type do_mean(do_meanSEXP);
+    rcpp_result_gen = Rcpp::wrap(grouped_agg_cpp(x, G, na_rm, do_mean));
+    return rcpp_result_gen;
+END_RCPP
+}
 // loo_change_probs
 arma::mat loo_change_probs(const arma::mat& contribMat, const arma::vec& theta, const arma::ivec& group_id);
 RcppExport SEXP _RSiena_loo_change_probs(SEXP contribMatSEXP, SEXP thetaSEXP, SEXP group_idSEXP) {

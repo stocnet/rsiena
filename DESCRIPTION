@@ -28,7 +28,7 @@ Authors@R: c(person("Tom A.B.", "Snijders", role = c("aut", "ctb"), comment = c(
               person("Daniel", "Gotthardt", role = "ctb", comment=c(ORCID = "0000-0002-1294-9913")))
 Maintainer: Christian Steglich <c.e.g.steglich@rug.nl>
 Depends: R (>= 3.5.0)
-Imports: Matrix, lattice, parallel, MASS, xtable, methods, Rcpp (>= 0.11.0), RcppArmadillo, data.table
+Imports: Matrix, lattice, parallel, MASS, xtable, methods, Rcpp (>= 0.11.0), RcppArmadillo
 LinkingTo: Rcpp, RcppArmadillo
 Suggests: network, tools, codetools, tcltk, testthat (>= 3.0.0), ggplot2, RColorBrewer
 SystemRequirements: GNU make

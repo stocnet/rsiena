@@ -59,8 +59,8 @@ getChangeStatistics <- function(ans, data, effects = NULL, depvar = NULL,
     out <- data.frame(groupColsList(wide), stringsAsFactors = FALSE)
     out <- attachContribColumns(out, wide$effectNames,
                                  wide$contribMat, flip = flip)
-    if (requireNamespace("data.table", quietly = TRUE))
-        data.table::setDT(out)
+    # if (requireNamespace("data.table", quietly = TRUE)) # data.table removed
+    #     data.table::setDT(out)
     out
 }
 
@@ -225,23 +225,24 @@ getStaticChangeContributions <- function(ans = NULL,
           result[p, e, , ] <- mat
         }
       }
-      if (requireNamespace("data.table", quietly = TRUE)) {
-        # To resolve R CMD checks not understanding data.table syntax
-        ego <- choice <- period <- group <- networkName <- effecttype <- NULL
-        DT <- data.table::as.data.table(as.table(result))
-        data.table::setnames(DT, c("period", "effectname", "ego", "choice", "contribution"))
-        DT[, effecttype := typeMap[effectname]]
-        DT[, effectname := nameMap[effectname]]
-        DT[, ego := as.integer(ego)]
-        DT[, choice := as.integer(choice)]
-        DT[, period := as.integer(period)]
-        DT[, group := as.integer(g)]
-        DT[, networkName := dv]
-        data.table::setcolorder(DT, c("group", "period", "networkName",
-                                      "ego", "choice", "effectname",
-                                      "effecttype", "contribution"))
-        results[[paste0("g", g, "_", dv)]] <- DT
-      } else {
+      # data.table path removed — using base R path below
+      # if (requireNamespace("data.table", quietly = TRUE)) {
+      #   # To resolve R CMD checks not understanding data.table syntax
+      #   ego <- choice <- period <- group <- networkName <- effecttype <- NULL
+      #   DT <- data.table::as.data.table(as.table(result))
+      #   data.table::setnames(DT, c("period", "effectname", "ego", "choice", "contribution"))
+      #   DT[, effecttype := typeMap[effectname]]
+      #   DT[, effectname := nameMap[effectname]]
+      #   DT[, ego := as.integer(ego)]
+      #   DT[, choice := as.integer(choice)]
+      #   DT[, period := as.integer(period)]
+      #   DT[, group := as.integer(g)]
+      #   DT[, networkName := dv]
+      #   data.table::setcolorder(DT, c("group", "period", "networkName",
+      #                                 "ego", "choice", "effectname",
+      #                                 "effecttype", "contribution"))
+      #   results[[paste0("g", g, "_", dv)]] <- DT
+      # } else {
         df <- as.data.frame(as.table(result))
         names(df) <- c("period", "effectname", "ego", "choice", "contribution")
         df$effecttype <- typeMap[df$effectname]
@@ -254,14 +255,15 @@ getStaticChangeContributions <- function(ans = NULL,
         df <- df[, c("group", "period", "networkName", "ego", "choice",
                      "effectname", "effecttype", "contribution"), drop = FALSE]
         results[[paste0("g", g, "_", dv)]] <- df
-      }
+      # }
     }
   }
-  if (requireNamespace("data.table", quietly = TRUE)) {
-    data.table::rbindlist(results, use.names = TRUE, fill = TRUE)
-  } else {
+  # data.table removed — use do.call(rbind, ...)
+  # if (requireNamespace("data.table", quietly = TRUE)) {
+  #   data.table::rbindlist(results, use.names = TRUE, fill = TRUE)
+  # } else {
     do.call(rbind, results)
-  }
+  # }
 }
 
 # widenStaticContribution <- function(changeContributions){
@@ -448,22 +450,23 @@ getDynamicChangeContributions <- function(
         flattenChangeContributionsList)
     }
   # filtering before binding proofed to be quite slow
-    if (requireNamespace("data.table", quietly = TRUE)) {
-      changeContributions <- data.table::rbindlist(
-        lapply(seq_along(changeContributions), function(i) {
-          df <- changeContributions[[i]]
-          df$chain <- i
-          df
-        }),
-        use.names = TRUE, fill = TRUE
-      )
-      if (!is.null(depvar)) {
-        # in current implementation, each chain contains contributions for only one depvar, 
-        # but we keep the filtering here in case this changes in the future
-        changeContributions <- changeContributions[changeContributions[["networkName"]] 
-          %in% depvar, , drop=FALSE]
-      }
-    } else {
+    # data.table path removed — using base R path below
+    # if (requireNamespace("data.table", quietly = TRUE)) {
+    #   changeContributions <- data.table::rbindlist(
+    #     lapply(seq_along(changeContributions), function(i) {
+    #       df <- changeContributions[[i]]
+    #       df$chain <- i
+    #       df
+    #     }),
+    #     use.names = TRUE, fill = TRUE
+    #   )
+    #   if (!is.null(depvar)) {
+    #     # in current implementation, each chain contains contributions for only one depvar, 
+    #     # but we keep the filtering here in case this changes in the future
+    #     changeContributions <- changeContributions[changeContributions[["networkName"]] 
+    #       %in% depvar, , drop=FALSE]
+    #   }
+    # } else {
       changeContributions <- do.call(rbind, 
         lapply(seq_along(changeContributions), function(i) {
           df <- changeContributions[[i]]
@@ -476,7 +479,7 @@ getDynamicChangeContributions <- function(
         changeContributions <- changeContributions[
           changeContributions[["networkName"]] %in% depvar, , drop=FALSE]
       }
-    }
+    # }
     return(changeContributions)
   }
 }

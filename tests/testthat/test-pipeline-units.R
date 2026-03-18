@@ -450,9 +450,10 @@ test_that("predictFirstDiff: tieProb type attaches tieProb col when details=TRUE
   expect_true("tieProb" %in% names(result))
 })
 
-test_that("predictFirstDiff: output is data.table when package available", {
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
+# data.table removed — output is always data.frame now
+test_that("predictFirstDiff: output is always data.frame", {
+  # skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
+  # library(data.table)
   cc        <- make_cc2()
   theta_use <- c(density = -2, recip = 1.5)
 
@@ -462,12 +463,12 @@ test_that("predictFirstDiff: output is data.table when package available", {
     interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
   )
-  expect_true(data.table::is.data.table(result))
+  expect_true(is.data.frame(result))
+  expect_false("data.table" %in% class(result))
 })
 
 test_that("predictFirstDiff: base R output is plain data.frame", {
-  with_mocked_bindings(
-    {
+  # with_mocked_bindings no longer needed — data.table code paths removed
       cc        <- make_cc2()
       theta_use <- c(density = -2, recip = 1.5)
 
@@ -479,9 +480,6 @@ test_that("predictFirstDiff: base R output is plain data.frame", {
       )
       expect_true(is.data.frame(result))
       expect_false("data.table" %in% class(result))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
-  )
 })
 
 # ── predictSecondDiff ────────────────────────────────────────────────────────
@@ -920,23 +918,22 @@ test_that("agg egoNormalize works with complex sum_fun (summarizeValue)", {
   expect_true("cases" %in% names(r))
 })
 
-test_that("agg egoNormalize: base R fallback matches data.table path", {
+test_that("agg egoNormalize: Rcpp grouped_agg_cpp path works correctly", {
   df <- make_ego_norm_df()
-  # data.table path
-  r_dt <- agg("tieProb", df, level = "none", condition = "cond",
-              egoNormalize = TRUE)
-  # base R path
-  with_mocked_bindings(
-    {
-      r_base <- agg("tieProb", df, level = "none", condition = "cond",
-                     egoNormalize = TRUE)
-    },
-    requireNamespace = function(pkg, ...) FALSE,
-    .package = "base"
-  )
-  expect_equal(r_base$tieProb[order(r_base$cond)],
-               r_dt$tieProb[order(r_dt$cond)],
-               tolerance = 1e-10)
-  expect_equal(r_base$n_egos[order(r_base$cond)],
-               r_dt$n_egos[order(r_dt$cond)])
+  # Single path now (Rcpp + base R, no data.table)
+  r_result <- agg("tieProb", df, level = "none", condition = "cond",
+                   egoNormalize = TRUE)
+  expect_true(is.data.frame(r_result))
+  expect_true("tieProb" %in% names(r_result))
+  expect_true("n_egos"  %in% names(r_result))
+  expect_true("cond"    %in% names(r_result))
+  # Ego-normalize: each ego contributes equally, so within-ego means are
+  # averaged across egos → result should differ from raw mean of all rows.
+  raw <- agg("tieProb", df, level = "none", condition = "cond",
+             egoNormalize = FALSE)
+  # At least one condition value should differ
+  r_sorted <- r_result[order(r_result$cond), ]
+  raw_sorted <- raw[order(raw$cond), ]
+  # egoNormalize with extra ego columns should produce different results than raw
+  expect_false(identical(r_sorted$tieProb, raw_sorted$tieProb))
 })

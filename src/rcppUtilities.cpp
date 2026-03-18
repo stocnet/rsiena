@@ -303,6 +303,92 @@ arma::vec softmax_rcpp_grouped_cols(const Rcpp::DataFrame& data,
 //     );
 // }
 
+// ---------------------------------------------------------------------------
+// Grouped aggregation: single-pass mean (or sum) over contiguous groups
+// defined by an integer matrix of group keys.
+// x:       numeric vector of values
+// G:       integer matrix (nrow = length(x), ncol = number of group columns)
+//          Rows must be sorted so that identical key rows are contiguous.
+// na_rm:   if true, NA values are skipped
+// do_mean: if true, compute mean; if false, compute sum
+// Returns a List with:
+//   $value   numeric vector of group means/sums
+//   $count   integer vector of group sizes (excluding NAs if na_rm)
+//   $key     integer matrix of unique group keys (nrow = nGroups)
+// ---------------------------------------------------------------------------
+// [[Rcpp::export]]
+Rcpp::List grouped_agg_cpp(const Rcpp::NumericVector& x,
+                           const Rcpp::IntegerMatrix& G,
+                           bool na_rm = true,
+                           bool do_mean = true) {
+    int n = x.size(), ncols = G.ncol();
+    if (G.nrow() != n)
+        Rcpp::stop("length(x) must equal nrow(G)");
+
+    // Pointers into each column of G for fast comparison
+    std::vector<const int*> cols(ncols);
+    for (int c = 0; c < ncols; c++) cols[c] = &G(0, c);
+
+    // Count groups (single pass)
+    int nG = 0;
+    {
+        int start = 0;
+        while (start < n) {
+            nG++;
+            int end = start + 1;
+            while (end < n) {
+                bool same = true;
+                for (int c = 0; c < ncols && same; c++)
+                    if (cols[c][end] != cols[c][start]) same = false;
+                if (!same) break;
+                end++;
+            }
+            start = end;
+        }
+    }
+
+    // Allocate output
+    Rcpp::NumericVector val(nG);
+    Rcpp::IntegerVector cnt(nG);
+    Rcpp::IntegerMatrix key(nG, ncols);
+
+    // Fill pass
+    int gi = 0, start = 0;
+    while (start < n) {
+        // Store group key
+        for (int c = 0; c < ncols; c++) key(gi, c) = cols[c][start];
+
+        // Find group end
+        int end = start + 1;
+        while (end < n) {
+            bool same = true;
+            for (int c = 0; c < ncols && same; c++)
+                if (cols[c][end] != cols[c][start]) same = false;
+            if (!same) break;
+            end++;
+        }
+
+        // Accumulate
+        double sum = 0.0;
+        int count = 0;
+        for (int i = start; i < end; i++) {
+            if (na_rm && ISNAN(x[i])) continue;
+            sum += x[i];
+            count++;
+        }
+        val[gi] = do_mean ? (count > 0 ? sum / count : NA_REAL) : sum;
+        cnt[gi] = count;
+        gi++;
+        start = end;
+    }
+
+    return Rcpp::List::create(
+        Rcpp::Named("value") = val,
+        Rcpp::Named("count") = cnt,
+        Rcpp::Named("key")   = key
+    );
+}
+
 // LOO (leave-one-out) choice probabilities for all effects in one call.
 // For each effect k, zeros theta[k] and recomputes grouped softmax using:
 //   util_k = util_full - contribMat.col(k) * theta[k]   (O(n) per effect)
