@@ -31,7 +31,7 @@ sienaPostestimate <- function(
     gcEachSim = FALSE,
     metadata = NULL,
     returnDataTable = FALSE,
-    egoNormalize = FALSE
+    egoNormalize = TRUE
 ) {
   uncertaintyMode <- match.arg(uncertaintyMode)
     if (length(outcomeName) != 1L) {
@@ -258,7 +258,7 @@ computeMcse <- function(x,
 # thetaNames should not be necessary anymore?
 makeEstimator <- function(predictFun, predictArgs, outcomeName,
     level = "period", condition = NULL, sum_fun = mean, na.rm = TRUE,
-    thetaNames = NULL, egoNormalize = FALSE) {
+    thetaNames = NULL, egoNormalize = TRUE) {
     function(theta, useChangeContributions = FALSE) {
         if (!is.null(thetaNames) && is.null(names(theta)))
             names(theta) <- thetaNames
@@ -787,9 +787,17 @@ encodeGroupKeys <- function(data, group_vars) {
     if (is.integer(col)) {
       G[, j] <- col
       decode[j] <- list(NULL)  # identity mapping (note: [[j]]<-NULL would delete)
-    } else if (is.numeric(col) && all(col == as.integer(col), na.rm = TRUE)) {
-      G[, j] <- as.integer(col)
-      decode[j] <- list(NULL)
+    } else if (is.numeric(col)) {
+      icol <- as.integer(col)
+
+      if (identical(as.numeric(icol), as.numeric(col))) {
+        G[, j] <- icol
+        decode[j] <- list(NULL)
+      } else {
+        f <- factor(col)
+        G[, j] <- as.integer(f)
+        decode[[j]] <- levels(f)
+      }
     } else {
       f <- factor(col)
       G[, j] <- as.integer(f)
@@ -812,6 +820,7 @@ decodeGroupKeys <- function(key_mat, group_vars, decode) {
   out
 }
 
+# Works but could be nicer - push more to rcpp?
 # Pre-aggregate outcomeName within each ego-unit: within-ego mean.
 # Returns one row per ego-unit with pre_agg_vars + outcomeName columns.
 preAggEgo <- function(data, outcomeName, group_vars, ego_id_cols, na.rm) {
@@ -826,9 +835,12 @@ preAggEgo <- function(data, outcomeName, group_vars, ego_id_cols, na.rm) {
   # }
 
   # Rcpp fast path: use grouped_agg_cpp for contiguous integer keys
-  # Build integer group matrix; data arrives sorted from predictProbability
+  # grouped_agg_cpp requires contiguous groups — sort by encoded keys
   enc <- encodeGroupKeys(data, pre_agg_vars)
-  res <- grouped_agg_cpp(data[[outcomeName]], enc$G, na_rm = na.rm, do_mean = TRUE)
+  ord <- do.call(order, as.data.frame(enc$G))
+  G_sorted <- enc$G[ord, , drop = FALSE]
+  x_sorted <- data[[outcomeName]][ord]
+  res <- grouped_agg_cpp(x_sorted, G_sorted, na_rm = na.rm, do_mean = TRUE)
   out <- decodeGroupKeys(res$key, pre_agg_vars, enc$decode)
   out[[outcomeName]] <- res$value
   out
@@ -854,7 +866,7 @@ agg <- function(outcomeName,
                 condition = NULL,
                 sum_fun = mean,
                 na.rm = TRUE,
-                egoNormalize = FALSE) {
+                egoNormalize = TRUE) {
   if (length(outcomeName) != 1L) stop("'outcomeName' must be a single column name.")
   if (!is.null(condition)) condition <- resolveEffectName(condition, colnames(data))
   group_vars <- getGroupVars(level = level, condition = condition)
@@ -995,24 +1007,27 @@ alignThetaNoRate <- function(theta, effectNames) {
 }
 
 # Attach effect contribution columns from a matrix to a data.frame.
-# Extracts column-by-column (avoids full-matrix copy).
+# Builds all columns at once via cbind to avoid repeated data.frame copies.
 # If flip = TRUE, negates non-density columns where density == -1.
 attachContribColumns <- function(out, effectNames, contrib, flip = TRUE) {
   density_j <- grep("density", effectNames, fixed = TRUE)
   if (flip && length(density_j) > 0) {
     neg1 <- contrib[, density_j[1L]] == -1L
-    neg1[is.na(neg1)] <- FALSE          # guard against NA in contrib matrix
-    has_neg1 <- any(neg1)
-  } else {
-    has_neg1 <- FALSE
+    neg1[is.na(neg1)] <- FALSE
+    if (any(neg1)) {
+      flip_idx <- grep("density", effectNames, fixed = TRUE, invert = TRUE)
+      for (j in flip_idx) contrib[neg1, j] <- -contrib[neg1, j]
+    }
   }
-  flip_idx <- grep("density", effectNames, fixed = TRUE, invert = TRUE)
-  for (j in seq_along(effectNames)) {
-    col <- contrib[, j]
-    if (has_neg1 && j %in% flip_idx) col[neg1] <- -col[neg1]
-    out[[effectNames[j]]] <- col
-  }
-  out
+  # Build data.frame from list of column vectors — avoids slow
+  # as.data.frame.matrix which copies via as.vector per column.
+  nc <- ncol(contrib)
+  extra <- vector("list", nc)
+  names(extra) <- effectNames
+  for (j in seq_len(nc)) extra[[j]] <- contrib[, j]
+  attr(extra, "row.names") <- .set_row_names(nrow(contrib))
+  class(extra) <- "data.frame"
+  cbind(out, extra)
 }
 
 # Extract group-column vectors from a Contributions struct as a named list.

@@ -37,7 +37,7 @@ predict.sienaFit <- function(
     memoryScale = NULL,
     batchUnitBudget = 2.5e8,
     dynamicMinistepFactor = 10,
-    egoNormalize = FALSE,
+    egoNormalize = TRUE,
     ...
 ) {
   if (inherits(newdata, "sienaGroup"))
@@ -256,11 +256,9 @@ calculateChangeProb <- function(utility, group_id) {
   as.numeric(softmax_arma_by_group(utility, group_id))
 }
 
+# wrapper not necessary anymore - clean up later
 calculateTieProb <- function(prob, density) {
-  neg1 <- !is.na(density) & density == -1L
-  prob[neg1] <- 1 - prob[neg1]
-  prob[is.na(density) | density == 0L] <- NA
-  prob
+  calculate_tie_prob_cpp(prob, as.numeric(density))
 }
 
 

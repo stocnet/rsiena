@@ -152,3 +152,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// calculate_tie_prob_cpp
+Rcpp::NumericVector calculate_tie_prob_cpp(Rcpp::NumericVector prob, Rcpp::NumericVector density);
+RcppExport SEXP _RSiena_calculate_tie_prob_cpp(SEXP probSEXP, SEXP densitySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type prob(probSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type density(densitySEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_tie_prob_cpp(prob, density));
+    return rcpp_result_gen;
+END_RCPP
+}

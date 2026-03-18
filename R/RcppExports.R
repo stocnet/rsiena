@@ -45,3 +45,7 @@ mlogit_update <- function(p, delta_u, group_id, perturbType) {
     .Call(`_RSiena_mlogit_update`, p, delta_u, group_id, perturbType)
 }
 
+calculate_tie_prob_cpp <- function(prob, density) {
+    .Call(`_RSiena_calculate_tie_prob_cpp`, prob, density)
+}
+

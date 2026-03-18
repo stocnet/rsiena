@@ -54,7 +54,7 @@ marginalEffects.sienaFit <- function(
     memoryScale = NULL,
     batchUnitBudget = 2.5e8,
     dynamicMinistepFactor = 10,
-    egoNormalize = FALSE,
+    egoNormalize = TRUE,
     ...
 ) {
     if (inherits(data, "sienaGroup"))
@@ -719,6 +719,7 @@ calculateUtilityDiff <- function(effectName, diff,
                                  modEffectNames = NULL,
                                  modContribution = NULL,
                                  effectNames = NULL){
+  if (is.null(diff)) diff <- 1  # NULL means "+1 unit" perturbation
   effectNum <- which(effectNames == effectName)
   if(interaction == TRUE){
     if (is.null(intEffectNames))

@@ -558,3 +558,20 @@ arma::vec mlogit_update(const arma::vec& p,
     }
     return out;
 }
+
+// [[Rcpp::export]]
+Rcpp::NumericVector calculate_tie_prob_cpp(Rcpp::NumericVector prob,
+                                           Rcpp::NumericVector density) {
+    int n = prob.size();
+    Rcpp::NumericVector out = Rcpp::clone(prob);
+    for (int i = 0; i < n; i++) {
+        double d = density[i];
+        if (Rcpp::NumericVector::is_na(d) || d == 0.0) {
+            out[i] = NA_REAL;
+        } else if (d == -1.0) {
+            out[i] = 1.0 - prob[i];
+        }
+        // else d == 1: keep prob[i] as-is
+    }
+    return out;
+}
