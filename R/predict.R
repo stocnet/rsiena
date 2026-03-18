@@ -38,6 +38,7 @@ predict.sienaFit <- function(
     batchUnitBudget = 2.5e8,
     dynamicMinistepFactor = 10,
     egoNormalize = TRUE,
+    returnDecisionDetails = FALSE,
     ...
 ) {
   if (inherits(newdata, "sienaGroup"))
@@ -123,6 +124,7 @@ predict.sienaFit <- function(
   verbose                  = verbose,
   useChangeContributions   = if (dynamic) useChangeContributions else NULL,
   egoNormalize             = egoNormalize,
+  returnDecisionDetails    = returnDecisionDetails,
   metadata = list(
     method      = "predict",
     type        = type,

@@ -884,48 +884,21 @@ test_that("agg egoNormalize=TRUE differs from flat mean when egos have unequal a
                                  egofirst$tieProb[egofirst$cond == "A"])))
 })
 
-test_that("agg egoNormalize=TRUE adds n_egos column", {
-  df <- make_ego_norm_df()
-  r <- agg("tieProb", df, level = "none", condition = "cond",
-           egoNormalize = TRUE)
-  expect_true("n_egos" %in% names(r))
-  expect_equal(r$n_egos[r$cond == "A"], 3L)
-  expect_equal(r$n_egos[r$cond == "B"], 3L)
-})
-
-test_that("agg egoNormalize at ego level skips pre-agg (no n_egos)", {
-  df <- make_ego_norm_df()
-  r_plain <- agg("tieProb", df, level = "ego", condition = "cond")
-  r_ego   <- agg("tieProb", df, level = "ego", condition = "cond",
-                  egoNormalize = TRUE)
-  expect_equal(r_plain$tieProb, r_ego$tieProb)
-  expect_false("n_egos" %in% names(r_ego))
-})
-
-test_that("agg egoNormalize=FALSE has no overhead (no n_egos)", {
-  df <- make_ego_norm_df()
-  r <- agg("tieProb", df, level = "none", condition = "cond",
-           egoNormalize = FALSE)
-  expect_false("n_egos" %in% names(r))
-})
 
 test_that("agg egoNormalize works with complex sum_fun (summarizeValue)", {
   df <- make_ego_norm_df()
   r <- agg("tieProb", df, level = "none", condition = "cond",
            sum_fun = summarizeValue, egoNormalize = TRUE)
-  expect_true("n_egos" %in% names(r))
   expect_true("Mean" %in% names(r))
   expect_true("cases" %in% names(r))
 })
 
 test_that("agg egoNormalize: Rcpp grouped_agg_cpp path works correctly", {
   df <- make_ego_norm_df()
-  # Single path now (Rcpp + base R, no data.table)
   r_result <- agg("tieProb", df, level = "none", condition = "cond",
                    egoNormalize = TRUE)
   expect_true(is.data.frame(r_result))
   expect_true("tieProb" %in% names(r_result))
-  expect_true("n_egos"  %in% names(r_result))
   expect_true("cond"    %in% names(r_result))
   # Ego-normalize: each ego contributes equally, so within-ego means are
   # averaged across egos → result should differ from raw mean of all rows.

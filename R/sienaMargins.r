@@ -55,6 +55,7 @@ marginalEffects.sienaFit <- function(
     batchUnitBudget = 2.5e8,
     dynamicMinistepFactor = 10,
     egoNormalize = TRUE,
+    returnDecisionDetails = FALSE,
     ...
 ) {
     if (inherits(data, "sienaGroup"))
@@ -215,6 +216,7 @@ marginalEffects.sienaFit <- function(
     verbose                  = verbose,
     useChangeContributions   = if (dynamic) useChangeContributions else NULL,
     egoNormalize             = egoNormalize,
+    returnDecisionDetails    = returnDecisionDetails,
     metadata = list(
       method      = "marginalEffects",
       type        = type,

@@ -30,8 +30,8 @@ sienaPostestimate <- function(
     gcEachBatch = TRUE,
     gcEachSim = FALSE,
     metadata = NULL,
-    returnDataTable = FALSE,
-    egoNormalize = TRUE
+    egoNormalize = TRUE,
+    returnDecisionDetails = FALSE
 ) {
   uncertaintyMode <- match.arg(uncertaintyMode)
     if (length(outcomeName) != 1L) {
@@ -54,12 +54,26 @@ sienaPostestimate <- function(
 
     if (!is.null(useChangeContributions)) {
         expect <- estimator(thetaHat, 
-          useChangeContributions = useChangeContributions)
+          useChangeContributions = useChangeContributions,
+          returnDecisionDetails = returnDecisionDetails)
     } else {
-        expect <- estimator(thetaHat)
+        expect <- estimator(thetaHat,
+          returnDecisionDetails = returnDecisionDetails)
     }
 
-    if (!uncertainty) return(stampPostestimate(expect, metadata, returnDataTable))
+    # Unpack decision details from point estimate if requested
+    decisionDetails <- NULL
+    if (returnDecisionDetails && is.list(expect) &&
+        !is.null(expect$decisionDetails)) {
+      decisionDetails <- expect$decisionDetails
+      expect <- expect$summary
+    }
+
+    if (!uncertainty) {
+      result <- stampPostestimate(expect, metadata)
+      if (!is.null(decisionDetails)) attr(result, "decisionDetails") <- decisionDetails
+      return(result)
+    }
 
 
     # Resolve condition to actual column name now that we have the output shape.
@@ -125,7 +139,9 @@ sienaPostestimate <- function(
       )
     }
     result <- mergeEstimates(expect, uncert, level = level, condition = condition)
-    stampPostestimate(result, metadata, returnDataTable)
+    result <- stampPostestimate(result, metadata)
+    if (!is.null(decisionDetails)) attr(result, "decisionDetails") <- decisionDetails
+    result
 }
 
 makeUncertaintySummarizer <- function(
@@ -259,7 +275,8 @@ computeMcse <- function(x,
 makeEstimator <- function(predictFun, predictArgs, outcomeName,
     level = "period", condition = NULL, sum_fun = mean, na.rm = TRUE,
     thetaNames = NULL, egoNormalize = TRUE) {
-    function(theta, useChangeContributions = FALSE) {
+    function(theta, useChangeContributions = FALSE,
+             returnDecisionDetails = FALSE) {
         if (!is.null(thetaNames) && is.null(names(theta)))
             names(theta) <- thetaNames
         if(!is.null(predictArgs[["useChangeContributions"]])){
@@ -293,9 +310,12 @@ makeEstimator <- function(predictFun, predictArgs, outcomeName,
         if (isTRUE(predictArgs$details)) {
           details <- unit_pred
           return(list(summary = main_result, details = details))
-        } else {
-          return(main_result)
         }
+        if (returnDecisionDetails) {
+          return(list(summary = main_result,
+                      decisionDetails = unit_pred))
+        }
+        return(main_result)
     }
 }
 
@@ -879,16 +899,13 @@ agg <- function(outcomeName,
     }
   }
 
-  # Ego-first pre-aggregation: average within each ego-decision first,
-  # then aggregate across ego-level means. This ensures each ego
-  # contributes equally regardless of how many alters qualify.
-  add_n_egos <- FALSE
+  # Ego-first pre-aggregation: compute the mean within each realized
+  # ego-decision first, then average those decision-level means.
   if (egoNormalize) {
     ego_id_cols <- detectEgoUnit(data)
     extra <- setdiff(ego_id_cols, group_vars)
     if (length(extra) > 0) {
       data <- preAggEgo(data, outcomeName, group_vars, ego_id_cols, na.rm)
-      add_n_egos <- TRUE
     }
   }
 
@@ -899,7 +916,6 @@ agg <- function(outcomeName,
   #   }
   #   result <- data[, {
   #     res <- expand_summary(sum_fun(get(outcomeName), na.rm = na.rm))
-  #     if (add_n_egos) res[["n_egos"]] <- .N
   #     res
   #   }, by = group_vars]
   #   return(result)
@@ -907,9 +923,8 @@ agg <- function(outcomeName,
 
   # ---- Rcpp fast path for simple mean/sum on grouped integer keys ----
   is_simple_mean <- identical(sum_fun, mean) || identical(sum_fun, base::mean)
-  if (is_simple_mean && length(group_vars) > 0 && !add_n_egos) {
+  if (is_simple_mean && length(group_vars) > 0) {
     enc <- encodeGroupKeys(data, group_vars)
-    # grouped_agg_cpp requires contiguous groups — sort by encoded keys
     ord <- do.call(order, as.data.frame(enc$G))
     G_sorted <- enc$G[ord, , drop = FALSE]
     x_sorted <- data[[outcomeName]][ord]
@@ -923,22 +938,7 @@ agg <- function(outcomeName,
   if (length(group_vars) == 0) {
     output <- expand_summary(sum_fun(data[[outcomeName]], na.rm = na.rm))
     output <- as.data.frame(output)
-    if (add_n_egos) output[["n_egos"]] <- nrow(data)
     return(output)
-  }
-
-  # Rcpp fast path for grouped mean with n_egos
-  if (is_simple_mean && length(group_vars) > 0 && add_n_egos) {
-    enc <- encodeGroupKeys(data, group_vars)
-    # grouped_agg_cpp requires contiguous groups — sort by encoded keys
-    ord <- do.call(order, as.data.frame(enc$G))
-    G_sorted <- enc$G[ord, , drop = FALSE]
-    x_sorted <- data[[outcomeName]][ord]
-    res <- grouped_agg_cpp(x_sorted, G_sorted, na_rm = na.rm, do_mean = TRUE)
-    out <- decodeGroupKeys(res$key, group_vars, enc$decode)
-    out[[outcomeName]] <- res$value
-    out[["n_egos"]] <- res$count
-    return(out)
   }
 
   # General base R path (custom sum_fun or multi-column output)
@@ -948,9 +948,7 @@ agg <- function(outcomeName,
     vals <- subdf[[outcomeName]]
     res <- expand_summary(sum_fun(vals, na.rm = na.rm))
     group_vals <- subdf[1, group_vars, drop = FALSE]
-    row <- cbind(group_vals, as.data.frame(res, stringsAsFactors = FALSE))
-    if (add_n_egos) row[["n_egos"]] <- nrow(subdf)
-    row
+    cbind(group_vals, as.data.frame(res, stringsAsFactors = FALSE))
   })
   out <- do.call(rbind, agg_list)
   rownames(out) <- NULL
@@ -1065,8 +1063,7 @@ resolveCondition <- function(condition) {
 # ---- Class stamping and S3 methods for postestimate output -------------------
 
 # Convert postestimate result to the appropriate S3 class with metadata.
-# If returnDataTable is FALSE and the result is a data.table, convert it.
-stampPostestimate <- function(result, metadata = NULL, returnDataTable = FALSE) {
+stampPostestimate <- function(result, metadata = NULL) {
   # data.table removed — result is always a data.frame now
   # if (!returnDataTable && inherits(result, "data.table")) {
   #   result <- as.data.frame(result)
