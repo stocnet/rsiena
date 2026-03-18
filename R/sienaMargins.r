@@ -54,6 +54,7 @@ marginalEffects.sienaFit <- function(
     memoryScale = NULL,
     batchUnitBudget = 2.5e8,
     dynamicMinistepFactor = 10,
+    egoNormalize = FALSE,
     ...
 ) {
     if (inherits(data, "sienaGroup"))
@@ -212,7 +213,24 @@ marginalEffects.sienaFit <- function(
     batchSize               = batchSize,
     keepBatch               = keepBatch,
     verbose                  = verbose,
-    useChangeContributions   = if (dynamic) useChangeContributions else NULL
+    useChangeContributions   = if (dynamic) useChangeContributions else NULL,
+    egoNormalize             = egoNormalize,
+    metadata = list(
+      method      = "marginalEffects",
+      type        = type,
+      effectName1 = effectName1,
+      contrast1   = contrast1,
+      effectName2 = if (second) effectName2 else NULL,
+      contrast2   = if (second) contrast2 else NULL,
+      second      = second,
+      level       = level,
+      condition   = condition,
+      depvar      = depvar,
+      dynamic     = dynamic,
+      nsim        = nsim,
+      outcomeName = diffName,
+      mainEffect  = mainEffect
+    )
     )
 }
 
@@ -703,6 +721,10 @@ calculateUtilityDiff <- function(effectName, diff,
                                  effectNames = NULL){
   effectNum <- which(effectNames == effectName)
   if(interaction == TRUE){
+    if (is.null(intEffectNames))
+      stop("'intEffectNames' must not be NULL when interaction = TRUE.")
+    if (is.null(modEffectNames))
+      stop("'modEffectNames' must not be NULL when interaction = TRUE.")
     moderator_values <- densityValue * modContribution
     interaction_effectNums <- which(effectNames == intEffectNames)
     util_diff <- densityValue * (diff * theta[effectNum] + 

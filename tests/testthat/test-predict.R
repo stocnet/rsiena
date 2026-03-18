@@ -90,7 +90,9 @@ test_that("predict.sienaFit (data.table)", {
     level = "period",
     uncertainty = TRUE
   )
-  expect_true("data.table" %in% class(pred_dt) && is.data.frame(pred_dt))
+  # stampPostestimate converts to data.frame by default (returnDataTable=FALSE)
+  expect_true(is.data.frame(pred_dt))
+  expect_s3_class(pred_dt, "sienaPrediction")
 })
 
 # does not work here for unknown reasons

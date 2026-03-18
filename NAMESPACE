@@ -139,6 +139,10 @@ S3method(residuals, sienaFit)
 S3method(marginalEffects, sienaFit)
 S3method(entropy, sienaFit)
 S3method(entropy, default)
+S3method(print, sienaPrediction)
+S3method(summary, sienaPrediction)
+S3method(print, sienaMarginalEffect)
+S3method(summary, sienaMarginalEffect)
 
 
 

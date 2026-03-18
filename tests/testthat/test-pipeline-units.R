@@ -835,3 +835,108 @@ test_that("predictProbability: creation/endow — tieProb type produces NA for n
   expect_equal(result$tieProb[drop_rows],
                1 - result$changeProb[drop_rows], tolerance = 1e-14)
 })
+
+# ── egoNormalize / preAggEgo / detectEgoUnit ─────────────────────────────────
+
+# Shared fixture: 3 egos with unequal alter counts per condition cell
+make_ego_norm_df <- function() {
+  data.frame(
+    period  = rep(1L, 8),
+    ego     = c(1L,1L,1L, 2L,2L,2L, 3L,3L),
+    choice  = c(2L,3L,4L, 1L,3L,4L, 1L,2L),
+    cond    = c("A","A","B", "A","B","B", "A","B"),
+    tieProb = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8),
+    stringsAsFactors = FALSE
+  )
+}
+
+test_that("detectEgoUnit: static data returns group/period/ego", {
+  df <- make_ego_norm_df()
+  expect_equal(detectEgoUnit(df), c("period", "ego"))
+})
+
+test_that("detectEgoUnit: dynamic data includes chain/ministep", {
+  df <- make_ego_norm_df()
+  df$chain <- 1L
+  df$ministep <- seq_len(nrow(df))
+  expect_equal(detectEgoUnit(df),
+               c("chain", "period", "ego", "ministep"))
+})
+
+test_that("agg with egoNormalize=TRUE gives ego-first means", {
+  df <- make_ego_norm_df()
+  # Ego 1 in A: mean(0.1, 0.2) = 0.15
+  # Ego 2 in A: 0.4
+  # Ego 3 in A: 0.7
+  # Ego-first mean for A: mean(0.15, 0.4, 0.7) = 0.4167
+  expected_A <- mean(c(mean(c(0.1, 0.2)), 0.4, 0.7))
+  r <- agg("tieProb", df, level = "none", condition = "cond",
+           egoNormalize = TRUE)
+  actual_A <- r$tieProb[r$cond == "A"]
+  expect_equal(actual_A, expected_A, tolerance = 1e-10)
+})
+
+test_that("agg egoNormalize=TRUE differs from flat mean when egos have unequal alters", {
+  df <- make_ego_norm_df()
+  flat    <- agg("tieProb", df, level = "none", condition = "cond")
+  egofirst <- agg("tieProb", df, level = "none", condition = "cond",
+                   egoNormalize = TRUE)
+  # Cell A: flat = mean(0.1,0.2,0.4,0.7) = 0.35 vs ego-first = 0.4167
+  expect_false(isTRUE(all.equal(flat$tieProb[flat$cond == "A"],
+                                 egofirst$tieProb[egofirst$cond == "A"])))
+})
+
+test_that("agg egoNormalize=TRUE adds n_egos column", {
+  df <- make_ego_norm_df()
+  r <- agg("tieProb", df, level = "none", condition = "cond",
+           egoNormalize = TRUE)
+  expect_true("n_egos" %in% names(r))
+  expect_equal(r$n_egos[r$cond == "A"], 3L)
+  expect_equal(r$n_egos[r$cond == "B"], 3L)
+})
+
+test_that("agg egoNormalize at ego level skips pre-agg (no n_egos)", {
+  df <- make_ego_norm_df()
+  r_plain <- agg("tieProb", df, level = "ego", condition = "cond")
+  r_ego   <- agg("tieProb", df, level = "ego", condition = "cond",
+                  egoNormalize = TRUE)
+  expect_equal(r_plain$tieProb, r_ego$tieProb)
+  expect_false("n_egos" %in% names(r_ego))
+})
+
+test_that("agg egoNormalize=FALSE has no overhead (no n_egos)", {
+  df <- make_ego_norm_df()
+  r <- agg("tieProb", df, level = "none", condition = "cond",
+           egoNormalize = FALSE)
+  expect_false("n_egos" %in% names(r))
+})
+
+test_that("agg egoNormalize works with complex sum_fun (summarizeValue)", {
+  df <- make_ego_norm_df()
+  r <- agg("tieProb", df, level = "none", condition = "cond",
+           sum_fun = summarizeValue, egoNormalize = TRUE)
+  expect_true("n_egos" %in% names(r))
+  expect_true("Mean" %in% names(r))
+  expect_true("cases" %in% names(r))
+})
+
+test_that("agg egoNormalize: base R fallback matches data.table path", {
+  df <- make_ego_norm_df()
+  # data.table path
+  r_dt <- agg("tieProb", df, level = "none", condition = "cond",
+              egoNormalize = TRUE)
+  # base R path
+  with_mocked_bindings(
+    {
+      r_base <- agg("tieProb", df, level = "none", condition = "cond",
+                     egoNormalize = TRUE)
+    },
+    requireNamespace = function(pkg, ...) FALSE,
+    .package = "base"
+  )
+  expect_equal(r_base$tieProb[order(r_base$cond)],
+               r_dt$tieProb[order(r_dt$cond)],
+               tolerance = 1e-10)
+  expect_equal(r_base$n_egos[order(r_base$cond)],
+               r_dt$n_egos[order(r_dt$cond)])
+})

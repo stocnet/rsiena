@@ -35,8 +35,9 @@ predict.sienaFit <- function(
     keepBatch = FALSE,
     verbose = TRUE,
     memoryScale = NULL,
-    batchUnitBudget = 5e8,
+    batchUnitBudget = 2.5e8,
     dynamicMinistepFactor = 10,
+    egoNormalize = FALSE,
     ...
 ) {
   if (inherits(newdata, "sienaGroup"))
@@ -120,7 +121,18 @@ predict.sienaFit <- function(
   batchSize               = batchSize,
   keepBatch               = keepBatch,
   verbose                  = verbose,
-  useChangeContributions   = if (dynamic) useChangeContributions else NULL
+  useChangeContributions   = if (dynamic) useChangeContributions else NULL,
+  egoNormalize             = egoNormalize,
+  metadata = list(
+    method      = "predict",
+    type        = type,
+    level       = level,
+    condition   = condition,
+    depvar      = depvar,
+    dynamic     = dynamic,
+    nsim        = nsim,
+    outcomeName = type
+  )
   )
 }
 

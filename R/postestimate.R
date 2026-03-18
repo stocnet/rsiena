@@ -28,7 +28,10 @@ sienaPostestimate <- function(
     verbose = TRUE,
     useChangeContributions = NULL,
     gcEachBatch = TRUE,
-    gcEachSim = FALSE
+    gcEachSim = FALSE,
+    metadata = NULL,
+    returnDataTable = FALSE,
+    egoNormalize = FALSE
 ) {
   uncertaintyMode <- match.arg(uncertaintyMode)
     if (length(outcomeName) != 1L) {
@@ -45,7 +48,8 @@ sienaPostestimate <- function(
         condition = condition,
         sum_fun = sum_fun,
         na.rm = na.rm,
-        thetaNames = names(thetaHat)
+        thetaNames = names(thetaHat),
+        egoNormalize = egoNormalize
     )
 
     if (!is.null(useChangeContributions)) {
@@ -55,7 +59,7 @@ sienaPostestimate <- function(
         expect <- estimator(thetaHat)
     }
 
-    if (!uncertainty) return(expect)
+    if (!uncertainty) return(stampPostestimate(expect, metadata, returnDataTable))
 
 
     # Resolve condition to actual column name now that we have the output shape.
@@ -120,7 +124,8 @@ sienaPostestimate <- function(
         sum_fun = uncertainty_summary_fun
       )
     }
-    mergeEstimates(expect, uncert, level = level, condition = condition)
+    result <- mergeEstimates(expect, uncert, level = level, condition = condition)
+    stampPostestimate(result, metadata, returnDataTable)
 }
 
 makeUncertaintySummarizer <- function(
@@ -253,7 +258,7 @@ computeMcse <- function(x,
 # thetaNames should not be necessary anymore?
 makeEstimator <- function(predictFun, predictArgs, outcomeName,
     level = "period", condition = NULL, sum_fun = mean, na.rm = TRUE,
-    thetaNames = NULL) {
+    thetaNames = NULL, egoNormalize = FALSE) {
     function(theta, useChangeContributions = FALSE) {
         if (!is.null(thetaNames) && is.null(names(theta)))
             names(theta) <- thetaNames
@@ -268,7 +273,8 @@ makeEstimator <- function(predictFun, predictArgs, outcomeName,
             level = level,
             condition = condition,
             sum_fun = sum_fun,
-            na.rm = na.rm
+            na.rm = na.rm,
+            egoNormalize = egoNormalize
         )
         # Aggregate mass contrast columns alongside the main outcome
         massCols <- intersect(c("massCreation", "massDissolution"), names(unit_pred))
@@ -279,7 +285,8 @@ makeEstimator <- function(predictFun, predictArgs, outcomeName,
                 level = level,
                 condition = condition,
                 sum_fun = sum_fun,
-                na.rm = na.rm
+                na.rm = na.rm,
+                egoNormalize = egoNormalize
             )
             main_result[[mc]] <- mc_agg[[mc]]
         }
@@ -758,18 +765,58 @@ conditionalReplace <- function(df, row_ids, cols, fun) {
   df
 }
 
+# Detect columns that identify a single ego-decision in the data.
+# Dynamic data has chain/ministep; static data does not.
+detectEgoUnit <- function(data) {
+  cols <- names(data)
+  if ("chain" %in% cols) {
+    intersect(c("chain", "group", "period", "ego", "ministep"), cols)
+  } else {
+    intersect(c("group", "period", "ego"), cols)
+  }
+}
+
+# Pre-aggregate outcomeName within each ego-unit: within-ego mean.
+# Returns one row per ego-unit with pre_agg_vars + outcomeName columns.
+# Works for both data.table and data.frame inputs.
+preAggEgo <- function(data, outcomeName, group_vars, ego_id_cols, na.rm) {
+  pre_agg_vars <- unique(c(group_vars, ego_id_cols))
+
+  # data.table path (if input is already data.table)
+  if (requireNamespace("data.table", quietly = TRUE) &&
+      data.table::is.data.table(data)) {
+    return(data[, setNames(list(mean(get(outcomeName), na.rm = na.rm)),
+                           outcomeName),
+                by = pre_agg_vars])
+  }
+
+  # Base R path
+  vals <- data[[outcomeName]]
+  ego_key <- do.call(paste, c(data[pre_agg_vars], sep = "\r"))
+  ukeys <- unique(ego_key)
+  first_idx <- match(ukeys, ego_key)
+  split_vals <- split(vals, ego_key)
+  ego_means <- vapply(split_vals[ukeys],
+                      function(x) mean(x, na.rm = na.rm),
+                      numeric(1))
+  out <- data[first_idx, pre_agg_vars, drop = FALSE]
+  out[[outcomeName]] <- unname(ego_means)
+  rownames(out) <- NULL
+  out
+}
+
 
 agg <- function(outcomeName,
                 data,
                 level = "none",
                 condition = NULL,
                 sum_fun = mean,
-                na.rm = TRUE) {
+                na.rm = TRUE,
+                egoNormalize = FALSE) {
   if (length(outcomeName) != 1L) stop("'outcomeName' must be a single column name.")
   if (!is.null(condition)) condition <- resolveEffectName(condition, colnames(data))
   group_vars <- getGroupVars(level = level, condition = condition)
   # Helper for complex output (vector/list output from sum_fun)
-  # extract from agg?
   expand_summary <- function(val) {
     if (length(val) == 1 && (is.null(names(val)) || names(val) == "")) {
       setNames(list(val), outcomeName)
@@ -778,19 +825,36 @@ agg <- function(outcomeName,
     }
   }
 
+  # Ego-first pre-aggregation: average within each ego-decision first,
+  # then aggregate across ego-level means. This ensures each ego
+  # contributes equally regardless of how many alters qualify.
+  add_n_egos <- FALSE
+  if (egoNormalize) {
+    ego_id_cols <- detectEgoUnit(data)
+    extra <- setdiff(ego_id_cols, group_vars)
+    if (length(extra) > 0) {
+      data <- preAggEgo(data, outcomeName, group_vars, ego_id_cols, na.rm)
+      add_n_egos <- TRUE
+    }
+  }
+
   # Use data.table if available
   if (requireNamespace("data.table", quietly = TRUE)) {
     if (!data.table::is.data.table(data)) {
       data <- data.table::as.data.table(data)
     }
-    result <- data[, expand_summary(sum_fun(get(outcomeName), na.rm = na.rm)), 
-      by = group_vars]
+    result <- data[, {
+      res <- expand_summary(sum_fun(get(outcomeName), na.rm = na.rm))
+      if (add_n_egos) res[["n_egos"]] <- .N
+      res
+    }, by = group_vars]
     return(result)
   }
   # ---- Fallback base R: ----
   if (length(group_vars) == 0) {
     output <- expand_summary(sum_fun(data[[outcomeName]], na.rm = na.rm))
     output <- as.data.frame(output)
+    if (add_n_egos) output[["n_egos"]] <- nrow(data)
     return(output)
   }
 
@@ -799,9 +863,10 @@ agg <- function(outcomeName,
   agg_list <- lapply(split_data, function(subdf) {
     vals <- subdf[[outcomeName]]
     res <- expand_summary(sum_fun(vals, na.rm = na.rm))
-    # Add group columns
     group_vals <- subdf[1, group_vars, drop = FALSE]
-    cbind(group_vals, as.data.frame(res, stringsAsFactors = FALSE))
+    row <- cbind(group_vals, as.data.frame(res, stringsAsFactors = FALSE))
+    if (add_n_egos) row[["n_egos"]] <- nrow(subdf)
+    row
   })
   out <- do.call(rbind, agg_list)
   rownames(out) <- NULL
@@ -908,4 +973,101 @@ groupColsList <- function(pb, keep = NULL) {
 
 resolveCondition <- function(condition) {
   ifelse(grepl("_", condition, fixed = TRUE), condition, paste0(condition, "_eval"))
+}
+
+# ---- Class stamping and S3 methods for postestimate output -------------------
+
+# Convert postestimate result to the appropriate S3 class with metadata.
+# If returnDataTable is FALSE and the result is a data.table, convert it.
+stampPostestimate <- function(result, metadata = NULL, returnDataTable = FALSE) {
+  if (!returnDataTable && inherits(result, "data.table")) {
+    result <- as.data.frame(result)
+  }
+  if (!is.null(metadata)) {
+    # Store resolved condition column names from the output
+    cond_cols <- grep("_eval$", names(result), value = TRUE)
+    if (length(cond_cols) > 0) metadata$conditionCols <- cond_cols
+    for (nm in names(metadata)) {
+      attr(result, nm) <- metadata[[nm]]
+    }
+    cls <- switch(metadata$method,
+      predict         = "sienaPrediction",
+      marginalEffects = "sienaMarginalEffect",
+      NULL
+    )
+    if (!is.null(cls)) {
+      class(result) <- c(cls, class(result))
+    }
+  }
+  result
+}
+
+##@print.sienaPrediction S3 print
+print.sienaPrediction <- function(x, ...) {
+  cat("SAOM Prediction\n")
+  cat("  Type:      ", if (!is.null(attr(x, "type"))) attr(x, "type") else "unknown", "\n")
+  cat("  Dep. var.: ", if (!is.null(attr(x, "depvar"))) attr(x, "depvar") else "unknown", "\n")
+  cat("  Level:     ", if (!is.null(attr(x, "level"))) attr(x, "level") else "unknown", "\n")
+  cat("  Dynamic:   ", if (!is.null(attr(x, "dynamic"))) attr(x, "dynamic") else FALSE, "\n")
+  cat("  nsim:      ", if (!is.null(attr(x, "nsim"))) attr(x, "nsim") else NA, "\n")
+  cat("\n")
+  print.data.frame(x, ...)
+  invisible(x)
+}
+
+##@summary.sienaPrediction S3 summary
+summary.sienaPrediction <- function(object, ...) {
+  cat("SAOM Prediction Summary\n")
+  cat("  Type:      ", if (!is.null(attr(object, "type"))) attr(object, "type") else "unknown", "\n")
+  cat("  Dep. var.: ", if (!is.null(attr(object, "depvar"))) attr(object, "depvar") else "unknown", "\n")
+  cat("  Level:     ", if (!is.null(attr(object, "level"))) attr(object, "level") else "unknown", "\n")
+  cat("  Dynamic:   ", if (!is.null(attr(object, "dynamic"))) attr(object, "dynamic") else FALSE, "\n")
+  cat("  nsim:      ", if (!is.null(attr(object, "nsim"))) attr(object, "nsim") else NA, "\n")
+  if (!is.null(attr(object, "condition")))
+    cat("  Condition: ", paste(attr(object, "condition"), collapse = ", "), "\n")
+  cat("\n")
+  cat("  Rows:      ", nrow(object), "\n")
+  cat("  Columns:   ", paste(names(object), collapse = ", "), "\n\n")
+  summary.data.frame(object, ...)
+}
+
+##@print.sienaMarginalEffect S3 print
+print.sienaMarginalEffect <- function(x, ...) {
+  cat("SAOM Marginal Effect\n")
+  cat("  Effect:    ", if (!is.null(attr(x, "effectName1"))) attr(x, "effectName1") else "unknown", "\n")
+  if (isTRUE(attr(x, "second"))) {
+    cat("  Effect 2:  ", if (!is.null(attr(x, "effectName2"))) attr(x, "effectName2") else "unknown", "\n")
+  }
+  me <- if (!is.null(attr(x, "mainEffect"))) attr(x, "mainEffect") else "riskDifference"
+  cat("  Scale:     ", me, "\n")
+  cat("  Type:      ", if (!is.null(attr(x, "type"))) attr(x, "type") else "unknown", "\n")
+  cat("  Dep. var.: ", if (!is.null(attr(x, "depvar"))) attr(x, "depvar") else "unknown", "\n")
+  cat("  Level:     ", if (!is.null(attr(x, "level"))) attr(x, "level") else "unknown", "\n")
+  cat("  Dynamic:   ", if (!is.null(attr(x, "dynamic"))) attr(x, "dynamic") else FALSE, "\n")
+  cat("  nsim:      ", if (!is.null(attr(x, "nsim"))) attr(x, "nsim") else NA, "\n")
+  cat("\n")
+  print.data.frame(x, ...)
+  invisible(x)
+}
+
+##@summary.sienaMarginalEffect S3 summary
+summary.sienaMarginalEffect <- function(object, ...) {
+  cat("SAOM Marginal Effect Summary\n")
+  cat("  Effect:    ", if (!is.null(attr(object, "effectName1"))) attr(object, "effectName1") else "unknown", "\n")
+  if (isTRUE(attr(object, "second"))) {
+    cat("  Effect 2:  ", if (!is.null(attr(object, "effectName2"))) attr(object, "effectName2") else "unknown", "\n")
+  }
+  me <- if (!is.null(attr(object, "mainEffect"))) attr(object, "mainEffect") else "riskDifference"
+  cat("  Scale:     ", me, "\n")
+  cat("  Type:      ", if (!is.null(attr(object, "type"))) attr(object, "type") else "unknown", "\n")
+  cat("  Dep. var.: ", if (!is.null(attr(object, "depvar"))) attr(object, "depvar") else "unknown", "\n")
+  cat("  Level:     ", if (!is.null(attr(object, "level"))) attr(object, "level") else "unknown", "\n")
+  cat("  Dynamic:   ", if (!is.null(attr(object, "dynamic"))) attr(object, "dynamic") else FALSE, "\n")
+  cat("  nsim:      ", if (!is.null(attr(object, "nsim"))) attr(object, "nsim") else NA, "\n")
+  if (!is.null(attr(object, "condition")))
+    cat("  Condition: ", paste(attr(object, "condition"), collapse = ", "), "\n")
+  cat("\n")
+  cat("  Rows:      ", nrow(object), "\n")
+  cat("  Columns:   ", paste(names(object), collapse = ", "), "\n\n")
+  summary.data.frame(object, ...)
 }
