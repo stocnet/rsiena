@@ -622,6 +622,12 @@ finalizeStream <- function(stream_state,
   })
   out <- do.call(rbind, rows)
   rownames(out) <- NULL
+  if (length(group_vars) > 0L && nrow(out) > 0L) {
+    enc <- encodeGroupKeys(out, group_vars)
+    ord <- do.call(order, as.data.frame(enc$G))
+    out <- out[ord, , drop = FALSE]
+    rownames(out) <- NULL
+  }
   out
 }
 
@@ -819,7 +825,12 @@ encodeGroupKeys <- function(data, group_vars) {
         decode[[j]] <- levels(f)
       }
     } else {
-      f <- factor(col)
+      vals_num <- suppressWarnings(as.numeric(as.character(col)))
+      f <- if (all(!is.na(vals_num))) {
+        factor(col, levels = as.character(sort(unique(vals_num))))
+      } else {
+        factor(col)
+      }
       G[, j] <- as.integer(f)
       decode[[j]] <- levels(f)
     }
