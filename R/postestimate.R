@@ -293,14 +293,17 @@ makeEstimator <- function(predictFun, predictArgs, outcomeName,
             na.rm = na.rm,
             egoNormalize = egoNormalize
         )
-        # Aggregate mass contrast columns alongside the main outcome
+
+        # Aggregate mass contrast columns alongside the main outcome.
+        # Mass contrasts are ego-level quantities (already summed across the
+        # density dimension internally)
         massCols <- intersect(c("massCreation", "massDissolution"), names(unit_pred))
         for (mc in massCols) {
             mc_agg <- agg(
                 outcomeName = mc,
                 data = unit_pred,
                 level = level,
-                condition = condition,
+                condition = NULL,
                 sum_fun = sum_fun,
                 na.rm = na.rm,
                 egoNormalize = egoNormalize

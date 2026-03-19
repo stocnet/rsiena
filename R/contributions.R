@@ -363,6 +363,24 @@ getDynamicChangeContributions <- function(
         stop("effects is not a legitimate Siena effects object")
       }
     }
+    # siena07 -> initializeFRAN -> sienaTimeFix always computes groupPeriods from
+    # effects$period. Rate effects carry the period values; without them every
+    # period is NA, max(..., na.rm=TRUE) returns -Inf, and the subsequent rep()
+    # crashes. This can happen when effects was supplied (or defaulted) from
+    # ans$requestedEffects of a conditionally-estimated model, where rate effects
+    # are stripped out. Check here — after effects is resolved — so the guard
+    # fires whether effects was NULL-defaulted or explicitly passed in.
+    # later fix sienaTimeFix to not crash on this and add a more 
+    # specific error message about missing rate effects.
+    if ("basicRate" %in% names(effects) && !any(effects$basicRate)) {
+      stop(
+        "The 'effects' object contains no rate effects. This is required when ",
+        "useChangeContributions = FALSE or estimating dynamic uncertainty,
+        because siena07 is rerun internally.\n",
+        "Please pass the full effects object, e.g.:\n",
+        "  marginalEffects(..., dynamic = TRUE, effects = mymodel, ...)"
+      )
+    }
     if(is.null(theta)) {
       if (is.null(ans)) {
         stop("Must provide 'ans' or 'theta' when useChangeContributions=FALSE.")

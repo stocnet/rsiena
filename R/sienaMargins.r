@@ -69,8 +69,7 @@ marginalEffects.sienaFit <- function(
     if (!is.null(dvType) && dvType == "behavior")
       stop("marginalEffects is currently only implemented for network ",
            "dependent variables. Behaviour variable '", depvar,
-           "' was selected. See the design document ",
-           "(docs/design_count_behavior.md) for planned extensions.")
+           "' was selected.")
 
     if (dynamic && is.null(algorithm))
       stop("'algorithm' must be provided when dynamic = TRUE")
@@ -131,6 +130,12 @@ marginalEffects.sienaFit <- function(
     pt1 <- resolvePerturbType(effectName1, eiTypes, perturbType1)
     pt2 <- if (second) resolvePerturbType(effectName2, eiTypes, perturbType2) else "alter"
 
+    if (!is.null(condition) && pt1 == "ego") {
+      warning("'condition' is applied to 'firstDiff' only. ",
+      "Mass contrasts (massCreation, massDissolution) are ego-level ",
+      "quantities and are always averaged unconditionally over level = '",
+      level, "'.", call. = FALSE)
+    }
     # ---- build predictArgs ----
     if (dynamic) {
       predictArgs <- list(
