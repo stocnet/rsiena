@@ -662,7 +662,8 @@ getEffectNamesNoRate <- function(effects, depvar) {
     includedEffects <- effects[include, ]
     keep <- includedEffects[["type"]] != "rate" & includedEffects[["name"]] == depvar
     inc <- includedEffects[keep, ]
-    paste(inc[["name"]], inc[["shortName"]], inc[["type"]], sep = "_")
+    sn <- numberIntShortNames(inc[["shortName"]])
+    paste(inc[["name"]], sn, inc[["type"]], sep = "_")
 }
 
 

@@ -793,6 +793,18 @@ numberIntShortNames <- function(shortName) {
     shortName
 }
 
+# Like numberIntShortNames but for "shortName_type" column names returned by
+# the C++ flattenChangeContributionsWide (e.g. "unspInt_eval" -> "unspInt1_eval").
+numberIntColNames <- function(colNames) {
+    for (sn in c("unspInt", "behUnspInt", "contUnspInt")) {
+        idx <- which(startsWith(colNames, paste0(sn, "_")))
+        if (length(idx) > 1)
+            colNames[idx] <- paste0(sn, seq_along(idx),
+                                    substring(colNames[idx], nchar(sn) + 1))
+    }
+    colNames
+}
+
 getNamesFromEffects <- function(effects, append_parm = FALSE) {
     isBasicRate    <- effects$type == "rate" & effects$shortName == "Rate"
     isNonBasicRate <- effects$type == "rate" & effects$shortName != "Rate"

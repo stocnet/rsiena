@@ -544,8 +544,10 @@ flattenChangeContributionsWide <- function(changeContributions, depvar = NULL) {
   result <- .Call(C_flattenChangeContributionsWide,
               changeContributions,
               if (is.null(depvar)) NULL else as.character(depvar))
-  if (!is.null(depvar) && length(depvar) == 1L)
-    colnames(result$contribMat) <- paste(depvar, colnames(result$contribMat), sep = "_")
+  if (!is.null(depvar) && length(depvar) == 1L) {
+    cols <- numberIntColNames(colnames(result$contribMat))
+    colnames(result$contribMat) <- paste(depvar, cols, sep = "_")
+  }
   result$effectNames <- colnames(result$contribMat)
   result
 }
