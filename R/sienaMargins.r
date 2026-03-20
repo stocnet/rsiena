@@ -650,9 +650,25 @@ calculateSecondDiff <- function(densityValue,
     if (length(idx) > 0) tieProb_cf21[idx] <- 1 - changeProb_cf21[idx]
   }
   changeUtil21 <- changeUtil + utilDiff21
-  ## dangerous with interactions because other effect values are not "corrected"
-  ## should be correct now as long as user provides them correctly and there
-  ## are no higher order interactions *or* multiple interactions with same moderator
+
+  # Update moderator for effectName1's interaction after the step-2 shift:
+  # if the shifted effect (effectName2) IS one of the moderators, that moderator
+  # must reflect the post-shift state; otherwise the interaction contribution
+  # to firstDiff2 uses stale values and the utility-level SD is missed.
+  if (interaction1 && !is.null(modEffectNames1)) {
+    mod_shift <- if (is.null(diff2)) 1 else diff2
+    mod_shift[is.na(mod_shift)] <- 0
+    # modEffectNames1 may be a vector (multiple interactions)
+    match_idx <- which(modEffectNames1 == effectName2)
+    if (length(match_idx) > 0L) {
+      if (is.matrix(modContribution1)) {
+        for (mi in match_idx) modContribution1[, mi] <- modContribution1[, mi] + mod_shift
+      } else {
+        # scalar case (single moderator that matches)
+        modContribution1 <- modContribution1 + mod_shift
+      }
+    }
+  }
 
   # Calculate first difference of changing effect1 if effect2 was already changed
   firstDiff2 <- calculateFirstDiff(
@@ -733,10 +749,14 @@ calculateUtilityDiff <- function(effectName, diff,
       stop("'intEffectNames' must not be NULL when interaction = TRUE.")
     if (is.null(modEffectNames))
       stop("'modEffectNames' must not be NULL when interaction = TRUE.")
-    moderator_values <- densityValue * modContribution
-    interaction_effectNums <- which(effectNames == intEffectNames)
-    util_diff <- densityValue * (diff * theta[effectNum] + 
-                              diff * moderator_values * theta[interaction_effectNums])
+    util_diff <- densityValue * diff * theta[effectNum]
+    # intEffectNames / modContribution may be vectors (multiple interactions)
+    nInt <- length(intEffectNames)
+    for (k in seq_len(nInt)) {
+      mod_k <- if (is.matrix(modContribution)) modContribution[, k] else modContribution
+      int_num <- which(effectNames == intEffectNames[k])
+      util_diff <- util_diff + densityValue * diff * (densityValue * mod_k) * theta[int_num]
+    }
   } else {
     util_diff <- densityValue * diff * theta[effectNum]
   }
