@@ -391,7 +391,10 @@ getDynamicChangeContributions <- function(
       }
     }
     algorithm$nsub <- 0
+    algorithm$simOnly <- TRUE
+    algorithm$maxlike <- FALSE  
     if (!is.null(n3)) {
+      # should maybe be done differently
       algorithm$n3 <- as.integer(n3)
     }
     if(!is.null(seed)) {
