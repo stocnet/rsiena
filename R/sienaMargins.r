@@ -658,6 +658,9 @@ calculateSecondDiff <- function(densityValue,
   if (interaction1 && !is.null(modEffectNames1)) {
     mod_shift <- if (is.null(diff2)) 1 else diff2
     mod_shift[is.na(mod_shift)] <- 0
+    # diff is in raw change-stat space; modContribution is in contribMat space
+    # (density * c), so we convert: delta_contribMat = density * delta_c
+    mod_shift <- densityValue * mod_shift
     # modEffectNames1 may be a vector (multiple interactions)
     match_idx <- which(modEffectNames1 == effectName2)
     if (length(match_idx) > 0L) {
