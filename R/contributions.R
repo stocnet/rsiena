@@ -109,7 +109,7 @@ getStaticChangeContributions <- function(ans = NULL,
   # so its output order is: effects for the alphabetically-first dep var,
   # then the next, etc.  We must use the same ordering here.
   cppEffects <- do.call(rbind, setup$myeffects)
-  effectNames            <- cppEffects$shortName
+  effectNames            <- numberIntShortNames(cppEffects$shortName)
   effectDepvars          <- cppEffects$name
   effectNetTypes         <- cppEffects$netType
   effectTypes            <- cppEffects$type

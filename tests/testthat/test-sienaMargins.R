@@ -443,5 +443,105 @@ test_that("marginalEffects: behavior DV stops with informative error", {
   )
 })
 
+# ── Two user-specified interactions (unspInt numbering) ───────────────────────
+# The model has two unspInt effects; getNamesFromEffects() should number them
+# unspInt1 and unspInt2 so they are uniquely addressable.
 
+test_that("two unspInt: theta names are unspInt1 / unspInt2", {
+  skip_if(is.null(ans_2int), "ans_2int not fitted (RSENA_FULL_TESTS not set)")
+  thetaNames <- names(ans_2int$theta)
+  expect_true(any(grepl("unspInt1", thetaNames)),
+              info = paste("theta names:", paste(thetaNames, collapse = ", ")))
+  expect_true(any(grepl("unspInt2", thetaNames)),
+              info = paste("theta names:", paste(thetaNames, collapse = ", ")))
+  expect_false(any(thetaNames == grep("unspInt$", thetaNames, value = TRUE)[1]),
+               info = "bare 'unspInt' should not appear when there are two")
+})
+
+test_that("two unspInt: firstDiff via unspInt1 (main effect = recip)", {
+  skip_if(is.null(ans_2int), "ans_2int not fitted (RSENA_FULL_TESTS not set)")
+  with_mocked_bindings(
+    {
+      out <- marginalEffects(
+        object = ans_2int, data = mydata_2int, effects = mymodel_2int,
+        effectName1 = "recip", contrast1 = c(0, 1),
+        interaction1 = TRUE, intEffectNames1 = "unspInt1",
+        modEffectNames1 = "inPop",
+        type = "tieProb", depvar = "mynet_2int",
+        level = "period", condition = c("inPop", "density"),
+        uncertainty = FALSE
+      )
+      expect_true(is.data.frame(out))
+      expect_true("firstDiff" %in% names(out))
+      expect_true(nrow(out) > 0L)
+    },
+    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  )
+})
+
+test_that("two unspInt: firstDiff via unspInt2 (main effect = recip)", {
+  skip_if(is.null(ans_2int), "ans_2int not fitted (RSENA_FULL_TESTS not set)")
+  with_mocked_bindings(
+    {
+      out <- marginalEffects(
+        object = ans_2int, data = mydata_2int, effects = mymodel_2int,
+        effectName1 = "recip", contrast1 = c(0, 1),
+        interaction1 = TRUE, intEffectNames1 = "unspInt2",
+        modEffectNames1 = "outPop",
+        type = "tieProb", depvar = "mynet_2int",
+        level = "period", condition = c("outPop", "density"),
+        uncertainty = FALSE
+      )
+      expect_true(is.data.frame(out))
+      expect_true("firstDiff" %in% names(out))
+      expect_true(nrow(out) > 0L)
+    },
+    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  )
+})
+
+test_that("two unspInt: secondDiff across unspInt1 and unspInt2", {
+  skip_if(is.null(ans_2int), "ans_2int not fitted (RSENA_FULL_TESTS not set)")
+  with_mocked_bindings(
+    {
+      out <- marginalEffects(
+        object = ans_2int, data = mydata_2int, effects = mymodel_2int,
+        effectName1 = "recip", contrast1 = c(0, 1),
+        interaction1 = TRUE, intEffectNames1 = "unspInt1",
+        modEffectNames1 = "inPop",
+        second = TRUE,
+        effectName2 = "recip", contrast2 = c(0, 1),
+        interaction2 = TRUE, intEffectNames2 = "unspInt2",
+        modEffectNames2 = "outPop",
+        type = "tieProb", depvar = "mynet_2int",
+        level = "period", condition = c("inPop", "outPop", "density"),
+        uncertainty = FALSE
+      )
+      expect_true(is.data.frame(out))
+      expect_true("secondDiff" %in% names(out))
+      expect_true(nrow(out) > 0L)
+    },
+    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  )
+})
+
+test_that("two unspInt: conditional prediction (tieProb) with uncertainty", {
+  skip_if(is.null(ans_2int), "ans_2int not fitted (RSENA_FULL_TESTS not set)")
+  with_mocked_bindings(
+    {
+      out <- marginalEffects(
+        object = ans_2int, data = mydata_2int, effects = mymodel_2int,
+        effectName1 = "recip", contrast1 = c(0, 1),
+        interaction1 = TRUE, intEffectNames1 = "unspInt1",
+        modEffectNames1 = "inPop",
+        type = "tieProb", depvar = "mynet_2int",
+        level = "period", condition = c("inPop", "density"),
+        nsim = 5, uncertainty = TRUE, verbose = FALSE
+      )
+      expect_true(is.data.frame(out))
+      expect_true("Mean" %in% names(out))
+    },
+    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  )
+})
 

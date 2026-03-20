@@ -86,6 +86,10 @@ ans_cm            <- NULL
 mydata_cm         <- NULL
 mymodel_cm        <- NULL
 mycontrols_cm     <- NULL
+ans_2int          <- NULL
+mydata_2int       <- NULL
+mymodel_2int      <- NULL
+mycontrols_2int   <- NULL
 
 if (identical(Sys.getenv("RSENA_FULL_TESTS"), "1")) {
 
@@ -171,6 +175,29 @@ if (identical(Sys.getenv("RSENA_FULL_TESTS"), "1")) {
     effects = mymodel_cm,
     returnChangeContributions = TRUE,
     returnDataFrame           = FALSE,
+    silent                    = TRUE
+  )
+
+  # ── Model with TWO user-specified interactions (unspInt1 and unspInt2) ──────
+  # density + recip (main effects)
+  # unspInt1: recip x inPop
+  # unspInt2: recip x outPop
+  # Used to test that numbered names (unspInt1/unspInt2) work for predict /
+  # firstDiff / secondDiff / conditional predictions.
+  mynet_2int   <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
+  mydata_2int  <- sienaDataCreate(mynet_2int)
+  mymodel_2int <- getEffects(mydata_2int)
+  mymodel_2int <- includeEffects(mymodel_2int, inPop, outPop, name = "mynet_2int")
+  mymodel_2int <- includeInteraction(mymodel_2int, recip, inPop,  name = "mynet_2int")
+  mymodel_2int <- includeInteraction(mymodel_2int, recip, outPop, name = "mynet_2int")
+  mycontrols_2int <- sienaAlgorithmCreate(projname = NULL, n3 = 50,
+                                          cond = FALSE, seed = 77)
+  ans_2int <- siena07(
+    mycontrols_2int,
+    data    = mydata_2int,
+    effects = mymodel_2int,
+    returnChangeContributions = TRUE,
+    returnDataFrame           = TRUE,
     silent                    = TRUE
   )
 }

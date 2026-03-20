@@ -781,17 +781,30 @@ make_constraint.siena <- make_constraint.sienadata
 # other effects: {name}_{shortName}_{type}.
 # append_parm=TRUE adds _{parm} suffix for effects with non-zero parm.
 # Attaches attr(result, "label"): named vector of human-readable labels.
+# Number duplicate user-specified interaction shortNames without underscore,
+# so the number sits inside the composed name: e.g. unspInt1_eval, unspInt2_eval.
+# A single occurrence is left unnumbered.
+numberIntShortNames <- function(shortName) {
+    for (sn in c("unspInt", "behUnspInt", "contUnspInt")) {
+        idx <- which(shortName == sn)
+        if (length(idx) > 1)
+            shortName[idx] <- paste0(sn, seq_along(idx))
+    }
+    shortName
+}
+
 getNamesFromEffects <- function(effects, append_parm = FALSE) {
     isBasicRate    <- effects$type == "rate" & effects$shortName == "Rate"
     isNonBasicRate <- effects$type == "rate" & effects$shortName != "Rate"
+    shortName <- numberIntShortNames(effects$shortName)
     if (!is.null(effects$name) && !all(is.na(effects$name))) {
         effectNames <- ifelse(
             isBasicRate,
             paste0(effects$name, "_rate", effects$period),
             ifelse(
                 isNonBasicRate,
-                paste(effects$name, effects$shortName, "rate", sep = "_"),
-                paste(effects$name, effects$shortName, effects$type, sep = "_")
+                paste(effects$name, shortName, "rate", sep = "_"),
+                paste(effects$name, shortName, effects$type, sep = "_")
             )
         )
     } else {
@@ -800,8 +813,8 @@ getNamesFromEffects <- function(effects, append_parm = FALSE) {
             paste0("rate", effects$period),
             ifelse(
                 isNonBasicRate,
-                paste(effects$shortName, "rate", sep = "_"),
-                paste(effects$shortName, effects$type, sep = "_")
+                paste(shortName, "rate", sep = "_"),
+                paste(shortName, effects$type, sep = "_")
             )
         )
     }
