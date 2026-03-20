@@ -391,7 +391,6 @@ getDynamicChangeContributions <- function(
       }
     }
     algorithm$nsub <- 0
-    algorithm$simOnly <- TRUE
     algorithm$maxlike <- FALSE  
     if (!is.null(n3)) {
       # should maybe be done differently
