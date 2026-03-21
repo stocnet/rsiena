@@ -3484,7 +3484,7 @@ sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
 ##substracting c_p from the mean for p > 0.5
 
 c_p <- ifelse(p <= 0.5, 0, p - mbh)
-sum( (mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) / 
+sum( (mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) /
   sum(colSums(mynet[,,1])) ) - c_p )) # 15.74569 OK
 
 ## Test for three networks without shape effects
@@ -4310,3 +4310,27 @@ myeff <- set_effect(myeff, outPop, parameter=-1)
 myeff
 (ans <- siena(mydata, effects=myeff, control_algo=algo))
 ans$targets # 116  70 613 594 OK
+
+
+################################################################################
+### check outdegMixedPop
+################################################################################
+
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,1:2], type="behavior")
+(mydata <- make_data_rsiena(mynet1, mynet2, mybeh))
+myalg <- set_algorithm_saom(seed=123)
+
+effs <- make_specification(mydata)
+(effs <- set_effect(effs, outdegMixedPop, depvar='mybeh', covar1='mynet1', covar2='mynet2'))
+(ans <- siena(data=mydata, effects=effs, control_algo=myalg))
+ans$targets
+pop <- colSums(s502)
+sum((mybeh[,1,2]- mean(mybeh))* (s501 %*% pop)) #  62.070 OK
+
+effs <- make_specification(mydata)
+(effs <- set_effect(effs, indegMixedPop, depvar='mybeh', covar1='mynet1', covar2='mynet2'))
+(ans <- siena(data=mydata, effects=effs, control_algo=myalg))
+ans$targets
+sum((mybeh[,1,2]- mean(mybeh))* (t(s501) %*% pop)) #  74.07 OK

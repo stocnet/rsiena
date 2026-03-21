@@ -2535,6 +2535,14 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 //	{
 //		pEffect = new DoubleRecDegreeBehaviorEffect(pEffectInfo, 2); // leads to error
 //	}
+	else if (effectName == "indegMixedPop")
+	{
+		pEffect = new DegreeMixedPopularityEffect(pEffectInfo, false);
+	}
+	else if (effectName == "outdegMixedPop")
+	{
+		pEffect = new DegreeMixedPopularityEffect(pEffectInfo, true);
+	}
 	else if (effectName == "avSimPopEgo")
 	{
 		pEffect = new SimilarityEffect(pEffectInfo, true, false, true, true, true);
