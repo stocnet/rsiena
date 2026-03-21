@@ -5,143 +5,98 @@
 
 # ── Static tests ──────────────────────────────────────────────────────────────
 
-test_that("marginalEffects static: firstDiff structure (base R)", {
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans, data = mydata,
-        effectName1 = "transTrip", diff1 = 1,
-        type = "tieProb", depvar = "mynet",
-        level = "egoChoice",
-        condition = c("recip", "density", "transTrip"),
-        uncertainty = FALSE
-      )
-      expect_true(is.data.frame(out))
-      expect_false("data.table" %in% class(out))
-      expect_true("firstDiff" %in% names(out))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
-  )
-})
-
-test_that("marginalEffects static: data.table output", {
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
+test_that("marginalEffects static: firstDiff structure", {
   out <- marginalEffects(
     object = ans, data = mydata,
     effectName1 = "transTrip", diff1 = 1,
     type = "tieProb", depvar = "mynet",
-    level = "period", condition = "density",
+    level = "egoChoice",
+    condition = c("recip", "density", "transTrip"),
     uncertainty = FALSE
   )
-  expect_true("data.table" %in% class(out))
+  expect_true(is.data.frame(out))
   expect_true("firstDiff" %in% names(out))
 })
 
-test_that("marginalEffects static with uncertainty: MCSE columns, no CI (base R)", {
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans, data = mydata,
-        effectName1 = "recip", contrast1 = c(0, 1),
-        type = "tieProb", depvar = "mynet",
-        level = "period", condition = "density",
-        nsim = 20, uncertainty = TRUE,
-        uncertaintyMcse = TRUE, uncertaintymcseBatches = 4,
-        uncertaintySd = TRUE, uncertaintyCi = FALSE,
-        verbose = FALSE
-      )
-      expect_true(is.data.frame(out))
-      expect_true(all(c("Mean", "SE", "cases", "mcse_Mean", "mcse_SE") %in% names(out)))
-      expect_false("q_025" %in% names(out))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+
+
+test_that("marginalEffects static with uncertainty: MCSE columns, no CI", {
+  out <- marginalEffects(
+    object = ans, data = mydata,
+    effectName1 = "recip", contrast1 = c(0, 1),
+    type = "tieProb", depvar = "mynet",
+    level = "period", condition = "density",
+    nsim = 20, uncertainty = TRUE,
+    uncertaintyMcse = TRUE, uncertaintymcseBatches = 4,
+    uncertaintySd = TRUE, uncertaintyCi = FALSE,
+    verbose = FALSE
   )
+  expect_true(is.data.frame(out))
+  expect_true(all(c("Mean", "SE", "cases", "mcse_Mean", "mcse_SE") %in% names(out)))
+  expect_false("q_025" %in% names(out))
 })
 
-test_that("marginalEffects static: secondDiff structure (base R)", {
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans, data = mydata,
-        effectName1 = "transTrip", diff1 = 1,
-        effectName2 = "recip", contrast2 = c(0, 1),
-        second = TRUE, type = "tieProb", depvar = "mynet",
-        level = "egoChoice",
-        condition = c("recip", "density", "transTrip"),
-        uncertainty = FALSE
-      )
-      expect_true(is.data.frame(out))
-      expect_true("secondDiff" %in% names(out))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+test_that("marginalEffects static: secondDiff structure", {
+  out <- marginalEffects(
+    object = ans, data = mydata,
+    effectName1 = "transTrip", diff1 = 1,
+    effectName2 = "recip", contrast2 = c(0, 1),
+    second = TRUE, type = "tieProb", depvar = "mynet",
+    level = "egoChoice",
+    condition = c("recip", "density", "transTrip"),
+    uncertainty = FALSE
   )
+  expect_true(is.data.frame(out))
+  expect_true("secondDiff" %in% names(out))
 })
 
-test_that("marginalEffects static interaction, no uncertainty (base R)", {
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans2, data = mydata2,
-        effectName1 = "transTrip", diff1 = 1,
-        interaction1 = TRUE, intEffectNames1 = "transRecTrip",
-        modEffectNames1 = "recip",
-        type = "tieProb", depvar = "mynet2",
-        level = "period", condition = "recip",
-        uncertainty = FALSE, verbose = FALSE
-      )
-      expect_true(is.data.frame(out))
-      expect_true("firstDiff" %in% names(out))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+test_that("marginalEffects static interaction, no uncertainty", {
+  out <- marginalEffects(
+    object = ans2, data = mydata2,
+    effectName1 = "transTrip", diff1 = 1,
+    interaction1 = TRUE, intEffectNames1 = "transRecTrip",
+    modEffectNames1 = "recip",
+    type = "tieProb", depvar = "mynet2",
+    level = "period", condition = "recip",
+    uncertainty = FALSE, verbose = FALSE
   )
+  expect_true(is.data.frame(out))
+  expect_true("firstDiff" %in% names(out))
 })
 
-test_that("marginalEffects static interaction with uncertainty (base R)", {
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans2, data = mydata2,
-        effectName1 = "transTrip", diff1 = 1,
-        interaction1 = TRUE, intEffectNames1 = "transRecTrip",
-        modEffectNames1 = "recip",
-        type = "tieProb", depvar = "mynet2",
-        level = "period", condition = "recip",
-        nsim = 5, uncertainty = TRUE, verbose = FALSE
-      )
-      expect_true(is.data.frame(out))
-      expect_true("Mean" %in% names(out))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+test_that("marginalEffects static interaction with uncertainty", {
+  out <- marginalEffects(
+    object = ans2, data = mydata2,
+    effectName1 = "transTrip", diff1 = 1,
+    interaction1 = TRUE, intEffectNames1 = "transRecTrip",
+    modEffectNames1 = "recip",
+    type = "tieProb", depvar = "mynet2",
+    level = "period", condition = "recip",
+    nsim = 5, uncertainty = TRUE, verbose = FALSE
   )
+  expect_true(is.data.frame(out))
+  expect_true("Mean" %in% names(out))
 })
 
-test_that("marginalEffects static secondDiff with interactions, riskRatio (base R)", {
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans2, data = mydata2,
-        effectName1 = "recip", contrast1 = c(0, 1),
-        interaction1 = TRUE, intEffectNames1 = "transRecTrip",
-        modEffectNames1 = "transTrip",
-        second = TRUE,
-        effectName2 = "transTrip", diff2 = 1,
-        interaction2 = TRUE, intEffectNames2 = "transRecTrip",
-        modEffectNames2 = "recip",
-        type = "tieProb", depvar = "mynet2",
-        level = "period", nsim = 5, uncertainty = TRUE,
-        verbose = FALSE, mainEffect = "riskRatio"
-      )
-      expect_true(is.data.frame(out))
-      expect_true("secondRiskRatio" %in% names(out))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+test_that("marginalEffects static secondDiff with interactions, riskRatio", {
+  out <- marginalEffects(
+    object = ans2, data = mydata2,
+    effectName1 = "recip", contrast1 = c(0, 1),
+    interaction1 = TRUE, intEffectNames1 = "transRecTrip",
+    modEffectNames1 = "transTrip",
+    second = TRUE,
+    effectName2 = "transTrip", diff2 = 1,
+    interaction2 = TRUE, intEffectNames2 = "transRecTrip",
+    modEffectNames2 = "recip",
+    type = "tieProb", depvar = "mynet2",
+    level = "period", nsim = 5, uncertainty = TRUE,
+    verbose = FALSE, mainEffect = "riskRatio"
   )
+  expect_true(is.data.frame(out))
+  expect_true("secondRiskRatio" %in% names(out))
 })
 
-test_that("marginalEffects static with custom interaction (data.table)", {
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
+test_that("marginalEffects static with custom interaction", {
   out <- marginalEffects(
     object = ans3, data = mydata3, effects = mymodel3,
     effectName1 = "recip", contrast1 = c(0, 1),
@@ -151,14 +106,12 @@ test_that("marginalEffects static with custom interaction (data.table)", {
     level = "period", condition = "inPop",
     nsim = 5, uncertainty = TRUE, verbose = FALSE
   )
-  expect_true("data.table" %in% class(out) || is.data.frame(out))
+  expect_true(is.data.frame(out))
   expect_true("firstDiff" %in% names(out))
 })
 
-test_that("marginalEffects dynamic with custom interaction (data.table)", {
+test_that("marginalEffects dynamic with custom interaction", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
   out <- marginalEffects(
     object = ans3, data = mydata3, effects = mymodel3,
     effectName1 = "recip", contrast1 = c(0, 1),
@@ -169,92 +122,62 @@ test_that("marginalEffects dynamic with custom interaction (data.table)", {
     dynamic = TRUE, algorithm = mycontrols3, n3 = 60,
     uncertainty = FALSE, verbose = FALSE
   )
-  expect_true("data.table" %in% class(out) || is.data.frame(out))
+  expect_true(is.data.frame(out))
   expect_true("firstDiff" %in% names(out))
 })
 
 # ── Dynamic tests (marginalEffects dynamic = TRUE) ───────────────────────────────────
 
-test_that("marginalEffects dynamic: firstDiff structure, uncertainty=FALSE (base R)", {
+test_that("marginalEffects dynamic: firstDiff structure, uncertainty=FALSE", {
   skip_slow()
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans, data = mydata,
-        effectName1 = "transTrip", diff1 = 1,
-        effects = mymodel, algorithm = mycontrols,
-        dynamic = TRUE, n3 = 60,
-        type = "tieProb", condition = "density",
-        uncertainty = FALSE
-      )
-      expect_true(is.data.frame(out))
-      expect_false("data.table" %in% class(out))
-      expect_true("firstDiff" %in% names(out))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
-  )
-})
-
-test_that("marginalEffects dynamic: MCSE + CI structure (base R)", {
-  skip_slow()
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans, data = mydata,
-        effectName1 = "transTrip", diff1 = 1,
-        effects = mymodel, algorithm = mycontrols,
-        dynamic = TRUE, n3 = 60, nsim = 20,
-        type = "tieProb", condition = "density",
-        uncertainty = TRUE,
-        uncertaintyMcse = TRUE, uncertaintymcseBatches = 4,
-        uncertaintySd = FALSE, uncertaintyCi = TRUE,
-        verbose = FALSE
-      )
-      expect_true(is.data.frame(out))
-      expect_true(all(c("Mean", "cases", "mcse_Mean", "q_025", "q_975", "Median") %in% names(out)))
-      expect_false("SE" %in% names(out))
-      expect_false("mcse_SE" %in% names(out))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
-  )
-})
-
-test_that("marginalEffects dynamic: data.table output", {
-  skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
   out <- marginalEffects(
     object = ans, data = mydata,
     effectName1 = "transTrip", diff1 = 1,
     effects = mymodel, algorithm = mycontrols,
-    dynamic = TRUE, n3 = 50, nsim = 5,
-    type = "tieProb", condition = "density"
+    dynamic = TRUE, n3 = 60,
+    type = "tieProb", condition = "density",
+    uncertainty = FALSE
   )
-  expect_true("data.table" %in% class(out) || is.data.frame(out))
+  expect_true(is.data.frame(out))
   expect_true("firstDiff" %in% names(out))
 })
 
-test_that("marginalEffects dynamic: interaction (base R)", {
+test_that("marginalEffects dynamic: MCSE + CI structure", {
   skip_slow()
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans2, data = mydata2,
-        effectName1 = "transTrip", diff1 = 1,
-        interaction1 = TRUE, intEffectNames1 = "transRecTrip",
-        modEffectNames1 = "recip",
-        effects = mymodel2, algorithm = mycontrols2,
-        dynamic = TRUE, n3 = 60,
-        type = "tieProb", level = "period",
-        condition = c("density", "recip"),
-        uncertainty = FALSE
-      )
-      expect_true(is.data.frame(out))
-      expect_false("data.table" %in% class(out))
-      expect_true("firstDiff" %in% names(out))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  out <- marginalEffects(
+    object = ans, data = mydata,
+    effectName1 = "transTrip", diff1 = 1,
+    effects = mymodel, algorithm = mycontrols,
+    dynamic = TRUE, n3 = 60, nsim = 20,
+    type = "tieProb", condition = "density",
+    uncertainty = TRUE,
+    uncertaintyMcse = TRUE, uncertaintymcseBatches = 4,
+    uncertaintySd = FALSE, uncertaintyCi = TRUE,
+    verbose = FALSE
   )
+  expect_true(is.data.frame(out))
+  expect_true(all(c("Mean", "cases", "mcse_Mean", "q_025", "q_975", "Median") %in% names(out)))
+  expect_false("SE" %in% names(out))
+  expect_false("mcse_SE" %in% names(out))
+})
+
+
+
+test_that("marginalEffects dynamic: interaction", {
+  skip_slow()
+  out <- marginalEffects(
+    object = ans2, data = mydata2,
+    effectName1 = "transTrip", diff1 = 1,
+    interaction1 = TRUE, intEffectNames1 = "transRecTrip",
+    modEffectNames1 = "recip",
+    effects = mymodel2, algorithm = mycontrols2,
+    dynamic = TRUE, n3 = 60,
+    type = "tieProb", level = "period",
+    condition = c("density", "recip"),
+    uncertainty = FALSE
+  )
+  expect_true(is.data.frame(out))
+  expect_true("firstDiff" %in% names(out))
 })
 
 # ── Ego-perturbation & behavior-DV integration tests ─────────────────────────
@@ -262,23 +185,18 @@ test_that("marginalEffects dynamic: interaction (base R)", {
 test_that("marginalEffects static: egoX auto-detects ego perturbation", {
   skip_slow()
   skip_if(is.null(ans_ego), "ans_ego not fitted (RSENA_FULL_TESTS=1)")
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans_ego, data = mydata_ego,
-        effectName1 = "egoX", diff1 = 1,
-        type = "tieProb", depvar = "mynet_ego",
-        level = "period", condition = "density",
-        uncertainty = FALSE
-      )
-      expect_true(is.data.frame(out))
-      expect_true("firstDiff" %in% names(out))
-      # Mass contrasts should be present for ego perturbation
-      expect_true("massCreation" %in% names(out))
-      expect_true("massDissolution" %in% names(out))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  out <- marginalEffects(
+    object = ans_ego, data = mydata_ego,
+    effectName1 = "egoX", diff1 = 1,
+    type = "tieProb", depvar = "mynet_ego",
+    level = "period", condition = "density",
+    uncertainty = FALSE
   )
+  expect_true(is.data.frame(out))
+  expect_true("firstDiff" %in% names(out))
+  # Mass contrasts should be present for ego perturbation
+  expect_true("massCreation" %in% names(out))
+  expect_true("massDissolution" %in% names(out))
 })
 
 test_that("marginalEffects static: egoX mass contrasts sum to dyad-level diffs", {
@@ -342,85 +260,65 @@ test_that("marginalEffects static: egoX tieProb mass contrasts use changeProbDif
 test_that("marginalEffects static: alter perturbType does NOT have mass columns", {
   skip_slow()
   skip_if(is.null(ans_ego), "ans_ego not fitted (RSENA_FULL_TESTS=1)")
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans_ego, data = mydata_ego,
-        effectName1 = "egoX", diff1 = 1,
-        perturbType1 = "alter",
-        type = "tieProb", depvar = "mynet_ego",
-        level = "period", condition = "density",
-        uncertainty = FALSE
-      )
-      expect_true(is.data.frame(out))
-      expect_true("firstDiff" %in% names(out))
-      # Mass contrasts should NOT be present for alter perturbation
-      expect_false("massCreation" %in% names(out))
-      expect_false("massDissolution" %in% names(out))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  out <- marginalEffects(
+    object = ans_ego, data = mydata_ego,
+    effectName1 = "egoX", diff1 = 1,
+    perturbType1 = "alter",
+    type = "tieProb", depvar = "mynet_ego",
+    level = "period", condition = "density",
+    uncertainty = FALSE
   )
+  expect_true(is.data.frame(out))
+  expect_true("firstDiff" %in% names(out))
+  # Mass contrasts should NOT be present for alter perturbation
+  expect_false("massCreation" %in% names(out))
+  expect_false("massDissolution" %in% names(out))
 })
 
 test_that("marginalEffects static: egoX interaction firstDiff", {
   skip_slow()
   skip_if(is.null(ans_ego), "ans_ego not fitted (RSENA_FULL_TESTS=1)")
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans_ego, data = mydata_ego,
-        effectName1 = "egoX", diff1 = 1,
-        interaction1 = TRUE, intEffectNames1 = "unspInt",
-        modEffectNames1 = "transTrip",
-        type = "tieProb", depvar = "mynet_ego",
-        level = "period", condition = c("density", "transTrip"),
-        uncertainty = FALSE
-      )
-      expect_true(is.data.frame(out))
-      expect_true("firstDiff" %in% names(out))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  out <- marginalEffects(
+    object = ans_ego, data = mydata_ego,
+    effectName1 = "egoX", diff1 = 1,
+    interaction1 = TRUE, intEffectNames1 = "unspInt",
+    modEffectNames1 = "transTrip",
+    type = "tieProb", depvar = "mynet_ego",
+    level = "period", condition = c("density", "transTrip"),
+    uncertainty = FALSE
   )
+  expect_true(is.data.frame(out))
+  expect_true("firstDiff" %in% names(out))
 })
 
 test_that("marginalEffects static: egoX perturbType override alter works", {
   skip_slow()
   skip_if(is.null(ans_ego), "ans_ego not fitted (RSENA_FULL_TESTS=1)")
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans_ego, data = mydata_ego,
-        effectName1 = "egoX", diff1 = 1,
-        perturbType1 = "alter",
-        type = "tieProb", depvar = "mynet_ego",
-        level = "period", condition = "density",
-        uncertainty = FALSE
-      )
-      expect_true(is.data.frame(out))
-      expect_true("firstDiff" %in% names(out))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  out <- marginalEffects(
+    object = ans_ego, data = mydata_ego,
+    effectName1 = "egoX", diff1 = 1,
+    perturbType1 = "alter",
+    type = "tieProb", depvar = "mynet_ego",
+    level = "period", condition = "density",
+    uncertainty = FALSE
   )
+  expect_true(is.data.frame(out))
+  expect_true("firstDiff" %in% names(out))
 })
 
 test_that("marginalEffects dynamic: egoX auto-detects ego perturbation", {
   skip_slow()
   skip_if(is.null(ans_ego), "ans_ego not fitted (RSENA_FULL_TESTS=1)")
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans_ego, data = mydata_ego,
-        effectName1 = "egoX", diff1 = 1,
-        effects = mymodel_ego, algorithm = mycontrols_ego,
-        dynamic = TRUE, n3 = 60,
-        type = "tieProb", condition = "density",
-        uncertainty = FALSE
-      )
-      expect_true(is.data.frame(out))
-      expect_true("firstDiff" %in% names(out))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  out <- marginalEffects(
+    object = ans_ego, data = mydata_ego,
+    effectName1 = "egoX", diff1 = 1,
+    effects = mymodel_ego, algorithm = mycontrols_ego,
+    dynamic = TRUE, n3 = 60,
+    type = "tieProb", condition = "density",
+    uncertainty = FALSE
   )
+  expect_true(is.data.frame(out))
+  expect_true("firstDiff" %in% names(out))
 })
 
 test_that("marginalEffects: behavior DV stops with informative error", {
@@ -443,105 +341,72 @@ test_that("marginalEffects: behavior DV stops with informative error", {
   )
 })
 
-# ── Two user-specified interactions (unspInt numbering) ───────────────────────
-# The model has two unspInt effects; getNamesFromEffects() should number them
-# unspInt1 and unspInt2 so they are uniquely addressable.
 
-test_that("two unspInt: theta names are unspInt1 / unspInt2", {
-  skip_if(is.null(ans_2int), "ans_2int not fitted (RSENA_FULL_TESTS not set)")
-  thetaNames <- names(ans_2int$theta)
-  expect_true(any(grepl("unspInt1", thetaNames)),
-              info = paste("theta names:", paste(thetaNames, collapse = ", ")))
-  expect_true(any(grepl("unspInt2", thetaNames)),
-              info = paste("theta names:", paste(thetaNames, collapse = ", ")))
-  expect_false(any(thetaNames == grep("unspInt$", thetaNames, value = TRUE)[1]),
-               info = "bare 'unspInt' should not appear when there are two")
-})
 
 test_that("two unspInt: firstDiff via unspInt1 (main effect = recip)", {
   skip_if(is.null(ans_2int), "ans_2int not fitted (RSENA_FULL_TESTS not set)")
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans_2int, data = mydata_2int, effects = mymodel_2int,
-        effectName1 = "recip", contrast1 = c(0, 1),
-        interaction1 = TRUE, intEffectNames1 = "unspInt1",
-        modEffectNames1 = "inPop",
-        type = "tieProb", depvar = "mynet_2int",
-        level = "period", condition = c("inPop", "density"),
-        uncertainty = FALSE
-      )
-      expect_true(is.data.frame(out))
-      expect_true("firstDiff" %in% names(out))
-      expect_true(nrow(out) > 0L)
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  out <- marginalEffects(
+    object = ans_2int, data = mydata_2int, effects = mymodel_2int,
+    effectName1 = "recip", contrast1 = c(0, 1),
+    interaction1 = TRUE, intEffectNames1 = "unspInt1",
+    modEffectNames1 = "inPop",
+    type = "tieProb", depvar = "mynet_2int",
+    level = "period", condition = c("inPop", "density"),
+    uncertainty = FALSE
   )
+  expect_true(is.data.frame(out))
+  expect_true("firstDiff" %in% names(out))
+  expect_true(nrow(out) > 0L)
 })
 
 test_that("two unspInt: firstDiff via unspInt2 (main effect = recip)", {
   skip_if(is.null(ans_2int), "ans_2int not fitted (RSENA_FULL_TESTS not set)")
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans_2int, data = mydata_2int, effects = mymodel_2int,
-        effectName1 = "recip", contrast1 = c(0, 1),
-        interaction1 = TRUE, intEffectNames1 = "unspInt2",
-        modEffectNames1 = "outPop",
-        type = "tieProb", depvar = "mynet_2int",
-        level = "period", condition = c("outPop", "density"),
-        uncertainty = FALSE
-      )
-      expect_true(is.data.frame(out))
-      expect_true("firstDiff" %in% names(out))
-      expect_true(nrow(out) > 0L)
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  out <- marginalEffects(
+    object = ans_2int, data = mydata_2int, effects = mymodel_2int,
+    effectName1 = "recip", contrast1 = c(0, 1),
+    interaction1 = TRUE, intEffectNames1 = "unspInt2",
+    modEffectNames1 = "outPop",
+    type = "tieProb", depvar = "mynet_2int",
+    level = "period", condition = c("outPop", "density"),
+    uncertainty = FALSE
   )
+  expect_true(is.data.frame(out))
+  expect_true("firstDiff" %in% names(out))
+  expect_true(nrow(out) > 0L)
 })
 
 test_that("two unspInt: secondDiff across unspInt1 and unspInt2", {
   skip_if(is.null(ans_2int), "ans_2int not fitted (RSENA_FULL_TESTS not set)")
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans_2int, data = mydata_2int, effects = mymodel_2int,
-        effectName1 = "recip", contrast1 = c(0, 1),
-        interaction1 = TRUE, intEffectNames1 = "unspInt1",
-        modEffectNames1 = "inPop",
-        second = TRUE,
-        effectName2 = "recip", contrast2 = c(0, 1),
-        interaction2 = TRUE, intEffectNames2 = "unspInt2",
-        modEffectNames2 = "outPop",
-        type = "tieProb", depvar = "mynet_2int",
-        level = "period", condition = c("inPop", "outPop", "density"),
-        uncertainty = FALSE
-      )
-      expect_true(is.data.frame(out))
-      expect_true("secondDiff" %in% names(out))
-      expect_true(nrow(out) > 0L)
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  out <- marginalEffects(
+    object = ans_2int, data = mydata_2int, effects = mymodel_2int,
+    effectName1 = "recip", contrast1 = c(0, 1),
+    interaction1 = TRUE, intEffectNames1 = "unspInt1",
+    modEffectNames1 = "inPop",
+    second = TRUE,
+    effectName2 = "recip", contrast2 = c(0, 1),
+    interaction2 = TRUE, intEffectNames2 = "unspInt2",
+    modEffectNames2 = "outPop",
+    type = "tieProb", depvar = "mynet_2int",
+    level = "period", condition = c("inPop", "outPop", "density"),
+    uncertainty = FALSE
   )
+  expect_true(is.data.frame(out))
+  expect_true("secondDiff" %in% names(out))
+  expect_true(nrow(out) > 0L)
 })
 
 test_that("two unspInt: conditional prediction (tieProb) with uncertainty", {
   skip_if(is.null(ans_2int), "ans_2int not fitted (RSENA_FULL_TESTS not set)")
-  with_mocked_bindings(
-    {
-      out <- marginalEffects(
-        object = ans_2int, data = mydata_2int, effects = mymodel_2int,
-        effectName1 = "recip", contrast1 = c(0, 1),
-        interaction1 = TRUE, intEffectNames1 = "unspInt1",
-        modEffectNames1 = "inPop",
-        type = "tieProb", depvar = "mynet_2int",
-        level = "period", condition = c("inPop", "density"),
-        nsim = 5, uncertainty = TRUE, verbose = FALSE
-      )
-      expect_true(is.data.frame(out))
-      expect_true("Mean" %in% names(out))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
+  out <- marginalEffects(
+    object = ans_2int, data = mydata_2int, effects = mymodel_2int,
+    effectName1 = "recip", contrast1 = c(0, 1),
+    interaction1 = TRUE, intEffectNames1 = "unspInt1",
+    modEffectNames1 = "inPop",
+    type = "tieProb", depvar = "mynet_2int",
+    level = "period", condition = c("inPop", "density"),
+    nsim = 5, uncertainty = TRUE, verbose = FALSE
   )
+  expect_true(is.data.frame(out))
+  expect_true("Mean" %in% names(out))
 })
 

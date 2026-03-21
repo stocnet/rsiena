@@ -308,7 +308,20 @@ makeEstimator <- function(predictFun, predictArgs, outcomeName,
                 na.rm = na.rm,
                 egoNormalize = egoNormalize
             )
-            main_result[[mc]] <- mc_agg[[mc]]
+            # Join by the level-based group variables so that the mass contrast
+            # value for each period (and group, if present) is matched to all
+            # condition × period rows in main_result rather than recycled.
+            mc_by <- intersect(
+                getGroupVars(level = level, condition = NULL),
+                intersect(names(main_result), names(mc_agg))
+            )
+            if (length(mc_by) > 0L) {
+                main_result <- merge(main_result, mc_agg, by = mc_by,
+                                     all.x = TRUE, sort = FALSE)
+            } else {
+                # level = "none": single scalar result — assign directly.
+                main_result[[mc]] <- mc_agg[[mc]]
+            }
         }
         if (isTRUE(predictArgs$details)) {
           details <- unit_pred
@@ -663,7 +676,12 @@ getEffectNamesNoRate <- function(effects, depvar) {
     keep <- includedEffects[["type"]] != "rate" & includedEffects[["name"]] == depvar
     inc <- includedEffects[keep, ]
     sn <- numberIntShortNames(inc[["shortName"]])
-    paste(inc[["name"]], sn, inc[["type"]], sep = "_")
+    n <- length(sn)
+    i1 <- if (!is.null(inc[["interaction1"]])) inc[["interaction1"]] else rep("", n)
+    i2 <- if (!is.null(inc[["interaction2"]])) inc[["interaction2"]] else rep("", n)
+    cs <- effectCovarSuffix(i1, i2)
+    snWithCovar <- ifelse(cs == "", sn, paste(sn, cs, sep = "_"))
+    paste(inc[["name"]], snWithCovar, inc[["type"]], sep = "_")
 }
 
 
@@ -1019,19 +1037,26 @@ alignThetaNoRate <- function(theta, effectNames) {
     theta[effectNames]
 }
 
+# Convert a contribution matrix (density * delta) to change-statistic space.
+# Non-density columns on dissolution rows (density == -1) are negated so they
+# become the raw change statistic delta.  The density column stays +/-1.
+##@contribToChangeStats Contribution-to-CS conversion
+contribToChangeStats <- function(contribMat, effectNames) {
+  densityCol <- grep("density", effectNames, fixed = TRUE)[1L]
+  neg <- contribMat[, densityCol] == -1L
+  neg[is.na(neg)] <- FALSE
+  if (any(neg)) {
+    flipIdx <- setdiff(seq_along(effectNames), densityCol)
+    contribMat[neg, flipIdx] <- -contribMat[neg, flipIdx]
+  }
+  contribMat
+}
+
 # Attach effect contribution columns from a matrix to a data.frame.
 # Builds all columns at once via cbind to avoid repeated data.frame copies.
 # If flip = TRUE, negates non-density columns where density == -1.
 attachContribColumns <- function(out, effectNames, contrib, flip = TRUE) {
-  density_j <- grep("density", effectNames, fixed = TRUE)
-  if (flip && length(density_j) > 0) {
-    neg1 <- contrib[, density_j[1L]] == -1L
-    neg1[is.na(neg1)] <- FALSE
-    if (any(neg1)) {
-      flip_idx <- grep("density", effectNames, fixed = TRUE, invert = TRUE)
-      for (j in flip_idx) contrib[neg1, j] <- -contrib[neg1, j]
-    }
-  }
+  if (flip) contrib <- contribToChangeStats(contrib, effectNames)
   # Build data.frame from list of column vectors — avoids slow
   # as.data.frame.matrix which copies via as.vector per column.
   nc <- ncol(contrib)

@@ -109,8 +109,8 @@ test_that("calculateUtilityDiff: interaction adds moderator term", {
     modContribution = modContrib,
     effectNames = effectNames
   )
-  # density * (diff*theta[recip] + diff*density*modContrib*theta[unspInt])
-  expected <- densityValue * (1 * theta["recip"] + 1 * densityValue * modContrib * theta["unspInt"])
+  # CS-space formula: d * diff * (theta[recip] + modContrib * theta[unspInt])
+  expected <- densityValue * (1 * theta["recip"] + modContrib * theta["unspInt"])
   expect_equal(result, unname(expected))
 })
 
@@ -570,10 +570,8 @@ test_that("agg: composite condition passes through unchanged", {
                    `transTrip_eval` = c(0, 1, 0),
                    changeProb = c(0.3, 0.7, 0.4),
                    check.names = FALSE)
-  result <- with_mocked_bindings(
-    agg("changeProb", df, level = "period", condition = "transTrip_eval"),
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
-  )
+  result <-
+    agg("changeProb", df, level = "period", condition = "transTrip_eval")
   expect_true("transTrip_eval" %in% names(result))
   expect_equal(nrow(result), 3L)   # period + transTrip_eval + changeProb value
 })
@@ -583,10 +581,8 @@ test_that("agg: creation/endow composite condition aggregates correctly", {
                    `recip_creation` = c(0L, 1L, 0L, 1L),
                    changeProb = c(0.2, 0.8, 0.3, 0.7),
                    check.names = FALSE)
-  result <- with_mocked_bindings(
-    agg("changeProb", df, level = "period", condition = "recip_creation"),
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
-  )
+  result <- 
+    agg("changeProb", df, level = "period", condition = "recip_creation")
   expect_true("recip_creation" %in% names(result))
   expect_equal(nrow(result), 4L)   # 2 periods × 2 condition values
 })
@@ -598,14 +594,11 @@ test_that("agg: co-evolution — separate depvar data aggregates independently",
                      changeProb = c(0.8, 0.2), check.names = FALSE)
   df_b <- data.frame(period = c(1L, 1L), `density_eval` = c(1L, -1L),
                      changeProb = c(0.6, 0.4), check.names = FALSE)
-  agg_a <- with_mocked_bindings(
+  agg_a <-
     agg("changeProb", df_a, level = "period", condition = "density_eval"),
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
-  )
-  agg_b <- with_mocked_bindings(
+
+  agg_b <-
     agg("changeProb", df_b, level = "period", condition = "density_eval"),
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
-  )
   expect_false(identical(agg_a$changeProb, agg_b$changeProb))
 })
 
@@ -629,11 +622,9 @@ test_that("updateStream + finalizeStream: composite condition column works end-t
     requireNamespace = function(pkg, ...) FALSE, .package = "base"
   )
 
-  result <- with_mocked_bindings(
+  result <-
     finalizeStream(stream_state, group_state, group_vars,
-                   uncertainty_summary_fun = function(x, na.rm) list(Mean = mean(x))),
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
-  )
+                   uncertainty_summary_fun = function(x, na.rm) list(Mean = mean(x)))
 
   expect_true(is.data.frame(result))
   expect_true("transTrip.eval" %in% names(result))
@@ -653,16 +644,11 @@ test_that("updateStream + finalizeStream: creation/endow condition column works"
   stream_state <- new.env(parent = emptyenv(), hash = TRUE)
   group_state  <- new.env(parent = emptyenv(), hash = TRUE)
 
-  with_mocked_bindings(
-    updateStream(stream_state, group_state, sim_df, "changeProb", group_vars),
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
-  )
+    updateStream(stream_state, group_state, sim_df, "changeProb", group_vars)
 
-  result <- with_mocked_bindings(
+  result <- 
     finalizeStream(stream_state, group_state, group_vars,
-                   uncertainty_summary_fun = function(x, na.rm) list(Mean = mean(x))),
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
-  )
+                   uncertainty_summary_fun = function(x, na.rm) list(Mean = mean(x)))
 
   expect_true("recip.creation" %in% names(result))
   expect_equal(nrow(result), 2L)
@@ -909,4 +895,19 @@ test_that("agg egoNormalize: Rcpp grouped_agg_cpp path works correctly", {
   raw_sorted <- raw[order(raw$cond), ]
   # egoNormalize with extra ego columns should produce different results than raw
   expect_false(identical(r_sorted$tieProb, raw_sorted$tieProb))
+})
+
+# ── Two user-specified interactions (unspInt numbering) ───────────────────────
+# The model has two unspInt effects; getNamesFromEffects() should number them
+# unspInt1 and unspInt2 so they are uniquely addressable.
+
+test_that("two unspInt: theta names are unspInt1 / unspInt2", {
+  skip_if(is.null(ans_2int), "ans_2int not fitted (RSENA_FULL_TESTS not set)")
+  thetaNames <- names(ans_2int$theta)
+  expect_true(any(grepl("unspInt1", thetaNames)),
+              info = paste("theta names:", paste(thetaNames, collapse = ", ")))
+  expect_true(any(grepl("unspInt2", thetaNames)),
+              info = paste("theta names:", paste(thetaNames, collapse = ", ")))
+  expect_false(any(thetaNames == grep("unspInt$", thetaNames, value = TRUE)[1]),
+               info = "bare 'unspInt' should not appear when there are two")
 })

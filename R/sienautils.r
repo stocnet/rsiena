@@ -793,6 +793,18 @@ numberIntShortNames <- function(shortName) {
     shortName
 }
 
+# Build the covariate suffix to insert between shortName and type.
+# interaction1 / interaction2 are vectors from the effects data frame.
+# Returns a character vector: "" for effects without covariates,
+# "gender" for effects with one covariate, "genderage" for two.
+effectCovarSuffix <- function(interaction1, interaction2 = NULL) {
+    i1 <- ifelse(is.na(interaction1) | interaction1 == "", "", interaction1)
+    if (is.null(interaction2) || all(interaction2 == "" | is.na(interaction2)))
+        return(i1)
+    i2 <- ifelse(is.na(interaction2) | interaction2 == "", "", interaction2)
+    ifelse(i2 == "", i1, paste(i1, i2, sep = ""))
+}
+
 # Like numberIntShortNames but for "shortName_type" column names returned by
 # the C++ flattenChangeContributionsWide (e.g. "unspInt_eval" -> "unspInt1_eval").
 numberIntColNames <- function(colNames) {
@@ -809,14 +821,21 @@ getNamesFromEffects <- function(effects, append_parm = FALSE) {
     isBasicRate    <- effects$type == "rate" & effects$shortName == "Rate"
     isNonBasicRate <- effects$type == "rate" & effects$shortName != "Rate"
     shortName <- numberIntShortNames(effects$shortName)
+    n <- length(shortName)
+    i1 <- if (!is.null(effects$interaction1)) effects$interaction1 else rep("", n)
+    i2 <- if (!is.null(effects$interaction2)) effects$interaction2 else rep("", n)
+    covarSuffix <- effectCovarSuffix(i1, i2)
+    # Compose shortName with optional covariate suffix
+    snWithCovar <- ifelse(covarSuffix == "", shortName,
+                          paste(shortName, covarSuffix, sep = "_"))
     if (!is.null(effects$name) && !all(is.na(effects$name))) {
         effectNames <- ifelse(
             isBasicRate,
             paste0(effects$name, "_rate", effects$period),
             ifelse(
                 isNonBasicRate,
-                paste(effects$name, shortName, "rate", sep = "_"),
-                paste(effects$name, shortName, effects$type, sep = "_")
+                paste(effects$name, snWithCovar, "rate", sep = "_"),
+                paste(effects$name, snWithCovar, effects$type, sep = "_")
             )
         )
     } else {
@@ -825,8 +844,8 @@ getNamesFromEffects <- function(effects, append_parm = FALSE) {
             paste0("rate", effects$period),
             ifelse(
                 isNonBasicRate,
-                paste(shortName, "rate", sep = "_"),
-                paste(shortName, effects$type, sep = "_")
+                paste(snWithCovar, "rate", sep = "_"),
+                paste(snWithCovar, effects$type, sep = "_")
             )
         )
     }

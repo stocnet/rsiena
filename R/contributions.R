@@ -42,7 +42,7 @@ getChangeStatistics <- function(ans, data, effects = NULL, depvar = NULL,
     if (dynamic) {
         if (is.null(algorithm))
             stop("'algorithm' must be provided when dynamic = TRUE")
-        wide <- getDynamicChangeContributions(
+        changeStats <- getDynamicChangeContributions(
             ans = ans, theta = ans$theta, data = data,
             algorithm = algorithm, effects = effects,
             depvar = depvar, n3 = n3,
@@ -50,15 +50,15 @@ getChangeStatistics <- function(ans, data, effects = NULL, depvar = NULL,
             returnWide = TRUE
         )
     } else {
-        wide <- getStaticChangeContributions(
+        changeStats <- getStaticChangeContributions(
             ans = ans, data = data, effects = effects,
             depvar = depvar, returnWide = TRUE
         )
     }
 
-    out <- data.frame(groupColsList(wide), stringsAsFactors = FALSE)
-    out <- attachContribColumns(out, wide$effectNames,
-                                 wide$contribMat, flip = flip)
+    out <- data.frame(groupColsList(changeStats), stringsAsFactors = FALSE)
+    out <- attachContribColumns(out, changeStats$effectNames,
+                                 changeStats$contribMat, flip = flip)
     # if (requireNamespace("data.table", quietly = TRUE)) # data.table removed
     #     data.table::setDT(out)
     out
@@ -114,6 +114,14 @@ getStaticChangeContributions <- function(ans = NULL,
   effectNetTypes         <- cppEffects$netType
   effectTypes            <- cppEffects$type
   effectInteractionTypes <- cppEffects$interactionType
+  # Enrich shortNames with covariate identifiers so e.g. two egoX effects
+  # (for different covariates) get unique names: egoX_gender, egoX_age.
+  effectCovarSuffixes <- effectCovarSuffix(
+    if (!is.null(cppEffects$interaction1)) cppEffects$interaction1 else rep("", length(effectNames)),
+    if (!is.null(cppEffects$interaction2)) cppEffects$interaction2 else rep("", length(effectNames))
+  )
+  effectNamesEnriched <- ifelse(effectCovarSuffixes == "", effectNames,
+                                paste(effectNames, effectCovarSuffixes, sep = "_"))
 
   staticChangeContributions_effectNames <- attr(staticChangeContributions,
     "effectNames")
@@ -134,7 +142,7 @@ getStaticChangeContributions <- function(ans = NULL,
 
     for (dv in depvar) {
       effectIdx <- which(effectDepvars == dv)
-      effectNamesDv <- effectNames[effectIdx]
+      effectNamesDv <- effectNamesEnriched[effectIdx]
       compositeNames <- paste(dv, effectNamesDv, effectTypes[effectIdx], sep = "_")
       nEffects <- length(effectIdx)
       nEgos <- dim(data[["depvars"]][[dv]])[1]
@@ -187,7 +195,7 @@ getStaticChangeContributions <- function(ans = NULL,
       effectNames = effectNames_out,
       effectInteractionTypes = setNames(effectInteractionTypes[
           match(effectNames_out,
-                paste(effectDepvars, effectNames, effectTypes, sep = "_"))],
+                paste(effectDepvars, effectNamesEnriched, effectTypes, sep = "_"))],
           effectNames_out)
     ))
   }
@@ -195,7 +203,7 @@ getStaticChangeContributions <- function(ans = NULL,
   results <- list()
   for (dv in depvar) {
     effectIdx <- which(effectDepvars == dv)
-    effectNamesDepvar <- effectNames[effectIdx]
+    effectNamesDepvar <- effectNamesEnriched[effectIdx]
     compositeNames <- paste(dv, effectNamesDepvar, effectTypes[effectIdx], sep = "_")
     typeMap <- setNames(effectTypes[effectIdx], compositeNames)
     nameMap <- setNames(effectNamesDepvar, compositeNames)
@@ -390,8 +398,13 @@ getDynamicChangeContributions <- function(
         stop("theta is not a legitimate parameter vector")
       }
     }
+    if(algorithm$maxLike) {
+      warning("maxLike=TRUE is not compatible with dynamic change contributions; 
+       creating algorithm with maxLike=FALSE; using default settings for all other parameters.")
+      algorithm <- sienaAlgorithmCreate(projname = NULL, maxLike = FALSE)
+    }
     algorithm$nsub <- 0
-    algorithm$maxlike <- FALSE  
+    algorithm$simOnly <- TRUE
     if (!is.null(n3)) {
       # should maybe be done differently
       algorithm$n3 <- as.integer(n3)
@@ -451,6 +464,25 @@ getDynamicChangeContributions <- function(
     if (is.null(depvar))
       stop("'depvar' must be provided when returnWide = TRUE (use a single depvar name)")
     wide <- flattenChangeContributionsWide(changeContributions, depvar)
+    # Enrich column names with covariate identifiers from the effects data frame,
+    # matching positionally (C++ processes non-rate included effects sorted
+    # alphabetically by name, then in effects data frame order within each depvar).
+    if (!is.null(effects) && length(depvar) == 1L) {
+      noRate <- effects[["type"]] != "rate"
+      inc    <- effects[noRate & effects[["include"]], ]
+      inc    <- inc[order(inc[["name"]]), ]   # alphabetical by depvar name
+      inc_dv <- inc[inc[["name"]] == depvar, ]
+      if (nrow(inc_dv) == ncol(wide$contribMat)) {
+        sn <- numberIntShortNames(inc_dv[["shortName"]])
+        i1 <- if (!is.null(inc_dv[["interaction1"]])) inc_dv[["interaction1"]] else rep("", nrow(inc_dv))
+        i2 <- if (!is.null(inc_dv[["interaction2"]])) inc_dv[["interaction2"]] else rep("", nrow(inc_dv))
+        cs <- effectCovarSuffix(i1, i2)
+        snWithCovar    <- ifelse(cs == "", sn, paste(sn, cs, sep = "_"))
+        enrichedNames  <- paste(depvar, snWithCovar, inc_dv[["type"]], sep = "_")
+        colnames(wide$contribMat) <- enrichedNames
+        wide$effectNames          <- enrichedNames
+      }
+    }
     # Attach effectInteractionTypes from the effects object if available
     if (!is.null(effects) && "interactionType" %in% names(effects)) {
       noRate <- effects$type != "rate"

@@ -332,8 +332,12 @@ predictFirstDiff <- function(changeContributions, theta_use, type,
     perturbType = "alter")
 {
   contribMat         <- changeContributions$contribMat
-  densityName <- resolveEffectName("density", changeContributions$effectNames)
+  effectNames        <- changeContributions$effectNames
+  densityName <- resolveEffectName("density", effectNames)
   density     <- contribMat[, densityName]
+  # Flip to change-statistic space: non-density columns become delta (density-independent).
+  # density column stays +/-1.  calculateUtility(mat %*% theta) is invariant.
+  csMat       <- contribToChangeStats(contribMat, effectNames)
   utility    <- calculateUtility(contribMat, theta_use)
   changeProb <- calculateChangeProb(utility, changeContributions$group_id)
   tieProb    <- if (type == "tieProb") calculateTieProb(changeProb, density) else NULL
@@ -343,14 +347,14 @@ predictFirstDiff <- function(changeContributions, theta_use, type,
     changeProb         = changeProb,
     changeUtil         = utility,
     effectName         = effectName,
-    effectContribution = contribMat[, effectName],
+    effectContribution = csMat[, effectName],
     diff               = diff,
     contrast           = contrast,
     interaction        = interaction,
     intEffectNames     = intEffectNames,
     modEffectNames     = modEffectNames,
-    modContribution    = if (!is.null(modEffectNames)) contribMat[, modEffectNames] else NULL,
-    effectNames        = changeContributions$effectNames,
+    modContribution    = if (!is.null(modEffectNames)) csMat[, modEffectNames] else NULL,
+    effectNames        = effectNames,
     theta              = theta_use,
     type               = type,
     tieProb            = tieProb,
@@ -363,8 +367,8 @@ predictFirstDiff <- function(changeContributions, theta_use, type,
 
   keep   <- density != 0L
   out    <- data.frame(groupColsList(changeContributions, keep), stringsAsFactors = FALSE)
-  out    <- attachContribColumns(out, changeContributions$effectNames,
-                                 contribMat[keep, , drop = FALSE], flip = TRUE)
+  out    <- attachContribColumns(out, effectNames,
+                                 csMat[keep, , drop = FALSE], flip = FALSE)
   out[names(fd)] <- lapply(fd, `[`, keep)
 
   if (details) {
@@ -405,8 +409,11 @@ predictSecondDiff <- function(changeContributions, theta_use, type,
     perturbType1 = "alter", perturbType2 = "alter")
 {
   contribMat         <- changeContributions$contribMat
-  densityName <- resolveEffectName("density", changeContributions$effectNames)
+  effectNames        <- changeContributions$effectNames
+  densityName <- resolveEffectName("density", effectNames)
   density     <- contribMat[, densityName]
+  # Flip to change-statistic space: non-density columns become delta.
+  csMat       <- contribToChangeStats(contribMat, effectNames)
   utility    <- calculateUtility(contribMat, theta_use)
   changeProb <- calculateChangeProb(utility, changeContributions$group_id)
   tieProb    <- if (type == "tieProb") calculateTieProb(changeProb, density) else NULL
@@ -416,22 +423,22 @@ predictSecondDiff <- function(changeContributions, theta_use, type,
     changeProb          = changeProb,
     changeUtil          = utility,
     effectName1         = effectName1,
-    effectContribution1 = contribMat[, effectName1],
+    effectContribution1 = csMat[, effectName1],
     diff1               = diff1,
     contrast1           = contrast1,
     interaction1        = interaction1,
     intEffectNames1     = intEffectNames1,
     modEffectNames1     = modEffectNames1,
-    modContribution1    = if (!is.null(modEffectNames1)) contribMat[, modEffectNames1] else NULL,
+    modContribution1    = if (!is.null(modEffectNames1)) csMat[, modEffectNames1] else NULL,
     effectName2         = effectName2,
-    effectContribution2 = if (!is.null(effectName2)) contribMat[, effectName2] else NULL,
+    effectContribution2 = if (!is.null(effectName2)) csMat[, effectName2] else NULL,
     diff2               = diff2,
     contrast2           = contrast2,
     interaction2        = interaction2,
     intEffectNames2     = intEffectNames2,
     modEffectNames2     = modEffectNames2,
-    modContribution2    = if (!is.null(modEffectNames2)) contribMat[, modEffectNames2] else NULL,
-    effectNames         = changeContributions$effectNames,
+    modContribution2    = if (!is.null(modEffectNames2)) csMat[, modEffectNames2] else NULL,
+    effectNames         = effectNames,
     theta               = theta_use,
     type                = type,
     tieProb             = tieProb,
@@ -445,8 +452,8 @@ predictSecondDiff <- function(changeContributions, theta_use, type,
 
   keep <- density != 0L
   out  <- data.frame(groupColsList(changeContributions, keep), stringsAsFactors = FALSE)
-  out  <- attachContribColumns(out, changeContributions$effectNames,
-                               contribMat[keep, , drop = FALSE], flip = TRUE)
+  out  <- attachContribColumns(out, effectNames,
+                               csMat[keep, , drop = FALSE], flip = FALSE)
   out[names(sd)] <- lapply(sd, `[`, keep)
 
   if (details) {
@@ -512,10 +519,16 @@ calculateFirstDiff <- function(densityValue,
     }
   } else {
     if(!is.null(contrast)){
-      oldChangeStatistic <- densityValue * effectContribution
+      # effectContribution is in CS space (delta) — density-independent.
+      # Contrast values match delta directly for both ego and alter effects.
+      oldChangeStatistic <- effectContribution
       newChangeStatistic <- rep(NA, length(oldChangeStatistic))
       newChangeStatistic[oldChangeStatistic == contrast[1]] <- contrast[2]
       newChangeStatistic[oldChangeStatistic == contrast[2]] <- contrast[1]
+      if (sum(!is.na(newChangeStatistic)) == 0L)
+        warning("contrast: no rows matched. For mean-centered covariates ",
+                "(varCovar), supply contrast values on the centered scale.",
+                call. = FALSE)
       diff <- newChangeStatistic - oldChangeStatistic # this is a vector
     }
     utilDiff <- calculateUtilityDiff(effectName = effectName, diff = diff, 
@@ -629,10 +642,15 @@ calculateSecondDiff <- function(densityValue,
   )
 
   if(!is.null(contrast2)){
-    oldChangeStatistic2 <- densityValue * effectContribution2
+    # effectContribution2 is in CS space (delta) — density-independent.
+    oldChangeStatistic2 <- effectContribution2
     newChangeStatistic2 <- rep(NA, length(oldChangeStatistic2))
     newChangeStatistic2[oldChangeStatistic2 == contrast2[1]] <- contrast2[2]
     newChangeStatistic2[oldChangeStatistic2 == contrast2[2]] <- contrast2[1]
+    if (sum(!is.na(newChangeStatistic2)) == 0L)
+      warning("contrast2: no rows matched. For mean-centered covariates ",
+              "(varCovar), supply contrast values on the centered scale.",
+              call. = FALSE)
     diff2 <- newChangeStatistic2 - oldChangeStatistic2
   }
   utilDiff21 <- calculateUtilityDiff(effectName = effectName2,
@@ -655,19 +673,15 @@ calculateSecondDiff <- function(densityValue,
   # if the shifted effect (effectName2) IS one of the moderators, that moderator
   # must reflect the post-shift state; otherwise the interaction contribution
   # to firstDiff2 uses stale values and the utility-level SD is missed.
+  # Both diff2 and modContribution1 are in CS space — just add directly.
   if (interaction1 && !is.null(modEffectNames1)) {
     mod_shift <- if (is.null(diff2)) 1 else diff2
     mod_shift[is.na(mod_shift)] <- 0
-    # diff is in raw change-stat space; modContribution is in contribMat space
-    # (density * c), so we convert: delta_contribMat = density * delta_c
-    mod_shift <- densityValue * mod_shift
-    # modEffectNames1 may be a vector (multiple interactions)
     match_idx <- which(modEffectNames1 == effectName2)
     if (length(match_idx) > 0L) {
       if (is.matrix(modContribution1)) {
         for (mi in match_idx) modContribution1[, mi] <- modContribution1[, mi] + mod_shift
       } else {
-        # scalar case (single moderator that matches)
         modContribution1 <- modContribution1 + mod_shift
       }
     }
@@ -738,6 +752,9 @@ calculateSecondDiff <- function(densityValue,
   }
 }
 
+# Compute the utility shift from perturbing effectName by diff.
+# All inputs (diff, modContribution) are in change-statistic space (delta).
+# The utility shift is  d * diff * (theta_e + sum_k mod_k * theta_int_k).
 calculateUtilityDiff <- function(effectName, diff, 
                                  theta, densityValue,
                                  interaction = FALSE,
@@ -752,14 +769,15 @@ calculateUtilityDiff <- function(effectName, diff,
       stop("'intEffectNames' must not be NULL when interaction = TRUE.")
     if (is.null(modEffectNames))
       stop("'modEffectNames' must not be NULL when interaction = TRUE.")
-    util_diff <- densityValue * diff * theta[effectNum]
-    # intEffectNames / modContribution may be vectors (multiple interactions)
+    # d * diff * (theta_e + sum_k mod_k * theta_int_k)
+    inner <- theta[effectNum]
     nInt <- length(intEffectNames)
     for (k in seq_len(nInt)) {
       mod_k <- if (is.matrix(modContribution)) modContribution[, k] else modContribution
       int_num <- which(effectNames == intEffectNames[k])
-      util_diff <- util_diff + densityValue * diff * (densityValue * mod_k) * theta[int_num]
+      inner <- inner + mod_k * theta[int_num]
     }
+    util_diff <- densityValue * diff * inner
   } else {
     util_diff <- densityValue * diff * theta[effectNum]
   }
