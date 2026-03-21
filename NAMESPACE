@@ -16,7 +16,7 @@ export(
 	includeTimeDummy, sienaGOF, descriptives, interpret_size,
 	interpret_size_dynamics, sparseMatrixExtraction, networkExtraction, behaviorExtraction,
 	OutdegreeDistribution, IndegreeDistribution, BehaviorDistribution,
-	TriadCensus, mixedTriadCensus, dyadicCov, egoAlterCombi,
+	TriadCensus, mixedTriadCensus, dyadicCov, egoAlterCombi, egoAlterCovarComb,
 	siena_table, xtable, score.Test, Wald.RSiena, Multipar.RSiena, 
    testSame.RSiena, funnelPlot, meta.table,
 	influenceTable, selectionTable,
