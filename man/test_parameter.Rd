@@ -69,13 +69,13 @@ score.Test(x, tested=x$test)
     if \code{tested} is a number or vector, a multivariate
     (i.e., simultaneous) test  is given of the hypothesis that
     the  parameters mentioned in \code{tested} are 0.   \cr
-    For \code{test_parameter} if \code{"all"},
+    For \code{test_parameter} if \code{method="all"},
     a test is given of all parameters in the model.\cr
     For \code{test_parameter}
-    if \code{"same"}, the items \code{"tested"} and  \code{"tested2"}
+    if \code{method="same"}, the items \code{"tested"} and  \code{"tested2"}
     should be single numbers or vectors of equal length, and the test
     of equality of the corresponding two parameters is given.\cr
-    For \code{test_parameter} if \code{"score"}, and for \code{score.Test},
+    For \code{test_parameter} if \code{method="score"}, and for \code{score.Test},
     the parameters with numbers in \code{"tested"}
     should all be used in \code{x} as fixed-and-tested parameters,
     and the multivariate score test of these parameters is given

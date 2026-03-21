@@ -1586,7 +1586,7 @@ namedVector <- function(vectorValue, vectorNames, listType=FALSE)
 createSettings <- function(x, varName=1, model=TRUE)
 ##
 {
-	if (!inherits(x, 'sienadata'))
+	if (!(inherits(x, "sienadata") | inherits(x, "siena")))
 	{
 		stop('x should be a siena data object')
 	}
@@ -1612,7 +1612,7 @@ createSettings <- function(x, varName=1, model=TRUE)
 # this refers only to the indicated variable.
 hasSettings <- function(x, varName=NULL)
 {
-	if (!inherits(x, 'sienadata'))
+	if (!(inherits(x, "sienadata") | inherits(x, "siena")))
 	{
 		stop('x should be a siena data object')
 	}
@@ -1714,8 +1714,8 @@ sienaGroupCreate <- function(objlist, singleOK=FALSE, getDocumentation=FALSE)
 	if (!is.list(objlist))
 	{
 		stop('Need a list of objects')
-	}
-	if (any (sapply(objlist, function(x) !inherits(x, 'sienadata'))))
+	} 
+	if (any (sapply(objlist, function(x) (!(inherits(x, "sienadata") | inherits(x, "siena"))))))
 	{
 		stop('Not a list of valid sienadata objects')
 	}
@@ -2089,7 +2089,7 @@ sienaGroupCreate <- function(objlist, singleOK=FALSE, getDocumentation=FALSE)
 		names(group) <- paste('Data', 1:length(group), sep="")
 	}
 # This is where the names Data1 etc. are created.
-	class(group)<- c("sienaGroup", "sienadata")
+	class(group)<- c("sienaGroup", "siena")
 	attr(group, "version") <- packageDescription(pkgname, fields = "Version")
 	balmeans <- calcBalmeanGroup (group)
 	names(balmeans) <- netnames

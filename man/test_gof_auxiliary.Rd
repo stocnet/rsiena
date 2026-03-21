@@ -11,6 +11,7 @@
 \alias{mixedTriadCensus}
 \alias{dyadicCov}
 \alias{egoAlterCombi}
+\alias{egoAlterCovarComb}
 
 \title{Auxiliary functions for goodness of fit assessment by \code{\link{test_gof}}}
 \description{
@@ -49,6 +50,8 @@ dyadicCov(i, obsData, sims, period, groupName, varName, dc)
 
 egoAlterCombi(i, obsData, sims, period, groupName, varName, trafo=NULL)
 
+egoAlterCovarComb(i, obsData, sims, period, groupName, varName, covar)
+
 sparseMatrixExtraction(i, obsData, sims, period, groupName, varName)
 
 networkExtraction(i, obsData, sims, period, groupName, varName)
@@ -83,6 +86,8 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
   \item{trafo}{ For \code{egoAlterCombi}:
     transformation of the dependent behavior variable.
     Default: identity function. }
+  \item{covar}{ For \code{egoAlterCovarComb}: arbitrary monadic variable, 
+    vector of length \eqn{n},  the number of actors. }
 }
 \details{
  The statistics should be chosen to represent features of the network
@@ -131,8 +136,12 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
   transformed by trafo; if \code{NULL}, untransformed.\cr
   The range of this transformation should preferably have 5 or fewer values,
   and definitely not 10 or more, as this would lead to problems in
-  the coding of ego-alter combinations.
-    }
+  the coding of ego-alter combinations.\cr
+ \code{egoAlterCovarComb} does the same, for arbitrary monadic 
+  variables; e.g., transformed or untransformed covariates.\cr
+  Here also, the range of \code{covar} should preferably have 5 or fewer values.
+  Missing values are allowed.
+}
 
 \value{
  \code{OutdegreeDistribution} returns a named vector, the distribution
@@ -162,8 +171,15 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
  \code{dyadicCov} returns a named vector, the frequencies of the non-missing
   non-zero values dc(ego,alter) of the observed or simulated (ego,alter) ties.
   
- \code{sparseMatrixExtraction} returns the simulated network as a
-  \code{"TsparseMatrix"};
+ \code{egoAlterCombi} and \code{egoAlterCovarComb} return  a named vector
+  with the frequencies of realized ties for ego-alter combinations
+  as indicated above. The range of \code{trafo} or \code{covar}, respectively,
+  should be a subset of the values \code{0, 1, 2, ..., 9}. Then the name
+  is composed of a number having two digits; the first digit is ego's value,
+  the second alter's  value.  
+  
+ \code{sparseMatrixExtraction} returns the simulated network as a sparse matrix
+  in the \code{"TsparseMatrix-class"};
   this is the virtual class for sparse numeric matrices
   represented by triplets in the \code{Matrix} package.\cr
   Tie variables for ordered pairs with a missing value for wave=period or
@@ -258,6 +274,11 @@ traf <- function(z){pmax(pmin(z,4),2)}
     varName=c("mynet1","mybeh"), trafo=traf))
 plot(gofea)
 descriptives(gofea, showAll=TRUE)
+
+cova <- c(rep(1:3, 16), NA, 1)
+(gofea <- test_gof(ans, egoAlterCovarComb, verbose=TRUE, join=TRUE,
+    varName="mynet1", covar=cova))
+plot(gofea)
 
 (gofdc <- test_gof(ans, dyadicCov, verbose=TRUE, join=TRUE,
     dc=mydycov, varName="mynet1"))

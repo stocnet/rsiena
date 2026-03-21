@@ -6,11 +6,12 @@
 \alias{updateSpecification}
 \alias{update_specification.sienaEffects}
 \title{
-A function to update the initial values of theta, and a function
+A function to update the initial values of the parameters, and a function
 to update an effects object.
 }
 \description{
-  \code{update_theta} copies the final values of any matching selected effects
+  \code{update_theta} copies the final values of 
+  the parameter estimates for any matching selected effects
   from a \code{\link{sienaFit}} object to a Siena effects object.\cr
   \code{update_specification} includes in a Siena effects object
   a set of effects that are included in another effects object.\cr
@@ -49,7 +50,8 @@ updateSpecification(effects.to, effects.from,
 \details{
   The initial values of any selected effects
   in the input effects object which match an effect estimated in
-  \code{prevAns} will be updated by \code{update_theta}.
+  \code{prevAns} will be updated by \code{update_theta}
+  and set to the parameter estimates obtained in \code{prevAns}.\cr
   If the previous run was conditional, the estimated rate parameters for
   the dependent variable on which the run was conditioned are added to
   the final value of theta. If \code{varName} is not \code{NULL},
