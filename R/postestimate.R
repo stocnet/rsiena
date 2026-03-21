@@ -805,27 +805,13 @@ preAggEgo <- function(data, outcomeName, group_vars, ego_id_cols, na.rm) {
   #               by = pre_agg_vars])
   # }
 
-  # Fused C++ path: encode + sort + aggregate + decode in one call
-  enc <- extractGroupCols(data, pre_agg_vars)
-  res <- grouped_agg_from_cols(data[[outcomeName]], enc$cols, na_rm = na.rm,
-                               do_mean = TRUE)
-  res[["count"]] <- NULL
-  names(res)[[length(res)]] <- outcomeName
-  if (enc$needs_decode) res <- decodeResultCols(res, enc$decode)
-  res
-  # old base R fallback (kept for reference)
-  # vals <- data[[outcomeName]]
-  # ego_key <- do.call(paste, c(data[pre_agg_vars], sep = "\r"))
-  # ukeys <- unique(ego_key)
-  # first_idx <- match(ukeys, ego_key)
-  # split_vals <- split(vals, ego_key)
-  # ego_means <- vapply(split_vals[ukeys],
-  #                     function(x) mean(x, na.rm = na.rm),
-  #                     numeric(1))
-  # out <- data[first_idx, pre_agg_vars, drop = FALSE]
-  # out[[outcomeName]] <- unname(ego_means)
-  # rownames(out) <- NULL
-  # out
+  enc <- encodeGroupKeys(data, pre_agg_vars)
+  ord <- do.call(order, lapply(seq_len(ncol(enc$G)), function(j) enc$G[, j]))
+  res <- grouped_agg_cpp(data[[outcomeName]][ord], enc$G[ord, , drop = FALSE],
+                         na_rm = na.rm, do_mean = TRUE)
+  out <- decodeGroupKeys(res$key, pre_agg_vars, enc$decode)
+  out[[outcomeName]] <- res$value
+  out
 }
 
 
@@ -873,16 +859,15 @@ agg <- function(outcomeName,
   # ---- Rcpp fast path for simple mean/sum ----
   is_simple_mean <- identical(sum_fun, mean) || identical(sum_fun, base::mean)
   if (is_simple_mean && length(group_vars) > 0) {
-    enc <- extractGroupCols(data, group_vars)
-    res <- grouped_agg_from_cols(data[[outcomeName]], enc$cols, na_rm = na.rm,
-                                 do_mean = TRUE)
-    nout <- length(res[["value"]])
-    res[["count"]] <- NULL
-    names(res)[[length(res)]] <- outcomeName
-    if (enc$needs_decode) res <- decodeResultCols(res, enc$decode)
-    attr(res, "row.names") <- .set_row_names(nout)
-    class(res) <- "data.frame"
-    return(res)
+    enc <- encodeGroupKeys(data, group_vars)
+    ord <- do.call(order, lapply(seq_len(ncol(enc$G)), function(j) enc$G[, j]))
+    res <- grouped_agg_cpp(data[[outcomeName]][ord], enc$G[ord, , drop = FALSE],
+                           na_rm = na.rm, do_mean = TRUE)
+    out <- decodeGroupKeys(res$key, group_vars, enc$decode)
+    out[[outcomeName]] <- res$value
+    attr(out, "row.names") <- .set_row_names(length(res$value))
+    class(out) <- "data.frame"
+    return(out)
   }
 
   # ---- Base R path ----

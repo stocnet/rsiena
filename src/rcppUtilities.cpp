@@ -464,10 +464,51 @@ Rcpp::List grouped_agg_from_cols(const Rcpp::NumericVector& x,
         return true;
     };
 
-    // Build sort index
+    // Build sort index.
+    // For all-integer columns use a multi-pass LSD counting sort (O(n * ncols),
+    // stable, cache-friendly).  Falls back to std::sort for mixed int/double.
     std::vector<int> idx(n);
     for (int i = 0; i < n; i++) idx[i] = i;
-    std::sort(idx.begin(), idx.end(), row_less);
+
+    bool all_int_cols = true;
+    for (int c = 0; c < ncols; c++) if (!is_int[c]) { all_int_cols = false; break; }
+
+    if (all_int_cols) {
+        // LSD radix sort: one stable counting-sort pass per column, rightmost first.
+        // pos is a stack array for small value ranges (typical SAOM data),
+        // falling back to a heap vector only when range > STACK_LIMIT.
+        const int STACK_LIMIT = 8192;
+        int stack_pos[STACK_LIMIT];
+        std::vector<int> heap_pos;
+        std::vector<int> tmp(n);
+        for (int c = ncols - 1; c >= 0; c--) {
+            const int* col = icols[c];
+            // Find value range
+            int mn = col[idx[0]], mx = mn;
+            for (int i = 1; i < n; i++) {
+                int v = col[idx[i]];
+                if (v < mn) mn = v; else if (v > mx) mx = v;
+            }
+            int range = mx - mn + 1;
+            // Use stack array for small ranges, heap vector for large
+            int* pos;
+            if (range <= STACK_LIMIT) {
+                pos = stack_pos;
+                std::fill(pos, pos + range, 0);
+            } else {
+                heap_pos.assign(range, 0);
+                pos = heap_pos.data();
+            }
+            // Count, compute start positions, scatter (stable)
+            for (int i = 0; i < n; i++) pos[col[idx[i]] - mn]++;
+            int acc = 0;
+            for (int k = 0; k < range; k++) { int cnt = pos[k]; pos[k] = acc; acc += cnt; }
+            for (int i = 0; i < n; i++) tmp[pos[col[idx[i]] - mn]++] = idx[i];
+            std::swap(idx, tmp);
+        }
+    } else {
+        std::sort(idx.begin(), idx.end(), row_less);
+    }
 
     // Count groups
     int nG = 0;
