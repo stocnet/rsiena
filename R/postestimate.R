@@ -297,7 +297,8 @@ makeEstimator <- function(predictFun, predictArgs, outcomeName,
         # Skipping this saves materializing the full contribMat into a data.frame
         # for every theta draw, which is expensive for large networks.
         if (!is.null(predictArgs[["attachContribs"]])) {
-          predictArgs[["attachContribs"]] <- returnDecisionDetails
+          predictArgs[["attachContribs"]] <- returnDecisionDetails ||
+              !is.null(condition)
         }
         callArgs <- c(list(theta = theta), predictArgs)
         unit_pred <- do.call(predictFun, callArgs)
@@ -695,11 +696,54 @@ detectEgoUnit <- function(data) {
   }
 }
 
+# Extract group columns as a named list for grouped_agg_from_cols.
+# Integer and numeric (double) columns pass through directly.
+# Character/factor columns are integer-encoded; their decode levels are
+# returned so the caller can restore original values in the C++ output.
+# Returns list(cols = named list of int/double vectors,
+#              decode = named list: NULL for passthrough, character levels for encoded)
+extractGroupCols <- function(data, group_vars) {
+  cols <- vector("list", length(group_vars))
+  names(cols) <- group_vars
+  decode <- vector("list", length(group_vars))
+  names(decode) <- group_vars
+  needs_decode <- FALSE
+  for (j in seq_along(group_vars)) {
+    col <- data[[group_vars[j]]]
+    if (is.integer(col) || is.double(col)) {
+      cols[[j]] <- col
+      decode[j] <- list(NULL)
+    } else {
+      # Character/factor: integer-encode
+      vals_num <- suppressWarnings(as.numeric(as.character(col)))
+      f <- if (all(!is.na(vals_num))) {
+        factor(col, levels = as.character(sort(unique(vals_num))))
+      } else {
+        factor(col)
+      }
+      cols[[j]] <- as.integer(f)
+      decode[[j]] <- levels(f)
+      needs_decode <- TRUE
+    }
+  }
+  list(cols = cols, decode = decode, needs_decode = needs_decode)
+}
+
+# Restore original values in columns that were factor-encoded by extractGroupCols.
+decodeResultCols <- function(res, decode) {
+  for (nm in names(decode)) {
+    if (!is.null(decode[[nm]])) {
+      res[[nm]] <- decode[[nm]][res[[nm]]]
+    }
+  }
+  res
+}
+
 # Encode group columns as a contiguous integer matrix for grouped_agg_cpp.
 # Non-integer/non-numeric columns are factor-encoded.
 # Returns list(G = integer matrix, decode = list of level vectors per column).
 encodeGroupKeys <- function(data, group_vars) {
-  n <- nrow(data)
+  n <- if (is.data.frame(data)) nrow(data) else length(data[[1L]])
   ncols <- length(group_vars)
   G <- matrix(0L, nrow = n, ncol = ncols)
   decode <- vector("list", ncols)
@@ -737,12 +781,12 @@ encodeGroupKeys <- function(data, group_vars) {
 
 # Decode integer group key matrix back to original values using decode info.
 decodeGroupKeys <- function(key_mat, group_vars, decode) {
-  out <- data.frame(key_mat)
+  nc <- ncol(key_mat)
+  out <- vector("list", nc)
   names(out) <- group_vars
-  for (j in seq_along(group_vars)) {
-    if (!is.null(decode[[j]])) {
-      out[[group_vars[j]]] <- decode[[j]][out[[group_vars[j]]]]
-    }
+  for (j in seq_len(nc)) {
+    col <- key_mat[, j]
+    out[[j]] <- if (!is.null(decode[[j]])) decode[[j]][col] else col
   }
   out
 }
@@ -761,16 +805,14 @@ preAggEgo <- function(data, outcomeName, group_vars, ego_id_cols, na.rm) {
   #               by = pre_agg_vars])
   # }
 
-  # Rcpp fast path: use grouped_agg_cpp for contiguous integer keys
-  # grouped_agg_cpp requires contiguous groups — sort by encoded keys
-  enc <- encodeGroupKeys(data, pre_agg_vars)
-  ord <- do.call(order, as.data.frame(enc$G))
-  G_sorted <- enc$G[ord, , drop = FALSE]
-  x_sorted <- data[[outcomeName]][ord]
-  res <- grouped_agg_cpp(x_sorted, G_sorted, na_rm = na.rm, do_mean = TRUE)
-  out <- decodeGroupKeys(res$key, pre_agg_vars, enc$decode)
-  out[[outcomeName]] <- res$value
-  out
+  # Fused C++ path: encode + sort + aggregate + decode in one call
+  enc <- extractGroupCols(data, pre_agg_vars)
+  res <- grouped_agg_from_cols(data[[outcomeName]], enc$cols, na_rm = na.rm,
+                               do_mean = TRUE)
+  res[["count"]] <- NULL
+  names(res)[[length(res)]] <- outcomeName
+  if (enc$needs_decode) res <- decodeResultCols(res, enc$decode)
+  res
   # old base R fallback (kept for reference)
   # vals <- data[[outcomeName]]
   # ego_key <- do.call(paste, c(data[pre_agg_vars], sep = "\r"))
@@ -795,7 +837,7 @@ agg <- function(outcomeName,
                 na.rm = TRUE,
                 egoNormalize = TRUE) {
   if (length(outcomeName) != 1L) stop("'outcomeName' must be a single column name.")
-  if (!is.null(condition)) condition <- resolveEffectName(condition, colnames(data))
+  if (!is.null(condition)) condition <- resolveEffectName(condition, names(data))
   group_vars <- getGroupVars(level = level, condition = condition)
   # Helper for complex output (vector/list output from sum_fun)
   expand_summary <- function(val) {
@@ -828,17 +870,19 @@ agg <- function(outcomeName,
   #   return(result)
   # }
 
-  # ---- Rcpp fast path for simple mean/sum on grouped integer keys ----
+  # ---- Rcpp fast path for simple mean/sum ----
   is_simple_mean <- identical(sum_fun, mean) || identical(sum_fun, base::mean)
   if (is_simple_mean && length(group_vars) > 0) {
-    enc <- encodeGroupKeys(data, group_vars)
-    ord <- do.call(order, as.data.frame(enc$G))
-    G_sorted <- enc$G[ord, , drop = FALSE]
-    x_sorted <- data[[outcomeName]][ord]
-    res <- grouped_agg_cpp(x_sorted, G_sorted, na_rm = na.rm, do_mean = TRUE)
-    out <- decodeGroupKeys(res$key, group_vars, enc$decode)
-    out[[outcomeName]] <- res$value
-    return(out)
+    enc <- extractGroupCols(data, group_vars)
+    res <- grouped_agg_from_cols(data[[outcomeName]], enc$cols, na_rm = na.rm,
+                                 do_mean = TRUE)
+    nout <- length(res[["value"]])
+    res[["count"]] <- NULL
+    names(res)[[length(res)]] <- outcomeName
+    if (enc$needs_decode) res <- decodeResultCols(res, enc$decode)
+    attr(res, "row.names") <- .set_row_names(nout)
+    class(res) <- "data.frame"
+    return(res)
   }
 
   # ---- Base R path ----
@@ -849,6 +893,11 @@ agg <- function(outcomeName,
   }
 
   # General base R path (custom sum_fun or multi-column output)
+  # Coerce to data.frame for split() / interaction() which need [.data.frame
+  if (!is.data.frame(data)) {
+    attr(data, "row.names") <- .set_row_names(length(data[[1L]]))
+    class(data) <- "data.frame"
+  }
   grouping <- interaction(data[, group_vars, drop = FALSE], drop = TRUE)
   split_data <- split(data, grouping)
   agg_list <- lapply(split_data, function(subdf) {
@@ -926,20 +975,21 @@ contribToChangeStats <- function(contribMat, effectNames) {
   contribMat
 }
 
-# Attach effect contribution columns from a matrix to a data.frame.
-# Builds all columns at once via cbind to avoid repeated data.frame copies.
+# Attach effect contribution columns to a named list (or data.frame).
 # If flip = TRUE, negates non-density columns where density == -1.
-attachContribColumns <- function(out, effectNames, contrib, flip = TRUE) {
+attachContributions <- function(out, effectNames, contrib, flip = TRUE) {
   if (flip) contrib <- contribToChangeStats(contrib, effectNames)
-  # Build data.frame from list of column vectors — avoids slow
-  # as.data.frame.matrix which copies via as.vector per column.
   nc <- ncol(contrib)
   extra <- vector("list", nc)
   names(extra) <- effectNames
   for (j in seq_len(nc)) extra[[j]] <- contrib[, j]
-  attr(extra, "row.names") <- .set_row_names(nrow(contrib))
-  class(extra) <- "data.frame"
-  cbind(out, extra)
+  if (is.data.frame(out)) {
+    attr(extra, "row.names") <- .set_row_names(nrow(contrib))
+    class(extra) <- "data.frame"
+    cbind(out, extra)
+  } else {
+    c(out, extra)
+  }
 }
 
 # Extract group-column vectors from a Contributions struct as a named list.

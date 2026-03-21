@@ -389,6 +389,163 @@ Rcpp::List grouped_agg_cpp(const Rcpp::NumericVector& x,
     );
 }
 
+// ---------------------------------------------------------------------------
+// Fused encode + sort + aggregate + decode in a single C++ call.
+// Replaces the R-side encodeGroupKeys -> order -> grouped_agg_cpp -> decodeGroupKeys
+// pipeline with zero intermediate R allocations.
+//
+// x:          numeric vector of values to aggregate
+// group_cols: named list of grouping column vectors (each length n).
+//             Columns may be integer (INTSXP) or double (REALSXP).
+//             Character/factor columns must be integer-encoded by the caller.
+// na_rm:      if true, NA values in x are skipped
+// do_mean:    if true, compute mean; if false, compute sum
+//
+// Returns a named List:
+//   - one element per group column (same name and same type as input),
+//     containing the unique group-key values
+//   - $value: numeric vector of group means/sums
+//   - $count: integer vector of group sizes
+// ---------------------------------------------------------------------------
+// [[Rcpp::export]]
+Rcpp::List grouped_agg_from_cols(const Rcpp::NumericVector& x,
+                                 const Rcpp::List& group_cols,
+                                 bool na_rm = true,
+                                 bool do_mean = true) {
+    int n = x.size();
+    int ncols = group_cols.size();
+    if (ncols == 0) Rcpp::stop("group_cols must have at least one column");
+
+    // Classify each column as integer or double and store raw pointers.
+    // is_int[c] == true  -> use icols[c] (const int*)
+    // is_int[c] == false -> use dcols[c] (const double*)
+    std::vector<bool> is_int(ncols);
+    std::vector<const int*>    icols(ncols, nullptr);
+    std::vector<const double*> dcols(ncols, nullptr);
+
+    for (int c = 0; c < ncols; c++) {
+        SEXP col = group_cols[c];
+        R_xlen_t clen = Rf_xlength(col);
+        if (clen != n)
+            Rcpp::stop("All group columns must have the same length as x");
+        if (TYPEOF(col) == INTSXP) {
+            is_int[c] = true;
+            icols[c] = INTEGER(col);
+        } else if (TYPEOF(col) == REALSXP) {
+            is_int[c] = false;
+            dcols[c] = REAL(col);
+        } else {
+            Rcpp::stop("group_cols must contain integer or numeric vectors");
+        }
+    }
+
+    // Comparison lambda: compare row a vs row b across all group columns
+    auto row_less = [&](int a, int b) -> bool {
+        for (int c = 0; c < ncols; c++) {
+            if (is_int[c]) {
+                if (icols[c][a] < icols[c][b]) return true;
+                if (icols[c][a] > icols[c][b]) return false;
+            } else {
+                if (dcols[c][a] < dcols[c][b]) return true;
+                if (dcols[c][a] > dcols[c][b]) return false;
+            }
+        }
+        return false;
+    };
+
+    auto row_eq = [&](int a, int b) -> bool {
+        for (int c = 0; c < ncols; c++) {
+            if (is_int[c]) {
+                if (icols[c][a] != icols[c][b]) return false;
+            } else {
+                if (dcols[c][a] != dcols[c][b]) return false;
+            }
+        }
+        return true;
+    };
+
+    // Build sort index
+    std::vector<int> idx(n);
+    for (int i = 0; i < n; i++) idx[i] = i;
+    std::sort(idx.begin(), idx.end(), row_less);
+
+    // Count groups
+    int nG = 0;
+    {
+        int pos = 0;
+        while (pos < n) {
+            nG++;
+            int cur = pos + 1;
+            while (cur < n && row_eq(idx[cur], idx[pos])) cur++;
+            pos = cur;
+        }
+    }
+
+    // Allocate output key columns (preserve original type)
+    Rcpp::List out_keys(ncols);
+    // Typed pointers for output columns
+    std::vector<int*>    out_icols(ncols, nullptr);
+    std::vector<double*> out_dcols(ncols, nullptr);
+    for (int c = 0; c < ncols; c++) {
+        if (is_int[c]) {
+            Rcpp::IntegerVector v(nG);
+            out_icols[c] = v.begin();
+            out_keys[c] = v;
+        } else {
+            Rcpp::NumericVector v(nG);
+            out_dcols[c] = v.begin();
+            out_keys[c] = v;
+        }
+    }
+    Rcpp::NumericVector val(nG);
+    Rcpp::IntegerVector cnt(nG);
+
+    // Fill pass
+    int gi = 0, pos = 0;
+    while (pos < n) {
+        // Store group key
+        for (int c = 0; c < ncols; c++) {
+            if (is_int[c])
+                out_icols[c][gi] = icols[c][idx[pos]];
+            else
+                out_dcols[c][gi] = dcols[c][idx[pos]];
+        }
+
+        // Find group end
+        int cur = pos + 1;
+        while (cur < n && row_eq(idx[cur], idx[pos])) cur++;
+
+        // Accumulate
+        double sum = 0.0;
+        int count = 0;
+        for (int i = pos; i < cur; i++) {
+            double xi = x[idx[i]];
+            if (na_rm && ISNAN(xi)) continue;
+            sum += xi;
+            count++;
+        }
+        val[gi] = do_mean ? (count > 0 ? sum / count : NA_REAL) : sum;
+        cnt[gi] = count;
+        gi++;
+        pos = cur;
+    }
+
+    // Build return list: group columns + value + count
+    Rcpp::CharacterVector col_names = group_cols.names();
+    Rcpp::List result(ncols + 2);
+    Rcpp::CharacterVector rnames(ncols + 2);
+    for (int c = 0; c < ncols; c++) {
+        result[c] = out_keys[c];
+        rnames[c] = col_names[c];
+    }
+    result[ncols] = val;
+    rnames[ncols] = "value";
+    result[ncols + 1] = cnt;
+    rnames[ncols + 1] = "count";
+    result.names() = rnames;
+    return result;
+}
+
 // LOO (leave-one-out) choice probabilities for all effects in one call.
 // For each effect k, zeros theta[k] and recomputes grouped softmax using:
 //   util_k = util_full - contribMat.col(k) * theta[k]   (O(n) per effect)

@@ -43,7 +43,7 @@ test_that("interpret_size.sienaFit RI rows sum to ~1", {
 
 test_that("interpret_size.sienaFit with uncertainty adds uncertainty slot", {
   ri <- interpret_size(ans, data = mydata, uncertainty = TRUE,
-                       nsim = 5, verbose = FALSE)
+                       nsim = 5, uncertaintyMean = TRUE, verbose = FALSE)
   expect_s3_class(ri, "sienaRI")
   expect_true(!is.null(ri$uncertainty))
   expect_true(is.data.frame(ri$uncertainty))

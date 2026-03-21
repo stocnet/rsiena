@@ -258,29 +258,29 @@ test_that("calculateSecondDiff: details=TRUE returns broad data.frame", {
                     "changeProb_both", "firstDiff1", "firstDiff2", "secondDiff") %in% names(result)))
 })
 
-# ── attachContribColumns ────────────────────────────────────────────────────
+# ── attachContributions ─────────────────────────────────────────────────────
 
-test_that("attachContribColumns: density==-1 flips other columns; density col unchanged", {
+test_that("attachContributions: density==-1 flips other columns; density col unchanged", {
   density <- c(1L, -1L, 0L)
   recip   <- c(2L, 3L, 4L)
   contrib <- matrix(c(density, recip), nrow = 3,
                     dimnames = list(NULL, c("density", "recip")))
   df <- data.frame(x = 1:3)
 
-  result <- attachContribColumns(df, c("density", "recip"), contrib, flip = TRUE)
+  result <- attachContributions(df, c("density", "recip"), contrib, flip = TRUE)
 
   expect_equal(result$density, density)             # density itself not flipped
   expect_equal(result$recip,   c(2L, -3L, 4L))     # density==-1 row → negated
 })
 
-test_that("attachContribColumns: flip=FALSE leaves all columns unchanged", {
+test_that("attachContributions: flip=FALSE leaves all columns unchanged", {
   density <- c(1L, -1L, -1L)
   recip   <- c(2L, 3L, 4L)
   contrib <- matrix(c(density, recip), nrow = 3,
                     dimnames = list(NULL, c("density", "recip")))
   df <- data.frame(x = 1:3)
 
-  result <- attachContribColumns(df, c("density", "recip"), contrib, flip = FALSE)
+  result <- attachContributions(df, c("density", "recip"), contrib, flip = FALSE)
 
   expect_equal(result$recip, c(2L, 3L, 4L))        # no flipping
 })
@@ -613,14 +613,14 @@ test_that("mergeEstimates: composite condition merges point estimate with uncert
   expect_equal(nrow(result), 2L)
 })
 
-# ── attachContribColumns: composite density name ─────────────────────────────
+# ── attachContributions: composite density name ──────────────────────────────
 
-test_that("attachContribColumns: composite 'density_eval' column triggers flip", {
+test_that("attachContributions: composite 'density_eval' column triggers flip", {
   density <- c(1L, -1L, 0L)
   recip   <- c(2L,  3L, 4L)
   contrib <- matrix(c(density, recip), nrow = 3,
                     dimnames = list(NULL, c("density_eval", "recip_eval")))
-  result <- attachContribColumns(data.frame(x = 1:3),
+  result <- attachContributions(data.frame(x = 1:3),
                                  c("density_eval", "recip_eval"),
                                  contrib, flip = TRUE)
   # grepl("density", "density_eval") is TRUE → flip applies
@@ -628,14 +628,14 @@ test_that("attachContribColumns: composite 'density_eval' column triggers flip",
   expect_equal(result[["recip_eval"]],   c(2L, -3L, 4L))# density==-1 row negated
 })
 
-test_that("attachContribColumns: 'recip_creation' not confused with density trigger", {
+test_that("attachContributions: 'recip_creation' not confused with density trigger", {
   density  <- c(1L, -1L, 1L)
   recip_e  <- c(1L,  1L, 1L)
   recip_c  <- c(1L,  0L, 1L)   # 0 on deletion rows by construction
   contrib  <- matrix(c(density, recip_e, recip_c), nrow = 3,
                      dimnames = list(NULL,
                        c("density_eval", "recip_eval", "recip_creation")))
-  result <- attachContribColumns(data.frame(x = 1:3),
+  result <- attachContributions(data.frame(x = 1:3),
                                  colnames(contrib), contrib, flip = TRUE)
   expect_equal(result[["recip_eval"]],     c(1L, -1L, 1L))
   expect_equal(result[["recip_creation"]], c(1L,  0L, 1L))  # 0 negated == 0

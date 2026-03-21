@@ -26,16 +26,6 @@ test_that("Static contributions (base R fallback)", {
   )
 })
 
-# --- Test static contribution extraction (data.table)
-test_that("Static contributions (data.table)", {
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
-        stat_dt <- getStaticChangeContributions(ans = ans, 
-        data = mydata,
-          returnDataFrame = TRUE)
-  expect_true("data.table" %in% class(stat_dt))
-})
-
 # # --- Test dynamic contribution extraction (pure list)
 test_that("Dynamic contributions (pure list)", {
       skip_slow()

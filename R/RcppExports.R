@@ -29,6 +29,10 @@ grouped_agg_cpp <- function(x, G, na_rm = TRUE, do_mean = TRUE) {
     .Call(`_RSiena_grouped_agg_cpp`, x, G, na_rm, do_mean)
 }
 
+grouped_agg_from_cols <- function(x, group_cols, na_rm = TRUE, do_mean = TRUE) {
+    .Call(`_RSiena_grouped_agg_from_cols`, x, group_cols, na_rm, do_mean)
+}
+
 loo_change_probs <- function(contribMat, theta, group_id) {
     .Call(`_RSiena_loo_change_probs`, contribMat, theta, group_id)
 }

@@ -56,11 +56,11 @@ getChangeStatistics <- function(ans, data, effects = NULL, depvar = NULL,
         )
     }
 
-    out <- data.frame(groupColsList(changeStats), stringsAsFactors = FALSE)
-    out <- attachContribColumns(out, changeStats$effectNames,
-                                 changeStats$contribMat, flip = flip)
-    # if (requireNamespace("data.table", quietly = TRUE)) # data.table removed
-    #     data.table::setDT(out)
+    out <- groupColsList(changeStats)
+    out <- attachContributions(out, changeStats$effectNames,
+                                changeStats$contribMat, flip = flip)
+    attr(out, "row.names") <- .set_row_names(length(out[[1L]]))
+    class(out) <- "data.frame"
     out
 }
 

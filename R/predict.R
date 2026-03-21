@@ -213,9 +213,9 @@ predictProbability <- function(contributions, theta, type = "changeProb",
     names(theta_use) <- contributions$effectNames
     utility <- calculateUtility(contributions$contribMat, theta_use)
     changeProb <- calculateChangeProb(utility, contributions$group_id)
-    out <- data.frame(groupColsList(contributions),
-                      changeUtil = utility, changeProb = changeProb,
-                      stringsAsFactors = FALSE)
+    out <- groupColsList(contributions)
+    out[["changeUtil"]] <- utility
+    out[["changeProb"]] <- changeProb
     if (type == "tieProb") {
       out[["tieProb"]] <- calculateTieProb(
         changeProb,
@@ -223,9 +223,11 @@ predictProbability <- function(contributions, theta, type = "changeProb",
       )
     }
     if (attachContribs) {
-      out <- attachContribColumns(out, contributions$effectNames,
+      out <- attachContributions(out, contributions$effectNames,
                                   contributions$contribMat, flip = TRUE)
     }
+    attr(out, "row.names") <- .set_row_names(length(out[[1L]]))
+    class(out) <- "data.frame"
     out
 }
 

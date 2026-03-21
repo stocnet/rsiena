@@ -104,6 +104,10 @@ marginalEffects.sienaFit <- function(
           ans = object, data = data, effects = effects, depvar = depvar,
           returnWide = TRUE
       )
+      # Pre-flip to change-statistic space once (like getChangeStatistics).
+      # Reused across all theta draws — avoids per-draw matrix copy.
+      staticContributions$csMat <- contribToChangeStats(
+          staticContributions$contribMat, staticContributions$effectNames)
       knownEffectNames <- staticContributions$effectNames
     }
 
@@ -160,7 +164,8 @@ marginalEffects.sienaFit <- function(
           ans = object, data = data, effects = effects,
           algorithm = algorithm, type = type, depvar = depvar,
           n3 = n3, useChangeContributions = useChangeContributions,
-          mainEffect = mainEffect, details = details
+          mainEffect = mainEffect, details = details,
+          attachContribs = TRUE
       )
       if (!second) {
           diffFun <- predictFirstDiffDynamic
@@ -187,7 +192,8 @@ marginalEffects.sienaFit <- function(
     } else {
       predictArgs <- list(
           staticContributions = staticContributions,
-          type = type, mainEffect = mainEffect, details = details
+          type = type, mainEffect = mainEffect, details = details,
+          attachContribs = TRUE
       )
       if (!second) {
           diffFun <- predictFirstDiffStatic
@@ -273,14 +279,15 @@ predictFirstDiffStatic <- function(theta, staticContributions,
     effectName, diff = NULL, contrast = NULL,
     interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference",
-    perturbType = "alter", massContrasts = FALSE)
+    perturbType = "alter", massContrasts = FALSE, attachContribs = TRUE)
 {
   effectNames <- staticContributions$effectNames
   theta_use   <- theta[effectNames]
   predictFirstDiff(changeContributions = staticContributions, theta_use, type,
       effectName, diff, contrast, interaction, intEffectNames,
       modEffectNames, details, calcRiskRatio, mainEffect,
-      perturbType = perturbType, massContrasts = massContrasts)
+      perturbType = perturbType, massContrasts = massContrasts,
+      attachContribs = attachContribs)
 }
 
 predictSecondDiffStatic <- function(theta, staticContributions,
@@ -291,7 +298,7 @@ predictSecondDiffStatic <- function(theta, staticContributions,
     interaction2 = FALSE, intEffectNames2 = NULL, modEffectNames2 = NULL,
     mainEffect = "riskDifference", details = FALSE,
     perturbType1 = "alter", perturbType2 = "alter",
-    massContrasts = FALSE)
+    massContrasts = FALSE, attachContribs = TRUE)
 {
   effectNames <- staticContributions$effectNames
   theta_use   <- theta[effectNames]
@@ -300,7 +307,7 @@ predictSecondDiffStatic <- function(theta, staticContributions,
       effectName2, diff2, contrast2, interaction2, intEffectNames2, modEffectNames2,
       details, FALSE, mainEffect,
       perturbType1 = perturbType1, perturbType2 = perturbType2,
-      massContrasts = massContrasts)
+      massContrasts = massContrasts, attachContribs = attachContribs)
 }
 
 predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
@@ -309,7 +316,7 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
     interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     n3 = NULL, useChangeContributions = FALSE,
     details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference",
-    perturbType = "alter", massContrasts = FALSE)
+    perturbType = "alter", massContrasts = FALSE, attachContribs = TRUE)
 {
   if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
   dynContrib <- getDynamicChangeContributions(
@@ -317,11 +324,14 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
     effects = effects, depvar = depvar, n3 = n3,
     useChangeContributions = useChangeContributions, returnWide = TRUE
   )
+  dynContrib$csMat <- contribToChangeStats(dynContrib$contribMat,
+                                            dynContrib$effectNames)
   theta_use <- theta[dynContrib$effectNames]
   predictFirstDiff(changeContributions = dynContrib, theta_use, type,
       effectName, diff, contrast, interaction, intEffectNames,
       modEffectNames, details, calcRiskRatio, mainEffect,
-      perturbType = perturbType, massContrasts = massContrasts)
+      perturbType = perturbType, massContrasts = massContrasts,
+      attachContribs = attachContribs)
 }
 
 predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
@@ -333,7 +343,7 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
     n3 = NULL, useChangeContributions = FALSE,
     calcRiskRatio = FALSE, mainEffect = "riskDifference", details = FALSE,
     perturbType1 = "alter", perturbType2 = "alter",
-    massContrasts = FALSE)
+    massContrasts = FALSE, attachContribs = TRUE)
 {
   if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
   dynContrib <- getDynamicChangeContributions(
@@ -341,13 +351,15 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
     effects = effects, depvar = depvar, n3 = n3,
     useChangeContributions = useChangeContributions, returnWide = TRUE
   )
+  dynContrib$csMat <- contribToChangeStats(dynContrib$contribMat,
+                                            dynContrib$effectNames)
   theta_use <- theta[dynContrib$effectNames]
   predictSecondDiff(changeContributions = dynContrib, theta_use, type,
       effectName1, diff1, contrast1, interaction1, intEffectNames1, modEffectNames1,
       effectName2, diff2, contrast2, interaction2, intEffectNames2, modEffectNames2,
       details, calcRiskRatio, mainEffect,
       perturbType1 = perturbType1, perturbType2 = perturbType2,
-      massContrasts = massContrasts)
+      massContrasts = massContrasts, attachContribs = attachContribs)
 }
 
 # Core computation shared by both static and dynamic paths.
@@ -356,15 +368,16 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
 predictFirstDiff <- function(changeContributions, theta_use, type,
     effectName, diff, contrast, interaction, intEffectNames,
     modEffectNames, details, calcRiskRatio, mainEffect,
-    perturbType = "alter", massContrasts = FALSE)
+    perturbType = "alter", massContrasts = FALSE, attachContribs = TRUE)
 {
   contribMat         <- changeContributions$contribMat
   effectNames        <- changeContributions$effectNames
   densityName <- resolveEffectName("density", effectNames)
   density     <- contribMat[, densityName]
-  # Flip to change-statistic space: non-density columns become delta (density-independent).
-  # density column stays +/-1.  calculateUtility(mat %*% theta) is invariant.
-  csMat       <- contribToChangeStats(contribMat, effectNames)
+  # Use pre-flipped change-statistic matrix if available (static path),
+  # otherwise compute it (backward compat / standalone calls).
+  csMat <- if (!is.null(changeContributions$csMat)) changeContributions$csMat
+           else contribToChangeStats(contribMat, effectNames)
   utility    <- calculateUtility(contribMat, theta_use)
   changeProb <- calculateChangeProb(utility, changeContributions$group_id)
   tieProb    <- if (type == "tieProb") calculateTieProb(changeProb, density) else NULL
@@ -392,10 +405,8 @@ predictFirstDiff <- function(changeContributions, theta_use, type,
     group_id           = changeContributions$group_id
   )
 
-  keep   <- density != 0L
-  out    <- data.frame(groupColsList(changeContributions, keep), stringsAsFactors = FALSE)
-  out    <- attachContribColumns(out, effectNames,
-                                 csMat[keep, , drop = FALSE], flip = FALSE)
+  keep <- density != 0L
+  out  <- groupColsList(changeContributions, keep)
   out[names(fd)] <- lapply(fd, `[`, keep)
 
   if (details) {
@@ -422,7 +433,12 @@ predictFirstDiff <- function(changeContributions, theta_use, type,
     }
   }
 
-  # if (requireNamespace("data.table", quietly = TRUE)) data.table::setDT(out) # data.table removed
+  if (attachContribs) {
+    out <- attachContributions(out, effectNames,
+                               csMat[keep, , drop = FALSE], flip = FALSE)
+  }
+  attr(out, "row.names") <- .set_row_names(length(out[[1L]]))
+  class(out) <- "data.frame"
   out
 }
 
@@ -434,14 +450,15 @@ predictSecondDiff <- function(changeContributions, theta_use, type,
     intEffectNames2, modEffectNames2,
     details, calcRiskRatio, mainEffect,
     perturbType1 = "alter", perturbType2 = "alter",
-    massContrasts = FALSE)
+    massContrasts = FALSE, attachContribs = TRUE)
 {
   contribMat         <- changeContributions$contribMat
   effectNames        <- changeContributions$effectNames
   densityName <- resolveEffectName("density", effectNames)
   density     <- contribMat[, densityName]
-  # Flip to change-statistic space: non-density columns become delta.
-  csMat       <- contribToChangeStats(contribMat, effectNames)
+  # Use pre-flipped change-statistic matrix if available.
+  csMat <- if (!is.null(changeContributions$csMat)) changeContributions$csMat
+           else contribToChangeStats(contribMat, effectNames)
   utility    <- calculateUtility(contribMat, theta_use)
   changeProb <- calculateChangeProb(utility, changeContributions$group_id)
   tieProb    <- if (type == "tieProb") calculateTieProb(changeProb, density) else NULL
@@ -479,9 +496,7 @@ predictSecondDiff <- function(changeContributions, theta_use, type,
   )
 
   keep <- density != 0L
-  out  <- data.frame(groupColsList(changeContributions, keep), stringsAsFactors = FALSE)
-  out  <- attachContribColumns(out, effectNames,
-                               csMat[keep, , drop = FALSE], flip = FALSE)
+  out  <- groupColsList(changeContributions, keep)
   out[names(sd)] <- lapply(sd, `[`, keep)
 
   if (details) {
@@ -508,7 +523,12 @@ predictSecondDiff <- function(changeContributions, theta_use, type,
     }
   }
 
-  # if (requireNamespace("data.table", quietly = TRUE)) data.table::setDT(out) # data.table removed
+  if (attachContribs) {
+    out <- attachContributions(out, effectNames,
+                               csMat[keep, , drop = FALSE], flip = FALSE)
+  }
+  attr(out, "row.names") <- .set_row_names(length(out[[1L]]))
+  class(out) <- "data.frame"
   out
 }
 
