@@ -750,3 +750,25 @@ test_that("thetaValues batch records correct theta per block", {
 #   expect_identical(dim(mat1), dim(mat2))          # same structure
 #   expect_false(identical(mat1, mat2))             # different values
 # })
+
+# Multicore: changeContributions must be populated when nbrNodes >= 2
+test_that("multicore siena07 populates changeContributions", {
+  skip_slow()
+  skip_on_cran()
+  skip_on_os("windows")  # FORK clusters not available on Windows
+
+  alg_mc <- sienaAlgorithmCreate(projname = NULL, n3 = 10, nsub = 0,
+                                  cond = FALSE, simOnly = TRUE, seed = 99)
+  ans_mc <- siena07(alg_mc, data = mydata, effects = mymodel,
+                    batch = TRUE, silent = TRUE, nbrNodes = 2,
+                    returnChangeContributions = TRUE)
+
+  cc <- ans_mc$changeContributions
+  expect_true(is.list(cc), label = "changeContributions is a list")
+  expect_length(cc, 10L)
+  expect_true(all(!sapply(cc, is.null)),
+              label = "no NULL entries in changeContributions")
+  # Each entry must be a non-empty nested list (group -> period -> ministeps)
+  expect_true(all(sapply(cc, function(nit) is.list(nit) && length(nit) > 0)),
+              label = "each iteration entry is a non-empty list")
+})

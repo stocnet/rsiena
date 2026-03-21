@@ -293,6 +293,12 @@ makeEstimator <- function(predictFun, predictArgs, outcomeName,
         if(!is.null(predictArgs[["useChangeContributions"]])){
           predictArgs[["useChangeContributions"]] <- useChangeContributions
         }
+        # Only attach contribution columns when the caller needs decision details.
+        # Skipping this saves materializing the full contribMat into a data.frame
+        # for every theta draw, which is expensive for large networks.
+        if (!is.null(predictArgs[["attachContribs"]])) {
+          predictArgs[["attachContribs"]] <- returnDecisionDetails
+        }
         callArgs <- c(list(theta = theta), predictArgs)
         unit_pred <- do.call(predictFun, callArgs)
         main_result <- agg(

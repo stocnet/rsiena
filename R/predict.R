@@ -76,7 +76,8 @@ predict.sienaFit <- function(
         n3                     = n3,
         useChangeContributions = useChangeContributions,
         batch                  = batch,
-        silent                 = silent
+        silent                 = silent,
+        attachContribs         = FALSE
     )
   } else {
     # Build the contribution matrix ONCE — reused across all theta draws
@@ -90,7 +91,8 @@ predict.sienaFit <- function(
     predictFun  <- predictProbabilityStatic
     predictArgs <- list(
         staticContributions = staticContributions,
-        type     = type
+        type                = type,
+        attachContribs      = FALSE
     )
   }
 
@@ -205,8 +207,8 @@ planBatch <- function(
 # Unified per-theta prediction from a compact contributions struct.
 # Works for both static (ego/period/choice coords) and dynamic
 # (chain/ministep/period/choice coords) -- groupColsList handles both.
-predictProbability <- function(contributions, theta, type = "changeProb") {
-  # should not be necessary?
+predictProbability <- function(contributions, theta, type = "changeProb",
+                               attachContribs = FALSE) {
     theta_use <- theta[contributions$effectNames]
     names(theta_use) <- contributions$effectNames
     utility <- calculateUtility(contributions$contribMat, theta_use)
@@ -220,16 +222,19 @@ predictProbability <- function(contributions, theta, type = "changeProb") {
         contributions$contribMat[, grep("density", contributions$effectNames, fixed = TRUE)[1L]]
       )
     }
-    out <- attachContribColumns(out, contributions$effectNames,
-                                contributions$contribMat, flip = TRUE)
-    # if (requireNamespace("data.table", quietly = TRUE)) data.table::setDT(out) # data.table removed
+    if (attachContribs) {
+      out <- attachContribColumns(out, contributions$effectNames,
+                                  contributions$contribMat, flip = TRUE)
+    }
     out
 }
 
 # Per-theta static prediction: build contributions once, reused per theta draw.
 predictProbabilityStatic <- function(staticContributions, theta,
-                                     type = "changeProb") {
-    predictProbability(staticContributions, theta, type)
+                                     type = "changeProb",
+                                     attachContribs = FALSE) {
+    predictProbability(staticContributions, theta, type,
+                       attachContribs = attachContribs)
 }
 
 # ---- Dynamic -------------------------------------------------------
@@ -238,14 +243,16 @@ predictProbabilityStatic <- function(staticContributions, theta,
 predictProbabilityDynamic <- function(ans, data, theta, algorithm, effects,
                                       type = "changeProb", depvar, n3 = NULL,
                                       useChangeContributions = FALSE,
-                                      batch = TRUE, silent = TRUE) {
+                                      batch = TRUE, silent = TRUE,
+                                      attachContribs = FALSE) {
     contributions <- getDynamicChangeContributions(
       ans = ans, theta = theta, data = data, algorithm = algorithm,
       effects = effects, depvar = depvar, n3 = n3,
       useChangeContributions = useChangeContributions,
       returnWide = TRUE, batch = batch, silent = silent
     )
-    predictProbability(contributions, theta, type)
+    predictProbability(contributions, theta, type,
+                       attachContribs = attachContribs)
 }
 
 # ---- Shared helpers -------------------------------------------------
