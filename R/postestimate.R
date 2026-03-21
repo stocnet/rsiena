@@ -9,10 +9,11 @@ sienaPostestimate <- function(
     thetaHat,
     covTheta,
     uncertainty = TRUE,
-    uncertaintyMode = c("batch", "stream"),
     nsim = 1000,
     uncertaintySd = TRUE,
     uncertaintyCi = TRUE,
+    uncertaintyMean = FALSE,
+    uncertaintyMedian = FALSE,
     uncertaintyProbs = c(0.025, 0.5, 0.975),
     uncertaintyMcse = FALSE,
     uncertaintymcseBatches = NULL,
@@ -33,7 +34,6 @@ sienaPostestimate <- function(
     egoNormalize = TRUE,
     returnDecisionDetails = FALSE
 ) {
-  uncertaintyMode <- match.arg(uncertaintyMode)
     if (length(outcomeName) != 1L) {
         stop("'outcomeName' must be a single column name.")
     }
@@ -76,69 +76,65 @@ sienaPostestimate <- function(
     }
 
 
-    # Resolve condition to actual column name now that we have the output shape.
-    # agg() resolves lazily per call, but drawSimStream needs it up-front for
-    # group_vars.  Doing it here keeps all downstream paths consistent.
-    if (!is.null(condition) && !is.null(colnames(expect))) {
-        condition <- tryCatch(
-            resolveEffectName(condition, colnames(expect)),
-            error = function(e) condition
-        )
-    }
-    
     uncertainty_summary_fun <- makeUncertaintySummarizer(
       return_sd = uncertaintySd,
       return_ci = uncertaintyCi,
+      return_mean = uncertaintyMean,
+      return_median = uncertaintyMedian,
       probs = uncertaintyProbs,
       return_mcse = uncertaintyMcse,
       mcseBatches = uncertaintymcseBatches
     )
 
-    if (identical(uncertaintyMode, "stream")) {
-      uncert <- drawSimStream(
-        estimator = estimator,
-        outcomeName = outcomeName,
-        level = level,
-        condition = condition,
-        uncertainty_summary_fun = uncertainty_summary_fun,
-        thetaHat = thetaHat,
-        covTheta = covTheta,
-        nbrNodes = if (useCluster) nbrNodes else 1L,
-        nsim = nsim,
-        clusterType = clusterType,
-        cluster = cluster,
-        batchSize = batchSize,
-        verbose = verbose,
-        gcEachBatch = gcEachBatch,
-        gcEachSim = gcEachSim
-      )
-    } else {
-      uncert <- drawSim(
-        estimator = estimator,
-        thetaHat = thetaHat,
-        covTheta = covTheta,
-        nbrNodes = if (useCluster) nbrNodes else 1L,
-        nsim = nsim,
-        clusterType = clusterType,
-        cluster = cluster,
-        batchDir = batchDir,
-        prefix = prefix,
-        combineBatch = combineBatch,
-        batchSize = batchSize,
-        keepBatch = keepBatch,
-        verbose = verbose,
-        gcEachBatch = gcEachBatch,
-        gcEachSim = gcEachSim
-      )
-      uncert <- agg(
-        outcomeName, 
-        uncert, 
-        level = level, 
-        condition = condition, 
-        sum_fun = uncertainty_summary_fun
-      )
-    }
+    raw_sims <- drawSim(
+      estimator = estimator,
+      thetaHat = thetaHat,
+      covTheta = covTheta,
+      nbrNodes = if (useCluster) nbrNodes else 1L,
+      nsim = nsim,
+      clusterType = clusterType,
+      cluster = cluster,
+      batchDir = batchDir,
+      prefix = prefix,
+      combineBatch = combineBatch,
+      batchSize = batchSize,
+      keepBatch = keepBatch,
+      verbose = verbose,
+      gcEachBatch = gcEachBatch,
+      gcEachSim = gcEachSim
+    )
+    uncert <- agg(
+      outcomeName, 
+      raw_sims, 
+      level = level, 
+      condition = condition, 
+      sum_fun = uncertainty_summary_fun
+    )
     result <- mergeEstimates(expect, uncert, level = level, condition = condition)
+
+    # Mass contrast uncertainty
+    massCols <- intersect(c("massCreation", "massDissolution"), names(raw_sims))
+    for (mc in massCols) {
+        mc_uncert <- agg(mc, raw_sims, level = level, condition = NULL,
+                         sum_fun = uncertainty_summary_fun)
+        level_by <- intersect(
+            getGroupVars(level = level, condition = NULL),
+            names(mc_uncert)
+        )
+        uc_cols <- setdiff(names(mc_uncert), level_by)
+        for (uc in uc_cols) {
+            names(mc_uncert)[names(mc_uncert) == uc] <- paste0(mc, "_", uc)
+        }
+        if (length(level_by) > 0L) {
+            result <- merge(result, mc_uncert, by = level_by,
+                            all.x = TRUE, sort = FALSE)
+        } else {
+            for (col in setdiff(names(mc_uncert), level_by)) {
+                result[[col]] <- mc_uncert[[col]]
+            }
+        }
+    }
+
     result <- stampPostestimate(result, metadata)
     if (!is.null(decisionDetails)) attr(result, "decisionDetails") <- decisionDetails
     result
@@ -147,6 +143,8 @@ sienaPostestimate <- function(
 makeUncertaintySummarizer <- function(
     return_sd = TRUE,
     return_ci = TRUE,
+    return_mean = FALSE,
+    return_median = FALSE,
     probs = c(0.025, 0.5, 0.975),
     return_mcse = FALSE,
     mcseBatches = NULL
@@ -163,24 +161,26 @@ makeUncertaintySummarizer <- function(
     if (na.rm) x <- x[!is.na(x)]
     n <- length(x)
 
-    out <- list(
-      Mean = if (n) mean(x) else NA_real_
-    )
+    out <- list()
+
+    if (isTRUE(return_mean)) {
+      out[["Mean"]] <- if (n) mean(x) else NA_real_
+    }
 
     if (isTRUE(return_sd)) {
       out[["SE"]] <- if (n >= 2L) stats::sd(x) else NA_real_
     }
 
-    if (isTRUE(return_ci)) {
+    if (isTRUE(return_ci) || isTRUE(return_median)) {
       if (n) {
         qu <- unname(stats::quantile(x, probs = probs, na.rm = FALSE))
-        out[["Median"]] <- qu[2]
+      } else {
+        qu <- rep(NA_real_, 3L)
+      }
+      if (isTRUE(return_median)) out[["Median"]] <- qu[2]
+      if (isTRUE(return_ci)) {
         out[["q_025"]] <- qu[1]
         out[["q_975"]] <- qu[3]
-      } else {
-        out[["Median"]] <- NA_real_
-        out[["q_025"]] <- NA_real_
-        out[["q_975"]] <- NA_real_
       }
     }
 
@@ -191,6 +191,8 @@ makeUncertaintySummarizer <- function(
         x = x,
         return_sd = return_sd,
         return_ci = return_ci,
+        return_mean = return_mean,
+        return_median = return_median,
         probs = probs,
         batches = mcseBatches
       ))
@@ -203,14 +205,18 @@ makeUncertaintySummarizer <- function(
 computeMcse <- function(x,
                                    return_sd = TRUE,
                                    return_ci = TRUE,
+                                   return_mean = FALSE,
+                                   return_median = FALSE,
                                    probs = c(0.025, 0.5, 0.975),
                                    batches = NULL) {
   n <- length(x)
+  need_q <- isTRUE(return_ci) || isTRUE(return_median)
   if (n < 2L) {
-    out <- list(mcse_Mean = NA_real_)
+    out <- list()
+    if (isTRUE(return_mean)) out[["mcse_Mean"]] <- NA_real_
     if (isTRUE(return_sd)) out[["mcse_SE"]] <- NA_real_
+    if (isTRUE(return_median)) out[["mcse_Median"]] <- NA_real_
     if (isTRUE(return_ci)) {
-      out[["mcse_Median"]] <- NA_real_
       out[["mcse_q_025"]] <- NA_real_
       out[["mcse_q_975"]] <- NA_real_
     }
@@ -238,33 +244,38 @@ computeMcse <- function(x,
   n_use <- as.integer(B * m)
   x_use <- x[seq_len(n_use)]
 
-  batch_stats_mean <- numeric(B)
+  batch_stats_mean <- if (isTRUE(return_mean)) numeric(B) else NULL
   batch_stats_sd <- if (isTRUE(return_sd)) numeric(B) else NULL
-  batch_stats_q <- if (isTRUE(return_ci)) matrix(NA_real_, nrow = B, ncol = 3L) else NULL
+  batch_stats_q <- if (need_q) matrix(NA_real_, nrow = B, ncol = 3L) else NULL
 
   for (b in seq_len(B)) {
     idx <- ((b - 1L) * m + 1L):(b * m)
     xb <- x_use[idx]
-    batch_stats_mean[b] <- mean(xb)
+    if (isTRUE(return_mean)) batch_stats_mean[b] <- mean(xb)
     if (isTRUE(return_sd)) {
       batch_stats_sd[b] <- if (m >= 2L) stats::sd(xb) else NA_real_
     }
-    if (isTRUE(return_ci)) {
+    if (need_q) {
       batch_stats_q[b, ] <- unname(stats::quantile(xb, probs = probs, na.rm = FALSE))
     }
   }
 
-  out <- list(
-    mcse_Mean = stats::sd(batch_stats_mean) / sqrt(B)
-  )
+  out <- list()
+
+  if (isTRUE(return_mean)) {
+    out[["mcse_Mean"]] <- stats::sd(batch_stats_mean) / sqrt(B)
+  }
 
   if (isTRUE(return_sd)) {
     out[["mcse_SE"]] <- stats::sd(batch_stats_sd) / sqrt(B)
   }
 
+  if (isTRUE(return_median)) {
+    out[["mcse_Median"]] <- stats::sd(batch_stats_q[, 2]) / sqrt(B)
+  }
+
   if (isTRUE(return_ci)) {
     out[["mcse_q_025"]] <- stats::sd(batch_stats_q[, 1]) / sqrt(B)
-    out[["mcse_Median"]] <- stats::sd(batch_stats_q[, 2]) / sqrt(B)
     out[["mcse_q_975"]] <- stats::sd(batch_stats_q[, 3]) / sqrt(B)
   }
 
@@ -455,107 +466,6 @@ drawSim <- function(
     }
 }
 
-drawSimStream <- function(
-    estimator,
-    outcomeName,
-    level,
-    condition,
-    uncertainty_summary_fun,
-    thetaHat,
-    covTheta,
-    nbrNodes = 1,
-    nsim = 1000,
-    clusterType = c("PSOCK", "FORK"),
-    cluster = NULL,
-    batchSize = NULL,
-    verbose = TRUE,
-    gcEachBatch = TRUE,
-    gcEachSim = FALSE
-) {
-
-    group_vars <- getGroupVars(level = level, condition = condition)
-
-
-    cli <- openCluster(nbrNodes, clusterType, cluster,
-      export_vars  = c("estimator", "thetaHat", "covTheta"),
-      export_envir = environment(),
-      verbose      = verbose
-    )
-    nbatches <- ceiling(nsim / batchSize)
-    if (verbose) {
-      message(
-        "Starting streaming simulations: nsim=", nsim,
-        ", batchSize=", batchSize,
-        ", batches=", nbatches,
-        ". (Last batch may be smaller.)"
-      )
-    }
-
-    stream_state <- new.env(parent = emptyenv(), hash = TRUE)
-    group_state <- new.env(parent = emptyenv(), hash = TRUE)
-
-    for (b in seq_len(nbatches)) {
-      first_sim <- 1 + (b - 1) * batchSize
-      last_sim  <- min(b * batchSize, nsim)
-      batch     <- first_sim:last_sim
-
-      if (verbose) {
-        message(
-          sprintf(
-            "Batch %d/%d: simulations %d-%d (%d sims)",
-            b, nbatches, first_sim, last_sim, length(batch)
-          )
-        )
-      }
-
-      if (cli$usePSOCK) {
-        batch_result <- parallel::parLapply(cli$cl, batch, function(i) {
-          theta_sim <- MASS::mvrnorm(1, mu = thetaHat, Sigma = covTheta)
-          do.call(estimator, list(theta = theta_sim))
-        })
-      } else if (cli$useFORK) {
-        batch_result <- parallel::mclapply(batch, function(i) {
-          # if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads(1) # data.table removed
-          theta_sim <- MASS::mvrnorm(1, mu = thetaHat, Sigma = covTheta)
-          do.call(estimator, list(theta = theta_sim))
-        }, mc.cores = nbrNodes)
-      } else {
-        batch_result <- vector("list", length(batch))
-        for (k in seq_along(batch)) {
-          theta_sim <- MASS::mvrnorm(1, mu = thetaHat, Sigma = covTheta)
-          batch_result[[k]] <- do.call(estimator, list(theta = theta_sim))
-          if (gcEachSim) gc(verbose = FALSE)
-        }
-      }
-
-      for (sim_df in batch_result) {
-        updateStream(
-          stream_state = stream_state,
-          group_state = group_state,
-          sim_df = sim_df,
-          outcomeName = outcomeName,
-          group_vars = group_vars
-        )
-      }
-
-      rm(batch_result)
-      if (gcEachBatch) gc(verbose = FALSE)
-      if (verbose) {
-        done <- last_sim
-        pct <- round(100 * done / nsim)
-        message(sprintf("Completed batch %d/%d (%d/%d sims, %d%%)", b, nbatches, done, nsim, pct))
-      }
-    }
-
-    closteCluster(cli, verbose)
-
-    finalizeStream(
-      stream_state = stream_state,
-      group_state = group_state,
-      group_vars = group_vars,
-      uncertainty_summary_fun = uncertainty_summary_fun
-    )
-}
 
 openCluster <- function(nbrNodes, clusterType, cluster, export_vars, export_envir, verbose) {
   clusterType <- if (nbrNodes > 1) match.arg(clusterType, c("PSOCK", "FORK")) else "FORK"
@@ -589,64 +499,6 @@ closteCluster <- function(cli, verbose) {
   }
 }
 
-updateStream <- function(stream_state,
-                                group_state,
-                                sim_df,
-                                outcomeName,
-                                group_vars) {
-  if (length(outcomeName) != 1L) stop("'outcomeName' must be a single column name.")
-
-  # data.table removed — sim_df is always a data.frame now
-
-  keys <- makeGroupKey(sim_df, group_vars)
-  vals <- sim_df[[outcomeName]]
-
-  for (i in seq_along(vals)) {
-    key <- keys[[i]]
-    old <- if (exists(key, envir = stream_state, inherits = FALSE)) {
-      get(key, envir = stream_state, inherits = FALSE)
-    } else {
-      numeric(0)
-    }
-    assign(key, c(old, vals[[i]]), envir = stream_state)
-
-    if (!exists(key, envir = group_state, inherits = FALSE) && length(group_vars)) {
-      assign(key, sim_df[i, group_vars, drop = FALSE], envir = group_state)
-    }
-  }
-}
-
-finalizeStream <- function(stream_state,
-                                  group_state,
-                                  group_vars,
-                                  uncertainty_summary_fun) {
-  # should be able to handle data.table as well
-  keys <- ls(stream_state, all.names = TRUE)
-  if (!length(keys)) {
-    return(data.frame())
-  }
-
-  rows <- lapply(keys, function(key) {
-    draws <- get(key, envir = stream_state, inherits = FALSE)
-    summary_vals <- as.data.frame(as.list(uncertainty_summary_fun(draws, na.rm = TRUE)), stringsAsFactors = FALSE)
-    if (length(group_vars)) {
-      grp <- get(key, envir = group_state, inherits = FALSE)
-      cbind(grp, summary_vals)
-    } else {
-      summary_vals
-    }
-  })
-  out <- do.call(rbind, rows)
-  rownames(out) <- NULL
-  if (length(group_vars) > 0L && nrow(out) > 0L) {
-    enc <- encodeGroupKeys(out, group_vars)
-    ord <- do.call(order, as.data.frame(enc$G))
-    out <- out[ord, , drop = FALSE]
-    rownames(out) <- NULL
-  }
-  out
-}
-
 getGroupVars <- function(level = "none", condition = NULL) {
   levels <- list(
     none = character(0),
@@ -659,15 +511,6 @@ getGroupVars <- function(level = "none", condition = NULL) {
     ministepChoice = c("period", "chain", "ego","ministep", "choice")
   )
   c(levels[[level]], condition)
-}
-
-makeGroupKey <- function(df, group_vars) {
-  # data.table removed — df is always a data.frame now
-  if (!length(group_vars)) {
-    rep("__all__", nrow(df))
-  } else {
-    do.call(paste, c(df[group_vars], sep = "\r"))
-  }
 }
 
 getEffectNamesNoRate <- function(effects, depvar) {
@@ -684,7 +527,32 @@ getEffectNamesNoRate <- function(effects, depvar) {
     paste(inc[["name"]], snWithCovar, inc[["type"]], sep = "_")
 }
 
-
+# Look up the centering mean for the covariate underlying a given effect.
+# Returns the centering mean (numeric) if the effect is covariate-based and
+# centered, otherwise 0.  Used to translate user-supplied contrast values
+# from the raw (uncentered) scale to the centered scale used internally.
+getCovCenteringMean <- function(effectName, effects, data, depvar) {
+  inc <- effects[effects$include & effects$type != "rate" &
+                   effects$name == depvar, ]
+  canonNames <- getEffectNamesNoRate(effects, depvar)
+  idx <- match(effectName, canonNames)
+  if (is.na(idx)) return(0)
+  covarName <- inc$interaction1[idx]
+  if (is.na(covarName) || covarName == "") return(0)
+  # Look up in all covariate stores
+  cov <- data[["cCovars"]][[covarName]]
+  if (is.null(cov)) cov <- data[["vCovars"]][[covarName]]
+  if (is.null(cov)) cov <- data[["dycCovars"]][[covarName]]
+  if (is.null(cov)) cov <- data[["dyvCovars"]][[covarName]]
+  if (is.null(cov)) return(0)
+  # coCovar/varCovar always store the raw mean; check centered flag.
+  # dycCovars/dyvCovars store 0 when not centered.
+  if (isTRUE(attr(cov, "centered"))) {
+    m <- attr(cov, "mean")
+    if (!is.null(m) && is.finite(m)) return(m)
+  }
+  0
+}
 
 # Resolve the perturbation type for a named effect.
 #
@@ -1171,7 +1039,30 @@ print.sienaMarginalEffect <- function(x, ...) {
   cat("  Dynamic:   ", if (!is.null(attr(x, "dynamic"))) attr(x, "dynamic") else FALSE, "\n")
   cat("  nsim:      ", if (!is.null(attr(x, "nsim"))) attr(x, "nsim") else NA, "\n")
   cat("\n")
-  print.data.frame(x, ...)
+
+  massCols <- intersect(c("massCreation", "massDissolution"), names(x))
+  mass_related <- character(0)
+  if (length(massCols) > 0L) {
+    mass_related <- grep(
+      paste0("^(", paste(massCols, collapse = "|"), ")($|_)"),
+      names(x), value = TRUE
+    )
+  }
+
+  main_cols <- setdiff(names(x), mass_related)
+  print.data.frame(x[, main_cols, drop = FALSE], row.names = FALSE, ...)
+
+  for (mc in massCols) {
+    mc_uc_pattern <- paste0("^", mc, "_")
+    mc_uc_cols <- grep(mc_uc_pattern, names(x), value = TRUE)
+    level_cols <- intersect(c("period", "group"), names(x))
+    mc_all <- c(level_cols, mc, mc_uc_cols)
+    mc_df <- unique(x[, mc_all, drop = FALSE])
+    names(mc_df) <- sub(mc_uc_pattern, "", names(mc_df))
+    cat("\n  ", mc, ":\n")
+    print.data.frame(mc_df, row.names = FALSE, ...)
+  }
+
   invisible(x)
 }
 

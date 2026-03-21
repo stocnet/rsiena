@@ -19,10 +19,11 @@ entropy.sienaFit <- function(object, data, effects = NULL, depvar = NULL,
     useChangeContributions = FALSE,
     level = "ego", sum_fun = mean, na.rm = TRUE,
     uncertainty = TRUE,
-    uncertaintyMode = c("batch", "stream"),
     nsim = 1000,
     uncertaintySd = TRUE,
     uncertaintyCi = TRUE,
+    uncertaintyMean = FALSE,
+    uncertaintyMedian = FALSE,
     uncertaintyProbs = c(0.025, 0.5, 0.975),
     useCluster = FALSE,
     nbrNodes = 1,
@@ -36,7 +37,6 @@ entropy.sienaFit <- function(object, data, effects = NULL, depvar = NULL,
     dynamicMinistepFactor = 10,
     ...) {
 
-    uncertaintyMode <- match.arg(uncertaintyMode)
     if (is.null(effects)) effects <- object$requestedEffects
     if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
     if (dynamic && is.null(algorithm))
@@ -83,10 +83,11 @@ entropy.sienaFit <- function(object, data, effects = NULL, depvar = NULL,
         thetaHat         = nameThetaFromEffects(object[["theta"]], object$requestedEffects),
         covTheta         = object[["covtheta"]],
         uncertainty      = uncertainty,
-        uncertaintyMode  = uncertaintyMode,
         nsim             = nsim,
         uncertaintySd    = uncertaintySd,
         uncertaintyCi    = uncertaintyCi,
+        uncertaintyMean  = uncertaintyMean,
+        uncertaintyMedian = uncertaintyMedian,
         uncertaintyProbs = uncertaintyProbs,
         useCluster       = useCluster,
         nbrNodes         = nbrNodes,

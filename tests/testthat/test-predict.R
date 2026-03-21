@@ -43,25 +43,8 @@ test_that("predict.sienaFit (base R fallback, optional MCSE + no CI)", {
       expect_false("Median" %in% names(pred_df))
 })
 
-test_that("predict.sienaFit (base R fallback, streaming uncertainty)", {
-  # with_mocked_bindings no longer needed — data.table code paths removed
-      pred_df <- predict(
-        object = ans,
-        newdata = mydata,
-        type = "tieProb",
-        nsim = 10,
-        condition = "transTrip",
-        level = "period",
-        uncertainty = TRUE,
-        uncertaintyMode = "stream",
-        verbose = FALSE
-      )
-      expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
-      expect_true("Mean" %in% names(pred_df))
-      expect_true("SE" %in% names(pred_df))
-      expect_true("q_025" %in% names(pred_df))
-      expect_true("q_975" %in% names(pred_df))
-})
+# Streaming path removed — test disabled
+# test_that("predict.sienaFit (base R fallback, streaming uncertainty)", { ... })
 
 # data.table removed — test now verifies output is always data.frame
 test_that("predict.sienaFit (always data.frame)", {
@@ -217,29 +200,8 @@ test_that("predictDynamic (base R fallback, optional MCSE + no SD)", {
       expect_true("Median" %in% names(pred_df))
 })
 
-test_that("predictDynamic (base R fallback, streaming uncertainty)", {
-  skip_slow()
-  # with_mocked_bindings no longer needed — data.table code paths removed
-      pred_df <- predict(
-        object = ans,
-        dynamic = TRUE,
-        newdata = mydata,
-        effects = mymodel,
-        algorithm = mycontrols,
-        type = "tieProb",
-        n3 = 60,
-        nsim = 6,
-        condition = "density_eval",
-        uncertainty = TRUE,
-        uncertaintyMode = "stream",
-        verbose = FALSE
-      )
-      expect_true(is.data.frame(pred_df) && !("data.table" %in% class(pred_df)))
-      expect_true("Mean" %in% names(pred_df))
-      expect_true("SE" %in% names(pred_df))
-      expect_true("q_025" %in% names(pred_df))
-      expect_true("q_975" %in% names(pred_df))
-})
+# Streaming path removed — test disabled
+# test_that("predictDynamic (base R fallback, streaming uncertainty)", { ... })
 
 # data.table removed — test now verifies output is always data.frame
 test_that("predictDynamic (always data.frame)", {

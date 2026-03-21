@@ -398,10 +398,11 @@ getDynamicChangeContributions <- function(
         stop("theta is not a legitimate parameter vector")
       }
     }
-    if(algorithm$maxLike) {
+    if(algorithm$maxlike) {
+      # improve: restore all other settings from the provided algorithm object instead of using defaults
       warning("maxLike=TRUE is not compatible with dynamic change contributions; 
        creating algorithm with maxLike=FALSE; using default settings for all other parameters.")
-      algorithm <- sienaAlgorithmCreate(projname = NULL, maxLike = FALSE)
+      algorithm <- sienaAlgorithmCreate(projname = NULL, maxlike = FALSE)
     }
     algorithm$nsub <- 0
     algorithm$simOnly <- TRUE

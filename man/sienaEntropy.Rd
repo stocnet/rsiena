@@ -23,8 +23,9 @@
     dynamic = FALSE, algorithm = NULL, n3 = 500,
     useChangeContributions = FALSE,
     level = "ego", sum_fun = mean, na.rm = TRUE,
-    uncertainty = TRUE, uncertaintyMode = c("batch", "stream"),
+    uncertainty = TRUE,
     nsim = 1000, uncertaintySd = TRUE, uncertaintyCi = TRUE,
+    uncertaintyMean = FALSE, uncertaintyMedian = FALSE,
     uncertaintyProbs = c(0.025, 0.5, 0.975),
     useCluster = FALSE, nbrNodes = 1,
     clusterType = c("PSOCK", "FORK"),
@@ -55,9 +56,9 @@ sienaEntropy(x, group_id = NULL, level = "ego",
   \item{sum_fun}{Aggregation function (default \code{mean}).}
   \item{na.rm}{Logical: remove NAs.}
   \item{uncertainty}{Logical: compute uncertainty via theta-draws.}
-  \item{uncertaintyMode}{\code{"batch"} or \code{"stream"}.}
   \item{nsim}{Number of theta-draws for uncertainty.}
-  \item{uncertaintySd, uncertaintyCi, uncertaintyProbs}{Uncertainty
+  \item{uncertaintySd, uncertaintyCi, uncertaintyMean, uncertaintyMedian,
+      uncertaintyProbs}{Uncertainty
       summary controls.}
   \item{useCluster, nbrNodes, clusterType}{Parallelisation settings.}
   \item{batchDir, batchSize, keepBatch}{Batch mode settings.}

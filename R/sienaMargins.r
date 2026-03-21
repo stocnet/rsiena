@@ -30,10 +30,11 @@ marginalEffects.sienaFit <- function(
     n3 = 500,
     useChangeContributions = FALSE,
     uncertainty = TRUE,
-    uncertaintyMode = c("batch", "stream"),
     nsim = 1000,
     uncertaintySd = TRUE,
     uncertaintyCi = TRUE,
+    uncertaintyMean = FALSE,
+    uncertaintyMedian = FALSE,
     uncertaintyProbs = c(0.025, 0.5, 0.975),
     uncertaintyMcse = FALSE,
     uncertaintymcseBatches = NULL,
@@ -51,6 +52,7 @@ marginalEffects.sienaFit <- function(
     details = FALSE,
     perturbType1 = NULL,
     perturbType2 = NULL,
+    massContrasts = NULL,
     memoryScale = NULL,
     batchUnitBudget = 2.5e8,
     dynamicMinistepFactor = 10,
@@ -60,7 +62,6 @@ marginalEffects.sienaFit <- function(
 ) {
     if (inherits(data, "sienaGroup"))
       stop("marginalEffects does not support multi-group data (sienaGroup).")
-    uncertaintyMode <- match.arg(uncertaintyMode)
     type <- match.arg(type)
     if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
 
@@ -119,6 +120,19 @@ marginalEffects.sienaFit <- function(
     intEffectNames2 <- resolvedNames$intEffectNames2
     modEffectNames2 <- resolvedNames$modEffectNames2
 
+    # ---- auto-center contrasts for centered covariates ----
+    # Users supply contrast on the raw (uncentered) scale, e.g. c(0, 1).
+    # Internally the change statistics use centered covariate values, so we
+    # shift the contrast by the centering mean.
+    if (!is.null(contrast1)) {
+      cm1 <- getCovCenteringMean(effectName1, effects, data, depvar)
+      if (cm1 != 0) contrast1 <- contrast1 - cm1
+    }
+    if (second && !is.null(contrast2)) {
+      cm2 <- getCovCenteringMean(effectName2, effects, data, depvar)
+      if (cm2 != 0) contrast2 <- contrast2 - cm2
+    }
+
     # ---- resolve perturbation type (alter vs ego) per effect ----
     eiTypes <- if (!dynamic) staticContributions$effectInteractionTypes else NULL
     # For the dynamic path, build effectInteractionTypes from the effects object
@@ -130,7 +144,11 @@ marginalEffects.sienaFit <- function(
     pt1 <- resolvePerturbType(effectName1, eiTypes, perturbType1)
     pt2 <- if (second) resolvePerturbType(effectName2, eiTypes, perturbType2) else "alter"
 
-    if (!is.null(condition) && pt1 == "ego") {
+    if (is.null(massContrasts)) {
+        massContrasts <- (pt1 == "ego") || (second && pt2 == "ego")
+    }
+
+    if (!is.null(condition) && massContrasts) {
       warning("'condition' is applied to 'firstDiff' only. ",
       "Mass contrasts (massCreation, massDissolution) are ego-level ",
       "quantities and are always averaged unconditionally over level = '",
@@ -150,7 +168,8 @@ marginalEffects.sienaFit <- function(
           effectName = effectName1, diff = diff1, contrast = contrast1,
           interaction = interaction1, intEffectNames = intEffectNames1,
           modEffectNames = modEffectNames1,
-          perturbType = pt1
+          perturbType = pt1,
+          massContrasts = massContrasts
           ))
       } else {
           diffFun <- predictSecondDiffDynamic
@@ -161,7 +180,8 @@ marginalEffects.sienaFit <- function(
           effectName2 = effectName2, diff2 = diff2, contrast2 = contrast2,
           interaction2 = interaction2, intEffectNames2 = intEffectNames2,
           modEffectNames2 = modEffectNames2,
-          perturbType1 = pt1, perturbType2 = pt2
+          perturbType1 = pt1, perturbType2 = pt2,
+          massContrasts = massContrasts
           ))
       }
     } else {
@@ -175,7 +195,8 @@ marginalEffects.sienaFit <- function(
           effectName = effectName1, diff = diff1, contrast = contrast1,
           interaction = interaction1, intEffectNames = intEffectNames1,
           modEffectNames = modEffectNames1,
-          perturbType = pt1
+          perturbType = pt1,
+          massContrasts = massContrasts
           ))
       } else {
           diffFun <- predictSecondDiffStatic
@@ -186,7 +207,8 @@ marginalEffects.sienaFit <- function(
           effectName2 = effectName2, diff2 = diff2, contrast2 = contrast2,
           interaction2 = interaction2, intEffectNames2 = intEffectNames2,
           modEffectNames2 = modEffectNames2,
-          perturbType1 = pt1, perturbType2 = pt2
+          perturbType1 = pt1, perturbType2 = pt2,
+          massContrasts = massContrasts
           ))
       }
     }
@@ -202,10 +224,11 @@ marginalEffects.sienaFit <- function(
     thetaHat                = object[["theta"]], # change to coef later
     covTheta                = object[["covtheta"]], # change to vcov later
     uncertainty              = uncertainty,
-    uncertaintyMode         = uncertaintyMode,
     nsim                     = nsim,
     uncertaintySd           = uncertaintySd,
     uncertaintyCi           = uncertaintyCi,
+    uncertaintyMean         = uncertaintyMean,
+    uncertaintyMedian       = uncertaintyMedian,
     uncertaintyProbs        = uncertaintyProbs,
     uncertaintyMcse         = uncertaintyMcse,
     uncertaintymcseBatches = uncertaintymcseBatches,
@@ -250,14 +273,14 @@ predictFirstDiffStatic <- function(theta, staticContributions,
     effectName, diff = NULL, contrast = NULL,
     interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference",
-    perturbType = "alter")
+    perturbType = "alter", massContrasts = FALSE)
 {
   effectNames <- staticContributions$effectNames
   theta_use   <- theta[effectNames]
   predictFirstDiff(changeContributions = staticContributions, theta_use, type,
       effectName, diff, contrast, interaction, intEffectNames,
       modEffectNames, details, calcRiskRatio, mainEffect,
-      perturbType = perturbType)
+      perturbType = perturbType, massContrasts = massContrasts)
 }
 
 predictSecondDiffStatic <- function(theta, staticContributions,
@@ -267,7 +290,8 @@ predictSecondDiffStatic <- function(theta, staticContributions,
     effectName2 = NULL, diff2 = NULL, contrast2 = NULL,
     interaction2 = FALSE, intEffectNames2 = NULL, modEffectNames2 = NULL,
     mainEffect = "riskDifference", details = FALSE,
-    perturbType1 = "alter", perturbType2 = "alter")
+    perturbType1 = "alter", perturbType2 = "alter",
+    massContrasts = FALSE)
 {
   effectNames <- staticContributions$effectNames
   theta_use   <- theta[effectNames]
@@ -275,7 +299,8 @@ predictSecondDiffStatic <- function(theta, staticContributions,
       effectName1, diff1, contrast1, interaction1, intEffectNames1, modEffectNames1,
       effectName2, diff2, contrast2, interaction2, intEffectNames2, modEffectNames2,
       details, FALSE, mainEffect,
-      perturbType1 = perturbType1, perturbType2 = perturbType2)
+      perturbType1 = perturbType1, perturbType2 = perturbType2,
+      massContrasts = massContrasts)
 }
 
 predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
@@ -284,7 +309,7 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
     interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     n3 = NULL, useChangeContributions = FALSE,
     details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference",
-    perturbType = "alter")
+    perturbType = "alter", massContrasts = FALSE)
 {
   if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
   dynContrib <- getDynamicChangeContributions(
@@ -296,7 +321,7 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
   predictFirstDiff(changeContributions = dynContrib, theta_use, type,
       effectName, diff, contrast, interaction, intEffectNames,
       modEffectNames, details, calcRiskRatio, mainEffect,
-      perturbType = perturbType)
+      perturbType = perturbType, massContrasts = massContrasts)
 }
 
 predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
@@ -307,7 +332,8 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
     interaction2 = FALSE, intEffectNames2 = NULL, modEffectNames2 = NULL,
     n3 = NULL, useChangeContributions = FALSE,
     calcRiskRatio = FALSE, mainEffect = "riskDifference", details = FALSE,
-    perturbType1 = "alter", perturbType2 = "alter")
+    perturbType1 = "alter", perturbType2 = "alter",
+    massContrasts = FALSE)
 {
   if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
   dynContrib <- getDynamicChangeContributions(
@@ -320,7 +346,8 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
       effectName1, diff1, contrast1, interaction1, intEffectNames1, modEffectNames1,
       effectName2, diff2, contrast2, interaction2, intEffectNames2, modEffectNames2,
       details, calcRiskRatio, mainEffect,
-      perturbType1 = perturbType1, perturbType2 = perturbType2)
+      perturbType1 = perturbType1, perturbType2 = perturbType2,
+      massContrasts = massContrasts)
 }
 
 # Core computation shared by both static and dynamic paths.
@@ -329,7 +356,7 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
 predictFirstDiff <- function(changeContributions, theta_use, type,
     effectName, diff, contrast, interaction, intEffectNames,
     modEffectNames, details, calcRiskRatio, mainEffect,
-    perturbType = "alter")
+    perturbType = "alter", massContrasts = FALSE)
 {
   contribMat         <- changeContributions$contribMat
   effectNames        <- changeContributions$effectNames
@@ -378,7 +405,7 @@ predictFirstDiff <- function(changeContributions, theta_use, type,
   }
 
   # Mass contrasts for ego-wide perturbations (Delta P_i^+ and Delta P_i^-)
-  if (perturbType == "ego") {
+  if (massContrasts) {
     diffColName <- intersect(c("firstDiff", "firstRiskRatio"), names(fd))[1L]
     if (!is.na(diffColName) && diffColName == "firstDiff") {
       mc <- computeMassContrasts(
@@ -406,7 +433,8 @@ predictSecondDiff <- function(changeContributions, theta_use, type,
     effectName2, diff2, contrast2, interaction2,
     intEffectNames2, modEffectNames2,
     details, calcRiskRatio, mainEffect,
-    perturbType1 = "alter", perturbType2 = "alter")
+    perturbType1 = "alter", perturbType2 = "alter",
+    massContrasts = FALSE)
 {
   contribMat         <- changeContributions$contribMat
   effectNames        <- changeContributions$effectNames
@@ -463,7 +491,7 @@ predictSecondDiff <- function(changeContributions, theta_use, type,
   }
 
   # Mass contrasts for ego-wide perturbations
-  if (perturbType1 == "ego" || perturbType2 == "ego") {
+  if (massContrasts) {
     diffColName <- intersect(c("secondDiff", "secondRiskRatio"), names(sd))[1L]
     if (!is.na(diffColName) && diffColName == "secondDiff") {
       mc <- computeMassContrasts(
@@ -526,8 +554,9 @@ calculateFirstDiff <- function(densityValue,
       newChangeStatistic[oldChangeStatistic == contrast[1]] <- contrast[2]
       newChangeStatistic[oldChangeStatistic == contrast[2]] <- contrast[1]
       if (sum(!is.na(newChangeStatistic)) == 0L)
-        warning("contrast: no rows matched. For mean-centered covariates ",
-                "(varCovar), supply contrast values on the centered scale.",
+        warning("contrast: no rows matched the supplied values ",
+                "(after auto-centering, if applicable). Check that the ",
+                "contrast values correspond to observed change statistics.",
                 call. = FALSE)
       diff <- newChangeStatistic - oldChangeStatistic # this is a vector
     }
@@ -648,8 +677,9 @@ calculateSecondDiff <- function(densityValue,
     newChangeStatistic2[oldChangeStatistic2 == contrast2[1]] <- contrast2[2]
     newChangeStatistic2[oldChangeStatistic2 == contrast2[2]] <- contrast2[1]
     if (sum(!is.na(newChangeStatistic2)) == 0L)
-      warning("contrast2: no rows matched. For mean-centered covariates ",
-              "(varCovar), supply contrast values on the centered scale.",
+      warning("contrast2: no rows matched the supplied values ",
+              "(after auto-centering, if applicable). Check that the ",
+              "contrast values correspond to observed change statistics.",
               call. = FALSE)
     diff2 <- newChangeStatistic2 - oldChangeStatistic2
   }

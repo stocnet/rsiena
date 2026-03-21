@@ -534,21 +534,10 @@ test_that("getGroupVars: NULL condition returns only level vars", {
   expect_equal(getGroupVars("none"),        character(0))
 })
 
-# ── makeGroupKey ─────────────────────────────────────────────────────────────
-
-test_that("makeGroupKey: composite column name indexes correctly", {
-  df <- data.frame(period = c(1L, 1L, 2L), `transTrip_eval` = c(0, 0, 1),
-                   check.names = FALSE)
-  keys <- makeGroupKey(df, c("period", "transTrip_eval"))
-  expect_length(keys, 3L)
-  expect_equal(keys[1], keys[2])     # same period AND same val → same key
-  expect_false(keys[1] == keys[3])   # different period AND different val → different key
-})
-
-test_that("makeGroupKey: empty group_vars returns __all__", {
-  keys <- makeGroupKey(data.frame(x = 1:3), character(0))
-  expect_true(all(keys == "__all__"))
-})
+# ── makeGroupKey (removed — streaming path deleted) ──────────────────────────
+#
+# test_that("makeGroupKey: composite column name indexes correctly", { ... })
+# test_that("makeGroupKey: empty group_vars returns __all__", { ... })
 
 # ── agg: bare-name resolution ────────────────────────────────────────────────
 
@@ -595,64 +584,17 @@ test_that("agg: co-evolution — separate depvar data aggregates independently",
   df_b <- data.frame(period = c(1L, 1L), `density_eval` = c(1L, -1L),
                      changeProb = c(0.6, 0.4), check.names = FALSE)
   agg_a <-
-    agg("changeProb", df_a, level = "period", condition = "density_eval"),
+    agg("changeProb", df_a, level = "period", condition = "density_eval")
 
   agg_b <-
-    agg("changeProb", df_b, level = "period", condition = "density_eval"),
+    agg("changeProb", df_b, level = "period", condition = "density_eval")
   expect_false(identical(agg_a$changeProb, agg_b$changeProb))
 })
 
-# ── updateStream / finalizeStream ─────────────────────────────────────────────
-
-test_that("updateStream + finalizeStream: composite condition column works end-to-end", {
-  sim_df <- data.frame(period = c(1L, 1L, 2L, 2L),
-                       `transTrip.eval` = c(0, 1, 0, 1),
-                       changeProb = c(0.3, 0.7, 0.4, 0.6),
-                       check.names = FALSE)
-  group_vars   <- c("period", "transTrip.eval")
-  stream_state <- new.env(parent = emptyenv(), hash = TRUE)
-  group_state  <- new.env(parent = emptyenv(), hash = TRUE)
-
-  # Two draws of the same result (simple smoke test)
-  with_mocked_bindings(
-    {
-      updateStream(stream_state, group_state, sim_df, "changeProb", group_vars)
-      updateStream(stream_state, group_state, sim_df, "changeProb", group_vars)
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
-  )
-
-  result <-
-    finalizeStream(stream_state, group_state, group_vars,
-                   uncertainty_summary_fun = function(x, na.rm) list(Mean = mean(x)))
-
-  expect_true(is.data.frame(result))
-  expect_true("transTrip.eval" %in% names(result))
-  expect_true("Mean"           %in% names(result))
-  # 2 periods × 2 condition values = 4 groups
-  expect_equal(nrow(result), 4L)
-  # Mean of two identical draws == draw itself
-  expect_true(all(result$Mean %in% c(0.3, 0.7, 0.4, 0.6)))
-})
-
-test_that("updateStream + finalizeStream: creation/endow condition column works", {
-  sim_df <- data.frame(period = c(1L, 1L),
-                       `recip.creation` = c(0L, 1L),
-                       changeProb = c(0.25, 0.75),
-                       check.names = FALSE)
-  group_vars   <- c("period", "recip.creation")
-  stream_state <- new.env(parent = emptyenv(), hash = TRUE)
-  group_state  <- new.env(parent = emptyenv(), hash = TRUE)
-
-    updateStream(stream_state, group_state, sim_df, "changeProb", group_vars)
-
-  result <- 
-    finalizeStream(stream_state, group_state, group_vars,
-                   uncertainty_summary_fun = function(x, na.rm) list(Mean = mean(x)))
-
-  expect_true("recip.creation" %in% names(result))
-  expect_equal(nrow(result), 2L)
-})
+# ── updateStream / finalizeStream (removed — streaming path deleted) ──────────
+#
+# test_that("updateStream + finalizeStream: composite condition column works end-to-end", { ... })
+# test_that("updateStream + finalizeStream: creation/endow condition column works", { ... })
 
 # ── mergeEstimates ────────────────────────────────────────────────────────────
 
@@ -862,7 +804,8 @@ test_that("agg with egoNormalize=TRUE gives ego-first means", {
 
 test_that("agg egoNormalize=TRUE differs from flat mean when egos have unequal alters", {
   df <- make_ego_norm_df()
-  flat    <- agg("tieProb", df, level = "none", condition = "cond")
+  flat    <- agg("tieProb", df, level = "none", condition = "cond",
+    egoNormalize = FALSE)
   egofirst <- agg("tieProb", df, level = "none", condition = "cond",
                    egoNormalize = TRUE)
   # Cell A: flat = mean(0.1,0.2,0.4,0.7) = 0.35 vs ego-first = 0.4167
@@ -910,4 +853,56 @@ test_that("two unspInt: theta names are unspInt1 / unspInt2", {
               info = paste("theta names:", paste(thetaNames, collapse = ", ")))
   expect_false(any(thetaNames == grep("unspInt$", thetaNames, value = TRUE)[1]),
                info = "bare 'unspInt' should not appear when there are two")
+})
+
+# ── getCovCenteringMean ──────────────────────────────────────────────────────
+
+test_that("getCovCenteringMean: returns mean for centered covar", {
+  # Build a minimal effects-like data frame and data object
+  eff <- data.frame(
+    name = "mynet", shortName = c("density", "egoX"),
+    interaction1 = c("", "mybeh"), interaction2 = c("", ""),
+    type = c("eval", "eval"), include = c(TRUE, TRUE),
+    stringsAsFactors = FALSE
+  )
+  # Simulate a centered covariate
+  cov <- 1:10 - 5.5
+  attr(cov, "centered") <- TRUE
+  attr(cov, "mean") <- 5.5
+  dat <- list(cCovars = list(mybeh = cov), vCovars = list(),
+              dycCovars = list(), dyvCovars = list())
+
+  resolved <- resolveEffectName("egoX", getEffectNamesNoRate(eff, "mynet"))
+  expect_equal(getCovCenteringMean(resolved, eff, dat, "mynet"), 5.5)
+})
+
+test_that("getCovCenteringMean: returns 0 for structural effect", {
+  eff <- data.frame(
+    name = "mynet", shortName = c("density", "recip"),
+    interaction1 = c("", ""), interaction2 = c("", ""),
+    type = c("eval", "eval"), include = c(TRUE, TRUE),
+    stringsAsFactors = FALSE
+  )
+  dat <- list(cCovars = list(), vCovars = list(),
+              dycCovars = list(), dyvCovars = list())
+
+  resolved <- resolveEffectName("recip", getEffectNamesNoRate(eff, "mynet"))
+  expect_equal(getCovCenteringMean(resolved, eff, dat, "mynet"), 0)
+})
+
+test_that("getCovCenteringMean: returns 0 for uncentered covar", {
+  eff <- data.frame(
+    name = "mynet", shortName = c("density", "egoX"),
+    interaction1 = c("", "mybeh"), interaction2 = c("", ""),
+    type = c("eval", "eval"), include = c(TRUE, TRUE),
+    stringsAsFactors = FALSE
+  )
+  cov <- 1:10
+  attr(cov, "centered") <- FALSE
+  attr(cov, "mean") <- 5.5
+  dat <- list(cCovars = list(mybeh = cov), vCovars = list(),
+              dycCovars = list(), dyvCovars = list())
+
+  resolved <- resolveEffectName("egoX", getEffectNamesNoRate(eff, "mynet"))
+  expect_equal(getCovCenteringMean(resolved, eff, dat, "mynet"), 0)
 })

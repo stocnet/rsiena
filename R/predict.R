@@ -15,12 +15,13 @@ predict.sienaFit <- function(
     sum_fun = mean,
     na.rm = TRUE,
     uncertainty = TRUE,
-    uncertaintyMode = c("batch", "stream"),
     useCluster = FALSE,
     nbrNodes = 1,
     nsim = 1000,
     uncertaintySd = TRUE,
     uncertaintyCi = TRUE,
+    uncertaintyMean = FALSE,
+    uncertaintyMedian = FALSE,
     uncertaintyProbs = c(0.025, 0.5, 0.975),
     uncertaintyMcse = FALSE,
     uncertaintymcseBatches = NULL,
@@ -43,7 +44,6 @@ predict.sienaFit <- function(
 ) {
   if (inherits(newdata, "sienaGroup"))
     stop("predict.sienaFit does not support multi-group data (sienaGroup).")
-  uncertaintyMode <- match.arg(uncertaintyMode)
   type             <- match.arg(type)
 
   if (is.null(depvar)) depvar <- names(newdata[["depvars"]])[1]
@@ -105,10 +105,12 @@ predict.sienaFit <- function(
   thetaHat                = object[["theta"]], # adjust coef to be used
   covTheta                = object[["covtheta"]], # adjust voctheta to be used
   uncertainty              = uncertainty,
-  uncertaintyMode         = uncertaintyMode,
+
   nsim                     = nsim,
   uncertaintySd           = uncertaintySd,
   uncertaintyCi           = uncertaintyCi,
+  uncertaintyMean         = uncertaintyMean,
+  uncertaintyMedian       = uncertaintyMedian,
   uncertaintyProbs        = uncertaintyProbs,
   uncertaintyMcse         = uncertaintyMcse,
   uncertaintymcseBatches = uncertaintymcseBatches,

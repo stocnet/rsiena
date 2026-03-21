@@ -27,6 +27,7 @@ test_that("marginalEffects static with uncertainty: MCSE columns, no CI", {
     type = "tieProb", depvar = "mynet",
     level = "period", condition = "density",
     nsim = 20, uncertainty = TRUE,
+    uncertaintyMean = TRUE,
     uncertaintyMcse = TRUE, uncertaintymcseBatches = 4,
     uncertaintySd = TRUE, uncertaintyCi = FALSE,
     verbose = FALSE
@@ -75,7 +76,7 @@ test_that("marginalEffects static interaction with uncertainty", {
     nsim = 5, uncertainty = TRUE, verbose = FALSE
   )
   expect_true(is.data.frame(out))
-  expect_true("Mean" %in% names(out))
+  expect_true("SE" %in% names(out))
 })
 
 test_that("marginalEffects static secondDiff with interactions, riskRatio", {
@@ -407,6 +408,6 @@ test_that("two unspInt: conditional prediction (tieProb) with uncertainty", {
     nsim = 5, uncertainty = TRUE, verbose = FALSE
   )
   expect_true(is.data.frame(out))
-  expect_true("Mean" %in% names(out))
+  expect_true("SE" %in% names(out))
 })
 

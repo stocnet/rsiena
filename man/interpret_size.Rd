@@ -43,8 +43,8 @@
                                   n3=500, useChangeContributions=FALSE,
                                   uncertainty=FALSE, level="ego",
                                   sum_fun=mean, na.rm=TRUE, nsim=1000,
-                                  uncertaintyMode=c("batch","stream"),
                                   uncertaintySd=TRUE, uncertaintyCi=TRUE,
+                                  uncertaintyMean=FALSE, uncertaintyMedian=FALSE,
                                   uncertaintyProbs=c(0.025,0.5,0.975),
                                   useCluster=FALSE, nbrNodes=1,
                                   clusterType=c("PSOCK","FORK"),
@@ -96,9 +96,10 @@
   \item{sum_fun}{Function used to aggregate RI values across actors (default \code{mean}).}
   \item{na.rm}{Boolean: whether to remove \code{NA}s in aggregation (default \code{TRUE}).}
   \item{nsim}{Integer: number of theta draws for uncertainty quantification (default 1000).}
-  \item{uncertaintyMode}{Character: uncertainty computation mode (\code{"batch"} or \code{"stream"}).}
   \item{uncertaintySd}{Boolean: include posterior SD in uncertainty output.}
   \item{uncertaintyCi}{Boolean: include credible interval in uncertainty output.}
+  \item{uncertaintyMean}{Boolean: include mean of draws (default \code{FALSE}).}
+  \item{uncertaintyMedian}{Boolean: include median of draws (default \code{FALSE}).}
   \item{uncertaintyProbs}{Numeric vector: quantile probabilities for credible intervals.}
   \item{useCluster}{Boolean: if \code{TRUE}, use a parallel cluster.}
   \item{nbrNodes}{Integer: number of cluster nodes (default 1).}

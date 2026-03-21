@@ -39,9 +39,10 @@
     dynamic = FALSE, algorithm = NULL, n3 = 1000,
     useChangeContributions = FALSE,
     level = "period", condition = NULL, sum_fun = mean, na.rm = TRUE,
-    uncertainty = TRUE, uncertaintyMode = c("batch", "stream"),
+    uncertainty = TRUE,
     useCluster = FALSE, nbrNodes = 1,
     nsim = 1000, uncertaintySd = TRUE, uncertaintyCi = TRUE,
+    uncertaintyMean = FALSE, uncertaintyMedian = FALSE,
     uncertaintyProbs = c(0.025, 0.5, 0.975),
     uncertaintyMcse = FALSE, uncertaintymcseBatches = NULL,
     clusterType = c("PSOCK", "FORK"), cluster = NULL,
@@ -81,13 +82,13 @@
   \item{na.rm}{Logical: remove NAs before aggregation.}
   \item{uncertainty}{Logical (default \code{TRUE}).  If \code{TRUE},
       compute uncertainty via Monte Carlo theta draws.}
-  \item{uncertaintyMode}{\code{"batch"} (default) or \code{"stream"}.}
   \item{useCluster}{Logical: parallelize theta draws across a cluster.}
   \item{nbrNodes}{Number of cluster nodes.}
   \item{nsim}{Number of theta draws (default 1000).}
-  \item{uncertaintySd, uncertaintyCi, uncertaintyProbs,
+  \item{uncertaintySd, uncertaintyCi, uncertaintyMean, uncertaintyMedian,
+      uncertaintyProbs,
       uncertaintyMcse, uncertaintymcseBatches}{Control output columns
-      for SE, confidence intervals, quantiles, and Monte Carlo SE.}
+      for SE, confidence intervals, mean, median, quantiles, and Monte Carlo SE.}
   \item{clusterType}{\code{"PSOCK"} or \code{"FORK"}.}
   \item{cluster}{An existing cluster object (optional).}
   \item{batchDir, prefix, combineBatch, batchSize, keepBatch}{Batch

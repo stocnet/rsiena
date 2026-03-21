@@ -44,9 +44,10 @@ relativeImportance.sienaFit <- function(object, data,
     sum_fun = mean,
     na.rm = TRUE,
     nsim = 1000,
-    uncertaintyMode = c("batch", "stream"),
     uncertaintySd = TRUE,
     uncertaintyCi = TRUE,
+    uncertaintyMean = FALSE,
+    uncertaintyMedian = FALSE,
     uncertaintyProbs = c(0.025, 0.5, 0.975),
     useCluster = FALSE,
     nbrNodes = 1,
@@ -61,7 +62,6 @@ relativeImportance.sienaFit <- function(object, data,
     getChangeStats = FALSE,
     ...) {
 
-    uncertaintyMode <- match.arg(uncertaintyMode)
     distFun <- match.arg(distFun)
     if (is.null(effects)) effects <- object$requestedEffects
     if (!inherits(effects, "sienaEffects"))
@@ -183,10 +183,11 @@ relativeImportance.sienaFit <- function(object, data,
                 thetaHat         = thetaHat,
                 covTheta         = object$covtheta,
                 uncertainty      = TRUE,
-                uncertaintyMode  = uncertaintyMode,
                 nsim             = nsim,
                 uncertaintySd    = uncertaintySd,
                 uncertaintyCi    = uncertaintyCi,
+                uncertaintyMean  = uncertaintyMean,
+                uncertaintyMedian = uncertaintyMedian,
                 uncertaintyProbs = uncertaintyProbs,
                 useCluster       = useCluster,
                 nbrNodes         = nbrNodes,

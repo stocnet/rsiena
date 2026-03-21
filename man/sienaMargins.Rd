@@ -54,8 +54,9 @@
     level = "period", condition = NULL, sum_fun = mean, na.rm = TRUE,
     dynamic = FALSE, algorithm = NULL, n3 = 500,
     useChangeContributions = FALSE, uncertainty = TRUE,
-    uncertaintyMode = c("batch", "stream"), nsim = 1000,
+    nsim = 1000,
     uncertaintySd = TRUE, uncertaintyCi = TRUE,
+    uncertaintyMean = FALSE, uncertaintyMedian = FALSE,
     uncertaintyProbs = c(0.025, 0.5, 0.975),
     uncertaintyMcse = FALSE, uncertaintymcseBatches = NULL,
     useCluster = FALSE, nbrNodes = 1,
@@ -65,6 +66,7 @@
     keepBatch = FALSE, verbose = TRUE,
     mainEffect = "riskDifference", details = FALSE,
     perturbType1 = NULL, perturbType2 = NULL,
+    massContrasts = NULL,
     memoryScale = NULL, batchUnitBudget = 2.5e8,
     dynamicMinistepFactor = 10, ...)
 }
@@ -125,9 +127,9 @@
       \code{ans}.}
   \item{uncertainty}{Logical: whether to compute uncertainty via
       theta-draws (default \code{TRUE}).}
-  \item{uncertaintyMode}{\code{"batch"} or \code{"stream"}.}
   \item{nsim}{Number of theta-draws for uncertainty.}
-  \item{uncertaintySd, uncertaintyCi, uncertaintyProbs, uncertaintyMcse,
+  \item{uncertaintySd, uncertaintyCi, uncertaintyMean, uncertaintyMedian,
+      uncertaintyProbs, uncertaintyMcse,
       uncertaintymcseBatches}{Control output of uncertainty summaries.}
   \item{useCluster, nbrNodes, clusterType, cluster}{Parallelisation settings.}
   \item{batchDir, prefix, combineBatch, batchSize, keepBatch}{Batch mode
@@ -136,6 +138,9 @@
   \item{mainEffect}{\code{"riskDifference"} or \code{"riskRatio"}.}
   \item{details}{Logical: if \code{TRUE}, include detailed intermediate
       quantities.}
+  \item{massContrasts}{Logical or \code{NULL}: compute mass contrasts
+      (\code{massCreation}, \code{massDissolution}).  Auto-detected from
+      \code{perturbType} when \code{NULL} (the default).}
   \item{memoryScale, batchUnitBudget, dynamicMinistepFactor}{Memory management.}
   \item{\dots}{Additional arguments passed to internal functions.}
 }

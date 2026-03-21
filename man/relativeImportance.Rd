@@ -37,8 +37,8 @@ relativeImportance(object, \dots)
     uncertainty = FALSE,
     level = "ego", sum_fun = mean, na.rm = TRUE,
     nsim = 1000,
-    uncertaintyMode = c("batch", "stream"),
     uncertaintySd = TRUE, uncertaintyCi = TRUE,
+    uncertaintyMean = FALSE, uncertaintyMedian = FALSE,
     uncertaintyProbs = c(0.025, 0.5, 0.975),
     useCluster = FALSE, nbrNodes = 1,
     clusterType = c("PSOCK", "FORK"),
@@ -94,11 +94,11 @@ relativeImportance(object, \dots)
   \item{na.rm}{Logical: whether to remove \code{NA}s in aggregation.}
   \item{nsim}{Number of theta draws for uncertainty quantification
         (default 1000).}
-  \item{uncertaintyMode}{Character: \code{"batch"} (default) or
-        \code{"stream"}.}
   \item{uncertaintySd}{Logical: include Monte Carlo standard errors
         in uncertainty output?}
   \item{uncertaintyCi}{Logical: include confidence intervals?}
+  \item{uncertaintyMean}{Logical: include mean of draws (default \code{FALSE})?}
+  \item{uncertaintyMedian}{Logical: include median of draws (default \code{FALSE})?}
   \item{uncertaintyProbs}{Numeric vector of quantile probabilities for
         confidence intervals (default \code{c(0.025, 0.5, 0.975)}).}
   \item{useCluster}{Logical: use a parallel cluster for uncertainty
