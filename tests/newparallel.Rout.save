@@ -237,9 +237,7 @@ outdegree - activity                   0.000
 reciprocity x indegree - popularity   -0.945
 MHD                                   -0.801
 
------
-Computation time for auxiliary statistic calculations on simulations:  0.09 seconds.
-> ##test6
+-----> ##test6
 > mynet1 <- as_dependent_rsiena(array(c(tmp3,tmp4),dim=c(32,32,2)))
 > mydata <- make_data_rsiena(mynet1)
 > myeff<- make_specification(mydata)
@@ -1732,4 +1730,4 @@ Total of 605 iteration steps.
 > 
 > proc.time()
    user  system elapsed 
-  40.60    0.81   41.45 
+  42.89    0.87   43.73 

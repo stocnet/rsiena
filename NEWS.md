@@ -1,4 +1,4 @@
-2026-03-21
+2026-03-22
 
 # RSiena 1.6.3
 
@@ -33,6 +33,8 @@
     all arguments are transferred to the call of `selectionTable`. 
   * For `interpret_influence`,  
     all arguments are transferred to the call of `influenceTable`. 
+  * `Rf_findVar` replaced by `R_getVar` (in `siena07models.cpp`)
+    in view of requirements of `R 4.5.3`.
 ### Documentation 
   * Manual updated to new function names and use of `autograph` for
     plotting influence and selection tables. 
