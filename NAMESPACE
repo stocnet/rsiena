@@ -29,7 +29,8 @@ export(
    sienaEntropy,
    marginalEffects, entropy,
    relativeImportance,
-   getChangeStatistics
+   getChangeStatistics,
+   utilitySpec
 )
 
 # data.table removed — using pure base R + Rcpp
@@ -76,6 +77,7 @@ S3method(make_constraint, sienaGroup)
 S3method(write_report, sienadata)
 S3method(print, sienaGroup)
 S3method(print, sienaDependent)
+S3method(print, utilitySpec)
 S3method(print, sienaFit)
 S3method(summary, sienaFit)
 S3method(coef, sienaFit)
