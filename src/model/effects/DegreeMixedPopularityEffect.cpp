@@ -9,11 +9,8 @@
  * DegreeMixedPopularityEffect class.
  *****************************************************************************/
 
-//#include <string>
-//#include <stdexcept>
 #include "DegreeMixedPopularityEffect.h"
 #include "network/Network.h"
-//#include "network/OneModeNetwork.h"
 #include "network/IncidentTieIterator.h"
 #include "model/EffectInfo.h"
 
