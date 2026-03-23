@@ -1,4 +1,4 @@
-2026-03-22
+2026-03-23
 
 # RSiena 1.6.3
 
@@ -25,6 +25,13 @@
   * Several checks for objects being of class 'siena' extended to 
     alternatively being of class 'sienadata'.
   * `newparallel.R' extended by a test using `test_gof`. 
+  * Depends on `tibble` (for `network` in `networkExtraction`).
+### C++ coding
+  * `Rf_PrintValue` in `Chain.cpp` dropped 
+    (was leftover from earlier debugging). 
+  * `Rf_findVar` replaced by `R_getVar` in `siena07models.cpp`
+    in view of requirements of `R 4.5.3`; requires at least `R 4.5.0`.
+  * Depends on R changed to `(>= 4.5.0)`. 
 ### Bug correction
   * For `transformScript`, processing of `Multipar.RSiena` added. 
   * For `test_gof`,  
@@ -33,8 +40,6 @@
     all arguments are transferred to the call of `selectionTable`. 
   * For `interpret_influence`,  
     all arguments are transferred to the call of `influenceTable`. 
-  * `Rf_findVar` replaced by `R_getVar` (in `siena07models.cpp`)
-    in view of requirements of `R 4.5.3`.
 ### Documentation 
   * Manual updated to new function names and use of `autograph` for
     plotting influence and selection tables. 
