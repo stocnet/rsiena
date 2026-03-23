@@ -60,7 +60,7 @@
     uncertaintyProbs = c(0.025, 0.5, 0.975),
     uncertaintyMcse = FALSE, uncertaintymcseBatches = NULL,
     useCluster = FALSE, nbrNodes = 1,
-    clusterType = c("PSOCK", "FORK"), cluster = NULL,
+    clusterType = c("PSOCK", "FORK"), cl = NULL,
     batchDir = "temp", prefix = "simBatch_b",
     combineBatch = TRUE, batchSize = NULL,
     keepBatch = FALSE, verbose = TRUE,
@@ -131,7 +131,7 @@
   \item{uncertaintySd, uncertaintyCi, uncertaintyMean, uncertaintyMedian,
       uncertaintyProbs, uncertaintyMcse,
       uncertaintymcseBatches}{Control output of uncertainty summaries.}
-  \item{useCluster, nbrNodes, clusterType, cluster}{Parallelisation settings.}
+  \item{useCluster, nbrNodes, clusterType, cl}{Parallelisation settings.}
   \item{batchDir, prefix, combineBatch, batchSize, keepBatch}{Batch mode
       settings.}
   \item{verbose}{Logical: print progress messages.}

@@ -433,7 +433,8 @@ getDynamicChangeContributions <- function(
         algorithm, 
         data=data, 
         effects=effects,
-        initC=FALSE, # why?
+        nbrNodes=1,  # enforce single-threaded: outer mclapply already parallelises over draws
+        initC=FALSE, # parent already called initializeFRAN; workers always get initC=TRUE in robmon
         returnDeps=FALSE, 
         returnChangeContributions=TRUE, 
         returnDataFrame = returnDataFrame,

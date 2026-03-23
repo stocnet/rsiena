@@ -20,7 +20,7 @@ sienaPostestimate <- function(
     useCluster = FALSE,
     nbrNodes = 1,
     clusterType = c("PSOCK", "FORK"),
-    cluster = NULL,
+    cl = NULL,
     batchDir = "temp",
     prefix = "simBatch_b",
     combineBatch = TRUE,
@@ -93,7 +93,7 @@ sienaPostestimate <- function(
       nbrNodes = if (useCluster) nbrNodes else 1L,
       nsim = nsim,
       clusterType = clusterType,
-      cluster = cluster,
+      cl = cl,
       batchDir = batchDir,
       prefix = prefix,
       combineBatch = combineBatch,
@@ -360,7 +360,7 @@ drawSim <- function(
     nbrNodes = 1,
     nsim = 1000,
     clusterType = c("PSOCK", "FORK"),
-    cluster = NULL,
+    cl = NULL,
     batchDir = "temp",
     prefix = "simBatch_b",
     batchSize = NULL,
@@ -371,7 +371,7 @@ drawSim <- function(
     gcEachSim = FALSE
 ) {
 
-    cli <- openCluster(nbrNodes, clusterType, cluster,
+    cli <- openCluster(nbrNodes, clusterType, cl,
       export_vars  = c("estimator", "thetaHat", "covTheta"),
       export_envir = environment(),
       verbose      = verbose
@@ -409,7 +409,9 @@ drawSim <- function(
         })
       } else if (cli$useFORK) {
         batch_result <- parallel::mclapply(batch, function(i) {
-          # if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads(1) # data.table removed
+          Sys.setenv(OMP_NUM_THREADS = "1",
+                     OPENBLAS_NUM_THREADS = "1",
+                     MKL_NUM_THREADS = "1")
           theta_sim <- MASS::mvrnorm(1, mu = thetaHat, Sigma = covTheta)
           sim <- do.call(estimator, list(theta = theta_sim))
           sim[, "sim"] <- i
@@ -438,7 +440,7 @@ drawSim <- function(
       }
     }
     
-    closteCluster(cli, verbose)
+    closeCluster(cli, verbose)
     
     if (verbose) message("All batches complete. Now combining and cleaning up...")
     
@@ -474,7 +476,251 @@ drawSim <- function(
 }
 
 
-openCluster <- function(nbrNodes, clusterType, cluster, export_vars, export_envir, verbose) {
+# ---- Batch-shared simulation loop ----------------------------------------
+#
+# Runs one set of theta draws and evaluates N effects per draw, sharing the
+# expensive contribution-matrix computation step.
+#
+# Static path:  getStaticChangeContributions() computed once (theta-independent),
+#               then N effects × nsim draws evaluated cheaply from the same matrix.
+# Dynamic path: getDynamicChangeContributions() runs n3 forward sims ONCE per
+#               theta draw (instead of N × n3 per draw), all N effects evaluated
+#               from that one set of simulated ministeps.
+#
+# getContribFun(theta) -> wide changeContributions struct
+# effectSpecList: named list of per-effect specs (see marginalEffects effectList)
+#
+# Returns a named list of raw_sims data frames (one per effect).
+drawSimBatch <- function(
+    getContribFun,
+    effectSpecList,
+    thetaHat,
+    covTheta,
+    thetaNames   = names(thetaHat),
+    nsim         = 1000L,
+    useCluster   = FALSE,
+    nbrNodes     = 1L,
+    clusterType  = c("PSOCK", "FORK"),
+    cl      = NULL,
+    batchSize    = 100L,
+    batchDir     = "temp",
+    prefix       = "simBatchB_b",
+    keepBatch    = FALSE,
+    verbose      = TRUE,
+    gcEachBatch  = TRUE,
+    gcEachSim    = FALSE,
+    egoNormalize = TRUE
+) {
+    N <- length(effectSpecList)
+    if (N == 0L) stop("'effectSpecList' must not be empty.")
+    eff_names <- names(effectSpecList)
+    if (is.null(eff_names) || any(eff_names == ""))
+        stop("All elements of 'effectSpecList' must be named.")
+
+    nbrNodes <- as.integer(nbrNodes)
+    ct       <- match.arg(clusterType, c("PSOCK", "FORK"))
+    useFork  <- isTRUE(useCluster) && (ct == "FORK") &&
+                    (nbrNodes > 1L) && (.Platform$OS.type != "windows")
+    usePSOCK <- isTRUE(useCluster) && (ct == "PSOCK") && (nbrNodes > 1L)
+
+    nbatches <- ceiling(nsim / batchSize)
+    # When there is only one batch and we are not asked to keep it, skip
+    # disk I/O entirely and hold the result in memory.
+    skip_disk <- (nbatches == 1L && !keepBatch)
+
+    if (!skip_disk && !dir.exists(batchDir))
+        dir.create(batchDir, recursive = TRUE)
+
+    if (verbose) {
+        message("Batch-shared simulation: nsim=", nsim, ", effects=", N,
+                ", batchSize=", batchSize, ", batches=", nbatches)
+    }
+
+    t_loop_start   <- proc.time()
+    sims_computed  <- 0L  # sims actually run this session (not loaded from disk)
+
+    # ---- Batch loop with resume support -----------------------------------
+    # If a batch file already exists on disk (from a previous crashed run),
+    # skip recomputing it.  This makes the server pipeline resumable.
+    batch_pattern <- sprintf("^%s\\d{3}\\.rds$", prefix)
+
+    in_memory_batch <- NULL  # used only when skip_disk == TRUE
+
+    for (b in seq_len(nbatches)) {
+        first_sim <- 1L + (b - 1L) * batchSize
+        last_sim  <- min(b * batchSize, nsim)
+        batch_idx <- first_sim:last_sim
+        bsz <- length(batch_idx)
+
+        fname <- file.path(batchDir, sprintf("%s%03d.rds", prefix, b))
+        if (file.exists(fname)) {
+            if (verbose) {
+                message(sprintf("  Batch %d/%d: found on disk, skipping.",
+                                b, nbatches))
+            }
+            next
+        }
+
+        if (verbose) {
+            message(sprintf("  Batch %d/%d: sims %d-%d", b, nbatches,
+                            first_sim, last_sim))
+        }
+
+        # bpe[[j]][[k]]: per-draw result for effect j, k-th sim in this batch
+        bpe <- vector("list", N)
+        for (j in seq_len(N)) bpe[[j]] <- vector("list", bsz)
+
+        # Function to run one draw and return per-effect results
+        run_one_draw <- function(k) {
+            i <- batch_idx[k]
+            theta_sim <- MASS::mvrnorm(1L, mu = thetaHat, Sigma = covTheta)
+            if (!is.null(thetaNames) && is.null(names(theta_sim)))
+                names(theta_sim) <- thetaNames
+            cc <- getContribFun(theta_sim)
+            if (is.null(cc$csMat))
+                cc$csMat <- contribToChangeStats(cc$contribMat, cc$effectNames)
+            theta_use <- theta_sim[cc$effectNames]
+
+            per_effect <- vector("list", N)
+            for (j in seq_len(N)) {
+                spec      <- effectSpecList[[j]]
+                unit_pred <- do.call(
+                    spec$diffFun,
+                    c(list(changeContributions = cc, theta_use = theta_use),
+                      spec$diffArgs)
+                )
+                out_nm <- spec$outcomeName
+                lvl    <- if (!is.null(spec$level))     spec$level     else "period"
+                cond   <- if (!is.null(spec$condition)) spec$condition else NULL
+
+                row_j <- agg(out_nm, unit_pred,
+                             level = lvl, condition = cond,
+                             sum_fun = mean, na.rm = TRUE,
+                             egoNormalize = egoNormalize)
+                row_j[["sim"]] <- i
+
+                massCols <- intersect(c("massCreation", "massDissolution"),
+                                      names(unit_pred))
+                for (mc in massCols) {
+                    mc_row <- agg(mc, unit_pred,
+                                  level = lvl, condition = NULL,
+                                  sum_fun = mean, na.rm = TRUE,
+                                  egoNormalize = egoNormalize)
+                    mc_by  <- intersect(
+                        getGroupVars(level = lvl, condition = NULL),
+                        intersect(names(row_j), names(mc_row))
+                    )
+                    if (length(mc_by) > 0L) {
+                        row_j <- merge(row_j, mc_row, by = mc_by,
+                                       all.x = TRUE, sort = FALSE)
+                    } else {
+                        row_j[[mc]] <- mc_row[[mc]]
+                    }
+                }
+                per_effect[[j]] <- row_j
+            }
+            per_effect
+        }
+
+        if (usePSOCK) {
+            # Export needed objects to workers each batch
+            parallel::clusterExport(
+                cl,
+                c("getContribFun", "effectSpecList", "thetaHat", "covTheta",
+                  "thetaNames", "N", "bsz", "batch_idx", "egoNormalize"),
+                envir = environment()
+            )
+            draw_results <- parallel::parLapply(cl, seq_len(bsz), run_one_draw)
+            for (k in seq_len(bsz)) {
+                for (j in seq_len(N)) bpe[[j]][[k]] <- draw_results[[k]][[j]]
+            }
+            sims_computed <- sims_computed + bsz
+        } else if (useFork) {
+            draw_results <- parallel::mclapply(
+                seq_len(bsz), function(k) {
+                    Sys.setenv(OMP_NUM_THREADS = "1",
+                               OPENBLAS_NUM_THREADS = "1",
+                               MKL_NUM_THREADS = "1")
+                    run_one_draw(k)
+                },
+                mc.cores = nbrNodes, mc.set.seed = TRUE
+            )
+            for (k in seq_len(bsz)) {
+                for (j in seq_len(N)) bpe[[j]][[k]] <- draw_results[[k]][[j]]
+            }
+            sims_computed <- sims_computed + bsz
+        } else {
+            for (k in seq_len(bsz)) {
+                t_sim_start <- proc.time()
+                per_effect  <- run_one_draw(k)
+                sims_computed <- sims_computed + 1L
+                if (verbose) {
+                    i <- batch_idx[k]
+                    t_draw    <- (proc.time() - t_sim_start)[["elapsed"]]
+                    t_elapsed <- (proc.time() - t_loop_start)[["elapsed"]]
+                    eta_sec   <- if (sims_computed < nsim)
+                        (t_elapsed / sims_computed) * (nsim - sims_computed)
+                        else 0
+                    message(sprintf("    [%d/%d] %.1fs/draw | ETA ~%.0fs",
+                                    i, nsim, t_draw, eta_sec))
+                }
+                for (j in seq_len(N)) bpe[[j]][[k]] <- per_effect[[j]]
+                if (gcEachSim) gc(verbose = FALSE)
+            }
+        }
+
+        # Save batch to disk (or hold in memory if single-batch run)
+        if (skip_disk) {
+            in_memory_batch <- bpe
+        } else {
+            saveRDS(bpe, file = fname)
+        }
+        rm(bpe)
+        if (gcEachBatch) gc(verbose = FALSE)
+        if (verbose) {
+            message(sprintf("  Done batch %d/%d (%d%%)",
+                            b, nbatches, round(100 * last_sim / nsim)))
+        }
+    } # batch loop
+
+    if (verbose) message("Combining batches...")
+
+    # Read batch files and flatten per-effect lists
+    per_effect_raw <- vector("list", N)
+    for (j in seq_len(N)) per_effect_raw[[j]] <- vector("list", nsim)
+
+    if (!is.null(in_memory_batch)) {
+        # Single-batch path: no disk I/O
+        for (j in seq_len(N)) per_effect_raw[[j]] <- in_memory_batch[[j]]
+    } else {
+        batch_files <- sort(list.files(
+            batchDir,
+            pattern    = batch_pattern,
+            full.names = TRUE
+        ))
+        for (b in seq_along(batch_files)) {
+            bp    <- readRDS(batch_files[[b]])
+            first <- 1L + (b - 1L) * batchSize
+            last  <- min(b * batchSize, nsim)
+            for (j in seq_len(N)) {
+                per_effect_raw[[j]][first:last] <- bp[[j]]
+            }
+            if (!keepBatch) file.remove(batch_files[[b]])
+        }
+    }
+
+    # Collapse each effect's list of per-draw rows into one data frame
+    out <- lapply(per_effect_raw, function(draws) {
+        raw <- do.call(rbind, draws)
+        rownames(raw) <- NULL
+        raw
+    })
+    names(out) <- eff_names
+    out
+}
+
+
+openCluster <- function(nbrNodes, clusterType, cl, export_vars, export_envir, verbose) {
   clusterType <- if (nbrNodes > 1) match.arg(clusterType, c("PSOCK", "FORK")) else "FORK"
   usePSOCK <- (clusterType == "PSOCK" && nbrNodes > 1)
   useFORK  <- (clusterType == "FORK"  && nbrNodes > 1 && .Platform$OS.type != "windows")
@@ -483,7 +729,7 @@ openCluster <- function(nbrNodes, clusterType, cluster, export_vars, export_envi
     warning("An X11 graphics device is open. This can cause parallel processing to hang. ...")
 
   cluster_created <- FALSE
-  cl <- cluster
+  cl <- cl
   if (usePSOCK && is.null(cl)) {
     cl <- parallel::makeCluster(nbrNodes, type = "PSOCK")
     cluster_created <- TRUE
@@ -491,15 +737,18 @@ openCluster <- function(nbrNodes, clusterType, cluster, export_vars, export_envi
   }
   if (usePSOCK) {
     parallel::clusterExport(cl, export_vars, envir = export_envir)
-    # data.table removed — no need for setDTthreads
-    # parallel::clusterEvalQ(cl, {
-    #   if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads(1)
-    # })
+    # Limit inner threading on workers so BLAS/OpenMP don't oversubscribe
+    # when multiple PSOCK workers run concurrently.
+    parallel::clusterEvalQ(cl, {
+      Sys.setenv(OMP_NUM_THREADS = "1",
+                 OPENBLAS_NUM_THREADS = "1",
+                 MKL_NUM_THREADS = "1")
+    })
   }
   list(cl = cl, cluster_created = cluster_created, usePSOCK = usePSOCK, useFORK = useFORK)
 }
 
-closteCluster <- function(cli, verbose) {
+closeCluster <- function(cli, verbose) {
   if (cli$cluster_created) {
     parallel::stopCluster(cli$cl)
     if (verbose) message("Stopped internal cluster.")

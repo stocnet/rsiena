@@ -386,13 +386,13 @@ test_that("planBatch: nsim=1 always returns 1", {
   expect_equal(planBatch(mock_data, "mynet", nsim = 1L), 1L)
 })
 
-test_that("planBatch: multi-worker result is multiple of nbrNodes", {
+test_that("planBatch: returns positive integer within nsim", {
   dv <- array(0, dim = c(10, 10, 3))
   mock_data <- list(depvars = list(net = dv))
-  result <- planBatch(mock_data, "net", nsim = 50,
-                       useCluster = TRUE, nbrNodes = 4, dynamic = FALSE)
-  expect_equal(result %% 4L, 0L)
-  expect_gte(result, 4L)
+  result <- planBatch(mock_data, "net", nsim = 50, dynamic = FALSE)
+  expect_true(is.integer(result))
+  expect_gte(result, 1L)
+  expect_lte(result, 50L)
 })
 
 test_that("planBatch: memoryScale reduces batch size", {

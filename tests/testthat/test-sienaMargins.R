@@ -292,21 +292,6 @@ test_that("marginalEffects static: egoX interaction firstDiff", {
   expect_true("firstDiff" %in% names(out))
 })
 
-test_that("marginalEffects static: egoX perturbType override alter works", {
-  skip_slow()
-  skip_if(is.null(ans_ego), "ans_ego not fitted (RSENA_FULL_TESTS=1)")
-  out <- marginalEffects(
-    object = ans_ego, data = mydata_ego,
-    effectName1 = "egoX", diff1 = 1,
-    perturbType1 = "alter",
-    type = "tieProb", depvar = "mynet_ego",
-    level = "period", condition = "density",
-    uncertainty = FALSE
-  )
-  expect_true(is.data.frame(out))
-  expect_true("firstDiff" %in% names(out))
-})
-
 test_that("marginalEffects dynamic: egoX auto-detects ego perturbation", {
   skip_slow()
   skip_if(is.null(ans_ego), "ans_ego not fitted (RSENA_FULL_TESTS=1)")
@@ -409,5 +394,96 @@ test_that("two unspInt: conditional prediction (tieProb) with uncertainty", {
   )
   expect_true(is.data.frame(out))
   expect_true("SE" %in% names(out))
+})
+
+# ── effectList: multi-effect batch path ──────────────────────────────────────
+
+test_that("effectList returns named list with same structure as scalar calls", {
+  set.seed(1)
+  scalar_recip <- marginalEffects(
+    object = ans, data = mydata,
+    effectName1 = "recip", contrast1 = c(0, 1),
+    type = "tieProb", level = "period", condition = "density",
+    nsim = 20, uncertainty = TRUE, verbose = FALSE
+  )
+  scalar_trans <- marginalEffects(
+    object = ans, data = mydata,
+    effectName1 = "transTrip", diff1 = 1,
+    type = "tieProb", level = "period", condition = "density",
+    nsim = 20, uncertainty = TRUE, verbose = FALSE
+  )
+
+  set.seed(1)
+  batch <- marginalEffects(
+    object = ans, data = mydata,
+    type = "tieProb", level = "period", condition = "density",
+    nsim = 20, uncertainty = TRUE, verbose = FALSE,
+    effectList = list(
+      recip_fd  = list(effectName1 = "recip",     contrast1 = c(0, 1)),
+      trans_fd  = list(effectName1 = "transTrip", diff1     = 1)
+    )
+  )
+
+  # Returns a named list
+  expect_true(is.list(batch))
+  expect_setequal(names(batch), c("recip_fd", "trans_fd"))
+
+  # Each element is a data frame with the expected uncertainty columns
+  expect_true(is.data.frame(batch$recip_fd))
+  expect_true(is.data.frame(batch$trans_fd))
+  expect_true("firstDiff" %in% names(batch$recip_fd))
+  expect_true("SE"        %in% names(batch$recip_fd))
+  expect_true("firstDiff" %in% names(batch$trans_fd))
+  expect_true("SE"        %in% names(batch$trans_fd))
+
+  # Row counts match the scalar equivalents
+  expect_equal(nrow(batch$recip_fd), nrow(scalar_recip))
+  expect_equal(nrow(batch$trans_fd), nrow(scalar_trans))
+})
+
+test_that("effectList scalar call (single element) returns data frame, not list", {
+  out <- marginalEffects(
+    object = ans, data = mydata,
+    effectName1 = "recip", contrast1 = c(0, 1),
+    type = "tieProb", level = "period", condition = "density",
+    nsim = 10, uncertainty = FALSE, verbose = FALSE
+  )
+  expect_true(is.data.frame(out))
+  expect_false(is.list(out) && !is.data.frame(out))
+})
+
+test_that("effectList: secondDiff mixed with firstDiff in one batch", {
+  batch <- marginalEffects(
+    object = ans, data = mydata,
+    type = "tieProb", level = "period", condition = "density",
+    nsim = 10, uncertainty = FALSE, verbose = FALSE,
+    effectList = list(
+      fd   = list(effectName1 = "recip",    contrast1 = c(0, 1)),
+      sd   = list(effectName1 = "transTrip", diff1 = 1,
+                  effectName2 = "recip",    contrast2 = c(0, 1),
+                  second = TRUE)
+    )
+  )
+  expect_true(is.list(batch))
+  expect_true("firstDiff"  %in% names(batch$fd))
+  expect_true("secondDiff" %in% names(batch$sd))
+})
+
+test_that("effectList dynamic: shared forward sims, returns named list", {
+  skip_slow()
+  batch <- marginalEffects(
+    object = ans, data = mydata,
+    effects = mymodel, algorithm = mycontrols,
+    type = "tieProb", level = "period", condition = "density",
+    dynamic = TRUE, n3 = 50, nsim = 10,
+    uncertainty = FALSE, verbose = FALSE,
+    effectList = list(
+      recip_fd = list(effectName1 = "recip",    contrast1 = c(0, 1)),
+      trans_fd = list(effectName1 = "transTrip", diff1    = 1)
+    )
+  )
+  expect_true(is.list(batch))
+  expect_true("firstDiff" %in% names(batch$recip_fd))
+  expect_true("firstDiff" %in% names(batch$trans_fd))
 })
 

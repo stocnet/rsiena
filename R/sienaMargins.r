@@ -41,7 +41,7 @@ marginalEffects.sienaFit <- function(
     useCluster = FALSE,
     nbrNodes = 1,
     clusterType = c("PSOCK", "FORK"),
-    cluster = NULL,
+    cl = NULL,
     batchDir = "temp",
     prefix = "simBatch_b",
     combineBatch = TRUE,
@@ -58,6 +58,10 @@ marginalEffects.sienaFit <- function(
     dynamicMinistepFactor = 10,
     egoNormalize = TRUE,
     returnDecisionDetails = FALSE,
+    effectList = NULL,
+    saveDir = NULL,
+    gcEachBatch = TRUE,
+    gcEachSim = FALSE,
     ...
 ) {
     if (inherits(data, "sienaGroup"))
@@ -75,199 +79,460 @@ marginalEffects.sienaFit <- function(
     if (dynamic && is.null(algorithm))
       stop("'algorithm' must be provided when dynamic = TRUE")
 
-    if (is.null(batchSize)) {
-        batchSize <- planBatch(
-        data = data, depvar = depvar, nsim = nsim,
-        nbrNodes = nbrNodes, useCluster = useCluster,
-        dynamic = dynamic, n3 = n3,
-        unitBudget = batchUnitBudget,
-        dynamicMinistepFactor = dynamicMinistepFactor,
-        memoryScale = memoryScale
+    # ================================================================
+    # Unified code path: if scalar effectName1 args are given (single
+    # effect), wrap them into a one-element effectList so everything
+    # flows through the same code.
+    # ================================================================
+    .single_effect <- FALSE
+    if (is.null(effectList) && !missing(effectName1)) {
+        effectList <- list(single = list(
+            effectName1     = effectName1,
+            diff1           = diff1,
+            contrast1       = contrast1,
+            interaction1    = interaction1,
+            intEffectNames1 = intEffectNames1,
+            modEffectNames1 = modEffectNames1,
+            second          = second,
+            effectName2     = effectName2,
+            diff2           = diff2,
+            contrast2       = contrast2,
+            interaction2    = interaction2,
+            intEffectNames2 = intEffectNames2,
+            modEffectNames2 = modEffectNames2,
+            perturbType1    = perturbType1,
+            perturbType2    = perturbType2,
+            massContrasts   = massContrasts,
+            returnDecisionDetails = returnDecisionDetails
+        ))
+        .single_effect <- TRUE
+    }
+
+    if (is.null(effectList))
+        stop("Either 'effectName1' or 'effectList' must be provided.")
+
+    # ================================================================
+    # Main computation path (handles both single and multi-effect).
+    #
+    # Static:  getStaticChangeContributions() once (theta-independent),
+    #          then N effects x nsim draws evaluated cheaply.
+    # Dynamic: getDynamicChangeContributions() once per theta draw
+    #          (n3 forward sims shared across all N effects).
+    #
+    # level, condition, type, mainEffect are fixed for all effects.
+    # Per-effect entries only specify effect-identifying params
+    # (effectName1, diff1, contrast1, interaction1, etc.).
+    # ================================================================
+    if (!is.list(effectList) || length(effectList) == 0L)
+        stop("'effectList' must be a non-empty named list.")
+    if (is.null(names(effectList)) || any(nchar(names(effectList)) == 0L))
+        stop("All elements of 'effectList' must be named.")
+
+        req         <- object$requestedEffects
+        effects_use <- if (is.null(effects)) req else effects
+        thetaHat    <- object[["theta"]]
+        covTheta    <- object[["covtheta"]]
+        thetaNames  <- names(thetaHat)
+
+        # ---- saveDir: check for completed effects --
+        if (!is.null(saveDir)) {
+            if (!dir.exists(saveDir))
+                dir.create(saveDir, recursive = TRUE)
+            done <- vapply(names(effectList), function(nm)
+                file.exists(file.path(saveDir, paste0(nm, ".rds"))),
+                logical(1L))
+            if (all(done)) {
+                if (verbose) message("All effects found in saveDir, loading.")
+                results <- lapply(names(effectList), function(nm)
+                    readRDS(file.path(saveDir, paste0(nm, ".rds"))))
+                names(results) <- names(effectList)
+                return(if (.single_effect) results[["single"]] else results)
+            }
+        }
+
+        # ---- Build shared contribution function ----
+        if (!dynamic) {
+            staticContributions <- getStaticChangeContributions(
+                ans     = object,
+                data    = data,
+                effects = effects_use,
+                depvar  = depvar,
+                returnWide = TRUE
+            )
+            staticContributions$csMat <- contribToChangeStats(
+                staticContributions$contribMat,
+                staticContributions$effectNames
+            )
+            knownEffectNames <- staticContributions$effectNames
+            getContribFun <- function(theta) staticContributions
+        } else {
+            if ("basicRate" %in% names(effects_use) && !any(effects_use$basicRate)) {
+                stop(
+                    "The 'effects' object contains no rate effects. ",
+                    "This is required when dynamic = TRUE because siena07 ",
+                    "is rerun internally.\n",
+                    "Please pass the full effects object, e.g. effects = mymodel."
+                )
+            }
+            knownEffectNames <- getEffectNamesNoRate(effects_use, depvar)
+            dynArgs <- list(
+                ans      = object,
+                data     = data,
+                algorithm = algorithm,
+                effects  = effects_use,
+                depvar   = depvar,
+                n3       = n3,
+                useChangeContributions = useChangeContributions,
+                returnWide = TRUE
+            )
+            getContribFun <- function(theta) {
+                do.call(getDynamicChangeContributions,
+                        c(list(theta = theta), dynArgs))
+            }
+        }
+
+        # ---- effectInteractionTypes for resolvePerturbType ----
+        if (!dynamic) {
+            eiTypes <- staticContributions$effectInteractionTypes
+        } else if ("interactionType" %in% names(effects_use)) {
+            noRate  <- effects_use$type != "rate"
+            inc     <- effects_use[
+                noRate & effects_use$include & effects_use$name == depvar, ]
+            eiTypes <- setNames(inc$interactionType, knownEffectNames)
+        } else {
+            eiTypes <- NULL
+        }
+
+        # ---- Uncertainty summary function ----
+        uncertainty_summary_fun <- makeUncertaintySummarizer(
+            return_sd     = uncertaintySd,
+            return_ci     = uncertaintyCi,
+            return_mean   = uncertaintyMean,
+            return_median = uncertaintyMedian,
+            probs         = uncertaintyProbs,
+            return_mcse   = uncertaintyMcse,
+            mcseBatches   = uncertaintymcseBatches
         )
-    }
 
-    # ---- outcome name ----
-    diffName <- if (!second) {
-    ifelse(mainEffect == "riskDifference", "firstDiff", "firstRiskRatio")
-    } else {
-    ifelse(mainEffect == "riskDifference", "secondDiff", "secondRiskRatio")
-    }
+        # ---- Build validated per-effect spec list ----
+        builtSpecList <- vector("list", length(effectList))
+        names(builtSpecList) <- names(effectList)
 
-    # still necessary?
-    req      <- object$requestedEffects
-    effects  <- if (is.null(effects)) req else effects
-    # ---- resolve all user-supplied effect names once ----
-    if (dynamic) {
-      knownEffectNames <- getEffectNamesNoRate(effects, depvar)
-    } else {
-      staticContributions <- getStaticChangeContributions(
-          ans = object, data = data, effects = effects, depvar = depvar,
-          returnWide = TRUE
-      )
-      # Pre-flip to change-statistic space once (like getChangeStatistics).
-      # Reused across all theta draws — avoids per-draw matrix copy.
-      staticContributions$csMat <- contribToChangeStats(
-          staticContributions$contribMat, staticContributions$effectNames)
-      knownEffectNames <- staticContributions$effectNames
-    }
+        for (nm in names(effectList)) {
+            spec <- effectList[[nm]]
+            eff_second <- isTRUE(spec$second)
 
-    resolvedNames <- resolveAMEEffectNames(
-      knownEffectNames,
-      effectName1, intEffectNames1, modEffectNames1,
-      effectName2, intEffectNames2, modEffectNames2,
-      second
-    )
-    effectName1     <- resolvedNames$effectName1
-    intEffectNames1 <- resolvedNames$intEffectNames1
-    modEffectNames1 <- resolvedNames$modEffectNames1
-    effectName2     <- resolvedNames$effectName2
-    intEffectNames2 <- resolvedNames$intEffectNames2
-    modEffectNames2 <- resolvedNames$modEffectNames2
+            if (is.null(spec$effectName1))
+                stop("Effect '", nm, "' must specify 'effectName1'.")
 
-    # ---- auto-center contrasts for centered covariates ----
-    # Users supply contrast on the raw (uncentered) scale, e.g. c(0, 1).
-    # Internally the change statistics use centered covariate values, so we
-    # shift the contrast by the centering mean.
-    if (!is.null(contrast1)) {
-      cm1 <- getCovCenteringMean(effectName1, effects, data, depvar)
-      if (cm1 != 0) contrast1 <- contrast1 - cm1
-    }
-    if (second && !is.null(contrast2)) {
-      cm2 <- getCovCenteringMean(effectName2, effects, data, depvar)
-      if (cm2 != 0) contrast2 <- contrast2 - cm2
-    }
+            resolved <- resolveAMEEffectNames(
+                knownEffectNames,
+                spec$effectName1,
+                spec$intEffectNames1,
+                spec$modEffectNames1,
+                spec$effectName2,
+                spec$intEffectNames2,
+                spec$modEffectNames2,
+                eff_second
+            )
 
-    # ---- resolve perturbation type (alter vs ego) per effect ----
-    eiTypes <- if (!dynamic) staticContributions$effectInteractionTypes else NULL
-    # For the dynamic path, build effectInteractionTypes from the effects object
-    if (dynamic && "interactionType" %in% names(effects)) {
-        noRate <- effects$type != "rate"
-        inc <- effects[noRate & effects$include & effects$name == depvar, ]
-        eiTypes <- setNames(inc$interactionType, knownEffectNames)
-    }
-    pt1 <- resolvePerturbType(effectName1, eiTypes, perturbType1)
-    pt2 <- if (second) resolvePerturbType(effectName2, eiTypes, perturbType2) else "alter"
+            pt1 <- resolvePerturbType(resolved$effectName1, eiTypes,
+                                      spec$perturbType1)
+            pt2 <- if (eff_second)
+                       resolvePerturbType(resolved$effectName2, eiTypes,
+                                          spec$perturbType2)
+                   else
+                       "alter"
 
-    if (is.null(massContrasts)) {
-        massContrasts <- (pt1 == "ego") || (second && pt2 == "ego")
-    }
+            eff_massC <- if (!is.null(spec$massContrasts)) {
+                spec$massContrasts
+            } else {
+                (pt1 == "ego") || (eff_second && pt2 == "ego")
+            }
 
-    if (!is.null(condition) && massContrasts) {
-      warning("'condition' is applied to 'firstDiff' only. ",
-      "Mass contrasts (massCreation, massDissolution) are ego-level ",
-      "quantities and are always averaged unconditionally over level = '",
-      level, "'.", call. = FALSE)
-    }
-    # ---- build predictArgs ----
-    if (dynamic) {
-      predictArgs <- list(
-          ans = object, data = data, effects = effects,
-          algorithm = algorithm, type = type, depvar = depvar,
-          n3 = n3, useChangeContributions = useChangeContributions,
-          mainEffect = mainEffect, details = details,
-          attachContribs = TRUE
-      )
-      if (!second) {
-          diffFun <- predictFirstDiffDynamic
-          predictArgs <- c(predictArgs, list(
-          effectName = effectName1, diff = diff1, contrast = contrast1,
-          interaction = interaction1, intEffectNames = intEffectNames1,
-          modEffectNames = modEffectNames1,
-          perturbType = pt1,
-          massContrasts = massContrasts
-          ))
-      } else {
-          diffFun <- predictSecondDiffDynamic
-          predictArgs <- c(predictArgs, list(
-          effectName1 = effectName1, diff1 = diff1, contrast1 = contrast1,
-          interaction1 = interaction1, intEffectNames1 = intEffectNames1,
-          modEffectNames1 = modEffectNames1,
-          effectName2 = effectName2, diff2 = diff2, contrast2 = contrast2,
-          interaction2 = interaction2, intEffectNames2 = intEffectNames2,
-          modEffectNames2 = modEffectNames2,
-          perturbType1 = pt1, perturbType2 = pt2,
-          massContrasts = massContrasts
-          ))
-      }
-    } else {
-      predictArgs <- list(
-          staticContributions = staticContributions,
-          type = type, mainEffect = mainEffect, details = details,
-          attachContribs = TRUE
-      )
-      if (!second) {
-          diffFun <- predictFirstDiffStatic
-          predictArgs <- c(predictArgs, list(
-          effectName = effectName1, diff = diff1, contrast = contrast1,
-          interaction = interaction1, intEffectNames = intEffectNames1,
-          modEffectNames = modEffectNames1,
-          perturbType = pt1,
-          massContrasts = massContrasts
-          ))
-      } else {
-          diffFun <- predictSecondDiffStatic
-          predictArgs <- c(predictArgs, list(
-          effectName1 = effectName1, diff1 = diff1, contrast1 = contrast1,
-          interaction1 = interaction1, intEffectNames1 = intEffectNames1,
-          modEffectNames1 = modEffectNames1,
-          effectName2 = effectName2, diff2 = diff2, contrast2 = contrast2,
-          interaction2 = interaction2, intEffectNames2 = intEffectNames2,
-          modEffectNames2 = modEffectNames2,
-          perturbType1 = pt1, perturbType2 = pt2,
-          massContrasts = massContrasts
-          ))
-      }
-    }
+            eff_diffName <- if (!eff_second) {
+                ifelse(mainEffect == "riskDifference", "firstDiff",
+                       "firstRiskRatio")
+            } else {
+                ifelse(mainEffect == "riskDifference", "secondDiff",
+                       "secondRiskRatio")
+            }
 
-    sienaPostestimate(
-    predictFun               = diffFun,
-    predictArgs              = predictArgs,
-    outcomeName              = diffName,
-    level                    = level,
-    condition                = condition,
-    sum_fun                  = sum_fun,
-    na.rm                    = na.rm,
-    thetaHat                = object[["theta"]], # change to coef later
-    covTheta                = object[["covtheta"]], # change to vcov later
-    uncertainty              = uncertainty,
-    nsim                     = nsim,
-    uncertaintySd           = uncertaintySd,
-    uncertaintyCi           = uncertaintyCi,
-    uncertaintyMean         = uncertaintyMean,
-    uncertaintyMedian       = uncertaintyMedian,
-    uncertaintyProbs        = uncertaintyProbs,
-    uncertaintyMcse         = uncertaintyMcse,
-    uncertaintymcseBatches = uncertaintymcseBatches,
-    useCluster               = useCluster,
-    nbrNodes                 = nbrNodes,
-    clusterType              = clusterType,
-    cluster                  = cluster,
-    batchDir                = batchDir,
-    prefix                   = prefix,
-    combineBatch            = combineBatch,
-    batchSize               = batchSize,
-    keepBatch               = keepBatch,
-    verbose                  = verbose,
-    useChangeContributions   = if (dynamic) useChangeContributions else NULL,
-    egoNormalize             = egoNormalize,
-    returnDecisionDetails    = returnDecisionDetails,
-    metadata = list(
-      method      = "marginalEffects",
-      type        = type,
-      effectName1 = effectName1,
-      contrast1   = contrast1,
-      effectName2 = if (second) effectName2 else NULL,
-      contrast2   = if (second) contrast2 else NULL,
-      second      = second,
-      level       = level,
-      condition   = condition,
-      depvar      = depvar,
-      dynamic     = dynamic,
-      nsim        = nsim,
-      outcomeName = diffName,
-      mainEffect  = mainEffect
-    )
-    )
+            # Auto-center contrasts for centered covariates
+            eff_contrast1 <- spec$contrast1
+            eff_contrast2 <- spec$contrast2
+            if (!is.null(eff_contrast1)) {
+                cm1 <- getCovCenteringMean(resolved$effectName1,
+                                           effects_use, data, depvar)
+                if (cm1 != 0) eff_contrast1 <- eff_contrast1 - cm1
+            }
+            if (eff_second && !is.null(eff_contrast2)) {
+                cm2 <- getCovCenteringMean(resolved$effectName2,
+                                           effects_use, data, depvar)
+                if (cm2 != 0) eff_contrast2 <- eff_contrast2 - cm2
+            }
+
+            eff_retDet    <- isTRUE(spec$returnDecisionDetails)
+            needs_attrib  <- !is.null(condition) || eff_retDet
+
+            if (!eff_second) {
+                diffFun  <- predictFirstDiff
+                diffArgs <- list(
+                    type           = type,
+                    effectName     = resolved$effectName1,
+                    diff           = spec$diff1,
+                    contrast       = eff_contrast1,
+                    interaction    = isTRUE(spec$interaction1),
+                    intEffectNames = resolved$intEffectNames1,
+                    modEffectNames = resolved$modEffectNames1,
+                    details        = FALSE,
+                    calcRiskRatio  = FALSE,
+                    mainEffect     = mainEffect,
+                    perturbType    = pt1,
+                    massContrasts  = eff_massC,
+                    attachContribs = needs_attrib
+                )
+            } else {
+                diffFun  <- predictSecondDiff
+                diffArgs <- list(
+                    type            = type,
+                    effectName1     = resolved$effectName1,
+                    diff1           = spec$diff1,
+                    contrast1       = eff_contrast1,
+                    interaction1    = isTRUE(spec$interaction1),
+                    intEffectNames1 = resolved$intEffectNames1,
+                    modEffectNames1 = resolved$modEffectNames1,
+                    effectName2     = resolved$effectName2,
+                    diff2           = spec$diff2,
+                    contrast2       = eff_contrast2,
+                    interaction2    = isTRUE(spec$interaction2),
+                    intEffectNames2 = resolved$intEffectNames2,
+                    modEffectNames2 = resolved$modEffectNames2,
+                    details         = FALSE,
+                    calcRiskRatio   = FALSE,
+                    mainEffect      = mainEffect,
+                    perturbType1    = pt1,
+                    perturbType2    = pt2,
+                    massContrasts   = eff_massC,
+                    attachContribs  = needs_attrib
+                )
+            }
+
+            builtSpecList[[nm]] <- list(
+                diffFun               = diffFun,
+                diffArgs              = diffArgs,
+                outcomeName           = eff_diffName,
+                level                 = level,
+                condition             = condition,
+                massContrasts         = eff_massC,
+                returnDecisionDetails = eff_retDet,
+                metadata = list(
+                    method      = "marginalEffects",
+                    type        = type,
+                    effectName1 = resolved$effectName1,
+                    contrast1   = eff_contrast1,
+                    effectName2 = if (eff_second) resolved$effectName2
+                                  else NULL,
+                    contrast2   = if (eff_second) eff_contrast2
+                                  else NULL,
+                    second      = eff_second,
+                    level       = level,
+                    condition   = condition,
+                    depvar      = depvar,
+                    dynamic     = dynamic,
+                    nsim        = nsim,
+                    n3          = if (dynamic) n3 else NULL
+                )
+            )
+        }
+
+        # ---- Default batchSize (batch path uses nbrNodes=1) ----
+        if (is.null(batchSize)) {
+            batchSize <- planBatch(
+                data     = data,
+                depvar   = depvar,
+                nsim     = nsim,
+                dynamic  = dynamic,
+                n3       = n3,
+                nbrNodes = nbrNodes,
+                useCluster = useCluster,
+                unitBudget = batchUnitBudget,
+                dynamicMinistepFactor = dynamicMinistepFactor,
+                memoryScale = memoryScale
+            )
+        }
+
+        # ---- Point estimates (shared hat contributions) ----
+        ccHat <- getContribFun(thetaHat)
+        if (is.null(ccHat$csMat))
+            ccHat$csMat <- contribToChangeStats(ccHat$contribMat,
+                                                ccHat$effectNames)
+        theta_hat_use <- thetaHat[ccHat$effectNames]
+
+        decision_details <- vector("list", length(builtSpecList))
+        names(decision_details) <- names(builtSpecList)
+
+        expects <- lapply(names(builtSpecList), function(nm) {
+            spec    <- builtSpecList[[nm]]
+            pe_args <- spec$diffArgs
+            if (isTRUE(spec$returnDecisionDetails))
+                pe_args$attachContribs <- TRUE
+            unit_pred <- do.call(
+                spec$diffFun,
+                c(list(changeContributions = ccHat,
+                       theta_use = theta_hat_use),
+                  pe_args)
+            )
+            if (isTRUE(spec$returnDecisionDetails))
+                decision_details[[nm]] <<- unit_pred
+            main_result <- agg(spec$outcomeName, unit_pred,
+                level = spec$level, condition = spec$condition,
+                sum_fun = sum_fun, na.rm = na.rm,
+                egoNormalize = egoNormalize)
+            # Also aggregate mass contrast point estimates alongside main outcome
+            massCols_pe <- intersect(c("massCreation", "massDissolution"),
+                                     names(unit_pred))
+            for (mc in massCols_pe) {
+                mc_agg <- agg(mc, unit_pred,
+                              level = spec$level, condition = NULL,
+                              sum_fun = sum_fun, na.rm = na.rm,
+                              egoNormalize = egoNormalize)
+                mc_by <- intersect(
+                    getGroupVars(level = spec$level, condition = NULL),
+                    intersect(names(main_result), names(mc_agg))
+                )
+                if (length(mc_by) > 0L) {
+                    main_result <- merge(main_result, mc_agg, by = mc_by,
+                                         all.x = TRUE, sort = FALSE)
+                } else {
+                    main_result[[mc]] <- mc_agg[[mc]]
+                }
+            }
+            main_result
+        })
+        names(expects) <- names(builtSpecList)
+
+        if (!uncertainty) {
+            results <- mapply(function(nm, spec) {
+                res <- stampPostestimate(expects[[nm]], spec$metadata)
+                if (isTRUE(spec$returnDecisionDetails) &&
+                    !is.null(decision_details[[nm]]))
+                    attr(res, "decisionDetails") <- decision_details[[nm]]
+                res
+            }, names(builtSpecList), builtSpecList, SIMPLIFY = FALSE)
+            if (!is.null(saveDir)) {
+                for (nm in names(results))
+                    saveRDS(results[[nm]],
+                            file.path(saveDir, paste0(nm, ".rds")))
+            }
+            return(if (.single_effect) results[["single"]] else results)
+        }
+
+        # ---- Uncertainty via shared simulation loop ----
+        # When saveDir is set, keep batch files until all effects are
+        # saved so the simulation phase can resume on crash.
+        keepBatch_internal <- if (!is.null(saveDir)) TRUE else keepBatch
+
+        raw_sims_list <- drawSimBatch(
+            getContribFun  = getContribFun,
+            effectSpecList = builtSpecList,
+            thetaHat    = thetaHat,
+            covTheta    = covTheta,
+            thetaNames  = thetaNames,
+            nsim        = nsim,
+            useCluster  = useCluster,
+            nbrNodes    = nbrNodes,
+            clusterType = clusterType,
+            cl     = cl,
+            batchSize   = batchSize,
+            batchDir    = batchDir,
+            prefix      = prefix,
+            keepBatch   = keepBatch_internal,
+            verbose     = verbose,
+            gcEachBatch = gcEachBatch,
+            gcEachSim   = gcEachSim,
+            egoNormalize = egoNormalize
+        )
+
+        # ---- Aggregate uncertainty per effect ----
+        results <- vector("list", length(builtSpecList))
+        names(results) <- names(builtSpecList)
+
+        for (nm in names(builtSpecList)) {
+            # Skip effects already saved from a previous (crashed) run
+            if (!is.null(saveDir) &&
+                file.exists(file.path(saveDir, paste0(nm, ".rds")))) {
+                results[[nm]] <- readRDS(
+                    file.path(saveDir, paste0(nm, ".rds")))
+                if (verbose) message("  Loading saved result: ", nm)
+                next
+            }
+
+            spec     <- builtSpecList[[nm]]
+            raw_j    <- raw_sims_list[[nm]]
+            expect_j <- expects[[nm]]
+
+            uncert_j <- agg(
+                spec$outcomeName, raw_j,
+                level     = spec$level,
+                condition = spec$condition,
+                sum_fun   = uncertainty_summary_fun,
+                na.rm     = na.rm,
+                egoNormalize = egoNormalize
+            )
+            result_j <- mergeEstimates(expect_j, uncert_j,
+                                       level     = spec$level,
+                                       condition = spec$condition)
+
+            massCols <- intersect(
+                c("massCreation", "massDissolution"), names(raw_j))
+            for (mc in massCols) {
+                mc_uncert <- agg(mc, raw_j,
+                                 level     = spec$level,
+                                 condition = NULL,
+                                 sum_fun   = uncertainty_summary_fun,
+                                 na.rm     = na.rm,
+                                 egoNormalize = egoNormalize)
+                level_by <- intersect(
+                    getGroupVars(level = spec$level, condition = NULL),
+                    names(mc_uncert)
+                )
+                uc_cols <- setdiff(names(mc_uncert), level_by)
+                for (uc in uc_cols)
+                    names(mc_uncert)[names(mc_uncert) == uc] <-
+                        paste0(mc, "_", uc)
+                if (length(level_by) > 0L) {
+                    result_j <- merge(result_j, mc_uncert,
+                                      by = level_by,
+                                      all.x = TRUE, sort = FALSE)
+                } else {
+                    for (col in setdiff(names(mc_uncert), level_by))
+                        result_j[[col]] <- mc_uncert[[col]]
+                }
+            }
+
+            results[[nm]] <- stampPostestimate(result_j, spec$metadata)
+            if (isTRUE(spec$returnDecisionDetails) &&
+                !is.null(decision_details[[nm]]))
+                attr(results[[nm]], "decisionDetails") <-
+                    decision_details[[nm]]
+
+            # Save immediately for crash resilience
+            if (!is.null(saveDir))
+                saveRDS(results[[nm]],
+                        file.path(saveDir, paste0(nm, ".rds")))
+        }
+
+        # Clean up batch files now that all effects are saved
+        if (!is.null(saveDir) && !keepBatch) {
+            batch_pattern <- sprintf("^%s\\d{3}\\.rds$", prefix)
+            bf <- list.files(batchDir, pattern = batch_pattern,
+                             full.names = TRUE)
+            for (f in bf) file.remove(f)
+        }
+
+    # Return: single data frame for scalar call, named list for effectList
+    if (.single_effect) results[["single"]] else results
 }
 
 
@@ -873,4 +1138,3 @@ resolveAMEEffectNames <- function(effectNames,
     modEffectNames2 = if (second) resolveEffectName(modEffectNames2, effectNames) else NULL
   )
 }
-

@@ -26,7 +26,7 @@ predict.sienaFit <- function(
     uncertaintyMcse = FALSE,
     uncertaintymcseBatches = NULL,
     clusterType = c("PSOCK", "FORK"),
-    cluster = NULL,
+    cl = NULL,
     batchDir = "temp",
     prefix = "simBatch_b",
     combineBatch = TRUE,
@@ -55,7 +55,7 @@ predict.sienaFit <- function(
         data = newdata,
         depvar = depvar, 
         nsim = nsim,
-        nbrNodes = nbrNodes, 
+        nbrNodes = nbrNodes,
         useCluster = useCluster,
         dynamic = dynamic, 
         n3 = n3,
@@ -79,6 +79,7 @@ predict.sienaFit <- function(
         silent                 = silent,
         attachContribs         = FALSE
     )
+
   } else {
     # Build the contribution matrix ONCE — reused across all theta draws
     staticContributions <- getStaticChangeContributions(
@@ -107,7 +108,6 @@ predict.sienaFit <- function(
   thetaHat                = object[["theta"]], # adjust coef to be used
   covTheta                = object[["covtheta"]], # adjust voctheta to be used
   uncertainty              = uncertainty,
-
   nsim                     = nsim,
   uncertaintySd           = uncertaintySd,
   uncertaintyCi           = uncertaintyCi,
@@ -119,7 +119,7 @@ predict.sienaFit <- function(
   useCluster               = useCluster,
   nbrNodes                 = nbrNodes,
   clusterType              = clusterType,
-  cluster                  = cluster,
+  cl                       = cl,
   batchDir                = batchDir,
   prefix                   = prefix,
   combineBatch            = combineBatch,
@@ -171,7 +171,6 @@ planBatch <- function(
     unitsPerCall <- units
   }
 
-
   unitsPerAgg <- max(1.0, units * as.numeric(n3Val) *
                         if (dynamic) as.numeric(dynamicMinistepFactor) else 1.0)
 
@@ -180,8 +179,7 @@ planBatch <- function(
   if (budgetForAgg <= 0) {
     if (effective_workers > 1L) {
       warning(sprintf(
-        "Memory budget (%.0f units) may be insufficient for %d parallel worker(s)
-        at %.0f units each. Consider reducing nbrNodes or increasing batchUnitBudget.",
+        "Memory budget (%.0f units) may be insufficient for %d parallel worker(s)\n        at %.0f units each. Consider reducing nbrNodes or increasing batchUnitBudget.",
         unitBudget, effective_workers, unitsPerCall
       ))
     }

@@ -45,7 +45,7 @@
     uncertaintyMean = FALSE, uncertaintyMedian = FALSE,
     uncertaintyProbs = c(0.025, 0.5, 0.975),
     uncertaintyMcse = FALSE, uncertaintymcseBatches = NULL,
-    clusterType = c("PSOCK", "FORK"), cluster = NULL,
+    clusterType = c("PSOCK", "FORK"), cl = NULL,
     batchDir = "temp", prefix = "simBatch_b",
     combineBatch = TRUE, batch = TRUE, silent = NULL,
     batchSize = NULL, keepBatch = FALSE, verbose = TRUE,
@@ -90,7 +90,7 @@
       uncertaintyMcse, uncertaintymcseBatches}{Control output columns
       for SE, confidence intervals, mean, median, quantiles, and Monte Carlo SE.}
   \item{clusterType}{\code{"PSOCK"} or \code{"FORK"}.}
-  \item{cluster}{An existing cluster object (optional).}
+  \item{cl}{An existing cluster object (optional).}
   \item{batchDir, prefix, combineBatch, batchSize, keepBatch}{Batch
       mode settings for large-scale computations.}
   \item{batch}{Logical: run \code{siena07} in batch mode (default
