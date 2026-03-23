@@ -31,8 +31,8 @@ effectsDocumentation <- function(effects= NULL, type="html",
 #  }
 	storage.mode(x$parm) <- "integer"
 	names(x)[4] <- ifelse(is.null(effects), "endow?", "type")
-	names(x)[5] <- "inter1"
-	names(x)[6] <- "inter2"
+	names(x)[5] <- "covar1"
+	names(x)[6] <- "covar2"
 	names(x)[8] <- "interactionType"
 	if (is.null(effects))
 	{

@@ -1,4 +1,5 @@
 #/******************************************************************************
+#/******************************************************************************
 # * SIENA: Simulation Investigation for Empirical Network Analysis
 # *
 # * Web: https://www.stats.ox.ac.uk/~snijders/siena
@@ -226,10 +227,10 @@ EvaluateTestStatistic<- function(maxlike, test, redundant, dfra, msf, fra)
 	sigma21<- t(sigma12)
 	z1 <- fra[!(test|redundant)]
 	z2 <- fra[test]
+	oneSided <- NA
 	if (inherits(try(id11 <- solve(d11), silent=TRUE), "try-error"))
 	{
 		warning('Score test: Error for inversion of d11 \n')
-		oneSided <- NA
 		v9 <- d22
 		v9[] <- NA
 		cvalue <- matrix(NA, 1, 1)
@@ -260,7 +261,6 @@ EvaluateTestStatistic<- function(maxlike, test, redundant, dfra, msf, fra)
 			vav <- v9
 			vav[] <- NA
 			cvalue <- NA
-			oneSided <- NA
 		}
 		else
 		{
@@ -269,9 +269,13 @@ EvaluateTestStatistic<- function(maxlike, test, redundant, dfra, msf, fra)
 			if (sum(test) == 1)
 			{
 				if (vav > 0)
+				{
 					oneSided <- ov * sqrt(vav)
+				}
 				else
+				{
 					oneSided <- 0
+				}
 				if (!maxlike) oneSided <- - oneSided
 				## change the sign for intuition for users
 			}
@@ -367,12 +371,14 @@ Wald.RSiena <- function(A, x)
 	if (df == 1)
 	{
 		onesided <- sign(th) * sqrt(chisq)
+		ster <- sqrt(covmat[1,1])
 	}
 	else
 	{
 		onesided <- NULL
+		ster <- NULL
 	}
-	t_x <- list(chisquare=chisq, df=df, pvalue=pval, onesided=onesided)
+	t_x <- list(chisquare=chisq, df=df, pvalue=pval, onesided=onesided, sterror=ster)
 	class(t_x) <- "sienaTest"
 	attr(t_x, "version") <- packageDescription(pkgname, fields = "Version")
 	t_x
@@ -432,7 +438,7 @@ print.sienaTest <- function(x, ...)
 	}
 	if (any(is.na(unlist(x))))
 	{
-		stop("some estimates or standard errors are NA")
+		warning("some estimates or standard errors are NA")
 	}
 	if (!is.null(x$efnames))
 	{
@@ -442,12 +448,14 @@ print.sienaTest <- function(x, ...)
 	cat(paste('chi-squared = ',
 		format(round(x$chisquare, digits=2), nsmall = 2),
 		', d.f. = ', x$df, '; ', sep=''))
-	if ((x$df == 1) & (!is.null(x$onesided)))
+	if ((x$df == 1) & (!is.null(x$onesided)) & (!is.null(x$sterror)))
 	{
+		cat(paste( 'standard error of linear combination = ',
+			format(round(x$sterror, digits=3), nsmall = 2), '; ', sep=''))
 		cat(paste('one-sided Z = ',
 			format(round(x$onesided, digits=2), nsmall = 2), '; ', sep=''))
-		cat('two-sided')
 	}
+	cat('two-sided')
 	if (x$pvalue < 0.001)
 	{
 		cat(' p < 0.001. \n')

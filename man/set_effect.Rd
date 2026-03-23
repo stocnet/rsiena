@@ -46,14 +46,12 @@ setEffect(x, shortName, parameter = NULL,
     Defaults to the first in the effects object.
   }
   \item{covar1}{
-    Vector of Siena objects where needed to completely identify the
-    effect e.g. covariate name or behavior variable name.
-    See the examples below. Trailing blanks may be omitted.
+  Name of siena object where needed to completely identify the
+  effect e.g. covariate name or behavior variable name.
   }
   \item{covar2}{
-    Vector of Siena objects where needed to completely identify the
-    effect e.g. covariate name or behavior variable name.
-    Trailing blanks may be omitted.
+  Name of siena object where needed to completely identify the
+  effect e.g. covariate name or behavior variable name.
   }
   \item{parameter}{Value of internal effect parameter. If \code{NULL},
   no change is made.
@@ -175,6 +173,7 @@ myeff <- make_specification(mydata)
 myeff <- set_effect(myeff, gwespFF)
 myeff <- set_effect(myeff, list(inPop, outAct))
 myeff <- set_effect(myeff, "gwespFB")
+myeff <- set_effect(myeff, simX, covar1="mybeh")
 myeff
 # Specify an effect parameter:
 myeff <- set_effect(myeff, outTrunc, parameter=1)

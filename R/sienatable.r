@@ -66,6 +66,7 @@ write_result.sienaFit <- function(x, type='tex',
 
 ##@siena_table siena07 Saves latex or html table of estimates
 ## for a sienaFit or sienaBayesFit object
+# Also see fromObjectToText in siena07.r,which does this more drastically
 siena_table <- function(x, type='tex',
 	fileName=NULL,
 	vertLine=TRUE, tstatPrint=FALSE,
@@ -86,13 +87,19 @@ siena_table <- function(x, type='tex',
 			b <- gsub('<=', '$\\leq$', fixed=TRUE, b)
 			b <- gsub('sqrt', '$\\sqrt{}$', fixed=TRUE, b)
 			b <- gsub('&', '.', fixed=TRUE, b)
+			b <- gsub('#', '.', fixed=TRUE, b)
+		}
+		else
+		{
+			b <- gsub(' ', '_', fixed=TRUE, b)
+			b <- gsub('.', '_', fixed=TRUE, b)
+			b <- gsub('#', '_', fixed=TRUE, b)
 		}
 # Note: R changes \\ to \ but still displays \\ in printing the string.
 		b <- gsub('^(1/1)', '', fixed=TRUE, b)
 		b <- gsub('^(1/2)', '(sqrt)', fixed=TRUE, b)
 		b <- gsub('^', '', fixed=TRUE, b)
 		b <- gsub('_', '-', fixed=TRUE, b)
-		b <- gsub('#', '.', fixed=TRUE, b)
 		b
 	}
 

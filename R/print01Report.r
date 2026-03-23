@@ -873,7 +873,7 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 		Report("\n\n", outf) ## end of reportDataObject
 	}
 	## create output file. ## start of print01Report proper
-	if (!(inherits(data, "sienadata")))
+	if 	(!(inherits(data, "sienadata") | inherits(data, "siena")))
 	{
 		stop("The first argument needs to be a siena data object.")
 	}
@@ -1139,7 +1139,8 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 		}
 	}
 
-	if (sum(atts$types == 'oneMode') > 0)
+# The following is dropped in version 1.6.3 because the balance effect is hardly used.
+	if ((sum(atts$types == 'oneMode') > 0) & (FALSE))
 	{
 		netnames <- atts$netnames[nets]
 		if (nData > 1)

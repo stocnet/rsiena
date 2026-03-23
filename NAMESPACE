@@ -16,7 +16,7 @@ export(
 	includeTimeDummy, sienaGOF, descriptives, interpret_size,
 	interpret_size_dynamics, sparseMatrixExtraction, networkExtraction, behaviorExtraction,
 	OutdegreeDistribution, IndegreeDistribution, BehaviorDistribution,
-	TriadCensus, mixedTriadCensus, dyadicCov, egoAlterCombi,
+	TriadCensus, mixedTriadCensus, dyadicCov, egoAlterCombi, egoAlterCovarComb,
 	siena_table, xtable, score.Test, Wald.RSiena, Multipar.RSiena, 
    testSame.RSiena, funnelPlot, meta.table,
 	influenceTable, selectionTable,
@@ -52,6 +52,7 @@ importFrom("utils", "browseURL", "edit",
            "flush.console", "getFromNamespace", "object.size",
            "packageDescription", "read.csv",
            "read.table", "write.csv", "write.table")
+importFrom("network", "network.initialize", "network.edgelist")
 S3method(print, sienadata)
 S3method(print, siena)
 S3method(make_specification, sienadata)

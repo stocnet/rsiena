@@ -31,7 +31,7 @@ interpret_size_dynamics <- function(data, ans=NULL, theta=NULL,
 	} else {
 		depvar <- attr(data$depvars,"names")[1]
 	}
-	if (!inherits(data, "sienadata"))
+	if (!(inherits(data, "sienadata") | inherits(data, "siena")))
 	{
 		stop("data is not a legitimate Siena data specification")
 	}

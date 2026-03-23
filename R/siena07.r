@@ -778,7 +778,14 @@ errorHandler <- function()
 coef.sienaFit <- function(object, dropRates=TRUE, shortenNames=TRUE, ...)
 {
 	result <- object$theta
-	names(result) <- fromObjectToText(object$requestedEffects$effectName)
+	if (shortenNames)
+	{
+		names(result) <- fromObjectToText(object$requestedEffects$effectName)
+	}
+	else
+	{
+		names(result) <- object$requestedEffects$effectName
+	}	
 	if (dropRates)
 	{
 		return(result[!object$requestedEffects$basicRate])
@@ -793,7 +800,14 @@ coef.sienaFit <- function(object, dropRates=TRUE, shortenNames=TRUE, ...)
 vcov.sienaFit <- function(object, dropRates=TRUE, shortenNames=TRUE, ...)
 {
 	result <- object$covtheta
-	colnames(result) <- fromObjectToText(object$requestedEffects$effectName)
+	if (shortenNames)
+	{
+		colnames(result) <- fromObjectToText(object$requestedEffects$effectName)
+	}
+	else
+	{
+		colnames(result) <- object$requestedEffects$effectName
+	}	
 	rownames(result) <- colnames(result)
 	if (dropRates)
 	{
@@ -824,18 +838,26 @@ fromObjectToText <- function(a, type='notex'){
 	b <- gsub("ocity", "", fixed=TRUE, b)
 	b <- gsub("itive", "", fixed=TRUE, b)
 	b <- gsub("iated", "", fixed=TRUE, b)
-	b <- gsub("constant ", "", fixed=TRUE, b)
-	b <- gsub("period ", "", fixed=TRUE, b)
+	b <- gsub("basic ", "", fixed=TRUE, b)
+	b <- gsub("rate constant ", "", fixed=TRUE, b)
+	b <- gsub("(period ", "(per_", fixed=TRUE, b)
 	b <- gsub("degree", "deg", fixed=TRUE, b)
 	b <- gsub("arity", "", fixed=TRUE, b)
 	b <- gsub("ativity", "", fixed=TRUE, b)
 	b <- gsub("ivity", "", fixed=TRUE, b)
 	b <- gsub("erence", "", fixed=TRUE, b)
+	b <- gsub("tot.", "tot", fixed=TRUE, b)
+	b <- gsub("av.", "av", fixed=TRUE, b)
+	b <- gsub("aver.", "av", fixed=TRUE, b)
 	b <- gsub(" at ", " ", fixed=TRUE, b)
 	b <- gsub(" of ", " ", fixed=TRUE, b)
 	b <- gsub(" by ", " ", fixed=TRUE, b)
+	b <- gsub("compression", "compr", fixed=TRUE, b)
+	b <- gsub("triplets", "tripl", fixed=TRUE, b)
 	b <- gsub("weighted", "wght", fixed=TRUE, b)
 	b <- gsub("weight", "wght", fixed=TRUE, b)
+	b <- gsub("maximum", "max", fixed=TRUE, b)
+	b <- gsub("minimum", "min", fixed=TRUE, b)
 	b <- gsub(" -> ", ">", fixed=TRUE, b)
 	b <- gsub(" <- ", "<", fixed=TRUE, b)
 	b <- gsub(" <> ", "=", fixed=TRUE, b)
@@ -843,10 +865,18 @@ fromObjectToText <- function(a, type='notex'){
 	b <- gsub(" * ", "*", fixed=TRUE, b)
 	b <- gsub(" x ", "*", fixed=TRUE, b)
 	b <- gsub("ilarity", "", fixed=TRUE, b)
-	b <- gsub('^(1/1)', '1', fixed=TRUE, b)
+	b <- gsub('^(1/1)', '(1)', fixed=TRUE, b)
 	b <- gsub('^(1/2)', '(sqrt)', fixed=TRUE, b)
+	b <- gsub(' (', '(', fixed=TRUE, b)
 	b <- gsub('^', '', fixed=TRUE, b)
 	b <- gsub('_', '-', fixed=TRUE, b)
-	b <- gsub('#', '.', fixed=TRUE, b)
+	b <- gsub('#', '.', fixed=TRUE, b)	
+	if (type != 'tex')
+	{
+		b <- gsub(' ', '_', fixed=TRUE, b)
+		b <- gsub('.', '_', fixed=TRUE, b)
+		b <- gsub('__', '_', fixed=TRUE, b)
+		b <- gsub('_(', '(', fixed=TRUE, b)
+	}
 	b
 }

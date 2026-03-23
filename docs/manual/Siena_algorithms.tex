@@ -780,6 +780,9 @@ The algorithm consists of three phases.
       \]
       where \nnm{diagonalize} is set in function \nm{sienaAlgorithmCreate},
       with default value 1.
+      \item If \nnm{splitDepvars}=1 in the algorithm, then replace the
+        blocks in matrix $ \tilde{D}$ regarding effects for different dependent
+        variables (which occur only for co-evolution models) by zero blocks.
       \item Componentwise regression coefficients of statistics $S$ on scores
             $\sum_m J_m$, i.e., for each coordinate $j$,
             \[
@@ -792,14 +795,18 @@ The algorithm consists of three phases.
       \item Make one partial estimated Newton-Raphson step,
       \[
        {\hat{\theta}} = \theta_1 -
-         a_1 {\hat{D}}^{-1} \left( \bar{s} - s \right)\, .
+         a_1 {\tilde{D}}^{-1} \left( \bar{s} - s \right)\, .
       \]
       where
       \[
       \nnm{targets} = s = \text{ observed values} .
       \]
+      (For this step, before version 1.6.3, the matrix $\hat{D}$ was used
+      instead of $\tilde{D}$.)
       \end{enumerate}
+      \medskip
 
+     In the code, matrix $\hat{D}$ is \nnm{dinv} and $\tilde{D}$ is \nnm{dinvv}.
 \item[Phase 2.]
     \emph{Note 1: I cannot find anything about phase2.0 in the current code -- ts 23-05-13.}\\
     \emph{Note 2: the use of observedPos and observedNeg apparently was discontinued.}\\
@@ -1899,7 +1906,7 @@ It is identified by being the only rate effect of type "covariate",
 together with the dependent variable name and the explanatory variable,
 given by the parameter "interaction1".
 
-\subsection{Diffusion rate effects\protect\footnote{This 
+\subsection{Diffusion rate effects\protect\footnote{This
     section was contributed by Daniel Gotthardt.}}
 
 Diffusion rate effects can be added and modified more easily than other rate

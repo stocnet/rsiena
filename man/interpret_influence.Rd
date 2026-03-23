@@ -101,7 +101,7 @@ influenceTable(x, xd, netname, behname,
 
 \references{
   \url{https://www.stats.ox.ac.uk/~snijders/siena/}\cr
-  See the manual, Sections 13.2 and 13.4.
+  See the manual, Sections 14.2 and 14.4.
 }
 \author{Tom Snijders}
 \seealso{\code{\link{siena}}, \code{\link{meta_siena}} }

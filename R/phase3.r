@@ -102,7 +102,7 @@ phase3.2 <- function(z, x, ...)
 	z <- CalculateDerivative3(z, x)
 	if (!x$simOnly)
 	{
-		z <- PotentialNR(z, x, FALSE)
+		z <- PotentialNR(z, x, FALSE) # this calculates z$dinv
 	}
     if (any(z$newfixed))
     {
@@ -189,6 +189,7 @@ phase3.2 <- function(z, x, ...)
 			B0 <- t(gamma) %*% W
 			B <- solve(diag(sqrt(rowSums(B0*B0)))) %*% B0 # Row-normalized matrix B
 			D0 <- B%*%gamma # Matrix D = B * gammaT 
+# I (TS) think the following is superfluous, because z$dinvv is never used in Phase 3.
 			if (inherits(try(D0inv <- solve(D0), silent=TRUE),
  						"try-error"))
 			{

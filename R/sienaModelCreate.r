@@ -61,13 +61,14 @@ set_algorithm_saom <- function(
 # Sets SAOM estimation procedure:
 	maxlike = FALSE, gmm = FALSE,
 	cond = NA, condvarno = 0, condname = "",
-	simOnly=FALSE,
-	targets=NULL, thetaValues = NULL, 
+	simOnly = FALSE,
+	targets = NULL, thetaValues = NULL, 
 	seed = NULL,
 # Specification of Robbins Monro algorithm:
 	n3 = 1000, nsub = 4, n2start = NULL, firstg = 0.2, reduceg = 0.5,
-	truncation=5, doubleAveraging=0,
-	diagonalize=0.2*!maxlike, standardizeVar=(diagonalize<1), dolby=TRUE,
+	truncation = 5, doubleAveraging = 0,
+	diagonalize = 0.2*!maxlike, standardizeVar = (diagonalize<1), dolby = TRUE,
+	splitDepvars = 0,
 	useStdInits = FALSE, findiff = FALSE,
 # Specification of likelihood algorithm,
 # relevant only for maximum likelihood and Bayesian estimation:
@@ -143,6 +144,7 @@ set_algorithm_saom <- function(
 	model$nsub <- nsub
 	model$n2start <- n2start
 	model$dolby <- (dolby && (!maxlike)&& (!gmm))
+	model$splitDepvars <- splitDepvars
 	if (diagonalize < 0) {diagonalize <- 0}
 	if (diagonalize > 1) {diagonalize <- 1}
 	model$diagg <- (diagonalize >= 0.9999)
@@ -251,6 +253,7 @@ sienaModelCreate <- function(fn,
 	projname="Siena", MaxDegree=NULL, Offset=NULL,
 	useStdInits=FALSE,
 	n3=1000, nsub=4, n2start = NULL, dolby=TRUE,
+	splitDepvars=0,
 	maxlike=FALSE, gmm=FALSE, diagonalize=0.2*!maxlike,
 	condvarno=0, condname='',
 	firstg=0.2, reduceg=0.5, cond=NA, findiff=FALSE,  seed=NULL,
@@ -394,6 +397,7 @@ sienaModelCreate <- function(fn,
 	{
 		model$dolby <- (dolby && (!maxlike)&& (!gmm))
 	}	
+	model$splitDepvars <- splitDepvars
 	if (diagonalize < 0) {diagonalize <- 0}
 	if (diagonalize > 1) {diagonalize <- 1}
 	model$diagg <- (diagonalize >= 0.9999)

@@ -524,19 +524,28 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 				z$dfra <- prevAns$dfra
 				z$dinv <- prevAns$dinv
 				# z$dinvv must not be taken from prevAns,
-				# because the value of diagonalize
+				# because the values of diagonalize and splitDepvars
 				# is defined in x and may have changed.
 				# Therefore here we copy the corresponding lines
 				# from phase1.r.
 				# Partial diagonalization of derivative matrix
 				# for use if 0 < x$diagonalize < 1.
-				if (any(!z$gmm))
+				splitDepvars <- "splitDepvars" %in% names(x)
+				if (splitDepvars)
+				{
+					splitDepvars <- x$splitDepvars
+				}
+				if (any(!z$gmm)) 
 				{
 				  temp <- (1-x$diagonalize)*z$dfra +
 				    x$diagonalize*diag(diag(z$dfra), nrow=dim(z$dfra)[1])
 				  temp[z$fixed, ] <- 0.0
 				  temp[, z$fixed] <- 0.0
 				  diag(temp)[z$fixed] <- 1.0
+				  if (splitDepvars)
+				  {	
+						temp[outer(effects$name, effects$name, '!=')] <- 0
+				  }
 				  # Invert this matrix
 				  z$dinvv <- solve(temp)
 				}

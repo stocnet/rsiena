@@ -1,3 +1,56 @@
+2026-03-23
+
+# RSiena 1.6.3
+
+## Changes in RSiena:
+### New function
+  * Auxiliary function `egoAlterCovarComb` for `test_gof`. 
+### Effects
+  * New effects `outdegMixedPop` and `indegMixedPop`.
+  * `endowment`=TRUE for `XWX1`, `XWX2`, and `cl.XWX1`.
+### Functionality
+  * Option `splitDepvars` for `set_algorithm_saom`.
+  * The quasi-Newton Raphson update step at the end of Phase 1 used
+    matrix `dinvv`, which is the partially diagonalized version of `dinv`.
+    This now uses `dinvv`, unless `splitDepvars`=-1.
+  * Column names `inter1` and `inter2` of the result of `effectsDocumentation` 
+    changed to `covar1` and `covar2`.
+  * Better error message for `set_interaction` in case `shortNames`
+    is not a list.
+  * In `sienaTest` objects, if the test is one-dimensional, the standard error
+    of the linear combination is given as an additional component `sterror`
+    and included in `print.sienaTest`. 
+  * Mean structural dissimilarity values for balance calculations
+    dropped from `write_report` (almost never used, therefore confusing).
+  * Several checks for objects being of class 'siena' extended to 
+    alternatively being of class 'sienadata'.
+  * `newparallel.R' extended by a test using `test_gof`. 
+  * `importFrom` used for package `network`.
+  * " " and "." changed to "_" in `fromObjectToText` (names for `coef` 
+    and `vcov`) and `fromObjectToText` (in `siena_table`). 
+### C++ coding
+  * `Rf_PrintValue` in `Chain.cpp` dropped 
+    (was leftover from earlier debugging). 
+  * `Rf_findVar` replaced by `R_getVar` in `siena07models.cpp`
+    in view of requirements of `R 4.5.3`; requires at least `R 4.5.0`.
+  * Depends on R changed to `(>= 4.5.0)`. 
+### Bug correction
+  * For `transformScript`, processing of `Multipar.RSiena` added. 
+  * For `test_gof`,  
+    all arguments are transferred to the call of `sienaGOF`.
+  * For `interpret_selection`,  
+    all arguments are transferred to the call of `selectionTable`. 
+  * For `interpret_influence`,  
+    all arguments are transferred to the call of `influenceTable`. 
+### Documentation 
+  * Manual updated to new function names and use of `autograph` for
+    plotting influence and selection tables. 
+  * In help file for `set_interaction`, treatment of `shortNames`
+    corrected.
+  * In help file for `set_effect`, treatment of `covar1` and `covar2`
+    corrected.
+
+
 2026-02-26
 
 # RSiena 1.6.2

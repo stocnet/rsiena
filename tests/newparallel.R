@@ -35,9 +35,12 @@ ans
 (myeff <- set_interaction(myeff, list(recip, inPop), fix=TRUE, test=TRUE))
 alg_alg <- set_algorithm_saom(cond=FALSE, seed=5, n3=50, nsub=2)
 ans <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
-         control_algo=alg_alg)
+         control_algo=alg_alg, returnDeps=TRUE)
 ans
 test_parameter(ans, method='score')
+(goft <- test_gof(ans, IndegreeDistribution, verbose=TRUE, varName="mynet1",
+          test=NULL))
+summary(goft)
 ##test6
 mynet1 <- as_dependent_rsiena(array(c(tmp3,tmp4),dim=c(32,32,2)))
 mydata <- make_data_rsiena(mynet1)
@@ -83,6 +86,10 @@ print('test10')
 alg_alg <- set_algorithm_saom(cond=TRUE, condvarno=1, seed=5, n3=50, nsub=1)
 ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
          control_algo=alg_alg)
+alg_alg2 <- set_algorithm_saom(cond=TRUE, condvarno=1, seed=5, n3=50, nsub=1,
+			splitDepvars=1)
+ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
+         control_algo=alg_alg2)
 ##, verbose=TRUE)
 ans
 ##test11
@@ -325,9 +332,4 @@ myalg <- set_algorithm_saom(nsub=2, n3=50, cond=FALSE, seed=5, simOnly=TRUE,
 print('test24')
 (ans <- siena(mymodel, data=mydata, effects=myeff, control_algo=myalg, batch=TRUE, silent=TRUE))
 ## delete output files
-if (file.exists('mydata_report.txt')){unlink('mydata_report.txt')}
 if (file.exists('mydata_out.txt')){unlink('mydata_out.txt')}
-if (file.exists('mydata2_out.txt')){unlink('mydata2_out.txt')}
-if (file.exists('mydata3_out.txt')){unlink('mydata3_out.txt')}
-if (file.exists('mygroup_out.txt')){unlink('mygroup_out.txt')}
-if (file.exists('dataset_out.txt')){unlink('dataset_out.txt')}
