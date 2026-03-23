@@ -52,6 +52,7 @@ importFrom("utils", "browseURL", "edit",
            "flush.console", "getFromNamespace", "object.size",
            "packageDescription", "read.csv",
            "read.table", "write.csv", "write.table")
+importFrom("network", "network.initialize", "network.edgelist")
 S3method(print, sienadata)
 S3method(print, siena)
 S3method(make_specification, sienadata)

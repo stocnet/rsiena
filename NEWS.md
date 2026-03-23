@@ -25,7 +25,9 @@
   * Several checks for objects being of class 'siena' extended to 
     alternatively being of class 'sienadata'.
   * `newparallel.R' extended by a test using `test_gof`. 
-  * Depends on `tibble` (for `network` in `networkExtraction`).
+  * `importFrom` used for package `network`.
+  * " " and "." changed to "_" in `fromObjectToText` (names for `coef` 
+    and `vcov`) and `fromObjectToText` (in `siena_table`). 
 ### C++ coding
   * `Rf_PrintValue` in `Chain.cpp` dropped 
     (was leftover from earlier debugging). 
