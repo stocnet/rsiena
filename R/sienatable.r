@@ -86,13 +86,19 @@ siena_table <- function(x, type='tex',
 			b <- gsub('<=', '$\\leq$', fixed=TRUE, b)
 			b <- gsub('sqrt', '$\\sqrt{}$', fixed=TRUE, b)
 			b <- gsub('&', '.', fixed=TRUE, b)
+			b <- gsub('#', '.', fixed=TRUE, b)
+		}
+		else
+		{
+			b <- gsub(' ', '_', fixed=TRUE, b)
+			b <- gsub('.', '_', fixed=TRUE, b)
+			b <- gsub('#', '_', fixed=TRUE, b)
 		}
 # Note: R changes \\ to \ but still displays \\ in printing the string.
 		b <- gsub('^(1/1)', '', fixed=TRUE, b)
 		b <- gsub('^(1/2)', '(sqrt)', fixed=TRUE, b)
 		b <- gsub('^', '', fixed=TRUE, b)
 		b <- gsub('_', '-', fixed=TRUE, b)
-		b <- gsub('#', '.', fixed=TRUE, b)
 		b
 	}
 
