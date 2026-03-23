@@ -66,6 +66,7 @@ write_result.sienaFit <- function(x, type='tex',
 
 ##@siena_table siena07 Saves latex or html table of estimates
 ## for a sienaFit or sienaBayesFit object
+# Also see fromObjectToText in siena07.r,which does this more drastically
 siena_table <- function(x, type='tex',
 	fileName=NULL,
 	vertLine=TRUE, tstatPrint=FALSE,
