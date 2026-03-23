@@ -376,8 +376,10 @@ drawSim <- function(
       export_envir = environment(),
       verbose      = verbose
     )
-    if (!dir.exists(batchDir)) dir.create(batchDir, recursive = TRUE)
-    nbatches <- ceiling(nsim / batchSize) 
+    nbatches <- ceiling(nsim / batchSize)
+    skip_disk <- (nbatches == 1L && !keepBatch)
+    if (!skip_disk && !dir.exists(batchDir)) dir.create(batchDir, recursive = TRUE)
+    in_memory_batch <- NULL
     if (verbose) {
       message(
         "Starting simulations: nsim=", nsim,
@@ -430,7 +432,11 @@ drawSim <- function(
       }
 
       file_name <- file.path(batchDir, sprintf("%s%03d.rds", prefix, b))
-      saveRDS(batch_result, file = file_name)
+      if (skip_disk) {
+        in_memory_batch <- batch_result
+      } else {
+        saveRDS(batch_result, file = file_name)
+      }
       rm(batch_result)
       if (gcEachBatch) gc(verbose = FALSE)
       if (verbose) {
@@ -446,7 +452,13 @@ drawSim <- function(
     
     # if (requireNamespace("data.table", quietly = TRUE)) data.table::setDTthreads() # data.table removed
     if(combineBatch){
-      # Combine all batches
+      # Single-batch in-memory path: no disk I/O
+      if (skip_disk) {
+        out <- do.call(rbind, in_memory_batch)
+        rownames(out) <- NULL
+        return(out)
+      }
+      # Combine all batches from disk
       batch_files <- list.files(batchDir, 
         pattern = sprintf("^%s\\d{3}\\.rds$", prefix), full.names = TRUE)
       batch_files <- sort(batch_files)
@@ -531,13 +543,19 @@ drawSimBatch <- function(
     if (!skip_disk && !dir.exists(batchDir))
         dir.create(batchDir, recursive = TRUE)
 
+    mode_label <- if (useFork) paste0("FORK (", nbrNodes, " cores)")
+                  else if (usePSOCK) paste0("PSOCK (", nbrNodes, " workers)")
+                  else "sequential"
+
     if (verbose) {
         message("Batch-shared simulation: nsim=", nsim, ", effects=", N,
-                ", batchSize=", batchSize, ", batches=", nbatches)
+                ", batchSize=", batchSize, ", batches=", nbatches,
+                ", mode=", mode_label)
     }
 
     t_loop_start   <- proc.time()
     sims_computed  <- 0L  # sims actually run this session (not loaded from disk)
+    batches_done   <- 0L  # completed batches (for ETA)
 
     # ---- Batch loop with resume support -----------------------------------
     # If a batch file already exists on disk (from a previous crashed run),
@@ -562,9 +580,11 @@ drawSimBatch <- function(
         }
 
         if (verbose) {
-            message(sprintf("  Batch %d/%d: sims %d-%d", b, nbatches,
-                            first_sim, last_sim))
+            message(sprintf("  Batch %d/%d: sims %d-%d (%d draws, %s)",
+                            b, nbatches, first_sim, last_sim, bsz, mode_label))
         }
+
+        t_batch_start <- proc.time()
 
         # bpe[[j]][[k]]: per-draw result for effect j, k-th sim in this batch
         bpe <- vector("list", N)
@@ -636,15 +656,34 @@ drawSimBatch <- function(
             }
             sims_computed <- sims_computed + bsz
         } else if (useFork) {
+            # Set thread limits in parent BEFORE forking — forked children
+            # inherit the parent's BLAS/OpenMP thread pool at fork time.
+            old_omp  <- Sys.getenv("OMP_NUM_THREADS",      unset = NA)
+            old_blas <- Sys.getenv("OPENBLAS_NUM_THREADS",  unset = NA)
+            old_mkl  <- Sys.getenv("MKL_NUM_THREADS",       unset = NA)
+            Sys.setenv(OMP_NUM_THREADS      = "1",
+                       OPENBLAS_NUM_THREADS  = "1",
+                       MKL_NUM_THREADS       = "1")
             draw_results <- parallel::mclapply(
-                seq_len(bsz), function(k) {
-                    Sys.setenv(OMP_NUM_THREADS = "1",
-                               OPENBLAS_NUM_THREADS = "1",
-                               MKL_NUM_THREADS = "1")
-                    run_one_draw(k)
-                },
-                mc.cores = nbrNodes, mc.set.seed = TRUE
+                seq_len(bsz), run_one_draw,
+                mc.cores = nbrNodes, mc.set.seed = TRUE,
+                mc.preschedule = FALSE
             )
+            # Restore parent thread settings
+            if (is.na(old_omp))  Sys.unsetenv("OMP_NUM_THREADS")      else Sys.setenv(OMP_NUM_THREADS      = old_omp)
+            if (is.na(old_blas)) Sys.unsetenv("OPENBLAS_NUM_THREADS") else Sys.setenv(OPENBLAS_NUM_THREADS = old_blas)
+            if (is.na(old_mkl))  Sys.unsetenv("MKL_NUM_THREADS")     else Sys.setenv(MKL_NUM_THREADS      = old_mkl)
+            # Validate mclapply results — detect OOM-killed workers
+            failed <- vapply(draw_results, function(x) {
+                inherits(x, "try-error") || is.null(x)
+            }, logical(1L))
+            if (any(failed)) {
+                n_fail <- sum(failed)
+                stop(sprintf(
+                    "mclapply: %d of %d workers failed (likely OOM or signal). ",
+                    n_fail, bsz),
+                    "Consider reducing nbrNodes or batchSize.")
+            }
             for (k in seq_len(bsz)) {
                 for (j in seq_len(N)) bpe[[j]][[k]] <- draw_results[[k]][[j]]
             }
@@ -677,13 +716,48 @@ drawSimBatch <- function(
         }
         rm(bpe)
         if (gcEachBatch) gc(verbose = FALSE)
+        batches_done <- batches_done + 1L
         if (verbose) {
-            message(sprintf("  Done batch %d/%d (%d%%)",
-                            b, nbatches, round(100 * last_sim / nsim)))
+            t_batch   <- (proc.time() - t_batch_start)[["elapsed"]]
+            t_elapsed <- (proc.time() - t_loop_start)[["elapsed"]]
+            draw_rate <- if (sims_computed > 0) sims_computed / t_elapsed else NA_real_
+            remaining <- nsim - last_sim
+            eta_sec   <- if (remaining > 0 && !is.na(draw_rate) && draw_rate > 0)
+                             remaining / draw_rate else 0
+            eta_str <- if (eta_sec > 3600) sprintf("%.1f h", eta_sec / 3600)
+                       else if (eta_sec > 60) sprintf("%.0f min", eta_sec / 60)
+                       else sprintf("%.0f s", eta_sec)
+            mem_mb <- tryCatch(
+                round(sum(gc(reset = FALSE, verbose = FALSE)[, 2]) / 1024, 0),
+                error = function(e) NA_integer_
+            )
+            message(sprintf(
+                "  Done batch %d/%d (%d%%) | %.1fs (%.2f draws/s) | ETA %s | mem ~%s MB",
+                b, nbatches, round(100 * last_sim / nsim),
+                t_batch, if (!is.na(draw_rate)) draw_rate else 0,
+                eta_str, if (!is.na(mem_mb)) as.character(mem_mb) else "?"))
+            # After the first real batch, report per-core throughput
+            # (useful to compare across runs / node counts)
+            if (batches_done == 1L && (useFork || usePSOCK)) {
+                rate_per_core <- draw_rate / nbrNodes
+                message(sprintf(
+                    "  Throughput (batch 1): %.2f draws/s total, %.2f draws/s/core (%d cores)",
+                    draw_rate, rate_per_core, nbrNodes))
+            }
         }
     } # batch loop
 
-    if (verbose) message("Combining batches...")
+    t_total <- (proc.time() - t_loop_start)[["elapsed"]]
+    if (verbose) {
+        total_str <- if (t_total > 3600) sprintf("%.1f h", t_total / 3600)
+                     else if (t_total > 60) sprintf("%.1f min", t_total / 60)
+                     else sprintf("%.0f s", t_total)
+        final_rate <- if (sims_computed > 0) sims_computed / t_total else 0
+        message(sprintf(
+            "Simulation complete: %d draws in %s (%.2f draws/s, %s)",
+            sims_computed, total_str, final_rate, mode_label))
+        message("Combining batches...")
+    }
 
     # Read batch files and flatten per-effect lists
     per_effect_raw <- vector("list", N)
@@ -710,10 +784,16 @@ drawSimBatch <- function(
     }
 
     # Collapse each effect's list of per-draw rows into one data frame
+    # Column-wise unlist is faster than do.call(rbind, ...) on many small dfs
     out <- lapply(per_effect_raw, function(draws) {
-        raw <- do.call(rbind, draws)
-        rownames(raw) <- NULL
-        raw
+        nms <- names(draws[[1L]])
+        cols <- setNames(vector("list", length(nms)), nms)
+        for (nm in nms) {
+            cols[[nm]] <- unlist(lapply(draws, `[[`, nm), use.names = FALSE)
+        }
+        attr(cols, "row.names") <- .set_row_names(length(cols[[1L]]))
+        class(cols) <- "data.frame"
+        cols
     })
     names(out) <- eff_names
     out

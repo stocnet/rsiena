@@ -33,7 +33,9 @@ ans <- siena07(
   returnDeps               = TRUE,
   returnChangeContributions = TRUE,
   returnDataFrame          = TRUE,
-  silent                   = TRUE
+  useCluster = TRUE,
+  nbrNodes = 2L,
+  clusterType = "FORK"
 )
 
 # ── Model 2: add transRecTrip (interaction/moderator tests in sienaMargins) ──

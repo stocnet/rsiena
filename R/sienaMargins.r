@@ -358,7 +358,8 @@ marginalEffects.sienaFit <- function(
                 useCluster = useCluster,
                 unitBudget = batchUnitBudget,
                 dynamicMinistepFactor = dynamicMinistepFactor,
-                memoryScale = memoryScale
+                memoryScale = memoryScale,
+                useChangeContributions = useChangeContributions
             )
         }
 

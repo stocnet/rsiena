@@ -152,7 +152,8 @@ planBatch <- function(
   n3 = NULL,
   unitBudget = 2.5e8,
   dynamicMinistepFactor = 10,
-  memoryScale = NULL
+  memoryScale = NULL,
+  useChangeContributions = FALSE
 ) {
   dv     <- data$depvars[[depvar]]
   dvDim <- dim(dv)
@@ -163,7 +164,12 @@ planBatch <- function(
 
   effective_workers <- if (isTRUE(useCluster)) max(1L, as.integer(nbrNodes)) else 1L
 
-  if (dynamic) {
+  # When useChangeContributions=TRUE, the pre-computed contribMat is reused
+  # (COW-shared under FORK), so per-draw memory is essentially the same as
+  # the static case — no siena07 runs, no large allocations per worker.
+  dynamic_costly <- dynamic && !isTRUE(useChangeContributions)
+
+  if (dynamic_costly) {
     n3Val <- if (is.null(n3)) 1L else max(1L, as.integer(n3))
     unitsPerCall <- units * as.numeric(dynamicMinistepFactor) * as.numeric(n3Val)
   } else {
@@ -172,7 +178,7 @@ planBatch <- function(
   }
 
   unitsPerAgg <- max(1.0, units * as.numeric(n3Val) *
-                        if (dynamic) as.numeric(dynamicMinistepFactor) else 1.0)
+                        if (dynamic_costly) as.numeric(dynamicMinistepFactor) else 1.0)
 
   budgetForAgg <- as.numeric(unitBudget) - effective_workers * unitsPerCall
 
