@@ -15,7 +15,6 @@
 #include <cmath>
 #include <R_ext/Arith.h>
 #include <R_ext/Print.h>
-
 #include "StatisticCalculator.h"
 #include "data/Data.h"
 #include "data/ActorSet.h"
@@ -55,6 +54,45 @@ using namespace std;
 
 namespace siena
 {
+
+static bool isPermittedNetworkChange(const NetworkLongitudinalData * pData,
+	const Network * pNetwork,
+	int period,
+	int ego,
+	int alter)
+{
+	if (pData->oneModeNetwork() && ego == alter)
+	{
+		return true; // no-change in one-mode
+	}
+	if (!pData->oneModeNetwork() && alter == pNetwork->m())
+	{
+		return true; // no-change in bipartite
+	}
+	if (alter < 0 || alter >= pNetwork->m())
+	{
+		return false;
+	}
+	if (pData->structural(ego, alter, period))
+	{
+		return false;
+	}
+	bool tie = pNetwork->tieValue(ego, alter);
+	if (tie)
+	{
+		return !pData->upOnly(period);
+	}
+	// creation candidate
+	if (pData->downOnly(period))
+	{
+		return false;
+	}
+	if (pNetwork->outDegree(ego) >= pData->maxDegree())
+	{
+		return false;
+	}
+	return true;
+}
 
 // ----------------------------------------------------------------------------
 // Section: Construction, destruction
@@ -177,6 +215,10 @@ StatisticCalculator::~StatisticCalculator()
 			&clear_vector_of_array_pointers);
 	this->lstaticChangeContributions.clear();
 
+	for_each_map_value(this->lstaticPermitted,
+			&clear_vector_of_array_pointers);
+	this->lstaticPermitted.clear();
+
 	clear_map_value_array_pointers(this->lactorStatistics);
 }
 
@@ -212,6 +254,22 @@ vector<double *> StatisticCalculator::staticChangeContributions(EffectInfo * pEf
 	{
 		throw invalid_argument(
 			"Unknown effect: The given effect is not part of the model.");
+	}
+	return iter->second;
+}
+
+/**
+ * Returns the permitted flags for the given depvar key.
+ * Key is the depvar name for eval/creation, name + "|endow" for endowment.
+ */
+const vector<bool *>& StatisticCalculator::staticPermitted(const string& key) const
+{
+	map<string, vector<bool *> >::const_iterator iter =
+		this->lstaticPermitted.find(key);
+	if (iter == this->lstaticPermitted.end())
+	{
+		throw invalid_argument(
+			"No permitted data for key: " + key);
 	}
 	return iter->second;
 }
@@ -531,36 +589,48 @@ void StatisticCalculator::calculateBehaviorGMMStatistics(
 		if (this->lcountStaticChangeContributions)
 		{
 			int choices = 3;
-			vector<double *> egosMap(pBehaviorData->n());
+			string behName = pBehaviorData->name();
+			int nActors = pBehaviorData->n();
+
+			// Reuse permitted from behavior eval (same state)
+			if (this->lstaticPermitted.find(behName) == this->lstaticPermitted.end())
+			{
+				vector<bool *> permVec(nActors);
+				for (int e = 0; e < nActors; e++)
+				{
+					bool * perms = new bool[choices];
+					perms[1] = true;
+					perms[0] = (currentState[e] > pBehaviorData->min())
+						&& (!pBehaviorData->upOnly(this->lperiod));
+					perms[2] = (currentState[e] < pBehaviorData->max())
+						&& (!pBehaviorData->downOnly(this->lperiod));
+					permVec[e] = perms;
+				}
+				this->lstaticPermitted[behName] = permVec;
+			}
+			const vector<bool *>& permVec = this->lstaticPermitted[behName];
+
+			vector<double *> egosMap(nActors);
 			this->lstaticChangeContributions.insert(make_pair(pInfo, egosMap));
-			for (int e = 0; e < pBehaviorData->n(); e++) {
+			for (int e = 0; e < nActors; e++) {
 				cache.initialize(e);
-				//			pEffect->initialize(this->lpData, this->lpPredictorState,
-				//					this->lperiod, &cache);
 				pEffect->initialize(this->lpData, this->lpPredictorState, this->lpState,
 						this->lperiod, &cache);
 				double * contributions = new double[choices];
 				this->lstaticChangeContributions[pInfo].at(e) = contributions;
 				pEffect->preprocessEgo(e);
-				// no change gives no contribution
-				this->lstaticChangeContributions[pInfo].at(e)[1] = 0;
-				// calculate the contribution of downward change
-				if ((currentState[e] > pBehaviorData->min())  // was currentValues
-						&& (!pBehaviorData->upOnly(this->lperiod)))
+				contributions[1] = 0;
+				if (permVec[e][0])
 				{
-					this->lstaticChangeContributions[pInfo].at(e)[0] =
-						pEffect->calculateChangeContribution(e, -1);
+					contributions[0] = pEffect->calculateChangeContribution(e, -1);
 				} else {
-					this->lstaticChangeContributions[pInfo].at(e)[0] = R_NaN;
+					contributions[0] = R_NaN;
 				}
-				// calculate the contribution of upward change
-				if ((currentState[e] < pBehaviorData->max())  // was currentValues
-						&& (!pBehaviorData->downOnly(this->lperiod)))
+				if (permVec[e][2])
 				{
-					this->lstaticChangeContributions[pInfo].at(e)[2] =
-						pEffect->calculateChangeContribution(e, 1);
+					contributions[2] = pEffect->calculateChangeContribution(e, 1);
 				} else {
-					this->lstaticChangeContributions[pInfo].at(e)[2] = R_NaN;
+					contributions[2] = R_NaN;
 				}
 			}
 		}
@@ -640,8 +710,30 @@ void StatisticCalculator::calculateNetworkEvaluationStatistics(
 //	Rprintf(" this->lcountStaticChangeContributions in calculateNetworkEvaluationStatistics \n");
 			int egos = pCurrentLessMissingsEtc->n();
 			int alters = pCurrentLessMissingsEtc->m();
+
+			// Compute permitted once per depvar (shared across eval/creation effects)
+			if (this->lstaticPermitted.find(name) == this->lstaticPermitted.end())
+			{
+				vector<bool *> permVec(egos);
+				for (int e = 0; e < egos; e++)
+				{
+					bool * perms = new bool[egos];
+					for (int a = 0; a < egos; a++)
+					{
+						perms[a] = isPermittedNetworkChange(
+							pNetworkData,
+							pCurrentLessMissingsEtc,
+							this->lperiod,
+							e,
+							a);
+					}
+					permVec[e] = perms;
+				}
+				this->lstaticPermitted[name] = permVec;
+			}
+
 			vector<double *> egosMap(egos);
-			this->lstaticChangeContributions.insert(make_pair(pInfo,egosMap));
+			this->lstaticChangeContributions.insert(make_pair(pInfo, egosMap));
 			for (int e = 0; e < egos ; e++)
 			{
 				cache.initialize(e);
@@ -656,41 +748,31 @@ void StatisticCalculator::calculateNetworkEvaluationStatistics(
 						this->lperiod, &cache);
 				}
 				double * contributions = new double[egos];
-					this->lstaticChangeContributions[pInfo].at(e) = contributions;
-					pEffect->preprocessEgo(e);
-					// TODO determine permissible changes
-					// (see: NetworkVariable::calculatePermissibleChanges())
-					// TODO allow also bipartite; this requires knowledge of number of alters.
-//earlier:					for (int a = 0; a < alters ; a++)
-					for (int a = 0; a < egos ; a++)
+				this->lstaticChangeContributions[pInfo].at(e) = contributions;
+				pEffect->preprocessEgo(e);
+				for (int a = 0; a < egos ; a++)
+				{
+					if ((a == e) && (pNetworkData->oneModeNetwork()))
 					{
-						if ((a == e) && (pNetworkData->oneModeNetwork()))
-						{
-							this->lstaticChangeContributions[pInfo].at(e)[a] = 0;
-						}
-						else if (a == alters)
-						{
-							this->lstaticChangeContributions[pInfo].at(e)[a] = 0;
-						}
-						else if (a > alters)
-						{
-							this->lstaticChangeContributions[pInfo].at(e)[a] = R_NaN;
-						}
-						else
-						{
-						// Tie withdrawal contributes the opposite of tie creating
-							if (pCurrentLessMissingsEtc->tieValue(e,a))
-							{
-								this->lstaticChangeContributions[pInfo].at(e)[a] =
-									-pEffect->calculateContribution(a);
-							}
-							else
-							{
-								this->lstaticChangeContributions[pInfo].at(e)[a] =
-									pEffect->calculateContribution(a);
-							}
-						}
+						contributions[a] = 0;
+						continue;
 					}
+					if (a == alters)
+					{
+						contributions[a] = 0;
+						continue;
+					}
+					if (pCurrentLessMissingsEtc->tieValue(e,a))
+					{
+						contributions[a] =
+							-pEffect->calculateContribution(a);
+					}
+					else
+					{
+						contributions[a] =
+							pEffect->calculateContribution(a);
+					}
+				}
 			}
 		}
 		delete pEffect;
@@ -785,7 +867,8 @@ void StatisticCalculator::calculateNetworkEndowmentStatistics(
 					pEffect->endowmentStatistic(pLostTieNetwork);
 			}
 			// Static change contributions for endowment:
-			// contributes calculateContribution(a) when withdrawing an existing tie,
+			// contributes -calculateContribution(a) when withdrawing an existing tie
+			// (matching the chain sign convention: withdrawal = negative direction),
 			// 0 when creating a tie (endowment doesn't apply to tie creation).
 			if (this->lcountStaticChangeContributions)
 			{
@@ -806,24 +889,20 @@ void StatisticCalculator::calculateNetworkEndowmentStatistics(
 						if ((a == e) && pNetworkData->oneModeNetwork())
 						{
 							contributions[a] = 0;
+							continue;
 						}
-						else if (a == alters)
+						if (a == alters)
 						{
 							contributions[a] = 0;
+							continue;
 						}
-						else if (a > alters)
+
+						if (pPredictor->tieValue(e, a))
 						{
-							contributions[a] = R_NaN;
-						}
-						else if (pPredictor->tieValue(e, a))
-						{
-							// existing tie: endowment contributes to withdrawal
-							contributions[a] = pEffect->calculateContribution(a);
+							contributions[a] = -pEffect->calculateContribution(a);
 						}
 						else
 						{
-							// no tie: endowment has no contribution to creation
-							// do we need this?
 							contributions[a] = 0;
 						}
 					}
@@ -916,6 +995,28 @@ void StatisticCalculator::calculateNetworkCreationStatistics(
 			{
 				int egos = pCurrentLessMissingsEtc->n();
 				int alters = pCurrentLessMissingsEtc->m();
+
+				// Reuse permitted from eval (same network: pCurrentLessMissingsEtc)
+				if (this->lstaticPermitted.find(name) == this->lstaticPermitted.end())
+				{
+					vector<bool *> permVec(egos);
+					for (int e = 0; e < egos; e++)
+					{
+						bool * perms = new bool[egos];
+						for (int a = 0; a < egos; a++)
+						{
+							perms[a] = isPermittedNetworkChange(
+								pNetworkData,
+								pCurrentLessMissingsEtc,
+								this->lperiod,
+								e,
+								a);
+						}
+						permVec[e] = perms;
+					}
+					this->lstaticPermitted[name] = permVec;
+				}
+
 				vector<double *> egosMap(egos);
 				this->lstaticChangeContributions.insert(make_pair(pInfo, egosMap));
 				for (int e = 0; e < egos; e++)
@@ -931,24 +1032,19 @@ void StatisticCalculator::calculateNetworkCreationStatistics(
 						if ((a == e) && pNetworkData->oneModeNetwork())
 						{
 							contributions[a] = 0;
+							continue;
 						}
-						else if (a == alters)
+						if (a == alters)
 						{
 							contributions[a] = 0;
+							continue;
 						}
-						else if (a > alters)
+						if (!pCurrentLessMissingsEtc->tieValue(e, a))
 						{
-							contributions[a] = R_NaN;
-						}
-						else if (!pCurrentLessMissingsEtc->tieValue(e, a))
-						{
-							// no existing tie: creation contributes to tie addition
 							contributions[a] = pEffect->calculateContribution(a);
 						}
 						else
 						{
-							// existing tie: creation has no contribution to withdrawal
-							// do we need this?
 							contributions[a] = 0;
 						}
 					}
@@ -1043,9 +1139,30 @@ void StatisticCalculator::calculateBehaviorStatistics(
 		if(this->lcountStaticChangeContributions)
 		{
 			int  choices = 3;
-			vector<double *> egosMap(pBehaviorData->n());
-			this->lstaticChangeContributions.insert(make_pair(pInfo,egosMap));
-			for (int e = 0; e < pBehaviorData->n(); e++)
+			string behName = pBehaviorData->name();
+			int nActors = pBehaviorData->n();
+
+			// Compute permitted once per behavior depvar
+			if (this->lstaticPermitted.find(behName) == this->lstaticPermitted.end())
+			{
+				vector<bool *> permVec(nActors);
+				for (int e = 0; e < nActors; e++)
+				{
+					bool * perms = new bool[choices];
+					perms[1] = true; // no change always permitted
+					perms[0] = (currentState[e] > pBehaviorData->min())
+						&& (!pBehaviorData->upOnly(this->lperiod));
+					perms[2] = (currentState[e] < pBehaviorData->max())
+						&& (!pBehaviorData->downOnly(this->lperiod));
+					permVec[e] = perms;
+				}
+				this->lstaticPermitted[behName] = permVec;
+			}
+			const vector<bool *>& permVec = this->lstaticPermitted[behName];
+
+			vector<double *> egosMap(nActors);
+			this->lstaticChangeContributions.insert(make_pair(pInfo, egosMap));
+			for (int e = 0; e < nActors; e++)
 			{
 				cache.initialize(e);
 				pEffect->initialize(this->lpData, this->lpPredictorState, this->lperiod, &cache);
@@ -1053,28 +1170,24 @@ void StatisticCalculator::calculateBehaviorStatistics(
 				this->lstaticChangeContributions[pInfo].at(e) = contributions;
 				pEffect->preprocessEgo(e);
 				// no change gives no contribution
-				this->lstaticChangeContributions[pInfo].at(e)[1] = 0;
-				// calculate the contribution of downward change
-				if ((currentState[e] > pBehaviorData->min())  // was currentValues
-						&& (!pBehaviorData->upOnly(this->lperiod)))
+				contributions[1] = 0;
+				// downward change
+				if (permVec[e][0])
 				{
-					this->lstaticChangeContributions[pInfo].at(e)[0] =
-						pEffect->calculateChangeContribution(e,-1);
+					contributions[0] = pEffect->calculateChangeContribution(e, -1);
 				}
 				else
 				{
-					this->lstaticChangeContributions[pInfo].at(e)[0] = R_NaN;
+					contributions[0] = R_NaN;
 				}
-				// calculate the contribution of upward change
-				if ((currentState[e] < pBehaviorData->max())  // was currentValues
-						&& (!pBehaviorData->downOnly(this->lperiod)))
+				// upward change
+				if (permVec[e][2])
 				{
-					this->lstaticChangeContributions[pInfo].at(e)[2] =
-						pEffect->calculateChangeContribution(e,1);
+					contributions[2] = pEffect->calculateChangeContribution(e, 1);
 				}
 				else
 				{
-					this->lstaticChangeContributions[pInfo].at(e)[2] = R_NaN;
+					contributions[2] = R_NaN;
 				}
 			}
 		}

@@ -48,7 +48,6 @@ sienaPostestimate <- function(
         condition = condition,
         sum_fun = sum_fun,
         na.rm = na.rm,
-        thetaNames = names(thetaHat),
         egoNormalize = egoNormalize
     )
 
@@ -282,14 +281,11 @@ computeMcse <- function(x,
   out
 }
 
-# thetaNames should not be necessary anymore?
 makeEstimator <- function(predictFun, predictArgs, outcomeName,
     level = "period", condition = NULL, sum_fun = mean, na.rm = TRUE,
-    thetaNames = NULL, egoNormalize = TRUE) {
+    egoNormalize = TRUE) {
     function(theta, useChangeContributions = FALSE,
              returnDecisionDetails = FALSE) {
-        if (!is.null(thetaNames) && is.null(names(theta)))
-            names(theta) <- thetaNames
         if(!is.null(predictArgs[["useChangeContributions"]])){
           predictArgs[["useChangeContributions"]] <- useChangeContributions
         }
@@ -508,7 +504,7 @@ drawSimBatch <- function(
     effectSpecList,
     thetaHat,
     covTheta,
-    thetaNames   = names(thetaHat),
+    type         = "changeProb",
     nsim         = 1000L,
     useCluster   = FALSE,
     nbrNodes     = 1L,
@@ -594,19 +590,18 @@ drawSimBatch <- function(
         run_one_draw <- function(k) {
             i <- batch_idx[k]
             theta_sim <- MASS::mvrnorm(1L, mu = thetaHat, Sigma = covTheta)
-            if (!is.null(thetaNames) && is.null(names(theta_sim)))
-                names(theta_sim) <- thetaNames
             cc <- getContribFun(theta_sim)
-            if (is.null(cc$csMat))
-                cc$csMat <- contribToChangeStats(cc$contribMat, cc$effectNames)
-            theta_use <- theta_sim[cc$effectNames]
+            baseline <- predictProbability(cc, theta_sim, type,
+                                           returnComponents = TRUE)
+            theta_use <- baseline$theta_use
 
             per_effect <- vector("list", N)
             for (j in seq_len(N)) {
                 spec      <- effectSpecList[[j]]
                 unit_pred <- do.call(
                     spec$diffFun,
-                    c(list(changeContributions = cc, theta_use = theta_use),
+                    c(list(changeContributions = cc, theta_use = theta_use,
+                           baseline = baseline),
                       spec$diffArgs)
                 )
                 out_nm <- spec$outcomeName
@@ -647,7 +642,7 @@ drawSimBatch <- function(
             parallel::clusterExport(
                 cl,
                 c("getContribFun", "effectSpecList", "thetaHat", "covTheta",
-                  "thetaNames", "N", "bsz", "batch_idx", "egoNormalize"),
+                  "type", "N", "bsz", "batch_idx", "egoNormalize"),
                 envir = environment()
             )
             draw_results <- parallel::parLapply(cl, seq_len(bsz), run_one_draw)
@@ -860,7 +855,9 @@ getEffectNamesNoRate <- function(effects, depvar) {
     i2 <- if (!is.null(inc[["interaction2"]])) inc[["interaction2"]] else rep("", n)
     cs <- effectCovarSuffix(i1, i2)
     snWithCovar <- ifelse(cs == "", sn, paste(sn, cs, sep = "_"))
-    paste(inc[["name"]], snWithCovar, inc[["type"]], sep = "_")
+    # changeStats names: depvar_shortName (no type suffix), deduplicated.
+    changeStats <- unique(paste(inc[["name"]], snWithCovar, sep = "_"))
+    changeStats
 }
 
 # Look up the centering mean for the covariate underlying a given effect.
@@ -870,8 +867,15 @@ getEffectNamesNoRate <- function(effects, depvar) {
 getCovCenteringMean <- function(effectName, effects, data, depvar) {
   inc <- effects[effects$include & effects$type != "rate" &
                    effects$name == depvar, ]
-  canonNames <- getEffectNamesNoRate(effects, depvar)
-  idx <- match(effectName, canonNames)
+  # Build changeStats base names aligned with inc rows.
+  sn <- numberIntShortNames(inc[["shortName"]])
+  n <- length(sn)
+  i1 <- if (!is.null(inc[["interaction1"]])) inc[["interaction1"]] else rep("", n)
+  i2 <- if (!is.null(inc[["interaction2"]])) inc[["interaction2"]] else rep("", n)
+  cs <- effectCovarSuffix(i1, i2)
+  snWithCovar <- ifelse(cs == "", sn, paste(sn, cs, sep = "_"))
+  rowchangeStatsNames <- paste(inc[["name"]], snWithCovar, sep = "_")
+  idx <- match(effectName, rowchangeStatsNames)
   if (is.na(idx)) return(0)
   covarName <- inc$interaction1[idx]
   if (is.na(covarName) || covarName == "") return(0)
@@ -933,24 +937,6 @@ resolvePerturbType <- function(effectName,
 perturbTypeToInt <- function(perturbType) {
     switch(perturbType, alter = 0L, ego = 1L,
            stop("Invalid perturbType: ", perturbType))
-}
-
-# Multinomial-logit probability update with string-based perturbation type.
-#
-# Thin wrapper around the Rcpp mlogit_update that accepts
-# perturbType as "alter" or "ego" (instead of 0L/1L)
-# and returns a plain numeric vector.
-#
-# p:           Numeric vector of baseline probabilities.
-# delta_u:     Numeric vector of utility shifts (same length as p).
-# group_id:    Integer vector of group identifiers.
-# perturbType: Character: "alter" (one-alternative update)
-#              or "ego" (ego-wide renormalization).
-# Returns numeric vector of updated probabilities.
-mlogit_update_r <- function(p, delta_u, group_id, perturbType) {
-    if (is.null(group_id)) group_id <- integer(length(p))
-    as.vector(mlogit_update(p, delta_u, group_id,
-                            perturbTypeToInt(perturbType)))
 }
 
 # Compute ego-level probability-mass contrasts.
@@ -1274,28 +1260,195 @@ alignThetaNoRate <- function(theta, effectNames) {
     theta[effectNames]
 }
 
-# Convert a contribution matrix (density * delta) to change-statistic space.
-# Non-density columns on dissolution rows (density == -1) are negated so they
-# become the raw change statistic delta.  The density column stays +/-1.
-##@contribToChangeStats Contribution-to-CS conversion
-contribToChangeStats <- function(contribMat, effectNames) {
-  densityCol <- grep("density", effectNames, fixed = TRUE)[1L]
-  neg <- contribMat[, densityCol] == -1L
-  neg[is.na(neg)] <- FALSE
+# Convert a raw contribution matrix to change-statistic space.
+#
+# The raw contribMat has one column per (effect x type) combination, with
+# composite names like "depvar_shortName_eval", "depvar_shortName_creation".
+# In change-statistic space, creation/endow are NOT independent statistics —
+# they are the eval statistic masked by direction (density).  This function
+# collapses type-variant columns into one column per underlying effect
+# (eval-space values) and builds direction-dependent theta.
+#
+# When called without theta, returns only the collapsed matrix + density
+# (backward-compatible sign-flip path for display).
+#
+# contribMat:   N x nRaw numeric matrix (raw contributions from C++).
+# effectNames:  character vector of length nRaw (composite names).
+# theta:        named numeric vector (optional). When supplied, also returns
+#               thetaEff (direction-dependent effective theta).
+#
+# Returns a list:
+#   csMat     — N x nchangeStats matrix (eval-space change statistics).
+#   csNames   — character(nchangeStats): changeStats names without type suffix.
+#   density   — integer(N): +1 (creation), -1 (dissolution), 0 (no-change).
+#   thetaEff  — nchangeStats x 2 matrix with columns "creation", "dissolution"
+#               (only when theta is supplied). nochange direction is always 0.
+##@contribToChangeStats Contribution-to-CS conversion (changeStats)
+contribToChangeStats <- function(contribMat, effectNames, theta = NULL) {
+  nRaw <- length(effectNames)
+  stopifnot(ncol(contribMat) == nRaw)
+
+  # ---- Parse composite names into (base, type) ----
+  # Composite format: "depvar_shortName[_covar]_type"
+  # Type is always the last underscore-separated segment, but only when it is
+  # one of the known types: eval, endow, creation.  Otherwise the whole name
+  # is the base (for simplified names used in tests or by the user).
+  knownTypes <- c("eval", "endow", "creation")
+  lastSeg <- sub("^.*_", "", effectNames)           # last segment
+  isKnownType <- lastSeg %in% knownTypes
+  types <- ifelse(isKnownType, lastSeg, "eval")     # treat plain names as eval
+  bases <- ifelse(isKnownType, sub("_[^_]+$", "", effectNames), effectNames)
+
+  # ---- Extract density column ----
+  densityIdx <- grep("density", bases, fixed = TRUE)[1L]
+  if (is.na(densityIdx)) stop("No density column found in effectNames")
+  density <- as.integer(contribMat[, densityIdx])
+  density[is.na(density)] <- 0L
+
+  # ---- Dissolution-row sign flip (signed → pure change statistics) ----
+  # The C++ stores signed contributions: on dissolution rows (d=-1) both
+  # eval and endow contributions equal -calculateContribution(alter).
+  # Negate NON-DENSITY columns on dissolution rows to recover the pure
+  # (unsigned) change statistics Δs.  The density column keeps its ±1
+  # sign so it carries the direction d and can be used for conditioning.
+  # Utility is computed as: d * (θ_density + Δs_rest %*% θ_rest).
+  neg <- density == -1L
   if (any(neg)) {
-    flipIdx <- setdiff(seq_along(effectNames), densityCol)
-    contribMat[neg, flipIdx] <- -contribMat[neg, flipIdx]
+    nonDens <- setdiff(seq_len(ncol(contribMat)), densityIdx)
+    contribMat[neg, nonDens] <- -contribMat[neg, nonDens]
   }
-  contribMat
+
+  # ---- Group columns by changeStats base name ----
+  # ALL columns (including density) become changeStats effects.
+  # Density stays ±1 in csMat and serves as both the direction indicator
+  # and a column available for conditioning (condition = "density").
+
+  # Unique changeStats names, preserving order of first appearance.
+  allBases <- bases
+  allTypes <- types
+  changeStatsOrder <- unique(allBases)
+  nChangeStats <- length(changeStatsOrder)
+
+  # Build changeStats matrix: for each changeStats effect, take the eval column
+  # if it exists; otherwise combine creation + endow.
+  csMat <- matrix(0, nrow = nrow(contribMat), ncol = nChangeStats)
+  colnames(csMat) <- changeStatsOrder
+
+  # Also build thetaEff if theta is supplied.
+  if (!is.null(theta)) {
+    thetaEff <- matrix(0, nrow = nChangeStats, ncol = 2L,
+                       dimnames = list(changeStatsOrder, c("creation", "dissolution")))
+  }
+
+  for (k in seq_len(nChangeStats)) {
+    base_k <- changeStatsOrder[k]
+    members <- which(allBases == base_k)
+    memberTypes <- allTypes[members]
+    memberRawIdx <- members  # indices into effectNames/contribMat
+
+    hasEval     <- "eval"     %in% memberTypes
+    hasCreation <- "creation" %in% memberTypes
+    hasEndow    <- "endow"    %in% memberTypes
+
+    # changeStats column: pure (unsigned) change statistic (Δs),
+    # except density which keeps its ±1 sign.
+    if (hasEval) {
+      csMat[, k] <- contribMat[, memberRawIdx[memberTypes == "eval"]]
+    } else if (hasCreation && hasEndow) {
+      # Creation and endow are structurally zero on the "other" direction
+      # rows, so summing recovers the signed Δs for both directions.
+      crIdx <- memberRawIdx[memberTypes == "creation"]
+      enIdx <- memberRawIdx[memberTypes == "endow"]
+      csMat[, k] <- contribMat[, crIdx] + contribMat[, enIdx]
+    } else if (hasCreation) {
+      csMat[, k] <- contribMat[, memberRawIdx[memberTypes == "creation"]]
+    } else if (hasEndow) {
+      csMat[, k] <- contribMat[, memberRawIdx[memberTypes == "endow"]]
+    }
+
+    # Direction-dependent theta.
+    #
+    # csMat stores the pure (unsigned) change statistics Δs.  Because the
+    # C++ stores c_eval = c_endow (same sign) on dissolution rows, eval
+    # and endow go in the SAME direction.  The utility formula is:
+    #   u = d × Δs × θ_combined
+    # where d is applied separately in calculateUtility, and:
+    #   creation:    θ_combined = θ_eval + θ_creation
+    #   dissolution: θ_combined = θ_eval + θ_endow
+    # A positive θ_endow makes dissolution utility more negative (d = -1),
+    # protecting existing ties.
+    if (!is.null(theta)) {
+      th_eval     <- if (hasEval)     theta[effectNames[memberRawIdx[memberTypes == "eval"]]]     else 0
+      th_creation <- if (hasCreation) theta[effectNames[memberRawIdx[memberTypes == "creation"]]] else 0
+      th_endow    <- if (hasEndow)    theta[effectNames[memberRawIdx[memberTypes == "endow"]]]    else 0
+      thetaEff[k, "creation"]    <- th_eval + th_creation
+      thetaEff[k, "dissolution"] <- th_eval + th_endow
+    }
+  }
+
+  # Find density's index in the changeStats matrix.
+  denschangeStatsIdx <- match(bases[densityIdx], changeStatsOrder)
+
+  # changeStatsMap: lightweight mapping for buildThetaEff (theta-independent).
+  changeStatsMap <- list(
+    effectNames = effectNames,
+    bases       = allBases,
+    types       = allTypes,
+    changeStatsOrder  = changeStatsOrder
+  )
+
+  out <- list(csMat = csMat, csNames = changeStatsOrder,
+              densityIdx = denschangeStatsIdx, density = density,
+              changeStatsMap = changeStatsMap)
+  if (!is.null(theta)) out$thetaEff <- thetaEff
+  out
+}
+
+# Build direction-dependent thetaEff matrix from theta and changeStatsMap.
+# O(p) — no matrix work, just theta arithmetic.
+# theta: named numeric vector aligned to changeStatsMap$effectNames.
+# changeStatsMap: from contribToChangeStats()$changeStatsMap.
+buildThetaEff <- function(theta, changeStatsMap) {
+  changeStatsOrder  <- changeStatsMap$changeStatsOrder
+  nchangeStats  <- length(changeStatsOrder)
+  effectNames <- changeStatsMap$effectNames
+  allBases    <- changeStatsMap$bases
+  allTypes    <- changeStatsMap$types
+
+  thetaEff <- matrix(0, nrow = nchangeStats, ncol = 2L,
+                     dimnames = list(changeStatsOrder, c("creation", "dissolution")))
+  for (k in seq_len(nchangeStats)) {
+    base_k      <- changeStatsOrder[k]
+    members     <- which(allBases == base_k)
+    memberTypes <- allTypes[members]
+    hasEval     <- "eval"     %in% memberTypes
+    hasCreation <- "creation" %in% memberTypes
+    hasEndow    <- "endow"    %in% memberTypes
+    th_eval     <- if (hasEval)     theta[effectNames[members[memberTypes == "eval"]]]     else 0
+    th_creation <- if (hasCreation) theta[effectNames[members[memberTypes == "creation"]]] else 0
+    th_endow    <- if (hasEndow)    theta[effectNames[members[memberTypes == "endow"]]]    else 0
+    thetaEff[k, "creation"]    <- th_eval + th_creation
+    thetaEff[k, "dissolution"] <- th_eval + th_endow
+  }
+  thetaEff
 }
 
 # Attach effect contribution columns to a named list (or data.frame).
-# If flip = TRUE, negates non-density columns where density == -1.
+# Accepts either:
+#   (a) changeStats output from contribToChangeStats(): csNames + csMat
+#   (b) raw effectNames + contrib matrix (legacy path)
+# flip is ignored when changeStats output is provided (already in eval-space).
 attachContributions <- function(out, effectNames, contrib, flip = TRUE) {
-  if (flip) contrib <- contribToChangeStats(contrib, effectNames)
+  if (flip) {
+    cs <- contribToChangeStats(contrib, effectNames)
+    contrib <- cs$csMat
+    effectNames <- cs$csNames
+  }
   nc <- ncol(contrib)
+  if (nc == 0L) return(out)
   extra <- vector("list", nc)
-  names(extra) <- effectNames
+  colNms <- if (!is.null(colnames(contrib))) colnames(contrib) else effectNames
+  names(extra) <- colNms
   for (j in seq_len(nc)) extra[[j]] <- contrib[, j]
   if (is.data.frame(out)) {
     attr(extra, "row.names") <- .set_row_names(nrow(contrib))
@@ -1335,7 +1488,9 @@ groupColsList <- function(pb, keep = NULL) {
 }
 
 resolveCondition <- function(condition) {
-  ifelse(grepl("_", condition, fixed = TRUE), condition, paste0(condition, "_eval"))
+  # With changeStats names (no type suffix), just pass through.
+  # Strip _eval/_endow/_creation suffix if user explicitly supplied one.
+  sub("_(eval|endow|creation)$", "", condition)
 }
 
 # ---- Class stamping and S3 methods for postestimate output -------------------

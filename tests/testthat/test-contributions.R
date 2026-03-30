@@ -1,8 +1,23 @@
 # testthat::skip_on_cran()
-# Models: ans, mydata, mymodel, mycontrols  — from helper-models.R
-#         ans_int, mydata_int, mymodel_int  — from helper-models.R (full mode only)
-#         ans_co, mydata_co, mymodel_co, mycontrols_co — from helper-models.R (full mode only)
-#         ans_cm, mydata_cm, mymodel_cm, mycontrols_cm — from helper-models.R (full mode only)
+
+# -- Load fixtures from cache (built by helper-models.R) --
+ans        <- load_fixture("ans")
+mydata     <- load_fixture("mydata")
+mymodel    <- load_fixture("mymodel")
+mycontrols <- load_fixture("mycontrols")
+# Full-mode fixtures (NULL in quick mode; those tests are guarded by skip_slow())
+ans_int        <- load_fixture("ans_int")
+mydata_int     <- load_fixture("mydata_int")
+mymodel_int    <- load_fixture("mymodel_int")
+mycontrols_int <- load_fixture("mycontrols_int")
+ans_co         <- load_fixture("ans_co")
+mydata_co      <- load_fixture("mydata_co")
+mymodel_co     <- load_fixture("mymodel_co")
+mycontrols_co  <- load_fixture("mycontrols_co")
+ans_cm         <- load_fixture("ans_cm")
+mydata_cm      <- load_fixture("mydata_cm")
+mymodel_cm     <- load_fixture("mymodel_cm")
+mycontrols_cm  <- load_fixture("mycontrols_cm")
 
 # --- Test static contribution extraction (pure list)
 test_that("Static contributions (pure list)", {
@@ -12,18 +27,11 @@ test_that("Static contributions (pure list)", {
 })
 
 
-# --- Test static contribution extraction (base R fallback)
-test_that("Static contributions (base R fallback)", {
-  with_mocked_bindings(
-    {
-      stat_df <- getStaticChangeContributions(ans = ans, data = mydata, 
-        effects = mymodel, returnDataFrame = TRUE)
-      expect_true(is.data.frame(stat_df))
-      expect_false("data.table" %in% class(stat_df))
-    },
-    requireNamespace = function(package, quietly=TRUE) FALSE,
-    .package="base"
-  )
+# --- Test static contribution extraction (data.frame)
+test_that("Static contributions (data.frame)", {
+  stat_df <- getStaticChangeContributions(ans = ans, data = mydata, 
+    effects = mymodel, returnDataFrame = TRUE)
+  expect_true(is.data.frame(stat_df))
 })
 
 # # --- Test dynamic contribution extraction (pure list)
@@ -41,42 +49,19 @@ test_that("Dynamic contributions (pure list)", {
       expect_true(is.list(dyn_ls))
 })
 
-# --- Test dynamic contribution extraction (base R fallback))
-test_that("Dynamic contributions (base R fallback)", {
+# --- Test dynamic contribution extraction (data.frame)
+test_that("Dynamic contributions (data.frame)", {
     skip_slow()
-    with_mocked_bindings(
-    {
-      dyn_df <- getDynamicChangeContributions(
-        ans = ans,
-        data = mydata,
-        theta = c(ans$rate, ans$theta),
-        algorithm = mycontrols,
-        effects = mymodel,
-        depvar = "mynet",
-        returnDataFrame = TRUE
-      )
-      expect_true(is.data.frame(dyn_df) && !("data.table" %in% class(dyn_df)))
-    },
-    requireNamespace = function(package, quietly=TRUE) FALSE,
-    .package="base"
-  )
-})
-
-# --- Test dynamic contribution extraction (data.table)
-test_that("Dynamic contributions (data.table)", {
-  skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
-  dyn_dt <- getDynamicChangeContributions(
-    ans = ans,
-    data = mydata,
-    theta = c(ans$rate, ans$theta),
-    algorithm = mycontrols,
-    effects = mymodel,
-    depvar = "mynet",
-    returnDataFrame = TRUE
-  )
-  expect_true("data.table" %in% class(dyn_dt))
+    dyn_df <- getDynamicChangeContributions(
+      ans = ans,
+      data = mydata,
+      theta = c(ans$rate, ans$theta),
+      algorithm = mycontrols,
+      effects = mymodel,
+      depvar = "mynet",
+      returnDataFrame = TRUE
+    )
+    expect_true(is.data.frame(dyn_df))
 })
 
 # --- Column schema tests (aligned between static and dynamic) ---------------
@@ -86,31 +71,15 @@ test_that("Dynamic contributions (data.table)", {
 .dynamic_cols <- c("group", "period", "ministep", "networkName", "ego",
                    "choice", "effectname", "effecttype", "contribution")
 
-test_that("Static df has expected columns incl. effecttype and ego (data.table)", {
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
+test_that("Static df has expected columns incl. effecttype and ego", {
   stat <- getStaticChangeContributions(ans = ans, data = mydata,
     effects = mymodel, returnDataFrame = TRUE)
   expect_true(all(.static_cols %in% names(stat)))
   expect_false("effectIdx" %in% names(stat))
 })
 
-test_that("Static df has expected columns incl. effecttype and ego (base R)", {
-  with_mocked_bindings(
-    {
-      stat <- getStaticChangeContributions(ans = ans, data = mydata,
-        effects = mymodel, returnDataFrame = TRUE)
-      expect_true(all(.static_cols %in% names(stat)))
-      expect_false("effectIdx" %in% names(stat))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
-  )
-})
-
-test_that("Dynamic df has expected columns incl. ego and no effectIdx (data.table)", {
+test_that("Dynamic df has expected columns incl. ego and no effectIdx", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
   dyn <- getDynamicChangeContributions(
     ans = ans, data = mydata, theta = c(ans$rate, ans$theta),
     algorithm = mycontrols, effects = mymodel,
@@ -122,63 +91,63 @@ test_that("Dynamic df has expected columns incl. ego and no effectIdx (data.tabl
   expect_true(all(dyn$ego >= 1L))
 })
 
-test_that("Dynamic df has expected columns incl. ego and no effectIdx (base R)", {
-  skip_slow()
-  with_mocked_bindings(
-    {
-      dyn <- getDynamicChangeContributions(
-        ans = ans, data = mydata, theta = c(ans$rate, ans$theta),
-        algorithm = mycontrols, effects = mymodel,
-        depvar = "mynet", returnDataFrame = TRUE
-      )
-      expect_true(all(.dynamic_cols %in% names(dyn)))
-      expect_false("effectIdx" %in% names(dyn))
-      expect_true(is.integer(dyn$ego))
-      expect_true(all(dyn$ego >= 1L))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
-  )
-})
-
 test_that("Static df: effecttype values are valid effect types", {
-  with_mocked_bindings(
-    {
-      stat <- getStaticChangeContributions(ans = ans, data = mydata,
-        effects = mymodel, returnDataFrame = TRUE)
-      expect_true(all(stat$effecttype %in% c("eval", "creation", "endow")))
-    },
-    requireNamespace = function(pkg, ...) FALSE, .package = "base"
-  )
+  stat <- getStaticChangeContributions(ans = ans, data = mydata,
+    effects = mymodel, returnDataFrame = TRUE)
+  expect_true(all(stat$effecttype %in% c("eval", "creation", "endow")))
 })
 
-test_that("Dynamic contributions (base R fallback, useChangeContributions = FALSE)", {
-  skip_slow()
-  with_mocked_bindings(
-    {
-      dyn_df <- getDynamicChangeContributions(
-        ans = ans,
-        data = mydata,
-        theta = c(ans$rate, ans$theta),
-        algorithm = mycontrols,
-        effects = mymodel,
-        depvar = "mynet",
-        useChangeContributions = FALSE,
-        n3 = 60,
-        returnDataFrame = TRUE
-      )
-      expect_true(is.matrix(dyn_df) || is.data.frame(dyn_df))
-      expect_false("data.table" %in% class(dyn_df))
-    },
-    requireNamespace = function(pkg, ...) FALSE,
-    .package="base"
-  )
+test_that("Static wide contributions include permitted when requested", {
+  wide <- getStaticChangeContributions(ans = ans, data = mydata,
+      effects = mymodel, depvar = "mynet",
+      returnWide = TRUE, includePermitted = TRUE)
+  expect_true(is.list(wide))
+  expect_true("contribMat" %in% names(wide))
+  expect_true("permitted" %in% names(wide))
+  # permitted is a per-row vector (not per-effect matrix)
+  expect_equal(length(wide$permitted), nrow(wide$contribMat))
+  expect_true(all(wide$permitted == !is.na(wide$contribMat[, 1])))
 })
 
-test_that("Dynamic contributions (data.table, useChangeContributions = FALSE)", {
+test_that("Static wide contributions do not include permitted by default", {
+  wide <- getStaticChangeContributions(ans = ans, data = mydata,
+      effects = mymodel, depvar = "mynet",
+      returnWide = TRUE, includePermitted = FALSE)
+  expect_true(is.list(wide))
+  expect_true("contribMat" %in% names(wide))
+  expect_false("permitted" %in% names(wide))
+})
+
+test_that("Static contributions respect MaxDegree in one-mode network", {
+  s1 <- array(0, dim=c(4,4,2))
+  s1[1,2,1] <- 1
+  mynet <- sienaDependent(s1, allowOnly=FALSE)
+  mydata_local <- sienaDataCreate(mynet)
+  myeffects_local <- getEffects(mydata_local)
+  myeffects_local <- includeEffects(myeffects_local, transTrip, name='mynet')
+  mycontrols_local <- set_algorithm_saom(n3=20, seed=123)
+  mymodel_local <- set_model_saom(MaxDegree=c(mynet=1))
+
+  ans_local <- siena(data=mydata_local, effects=myeffects_local,
+    control_model=mymodel_local, control_algo=mycontrols_local,
+    returnDeps=FALSE, silent=TRUE)
+
+  stat <- getStaticChangeContributions(ans = ans_local, data = mydata_local,
+    effects = myeffects_local, returnDataFrame = TRUE, returnWide = FALSE,
+    includePermitted = TRUE)
+
+  stat_transTrip <- subset(stat, ego == 1 & effectname == 'transTrip')
+  # In one-mode with maxDegree=1 and ego 1 already has one out-tie,
+  # additional creation choices should be prohibited.
+  # Contributions are still computed; permission is signalled separately.
+  expect_true(all(!is.na(stat_transTrip$contribution)))
+  expect_true(all(stat_transTrip$permitted[stat_transTrip$choice %in% c(3,4)] == FALSE))
+  expect_true(all(stat_transTrip$permitted[stat_transTrip$choice %in% c(1,2)] == TRUE))
+})
+
+test_that("Dynamic contributions (useChangeContributions = FALSE)", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
-  dyn_dt <- getDynamicChangeContributions(
+  dyn_df <- getDynamicChangeContributions(
     ans = ans,
     data = mydata,
     theta = c(ans$rate, ans$theta),
@@ -189,39 +158,13 @@ test_that("Dynamic contributions (data.table, useChangeContributions = FALSE)", 
     n3 = 60,
     returnDataFrame = TRUE
   )
-  expect_true("data.table" %in% class(dyn_dt))
+  expect_true(is.data.frame(dyn_df))
 })
 
-test_that("Dynamic contributions (base R fallback, new theta values)", {
+test_that("Dynamic contributions (new theta values)", {
   skip_slow()
-  with_mocked_bindings(
-    {
-      new_theta <- MASS::mvrnorm(n = 1, mu = ans$theta, Sigma = ans$covtheta)
-      dyn_df <- getDynamicChangeContributions(
-        ans = NULL,
-        data = mydata,
-        theta = c(ans$rate, new_theta),
-        algorithm = mycontrols,
-        effects = mymodel,
-        depvar = "mynet",
-        useChangeContributions = FALSE,
-        n3 = 60,
-        returnDataFrame = TRUE
-      )
-      expect_true(is.matrix(dyn_df) || is.data.frame(dyn_df))
-      expect_false("data.table" %in% class(dyn_df))
-    },
-    requireNamespace = function(pkg, ...) FALSE,
-    .package="base"
-  )
-})
-
-test_that("Dynamic contributions (data.table, new theta values)", {
-  skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
   new_theta <- MASS::mvrnorm(n = 1, mu = ans$theta, Sigma = ans$covtheta)
-  dyn_dt <- getDynamicChangeContributions(
+  dyn_df <- getDynamicChangeContributions(
     ans = NULL,
     data = mydata,
     theta = c(ans$rate, new_theta),
@@ -232,56 +175,30 @@ test_that("Dynamic contributions (data.table, new theta values)", {
     n3 = 60,
     returnDataFrame = TRUE
   )
-  expect_true("data.table" %in% class(dyn_dt))
+  expect_true(is.data.frame(dyn_df))
 })
 
 
 # Interaction without main effect: recip * outPop unspInt, without outPop.
 # Model fit from helper-models.R (full mode): ans_int, mydata_int, mymodel_int.
 
-test_that("getStaticChangeContributions with custom interactions & without main effect (data.table)", {
+test_that("getStaticChangeContributions with custom interactions & without main effect", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
-
-  stat_dt <- getStaticChangeContributions(
+  stat_df <- getStaticChangeContributions(
       ans = ans_int,
       data = mydata_int,
       effects = mymodel_int,
       depvar = "mynet_int",
       returnDataFrame = TRUE
   )
-  expect_true(!any(stat_dt$effectname == "outPop"))
-  expect_true(any(stat_dt$effectname == "unspInt"))
-  expect_true("data.table" %in% class(stat_dt) || is.data.frame(stat_dt))
+  expect_true(!any(stat_df$effectname == "outPop"))
+  expect_true(any(stat_df$effectname == "unspInt"))
+  expect_true(is.data.frame(stat_df))
 })
 
-test_that("getStaticChangeContributions with custom interactions & without main effect (base R fallback)", {
+test_that("getDynamicChangeContributions with custom interactions & without main effect", {
   skip_slow()
-  with_mocked_bindings(
-    {
-      stat_df <- getStaticChangeContributions(
-          ans = ans_int,
-          data = mydata_int,
-          effects = mymodel_int,
-          depvar = "mynet_int",
-          returnDataFrame = TRUE
-      )
-      expect_true(!any(stat_df$effectname == "outPop"))
-      expect_true(any(stat_df$effectname == "unspInt"))
-      expect_true(is.data.frame(stat_df) && !("data.table" %in% class(stat_df)))
-    },
-    requireNamespace = function(pkg, ...) FALSE,
-    .package="base"
-  )
-})
-
-test_that("getDynamicChangeContributions with custom interactions & without main effect (data.table)", {
-  skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
-
-  stat_dt <- getDynamicChangeContributions(
+  stat_df <- getDynamicChangeContributions(
       ans = ans_int,
       data = mydata_int,
       algorithm = mycontrols_int,
@@ -291,32 +208,9 @@ test_that("getDynamicChangeContributions with custom interactions & without main
       n3 = 50,
       returnDataFrame = TRUE
   )
-  expect_true(!any(stat_dt$effectname == "outPop"))
-  expect_true(any(stat_dt$effectname == "unspInt"))
-  expect_true("data.table" %in% class(stat_dt) || is.data.frame(stat_dt))
-})
-
-test_that("getDynamicChangeContributions with custom interactions & without main effect (base R fallback)", {
-  skip_slow()
-  with_mocked_bindings(
-    {
-      stat_df <- getDynamicChangeContributions(
-          ans = ans_int,
-          data = mydata_int,
-          algorithm = mycontrols_int,
-          effects = mymodel_int,
-          depvar = "mynet_int",
-          useChangeContributions = FALSE,
-          n3 = 50,
-          returnDataFrame = TRUE
-      )
-      expect_true(!any(stat_df$effectname == "outPop"))
-      expect_true(any(stat_df$effectname == "unspInt"))
-      expect_true(is.data.frame(stat_df) && !("data.table" %in% class(stat_df)))
-    },
-    requireNamespace = function(pkg, ...) FALSE,
-    .package="base"
-  )
+  expect_true(!any(stat_df$effectname == "outPop"))
+  expect_true(any(stat_df$effectname == "unspInt"))
+  expect_true(is.data.frame(stat_df))
 })
 
 # ---------------------------------------------------------------------------
@@ -386,7 +280,6 @@ test_that("co-evolution static wide (per-depvar): each call returns network-spec
 
 test_that("co-evolution static long (data.frame): effectname column distinguishes depvars", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
   long <- getStaticChangeContributions(
     ans = ans_co, data = mydata_co, effects = mymodel_co,
     returnDataFrame = TRUE
@@ -420,9 +313,8 @@ test_that("co-evolution dynamic per-depvar (pure list)", {
   expect_false(identical(dyn_a, dyn_b))
 })
 
-test_that("co-evolution dynamic (data.table): each depvar returns its own effect rows", {
+test_that("co-evolution dynamic (data.frame): each depvar returns its own effect rows", {
   skip_slow()
-  library(data.table)
   dyn_a <- getDynamicChangeContributions(
     ans = ans_co, data = mydata_co, algorithm = mycontrols_co,
     theta = c(ans_co$rate, ans_co$theta),
@@ -433,8 +325,8 @@ test_that("co-evolution dynamic (data.table): each depvar returns its own effect
     theta = c(ans_co$rate, ans_co$theta),
     effects = mymodel_co, depvar = "mynet_b", returnDataFrame = TRUE
   )
-  expect_true("data.table" %in% class(dyn_a))
-  expect_true("data.table" %in% class(dyn_b))
+  expect_true(is.data.frame(dyn_a))
+  expect_true(is.data.frame(dyn_b))
   # Both depvars have density and transTrip contributions
   expect_true("density"   %in% dyn_a$effectname)
   expect_true("transTrip" %in% dyn_a$effectname)
@@ -443,33 +335,6 @@ test_that("co-evolution dynamic (data.table): each depvar returns its own effect
   # networkName must be consistent with the requested depvar
   expect_true(all(dyn_a$networkName == "mynet_a"))
   expect_true(all(dyn_b$networkName == "mynet_b"))
-})
-
-test_that("co-evolution dynamic (base R fallback): per-depvar extraction correct", {
-  skip_slow()
-  with_mocked_bindings(
-    {
-      dyn_a <- getDynamicChangeContributions(
-        ans = ans_co, data = mydata_co, algorithm = mycontrols_co,
-        theta = c(ans_co$rate, ans_co$theta),
-        effects = mymodel_co, depvar = "mynet_a", returnDataFrame = TRUE
-      )
-      dyn_b <- getDynamicChangeContributions(
-        ans = ans_co, data = mydata_co, algorithm = mycontrols_co,
-        theta = c(ans_co$rate, ans_co$theta),
-        effects = mymodel_co, depvar = "mynet_b", returnDataFrame = TRUE
-      )
-      expect_true(is.data.frame(dyn_a) && !("data.table" %in% class(dyn_a)))
-      expect_true(is.data.frame(dyn_b) && !("data.table" %in% class(dyn_b)))
-      expect_true("transTrip" %in% dyn_a$effectname)
-      expect_true("transTrip" %in% dyn_b$effectname)
-      # Rows must belong to the right network
-      expect_true(all(dyn_a$networkName == "mynet_a"))
-      expect_true(all(dyn_b$networkName == "mynet_b"))
-    },
-    requireNamespace = function(pkg, ...) FALSE,
-    .package = "base"
-  )
 })
 
 # ---------------------------------------------------------------------------
@@ -514,7 +379,7 @@ test_that("creation/endow static wide: all non-rate effect slots are filled", {
   expect_equal(length(idx$recip_creat), 1L)
   expect_equal(length(idx$tt_eval),     1L)
   expect_equal(length(idx$tt_endow),    1L)
-  expect_true(all(mat[, idx$tt_endow] >= 0, na.rm = TRUE))
+  expect_true(all(mat[, idx$tt_endow] <= 0, na.rm = TRUE))
 })
 
 test_that("creation/endow static wide: creation contributions are non-negative", {
@@ -525,16 +390,18 @@ test_that("creation/endow static wide: creation contributions are non-negative",
   expect_true(all(mat[, idx$recip_creat] >= 0, na.rm = TRUE))
 })
 
-test_that("creation/endow static wide: endow(j) + eval(j) == 0 wherever endow(j) > 0", {
+test_that("creation/endow static wide: endow(j) == eval(j) wherever endow(j) != 0", {
+  # With chain-consistent signs, endowment and eval contributions are both
+  # -calculateContribution(a) on withdrawal rows (same underlying effect).
   skip_slow()
   idx <- .cm_indices()
   mat <- getStaticChangeContributions(ans = ans_cm, data = mydata_cm,
     effects = mymodel_cm, depvar = "mynet_cm", returnWide = TRUE)$contribMat
-  rows_with_endow <- which(mat[, idx$tt_endow] > 0)
+  rows_with_endow <- which(mat[, idx$tt_endow] != 0)
   expect_gt(length(rows_with_endow), 0L)
   expect_equal(
-    mat[rows_with_endow, idx$tt_endow] + mat[rows_with_endow, idx$tt_eval],
-    rep(0, length(rows_with_endow))
+    mat[rows_with_endow, idx$tt_endow],
+    mat[rows_with_endow, idx$tt_eval]
   )
 })
 
@@ -549,18 +416,16 @@ test_that("creation/endow static wide: creation(j) == eval(j) wherever creation(
                mat[rows_with_creat, idx$recip_eval])
 })
 
-test_that("creation/endow static long (data.table): all effect slots present, 2x rows for shared shortNames", {
+test_that("creation/endow static long: all effect slots present, 2x rows for shared shortNames", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
   long_cm <- getStaticChangeContributions(
     ans = ans_cm, data = mydata_cm, effects = mymodel_cm, returnDataFrame = TRUE)
   expect_true("density"   %in% long_cm$effectname)
   expect_true("recip"     %in% long_cm$effectname)
   expect_true("transTrip" %in% long_cm$effectname)
-  n_density_rows   <- nrow(long_cm[effectname == "density"])
-  expect_equal(nrow(long_cm[effectname == "recip"]),     2L * n_density_rows)
-  expect_equal(nrow(long_cm[effectname == "transTrip"]), 2L * n_density_rows)
+  n_density_rows   <- nrow(long_cm[long_cm$effectname == "density", ])
+  expect_equal(nrow(long_cm[long_cm$effectname == "recip", ]),     2L * n_density_rows)
+  expect_equal(nrow(long_cm[long_cm$effectname == "transTrip", ]), 2L * n_density_rows)
 })
 
 test_that("creation/endow dynamic (pure list): no error", {
@@ -573,19 +438,17 @@ test_that("creation/endow dynamic (pure list): no error", {
   expect_true(is.list(dyn_cm))
 })
 
-test_that("creation/endow dynamic (data.table): 2x rows for shared shortNames", {
+test_that("creation/endow dynamic: 2x rows for shared shortNames", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
   dyn_cm <- getDynamicChangeContributions(
     ans = ans_cm, data = mydata_cm, algorithm = mycontrols_cm,
     theta = c(ans_cm$rate, ans_cm$theta),
     effects = mymodel_cm, depvar = "mynet_cm", returnDataFrame = TRUE
   )
-  expect_true("data.table" %in% class(dyn_cm))
-  n_density_rows   <- nrow(dyn_cm[effectname == "density"])
-  expect_equal(nrow(dyn_cm[effectname == "recip"]),     2L * n_density_rows)
-  expect_equal(nrow(dyn_cm[effectname == "transTrip"]), 2L * n_density_rows)
+  expect_true(is.data.frame(dyn_cm))
+  n_density_rows   <- nrow(dyn_cm[dyn_cm$effectname == "density", ])
+  expect_equal(nrow(dyn_cm[dyn_cm$effectname == "recip", ]),     2L * n_density_rows)
+  expect_equal(nrow(dyn_cm[dyn_cm$effectname == "transTrip", ]), 2L * n_density_rows)
 })
 
 test_that("creation/endow static wide: ncol equals total included non-rate effects", {
@@ -605,18 +468,16 @@ test_that("creation/endow static wide: ncol equals total included non-rate effec
   expect_false(identical(mat[, tt_cols[1]], mat[, tt_cols[2]]))
 })
 
-test_that("creation/endow static long (data.table): all effect slots present in output", {
+test_that("creation/endow static long: all effect slots present in output", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
   long_cm <- getStaticChangeContributions(
     ans = ans_cm, data = mydata_cm, effects = mymodel_cm, returnDataFrame = TRUE)
   expect_true("density"   %in% long_cm$effectname)
   expect_true("recip"     %in% long_cm$effectname)
   expect_true("transTrip" %in% long_cm$effectname)
-  n_density_rows <- nrow(long_cm[effectname == "density"])
-  expect_equal(nrow(long_cm[effectname == "recip"]),     2L * n_density_rows)
-  expect_equal(nrow(long_cm[effectname == "transTrip"]), 2L * n_density_rows)
+  n_density_rows <- nrow(long_cm[long_cm$effectname == "density", ])
+  expect_equal(nrow(long_cm[long_cm$effectname == "recip", ]),     2L * n_density_rows)
+  expect_equal(nrow(long_cm[long_cm$effectname == "transTrip", ]), 2L * n_density_rows)
 })
 
 test_that("creation/endow dynamic (pure list): no error and result is a list", {
@@ -629,19 +490,17 @@ test_that("creation/endow dynamic (pure list): no error and result is a list", {
   expect_true(is.list(dyn_cm))
 })
 
-test_that("creation/endow dynamic (data.table): effect slots not collapsed", {
+test_that("creation/endow dynamic: effect slots not collapsed", {
   skip_slow()
-  skip_if_not(requireNamespace("data.table", quietly = TRUE), "data.table not available")
-  library(data.table)
   dyn_cm <- getDynamicChangeContributions(
     ans = ans_cm, data = mydata_cm, algorithm = mycontrols_cm,
     theta = c(ans_cm$rate, ans_cm$theta),
     effects = mymodel_cm, depvar = "mynet_cm", returnDataFrame = TRUE
   )
-  expect_true("data.table" %in% class(dyn_cm))
-  n_density_rows   <- nrow(dyn_cm[effectname == "density"])
-  expect_equal(nrow(dyn_cm[effectname == "recip"]),     2L * n_density_rows)
-  expect_equal(nrow(dyn_cm[effectname == "transTrip"]), 2L * n_density_rows)
+  expect_true(is.data.frame(dyn_cm))
+  n_density_rows   <- nrow(dyn_cm[dyn_cm$effectname == "density", ])
+  expect_equal(nrow(dyn_cm[dyn_cm$effectname == "recip", ]),     2L * n_density_rows)
+  expect_equal(nrow(dyn_cm[dyn_cm$effectname == "transTrip", ]), 2L * n_density_rows)
 })
 
 # ── thetaValues / simOnly batch approach ─────────────────────────────────────

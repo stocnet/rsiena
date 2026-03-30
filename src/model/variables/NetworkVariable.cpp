@@ -696,6 +696,9 @@ void NetworkVariable::makeChange(int actor)
 		if (this->pSimulation()->pModel()->needChangeContributions())
 		{
 			pMiniStep->changeContributions(lpChangeContribution);
+			pMiniStep->changePermitted(lpChangePermitted);
+			pMiniStep->changeUtility(lpChangeUtility);
+			pMiniStep->changeProbability(lpChangeProbability);
 		}
 		this->pSimulation()->pChain()->insertBefore(pMiniStep,
 			this->pSimulation()->pChain()->pLast());
@@ -1213,6 +1216,9 @@ void NetworkVariable::calculateTieFlipProbabilities()
 	if (this->pSimulation()->pModel()->needChangeContributions()) {
 		this->lpChangeContribution =
 				new map<const EffectInfo *, vector<double> >();
+		this->lpChangePermitted = new vector<bool>(this->m(), false);
+		this->lpChangeUtility = new vector<double>(this->m(), R_NegInf);
+		this->lpChangeProbability = new vector<double>(this->m(), 0.0);
 // used to be  >[evaluationEffectCount+endowmentEffectCount+creationEffectCount];
 		for (int i = 0; i < evaluationEffectCount; i++) {
 			vector<double> vec(this->m(),0);
@@ -1279,6 +1285,10 @@ void NetworkVariable::calculateTieFlipProbabilities()
 		}
 		if (this->lpermitted[alter])
 		{
+			if (this->pSimulation()->pModel()->needChangeContributions())
+			{
+				(*this->lpChangePermitted)[alter] = true;
+			}
 			// Calculate the total contribution of all effects
 
 			double contribution = 0;
@@ -1336,6 +1346,10 @@ void NetworkVariable::calculateTieFlipProbabilities()
 			// The selection probability is the exponential of the total
 			// contribution.
 			this->lprobabilities[alter] = contribution;
+			if (this->pSimulation()->pModel()->needChangeContributions())
+			{
+				(*this->lpChangeUtility)[alter] = contribution;
+			}
 			//	Rprintf("p1 %d %f \n", alter, contribution);
 			sumPermitted++;
 		}
@@ -1442,6 +1456,15 @@ void NetworkVariable::calculateTieFlipProbabilities()
 		Rprintf("this period = %d\n", (this->period() + 1) );
 		// counting starts at 0
 		Rf_error("total probability non-positive");
+	}
+
+	// Capture post-softmax probabilities
+	if (this->pSimulation()->pModel()->needChangeContributions())
+	{
+		for (int alter = 0; alter < this->m(); alter++)
+		{
+			(*this->lpChangeProbability)[alter] = this->lprobabilities[alter];
+		}
 	}
 
 	// delete iter

@@ -752,6 +752,7 @@ SEXP getStaticChangeContributions(SEXP DATAPTR,
 	size_t nGroups = pGroupData->size();
 
 	SEXP altStats = PROTECT(Rf_allocVector(VECSXP, nGroups));
+	SEXP permStats = PROTECT(Rf_allocVector(VECSXP, nGroups));
 	SEXP NETWORKTYPES = PROTECT(createRObjectAttributes(EFFECTSLIST, altStats));
 	int objEffects = Rf_length(NETWORKTYPES);
 
@@ -759,9 +760,13 @@ SEXP getStaticChangeContributions(SEXP DATAPTR,
 	{
 		SET_VECTOR_ELT(altStats, group, Rf_allocVector(VECSXP, 
 			(*pGroupData)[group]->observationCount()-1));
+		SET_VECTOR_ELT(permStats, group, Rf_allocVector(VECSXP, 
+			(*pGroupData)[group]->observationCount()-1));
 		for (int p = 0; p < (*pGroupData)[group]->observationCount()-1; p++)
 		{
 			SET_VECTOR_ELT(VECTOR_ELT(altStats, group), p, 
+				Rf_allocVector(VECSXP, objEffects));
+			SET_VECTOR_ELT(VECTOR_ELT(permStats, group), p, 
 				Rf_allocVector(VECSXP, objEffects));
 		}
 	}
@@ -776,12 +781,15 @@ SEXP getStaticChangeContributions(SEXP DATAPTR,
 			// TODO altStats[0] == altStats[1] ??
 			StatisticCalculator calculator(pData, pModel, &State, period, false, true);
 			vector<vector<double *>> changeContributions;
-			getStaticChangeContributionstatistics(EFFECTSLIST, &calculator, &changeContributions);
+			vector<vector<bool *>> changePermitted;
+			getStaticChangeContributionstatistics(EFFECTSLIST, &calculator, &changeContributions, &changePermitted);
 			int actors = pData->rDependentVariableData()[0]->n();
 			for (unsigned e = 0; e < changeContributions.size(); e++)
 			{
 				SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), period),
 								e, Rf_allocVector(VECSXP, actors));
+				SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(permStats, group), period),
+							e, Rf_allocVector(VECSXP, actors));
 				int choices;
 				if (strcmp(CHAR(STRING_ELT(NETWORKTYPES, e)), "behavior") == 0)
 				{
@@ -795,19 +803,25 @@ SEXP getStaticChangeContributions(SEXP DATAPTR,
 				for (int actor = 0; actor < actors; actor++)
 				{
 					SEXP actorsVal = PROTECT(Rf_allocVector(REALSXP, choices));
+					SEXP actorsPerm = PROTECT(Rf_allocVector(LGLSXP, choices));
 					double * d = REAL(actorsVal);
-					for (int i = 0; i < Rf_length(actorsVal); i++)
+					int * q = LOGICAL(actorsPerm);
+					for (int i = 0; i < choices; i++)
 					{
 						d[i] = changeContributions.at(e).at(actor)[i];
+						q[i] = changePermitted.at(e).at(actor)[i] ? TRUE : FALSE;
 					}
 					SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), period), e), 
 								actor, actorsVal);
-					UNPROTECT(1);         
+					SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(permStats, group), period), e), 
+								actor, actorsPerm);
+					UNPROTECT(2);         
 				}
 			}
 		}
 	}
-	UNPROTECT(2);
+	Rf_setAttrib(altStats, Rf_install("permitted"), permStats);
+	UNPROTECT(3);
 	return altStats;
 }
 

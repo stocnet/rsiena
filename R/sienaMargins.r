@@ -13,21 +13,28 @@ marginalEffects.sienaFit <- function(
     interaction1 = FALSE,
     intEffectNames1 = NULL,
     modEffectNames1 = NULL,
+    second = FALSE,
     effectName2 = NULL,
     diff2 = NULL,
     contrast2 = NULL,
     interaction2 = FALSE,
     intEffectNames2 = NULL,
     modEffectNames2 = NULL,
-    type = c("changeProb", "tieProb"),
-    second = FALSE,
+    effectList = NULL,
     level = "period",
     condition = NULL,
+    type = c("changeProb", "tieProb"),
+    mainEffect = "riskDifference", # allow utility later as well
+    perturbType1 = NULL,
+    perturbType2 = NULL,
+    massContrasts = NULL,
+    egoNormalize = TRUE,
+    returnDecisionDetails = FALSE,
     sum_fun = mean,
     na.rm = TRUE,
     dynamic = FALSE,
     algorithm = NULL,
-    n3 = 500,
+    n3 = 200,
     useChangeContributions = FALSE,
     uncertainty = TRUE,
     nsim = 1000,
@@ -38,6 +45,7 @@ marginalEffects.sienaFit <- function(
     uncertaintyProbs = c(0.025, 0.5, 0.975),
     uncertaintyMcse = FALSE,
     uncertaintymcseBatches = NULL,
+    # Multicore
     useCluster = FALSE,
     nbrNodes = 1,
     clusterType = c("PSOCK", "FORK"),
@@ -48,17 +56,10 @@ marginalEffects.sienaFit <- function(
     batchSize = NULL,
     keepBatch = FALSE,
     verbose = TRUE,
-    mainEffect = "riskDifference", # allow utility later as well
     details = FALSE,
-    perturbType1 = NULL,
-    perturbType2 = NULL,
-    massContrasts = NULL,
     memoryScale = NULL,
     batchUnitBudget = 2.5e8,
     dynamicMinistepFactor = 10,
-    egoNormalize = TRUE,
-    returnDecisionDetails = FALSE,
-    effectList = NULL,
     saveDir = NULL,
     gcEachBatch = TRUE,
     gcEachSim = FALSE,
@@ -128,11 +129,9 @@ marginalEffects.sienaFit <- function(
     if (is.null(names(effectList)) || any(nchar(names(effectList)) == 0L))
         stop("All elements of 'effectList' must be named.")
 
-        req         <- object$requestedEffects
-        effects_use <- if (is.null(effects)) req else effects
-        thetaHat    <- object[["theta"]]
-        covTheta    <- object[["covtheta"]]
-        thetaNames  <- names(thetaHat)
+        if (is.null(effects)) effects <- object$requestedEffects
+        thetaHat    <- coef(object)
+        covTheta    <- vcov(object)
 
         # ---- saveDir: check for completed effects --
         if (!is.null(saveDir)) {
@@ -155,18 +154,28 @@ marginalEffects.sienaFit <- function(
             staticContributions <- getStaticChangeContributions(
                 ans     = object,
                 data    = data,
-                effects = effects_use,
+                effects = effects,
                 depvar  = depvar,
                 returnWide = TRUE
             )
-            staticContributions$csMat <- contribToChangeStats(
+            staticContributions$changeStats <- contribToChangeStats(
                 staticContributions$contribMat,
-                staticContributions$effectNames
+                staticContributions$effectNames,
+                theta = NULL  # theta populated per-draw in predictFirstDiff
             )
-            knownEffectNames <- staticContributions$effectNames
+            csNames <- staticContributions$changeStats$csNames
+            knownEffectNames <- csNames
+            # Re-key effectInteractionTypes to changeStats names.
+            eitOld <- staticContributions$effectInteractionTypes
+            # Map composite names to changeStats: strip the type suffix.
+            eitBases <- sub("_[^_]+$", "", names(eitOld))
+            eitCanon <- setNames(
+              eitOld[match(csNames, eitBases)],
+              csNames
+            )
             getContribFun <- function(theta) staticContributions
         } else {
-            if ("basicRate" %in% names(effects_use) && !any(effects_use$basicRate)) {
+            if ("basicRate" %in% names(effects) && !any(effects$basicRate)) {
                 stop(
                     "The 'effects' object contains no rate effects. ",
                     "This is required when dynamic = TRUE because siena07 ",
@@ -174,12 +183,12 @@ marginalEffects.sienaFit <- function(
                     "Please pass the full effects object, e.g. effects = mymodel."
                 )
             }
-            knownEffectNames <- getEffectNamesNoRate(effects_use, depvar)
+            knownEffectNames <- getEffectNamesNoRate(effects, depvar)
             dynArgs <- list(
                 ans      = object,
                 data     = data,
                 algorithm = algorithm,
-                effects  = effects_use,
+                effects  = effects,
                 depvar   = depvar,
                 n3       = n3,
                 useChangeContributions = useChangeContributions,
@@ -193,11 +202,11 @@ marginalEffects.sienaFit <- function(
 
         # ---- effectInteractionTypes for resolvePerturbType ----
         if (!dynamic) {
-            eiTypes <- staticContributions$effectInteractionTypes
-        } else if ("interactionType" %in% names(effects_use)) {
-            noRate  <- effects_use$type != "rate"
-            inc     <- effects_use[
-                noRate & effects_use$include & effects_use$name == depvar, ]
+            eiTypes <- eitCanon
+        } else if ("interactionType" %in% names(effects)) {
+            noRate  <- effects$type != "rate"
+            inc     <- effects[
+                noRate & effects$include & effects$name == depvar, ]
             eiTypes <- setNames(inc$interactionType, knownEffectNames)
         } else {
             eiTypes <- NULL
@@ -225,6 +234,8 @@ marginalEffects.sienaFit <- function(
             if (is.null(spec$effectName1))
                 stop("Effect '", nm, "' must specify 'effectName1'.")
 
+            # feells unnecessary to have a helper function here?
+            
             resolved <- resolveAMEEffectNames(
                 knownEffectNames,
                 spec$effectName1,
@@ -263,12 +274,12 @@ marginalEffects.sienaFit <- function(
             eff_contrast2 <- spec$contrast2
             if (!is.null(eff_contrast1)) {
                 cm1 <- getCovCenteringMean(resolved$effectName1,
-                                           effects_use, data, depvar)
+                                           effects, data, depvar)
                 if (cm1 != 0) eff_contrast1 <- eff_contrast1 - cm1
             }
             if (eff_second && !is.null(eff_contrast2)) {
                 cm2 <- getCovCenteringMean(resolved$effectName2,
-                                           effects_use, data, depvar)
+                                           effects, data, depvar)
                 if (cm2 != 0) eff_contrast2 <- eff_contrast2 - cm2
             }
 
@@ -365,10 +376,9 @@ marginalEffects.sienaFit <- function(
 
         # ---- Point estimates (shared hat contributions) ----
         ccHat <- getContribFun(thetaHat)
-        if (is.null(ccHat$csMat))
-            ccHat$csMat <- contribToChangeStats(ccHat$contribMat,
-                                                ccHat$effectNames)
-        theta_hat_use <- thetaHat[ccHat$effectNames]
+        baselineHat <- predictProbability(ccHat, thetaHat, type,
+                                          returnComponents = TRUE)
+        theta_hat_use <- baselineHat$theta_use
 
         decision_details <- vector("list", length(builtSpecList))
         names(decision_details) <- names(builtSpecList)
@@ -381,7 +391,8 @@ marginalEffects.sienaFit <- function(
             unit_pred <- do.call(
                 spec$diffFun,
                 c(list(changeContributions = ccHat,
-                       theta_use = theta_hat_use),
+                       theta_use = theta_hat_use,
+                       baseline = baselineHat),
                   pe_args)
             )
             if (isTRUE(spec$returnDecisionDetails))
@@ -439,7 +450,7 @@ marginalEffects.sienaFit <- function(
             effectSpecList = builtSpecList,
             thetaHat    = thetaHat,
             covTheta    = covTheta,
-            thetaNames  = thetaNames,
+            type        = type,
             nsim        = nsim,
             useCluster  = useCluster,
             nbrNodes    = nbrNodes,
@@ -547,6 +558,7 @@ predictFirstDiffStatic <- function(theta, staticContributions,
     details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference",
     perturbType = "alter", massContrasts = FALSE, attachContribs = TRUE)
 {
+  # can theta even still be incorrectly ordered here? maybe safer to align by name just in case
   effectNames <- staticContributions$effectNames
   theta_use   <- theta[effectNames]
   predictFirstDiff(changeContributions = staticContributions, theta_use, type,
@@ -568,6 +580,7 @@ predictSecondDiffStatic <- function(theta, staticContributions,
 {
   effectNames <- staticContributions$effectNames
   theta_use   <- theta[effectNames]
+  # can theta even still be incorrectly ordered here? maybe safer to align by name just in case
   predictSecondDiff(changeContributions = staticContributions, theta_use, type,
       effectName1, diff1, contrast1, interaction1, intEffectNames1, modEffectNames1,
       effectName2, diff2, contrast2, interaction2, intEffectNames2, modEffectNames2,
@@ -590,8 +603,8 @@ predictFirstDiffDynamic <- function(ans, data, theta, effects, algorithm,
     effects = effects, depvar = depvar, n3 = n3,
     useChangeContributions = useChangeContributions, returnWide = TRUE
   )
-  dynContrib$csMat <- contribToChangeStats(dynContrib$contribMat,
-                                            dynContrib$effectNames)
+  dynContrib$changeStats <- contribToChangeStats(dynContrib$contribMat,
+                                                dynContrib$effectNames)
   theta_use <- theta[dynContrib$effectNames]
   predictFirstDiff(changeContributions = dynContrib, theta_use, type,
       effectName, diff, contrast, interaction, intEffectNames,
@@ -617,8 +630,8 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
     effects = effects, depvar = depvar, n3 = n3,
     useChangeContributions = useChangeContributions, returnWide = TRUE
   )
-  dynContrib$csMat <- contribToChangeStats(dynContrib$contribMat,
-                                            dynContrib$effectNames)
+  dynContrib$changeStats <- contribToChangeStats(dynContrib$contribMat,
+                                                dynContrib$effectNames)
   theta_use <- theta[dynContrib$effectNames]
   predictSecondDiff(changeContributions = dynContrib, theta_use, type,
       effectName1, diff1, contrast1, interaction1, intEffectNames1, modEffectNames1,
@@ -628,25 +641,47 @@ predictSecondDiffDynamic <- function(ans, data, theta, effects, algorithm,
       massContrasts = massContrasts, attachContribs = attachContribs)
 }
 
+# predictFirstDiff and predictSecondDiff reuse a lot of code, unify?
+
 # Core computation shared by both static and dynamic paths.
 # `changeContributions` — unified wide struct (contribMat + coord vectors + effectNames)
 # `theta_use`           — named numeric vector aligned to changeContributions$effectNames
 predictFirstDiff <- function(changeContributions, theta_use, type,
     effectName, diff, contrast, interaction, intEffectNames,
     modEffectNames, details, calcRiskRatio, mainEffect,
-    perturbType = "alter", massContrasts = FALSE, attachContribs = TRUE)
+    perturbType = "alter", massContrasts = FALSE, attachContribs = TRUE,
+    baseline = NULL)
 {
-  contribMat         <- changeContributions$contribMat
-  effectNames        <- changeContributions$effectNames
-  densityName <- resolveEffectName("density", effectNames)
-  density     <- contribMat[, densityName]
-  # Use pre-flipped change-statistic matrix if available (static path),
-  # otherwise compute it (backward compat / standalone calls).
-  csMat <- if (!is.null(changeContributions$csMat)) changeContributions$csMat
-           else contribToChangeStats(contribMat, effectNames)
-  utility    <- calculateUtility(contribMat, theta_use)
-  changeProb <- calculateChangeProb(utility, changeContributions$group_id)
-  tieProb    <- if (type == "tieProb") calculateTieProb(changeProb, density) else NULL
+  # Ensure changeStats is cached on the contribution struct.
+  if (is.null(changeContributions$changeStats))
+    changeContributions$changeStats <- contribToChangeStats(
+      changeContributions$contribMat, changeContributions$effectNames)
+  cs <- changeContributions$changeStats
+  csMat      <- cs$csMat
+  csNames    <- cs$csNames
+  densityIdx <- cs$densityIdx
+  density    <- cs$density
+
+  # Use pre-computed baseline components if supplied, else compute.
+  if (!is.null(baseline)) {
+    thetaEff   <- baseline$thetaEff
+    utility    <- baseline$utility
+    changeProb <- baseline$changeProb
+    tieProb    <- baseline$tieProb
+  } else {
+    thetaEff   <- buildThetaEff(theta_use, cs$changeStatsMap)
+    if (!is.null(changeContributions$changeUtility) &&
+        !all(is.na(changeContributions$changeUtility))) {
+      utility    <- changeContributions$changeUtility
+      changeProb <- changeContributions$changeProbability
+    } else {
+      utility    <- calculateUtility(csMat, thetaEff,
+                                     changeContributions$permitted, densityIdx)
+      changeProb <- calculateChangeProb(utility, changeContributions$group_id)
+    }
+    tieProb <- if (type == "tieProb")
+      calculateTieProb(changeProb, density) else NULL
+  }
 
   fd <- calculateFirstDiff(
     densityValue       = density,
@@ -660,8 +695,8 @@ predictFirstDiff <- function(changeContributions, theta_use, type,
     intEffectNames     = intEffectNames,
     modEffectNames     = modEffectNames,
     modContribution    = if (!is.null(modEffectNames)) csMat[, modEffectNames] else NULL,
-    effectNames        = effectNames,
-    theta              = theta_use,
+    effectNames        = csNames,
+    theta              = thetaEff,
     type               = type,
     tieProb            = tieProb,
     details            = details,
@@ -669,8 +704,10 @@ predictFirstDiff <- function(changeContributions, theta_use, type,
     mainEffect         = mainEffect,
     perturbType        = perturbType,
     group_id           = changeContributions$group_id
+    # document use of group_id better
   )
 
+  # maybe should be optional to subset to keep?
   keep <- density != 0L
   out  <- groupColsList(changeContributions, keep)
   out[names(fd)] <- lapply(fd, `[`, keep)
@@ -681,7 +718,7 @@ predictFirstDiff <- function(changeContributions, theta_use, type,
     if (!is.null(tieProb)) out[["tieProb"]] <- tieProb[keep]
   }
 
-  # Mass contrasts for ego-wide perturbations (Delta P_i^+ and Delta P_i^-)
+  # Mass contrasts on ego-level (Delta P_i^+ and Delta P_i^-)
   if (massContrasts) {
     diffColName <- intersect(c("firstDiff", "firstRiskRatio"), names(fd))[1L]
     if (!is.na(diffColName) && diffColName == "firstDiff") {
@@ -700,7 +737,7 @@ predictFirstDiff <- function(changeContributions, theta_use, type,
   }
 
   if (attachContribs) {
-    out <- attachContributions(out, effectNames,
+    out <- attachContributions(out, csNames,
                                csMat[keep, , drop = FALSE], flip = FALSE)
   }
   attr(out, "row.names") <- .set_row_names(length(out[[1L]]))
@@ -716,18 +753,39 @@ predictSecondDiff <- function(changeContributions, theta_use, type,
     intEffectNames2, modEffectNames2,
     details, calcRiskRatio, mainEffect,
     perturbType1 = "alter", perturbType2 = "alter",
-    massContrasts = FALSE, attachContribs = TRUE)
+    massContrasts = FALSE, attachContribs = TRUE,
+    baseline = NULL)
 {
-  contribMat         <- changeContributions$contribMat
-  effectNames        <- changeContributions$effectNames
-  densityName <- resolveEffectName("density", effectNames)
-  density     <- contribMat[, densityName]
-  # Use pre-flipped change-statistic matrix if available.
-  csMat <- if (!is.null(changeContributions$csMat)) changeContributions$csMat
-           else contribToChangeStats(contribMat, effectNames)
-  utility    <- calculateUtility(contribMat, theta_use)
-  changeProb <- calculateChangeProb(utility, changeContributions$group_id)
-  tieProb    <- if (type == "tieProb") calculateTieProb(changeProb, density) else NULL
+  # Ensure changeStats is cached on the contribution struct.
+  if (is.null(changeContributions$changeStats))
+    changeContributions$changeStats <- contribToChangeStats(
+      changeContributions$contribMat, changeContributions$effectNames)
+  cs <- changeContributions$changeStats
+  csMat      <- cs$csMat
+  csNames    <- cs$csNames
+  densityIdx <- cs$densityIdx
+  density    <- cs$density
+
+  # Use pre-computed baseline components if supplied, else compute.
+  if (!is.null(baseline)) {
+    thetaEff   <- baseline$thetaEff
+    utility    <- baseline$utility
+    changeProb <- baseline$changeProb
+    tieProb    <- baseline$tieProb
+  } else {
+    thetaEff   <- buildThetaEff(theta_use, cs$changeStatsMap)
+    if (!is.null(changeContributions$changeUtility) &&
+        !all(is.na(changeContributions$changeUtility))) {
+      utility    <- changeContributions$changeUtility
+      changeProb <- changeContributions$changeProbability
+    } else {
+      utility    <- calculateUtility(csMat, thetaEff,
+                                     changeContributions$permitted, densityIdx)
+      changeProb <- calculateChangeProb(utility, changeContributions$group_id)
+    }
+    tieProb <- if (type == "tieProb")
+      calculateTieProb(changeProb, density) else NULL
+  }
 
   sd <- calculateSecondDiff(
     densityValue        = density,
@@ -749,8 +807,8 @@ predictSecondDiff <- function(changeContributions, theta_use, type,
     intEffectNames2     = intEffectNames2,
     modEffectNames2     = modEffectNames2,
     modContribution2    = if (!is.null(modEffectNames2)) csMat[, modEffectNames2] else NULL,
-    effectNames         = effectNames,
-    theta               = theta_use,
+    effectNames         = csNames,
+    theta               = thetaEff,
     type                = type,
     tieProb             = tieProb,
     details             = details,
@@ -790,9 +848,10 @@ predictSecondDiff <- function(changeContributions, theta_use, type,
   }
 
   if (attachContribs) {
-    out <- attachContributions(out, effectNames,
+    out <- attachContributions(out, csNames,
                                csMat[keep, , drop = FALSE], flip = FALSE)
   }
+  # faster than as.data.frame for large nrow, and we don't need factors or automatic names here
   attr(out, "row.names") <- .set_row_names(length(out[[1L]]))
   class(out) <- "data.frame"
   out
@@ -856,6 +915,8 @@ calculateFirstDiff <- function(densityValue,
   }
 
   changeProb_cf <- mlogit_update_r(changeProb, utilDiff, group_id, perturbType)
+  # the counterfactual change probability IS well defined, but also not used for density=0 cases
+  # but should probably not use NA anyway
   changeProb_cf[densityValue == 0] <- NA
   if (type == "tieProb") {
     tieProb_cf <- changeProb_cf
@@ -1069,8 +1130,14 @@ calculateSecondDiff <- function(densityValue,
 }
 
 # Compute the utility shift from perturbing effectName by diff.
-# All inputs (diff, modContribution) are in change-statistic space (delta).
-# The utility shift is  d * diff * (theta_e + sum_k mod_k * theta_int_k).
+#
+# diff is in "network feature" space (absolute), e.g. +1 = one more unit of
+# the structural feature.  The signed change in csMat is d*diff (since
+# csMat stores signed Δs).  So: Δu = d * diff * θ_combined.
+#
+# theta: either a named numeric vector (legacy) or a nEffects x 2 matrix
+#   ("thetaEff") with columns "creation" and "dissolution" (changeStats).
+#   When matrix, direction-dependent theta is selected per-row via densityValue.
 calculateUtilityDiff <- function(effectName, diff, 
                                  theta, densityValue,
                                  interaction = FALSE,
@@ -1080,48 +1147,81 @@ calculateUtilityDiff <- function(effectName, diff,
                                  effectNames = NULL){
   if (is.null(diff)) diff <- 1  # NULL means "+1 unit" perturbation
   effectNum <- which(effectNames == effectName)
+
+  # Helper: extract direction-dependent scalar/vector from theta.
+  thetaForEffect <- function(eNum) {
+    if (is.matrix(theta)) {
+      # Direction-dependent: select per-row by density.
+      th <- rep(0, length(densityValue))
+      th[densityValue ==  1] <- theta[eNum, "creation"]
+      th[densityValue == -1] <- theta[eNum, "dissolution"]
+      th
+    } else {
+      theta[eNum]
+    }
+  }
+
   if(interaction == TRUE){
     if (is.null(intEffectNames))
       stop("'intEffectNames' must not be NULL when interaction = TRUE.")
     if (is.null(modEffectNames))
       stop("'modEffectNames' must not be NULL when interaction = TRUE.")
-    # d * diff * (theta_e + sum_k mod_k * theta_int_k)
-    inner <- theta[effectNum]
+    inner <- thetaForEffect(effectNum)
     nInt <- length(intEffectNames)
     for (k in seq_len(nInt)) {
       mod_k <- if (is.matrix(modContribution)) modContribution[, k] else modContribution
       int_num <- which(effectNames == intEffectNames[k])
-      inner <- inner + mod_k * theta[int_num]
+      inner <- inner + mod_k * thetaForEffect(int_num)
     }
     util_diff <- densityValue * diff * inner
   } else {
-    util_diff <- densityValue * diff * theta[effectNum]
+    util_diff <- densityValue * diff * thetaForEffect(effectNum)
   }
   util_diff
  }
 
-# Resolve a user-supplied bare effect shortName to the composite "shortName_type"
-# column name used in contribMat. If it already contains "_" it passes through.
-# If multiple type-variants exist, "_eval" is preferred.
+# Resolve a user-supplied effect name to the changeStats names used in
+# contributions/prediction pipelines.
+# changeStats names have no type suffix (e.g. "mynet_recip", not "mynet_recip_eval").
+# - Accepts exact changeStats names (e.g. "mynet_recip").
+# - Accepts shorthand names (e.g. "recip").
+# - Accepts legacy names with type suffix (e.g. "recip_eval", "mynet_recip_eval")
+#   — the type suffix is stripped before matching.
 resolveEffectName <- function(effectName, effectNames) {
   if (is.null(effectName)) return(NULL)
-  vapply(effectName, function(nm) {
+
+  resolve_one <- function(nm) {
     if (nm %in% effectNames) return(nm)
-    # If nm already contains '_' (composite shortName_type or full name), try
-    # matching it as a depvar-prefixed suffix: e.g. "recip_eval" → "mynet_recip_eval"
-    if (grepl("_", nm, fixed = TRUE)) {
-      m <- grep(paste0("_", nm, "$"), effectNames, perl = TRUE, value = TRUE)
-      if (length(m) > 0L) return(m[1L])
+
+    # Strip type suffix if present (legacy names).
+    nmStripped <- sub("_(eval|endow|creation)$", "", nm)
+    if (nmStripped %in% effectNames) return(nmStripped)
+
+    # Plain shortname: match as suffix of changeStats name.
+    # e.g. "recip" matches "mynet_recip", "egoX" matches "mynet_egoX_mybeh"
+    if (!grepl("_", nmStripped, fixed = TRUE)) {
+      pattern <- paste0("(^|_)", nmStripped, "(_[^_]+)*$")
+      m <- grep(pattern, effectNames, perl = TRUE, value = TRUE)
+      if (length(m) == 1L) return(m)
+      if (length(m) > 1L) {
+        stop("Effect '", nm, "' is ambiguous. Matches: ",
+             paste(m, collapse = ", "), call. = FALSE)
+      }
+    } else {
+      # Partial qualified name (e.g. "mynet_recip" or "recip_covar").
+      m <- grep(paste0("(^|_)", nmStripped, "$"), effectNames, perl = TRUE, value = TRUE)
+      if (length(m) == 1L) return(m)
+      if (length(m) > 1L) {
+        stop("Effect '", nm, "' is ambiguous. Matches: ",
+             paste(m, collapse = ", "), call. = FALSE)
+      }
     }
-    # Try shortName_eval (most common default type)
-    m <- grep(paste0("(^|_)", nm, "_eval$"), effectNames, perl = TRUE, value = TRUE)
-    if (length(m) > 0L) return(m[1L])
-    # Try any type suffix
-    m <- grep(paste0("(^|_)", nm, "_"), effectNames, perl = TRUE, value = TRUE)
-    if (length(m) > 0L) return(m[1L])
+
     stop("Effect '", nm, "' not found in contribMat columns: ",
          paste(effectNames, collapse = ", "), call. = FALSE)
-  }, character(1L), USE.NAMES = FALSE)
+  }
+
+  vapply(effectName, resolve_one, character(1L), USE.NAMES = FALSE)
 }
 
 # Helper: resolve the effect-name arguments of marginalEffects against a known column
@@ -1138,4 +1238,22 @@ resolveAMEEffectNames <- function(effectNames,
     intEffectNames2 = if (second) resolveEffectName(intEffectNames2, effectNames) else NULL,
     modEffectNames2 = if (second) resolveEffectName(modEffectNames2, effectNames) else NULL
   )
+}
+
+# Multinomial-logit probability update with string-based perturbation type.
+#
+# Thin wrapper around the Rcpp mlogit_update that accepts
+# perturbType as "alter" or "ego" (instead of 0L/1L)
+# and returns a plain numeric vector.
+#
+# p:           Numeric vector of baseline probabilities.
+# delta_u:     Numeric vector of utility shifts (same length as p).
+# group_id:    Integer vector of group identifiers.
+# perturbType: Character: "alter" (one-alternative update)
+#              or "ego" (ego-wide renormalization).
+# Returns numeric vector of updated probabilities.
+mlogit_update_r <- function(p, delta_u, group_id, perturbType) {
+    if (is.null(group_id)) group_id <- integer(length(p))
+    as.vector(mlogit_update(p, delta_u, group_id,
+                            perturbTypeToInt(perturbType)))
 }

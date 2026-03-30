@@ -1,7 +1,27 @@
 # testthat::skip_on_cran()
-# Models: ans, mydata, mymodel, mycontrols  — from helper-models.R (base)
-#         ans2, mydata2, mymodel2            — from helper-models.R (transRecTrip)
-#         ans3, mydata3, mymodel3            — from helper-models.R (unspInt)
+
+# -- Load fixtures from cache (built by helper-models.R) --
+ans        <- load_fixture("ans")
+mydata     <- load_fixture("mydata")
+mymodel    <- load_fixture("mymodel")
+mycontrols <- load_fixture("mycontrols")
+ans2       <- load_fixture("ans2")
+mydata2    <- load_fixture("mydata2")
+mymodel2   <- load_fixture("mymodel2")
+mycontrols2 <- load_fixture("mycontrols2")
+ans3       <- load_fixture("ans3")
+mydata3    <- load_fixture("mydata3")
+mymodel3   <- load_fixture("mymodel3")
+mycontrols3 <- load_fixture("mycontrols3")
+# Full-mode fixtures (NULL in quick mode; those tests are guarded by skip_slow()/skip_if())
+ans_ego        <- load_fixture("ans_ego")
+mydata_ego     <- load_fixture("mydata_ego")
+mymodel_ego    <- load_fixture("mymodel_ego")
+mycontrols_ego <- load_fixture("mycontrols_ego")
+ans_2int       <- load_fixture("ans_2int")
+mydata_2int    <- load_fixture("mydata_2int")
+mymodel_2int   <- load_fixture("mymodel_2int")
+mycontrols_2int <- load_fixture("mycontrols_2int")
 
 # ── Static tests ──────────────────────────────────────────────────────────────
 
@@ -152,6 +172,7 @@ test_that("marginalEffects dynamic: MCSE + CI structure", {
     dynamic = TRUE, n3 = 60, nsim = 20,
     type = "tieProb", condition = "density",
     uncertainty = TRUE,
+    uncertaintyMean = TRUE, uncertaintyMedian = TRUE,
     uncertaintyMcse = TRUE, uncertaintymcseBatches = 4,
     uncertaintySd = FALSE, uncertaintyCi = TRUE,
     verbose = FALSE
@@ -323,7 +344,7 @@ test_that("marginalEffects: behavior DV stops with informative error", {
       level = "period", condition = "density",
       uncertainty = FALSE
     ),
-    "behavior"
+    "[Bb]ehavio(u)?r"
   )
 })
 

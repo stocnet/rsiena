@@ -13,6 +13,8 @@
 #define STATISTICCALCULATOR_H_
 
 #include <map>
+#include <string>
+#include <vector>
 
 namespace siena
 {
@@ -67,6 +69,7 @@ public:
 
 	double statistic(EffectInfo * pEffectInfo) const;
 	std::vector<double *> staticChangeContributions(EffectInfo * pEffect) const;
+	const std::vector<bool *>& staticPermitted(const std::string& key) const;
 	double * actorStatistics(EffectInfo * pEffect) const;
 	int distance(LongitudinalData * pData, int period) const;
 	double distance(ContinuousLongitudinalData * pData, int period) const;
@@ -119,6 +122,10 @@ private:
 
 	// The change contributions of all effects
 	std::map<EffectInfo *, std::vector<double *> > lstaticChangeContributions;
+
+	// Permitted flags per depvar (keyed by depvar name, or name + "|endow" for endowment).
+	// Each entry: vector<bool*>(nEgos), each bool* of size nChoices.
+	std::map<std::string, std::vector<bool *> > lstaticPermitted;
 
 	// Array of simulated distances per variable
 	std::map<LongitudinalData *, int *> ldistances;

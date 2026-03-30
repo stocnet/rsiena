@@ -105,6 +105,9 @@ namespace siena
 		}
 		this->lstepType = -1;
 		this->lpChangeContribution = 0;
+		this->lpChangePermitted = 0;
+		this->lpChangeUtility = 0;
+		this->lpChangeProbability = 0;
 	}
 
 	/**

@@ -1,9 +1,23 @@
 # testthat::skip_on_cran()
-# Models: ans, mydata, mymodel, mycontrols     — from helper-models.R (base, with returnDeps=TRUE)
-#         ans_int, mydata_int, mymodel_int      — from helper-models.R (full mode only)
-#         ans_int_uncond                        — from helper-models.R (full mode only)
-#         ans_co, mydata_co, mymodel_co, mycontrols_co — from helper-models.R (full mode only)
-#         ans_cm, mydata_cm, mymodel_cm, mycontrols_cm — from helper-models.R (full mode only)
+
+# -- Load fixtures from cache (built by helper-models.R) --
+ans        <- load_fixture("ans")
+mydata     <- load_fixture("mydata")
+mymodel    <- load_fixture("mymodel")
+mycontrols <- load_fixture("mycontrols")
+# Full-mode fixtures (NULL in quick mode; those tests are guarded by skip_slow())
+ans_int        <- load_fixture("ans_int")
+mydata_int     <- load_fixture("mydata_int")
+mymodel_int    <- load_fixture("mymodel_int")
+mycontrols_int <- load_fixture("mycontrols_int")
+ans_int_uncond <- load_fixture("ans_int_uncond")
+ans_co         <- load_fixture("ans_co")
+mydata_co      <- load_fixture("mydata_co")
+mymodel_co     <- load_fixture("mymodel_co")
+mycontrols_co  <- load_fixture("mycontrols_co")
+ans_cm         <- load_fixture("ans_cm")
+mydata_cm      <- load_fixture("mydata_cm")
+mymodel_cm     <- load_fixture("mymodel_cm")
 
 test_that("predict.sienaFit static: no uncertainty, egoChoice level", {
   pred_df <- predict(
@@ -24,9 +38,10 @@ test_that("predict.sienaFit static: MCSE columns, no CI", {
     newdata = mydata,
     type = "tieProb",
     nsim = 20,
-    condition = "transTrip_eval",
+    condition = "transTrip",
     level = "period",
     uncertainty = TRUE,
+    uncertaintyMean = TRUE,
     uncertaintyMcse = TRUE,
     uncertaintymcseBatches = 4,
     uncertaintySd = TRUE,
@@ -62,7 +77,7 @@ test_that("predict.sienaFit static: FORK cluster", {
     newdata = mydata,
     type = "tieProb",
     nsim = 10,
-    condition = "transTrip_eval",
+    condition = "transTrip",
     level = "period",
     uncertainty = TRUE,
     useCluster = TRUE,
@@ -84,7 +99,7 @@ test_that("predict.sienaFit dynamic: FORK cluster", {
         type = "tieProb",
         n3 = 60,
         nsim = 2,
-        condition = "transTrip_eval",
+        condition = "transTrip",
         level = "period",
         uncertainty = TRUE,
         useCluster = TRUE,
@@ -124,6 +139,7 @@ test_that("predict.sienaFit dynamic: MCSE, no SD", {
         nsim = 20,
         condition = "density_eval",
         uncertainty = TRUE,
+        uncertaintyMean = TRUE,
         uncertaintyMcse = TRUE,
         uncertaintymcseBatches = 4,
         uncertaintySd = FALSE,
@@ -221,6 +237,39 @@ test_that("nameThetaFromEffects + alignThetaNoRate: cond=FALSE interaction scena
   expect_equal(unname(result[["density_eval"]]),  -2.38)
   expect_equal(unname(result[["recip_eval"]]),     3.06)
   expect_equal(unname(result[["unspInt_eval"]]),  -0.07)
+})
+
+test_that("numberIntShortNames + getNamesFromEffects handle same-identity interactions", {
+  e_single <- data.frame(
+    name = rep("mynet", 3),
+    shortName = rep("unspInt", 3),
+    interaction1 = rep("recip", 3),
+    interaction2 = rep("inPop", 3),
+    type = c("eval", "creation", "endow"),
+    include = rep(TRUE, 3),
+    stringsAsFactors = FALSE
+  )
+  # same logical interaction should not be numbered
+  names_single <- getNamesFromEffects(e_single)
+  expect_true(any(grepl("unspInt_recipinPop_eval$", names_single)))
+  expect_true(any(grepl("unspInt_recipinPop_creation$", names_single)))
+  expect_true(any(grepl("unspInt_recipinPop_endow$", names_single)))
+  expect_false(any(grepl("unspInt1", names_single)))
+
+  e_double <- data.frame(
+    name = rep("mynet", 6),
+    shortName = rep("unspInt", 6),
+    interaction1 = c(rep("recip", 3), rep("outPop", 3)),
+    interaction2 = rep("inPop", 6),
+    type = rep(c("eval", "creation", "endow"), 2),
+    include = rep(TRUE, 6),
+    stringsAsFactors = FALSE
+  )
+  names_double <- getNamesFromEffects(e_double)
+  expect_true(any(grepl("unspInt1_recipinPop_eval$", names_double)))
+  expect_true(any(grepl("unspInt2_outPopinPop_eval$", names_double)))
+  expect_true(any(grepl("unspInt1_recipinPop_creation$", names_double)))
+  expect_true(any(grepl("unspInt2_outPopinPop_endow$", names_double)))
 })
 
 # ---------------------------------------------------------------------------
@@ -321,6 +370,47 @@ test_that("predict.sienaFit dynamic: creation/endow effect columns present", {
   recip_creat_col   <- which(contrib$effectNames == "mynet_cm_recip_creation")
   expect_false(identical(contrib$contribMat[, recip_eval_col],
                          contrib$contribMat[, recip_creat_col]))
+})
+
+# ---------------------------------------------------------------------------
+# Dynamic: R-recomputed probabilities match C++ chain-stored probabilities
+# ---------------------------------------------------------------------------
+test_that("Dynamic R-recomputed probs match C++ chain-stored probs", {
+  skip_slow()
+  # Rerun siena07 with returnChangeContributions=TRUE to get chain-stored
+  # utilities and probabilities (the fixture was built with returnDataFrame=TRUE
+  # which doesn't preserve chain attributes).
+  theta_all <- c(ans$rate, ans$theta)
+  contrib <- getDynamicChangeContributions(
+    ans = ans, data = mydata, algorithm = mycontrols,
+    theta = theta_all, effects = mymodel, depvar = "mynet",
+    returnWide = TRUE, useChangeContributions = FALSE,
+    n3 = 10, batch = TRUE, silent = TRUE
+  )
+  # Chain-stored values
+  chain_util <- contrib$changeUtility
+  chain_prob <- contrib$changeProbability
+
+  # R-recomputed values
+  theta_use <- theta_all[contrib$effectNames]
+  r_util <- calculateUtility(contrib$contribMat, theta_use, contrib$permitted)
+  r_prob <- calculateChangeProb(r_util, contrib$group_id)
+
+  # Compare on permitted rows only
+  perm <- contrib$permitted
+  expect_equal(length(chain_util), length(r_util))
+  expect_equal(length(chain_prob), length(r_prob))
+
+  # Utilities should match closely on permitted rows
+  expect_true(all(is.finite(r_util[perm])))
+  max_util_diff <- max(abs(chain_util[perm] - r_util[perm]))
+  expect_lt(max_util_diff, 1e-8,
+    label = paste("max utility diff =", max_util_diff))
+
+  # Probabilities should match closely on permitted rows
+  max_prob_diff <- max(abs(chain_prob[perm] - r_prob[perm]))
+  expect_lt(max_prob_diff, 1e-8,
+    label = paste("max prob diff =", max_prob_diff))
 })
 
 # ---------------------------------------------------------------------------

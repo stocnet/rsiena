@@ -151,10 +151,9 @@ sienaEntropy <- function(x, group_id = NULL, level = "ego",
 
 # Per-theta entropy from a static wide struct.
 predictEntropyStatic <- function(staticContributions, theta) {
-    theta_use <- theta[staticContributions$effectNames]
-    names(theta_use) <- staticContributions$effectNames
-    utility   <- calculateUtility(staticContributions$contribMat, theta_use)
-    fullProb  <- calculateChangeProb(utility, staticContributions$group_id)
+    baseline  <- predictProbability(staticContributions, theta,
+                                    returnComponents = TRUE)
+    fullProb  <- baseline$changeProb
 
     group_id <- staticContributions$group_id
     uGroups  <- unique(group_id)
@@ -168,7 +167,6 @@ predictEntropyStatic <- function(staticContributions, theta) {
     }
 
     out <- data.frame(coordCols, R_entropy = rh, stringsAsFactors = FALSE)
-    # if (requireNamespace("data.table", quietly = TRUE)) data.table::setDT(out) # data.table removed
     out
 }
 

@@ -44,6 +44,9 @@ MiniStep::MiniStep(LongitudinalData * pData, int ego)
 	this->lorderingKey = 0;
 	this->ldiagonal = false;
 	this->lpChangeContributions = 0;
+	this->lpChangePermitted = 0;
+	this->lpChangeUtility = 0;
+	this->lpChangeProbability = 0;
 }
 
 
@@ -61,6 +64,18 @@ MiniStep::~MiniStep()
 	if (this->lpChangeContributions)
 	{
 		delete this->lpChangeContributions;
+	}
+	if (this->lpChangePermitted)
+	{
+		delete this->lpChangePermitted;
+	}
+	if (this->lpChangeUtility)
+	{
+		delete this->lpChangeUtility;
+	}
+	if (this->lpChangeProbability)
+	{
+		delete this->lpChangeProbability;
 	}
 }
 
@@ -304,6 +319,54 @@ void MiniStep::changeContributions(map<const EffectInfo *, vector<double> > * co
 map<const EffectInfo *, vector<double> > * MiniStep::changeContributions() const
 {
 	return this->lpChangeContributions;
+}
+
+/**
+ * Stores whether each choice (alter) is permitted for this ministep.
+ */
+void MiniStep::changePermitted(vector<bool> * permitted)
+{
+	this->lpChangePermitted = permitted;
+}
+
+/**
+ * Returns whether each choice (alter) is permitted for this ministep.
+ */
+vector<bool> * MiniStep::changePermitted() const
+{
+	return this->lpChangePermitted;
+}
+
+/**
+ * Stores the total utility (pre-softmax) for each choice.
+ */
+void MiniStep::changeUtility(vector<double> * utility)
+{
+	this->lpChangeUtility = utility;
+}
+
+/**
+ * Returns the total utility (pre-softmax) for each choice.
+ */
+vector<double> * MiniStep::changeUtility() const
+{
+	return this->lpChangeUtility;
+}
+
+/**
+ * Stores the normalized probability (post-softmax) for each choice.
+ */
+void MiniStep::changeProbability(vector<double> * probability)
+{
+	this->lpChangeProbability = probability;
+}
+
+/**
+ * Returns the normalized probability (post-softmax) for each choice.
+ */
+vector<double> * MiniStep::changeProbability() const
+{
+	return this->lpChangeProbability;
 }
 
 }

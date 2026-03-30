@@ -328,6 +328,9 @@ void BehaviorVariable::makeChange(int actor)
 		if (this->pSimulation()->pModel()->needChangeContributions())
 		{
 			pMiniStep->changeContributions(lpChangeContribution);
+			pMiniStep->changePermitted(lpChangePermitted);
+			pMiniStep->changeUtility(lpChangeUtility);
+			pMiniStep->changeProbability(lpChangeProbability);
 		}
 		this->pSimulation()->pChain()->insertBefore(pMiniStep,
 			this->pSimulation()->pChain()->pLast());
@@ -400,6 +403,10 @@ void BehaviorVariable::calculateProbabilities(int actor)
 	if (this->pSimulation()->pModel()->needChangeContributions())
 	{
 		this->lpChangeContribution = new map<const EffectInfo *, vector<double> >();
+		// 3 choices: down(0), no-change(1), up(2); no-change always permitted
+		this->lpChangePermitted = new vector<bool>({true, true, true});
+		this->lpChangeUtility = new vector<double>({R_NegInf, 0.0, R_NegInf});
+		this->lpChangeProbability = new vector<double>(3, 0.0);
 // used to be:   >[evaluationEffectCount+endowmentEffectCount+creationEffectCount];
 		for (unsigned i = 0; i < evaluationEffectCount; i++)
 		{
@@ -424,6 +431,10 @@ void BehaviorVariable::calculateProbabilities(int actor)
 	{
 		this->lprobabilities[0] = 0;
 		this->ldownPossible = false;
+		if (this->pSimulation()->pModel()->needChangeContributions())
+		{
+			(*this->lpChangePermitted)[0] = false;
+		}
 		for (unsigned i = 0; i < pEvaluationFunction()->rEffects().size(); i++)
 		{
 			this->levaluationEffectContribution[0][i] =	R_NaN;
@@ -446,6 +457,10 @@ void BehaviorVariable::calculateProbabilities(int actor)
 			this->totalEvaluationContribution(actor, -1) +
 				this->totalEndowmentContribution(actor, -1);
 		maxValue = max(maxValue, this->lprobabilities[0]);
+		if (this->pSimulation()->pModel()->needChangeContributions())
+		{
+			(*this->lpChangeUtility)[0] = this->lprobabilities[0];
+		}
 	}
 
 	// No change means zero contribution, but exp(0) = 1
@@ -456,6 +471,10 @@ void BehaviorVariable::calculateProbabilities(int actor)
 	{
 		this->lprobabilities[2] = 0;
 		this->lupPossible = false;
+		if (this->pSimulation()->pModel()->needChangeContributions())
+		{
+			(*this->lpChangePermitted)[2] = false;
+		}
 		for (unsigned i = 0; i < pEvaluationFunction()->rEffects().size(); i++)
 		{
 			this->levaluationEffectContribution[2][i] =	R_NaN;
@@ -477,6 +496,10 @@ void BehaviorVariable::calculateProbabilities(int actor)
 			this->totalEvaluationContribution(actor, 1) +
 				this->totalCreationContribution(actor, 1);
 		maxValue = max(maxValue, this->lprobabilities[2]);
+		if (this->pSimulation()->pModel()->needChangeContributions())
+		{
+			(*this->lpChangeUtility)[2] = this->lprobabilities[2];
+		}
 	}
 
 		// turn objective function values into probabilities
@@ -513,6 +536,14 @@ void BehaviorVariable::calculateProbabilities(int actor)
 		this->lprobabilities[0] /= sum;
 		this->lprobabilities[1] /= sum;
 		this->lprobabilities[2] /= sum;
+	}
+
+	// Capture post-softmax probabilities
+	if (this->pSimulation()->pModel()->needChangeContributions())
+	{
+		(*this->lpChangeProbability)[0] = this->lprobabilities[0];
+		(*this->lpChangeProbability)[1] = this->lprobabilities[1];
+		(*this->lpChangeProbability)[2] = this->lprobabilities[2];
 	}
 }
 

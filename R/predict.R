@@ -83,10 +83,12 @@ predict.sienaFit <- function(
   } else {
     # Build the contribution matrix ONCE — reused across all theta draws
     staticContributions <- getStaticChangeContributions(
-        ans     = object,
-        data    = newdata,
-        effects = effects,
-        depvar  = depvar,
+        ans            = object,
+        data           = newdata,
+        effects        = effects,
+        depvar         = depvar,
+        algorithm      = algorithm,
+        includePermitted = TRUE,
         returnWide = TRUE
     )
     predictFun  <- predictProbabilityStatic
@@ -164,10 +166,7 @@ planBatch <- function(
 
   effective_workers <- if (isTRUE(useCluster)) max(1L, as.integer(nbrNodes)) else 1L
 
-  # When useChangeContributions=TRUE, the pre-computed contribMat is reused
-  # (COW-shared under FORK), so per-draw memory is essentially the same as
-  # the static case — no siena07 runs, no large allocations per worker.
-  dynamic_costly <- dynamic && !isTRUE(useChangeContributions)
+  dynamic_costly <- dynamic
 
   if (dynamic_costly) {
     n3Val <- if (is.null(n3)) 1L else max(1L, as.integer(n3))
@@ -212,23 +211,51 @@ planBatch <- function(
 # Works for both static (ego/period/choice coords) and dynamic
 # (chain/ministep/period/choice coords) -- groupColsList handles both.
 predictProbability <- function(contributions, theta, type = "changeProb",
-                               attachContribs = FALSE) {
+                               attachContribs = FALSE,
+                               returnComponents = FALSE) {
     theta_use <- theta[contributions$effectNames]
     names(theta_use) <- contributions$effectNames
-    utility <- calculateUtility(contributions$contribMat, theta_use)
-    changeProb <- calculateChangeProb(utility, contributions$group_id)
+
+    # Ensure changeStats are cached on the contribution struct.
+    if (is.null(contributions$changeStats))
+      contributions$changeStats <- contribToChangeStats(
+        contributions$contribMat, contributions$effectNames)
+    cs <- contributions$changeStats
+
+    thetaEff <- buildThetaEff(theta_use, cs$changeStatsMap)
+
+    # Use C++ values when available (dynamic), else compute in R (static).
+    if (!is.null(contributions$changeUtility) &&
+        !all(is.na(contributions$changeUtility))) {
+      utility    <- contributions$changeUtility
+      changeProb <- contributions$changeProbability
+    } else {
+      utility    <- calculateUtility(cs$csMat, thetaEff,
+                                     contributions$permitted, cs$densityIdx)
+      changeProb <- calculateChangeProb(utility, contributions$group_id)
+    }
+
+    # Return raw intermediates for downstream consumers (entropy, margins).
+    if (returnComponents) {
+      tieProb <- if (type == "tieProb")
+        calculateTieProb(changeProb, cs$density) else NULL
+      return(list(
+        theta_use  = theta_use,
+        thetaEff   = thetaEff,
+        utility    = utility,
+        changeProb = changeProb,
+        tieProb    = tieProb
+      ))
+    }
+
     out <- groupColsList(contributions)
     out[["changeUtil"]] <- utility
     out[["changeProb"]] <- changeProb
     if (type == "tieProb") {
-      out[["tieProb"]] <- calculateTieProb(
-        changeProb,
-        contributions$contribMat[, grep("density", contributions$effectNames, fixed = TRUE)[1L]]
-      )
+      out[["tieProb"]] <- calculateTieProb(changeProb, cs$density)
     }
     if (attachContribs) {
-      out <- attachContributions(out, contributions$effectNames,
-                                  contributions$contribMat, flip = TRUE)
+      out <- attachContributions(out, cs$csNames, cs$csMat, flip = FALSE)
     }
     attr(out, "row.names") <- .set_row_names(length(out[[1L]]))
     class(out) <- "data.frame"
@@ -263,9 +290,49 @@ predictProbabilityDynamic <- function(ans, data, theta, algorithm, effects,
 
 # ---- Shared helpers -------------------------------------------------
 
-calculateUtility <- function(mat, theta) {
+# Calculate utility from change statistics and theta.
+#
+# Supports two calling conventions:
+#   (a) Legacy: calculateUtility(mat, theta, permitted)
+#       — simple mat %*% theta (eval-only models or backward-compat callers).
+#   (b) changeStats: calculateUtility(mat, thetaEff, permitted, densityIdx)
+#       — direction-dependent theta; density is column densityIdx in mat.
+#
+# thetaEff: either a named numeric vector (legacy) or a nEffects x 2 matrix
+#   with columns "creation" and "dissolution" (changeStats).
+# densityIdx: integer scalar — column index of density in mat (changeStats path).
+calculateUtility <- function(mat, theta, permitted = NULL, densityIdx = NULL) {
   stopifnot(is.matrix(mat))
-  as.numeric(mat %*% theta)
+
+  if (is.null(densityIdx) || !is.matrix(theta)) {
+    # Legacy path: simple matrix-vector multiply.
+    util <- as.numeric(mat %*% theta)
+  } else {
+    # changeStats path: u = d × (θ_density + Δs_rest %*% θ_rest)
+    # Density column carries ±1 direction; non-density columns are pure Δs.
+    thetaEff <- theta
+    d <- as.integer(mat[, densityIdx])
+    rest <- seq_len(ncol(mat))[-densityIdx]  # non-density columns
+    n <- nrow(mat)
+    util <- numeric(n)
+    cre <- d ==  1L
+    dis <- d == -1L
+    # d=0 rows stay at 0 (no-change → no utility contribution)
+    if (any(cre)) {
+      util[cre] <- d[cre] * (thetaEff[densityIdx, "creation"] +
+        as.numeric(mat[cre, rest, drop = FALSE] %*% thetaEff[rest, "creation"]))
+    }
+    if (any(dis)) {
+      util[dis] <- d[dis] * (thetaEff[densityIdx, "dissolution"] +
+        as.numeric(mat[dis, rest, drop = FALSE] %*% thetaEff[rest, "dissolution"]))
+    }
+  }
+
+  if (!is.null(permitted)) {
+    stopifnot(length(permitted) == length(util))
+    util[!permitted] <- -Inf
+  }
+  util
 }
 
 calculateChangeProb <- function(utility, group_id) {
@@ -277,7 +344,6 @@ calculateChangeProb <- function(utility, group_id) {
 calculateTieProb <- function(prob, density) {
   calculate_tie_prob_cpp(prob, as.numeric(density))
 }
-
 
 # ===========================================================================
 # === V1 BACKUP: predict.sienaFit + static/dynamic per-theta functions    ===

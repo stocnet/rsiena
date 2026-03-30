@@ -781,14 +781,27 @@ make_constraint.siena <- make_constraint.sienadata
 # other effects: {name}_{shortName}_{type}.
 # append_parm=TRUE adds _{parm} suffix for effects with non-zero parm.
 # Attaches attr(result, "label"): named vector of human-readable labels.
-# Number duplicate user-specified interaction shortNames without underscore,
-# so the number sits inside the composed name: e.g. unspInt1_eval, unspInt2_eval.
-# A single occurrence is left unnumbered.
-numberIntShortNames <- function(shortName) {
+# Number duplicate user-specified interaction shortNames based on interaction identity.
+# This ensures the same logical effect (eval/endow/creation of one interaction)
+# stays in one group, while distinct interactions get numbered unspInt1, unspInt2.
+# A single logical effect is left unnumbered.
+numberIntShortNames <- function(shortName, key = NULL) {
+    if (is.null(key)) key <- shortName
+    if (length(key) != length(shortName))
+        stop("length(key) must match length(shortName)")
+
     for (sn in c("unspInt", "behUnspInt", "contUnspInt")) {
         idx <- which(shortName == sn)
-        if (length(idx) > 1)
-            shortName[idx] <- paste0(sn, seq_along(idx))
+        if (length(idx) <= 1) next
+
+        keys <- key[idx]
+        uniqKeys <- unique(keys)
+        if (length(uniqKeys) <= 1) next    # one logical interaction, keep unnumbered
+
+        for (j in seq_along(uniqKeys)) {
+            sel <- idx[keys == uniqKeys[j]]
+            shortName[sel] <- paste0(sn, j)
+        }
     }
     shortName
 }
@@ -810,9 +823,21 @@ effectCovarSuffix <- function(interaction1, interaction2 = NULL) {
 numberIntColNames <- function(colNames) {
     for (sn in c("unspInt", "behUnspInt", "contUnspInt")) {
         idx <- which(startsWith(colNames, paste0(sn, "_")))
-        if (length(idx) > 1)
-            colNames[idx] <- paste0(sn, seq_along(idx),
-                                    substring(colNames[idx], nchar(sn) + 1))
+        if (length(idx) <= 1) next
+
+        # Base name without trailing type suffix (eval/endow/creation)
+        baseNames <- sub("_(eval|endow|creation)$", "", colNames[idx])
+        uniqBases <- unique(baseNames)
+
+        if (length(uniqBases) <= 1) {
+            # single logical effect; keep as-is so contribToChangeStats can group eval/endow/creation
+            next
+        }
+
+        for (j in seq_along(uniqBases)) {
+            sel <- idx[which(baseNames == uniqBases[j])]
+            colNames[sel] <- paste0(sn, j, substring(colNames[sel], nchar(sn) + 1))
+        }
     }
     colNames
 }
@@ -820,8 +845,11 @@ numberIntColNames <- function(colNames) {
 getNamesFromEffects <- function(effects, append_parm = FALSE) {
     isBasicRate    <- effects$type == "rate" & effects$shortName == "Rate"
     isNonBasicRate <- effects$type == "rate" & effects$shortName != "Rate"
-    shortName <- numberIntShortNames(effects$shortName)
-    n <- length(shortName)
+    n <- length(effects$shortName)
+    i1 <- if (!is.null(effects$interaction1)) effects$interaction1 else rep("", n)
+    i2 <- if (!is.null(effects$interaction2)) effects$interaction2 else rep("", n)
+    key <- paste0(effects$name, "|", effects$shortName, "|", i1, "|", i2)
+    shortName <- numberIntShortNames(effects$shortName, key = key)
     i1 <- if (!is.null(effects$interaction1)) effects$interaction1 else rep("", n)
     i2 <- if (!is.null(effects$interaction2)) effects$interaction2 else rep("", n)
     covarSuffix <- effectCovarSuffix(i1, i2)

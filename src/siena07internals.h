@@ -218,7 +218,8 @@ SEXP createInteractionEffects(SEXP EFFECTS, Model *pModel,
  */
 void getStaticChangeContributionstatistics(SEXP EFFECTSLIST,
 	const StatisticCalculator * pCalculator,
-	std::vector<std::vector<double * > > *rChangeContributions);
+	std::vector<std::vector<double * > > *rChangeContributions,
+	std::vector<std::vector<bool * > > *rChangePermitted = 0);
 
 /**
  *  Retrieves the statistics of individual actors for each of the effects,

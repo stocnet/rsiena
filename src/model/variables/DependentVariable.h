@@ -198,6 +198,15 @@ protected:
 	// A two-dimensional array of tie flip and behavior change contributions to effects.
 	std::map<const EffectInfo *, std::vector<double> > * lpChangeContribution;
 
+	// Whether each choice (alter) is permitted for the current ego
+	std::vector<bool> * lpChangePermitted;
+
+	// Total utility (pre-softmax) for each choice
+	std::vector<double> * lpChangeUtility;
+
+	// Normalized probability (post-softmax) for each choice
+	std::vector<double> * lpChangeProbability;
+
 	Setting** lsettings;
 private:
 	void initializeFunction(Function * pFunction,

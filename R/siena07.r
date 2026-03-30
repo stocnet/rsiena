@@ -101,6 +101,10 @@ siena <- function(data = NULL, effects = NULL,
 				"is not possible with maximum likelihood estimation")
 		}
 	}
+	x <- c(control_model, control_algo, control_out)
+	# Note that, if this call of siena comes from sienaBayes,
+	# there will be components control_algo$fromBayes
+	# and control_algo$ddfra
 
 	# If the user is passing clusters through -cl- then change the
 	# useCluster to TRUE, and assign the -nbrNodes- to number of nodes
@@ -116,22 +120,7 @@ siena <- function(data = NULL, effects = NULL,
 	z$newNames <- TRUE
 	z$thetaBound <- thetaBound
 
-	if (control_algo$maxlike)
-	{
-		if (!is.null(control_model$MaxDegree))
-		{
-			stop("maxlike and MaxDegree are incompatible")
-		}
-		if (control_algo$FinDiff.method)
-		{
-			stop("Finite differences estimation of derivatives",
-				"is not possible with maximum likelihood estimation")
-		}
-	}
-	x <- c(control_model, control_algo, control_out)
-# Note that, if this call of siena comes from sienaBayes,
-# there will be components control_algo$fromBayes
-# and control_algo$ddfra
+
 	z$returnThetas <- control_out$returnThetas
 
 	parallelTesting <- FALSE
@@ -235,7 +224,7 @@ siena <- function(data = NULL, effects = NULL,
 	{
 		z$thetaValues <- control_algo$thetaValues
 		z$thetaFromFile <- TRUE
-	}				   	
+	}
 	z <- robmon(z, x, useCluster, nbrNodes, initC, clusterString,
 		clusterIter, clusterType, cl, data=data, effects=effects,
 		returnDeps=returnDeps, 

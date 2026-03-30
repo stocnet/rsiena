@@ -1,5 +1,10 @@
 # Tests for interpret_size (relative importance) and entropy
-# Models: ans, mydata, mymodel, mycontrols — from helper-models.R
+
+# -- Load fixtures from cache (built by helper-models.R) --
+ans        <- load_fixture("ans")
+mydata     <- load_fixture("mydata")
+mymodel    <- load_fixture("mymodel")
+mycontrols <- load_fixture("mycontrols")
 
 # ── interpret_size.sienaFit ──────────────────────────────────────────────────
 
@@ -134,7 +139,7 @@ test_that("plot.sienaRI works for new format (no error)", {
 
 test_that("entropy.sienaFit returns data.frame with R_entropy", {
   ent <- entropy(ans, data = mydata, depvar = "mynet",
-                 uncertainty = FALSE, verbose = FALSE)
+                 uncertainty = FALSE, verbose = FALSE, level ="period")
   expect_true(is.data.frame(ent))
   expect_true("R_entropy" %in% names(ent) || "Mean" %in% names(ent))
 })
@@ -142,7 +147,8 @@ test_that("entropy.sienaFit returns data.frame with R_entropy", {
 test_that("entropy.sienaFit with uncertainty returns MCSE/CI columns", {
   skip_slow()
   ent <- entropy(ans, data = mydata, nsim = 5,
-                 uncertainty = TRUE, verbose = FALSE)
+                 uncertainty = TRUE, uncertaintyMean = TRUE,
+                 verbose = FALSE)
   expect_true(is.data.frame(ent))
   expect_true("Mean" %in% names(ent))
 })
@@ -170,8 +176,9 @@ test_that("getChangeStatistics static returns data.frame with effect columns", {
   expect_true("period" %in% names(cs))
   expect_true("ego" %in% names(cs))
   expect_true("choice" %in% names(cs))
-  # Effect columns present
-  effCols <- grep("_eval$", names(cs), value = TRUE)
+  # Effect columns present — canonical names (no _eval suffix)
+  groupCols <- c("group", "period", "ego", "choice")
+  effCols <- setdiff(names(cs), groupCols)
   expect_true(length(effCols) >= 1)
 })
 
@@ -180,12 +187,13 @@ test_that("getChangeStatistics static with flip=FALSE returns raw contributions"
                                     flip = TRUE)
   cs_noflip <- getChangeStatistics(ans, data = mydata, depvar = "mynet",
                                     flip = FALSE)
-  # With flip, non-density columns on no-change rows get negated,
+  # With flip, non-density columns on dissolution rows get negated,
   # so the two should differ
   denCol <- grep("density", names(cs_flip), value = TRUE)[1]
   noChange <- cs_noflip[[denCol]] == -1
   if (any(noChange)) {
-    nonDenCols <- setdiff(grep("_eval$", names(cs_flip), value = TRUE), denCol)
+    groupCols <- c("group", "period", "ego", "choice")
+    nonDenCols <- setdiff(setdiff(names(cs_flip), groupCols), denCol)
     if (length(nonDenCols) > 0) {
       expect_false(identical(cs_flip[[nonDenCols[1]]][noChange],
                               cs_noflip[[nonDenCols[1]]][noChange]))

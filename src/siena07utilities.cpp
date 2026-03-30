@@ -980,6 +980,42 @@ SEXP getDynamicChangeContributionsList(const Chain& chain, SEXP EFFECTSLIST)
 					Rf_setAttrib(MINISTEPCONTRIBUTIONS, effectTypesSym, EFFECTTYPES);
 					Rf_setAttrib(MINISTEPCONTRIBUTIONS, netNameSym, NETNAME);
 					Rf_setAttrib(MINISTEPCONTRIBUTIONS, egoSym, EGOATTR);
+					std::vector<bool> * pPerm = pMiniStep->changePermitted();
+					if (pPerm)
+					{
+						SEXP PERMITTED = PROTECT(Rf_allocVector(LGLSXP, choices));
+						int * rperm = LOGICAL(PERMITTED);
+						for (int a = 0; a < choices; a++)
+						{
+							rperm[a] = (a < (int)pPerm->size() && (*pPerm)[a]) ? TRUE : FALSE;
+						}
+						Rf_setAttrib(MINISTEPCONTRIBUTIONS, Rf_install("permitted"), PERMITTED);
+						UNPROTECT(1); /* PERMITTED */
+					}
+					std::vector<double> * pUtil = pMiniStep->changeUtility();
+					if (pUtil)
+					{
+						SEXP UTILITY = PROTECT(Rf_allocVector(REALSXP, choices));
+						double * rutil = REAL(UTILITY);
+						for (int a = 0; a < choices; a++)
+						{
+							rutil[a] = (a < (int)pUtil->size()) ? (*pUtil)[a] : NA_REAL;
+						}
+						Rf_setAttrib(MINISTEPCONTRIBUTIONS, Rf_install("changeUtility"), UTILITY);
+						UNPROTECT(1); /* UTILITY */
+					}
+					std::vector<double> * pProb = pMiniStep->changeProbability();
+					if (pProb)
+					{
+						SEXP PROBABILITY = PROTECT(Rf_allocVector(REALSXP, choices));
+						double * rprob = REAL(PROBABILITY);
+						for (int a = 0; a < choices; a++)
+						{
+							rprob[a] = (a < (int)pProb->size()) ? (*pProb)[a] : NA_REAL;
+						}
+						Rf_setAttrib(MINISTEPCONTRIBUTIONS, Rf_install("changeProbability"), PROBABILITY);
+						UNPROTECT(1); /* PROBABILITY */
+					}
 					UNPROTECT(5); /* EGOATTR, NETNAME, MINISTEPCONTRIBUTIONS, EFFECTNAMES, EFFECTTYPES */
 				}
 			}
@@ -1179,12 +1215,18 @@ SEXP flattenChangeContributionsList(SEXP changeContributionChains)
     SEXP effectname_sxp  = PROTECT(Rf_allocVector(STRSXP, totalRows));
     SEXP effecttype_sxp  = PROTECT(Rf_allocVector(STRSXP, totalRows));
     SEXP value_sxp       = PROTECT(Rf_allocVector(REALSXP, totalRows));
+    SEXP permitted_sxp   = PROTECT(Rf_allocVector(LGLSXP, totalRows));
+    SEXP utility_sxp     = PROTECT(Rf_allocVector(REALSXP, totalRows));
+    SEXP probability_sxp = PROTECT(Rf_allocVector(REALSXP, totalRows));
 
     // * Second pass: fill *
 	SEXP netNameSym     = Rf_install("networkName");
 	SEXP effectNamesSym = Rf_install("effectNames");
 	SEXP effectTypesSym = Rf_install("effectTypes");
 	SEXP egoSym         = Rf_install("ego");
+	SEXP permSym        = Rf_install("permitted");
+	SEXP utilSym        = Rf_install("changeUtility");
+	SEXP probSym        = Rf_install("changeProbability");
 
     int idx = 0;
     for (int g = 0; g < nGroups; ++g) {
@@ -1200,6 +1242,9 @@ SEXP flattenChangeContributionsList(SEXP changeContributionChains)
 				SEXP effNames    = Rf_getAttrib(mat, effectNamesSym);
 				SEXP effTypes    = Rf_getAttrib(mat, effectTypesSym);
 				SEXP egoAttr     = Rf_getAttrib(mat, egoSym);
+				SEXP permAttr    = Rf_getAttrib(mat, permSym);
+				SEXP utilAttr    = Rf_getAttrib(mat, utilSym);
+				SEXP probAttr    = Rf_getAttrib(mat, probSym);
                 int nEff = Rf_nrows(mat);
                 int nChoice = Rf_ncols(mat);
                 SEXP networkNameChar = (netNameAttr != R_NilValue && TYPEOF(netNameAttr)==STRSXP && Rf_length(netNameAttr)>0)
@@ -1226,6 +1271,15 @@ SEXP flattenChangeContributionsList(SEXP changeContributionChains)
                         SET_STRING_ELT(effectname_sxp, idx, effNameChars[e]);
                         SET_STRING_ELT(effecttype_sxp, idx, effTypeChars[e]);
                         REAL(value_sxp)[idx]          = REAL(mat)[e + nEff*c];
+                        LOGICAL(permitted_sxp)[idx]   =
+                            (permAttr != R_NilValue && TYPEOF(permAttr) == LGLSXP && c < Rf_length(permAttr))
+                            ? LOGICAL(permAttr)[c] : TRUE;
+                        REAL(utility_sxp)[idx] =
+                            (utilAttr != R_NilValue && TYPEOF(utilAttr) == REALSXP && c < Rf_length(utilAttr))
+                            ? REAL(utilAttr)[c] : NA_REAL;
+                        REAL(probability_sxp)[idx] =
+                            (probAttr != R_NilValue && TYPEOF(probAttr) == REALSXP && c < Rf_length(probAttr))
+                            ? REAL(probAttr)[c] : NA_REAL;
                         ++idx;
                     }
                 }
@@ -1233,7 +1287,7 @@ SEXP flattenChangeContributionsList(SEXP changeContributionChains)
         }
     }
     // Build data.frame as before
-    int ncol = 9;
+    int ncol = 12;
     SEXP df = PROTECT(Rf_allocVector(VECSXP, ncol));
     SET_VECTOR_ELT(df, 0, group_sxp);
     SET_VECTOR_ELT(df, 1, period_sxp);
@@ -1244,6 +1298,9 @@ SEXP flattenChangeContributionsList(SEXP changeContributionChains)
     SET_VECTOR_ELT(df, 6, effectname_sxp);
     SET_VECTOR_ELT(df, 7, effecttype_sxp);
     SET_VECTOR_ELT(df, 8, value_sxp);
+    SET_VECTOR_ELT(df, 9, permitted_sxp);
+    SET_VECTOR_ELT(df, 10, utility_sxp);
+    SET_VECTOR_ELT(df, 11, probability_sxp);
     SEXP names = PROTECT(Rf_allocVector(STRSXP, ncol));
     SET_STRING_ELT(names, 0, Rf_mkChar("group"));
     SET_STRING_ELT(names, 1, Rf_mkChar("period"));
@@ -1254,6 +1311,9 @@ SEXP flattenChangeContributionsList(SEXP changeContributionChains)
     SET_STRING_ELT(names, 6, Rf_mkChar("effectname"));
     SET_STRING_ELT(names, 7, Rf_mkChar("effecttype"));
     SET_STRING_ELT(names, 8, Rf_mkChar("contribution"));
+    SET_STRING_ELT(names, 9, Rf_mkChar("permitted"));
+    SET_STRING_ELT(names, 10, Rf_mkChar("changeUtility"));
+    SET_STRING_ELT(names, 11, Rf_mkChar("changeProbability"));
     Rf_setAttrib(df, R_NamesSymbol, names);
     SEXP rownames = PROTECT(Rf_allocVector(INTSXP, 2));
     INTEGER(rownames)[0] = NA_INTEGER;
@@ -1262,7 +1322,7 @@ SEXP flattenChangeContributionsList(SEXP changeContributionChains)
     SEXP classdf = PROTECT(Rf_allocVector(STRSXP, 1));
     SET_STRING_ELT(classdf, 0, Rf_mkChar("data.frame"));
     Rf_setAttrib(df, R_ClassSymbol, classdf);
-    UNPROTECT(13);
+    UNPROTECT(16);
     return df;
 }
 
@@ -1351,6 +1411,9 @@ SEXP flattenChangeContributionsWide(SEXP changeContributionChains,
     SEXP choice_sxp  = PROTECT(Rf_allocVector(INTSXP, totalRows));
     SEXP grpid_sxp   = PROTECT(Rf_allocVector(INTSXP, totalRows));
     SEXP ego_sxp     = PROTECT(Rf_allocVector(INTSXP, totalRows));
+    SEXP perm_sxp    = PROTECT(Rf_allocVector(LGLSXP, totalRows));
+    SEXP util_sxp    = PROTECT(Rf_allocVector(REALSXP, totalRows));
+    SEXP prob_sxp    = PROTECT(Rf_allocVector(REALSXP, totalRows));
 
     double * rmat = REAL(contribMat);
     int    * rch  = INTEGER(chain_sxp);
@@ -1360,6 +1423,9 @@ SEXP flattenChangeContributionsWide(SEXP changeContributionChains,
     int    * rc   = INTEGER(choice_sxp);
     int    * rgid = INTEGER(grpid_sxp);
     int    * re   = INTEGER(ego_sxp);
+    int    * rperm = LOGICAL(perm_sxp);
+    double * rutil = REAL(util_sxp);
+    double * rprob = REAL(prob_sxp);
 
     /* --- second pass: fill ------------------------------------------------ */
     int row = 0;
@@ -1379,6 +1445,9 @@ SEXP flattenChangeContributionsWide(SEXP changeContributionChains,
                     SEXP egoAttr = Rf_getAttrib(mat, egoSym);
                     int egoVal = (!Rf_isNull(egoAttr) && Rf_length(egoAttr) > 0)
                                  ? INTEGER(egoAttr)[0] : NA_INTEGER;
+                    SEXP permAttr = Rf_getAttrib(mat, Rf_install("permitted"));
+                    SEXP utilAttr = Rf_getAttrib(mat, Rf_install("changeUtility"));
+                    SEXP probAttr = Rf_getAttrib(mat, Rf_install("changeProbability"));
                     grp++;
                     for (int c = 0; c < nChoice; ++c) {
                         int lim = (nEff < nEffSel) ? nEff : nEffSel;
@@ -1393,6 +1462,12 @@ SEXP flattenChangeContributionsWide(SEXP changeContributionChains,
                         rc[row]   = c  + 1;
                         rgid[row] = grp;
                         re[row]   = egoVal;
+                        rperm[row] = (!Rf_isNull(permAttr) && TYPEOF(permAttr) == LGLSXP && c < Rf_length(permAttr))
+                                     ? LOGICAL(permAttr)[c] : TRUE;
+                        rutil[row] = (!Rf_isNull(utilAttr) && TYPEOF(utilAttr) == REALSXP && c < Rf_length(utilAttr))
+                                     ? REAL(utilAttr)[c] : NA_REAL;
+                        rprob[row] = (!Rf_isNull(probAttr) && TYPEOF(probAttr) == REALSXP && c < Rf_length(probAttr))
+                                     ? REAL(probAttr)[c] : NA_REAL;
                         row++;
                     }
                 }
@@ -1407,7 +1482,7 @@ SEXP flattenChangeContributionsWide(SEXP changeContributionChains,
     Rf_setAttrib(contribMat, R_DimNamesSymbol, dimnames);
 
     /* --- assemble result list --------------------------------------------- */
-    SEXP result = PROTECT(Rf_allocVector(VECSXP, 8));
+    SEXP result = PROTECT(Rf_allocVector(VECSXP, 11));
     SET_VECTOR_ELT(result, 0, contribMat);
     SET_VECTOR_ELT(result, 1, chain_sxp);
     SET_VECTOR_ELT(result, 2, group_sxp);
@@ -1416,8 +1491,11 @@ SEXP flattenChangeContributionsWide(SEXP changeContributionChains,
     SET_VECTOR_ELT(result, 5, choice_sxp);
     SET_VECTOR_ELT(result, 6, grpid_sxp);
     SET_VECTOR_ELT(result, 7, ego_sxp);
+    SET_VECTOR_ELT(result, 8, perm_sxp);
+    SET_VECTOR_ELT(result, 9, util_sxp);
+    SET_VECTOR_ELT(result, 10, prob_sxp);
 
-    SEXP nms = PROTECT(Rf_allocVector(STRSXP, 8));
+    SEXP nms = PROTECT(Rf_allocVector(STRSXP, 11));
     SET_STRING_ELT(nms, 0, Rf_mkChar("contribMat"));
     SET_STRING_ELT(nms, 1, Rf_mkChar("chain"));
     SET_STRING_ELT(nms, 2, Rf_mkChar("group"));
@@ -1426,9 +1504,12 @@ SEXP flattenChangeContributionsWide(SEXP changeContributionChains,
     SET_STRING_ELT(nms, 5, Rf_mkChar("choice"));
     SET_STRING_ELT(nms, 6, Rf_mkChar("group_id"));
     SET_STRING_ELT(nms, 7, Rf_mkChar("ego"));
+    SET_STRING_ELT(nms, 8, Rf_mkChar("permitted"));
+    SET_STRING_ELT(nms, 9, Rf_mkChar("changeUtility"));
+    SET_STRING_ELT(nms, 10, Rf_mkChar("changeProbability"));
     Rf_setAttrib(result, R_NamesSymbol, nms);
 
-    UNPROTECT(12);
+    UNPROTECT(15);
     return result;
 }
 

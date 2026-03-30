@@ -260,7 +260,7 @@ test_that("calculateSecondDiff: details=TRUE returns broad data.frame", {
 
 # ── attachContributions ─────────────────────────────────────────────────────
 
-test_that("attachContributions: density==-1 flips other columns; density col unchanged", {
+test_that("attachContributions: density==-1 flips non-density columns only", {
   density <- c(1L, -1L, 0L)
   recip   <- c(2L, 3L, 4L)
   contrib <- matrix(c(density, recip), nrow = 3,
@@ -269,8 +269,8 @@ test_that("attachContributions: density==-1 flips other columns; density col unc
 
   result <- attachContributions(df, c("density", "recip"), contrib, flip = TRUE)
 
-  expect_equal(result$density, density)             # density itself not flipped
-  expect_equal(result$recip,   c(2L, -3L, 4L))     # density==-1 row → negated
+  expect_equal(result$density, c(1L, -1L, 0L))      # density keeps ±1 sign
+  expect_equal(result$recip,   c(2L, -3L, 4L))      # density==-1 row → negated
 })
 
 test_that("attachContributions: flip=FALSE leaves all columns unchanged", {
@@ -613,9 +613,9 @@ test_that("mergeEstimates: composite condition merges point estimate with uncert
   expect_equal(nrow(result), 2L)
 })
 
-# ── attachContributions: composite density name ──────────────────────────────
+# ── attachContributions: canonical output with flip ───────────────────────────
 
-test_that("attachContributions: composite 'density_eval' column triggers flip", {
+test_that("attachContributions: flip=TRUE produces canonical columns with sign flip", {
   density <- c(1L, -1L, 0L)
   recip   <- c(2L,  3L, 4L)
   contrib <- matrix(c(density, recip), nrow = 3,
@@ -623,12 +623,12 @@ test_that("attachContributions: composite 'density_eval' column triggers flip", 
   result <- attachContributions(data.frame(x = 1:3),
                                  c("density_eval", "recip_eval"),
                                  contrib, flip = TRUE)
-  # grepl("density", "density_eval") is TRUE → flip applies
-  expect_equal(result[["density_eval"]], density)        # density col unchanged
-  expect_equal(result[["recip_eval"]],   c(2L, -3L, 4L))# density==-1 row negated
+  # Canonical names: density_eval → density, recip_eval → recip
+  expect_equal(result[["density"]], c(1L, -1L, 0L))  # density keeps ±1 sign
+  expect_equal(result[["recip"]],   c(2L, -3L, 4L)) # density==-1 row negated
 })
 
-test_that("attachContributions: 'recip_creation' not confused with density trigger", {
+test_that("attachContributions: eval+creation collapse to single canonical column", {
   density  <- c(1L, -1L, 1L)
   recip_e  <- c(1L,  1L, 1L)
   recip_c  <- c(1L,  0L, 1L)   # 0 on deletion rows by construction
@@ -637,8 +637,12 @@ test_that("attachContributions: 'recip_creation' not confused with density trigg
                        c("density_eval", "recip_eval", "recip_creation")))
   result <- attachContributions(data.frame(x = 1:3),
                                  colnames(contrib), contrib, flip = TRUE)
-  expect_equal(result[["recip_eval"]],     c(1L, -1L, 1L))
-  expect_equal(result[["recip_creation"]], c(1L,  0L, 1L))  # 0 negated == 0
+  # Canonical: recip_eval + recip_creation → single "recip" column
+  # Eval column used when hasEval is TRUE (eval-space change statistic)
+  # density == -1 row: eval column flipped → -1
+  expect_equal(result[["recip"]],   c(1L, -1L, 1L))
+  expect_null(result[["recip_eval"]])       # separate columns gone
+  expect_null(result[["recip_creation"]])   # separate columns gone
 })
 
 # ── creation/endow: utility calculation and theta alignment ──────────────────
@@ -662,15 +666,19 @@ test_that("attachContributions: 'recip_creation' not confused with density trigg
 # Synthetic creation/endow contributions struct (2 egos × 3 choices = 6 rows)
 # Effects: density (eval), recip (eval + creation), transTrip (eval + endow)
 # Convention: depvarName_shortName_type  (mirrors getStaticChangeContributions returnWide)
+#
+# C++ convention: on dissolution rows (density=-1), BOTH eval and endow
+# contributions = -calculateContribution (same sign, both negative for cc>0).
+# So c_endow = c_eval on dissolution rows.
 make_cc_cm <- function() {
   eff_names <- c("net_density_eval", "net_recip_eval", "net_recip_creation",
                  "net_transTrip_eval", "net_transTrip_endow")
   # choice: 1=add, -1=drop, 0=no-change  (one of each per ego, 2 egos)
   density_col    <- c( 1L, -1L,  0L,   1L, -1L,  0L)
-  recip_eval     <- c( 0L,  1L,  0L,   1L,  0L,  0L)
+  recip_eval     <- c( 0L, -1L,  0L,   1L,  0L,  0L)  # dissolution: -cc
   recip_creat    <- c( 0L,  0L,  0L,   1L,  0L,  0L)  # only new-tie rows
-  transTrip_eval <- c( 2L,  1L,  0L,   1L,  3L,  0L)
-  transTrip_endow <- c(0L, -1L,  0L,   0L, -3L,  0L)  # endow = -eval on deletion rows
+  transTrip_eval <- c( 2L, -1L,  0L,   1L, -3L,  0L)  # dissolution: -cc
+  transTrip_endow <- c(0L, -1L,  0L,   0L, -3L,  0L)  # endow = eval on dissolution
   mat <- matrix(
     c(density_col, recip_eval, recip_creat, transTrip_eval, transTrip_endow),
     nrow = 6, dimnames = list(NULL, eff_names)
@@ -738,9 +746,10 @@ test_that("predictProbability: creation/endow effectNames — probabilities sum 
   expect_equal(sum(result$changeProb[cc$group_id == 1L]), 1, tolerance = 1e-10)
   expect_equal(sum(result$changeProb[cc$group_id == 2L]), 1, tolerance = 1e-10)
 
-  # Utility must exactly match manual matrix product
+  # Utility must match raw matrix product (the canonical transform
+  # with d× is equivalent to the raw c_raw %*% theta)
   expected_util <- as.numeric(cc$contribMat %*% theta[cc$effectNames])
-  expect_equal(result$changeUtil, expected_util, tolerance = 1e-14)
+  expect_equal(result$changeUtil, expected_util, tolerance = 1e-12)
 
   # No NaN or NA
   expect_false(any(is.nan(result$changeProb)))
@@ -844,15 +853,23 @@ test_that("agg egoNormalize: Rcpp grouped_agg_cpp path works correctly", {
 # The model has two unspInt effects; getNamesFromEffects() should number them
 # unspInt1 and unspInt2 so they are uniquely addressable.
 
-test_that("two unspInt: theta names are unspInt1 / unspInt2", {
-  skip_if(is.null(ans_2int), "ans_2int not fitted (RSENA_FULL_TESTS not set)")
-  thetaNames <- names(ans_2int$theta)
-  expect_true(any(grepl("unspInt1", thetaNames)),
-              info = paste("theta names:", paste(thetaNames, collapse = ", ")))
-  expect_true(any(grepl("unspInt2", thetaNames)),
-              info = paste("theta names:", paste(thetaNames, collapse = ", ")))
-  expect_false(any(thetaNames == grep("unspInt$", thetaNames, value = TRUE)[1]),
-               info = "bare 'unspInt' should not appear when there are two")
+test_that("resolveEffectName: canonical and alias mapping", {
+  effectNames <- c("mynet_transTrip_eval", "mynet_cm_recip_eval")
+  expect_equal(resolveEffectName("transTrip_eval", effectNames), "mynet_transTrip_eval")
+  expect_equal(resolveEffectName("transTrip", effectNames), "mynet_transTrip_eval")
+  expect_equal(resolveEffectName("mynet_cm_recip_eval", effectNames), "mynet_cm_recip_eval")
+
+  effectNames <- c("mynet_transTrip1_eval")
+  expect_error(resolveEffectName("transTrip_eval", effectNames),
+               "not found")
+  expect_equal(resolveEffectName("transTrip1_eval", effectNames), "mynet_transTrip1_eval")
+
+  effectNames <- c("mynet_transTrip_eval")
+  expect_equal(resolveEffectName("transTrip", effectNames), "mynet_transTrip_eval")
+
+  effectNames <- c("mynet_transTrip1_eval", "mynet_transTrip2_eval")
+  expect_error(resolveEffectName("transTrip_eval", effectNames),
+               "not found|ambiguous")
 })
 
 # ── getCovCenteringMean ──────────────────────────────────────────────────────

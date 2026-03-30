@@ -1596,7 +1596,8 @@ SEXP createInteractionEffects(SEXP EFFECTS, Model *pModel,
  */
  
 void getStaticChangeContributionstatistics(SEXP EFFECTSLIST,
-		const StatisticCalculator * pCalculator, vector<vector<double *> > *rChangeContributions)
+		const StatisticCalculator * pCalculator, vector<vector<double *> > *rChangeContributions,
+		vector<vector<bool *> > *rChangePermitted)
 {
     // get the column names from the names attribute
     SEXP cols = PROTECT(Rf_install("names"));
@@ -1648,6 +1649,16 @@ void getStaticChangeContributionstatistics(SEXP EFFECTSLIST,
 						rChangeContributions->push_back(
 							pCalculator->staticChangeContributions(pEffectInfo));
                     }
+					if(rChangePermitted != 0)
+					{
+						// Unified permission: all effect types (eval, endow, creation)
+						// use the same depvar-keyed permission vector.
+						const char * varName = CHAR(STRING_ELT(
+							VECTOR_ELT(EFFECTS, nameCol), i));
+						string key(varName);
+						rChangePermitted->push_back(
+							pCalculator->staticPermitted(key));
+					}
                 }
             }
         }

@@ -32,6 +32,7 @@
 # Returns a data.frame (or data.table) with columns for
 #   period, ego, choice (static) or chain, ministep, choice (dynamic),
 #   plus one column per effect containing the (possibly sign-adjusted) values.
+
 getChangeStatistics <- function(ans, data, effects = NULL, depvar = NULL,
                                  dynamic = FALSE, algorithm = NULL,
                                  n3 = 500, useChangeContributions = FALSE,
@@ -64,22 +65,128 @@ getChangeStatistics <- function(ans, data, effects = NULL, depvar = NULL,
     out
 }
 
+sienaSetupModelOptionsForCpp <- function(ans = NULL, algorithm = NULL, data, effects, pData, pModel,
+                                         profileData = FALSE, parallelrun = FALSE) {
+  if (is.null(algorithm) && !is.null(ans)) {
+    algorithm <- ans$x
+  }
+  if (!is.null(algorithm)) {
+    MAXDEGREE <- if (is.null(algorithm$MaxDegree) || all(algorithm$MaxDegree == 0)) {
+      NULL
+    } else {
+      tmp <- algorithm$MaxDegree
+      storage.mode(tmp) <- "integer"
+      tmp
+    }
+    UNIVERSALOFFSET <- if (is.null(algorithm$UniversalOffset) || all(algorithm$UniversalOffset == 0)) {
+      NULL
+    } else {
+      tmp <- algorithm$UniversalOffset
+      storage.mode(tmp) <- "double"
+      tmp
+    }
+    MODELTYPE <- if (is.null(algorithm$modelType) || all(algorithm$modelType == 0)) NULL else {
+      tmp <- algorithm$modelType
+      storage.mode(tmp) <- "integer"
+      tmp
+    }
+    BEHMODELTYPE <- if (is.null(algorithm$behModelType) || all(algorithm$behModelType == 0)) NULL else {
+      tmp <- algorithm$behModelType
+      storage.mode(tmp) <- "integer"
+      tmp
+    }
+    if (!is.null(algorithm$cconditional) && algorithm$cconditional) {
+      if (!is.null(algorithm$condname) && nzchar(algorithm$condname)) {
+        CONDVAR <- algorithm$condname
+      } else if (!is.null(algorithm$condvarno) && length(algorithm$condvarno) > 0 &&
+                 algorithm$condvarno >= 1 && algorithm$condvarno <= length(data$depvars)) {
+        CONDVAR <- names(data$depvars)[algorithm$condvarno]
+      } else {
+        CONDVAR <- NULL
+      }
+
+      if (!is.null(CONDVAR)) {
+        if (inherits(data, "sienaGroup")) {
+          CONDTARGET <- as.integer(sapply(data, function(xx)
+            attr(xx$depvars[[CONDVAR]], "distance")))
+        } else {
+          CONDTARGET <- as.integer(attr(data$depvars[[CONDVAR]], "distance"))
+        }
+      } else {
+        CONDTARGET <- NULL
+      }
+    } else {
+      CONDVAR <- NULL
+      CONDTARGET <- NULL
+    }
+    normSetRates <- if (!is.null(algorithm$normSetRates)) as.logical(algorithm$normSetRates) else FALSE
+  } else {
+    MAXDEGREE <- NULL
+    UNIVERSALOFFSET <- NULL
+    MODELTYPE <- NULL
+    BEHMODELTYPE <- NULL
+    CONDVAR <- NULL
+    CONDTARGET <- NULL
+    normSetRates <- FALSE
+  }
+
+  simpleRates <- TRUE
+  if (!is.null(effects) && any(!effects$basicRate & effects$type == "rate")) {
+    simpleRates <- FALSE
+  }
+
+  .Call(C_setupModelOptions, PACKAGE = pkgname,
+        pData, pModel,
+        MAXDEGREE, UNIVERSALOFFSET,
+        CONDVAR, CONDTARGET,
+        profileData, parallelrun,
+        MODELTYPE, BEHMODELTYPE,
+        simpleRates, normSetRates)
+}
 
 getStaticChangeContributions <- function(ans = NULL,
                                          data,
                                          effects = NULL,
                                          depvar = NULL,
+                                         algorithm = NULL,
+                                         includePermitted = FALSE,
                                          returnDataFrame = FALSE,
                                          returnWide = FALSE) {
   # Flexible argument handling
   if (!is.null(ans)) {
     if (is.null(effects)) effects <- ans$requestedEffects 
   }
+  if (is.null(ans) && is.null(algorithm)) {
+    warning("Neither 'ans' nor 'algorithm' provided to getStaticChangeContributions; ",
+            "\ model options (maxDegree, conditional, etc.) are not set and defaults are used.")
+  }
   if (is.null(data) || is.null(effects)) {
     stop("Must provide either 'ans' or all of 'data' and 'effects'.")
   }
   noRate <- effects$type != "rate"
   effects <- effects[noRate, ]
+
+  # Interaction effects (unspInt, behUnspInt, contUnspInt) reference component
+  # effects via effect1/effect2/effect3 (effectNumber).  The full effects object
+  # (from getEffects / includeEffects / includeInteraction) contains these as
+  # rows with include=FALSE.  ans$requestedEffects does not — it only keeps
+  # included rows — so sienaSetupEffectsForCpp cannot resolve the components.
+  intShort <- c("unspInt", "behUnspInt", "contUnspInt")
+  intIdx   <- effects$shortName %in% intShort
+  if (any(intIdx)) {
+    compNos <- unique(c(effects$effect1[intIdx],
+                        effects$effect2[intIdx],
+                        effects$effect3[intIdx]))
+    compNos <- compNos[compNos > 0]
+    missing <- compNos[!compNos %in% effects$effectNumber]
+    if (length(missing) > 0) {
+      stop("The effects object is missing component effects (effectNumber ",
+           paste(missing, collapse = ", "), ") needed by interaction effects.\n",
+           "This happens when using ans$requestedEffects (the default) ",
+           "instead of the full effects object.\n",
+           "Please pass the full effects object.")
+    }
+  }
 
   depvars_available <- names(data$depvars)
   if (is.null(depvar)) {
@@ -92,6 +199,11 @@ getStaticChangeContributions <- function(ans = NULL,
                                 includeBipartite = FALSE)
   setup <- sienaSetupEffectsForCpp(pData, data, effects)
 
+  # Propagate model options to C++ (maxDegree, universalOffset, conditional, etc.)
+  sienaSetupModelOptionsForCpp(ans = ans, algorithm = algorithm, data = data, effects = effects,
+                               pData = pData, pModel = setup$pModel,
+                               profileData = FALSE, parallelrun = FALSE)
+
   staticChangeContributions <- .Call(
     C_getStaticChangeContributions, 
     PACKAGE = pkgname,
@@ -100,6 +212,10 @@ getStaticChangeContributions <- function(ans = NULL,
   )
 
   if (!returnDataFrame && !returnWide) {
+    if (includePermitted) {
+      return(list(contributions = staticChangeContributions,
+                  permitted = attr(staticChangeContributions, "permitted")))
+    }
     return(staticChangeContributions)
   }
 
@@ -132,6 +248,7 @@ getStaticChangeContributions <- function(ans = NULL,
       stop("returnWide = TRUE requires exactly one depvar; got ",
            length(depvar), ". Call once per depvar.")
     all_contribMat <- list()
+    all_permitted <- list()
     all_period <- list()
     all_ego <- list()
     all_choice <- list()
@@ -140,6 +257,7 @@ getStaticChangeContributions <- function(ans = NULL,
     effectNames_out <- NULL
     group_id_offset <- 0L
 
+    permData <- attr(staticChangeContributions, "permitted")
     for (dv in depvar) {
       effectIdx <- which(effectDepvars == dv)
       effectNamesDv <- effectNamesEnriched[effectIdx]
@@ -176,6 +294,16 @@ getStaticChangeContributions <- function(ans = NULL,
         group_id <- group_id_offset + rep(seq_len(nPeriods * nEgos), each = nChoices)
 
         all_contribMat[[length(all_contribMat) + 1L]] <- contribMat
+        if (includePermitted) {
+          # Permitted is per-alter, not per-effect; take first effect (all identical)
+          permArr <- array(FALSE, dim = c(nPeriods, nEgos, nChoices))
+          for (p in seq_len(nPeriods)) {
+            permArr[p, , ] <- do.call(rbind,
+              permData[[g]][[p]][[effectIdx[1]]])
+          }
+          permArr <- aperm(permArr, c(3L, 2L, 1L))
+          all_permitted[[length(all_permitted) + 1L]] <- as.logical(permArr)
+        }
         all_period[[length(all_period) + 1L]] <- period_vec
         all_ego[[length(all_ego) + 1L]]  <- ego_vec
         all_choice[[length(all_choice) + 1L]] <- choice_vec
@@ -185,7 +313,7 @@ getStaticChangeContributions <- function(ans = NULL,
       }
     }
 
-    return(list(
+    out <- list(
       contribMat  = do.call(rbind, all_contribMat),
       period = unlist(all_period, use.names = FALSE),
       ego = unlist(all_ego, use.names = FALSE),
@@ -197,7 +325,11 @@ getStaticChangeContributions <- function(ans = NULL,
           match(effectNames_out,
                 paste(effectDepvars, effectNamesEnriched, effectTypes, sep = "_"))],
           effectNames_out)
-    ))
+    )
+    if (includePermitted) {
+      out$permitted <- unlist(all_permitted, use.names = FALSE)
+    }
+    return(out)
   }
 
   results <- list()
@@ -217,10 +349,19 @@ getStaticChangeContributions <- function(ans = NULL,
     } else {
       stop("Unsupported netType: ", netType)
     }
+    permData <- attr(staticChangeContributions, "permitted")
     for (g in seq_along(staticChangeContributions)) {
       groupContributions <- staticChangeContributions[[g]]
+      groupPermitted <- permData[[g]]
       nPeriods <- length(groupContributions)
       result <- array(NA_real_, dim = c(nPeriods, nEffects, nEgos, nChoices),
+                      dimnames = list(
+                        period = seq_len(nPeriods),
+                        effect = compositeNames,
+                        ego = seq_len(nEgos),
+                        choice = seq_len(nChoices)
+                      ))
+      permResult <- array(FALSE, dim = c(nPeriods, nEffects, nEgos, nChoices),
                       dimnames = list(
                         period = seq_len(nPeriods),
                         effect = compositeNames,
@@ -231,6 +372,7 @@ getStaticChangeContributions <- function(ans = NULL,
         for (e in seq_len(nEffects)) {
           mat <- do.call(rbind, groupContributions[[p]][[effectIdx[e]]])
           result[p, e, , ] <- mat
+          permResult[p, e, , ] <- do.call(rbind, groupPermitted[[p]][[effectIdx[e]]])
         }
       }
       # data.table path removed — using base R path below
@@ -260,8 +402,9 @@ getStaticChangeContributions <- function(ans = NULL,
         df$choice <- as.integer(df$choice)
         df$group <- as.integer(g)
         df$networkName <- dv
+        df$permitted <- c(permResult)
         df <- df[, c("group", "period", "networkName", "ego", "choice",
-                     "effectname", "effecttype", "contribution"), drop = FALSE]
+                     "effectname", "effecttype", "contribution", "permitted"), drop = FALSE]
         results[[paste0("g", g, "_", dv)]] <- df
       # }
     }
@@ -434,7 +577,7 @@ getDynamicChangeContributions <- function(
         data=data, 
         effects=effects,
         nbrNodes=1,  # enforce single-threaded: outer mclapply already parallelises over draws
-        initC=FALSE, # parent already called initializeFRAN; workers always get initC=TRUE in robmon
+        initC=FALSE, # parent already called initializeFRAN (really?); workers always get initC=TRUE in robmon
         returnDeps=FALSE, 
         returnChangeContributions=TRUE, 
         returnDataFrame = returnDataFrame,

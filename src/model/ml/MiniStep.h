@@ -104,6 +104,14 @@ public:
 	std::map<const EffectInfo *, std::vector<double> >* changeContributions() const;
 	void changeContributions(std::map<const EffectInfo *, std::vector<double> > * contributions);
 
+	std::vector<bool>* changePermitted() const;
+	void changePermitted(std::vector<bool> * permitted);
+
+	std::vector<double>* changeUtility() const;
+	void changeUtility(std::vector<double> * utility);
+
+	std::vector<double>* changeProbability() const;
+	void changeProbability(std::vector<double> * probability);
 
 protected:
 	void pOption(const Option * pOption);
@@ -180,6 +188,15 @@ private:
 
 	// Stores for each effect its contributions to the tie flip probabilities or behavior change probabilities
 	std::map<const EffectInfo *, std::vector<double> > * lpChangeContributions;
+
+	// Stores whether each choice (alter) is permitted for this ministep
+	std::vector<bool> * lpChangePermitted;
+
+	// Stores the total utility (pre-softmax) for each choice
+	std::vector<double> * lpChangeUtility;
+
+	// Stores the normalized probability (post-softmax) for each choice
+	std::vector<double> * lpChangeProbability;
 };
 
 
