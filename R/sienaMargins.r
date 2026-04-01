@@ -61,7 +61,7 @@ marginalEffects.sienaFit <- function(
     batchUnitBudget = 2.5e8,
     dynamicMinistepFactor = 10,
     saveDir = NULL,
-    gcEachBatch = TRUE,
+    gcEachBatch = FALSE,
     gcEachSim = FALSE,
     ...
 ) {

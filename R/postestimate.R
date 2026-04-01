@@ -28,7 +28,7 @@ sienaPostestimate <- function(
     keepBatch = FALSE,
     verbose = TRUE,
     useChangeContributions = NULL,
-    gcEachBatch = TRUE,
+    gcEachBatch = FALSE,
     gcEachSim = FALSE,
     metadata = NULL,
     egoNormalize = TRUE,
@@ -281,6 +281,48 @@ computeMcse <- function(x,
   out
 }
 
+# ---- Shared-cache infrastructure (Step 3 of the refactoring plan) ----------
+#
+# A shared cache allows multiple estimators (effects) to share the expensive
+# contribution-matrix and baseline-probability computations within a single
+# theta draw.  The cache is a private environment, never exposed to the user.
+#
+# Static path:  getContribFun(theta) returns the same pre-built struct
+#               regardless of theta, so the cache effectively stores it once.
+# Dynamic path: getContribFun(theta) re-simulates chains; the cache stores
+#               the result for the current theta and invalidates on change.
+#
+# Memory: only the *last* theta's results are kept.  No accumulation.
+
+makeSharedCache <- function() {
+    env <- new.env(parent = emptyenv())
+    env$contribTheta  <- NULL
+    env$contrib       <- NULL
+    env$baselineTheta <- NULL
+    env$baseline      <- NULL
+    env
+}
+
+getCachedContrib <- function(cache, getContribFun, theta) {
+    if (!identical(cache$contribTheta, theta)) {
+        cache$contrib      <- getContribFun(theta)
+        cache$contribTheta <- theta
+        # Invalidate baseline when contributions change
+        cache$baselineTheta <- NULL
+        cache$baseline      <- NULL
+    }
+    cache$contrib
+}
+
+getCachedBaseline <- function(cache, cc, theta, type) {
+    if (!identical(cache$baselineTheta, theta)) {
+        cache$baseline      <- predictProbability(cc, theta, type,
+                                                   returnComponents = TRUE)
+        cache$baselineTheta <- theta
+    }
+    cache$baseline
+}
+
 makeEstimator <- function(predictFun, predictArgs, outcomeName,
     level = "period", condition = NULL, sum_fun = mean, na.rm = TRUE,
     egoNormalize = TRUE) {
@@ -363,7 +405,7 @@ drawSim <- function(
     combineBatch = TRUE,
     keepBatch = FALSE,
     verbose = TRUE,
-    gcEachBatch = TRUE,
+    gcEachBatch = FALSE,
     gcEachSim = FALSE
 ) {
 
@@ -515,7 +557,7 @@ drawSimBatch <- function(
     prefix       = "simBatchB_b",
     keepBatch    = FALSE,
     verbose      = TRUE,
-    gcEachBatch  = TRUE,
+    gcEachBatch  = FALSE,
     gcEachSim    = FALSE,
     egoNormalize = TRUE
 ) {
@@ -722,10 +764,15 @@ drawSimBatch <- function(
             eta_str <- if (eta_sec > 3600) sprintf("%.1f h", eta_sec / 3600)
                        else if (eta_sec > 60) sprintf("%.0f min", eta_sec / 60)
                        else sprintf("%.0f s", eta_sec)
-            mem_mb <- tryCatch(
-                round(sum(gc(reset = FALSE, verbose = FALSE)[, 2]) / 1024, 0),
-                error = function(e) NA_integer_
-            )
+            mem_mb <- if (gcEachBatch) {
+                # gc() was just called above — reuse its summary for reporting
+                tryCatch(
+                    round(sum(gc(reset = FALSE, verbose = FALSE)[, 2]) / 1024, 0),
+                    error = function(e) NA_integer_
+                )
+            } else {
+                NA_integer_  # skip gc() when disabled — it's expensive on large heaps
+            }
             message(sprintf(
                 "  Done batch %d/%d (%d%%) | %.1fs (%.2f draws/s) | ETA %s | mem ~%s MB",
                 b, nbatches, round(100 * last_sim / nsim),
