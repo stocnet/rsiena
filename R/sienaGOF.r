@@ -16,18 +16,7 @@
 test_gof <- function(object, ...) UseMethod("test_gof", object)
 
 ##@test_gof.sienaFit gof method for sienaFit
-test_gof.sienaFit <- function(object, auxiliaryFunction,
-		period=NULL, verbose=FALSE, join=TRUE, twoTailed=FALSE,
-		cluster=NULL, robust=FALSE,
-		groupName="Data1", varName, tested=FALSE, iterations=NULL,
-		giveNAWarning=TRUE, ...)
-{
-	sienaGOF(object=object, auxiliaryFunction=auxiliaryFunction,
-	period=period, verbose=verbose, join=join, twoTailed=twoTailed,
-		cluster=cluster, robust=robust,
-		groupName=groupName, varName=varName, tested=tested,
-		iterations=iterations, giveNAWarning=giveNAWarning, ...)
-}
+test_gof.sienaFit <- sienaGOF
 
 ##@sienaGOF siena07 Does test for goodness of fit
 sienaGOF <- function(
