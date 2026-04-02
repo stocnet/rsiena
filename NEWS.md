@@ -1,3 +1,13 @@
+2026-04-02
+
+# RSiena 1.6.4
+
+## Changes in RSiena:
+### Bug correction
+  * For `test_gof`,  
+    a bug in the handling of auxiliary functions was fixed.
+
+
 2026-03-23
 
 # RSiena 1.6.3
