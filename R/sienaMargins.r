@@ -35,6 +35,7 @@ marginalEffects.sienaFit <- function(
     dynamic = FALSE,
     algorithm = NULL,
     n3 = 200,
+    n3PointEst = NULL,
     useChangeContributions = FALSE,
     uncertainty = TRUE,
     nsim = 1000,
@@ -151,8 +152,9 @@ marginalEffects.sienaFit <- function(
 
         # ---- Build shared contribution function ----
         if (!dynamic) {
-            # Strip stored chains from object — static workers use
-            # staticContributions only; changeContributions is dead weight.
+            # Strip stored chains before passing object to getStaticChangeContributions
+            # (chains are theta-independent and not needed for static contributions).
+            # object itself is rm()'d before forking below.
             object$changeContributions <- NULL
             staticContributions <- getStaticChangeContributions(
                 ans     = object,
@@ -188,6 +190,7 @@ marginalEffects.sienaFit <- function(
                 )
             }
             knownEffectNames <- getEffectNamesNoRate(effects, depvar)
+            # dynArgs: used by uncertainty workers (small n3 for speed).
             dynArgs <- list(
                 ans      = object,
                 data     = data,
@@ -198,9 +201,19 @@ marginalEffects.sienaFit <- function(
                 useChangeContributions = useChangeContributions,
                 returnWide = TRUE
             )
+            # dynArgsHat: used for the point estimate only.
+            # n3PointEst=NULL means use algorithm$n3 (estimation-time value),
+            # giving a high-quality point estimate independent of the (smaller)
+            # n3 used for uncertainty workers.
+            dynArgsHat <- dynArgs
+            dynArgsHat$n3 <- n3PointEst
             getContribFun <- function(theta) {
                 do.call(getDynamicChangeContributions,
                         c(list(theta = theta), dynArgs))
+            }
+            getContribFunHat <- function(theta) {
+                do.call(getDynamicChangeContributions,
+                        c(list(theta = theta), dynArgsHat))
             }
         }
 
@@ -379,7 +392,10 @@ marginalEffects.sienaFit <- function(
         }
 
         # ---- Point estimates (shared hat contributions) ----
-        ccHat <- getContribFun(thetaHat)
+        # Dynamic: use getContribFunHat which uses n3PointEst (default NULL =
+        # algorithm$n3 from estimation).  Static: getContribFun is fine (theta-
+        # independent, n3 irrelevant).
+        ccHat <- if (dynamic) getContribFunHat(thetaHat) else getContribFun(thetaHat)
         baselineHat <- predictProbability(ccHat, thetaHat, type,
                                           returnComponents = TRUE)
         theta_hat_use <- baselineHat$theta_use
@@ -445,23 +461,18 @@ marginalEffects.sienaFit <- function(
         }
 
         # ---- Uncertainty via shared simulation loop ----
-        # Free large objects before forking so workers don't inherit and
-        # CoW-dirty them unnecessarily.
-        #
-        # 1. ccHat / baselineHat: the hat-theta chains used for point estimates
-        #    above.  Workers each compute their own chains at theta_sim.
         rm(ccHat, baselineHat)
-        #
-        # 2. dynArgs$ans$changeContributions: for dynamic runs, the stored
-        #    chains from estimation are captured inside the getContribFun
-        #    closure via dynArgs.  Workers don't use them (they always run
-        #    fresh siena07 at their own theta_sim), so strip them now to
-        #    avoid bloating every forked worker's address space.
-        if (dynamic && exists("dynArgs", inherits = FALSE) &&
-                !is.null(dynArgs$ans)) {
-            dynArgs$ans$changeContributions <- NULL
+        if (dynamic && exists("dynArgs", inherits = FALSE)) {
+            # Workers draw their own theta_sim — chains must be generated at
+            # that theta, not reused from hat-theta estimation.  Set
+            # useChangeContributions=FALSE explicitly (avoids warning fallback)
+            # and drop ans entirely: theta/effects/data/algorithm are all
+            # explicit in dynArgs, so ans is dead weight on the FALSE path.
+            dynArgs$useChangeContributions <- FALSE
+            dynArgs$ans <- NULL
         }
-        gc(verbose = FALSE, full = FALSE)
+        rm(object)
+        gc(verbose = FALSE)
 
         # When saveDir is set, keep batch files until all effects are
         # saved so the simulation phase can resume on crash.
