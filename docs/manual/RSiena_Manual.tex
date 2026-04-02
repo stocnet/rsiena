@@ -216,7 +216,7 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.6.3.
+This version was renewed for \RS version 1.6.4.
 
 In version 1.6, the names of \RS functions have undergone
 important changes. This manual is for the new names.
@@ -1187,7 +1187,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.6.3).
+  identified by a version number (e.g.\ 1.6.4).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -1362,17 +1362,17 @@ transforms R scripts with calls of \RS and \MS
 functions to scripts utilizing the new names.
 See its help page!
 
-The function \sfn{transformScript} operates on the script (or other text files, 
+The function \sfn{transformScript} operates on the script (or other text files,
 e.g., \LaTeX)  line by line.
 It gives output in the new script line by line, with an exception
-for calls of \sfn{sienaAlgorithmCreate}. 
+for calls of \sfn{sienaAlgorithmCreate}.
 As this function now is split into three, no line in the new script
 is created; but calls of \sfn{siena07} and \sfn{sienaBayes} are
-checked for the algorithms they use, and transformed into  calls of \sfn{siena} 
-and \sfn{mult\_siena}, respectively, preceded by calls of 
-\sfn{set\_model\_saom}, \sfn{set\_algorithm\_saom}, and/or 
+checked for the algorithms they use, and transformed into  calls of \sfn{siena}
+and \sfn{mult\_siena}, respectively, preceded by calls of
+\sfn{set\_model\_saom}, \sfn{set\_algorithm\_saom}, and/or
 \sfn{set\_output\_saom},
-corresponding to the algorithm object used by this call of 
+corresponding to the algorithm object used by this call of
 \sfn{siena07} or \sfn{sienaBayes}.
 These algorithm objects constructed always have the names, respectively,
 \texttt{alg\_model}, \texttt{alg\_alg}, and \texttt{alg\_out}.
@@ -1386,7 +1386,7 @@ the log file, which will have line numbers until the last
 line that was treated.
 \bigskip
 
-If you want to transform to the new names 
+If you want to transform to the new names
 all files in the working directory with extension name \texttt{.R},
 you could use the following script.
 
@@ -1414,7 +1414,7 @@ for (h in (1:nfiles)){
 
 \newpage
 
-If and when errors in a newly created script occur, 
+If and when errors in a newly created script occur,
 it is good to understand how the function  \sfn{transformScript}
 operates.
 It passes three times through the old script:
@@ -1435,8 +1435,8 @@ It passes three times through the old script:
      without being a function call (i.e., without being
      followed by "(")), they are replaced with the new names.
 \end{enumerate}
- 
- 
+
+
 \clearpage
 
 \section{Steps of modelling}
@@ -15454,7 +15454,7 @@ For the combined degree-effects, mentioned first, \texttt{F} means `Forward',
 % \item {\em double reciprocated degree effect} \texttt{(RRDeg)},\\
 % $s^{\rm beh}_{i\vit}(x, z) = z_i \sum_j x_{1ij}\,x_{1ji}\,x_{2ij}\,x_{2ji} \,$.
 
- 
+
  \item {\em outdegree mixed popularity effect} \texttt{(outdegMixedPop)},
  defined by $i$'s behavior multiplied by the sum of the $X_2$-indegrees
  of ego's  $X_1$-out-alters :
@@ -15466,7 +15466,7 @@ For the combined degree-effects, mentioned first, \texttt{F} means `Forward',
  of ego's  $X_1$-in-alters :
  \\
  $s^{\rm beh}_{i\vit}(x, z) = z_i \, \sum_j x_{1ji}\,x_{2+j} \,$;\\[0.2em]
-  
+
 \end{followenum}
 
 
@@ -17702,12 +17702,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type
-\verb|R CMD check RSiena_1.6.3.tar.gz|\\
+\verb|R CMD check RSiena_1.6.4.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.6.3.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.6.4.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -18352,6 +18352,17 @@ Changes in RSiena:
 
 \fi
 
+
+\item 2026-04-02 GitHub, package version 1.6.4.
+
+Changes in RSiena:
+\begin{itemize}
+\item Bug corrections:
+  \begin{itemize}
+    \item For \sfn{test\_gof}, a bug in the handling
+      of auxiliary functions was fixed.
+  \end{itemize}
+\end{itemize}
 
 \item 2026-03-21 GitHub, package version 1.6.3.
 
