@@ -573,6 +573,20 @@ drawSimBatch <- function(
                     (nbrNodes > 1L) && (.Platform$OS.type != "windows")
     usePSOCK <- isTRUE(useCluster) && (ct == "PSOCK") && (nbrNodes > 1L)
 
+    # ---- Ensure PSOCK cluster exists before the batch loop ---------------
+    # openCluster creates a new cluster when cl=NULL and usePSOCK; it also
+    # sets OMP/BLAS/MKL thread limits on workers.  closeCluster stops it
+    # only if it was created here (not if the caller supplied their own).
+    if (usePSOCK) {
+        cli_psock <- openCluster(nbrNodes, ct, cl,
+            export_vars  = character(0),
+            export_envir = environment(),
+            verbose      = verbose
+        )
+        cl <- cli_psock$cl
+        on.exit(closeCluster(cli_psock, verbose = verbose), add = TRUE)
+    }
+
     nbatches <- ceiling(nsim / batchSize)
     # When there is only one batch and we are not asked to keep it, skip
     # disk I/O entirely and hold the result in memory.
