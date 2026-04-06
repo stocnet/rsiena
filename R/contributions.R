@@ -563,11 +563,33 @@ getDynamicChangeContributions <- function(
     # Update effects initial values with provided theta to sample chains from
     # specificed parameter values in phase 3 of siena07
     allEffNames <- getNamesFromEffects(effects[effects$include, ])
+    # Defensive backfill: if theta is named but shorter than allEffNames
+    # (e.g. caller used coef() with dropRates=TRUE, or conditional model
+    # where rate params live in ans$rate), fill in missing effects from
+    # ans$theta or — for conditional models — from ans$rate spliced into
+    # the condEffects rows that marginalEffects added to effects.
+    # The preferred path is for callers to supply full theta, making
+    # this a no-op safety net.
+    if (!is.null(names(theta)) && length(theta) < length(allEffNames)) {
+      if (!is.null(ans) && !is.null(ans$theta) &&
+          length(ans$theta) == length(allEffNames)) {
+        ansNamed <- setNames(ans$theta, allEffNames)
+        missingIdx <- which(!allEffNames %in% names(theta))
+        theta <- c(theta, ansNamed[allEffNames[missingIdx]])
+      } else if (!is.null(ans) && isTRUE(ans$cconditional) &&
+                 !is.null(ans$rate)) {
+        # Conditional model: ans$theta covers non-rate effects;
+        # ans$rate covers rate effects.  effects may already include
+        # rate rows (e.g. via condEffects splice in marginalEffects).
+        rateIdx <- which(effects$basicRate[effects$include])
+        nonRateIdx <- which(!effects$basicRate[effects$include])
+        if (length(rateIdx) > 0L && length(ans$rate) == length(rateIdx)) {
+          rateNamed <- setNames(ans$rate, allEffNames[rateIdx])
+          theta <- c(theta, rateNamed[setdiff(names(rateNamed), names(theta))])
+        }
+      }
+    }
     inTheta <- allEffNames %in% names(theta)
-    # Update only the effects whose name appears in theta:
-    # — conditional: theta has no rate names → only non-rate initialValues updated
-    #                rate initialValues are already correct from the estimation run
-    # — unconditional: theta has all names including rate → everything updated
     effects$initialValue[effects$include][inTheta] <- 
       theta[allEffNames[inTheta]]
 

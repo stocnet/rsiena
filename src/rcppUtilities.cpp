@@ -757,6 +757,61 @@ arma::vec mlogit_update(const arma::vec& p,
     return out;
 }
 
+// In-place contribMat → changeStats conversion for eval-only models.
+// Sign-flips non-density columns on dissolution rows (density == -1) and
+// optionally sets column names — all WITHOUT triggering R's copy-on-write,
+// so the contribMat SEXP can be reused directly as csMat.
+//
+// mat:             REAL matrix (N × p), modified in-place.
+// densityCol:      1-based column index of the density effect.
+// newColNames:     character vector of length p (new column names, without
+//                  "_eval" suffix).  Pass R_NilValue to skip renaming.
+// Returns:         integer vector of length N with density values (±1/0).
+// [[Rcpp::export]]
+Rcpp::IntegerVector contribToCS_eval_inplace(Rcpp::NumericMatrix mat,
+                                              int densityCol,
+                                              Rcpp::Nullable<Rcpp::CharacterVector> newColNames = R_NilValue) {
+    int n = mat.nrow(), p = mat.ncol();
+    int dc = densityCol - 1;  // 0-based
+
+    // 1. Extract density vector (integer ±1/0).
+    Rcpp::IntegerVector density(n);
+    for (int i = 0; i < n; i++) {
+        double v = mat(i, dc);
+        density[i] = ISNA(v) ? 0 : static_cast<int>(v);
+    }
+
+    // 2. Sign-flip non-density columns on dissolution rows.
+    for (int j = 0; j < p; j++) {
+        if (j == dc) continue;
+        for (int i = 0; i < n; i++) {
+            if (density[i] == -1) {
+                mat(i, j) = -mat(i, j);
+            }
+        }
+    }
+
+    // 3. Set column names via C API (no R-level COW).
+    if (newColNames.isNotNull()) {
+        Rcpp::CharacterVector cn(newColNames);
+        if (cn.size() == p) {
+            SEXP m = mat;
+            SEXP dn = Rf_getAttrib(m, R_DimNamesSymbol);
+            if (Rf_isNull(dn) || TYPEOF(dn) != VECSXP) {
+                dn = PROTECT(Rf_allocVector(VECSXP, 2));
+                SET_VECTOR_ELT(dn, 0, R_NilValue);
+                SET_VECTOR_ELT(dn, 1, cn);
+                Rf_setAttrib(m, R_DimNamesSymbol, dn);
+                UNPROTECT(1);
+            } else {
+                SET_VECTOR_ELT(dn, 1, cn);
+            }
+        }
+    }
+
+    return density;
+}
+
 // [[Rcpp::export]]
 Rcpp::NumericVector calculate_tie_prob_cpp(Rcpp::NumericVector prob,
                                            Rcpp::NumericVector density) {

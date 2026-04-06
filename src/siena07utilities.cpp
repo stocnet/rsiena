@@ -1473,6 +1473,11 @@ SEXP flattenChangeContributionsWide(SEXP changeContributionChains,
                 }
             }
         }
+        /* Release this chain's nested data so R's GC can reclaim it
+           while we continue filling the (already allocated) output.
+           Reduces peak resident memory from (input + output) towards
+           just output as the fill progresses. */
+        SET_VECTOR_ELT(changeContributionChains, ch, R_NilValue);
     }
 
     /* --- set colnames on contribMat -------------------------------------- */

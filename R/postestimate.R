@@ -1023,31 +1023,40 @@ perturbTypeToInt <- function(perturbType) {
 computeMassContrasts <- function(firstDiff, density, ego, period, group,
                                  type = "changeProb") {
     n <- length(firstDiff)
-    massCreation <- rep(NA_real_, n)
-    massDissolution <- rep(NA_real_, n)
 
     # Convert firstDiff to change-probability scale if needed.
-    # For tieProb, dissolution rows have firstDiff = -(changeProbDiff),
-    # so we flip them back.
     changeProbDiff <- firstDiff
     if (type == "tieProb") {
         diss <- density == -1L
         changeProbDiff[diss] <- -changeProbDiff[diss]
     }
 
-    # Build a grouping key for ego × period × group
-    grpKey <- paste(group, period, ego, sep = "\r")
-    ukeys <- unique(grpKey)
+    # Integer group key: encode (group, period, ego) as a single integer.
+    # This avoids paste() on millions of rows.
+    nPeriod <- max(period)
+    nEgo    <- max(ego)
+    grpKey  <- (as.integer(group) - 1L) * (nPeriod * nEgo) +
+               (as.integer(period) - 1L) * nEgo +
+               as.integer(ego)
 
-    for (k in ukeys) {
-        idx <- which(grpKey == k)
-        cre <- idx[density[idx] ==  1L]
-        dis <- idx[density[idx] == -1L]
-        mc <- if (length(cre)) sum(changeProbDiff[cre], na.rm = TRUE) else 0
-        md <- if (length(dis)) sum(changeProbDiff[dis], na.rm = TRUE) else 0
-        massCreation[idx] <- mc
-        massDissolution[idx] <- md
-    }
+    # Replace NA diffs with 0 for rowsum (rowsum has no na.rm).
+    cpd <- changeProbDiff
+    cpd[is.na(cpd)] <- 0
+
+    # Sum by group × direction using rowsum (compiled C, very fast).
+    cre <- density ==  1L
+    dis <- density == -1L
+    mc_sums <- rowsum(cpd[cre], grpKey[cre], reorder = FALSE)
+    md_sums <- rowsum(cpd[dis], grpKey[dis], reorder = FALSE)
+
+    # Broadcast sums back to every row via match().
+    mc_keys <- as.integer(rownames(mc_sums))
+    md_keys <- as.integer(rownames(md_sums))
+    massCreation    <- mc_sums[match(grpKey, mc_keys)]
+    massDissolution <- md_sums[match(grpKey, md_keys)]
+    massCreation[is.na(massCreation)]       <- 0
+    massDissolution[is.na(massDissolution)] <- 0
+
     data.frame(massCreation = massCreation, massDissolution = massDissolution)
 }
 
@@ -1272,6 +1281,58 @@ agg <- function(outcomeName,
   return(out)
 }
 
+# Aggregate multiple outcome columns sharing the expensive preAggEgo step.
+# Returns a named list of data.frames, one per outcomeName.
+aggMulti <- function(outcomeNames, data, level = "none", condition = NULL,
+                     sum_fun = mean, na.rm = TRUE, egoNormalize = TRUE) {
+  if (length(outcomeNames) <= 1L) {
+    return(setNames(
+      list(agg(outcomeNames[1L], data, level, condition, sum_fun, na.rm,
+               egoNormalize)),
+      outcomeNames
+    ))
+  }
+  group_vars <- getGroupVars(level = level, condition = condition)
+
+  # Share ego-level pre-aggregation across all outcome columns:
+  # encode group keys and order once, then run grouped_agg_cpp per column.
+  if (egoNormalize && length(group_vars) > 0) {
+    ego_id_cols <- detectEgoUnit(data)
+    extra <- setdiff(ego_id_cols, group_vars)
+    if (length(extra) > 0) {
+      pre_agg_vars <- unique(c(group_vars, ego_id_cols))
+      enc  <- encodeGroupKeys(data, pre_agg_vars)
+      ord  <- do.call(order,
+                 lapply(seq_len(ncol(enc$G)), function(j) enc$G[, j]))
+      Gord <- enc$G[ord, , drop = FALSE]
+
+      # First column: also extract key structure.
+      res0   <- grouped_agg_cpp(data[[outcomeNames[1L]]][ord], Gord,
+                                na_rm = na.rm, do_mean = TRUE)
+      preagg <- decodeGroupKeys(res0$key, pre_agg_vars, enc$decode)
+      preagg[[outcomeNames[1L]]] <- res0$value
+
+      # Remaining columns: same key, different values.
+      for (nm in outcomeNames[-1L]) {
+        res_i <- grouped_agg_cpp(data[[nm]][ord], Gord,
+                                 na_rm = na.rm, do_mean = TRUE)
+        preagg[[nm]] <- res_i$value
+      }
+
+      # Outer aggregation on the small pre-aggregated data.
+      results <- lapply(outcomeNames, function(nm)
+        agg(nm, preagg, level = level, condition = condition,
+            sum_fun = sum_fun, na.rm = na.rm, egoNormalize = FALSE))
+      return(setNames(results, outcomeNames))
+    }
+  }
+
+  # Fallback: individual calls.
+  results <- lapply(outcomeNames, function(nm)
+    agg(nm, data, level, condition, sum_fun, na.rm, egoNormalize))
+  setNames(results, outcomeNames)
+}
+
 summarizeValue <- function(x, na.rm = TRUE){
   if(na.rm){
     x <- x[! is.na(x)]
@@ -1363,32 +1424,47 @@ contribToChangeStats <- function(contribMat, effectNames, theta = NULL) {
   # ---- Extract density column ----
   densityIdx <- grep("density", bases, fixed = TRUE)[1L]
   if (is.na(densityIdx)) stop("No density column found in effectNames")
-  density <- as.integer(contribMat[, densityIdx])
-  density[is.na(density)] <- 0L
-
-  # ---- Dissolution-row sign flip (signed → pure change statistics) ----
-  # The C++ stores signed contributions: on dissolution rows (d=-1) both
-  # eval and endow contributions equal -calculateContribution(alter).
-  # Negate NON-DENSITY columns on dissolution rows to recover the pure
-  # (unsigned) change statistics Δs.  The density column keeps its ±1
-  # sign so it carries the direction d and can be used for conditioning.
-  # Utility is computed as: d * (θ_density + Δs_rest %*% θ_rest).
-  neg <- density == -1L
-  if (any(neg)) {
-    nonDens <- setdiff(seq_len(ncol(contribMat)), densityIdx)
-    contribMat[neg, nonDens] <- -contribMat[neg, nonDens]
-  }
-
-  # ---- Group columns by changeStats base name ----
-  # ALL columns (including density) become changeStats effects.
-  # Density stays ±1 in csMat and serves as both the direction indicator
-  # and a column available for conditioning (condition = "density").
 
   # Unique changeStats names, preserving order of first appearance.
   allBases <- bases
   allTypes <- types
   changeStatsOrder <- unique(allBases)
   nChangeStats <- length(changeStatsOrder)
+
+  # ---- Fast in-place path for eval-only models ----
+  # When every effect has type "eval" (the common case), the contribMat
+  # columns map 1:1 to changeStats columns. The only transformation is a
+  # sign flip on dissolution rows for non-density columns.  The C++ helper
+  # performs this in-place on the SEXP data (bypassing R's COW) so no
+  # second matrix needs to be allocated — saves ~12 GB at n3 = 1000.
+  allEval <- all(types == "eval")
+  if (allEval && nChangeStats == nRaw) {
+    density <- contribToCS_eval_inplace(contribMat, densityIdx,
+                                        changeStatsOrder)
+    csMat <- contribMat  # same SEXP — data already modified in-place
+    denschangeStatsIdx <- match(bases[densityIdx], changeStatsOrder)
+
+    changeStatsMap <- list(
+      effectNames      = effectNames,
+      bases            = allBases,
+      types            = allTypes,
+      changeStatsOrder = changeStatsOrder
+    )
+    out <- list(csMat = csMat, csNames = changeStatsOrder,
+                densityIdx = denschangeStatsIdx, density = density,
+                changeStatsMap = changeStatsMap)
+    if (!is.null(theta)) out$thetaEff <- buildThetaEff(theta, changeStatsMap)
+    return(out)
+  }
+
+  # ---- Standard path: allocate new csMat (endow/creation models) ----
+  density <- as.integer(contribMat[, densityIdx])
+  density[is.na(density)] <- 0L
+
+  # Dissolution-row sign flip is applied per column below during csMat
+  # construction (avoids bulk COW copy of contribMat).
+  neg <- density == -1L
+  anyNeg <- any(neg)
 
   # Build changeStats matrix: for each changeStats effect, take the eval column
   # if it exists; otherwise combine creation + endow.
@@ -1411,21 +1487,28 @@ contribToChangeStats <- function(contribMat, effectNames, theta = NULL) {
     hasCreation <- "creation" %in% memberTypes
     hasEndow    <- "endow"    %in% memberTypes
 
-    # changeStats column: pure (unsigned) change statistic (Δs),
-    # except density which keeps its ±1 sign.
+    # Extract column(s) from contribMat.  R extracts a fresh vector,
+    # so the per-column sign flip below is always in-place (no COW).
     if (hasEval) {
-      csMat[, k] <- contribMat[, memberRawIdx[memberTypes == "eval"]]
+      col <- contribMat[, memberRawIdx[memberTypes == "eval"]]
     } else if (hasCreation && hasEndow) {
       # Creation and endow are structurally zero on the "other" direction
       # rows, so summing recovers the signed Δs for both directions.
       crIdx <- memberRawIdx[memberTypes == "creation"]
       enIdx <- memberRawIdx[memberTypes == "endow"]
-      csMat[, k] <- contribMat[, crIdx] + contribMat[, enIdx]
+      col <- contribMat[, crIdx] + contribMat[, enIdx]
     } else if (hasCreation) {
-      csMat[, k] <- contribMat[, memberRawIdx[memberTypes == "creation"]]
+      col <- contribMat[, memberRawIdx[memberTypes == "creation"]]
     } else if (hasEndow) {
-      csMat[, k] <- contribMat[, memberRawIdx[memberTypes == "endow"]]
+      col <- contribMat[, memberRawIdx[memberTypes == "endow"]]
     }
+
+    # Sign-flip non-density columns on dissolution rows.
+    isDensity <- grepl("density", base_k, fixed = TRUE)
+    if (!isDensity && anyNeg) {
+      col[neg] <- -col[neg]
+    }
+    csMat[, k] <- col
 
     # Direction-dependent theta.
     #

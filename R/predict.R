@@ -144,12 +144,64 @@ predict.sienaFit <- function(
   )
 }
 
+# Estimate memory (GB) for a single getDynamicChangeContributions call.
+#
+# Returns a list with:
+#   estGB_contrib  – estimated size of the contribMat (the largest single object)
+#   estGB_peak     – estimated peak memory during effect computation
+#   estRows        – estimated total rows (n3 * sum_periods(ministeps * nChoice))
+#   nActor, nPer   – network dimensions
+#
+# The estimate uses: rows ≈ n3 * nPer * nActor * meanRate * nChoice,
+# where meanRate is the average rate parameter (ministeps/actor/period).
+# Each row stores nEff doubles (contribMat) plus integer metadata fields.
+# Peak includes csMat + baseline + one effect's temporaries (~3× contribMat).
+estimateDynMemory <- function(data, depvar, effects, n3,
+                              algorithm = NULL) {
+    dv     <- data$depvars[[depvar]]
+    dvDim  <- dim(dv)
+    nActor <- if (!is.null(dvDim) && length(dvDim) >= 1L) dvDim[1] else length(dv)
+    nChoice <- if (!is.null(dvDim) && length(dvDim) >= 2L) dvDim[2] else nActor
+    nPer   <- if (!is.null(dvDim) && length(dvDim) >= 3L) max(1L, dvDim[3] - 1L) else 1L
+
+    inc     <- effects[effects$include, ]
+    rateEff <- inc[inc$basicRate & inc$name == depvar, ]
+    evalEff <- inc[inc$type != "rate" & inc$name == depvar, ]
+    nEff    <- nrow(evalEff)
+
+    # Mean rate parameter — use estimated values, or n3 from algorithm
+    if (nrow(rateEff) > 0L) {
+        meanRate <- mean(rateEff$initialValue, na.rm = TRUE)
+    } else {
+        meanRate <- nActor  # rough fallback
+    }
+
+    # Estimated ministeps per chain = nActor * meanRate * nPer
+    # (rate ~ expected ministeps/actor/period for unconditional;
+    #  for conditional, actual ministeps per period ≈ observed distance)
+    estMinisteps <- as.numeric(nActor) * meanRate * as.numeric(nPer)
+    # Each ministep has nChoice candidate alterations
+    estRows <- estMinisteps * as.numeric(nChoice) * as.numeric(n3)
+    # contribMat: nEff doubles per row + 6 integer metadata fields
+    bytesPerRow <- as.numeric(nEff) * 8 + 6 * 4
+    estGB_contrib <- estRows * bytesPerRow / 1024^3
+    # Peak: contribMat + csMat (≈ same size) + baseline vectors (1× rows × 8)
+    # + one effect's temporaries (~3 vectors × rows × 8)
+    estGB_peak <- estGB_contrib * 2 + estRows * 4 * 8 / 1024^3
+
+    list(estGB_contrib = estGB_contrib, estGB_peak = estGB_peak,
+         estRows = estRows, nActor = as.integer(nActor),
+         nPer = as.integer(nPer), nEff = nEff,
+         meanRate = meanRate, n3 = n3)
+}
+
 planBatch <- function(
   data, 
   depvar, 
   nsim,
   nbrNodes = 1L,
   useCluster = FALSE,
+  clusterType = c("PSOCK", "FORK"),
   dynamic = FALSE,
   n3 = NULL,
   unitBudget = 2.5e8,
@@ -157,6 +209,7 @@ planBatch <- function(
   memoryScale = NULL,
   useChangeContributions = FALSE
 ) {
+  clusterType <- match.arg(clusterType)
   dv     <- data$depvars[[depvar]]
   dvDim <- dim(dv)
   nEgo  <- if (!is.null(dvDim) && length(dvDim) >= 1L) as.integer(dvDim[1]) else as.integer(length(dv))
@@ -179,7 +232,17 @@ planBatch <- function(
   unitsPerAgg <- max(1.0, units * as.numeric(n3Val) *
                         if (dynamic_costly) as.numeric(dynamicMinistepFactor) else 1.0)
 
-  budgetForAgg <- as.numeric(unitBudget) - effective_workers * unitsPerCall
+  # For FORK workers, children run in separate processes and their working
+  # memory does not add to the parent's budget (CoW means pages are shared
+  # until written).  Only the aggregation buffer in the parent matters.
+  # For PSOCK, results are serialised back to the parent, so worker cost
+  # does count against the budget.
+  is_fork <- isTRUE(useCluster) && clusterType == "FORK"
+  budgetForAgg <- if (is_fork) {
+    as.numeric(unitBudget)
+  } else {
+    as.numeric(unitBudget) - effective_workers * unitsPerCall
+  }
 
   if (budgetForAgg <= 0) {
     if (effective_workers > 1L) {

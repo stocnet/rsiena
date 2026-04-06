@@ -23,6 +23,7 @@ extern "C"
  SEXP _RSiena_grouped_agg_cpp(SEXP, SEXP, SEXP, SEXP);
  SEXP _RSiena_grouped_agg_from_cols(SEXP, SEXP, SEXP, SEXP);
  SEXP _RSiena_calculate_tie_prob_cpp(SEXP, SEXP);
+ SEXP _RSiena_contribToCS_eval_inplace(SEXP, SEXP, SEXP);
 
 
   /*
@@ -71,6 +72,7 @@ static const R_CallMethodDef CallEntries[] = {
    {"_RSiena_grouped_agg_cpp",           (DL_FUNC) &_RSiena_grouped_agg_cpp,           4},
    {"_RSiena_grouped_agg_from_cols",      (DL_FUNC) &_RSiena_grouped_agg_from_cols,      4},
    {"_RSiena_calculate_tie_prob_cpp",     (DL_FUNC) &_RSiena_calculate_tie_prob_cpp,     2},
+   {"_RSiena_contribToCS_eval_inplace",    (DL_FUNC) &_RSiena_contribToCS_eval_inplace,    3},
    {NULL, NULL, 0}
 };
 

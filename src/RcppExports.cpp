@@ -166,6 +166,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// contribToCS_eval_inplace
+Rcpp::IntegerVector contribToCS_eval_inplace(Rcpp::NumericMatrix mat, int densityCol, Rcpp::Nullable<Rcpp::CharacterVector> newColNames);
+RcppExport SEXP _RSiena_contribToCS_eval_inplace(SEXP matSEXP, SEXP densityColSEXP, SEXP newColNamesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< int >::type densityCol(densityColSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::CharacterVector> >::type newColNames(newColNamesSEXP);
+    rcpp_result_gen = Rcpp::wrap(contribToCS_eval_inplace(mat, densityCol, newColNames));
+    return rcpp_result_gen;
+END_RCPP
+}
 // calculate_tie_prob_cpp
 Rcpp::NumericVector calculate_tie_prob_cpp(Rcpp::NumericVector prob, Rcpp::NumericVector density);
 RcppExport SEXP _RSiena_calculate_tie_prob_cpp(SEXP probSEXP, SEXP densitySEXP) {
