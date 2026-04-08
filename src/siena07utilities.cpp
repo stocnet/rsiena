@@ -892,17 +892,18 @@ SEXP getChangeContributionsList(const Chain& chain, SEXP EFFECTSLIST)
 		PROTECT(netType = Rf_install("networkType"));
 		if (pNetworkChange || pBehaviorChange)
 		{
-			const char * netwName;
+			std::string netwNameStr;
 			if(pNetworkChange)
 			{
-				netwName = pNetworkChange->variableName().c_str();
+				netwNameStr = pNetworkChange->variableName();
 				SET_STRING_ELT(NETTYPE, 0, Rf_mkChar("oneMode"));
 			}
 			else
 			{
-				netwName = pBehaviorChange->variableName().c_str();
+				netwNameStr = pBehaviorChange->variableName();
 				SET_STRING_ELT(NETTYPE, 0, Rf_mkChar("behavior"));
 			}
+			const char * netwName = netwNameStr.c_str();
 			for (int ii = 0; ii < Rf_length(EFFECTSLIST); ii++)
 			{
 				const char * networkName = CHAR(STRING_ELT(VECTOR_ELT(VECTOR_ELT(EFFECTSLIST, ii),nameCol), 0));
