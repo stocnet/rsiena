@@ -127,4 +127,5 @@ myalgo <- set_algorithm_saom(nsub=2, n3=100, seed=1291)
                                             silent=TRUE, batch=TRUE))
 interpret_selection(ans, mydata, "mynet", "mycov")
 }
-\keyword{models, methods}
+\keyword{models}
+\keyword{methods}

@@ -117,4 +117,5 @@ myalgo <- set_algorithm_saom(nsub=2, n3=100, seed=1291)
                                             silent=TRUE, batch=TRUE))
 interpret_influence(ans, mydata, "mynet", "mybeh")
 }
-\keyword{models, methods}
+\keyword{models}
+\keyword{methods}
