@@ -216,7 +216,7 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.6.4.
+This version was renewed for \RS version 1.6.5.
 
 In version 1.6, the names of \RS functions have undergone
 important changes. This manual is for the new names.
@@ -1187,7 +1187,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g.\ 1.6.4).
+  identified by a version number (e.g.\ 1.6.5).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -17702,12 +17702,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type
-\verb|R CMD check RSiena_1.6.4.tar.gz|\\
+\verb|R CMD check RSiena_1.6.5.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.6.4.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.6.5.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -18332,28 +18332,47 @@ news(package="packageName")
 \iffalse
 \template
 
-\item 2026-mm-dd GitHub, package version 1.x.x.
+\item 2026-mm-dd GitHub, package version 1.6.x.
 
 Changes in RSiena:
 \begin{itemize}
-\item New effects:
-   \begin{itemize}
+  \item New effects:
+    \begin{itemize}
     \end{itemize}
-\item Improvements of functionality:
-   \begin{itemize}
+  \item Improvements of functionality:
+    \begin{itemize}
     \end{itemize}
-\item Bug corrections:
-   \begin{itemize}
+  \item Bug corrections:
+    \begin{itemize}
     \end{itemize}
-\item Corrections of documentation:
-   \begin{itemize}
+  \item Corrections of documentation:
+    \begin{itemize}
+    \end{itemize}
+  \item Corrections related to sanity checks:
+    \begin{itemize}
     \end{itemize}
 \end{itemize}
-
 \fi
 
 
-\item 2026-04-02 GitHub, package version 1.6.4.
+\item 2026-04-08 GitHub, package version 1.6.5.
+
+Changes in RSiena:
+\begin{itemize}
+\item Corrections related to sanity checks:
+   \begin{itemize}
+     \item  Keyword handling corrected in help files for
+       \sfn{interpret\_influence}, \sfn{interpret\_selection},
+       \sfn{make\_specification}, \sfn{set\_effect},
+       \sfn{test\_gof\_auxiliary} and \sfn{test\_time}.
+     \item In help file for \sfn{interpret\_size\_dynamics}, part of
+       example code disabled for testing due to time exceeding 5
+       seconds in checks.
+   \end{itemize}
+\end{itemize}
+
+
+\item 2026-04-07 GitHub, package version 1.6.4.
 
 Changes in RSiena:
 \begin{itemize}

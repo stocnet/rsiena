@@ -1,4 +1,17 @@
-2026-04-02
+2026-04-08
+
+# RSiena 1.6.5
+
+## Changes in RSiena:
+### Sanity checks 
+  * In help files for `interpret_influence', `interpret_selection',
+  `make_specification', `set_effect', `test_gof_auxiliary', and `test_time',
+  keyword handling corrected.
+  * In help file for `interpret_size_dynamics', part of example code disabled
+  for testing due to time exceeding 5 seconds.
+
+
+2026-04-07
 
 # RSiena 1.6.4
 

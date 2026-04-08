@@ -207,4 +207,5 @@ myeff <- includeTimeDummy(myeff, RateX, type="rate", covar1="myccov")
 (ans <- siena(mydata, effects=myeff, control_algo=myalgo, batch=TRUE))
 }
 }
-\keyword{tests,methods}
+\keyword{tests}
+\keyword{methods}

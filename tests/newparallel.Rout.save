@@ -199,7 +199,7 @@ Estimating test statistic for model including outdegree - activity
 
 Estimating test statistic for model including reciprocity x indegree - popularity
 
-Siena Goodness of Fit ( auxiliaryFunction ), all periods
+Siena Goodness of Fit ( IndegreeDistribution ), all periods
 =====
 Monte Carlo Mahalanobis distance test p-value:  1 
 -----
@@ -207,7 +207,7 @@ One tailed test used  (i.e. estimated probability of greater distance than obser
 -----
 Calculated joint MHD = ( 3.21 ) for current model.
 > summary(goft)
-Siena Goodness of Fit ( auxiliaryFunction ), all periods
+Siena Goodness of Fit ( IndegreeDistribution ), all periods
 =====
 Monte Carlo Mahalanobis distance test p-value:  1 
 -----
@@ -1730,4 +1730,4 @@ Total of 605 iteration steps.
 > 
 > proc.time()
    user  system elapsed 
-  42.89    0.87   43.73 
+  52.96    1.12   54.31 

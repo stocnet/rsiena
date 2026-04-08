@@ -485,4 +485,5 @@ gofgdd <- test_gof(ans2, GeodesicDistribution, varName="mynet1",
 plot(gofgdd)
 }
 }
-\keyword{models, methods}
+\keyword{models}
+\keyword{methods}
