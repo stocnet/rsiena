@@ -9,6 +9,7 @@ predict.sienaFit <- function(
     dynamic = FALSE,
     algorithm = NULL,
     n3 = 1000,
+    n3PointEst = NULL,
     n3BatchSize = NULL,
     useChangeContributions = FALSE,
     level = "period",
@@ -123,13 +124,14 @@ predict.sienaFit <- function(
   # ---- Build contribFun ----
   if (dynamic) {
     if (is.null(effects)) effects <- object$requestedEffects
+    n3Hat <- if (!is.null(n3PointEst)) n3PointEst else n3
     dynArgs <- list(
         ans                    = object,
         data                   = newdata,
         algorithm              = algorithm,
         effects                = effects,
         depvar                 = depvar,
-        n3                     = n3,
+        n3                     = n3Hat,
         batch                  = batch,
         silent                 = silent,
         returnWide             = TRUE
@@ -138,7 +140,7 @@ predict.sienaFit <- function(
         data         = newdata,
         depvar       = depvar,
         effects      = effects,
-        n3_per_batch = n3,
+        n3_per_batch = n3Hat,
         n3_uncert    = if (uncertainty) n3 else 0L,
         useCluster   = useCluster,
         nbrNodes     = nbrNodes,
