@@ -118,7 +118,7 @@ predict.sienaFit <- function(
   metadata <- list(method = "predict", type = type,
                    depvar = depvar, dynamic = dynamic)
   specs <- setNames(list(makeSpec(
-    predictFun   = predictProbFun,
+    predictFun   = predictProbability,
     predictArgs  = list(type = type, attachContribs = attachContribs),
     outcomeName  = type,
     level        = level,
@@ -126,6 +126,7 @@ predict.sienaFit <- function(
     na.rm        = na.rm,
     egoNormalize = egoNormalize,
     dynamic      = dynamic,
+    jacobianFun  = predictProbabilityJac,
     metadata     = metadata
   )), type)
 
@@ -259,37 +260,29 @@ estimateDynMemory <- function(data, depvar, effects, n3,
 # Works for both static (ego/period/choice coords) and dynamic
 # (chain/ministep/period/choice coords) -- groupColsList handles both.
 
-# ---- predictFun for predict.sienaFit specs ------------------------------
-# Wraps predictProbability in the (cc, theta, baseline, ...) interface
-# expected by makeEstimatorFun.  baseline (returnComponents=TRUE list) is
-# not used: predictProbability needs data.frame output, so it re-calls
-# with returnComponents=FALSE.  For dynamic contributions the re-call is
-# cheap (reads precomputed C++ fields); for static it is deterministic.
+# --------------------------------------------------------------------------
+# predictProbabilityJac — analytical Jacobian paired with predictProbability.
 #
-# outcomesOnly=TRUE: return just the outcome vector(s) as a named list,
-# using the pre-computed baseline to avoid redundant work.
-predictProbFun <- function(changeContributions, theta, baseline,
-                           type, attachContribs, outcomesOnly = FALSE) {
-  if (outcomesOnly) {
-    # baseline already has changeProb/tieProb — no recomputation needed
-    if (type == "tieProb") {
-      cs <- changeContributions$changeStats
-      if (is.null(cs))
-        cs <- contribToChangeStats(changeContributions$contribMat,
-                                   changeContributions$effectNames)
-      tp <- if (!is.null(baseline$tieProb)) baseline$tieProb
-            else calculateTieProb(baseline$changeProb, cs$density)
-      return(list(tieProb = tp))
-    }
-    return(list(changeProb = baseline$changeProb))
-  }
-  predictProbability(changeContributions, theta, type,
-                     attachContribs = attachContribs)
+# d(changeProb_i) / d(theta_k) = J_softmax[i, k]
+# d(tieProb_i)   / d(theta_k) = density_i * J_softmax[i, k]
+#
+# Calling convention matches evalBatchJacobian:
+#   cc, theta, changeProb, density, pa (spec$predictArgs), cs, ...
+# Returns: n × K_eff matrix.
+# --------------------------------------------------------------------------
+predictProbabilityJac <- function(cc, theta, changeProb, density,
+                                   pa, cs, ...) {
+  Jp <- softmax_jac_arma(changeProb, cc$contribMat, cc$group_id)
+  if (pa$type == "tieProb") density * Jp else Jp
 }
 
-predictProbability <- function(contributions, theta, type = "changeProb",
+predictProbability <- function(changeContributions, theta, type = "changeProb",
                                attachContribs = FALSE,
-                               returnComponents = FALSE) {
+                               returnComponents = FALSE,
+                               baseline = NULL,
+                               outcomesOnly = FALSE,
+                               ...) {
+    contributions <- changeContributions
     theta_use <- theta[contributions$effectNames]
     names(theta_use) <- contributions$effectNames
 
@@ -299,6 +292,16 @@ predictProbability <- function(contributions, theta, type = "changeProb",
       contributions$changeStats <- contribToChangeStats(
         contributions$contribMat, contributions$effectNames)
     cs <- contributions$changeStats
+
+    # outcomesOnly: reuse pre-computed baseline vectors, skip full recompute.
+    if (outcomesOnly && !is.null(baseline)) {
+      if (type == "tieProb") {
+        tp <- if (!is.null(baseline$tieProb)) baseline$tieProb
+              else calculateTieProb(baseline$changeProb, cs$density)
+        return(list(tieProb = tp))
+      }
+      return(list(changeProb = baseline$changeProb))
+    }
 
     thetaEff <- buildThetaEff(theta_use, cs$changeStatsMap)
 

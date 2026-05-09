@@ -701,8 +701,8 @@ chainStore_simulate <- function(dynArgs, batchSize, n3Total) {
 # Callers can override per-spec by setting spec$jacobianFun directly.
 # --------------------------------------------------------------------------
 .resolveBuiltinJac <- function(predictFun) {
-  if (identical(predictFun, predictProbability)) return(predictProbFunJac)
-  if (identical(predictFun, predictFirstDiff)) return(predictFirstDiffJac)
+  if (identical(predictFun, predictProbability)) return(predictProbabilityJac)
+  if (identical(predictFun, predictFirstDiff))   return(predictFirstDiffJac)
   NULL
 }
 
