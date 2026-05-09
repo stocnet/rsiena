@@ -160,6 +160,7 @@ predict.sienaFit <- function(
 
   if (!is.null(decisionDetails))
     attr(result, "decisionDetails") <- decisionDetails
+  class(result) <- c("sienaPrediction", class(result))
   result
 }
 
