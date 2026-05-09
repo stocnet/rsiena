@@ -578,94 +578,49 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
     fallback     <- TRUE
 
     if (reinforce_requested) {
-      if (n_out == 1L) {
-        ## Scalar spec: try bucketed path first (ratio estimator; correct for
-        ## variable chain lengths).  Fall back to .evalSpecScalar if bucketed
-        ## returns NULL (e.g., predictFun does not support outcomesOnly).
-        bucket_res_s <- NULL
-        if (!is.null(wide)) {
-          bucket_res_s <- tryCatch(
-            .evalSpecChainBuckets(spec, wide, thetaHat, type,
-                                  data.frame(.row = 1L)),
-            error = function(e) NULL)
-        }
+      ## Unified REINFORCE path for all specs (scalar and multi-row).
+      ## .evalSpecChainBuckets handles the n_out==1 case with key_df = one-row
+      ## placeholder; gradReinforceRowwise handles [1×R] just as well as [C×R].
+      bucket_res <- NULL
+      if (!is.null(wide)) {
+        cond_resolved_b <- if (!is.null(spec$condition))
+          resolveEffectName(spec$condition, wide$changeStats$csNames) else NULL
+        gvars_b  <- getGroupVars(level = spec$level, condition = cond_resolved_b)
+        key_cols <- intersect(gvars_b, names(hat[[specName]]))
+        key_df_b <- if (length(key_cols) > 0L)
+          hat[[specName]][, key_cols, drop = FALSE]
+        else
+          data.frame(.row = seq_len(n_out))
+        bucket_res <- tryCatch(
+          .evalSpecChainBuckets(spec, wide, thetaHat, type, key_df_b),
+          error = function(e) NULL)
+      }
 
-        if (!is.null(bucket_res_s) && length(bucket_res_s$chain_ids) > 1L) {
-          ## Bucketed path succeeded — use gradReinforceRowwise (ratio formula).
-          ssc_aligned <- ssc_sum[bucket_res_s$chain_ids, , drop = FALSE]
-          g_score_mat <- gradReinforceRowwise(bucket_res_s$Y, bucket_res_s$N,
-                                              ssc_aligned)
-          grad_re     <- as.numeric(g_score_mat[1L, ])
-          grad_cond   <- as.numeric(J_cond[1L, ])
-          grad_full   <- grad_cond + grad_re
-          SE_deltaFull <- seDelta(grad_full, covTheta)
-          J_full       <- matrix(grad_full, nrow = 1L,
-                                 dimnames = list(NULL, theta_names))
-          ## Dolby baseline diagnostic: use per-chain Y/N as Q_chain proxy.
-          N_c      <- pmax(bucket_res_s$N[, 1L], 1)
-          Q_c      <- bucket_res_s$Y[, 1L] / N_c
+      if (!is.null(bucket_res)) {
+        ssc_aligned  <- ssc_sum[bucket_res$chain_ids, , drop = FALSE]
+        g_score      <- gradReinforceRowwise(bucket_res$Y, bucket_res$N,
+                                             ssc_aligned)
+        J_full       <- J_cond + g_score
+        dimnames(J_full) <- dimnames(J_cond)
+        SE_deltaFull <- seDeltaRows(J_full, covTheta)
+        ## Dolby baseline diagnostic (scalar specs only; NULL for multi-row).
+        if (n_out == 1L) {
+          N_c      <- pmax(bucket_res$N[, 1L], 1)
+          Q_c      <- bucket_res$Y[, 1L] / N_c
           Qsk_mat  <- outer(Q_c, rep(1, nParams)) * ssc_aligned
           baseline <- .dolbyRegrCoef(Qsk_mat, ssc_aligned)
           names(baseline) <- theta_names
-          fallback <- FALSE
-        } else {
-          ## Fallback: .evalSpecScalar (simple per-chain mean, legacy path).
-          hat_chain <- .evalSpecScalar(spec, wide, thetaHat, type)
-          Q_chain   <- hat_chain$Q_chain
-          chain_ids <- hat_chain$chain_ids
-          if (length(Q_chain) > 1L && length(chain_ids) > 0L) {
-            ssc_aligned <- ssc_sum[chain_ids, , drop = FALSE]
-            grad_cond   <- as.numeric(J_cond[1L, ])
-            names(grad_cond) <- theta_names
-            grad_re      <- gradReinforceDolby(Q_chain, ssc_aligned)
-            names(grad_re) <- theta_names
-            grad_full    <- grad_cond + grad_re
-            SE_deltaFull <- seDelta(grad_full, covTheta)
-            J_full       <- matrix(grad_full, nrow = 1L,
-                                   dimnames = list(NULL, theta_names))
-            Qsk_mat  <- outer(Q_chain, rep(1, nParams)) * ssc_aligned
-            baseline <- .dolbyRegrCoef(Qsk_mat, ssc_aligned)
-            names(baseline) <- theta_names
-            fallback <- FALSE
-          }
         }
+        fallback <- FALSE
       } else {
-        ## Multi-row spec: attempt bucketed REINFORCE via .evalSpecChainBuckets.
-        ## Falls back to conditional SE for accumulated specs, when wide is NULL,
-        ## or when predictFun does not support outcomesOnly on delta_wide.
-        bucket_res <- NULL
-        if (!is.null(wide)) {
-          cond_resolved_b <- if (!is.null(spec$condition))
-            resolveEffectName(spec$condition, wide$changeStats$csNames) else NULL
-          gvars_b  <- getGroupVars(level = spec$level, condition = cond_resolved_b)
-          key_cols <- intersect(gvars_b, names(hat[[specName]]))
-          key_df_b <- if (length(key_cols) > 0L)
-            hat[[specName]][, key_cols, drop = FALSE]
-          else
-            data.frame(.row = seq_len(n_out))
-          bucket_res <- tryCatch(
-            .evalSpecChainBuckets(spec, wide, thetaHat, type, key_df_b),
-            error = function(e) NULL)
-        }
-
-        if (!is.null(bucket_res)) {
-          ssc_aligned  <- ssc_sum[bucket_res$chain_ids, , drop = FALSE]
-          g_score      <- gradReinforceRowwise(bucket_res$Y, bucket_res$N,
-                                               ssc_aligned)
-          J_full       <- J_cond + g_score
-          dimnames(J_full) <- dimnames(J_cond)
-          SE_deltaFull <- seDeltaRows(J_full, covTheta)
-          fallback     <- FALSE
-        } else {
-          if (!fallback_warned) {
-            warning(
-              "uncertaintyMode = 'deltaFull': bucketed REINFORCE not available ",
-              "for this aggregated spec (accumulated, egoNormalize, or ",
-              "predictFun incompatibility). Falling back to conditional delta ",
-              "SE. For publication-quality SE use uncertaintyMode = 'batch'.",
-              call. = FALSE)
-            fallback_warned <- TRUE
-          }
+        if (!fallback_warned) {
+          warning(
+            "uncertaintyMode = 'deltaFull': bucketed REINFORCE not available ",
+            "for this spec (accumulated, egoNormalize, or predictFun ",
+            "incompatibility). Falling back to conditional delta SE. For ",
+            "publication-quality SE use uncertaintyMode = 'batch'.",
+            call. = FALSE)
+          fallback_warned <- TRUE
         }
       }
     }

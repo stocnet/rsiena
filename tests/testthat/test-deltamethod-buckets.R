@@ -1,46 +1,42 @@
 ## test-deltamethod-buckets.R
 ##
-## Unit tests for .evalSpecChainBuckets / gradReinforceRowwise.
+## Tests for the unified bucketed REINFORCE path in deltaMethodUncertainty.
 ##
-## Focus: scalar parity — for R=1 (no grouping vars), .evalSpecChainBuckets
-## returns Y/N consistent with .evalSpecScalar Q_chain; gradReinforceRowwise
-## agrees with gradReinforceDolby (equal-N_c fixture, so equality is exact).
+## The key invariant: for a scalar spec (n_out==1) with constant per-chain
+## counts (equal N_c across all chains), the SE returned by
+## deltaMethodUncertainty (which uses .evalSpecChainBuckets +
+## gradReinforceRowwise) must be identical (to machine precision) to the SE
+## that the old .evalSpecScalar + gradReinforceDolby path would have returned.
 ##
-## Algebraic guarantee (constant N_c = K per chain):
-##   Q_hat_r = sum(Y)/sum(N) = mean(Q_chain)
-##   A[c]    = (Y[c] - Q_hat_r * K) / K = Q_chain[c] - mean(Q_chain)
-##   grad_new[k] = mean(A*sk) - cov(A*sk, sk)/var(sk) * mean(sk)
-##              = grad_old[k]    (add/subtract mean(Q_chain)*mean(sk) terms cancel)
-##
-## These tests are the "before" check: they pass against the existing code.
-## After scalar unification they remain the correctness anchor.
+## This is the "before/after" check: the reference ("before") is computed
+## explicitly in the test using .evalSpecScalar + gradReinforceDolby; the
+## "after" is the SE returned by deltaMethodUncertainty via the unified path.
+## Algebraic equality for equal N_c is exact, so tolerance is 1e-12.
 
-context("deltaFull bucketed REINFORCE — scalar parity")
+context("deltaFull bucketed REINFORCE — orchestrator-level parity")
 
 ## ── Synthetic dynamic wide fixture ───────────────────────────────────────────
 ##
-## n_chains chains × n_egos egos × 3 alternatives (add/drop/no-change).
-## The no-change rows are excluded by the keep mask (density == 0), leaving
-## exactly 2 * n_egos rows per chain → constant N_c across all chains.
+## n_chains × n_egos × 3 alternatives.  No-change rows (density==0) are
+## excluded by the keep mask → exactly 2 kept rows per ego per chain →
+## N_c = 2 * n_egos for every chain.  Equal N_c is the precondition for
+## exact algebraic parity between the ratio-estimator and the direct-mean path.
 make_wide_dyn_bucket <- function(n_chains = 3L, n_egos = 4L, seed = 42L) {
   set.seed(seed)
-  n_alts  <- 3L                           # add / drop / no-change
+  n_alts  <- 3L
   n_total <- n_chains * n_egos * n_alts
 
   chain_vec <- rep(seq_len(n_chains), each = n_egos * n_alts)
   ego_vec   <- rep(rep(seq_len(n_egos), each = n_alts), times = n_chains)
-  ms_vec    <- ego_vec                    # 1 ministep per ego (simple)
+  ms_vec    <- ego_vec
 
-  ## Density column: +1 (add), -1 (drop), 0 (no-change) — repeating per ego.
   density_col <- rep(c(1L, -1L, 0L), times = n_chains * n_egos)
-  ## Recip column: random 0/1; zero on no-change rows.
-  recip_col <- sample(c(0L, 1L), n_total, replace = TRUE)
+  recip_col   <- sample(c(0L, 1L), n_total, replace = TRUE)
   recip_col[density_col == 0L] <- 0L
 
   contribMat <- matrix(c(density_col, recip_col), ncol = 2L,
                        dimnames = list(NULL, c("density", "recip")))
 
-  ## group_id: each (chain, ego) combination forms its own softmax group.
   group_id <- as.integer(factor(paste(chain_vec, ego_vec, sep = "_")))
 
   wide <- list(
@@ -62,8 +58,7 @@ make_wide_dyn_bucket <- function(n_chains = 3L, n_egos = 4L, seed = 42L) {
   wide
 }
 
-## Mock predictFun: deterministic function of change stats; ignores theta.
-## outcome = density * 0.3 + recip * 0.1
+## Deterministic mock predictFun — outcome depends only on change stats.
 mock_pred_bucket <- function(changeContributions, theta, baseline = NULL,
                              outcomesOnly = FALSE, ...) {
   cs <- changeContributions$changeStats
@@ -72,7 +67,7 @@ mock_pred_bucket <- function(changeContributions, theta, baseline = NULL,
   data.frame(me_out = ov)
 }
 
-make_scalar_spec_bucket <- function() {
+make_scalar_spec <- function() {
   list(
     predictFun   = mock_pred_bucket,
     predictArgs  = list(),
@@ -85,92 +80,133 @@ make_scalar_spec_bucket <- function() {
   )
 }
 
-## ── 1. Y/N from bucketed path matches Q_chain from scalar path ───────────────
-
-test_that("scalar spec: .evalSpecChainBuckets Y/N matches .evalSpecScalar Q_chain", {
-  skip_on_cran()
-
-  wide  <- make_wide_dyn_bucket()
-  spec  <- make_scalar_spec_bucket()
-  theta <- c(density = -2, recip = 1)
-  type  <- "changeProb"
-
-  res_s  <- .evalSpecScalar(spec, wide, theta, type)
-  key_df <- data.frame(.row = 1L)
-  res_b  <- .evalSpecChainBuckets(spec, wide, theta, type, key_df)
-
-  expect_false(is.null(res_b),
-    info = ".evalSpecChainBuckets must return non-NULL for a valid scalar spec")
-  expect_equal(nrow(res_b$Y), 3L, info = "3 chains expected")
-  expect_equal(ncol(res_b$Y), 1L, info = "1 output cell (scalar spec)")
-
-  ## Chain IDs must match between the two paths (both sort unique chains).
-  expect_equal(res_b$chain_ids, res_s$chain_ids)
-
-  ## Per-chain ratio Y/N must equal per-chain mean from .evalSpecScalar.
-  Q_bucket <- as.numeric(res_b$Y[, 1L] / pmax(res_b$N[, 1L], 1L))
-  expect_equal(Q_bucket, res_s$Q_chain, tolerance = 1e-10)
-})
-
-## ── 2. Gradient parity: gradReinforceRowwise == gradReinforceDolby ────────────
+## ── 1. Orchestrator-level parity (scalar spec) ────────────────────────────────
 ##
-## When N_c is constant across chains, the ratio-influence formula in
-## gradReinforceRowwise collapses algebraically to gradReinforceDolby.
-## Tolerance is machine-precision tight.
+## "Before": SE computed via .evalSpecScalar + gradReinforceDolby (old path).
+## "After":  SE returned by deltaMethodUncertainty (new unified path).
+## Expected: equal to 1e-12 for constant N_c.
 
-test_that("scalar parity: gradReinforceRowwise[1,] equals gradReinforceDolby (equal N_c)", {
+test_that("deltaMethodUncertainty scalar deltaFull SE matches old .evalSpecScalar path", {
   skip_on_cran()
 
-  wide  <- make_wide_dyn_bucket()
-  spec  <- make_scalar_spec_bucket()
-  theta <- c(density = -2, recip = 1)
-  type  <- "changeProb"
+  wide     <- make_wide_dyn_bucket()
+  spec     <- make_scalar_spec()
+  theta    <- c(density = -2, recip = 1)
+  type     <- "changeProb"
+  nParams  <- length(theta)
+  n_chains <- length(unique(wide$chain))
 
-  res_s <- .evalSpecScalar(spec, wide, theta, type)
-  key_df <- data.frame(.row = 1L)
-  res_b  <- .evalSpecChainBuckets(spec, wide, theta, type, key_df)
-
-  ## Synthetic score matrix aligned to chain_ids.
-  n_chains <- length(res_b$chain_ids)
-  nParams  <- 2L
   set.seed(77L)
-  ssc_mat <- matrix(rnorm(n_chains * nParams), nrow = n_chains, ncol = nParams)
+  ssc_sum <- matrix(rnorm(n_chains * nParams), nrow = n_chains, ncol = nParams,
+                    dimnames = list(NULL, names(theta)))
 
-  grad_old <- gradReinforceDolby(res_s$Q_chain, ssc_mat)
-  grad_new <- as.numeric(gradReinforceRowwise(res_b$Y, res_b$N, ssc_mat)[1L, ])
+  ## Fixed J_cond and covariance.
+  J_cond   <- matrix(c(0.1, -0.05), nrow = 1L,
+                     dimnames = list(NULL, names(theta)))
+  covTheta <- diag(c(0.01, 0.02))
+  Q_hat    <- 0.25
 
-  expect_equal(grad_new, grad_old, tolerance = 1e-10,
-    info = "ratio-influence and direct-Q formulas must agree for equal N_c")
+  ## Inject known Jacobian and hat via precomputed — bypasses estimator call.
+  precomp <- list(
+    jac = list(myspec = J_cond),
+    hat = list(myspec = data.frame(me_out = Q_hat))
+  )
+
+  res <- deltaMethodUncertainty(
+    wide        = wide,
+    estimator   = NULL,
+    ssc_sum     = ssc_sum,
+    thetaHat    = theta,
+    covTheta    = covTheta,
+    specs       = list(myspec = spec),
+    type        = type,
+    fullMode    = TRUE,
+    precomputed = precomp
+  )
+
+  ## Confirm the bucketed path was taken (not fallback to conditional SE).
+  expect_false(attr(res$myspec$SE_deltaFull, "fallback"),
+    info = "bucketed path must succeed for this valid scalar spec")
+
+  ## Compute reference SE via the old .evalSpecScalar + gradReinforceDolby path.
+  old_path    <- .evalSpecScalar(spec, wide, theta, type)
+  ssc_aligned <- ssc_sum[old_path$chain_ids, , drop = FALSE]
+  grad_re_old <- gradReinforceDolby(old_path$Q_chain, ssc_aligned)
+  J_full_old  <- matrix(as.numeric(J_cond[1L, ]) + grad_re_old, nrow = 1L,
+                        dimnames = dimnames(J_cond))
+  SE_old      <- seDeltaRows(J_full_old, covTheta)
+
+  expect_equal(as.numeric(res$myspec$SE_deltaFull), SE_old, tolerance = 1e-12,
+    info = "unified bucketed path must give same SE as old evalSpecScalar path")
 })
 
-## ── 3. Bucketed path returns NULL for accumulated spec ───────────────────────
+## ── 2. Accumulated spec falls back to conditional SE ─────────────────────────
 
-test_that(".evalSpecChainBuckets returns NULL for accumulated spec", {
-  skip_on_cran()
-
-  wide   <- make_wide_dyn_bucket()
-  spec   <- make_scalar_spec_bucket()
-  spec$accumulated <- TRUE
-  theta  <- c(density = -2, recip = 1)
-  type   <- "changeProb"
-  key_df <- data.frame(.row = 1L)
-
-  res <- .evalSpecChainBuckets(spec, wide, theta, type, key_df)
-  expect_null(res, info = "accumulated spec must return NULL")
-})
-
-## ── 4. Bucketed path returns NULL when wide has no chain column ───────────────
-
-test_that(".evalSpecChainBuckets returns NULL when wide has no chain column", {
+test_that("deltaMethodUncertainty: accumulated spec falls back with warning", {
   skip_on_cran()
 
   wide  <- make_wide_dyn_bucket()
-  wide$chain <- NULL                  # simulate static wide (no chain col)
-  spec  <- make_scalar_spec_bucket()
-  theta <- c(density = -2, recip = 1)
-  type  <- "changeProb"
-  key_df <- data.frame(.row = 1L)
+  spec  <- make_scalar_spec()
+  spec$accumulated <- TRUE
+  theta    <- c(density = -2, recip = 1)
+  n_chains <- length(unique(wide$chain))
+  set.seed(77L)
+  ssc_sum  <- matrix(rnorm(n_chains * 2L), nrow = n_chains,
+                     dimnames = list(NULL, names(theta)))
 
-  res <- .evalSpecChainBuckets(spec, wide, theta, type, key_df)
-  expect_null(res, info = "no chain column must return NULL")
+  J_cond  <- matrix(c(0.1, -0.05), nrow = 1L, dimnames = list(NULL, names(theta)))
+  precomp <- list(
+    jac = list(acc = J_cond),
+    hat = list(acc = data.frame(me_out = 0.25))
+  )
+
+  expect_warning(
+    res <- deltaMethodUncertainty(
+      wide = wide, estimator = NULL, ssc_sum = ssc_sum,
+      thetaHat = theta, covTheta = diag(c(0.01, 0.02)),
+      specs = list(acc = spec), type = "changeProb",
+      fullMode = TRUE, precomputed = precomp
+    ),
+    regexp = "bucketed REINFORCE not available"
+  )
+
+  expect_true(attr(res$acc$SE_deltaFull, "fallback"),
+    info = "accumulated spec must stay on fallback path")
+  expect_equal(as.numeric(res$acc$SE_deltaFull),
+               as.numeric(res$acc$SE_delta),
+    info = "fallback SE_deltaFull must equal conditional SE_delta")
 })
+
+## ── 3. No chain column → falls back to conditional SE ────────────────────────
+
+test_that("deltaMethodUncertainty: no chain column forces fallback", {
+  skip_on_cran()
+
+  wide       <- make_wide_dyn_bucket()
+  wide$chain <- NULL          # simulate static wide
+  spec  <- make_scalar_spec()
+  theta <- c(density = -2, recip = 1)
+  n_chains <- 3L
+  set.seed(77L)
+  ssc_sum <- matrix(rnorm(n_chains * 2L), nrow = n_chains,
+                    dimnames = list(NULL, names(theta)))
+
+  J_cond  <- matrix(c(0.1, -0.05), nrow = 1L, dimnames = list(NULL, names(theta)))
+  precomp <- list(
+    jac = list(s = J_cond),
+    hat = list(s = data.frame(me_out = 0.25))
+  )
+
+  expect_warning(
+    res <- deltaMethodUncertainty(
+      wide = wide, estimator = NULL, ssc_sum = ssc_sum,
+      thetaHat = theta, covTheta = diag(c(0.01, 0.02)),
+      specs = list(s = spec), type = "changeProb",
+      fullMode = TRUE, precomputed = precomp
+    ),
+    regexp = "bucketed REINFORCE not available"
+  )
+
+  expect_true(attr(res$s$SE_deltaFull, "fallback"))
+})
+
