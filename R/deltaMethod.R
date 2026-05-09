@@ -579,27 +579,55 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
 
     if (reinforce_requested) {
       if (n_out == 1L) {
-        ## Scalar spec: full Dolby REINFORCE on per-chain Q.
-        hat_chain <- .evalSpecScalar(spec, wide, thetaHat, type)
-        Q_chain   <- hat_chain$Q_chain
-        chain_ids <- hat_chain$chain_ids
-        if (length(Q_chain) > 1L && length(chain_ids) > 0L) {
-          ssc_aligned <- ssc_sum[chain_ids, , drop = FALSE]
+        ## Scalar spec: try bucketed path first (ratio estimator; correct for
+        ## variable chain lengths).  Fall back to .evalSpecScalar if bucketed
+        ## returns NULL (e.g., predictFun does not support outcomesOnly).
+        bucket_res_s <- NULL
+        if (!is.null(wide)) {
+          bucket_res_s <- tryCatch(
+            .evalSpecChainBuckets(spec, wide, thetaHat, type,
+                                  data.frame(.row = 1L)),
+            error = function(e) NULL)
+        }
+
+        if (!is.null(bucket_res_s) && length(bucket_res_s$chain_ids) > 1L) {
+          ## Bucketed path succeeded — use gradReinforceRowwise (ratio formula).
+          ssc_aligned <- ssc_sum[bucket_res_s$chain_ids, , drop = FALSE]
+          g_score_mat <- gradReinforceRowwise(bucket_res_s$Y, bucket_res_s$N,
+                                              ssc_aligned)
+          grad_re     <- as.numeric(g_score_mat[1L, ])
           grad_cond   <- as.numeric(J_cond[1L, ])
-          names(grad_cond) <- theta_names
-
-          grad_re      <- gradReinforceDolby(Q_chain, ssc_aligned)
-          names(grad_re) <- theta_names
-          grad_full    <- grad_cond + grad_re
+          grad_full   <- grad_cond + grad_re
           SE_deltaFull <- seDelta(grad_full, covTheta)
-
           J_full       <- matrix(grad_full, nrow = 1L,
                                  dimnames = list(NULL, theta_names))
-
-          Qsk_mat  <- outer(Q_chain, rep(1, nParams)) * ssc_aligned
+          ## Dolby baseline diagnostic: use per-chain Y/N as Q_chain proxy.
+          N_c      <- pmax(bucket_res_s$N[, 1L], 1)
+          Q_c      <- bucket_res_s$Y[, 1L] / N_c
+          Qsk_mat  <- outer(Q_c, rep(1, nParams)) * ssc_aligned
           baseline <- .dolbyRegrCoef(Qsk_mat, ssc_aligned)
           names(baseline) <- theta_names
           fallback <- FALSE
+        } else {
+          ## Fallback: .evalSpecScalar (simple per-chain mean, legacy path).
+          hat_chain <- .evalSpecScalar(spec, wide, thetaHat, type)
+          Q_chain   <- hat_chain$Q_chain
+          chain_ids <- hat_chain$chain_ids
+          if (length(Q_chain) > 1L && length(chain_ids) > 0L) {
+            ssc_aligned <- ssc_sum[chain_ids, , drop = FALSE]
+            grad_cond   <- as.numeric(J_cond[1L, ])
+            names(grad_cond) <- theta_names
+            grad_re      <- gradReinforceDolby(Q_chain, ssc_aligned)
+            names(grad_re) <- theta_names
+            grad_full    <- grad_cond + grad_re
+            SE_deltaFull <- seDelta(grad_full, covTheta)
+            J_full       <- matrix(grad_full, nrow = 1L,
+                                   dimnames = list(NULL, theta_names))
+            Qsk_mat  <- outer(Q_chain, rep(1, nParams)) * ssc_aligned
+            baseline <- .dolbyRegrCoef(Qsk_mat, ssc_aligned)
+            names(baseline) <- theta_names
+            fallback <- FALSE
+          }
         }
       } else {
         ## Multi-row spec: attempt bucketed REINFORCE via .evalSpecChainBuckets.
