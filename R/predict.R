@@ -171,11 +171,15 @@ predict.sienaFit <- function(
                         setNames(list(decisionDetails), type) else NULL
   )
 
-  result <- results[[type]]
+  # Stamp S3 class on each result; sienaPostestimate returns plain data.frames.
+  results <- lapply(results, function(r) {
+    class(r) <- c("sienaPrediction", class(r))
+    r
+  })
 
+  result <- results[[type]]
   if (!is.null(decisionDetails))
     attr(result, "decisionDetails") <- decisionDetails
-  class(result) <- c("sienaPrediction", class(result))
   result
 }
 
