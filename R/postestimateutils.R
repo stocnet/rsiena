@@ -3,43 +3,42 @@
 #
 # Required: predictFun, outcomeName.
 # All other fields have documented defaults.
-# Caller-specific extras (massContrasts, returnDecisionDetails) pass through
-# via ... without triggering the unknown-field warning.
 # --------------------------------------------------------------------------
 makeSpec <- function(predictFun,
                      outcomeName,
-                     predictArgs  = list(),
-                     level        = "period",
-                     condition    = NULL,
-                     accumulated  = FALSE,
-                     na.rm        = TRUE,
-                     egoNormalize = FALSE,
-                     rateWeight   = FALSE,
-                     dynamic      = FALSE,
-                     metadata     = list(),
+                     predictArgs           = list(),
+                     level                 = "period",
+                     condition             = NULL,
+                     accumulated           = FALSE,
+                     na.rm                 = TRUE,
+                     egoNormalize          = FALSE,
+                     rateWeight            = FALSE,
+                     dynamic               = FALSE,
+                     massContrasts         = FALSE,
+                     returnDecisionDetails = FALSE,
+                     jacobianFun           = NULL,
+                     metadata              = list(),
                      ...) {
   dots <- list(...)
-  known_extra <- c("massContrasts", "returnDecisionDetails")
-  unknown <- setdiff(names(dots), known_extra)
-  if (length(unknown) > 0L)
+  if (length(dots) > 0L)
     warning("makeSpec: unknown fields ignored: ",
-            paste(unknown, collapse = ", "))
-  spec <- list(
-    predictFun   = predictFun,
-    predictArgs  = predictArgs,
-    outcomeName  = outcomeName,
-    level        = level,
-    condition    = condition,
-    accumulated  = accumulated,
-    na.rm        = na.rm,
-    egoNormalize = egoNormalize,
-    rateWeight   = rateWeight,
-    dynamic      = dynamic,
-    metadata     = metadata
+            paste(names(dots), collapse = ", "))
+  list(
+    predictFun            = predictFun,
+    predictArgs           = predictArgs,
+    outcomeName           = outcomeName,
+    level                 = level,
+    condition             = condition,
+    accumulated           = accumulated,
+    na.rm                 = na.rm,
+    egoNormalize          = egoNormalize,
+    rateWeight            = rateWeight,
+    dynamic               = dynamic,
+    massContrasts         = massContrasts,
+    returnDecisionDetails = returnDecisionDetails,
+    jacobianFun           = jacobianFun,
+    metadata              = metadata
   )
-  for (nm in intersect(names(dots), known_extra))
-    spec[[nm]] <- dots[[nm]]
-  spec
 }
 
 # --------------------------------------------------------------------------

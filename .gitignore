@@ -51,3 +51,10 @@ src/Makevars
 autom4te.cache
 config.log
 config.status
+
+tests/benchmarks/*
+
+# Local-only dev notes and expensive snapshot test artefacts
+dev-notes/
+tests/testthat/test-snapshots.R
+tests/testthat/cache/snap_*.rds
