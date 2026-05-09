@@ -99,6 +99,46 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// build_scatter_idx
+Rcpp::IntegerVector build_scatter_idx(const Rcpp::IntegerMatrix& G_sorted, const Rcpp::IntegerVector& ord);
+RcppExport SEXP _RSiena_build_scatter_idx(SEXP G_sortedSEXP, SEXP ordSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::IntegerMatrix& >::type G_sorted(G_sortedSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type ord(ordSEXP);
+    rcpp_result_gen = Rcpp::wrap(build_scatter_idx(G_sorted, ord));
+    return rcpp_result_gen;
+END_RCPP
+}
+// scatter_agg_1d
+Rcpp::List scatter_agg_1d(const Rcpp::NumericVector& vals, const Rcpp::IntegerVector& row_group, int nGroups, bool na_rm);
+RcppExport SEXP _RSiena_scatter_agg_1d(SEXP valsSEXP, SEXP row_groupSEXP, SEXP nGroupsSEXP, SEXP na_rmSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type vals(valsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type row_group(row_groupSEXP);
+    Rcpp::traits::input_parameter< int >::type nGroups(nGroupsSEXP);
+    Rcpp::traits::input_parameter< bool >::type na_rm(na_rmSEXP);
+    rcpp_result_gen = Rcpp::wrap(scatter_agg_1d(vals, row_group, nGroups, na_rm));
+    return rcpp_result_gen;
+END_RCPP
+}
+// grouped_agg_matrix_cpp
+Rcpp::List grouped_agg_matrix_cpp(const Rcpp::NumericMatrix& X, const Rcpp::IntegerMatrix& G, bool na_rm, bool do_mean);
+RcppExport SEXP _RSiena_grouped_agg_matrix_cpp(SEXP XSEXP, SEXP GSEXP, SEXP na_rmSEXP, SEXP do_meanSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerMatrix& >::type G(GSEXP);
+    Rcpp::traits::input_parameter< bool >::type na_rm(na_rmSEXP);
+    Rcpp::traits::input_parameter< bool >::type do_mean(do_meanSEXP);
+    rcpp_result_gen = Rcpp::wrap(grouped_agg_matrix_cpp(X, G, na_rm, do_mean));
+    return rcpp_result_gen;
+END_RCPP
+}
 // grouped_agg_from_cols
 Rcpp::List grouped_agg_from_cols(const Rcpp::NumericVector& x, const Rcpp::List& group_cols, bool na_rm, bool do_mean);
 RcppExport SEXP _RSiena_grouped_agg_from_cols(SEXP xSEXP, SEXP group_colsSEXP, SEXP na_rmSEXP, SEXP do_meanSEXP) {
@@ -176,6 +216,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type densityCol(densityColSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::CharacterVector> >::type newColNames(newColNamesSEXP);
     rcpp_result_gen = Rcpp::wrap(contribToCS_eval_inplace(mat, densityCol, newColNames));
+    return rcpp_result_gen;
+END_RCPP
+}
+// softmax_jac_arma
+arma::mat softmax_jac_arma(const arma::vec& changeProb, const arma::mat& contribMat, const arma::ivec& group_id);
+RcppExport SEXP _RSiena_softmax_jac_arma(SEXP changeProbSEXP, SEXP contribMatSEXP, SEXP group_idSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type changeProb(changeProbSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type contribMat(contribMatSEXP);
+    Rcpp::traits::input_parameter< const arma::ivec& >::type group_id(group_idSEXP);
+    rcpp_result_gen = Rcpp::wrap(softmax_jac_arma(changeProb, contribMat, group_id));
     return rcpp_result_gen;
 END_RCPP
 }

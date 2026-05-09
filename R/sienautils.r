@@ -782,6 +782,97 @@ make_constraint.siena <- make_constraint.sienadata
 # append_parm=TRUE adds _{parm} suffix for effects with non-zero parm.
 # Attaches attr(result, "label"): named vector of human-readable labels.
 # Number duplicate user-specified interaction shortNames based on interaction identity.
+# Build a key vector that distinguishes different logical interactions
+# (unspInt, behUnspInt, contUnspInt) in an effects data frame.
+# Uses shortNames of component effects (looked up via effect1/effect2/effect3
+# effectNumbers) so that eval/endow/creation variants of the same structural
+# interaction share the same key and are kept as one logical unspInt.
+# Falls back to name|shortName|interaction1|interaction2 when effect columns
+# are absent.
+getNamesFromEffects <- function(effects, append_parm = FALSE) {
+    isBasicRate    <- effects$type == "rate" & effects$shortName == "Rate"
+    isNonBasicRate <- effects$type == "rate" & effects$shortName != "Rate"
+    n <- length(effects$shortName)
+    i1 <- if (!is.null(effects$interaction1)) effects$interaction1 else rep("", n)
+    i2 <- if (!is.null(effects$interaction2)) effects$interaction2 else rep("", n)
+    key <- intKey(effects)
+    shortName <- numberIntShortNames(effects$shortName, key = key)
+    i1 <- if (!is.null(effects$interaction1)) effects$interaction1 else rep("", n)
+    i2 <- if (!is.null(effects$interaction2)) effects$interaction2 else rep("", n)
+    covarSuffix <- effectCovarSuffix(i1, i2)
+    # Compose shortName with optional covariate suffix
+    snWithCovar <- ifelse(covarSuffix == "", shortName,
+                          paste(shortName, covarSuffix, sep = "_"))
+    if (!is.null(effects$name) && !all(is.na(effects$name))) {
+        effectNames <- ifelse(
+            isBasicRate,
+            paste0(effects$name, "_rate", effects$period),
+            ifelse(
+                isNonBasicRate,
+                paste(effects$name, snWithCovar, "rate", sep = "_"),
+                paste(effects$name, snWithCovar, effects$type, sep = "_")
+            )
+        )
+    } else {
+        effectNames <- ifelse(
+            isBasicRate,
+            paste0("rate", effects$period),
+            ifelse(
+                isNonBasicRate,
+                paste(snWithCovar, "rate", sep = "_"),
+                paste(snWithCovar, effects$type, sep = "_")
+            )
+        )
+    }
+    if (append_parm) {
+        hasParm <- !is.na(effects$parm) & effects$parm != 0
+        effectNames[hasParm] <- paste0(effectNames[hasParm], "_", effects$parm[hasParm])
+    }
+    effectNames <- make.unique(effectNames, sep = ".")
+    if (!is.null(effects$effectName) && length(effects$effectName) == length(effectNames))
+        attr(effectNames, "label") <- setNames(fromObjectToText(effects$effectName), effectNames)
+    effectNames
+}
+
+intKey <- function(effects) {
+    e1 <- effects[["effect1"]]
+    e2 <- effects[["effect2"]]
+    e3 <- effects[["effect3"]]
+    if (!is.null(e1) && !is.null(e2) && !is.null(e3) &&
+        (is.numeric(e1) || is.integer(e1))) {
+        allEN <- effects[["effectNumber"]]
+        allSN <- effects[["shortName"]]
+        if (!is.null(allEN) && !is.null(allSN)) {
+            # Map effectNumber -> shortName.  shortName has no type suffix, so
+            # transTrip1_eval and transTrip1_creation both map to "transTrip1",
+            # making creation/endow pairs of the same interaction share a key.
+            sn_for <- function(en) {
+                sn <- allSN[match(en, allEN)]
+                sn[is.na(sn)] <- as.character(en[is.na(sn)])
+                sn
+            }
+            paste(sn_for(e1), sn_for(e2), sn_for(e3))
+        } else {
+            paste(e1, e2, e3)
+        }
+    } else if (!is.null(e1) && !is.null(e2) && !is.null(e3) && is.list(e1)) {
+        # C++ effects: effect slots contain external pointers (not integer effectNumbers).
+        # Two rows with the same pointer triple represent the same logical interaction
+        # (e.g. eval + endow of the same unspInt); different triples → different interactions.
+        ptr_str <- function(x) vapply(x, function(p) {
+            if (is.null(p)) "NULL" else format(p)
+        }, character(1L))
+        paste(ptr_str(e1), ptr_str(e2), ptr_str(e3))
+    } else {
+        n <- nrow(effects)
+        nm <- if (!is.null(effects[["name"]])) effects[["name"]] else rep("", n)
+        sn <- effects[["shortName"]]
+        i1 <- if (!is.null(effects[["interaction1"]])) effects[["interaction1"]] else rep("", n)
+        i2 <- if (!is.null(effects[["interaction2"]])) effects[["interaction2"]] else rep("", n)
+        paste(nm, sn, i1, i2)
+    }
+}
+
 # This ensures the same logical effect (eval/endow/creation of one interaction)
 # stays in one group, while distinct interactions get numbered unspInt1, unspInt2.
 # A single logical effect is left unnumbered.
@@ -842,47 +933,74 @@ numberIntColNames <- function(colNames) {
     colNames
 }
 
-getNamesFromEffects <- function(effects, append_parm = FALSE) {
-    isBasicRate    <- effects$type == "rate" & effects$shortName == "Rate"
-    isNonBasicRate <- effects$type == "rate" & effects$shortName != "Rate"
-    n <- length(effects$shortName)
-    i1 <- if (!is.null(effects$interaction1)) effects$interaction1 else rep("", n)
-    i2 <- if (!is.null(effects$interaction2)) effects$interaction2 else rep("", n)
-    key <- paste0(effects$name, "|", effects$shortName, "|", i1, "|", i2)
-    shortName <- numberIntShortNames(effects$shortName, key = key)
-    i1 <- if (!is.null(effects$interaction1)) effects$interaction1 else rep("", n)
-    i2 <- if (!is.null(effects$interaction2)) effects$interaction2 else rep("", n)
+# Parse canonical full effect names into base/type components.
+# Full names are expected in getNamesFromEffects() format.
+.parseEffectFullNames <- function(effectNames) {
+    knownTypes <- c("eval", "endow", "creation", "rate")
+    lastSeg <- sub("^.*_", "", effectNames)
+    hasKnownType <- lastSeg %in% knownTypes
+    list(
+        fullName = effectNames,
+        baseName = ifelse(hasKnownType,
+                          sub("_[^_]+$", "", effectNames),
+                          effectNames),
+        type = ifelse(hasKnownType, lastSeg, NA_character_)
+    )
+}
+
+# Build a canonical naming registry from an effects object.
+# This is the single source for full/base naming and aliases used by
+# user-facing resolution helpers.
+buildEffectNameRegistry <- function(effects,
+                                    depvar = NULL,
+                                    includeOnly = TRUE,
+                                    append_parm = FALSE) {
+    eff <- effects
+    if (includeOnly && !is.null(eff[["include"]]))
+        eff <- eff[eff[["include"]], , drop = FALSE]
+    if (!is.null(depvar) && !is.null(eff[["name"]]))
+        eff <- eff[eff[["name"]] == depvar, , drop = FALSE]
+
+    if (nrow(eff) == 0L) {
+        return(data.frame(
+            depvar = character(0),
+            effect_type = character(0),
+            interaction_type = character(0),
+            short_raw = character(0),
+            short_numbered = character(0),
+            short_with_covar = character(0),
+            full_name = character(0),
+            base_name = character(0),
+            name_type = character(0),
+            key = character(0),
+            stringsAsFactors = FALSE
+        ))
+    }
+
+    n <- nrow(eff)
+    i1 <- if (!is.null(eff[["interaction1"]])) eff[["interaction1"]] else rep("", n)
+    i2 <- if (!is.null(eff[["interaction2"]])) eff[["interaction2"]] else rep("", n)
+    key <- intKey(eff)
+    shortNumbered <- numberIntShortNames(eff[["shortName"]], key = key)
     covarSuffix <- effectCovarSuffix(i1, i2)
-    # Compose shortName with optional covariate suffix
-    snWithCovar <- ifelse(covarSuffix == "", shortName,
-                          paste(shortName, covarSuffix, sep = "_"))
-    if (!is.null(effects$name) && !all(is.na(effects$name))) {
-        effectNames <- ifelse(
-            isBasicRate,
-            paste0(effects$name, "_rate", effects$period),
-            ifelse(
-                isNonBasicRate,
-                paste(effects$name, snWithCovar, "rate", sep = "_"),
-                paste(effects$name, snWithCovar, effects$type, sep = "_")
-            )
-        )
-    } else {
-        effectNames <- ifelse(
-            isBasicRate,
-            paste0("rate", effects$period),
-            ifelse(
-                isNonBasicRate,
-                paste(snWithCovar, "rate", sep = "_"),
-                paste(snWithCovar, effects$type, sep = "_")
-            )
-        )
-    }
-    if (append_parm) {
-        hasParm <- !is.na(effects$parm) & effects$parm != 0
-        effectNames[hasParm] <- paste0(effectNames[hasParm], "_", effects$parm[hasParm])
-    }
-    effectNames <- make.unique(effectNames, sep = ".")
-    if (!is.null(effects$effectName) && length(effects$effectName) == length(effectNames))
-        attr(effectNames, "label") <- setNames(fromObjectToText(effects$effectName), effectNames)
-    effectNames
+    shortWithCovar <- ifelse(covarSuffix == "", shortNumbered,
+                             paste(shortNumbered, covarSuffix, sep = "_"))
+
+    fullNames <- getNamesFromEffects(eff, append_parm = append_parm)
+    parsed <- .parseEffectFullNames(fullNames)
+
+    data.frame(
+        depvar = eff[["name"]],
+        effect_type = eff[["type"]],
+        interaction_type = if (!is.null(eff[["interactionType"]]))
+            eff[["interactionType"]] else rep(NA_character_, n),
+        short_raw = eff[["shortName"]],
+        short_numbered = shortNumbered,
+        short_with_covar = shortWithCovar,
+        full_name = parsed$fullName,
+        base_name = parsed$baseName,
+        name_type = parsed$type,
+        key = key,
+        stringsAsFactors = FALSE
+    )
 }

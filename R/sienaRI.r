@@ -10,6 +10,15 @@
 # *****************************************************************************/
 
 
+# ---- predictFun for RI specs -----------------------------------------------
+# Spec-interface wrapper: (cc, theta, baseline, ...) → data.frame with RI
+# columns.  Delegates to computeRelativeImportance which needs the full
+# contribMat (LOO computation), hence keepContribMat = TRUE on the
+# contribFun.
+riPredictFun <- function(changeContributions, theta, baseline, distFun, ...) {
+    computeRelativeImportance(changeContributions, theta,
+                              distFun = distFun)
+}
 
 
 # ---- relativeImportance generic + sienaFit method --------------------------
@@ -141,7 +150,7 @@ relativeImportance.sienaFit <- function(object, data,
             riObj$changeStatistics <- staticContribs
         }
 
-        # Uncertainty via sienaPostestimate
+        # Uncertainty via sienaPostestimate (multi-spec: one per RI column)
         if (uncertainty) {
             if (is.null(batchSize)) {
                 batchSize <- planBatch(
@@ -155,48 +164,71 @@ relativeImportance.sienaFit <- function(object, data,
             }
             riCols <- grep("^RI_", names(riData), value = TRUE)
 
+            # Build contribFun (RI needs contribMat for LOO computation)
             if (dynamic) {
-                predictFun  <- predictRelativeImportanceDynamic
-                predictArgs <- list(
+                riDynArgs <- list(
                     ans       = object,
                     data      = data,
                     algorithm = algorithm,
                     effects   = effects,
                     depvar    = dv,
                     n3        = n3,
-                    useChangeContributions = useChangeContributions
+                    returnWide = TRUE
                 )
+                riContribFun <- makeContribFun("per_batch",
+                    dynArgs = riDynArgs, keepContribMat = TRUE)
             } else {
-                predictFun  <- predictRelativeImportanceStatic
-                predictArgs <- list(staticContributions = staticContribs,
-                                    distFun = distFun)
+                riContribFun <- makeContribFun("static",
+                    getContribFun = function(theta) staticContribs,
+                    keepContribMat = TRUE)
             }
 
-            riObj$uncertainty <- sienaPostestimate(
-                predictFun       = predictFun,
-                predictArgs      = predictArgs,
-                outcomeName      = riCols[1],
-                level            = level,
-                condition        = NULL,
-                sum_fun          = sum_fun,
-                na.rm            = na.rm,
-                thetaHat         = thetaHat,
-                covTheta         = object$covtheta,
-                uncertainty      = TRUE,
-                nsim             = nsim,
-                uncertaintySd    = uncertaintySd,
-                uncertaintyCi    = uncertaintyCi,
-                uncertaintyMean  = uncertaintyMean,
+            # One spec per RI column — shared predictFun, different outcomeName
+            riSpecs <- setNames(lapply(riCols, function(rc) {
+                makeSpec(
+                    predictFun   = riPredictFun,
+                    predictArgs  = list(distFun = distFun),
+                    outcomeName  = rc,
+                    level        = level,
+                    na.rm        = na.rm,
+                    dynamic      = dynamic,
+                    metadata     = list(
+                        method   = "relativeImportance",
+                        riColumn = rc,
+                        depvar   = dv,
+                        dynamic  = dynamic
+                    )
+                )
+            }), riCols)
+
+            riResults <- sienaPostestimate(
+                contribFun    = riContribFun,
+                nChainBatches = 1L,
+                type          = "changeProb",
+                specs         = riSpecs,
+                thetaHat      = thetaHat,
+                covTheta      = object$covtheta,
+                useChangeContributions = if (dynamic)
+                    useChangeContributions else FALSE,
+                uncertainty   = TRUE,
+                nsim          = nsim,
+                batchSize     = batchSize,
+                useCluster    = useCluster,
+                nbrNodes      = nbrNodes,
+                clusterType   = clusterType,
+                batchDir      = batchDir,
+                keepBatch     = keepBatch,
+                verbose       = verbose,
+                na.rm         = na.rm,
+                egoNormalize  = FALSE,
+                uncertaintySd     = uncertaintySd,
+                uncertaintyCi     = uncertaintyCi,
+                uncertaintyMean   = uncertaintyMean,
                 uncertaintyMedian = uncertaintyMedian,
-                uncertaintyProbs = uncertaintyProbs,
-                useCluster       = useCluster,
-                nbrNodes         = nbrNodes,
-                clusterType      = clusterType,
-                batchDir         = batchDir,
-                batchSize        = batchSize,
-                keepBatch        = keepBatch,
-                verbose          = verbose
+                uncertaintyProbs  = uncertaintyProbs
             )
+
+            riObj$uncertainty <- riResults
         }
 
         class(riObj) <- "sienaRI"
@@ -501,7 +533,8 @@ print.sienaRI <- function(x, printSigma = FALSE, ...){
 			cat('\n', as.matrix(line5), '\n', sep = '')
 		}
 		if (!is.null(object$uncertainty)) {
-			cat("\n  Uncertainty estimates available in object$uncertainty\n")
+			cat("\n  Uncertainty estimates available in object$uncertainty",
+			    sprintf(" (%d RI columns)\n", length(object$uncertainty)))
 		}
 		invisible(object)
 		return(invisible(object))

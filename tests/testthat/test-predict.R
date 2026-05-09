@@ -197,9 +197,8 @@ test_that("predict.sienaFit: interactions without main effect, with uncertainty"
   expect_true(is.data.frame(pred_dt))
 })
 
-# cond=FALSE + interaction without main effect: this is the critical case where
-# alignThetaNoRate must use requestedEffects (not effects) to avoid picking up
-# injected base-effect slots in theta, which would give wrong (uniform) probs.
+# cond=FALSE + interaction without main effect: requestedEffects (not effects)
+# must be used to avoid picking up injected base-effect slots in theta.
 # Model from helper-models.R (full mode): ans_int_uncond, mydata_int, mymodel_int
 
 test_that("predict.sienaFit: interaction without main effect, cond=FALSE, no NaN", {
@@ -209,34 +208,6 @@ test_that("predict.sienaFit: interaction without main effect, cond=FALSE, no NaN
   expect_true(is.data.frame(pred_dt))
   expect_true(nrow(pred_dt) > 0)
   expect_false(any(is.nan(pred_dt$changeProb)))
-})
-
-# Unit test for nameThetaFromEffects + alignThetaNoRate: verify that the
-# two-step naming approach handles cond=FALSE, interaction-without-main correctly.
-test_that("nameThetaFromEffects + alignThetaNoRate: cond=FALSE interaction scenario", {
-  # Reproduce the cond=FALSE + interaction-without-main-effect scenario:
-  #   ans$requestedEffects has 5 rows (2 rate, 3 non-rate — no injected outPop).
-  #   ans$theta has 5 elements (with rate params for cond=FALSE).
-  #   After nameThetaFromEffects, theta carries shortName_type names.
-  #   alignThetaNoRate then selects by effectNames from contributions.
-  theta_uncond <- c(5.1, 4.9, -2.38, 3.06, -0.07)  # rate1, rate2, density, recip, unspInt
-  effectNames  <- c("density_eval", "recip_eval", "unspInt_eval")
-  req_effs <- data.frame(
-    shortName = c("rateX", "rateX", "density", "recip", "unspInt"),
-    type      = c("rate",  "rate",  "eval",    "eval",  "eval"),
-    include   = rep(TRUE, 5L),
-    stringsAsFactors = FALSE
-  )
-  theta_named <- expect_warning(
-    nameThetaFromEffects(theta_uncond, req_effs),
-    "theta has no names"
-  )
-  result <- alignThetaNoRate(theta_named, effectNames)
-  # Must return the three eval params by composite name
-  expect_named(result, effectNames)
-  expect_equal(unname(result[["density_eval"]]),  -2.38)
-  expect_equal(unname(result[["recip_eval"]]),     3.06)
-  expect_equal(unname(result[["unspInt_eval"]]),  -0.07)
 })
 
 test_that("numberIntShortNames + getNamesFromEffects handle same-identity interactions", {

@@ -29,6 +29,18 @@ grouped_agg_cpp <- function(x, G, na_rm = TRUE, do_mean = TRUE) {
     .Call(`_RSiena_grouped_agg_cpp`, x, G, na_rm, do_mean)
 }
 
+build_scatter_idx <- function(G_sorted, ord) {
+    .Call(`_RSiena_build_scatter_idx`, G_sorted, ord)
+}
+
+scatter_agg_1d <- function(vals, row_group, nGroups, na_rm = TRUE) {
+    .Call(`_RSiena_scatter_agg_1d`, vals, row_group, nGroups, na_rm)
+}
+
+grouped_agg_matrix_cpp <- function(X, G, na_rm = TRUE, do_mean = FALSE) {
+    .Call(`_RSiena_grouped_agg_matrix_cpp`, X, G, na_rm, do_mean)
+}
+
 grouped_agg_from_cols <- function(x, group_cols, na_rm = TRUE, do_mean = TRUE) {
     .Call(`_RSiena_grouped_agg_from_cols`, x, group_cols, na_rm, do_mean)
 }
@@ -51,6 +63,10 @@ mlogit_update <- function(p, delta_u, group_id, perturbType) {
 
 contribToCS_eval_inplace <- function(mat, densityCol, newColNames = NULL) {
     .Call(`_RSiena_contribToCS_eval_inplace`, mat, densityCol, newColNames)
+}
+
+softmax_jac_arma <- function(changeProb, contribMat, group_id) {
+    .Call(`_RSiena_softmax_jac_arma`, changeProb, contribMat, group_id)
 }
 
 calculate_tie_prob_cpp <- function(prob, density) {

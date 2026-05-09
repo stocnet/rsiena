@@ -898,17 +898,18 @@ SEXP getDynamicChangeContributionsList(const Chain& chain, SEXP EFFECTSLIST)
 		SEXP NETTYPE = PROTECT(Rf_allocVector(STRSXP, 1));
 		if (pNetworkChange || pBehaviorChange)
 		{
-			const char * netwName;
-			if(pNetworkChange)
+			std::string netwNameStr;
+			if (pNetworkChange)
 			{
-				netwName = pNetworkChange->variableName().c_str();
+				netwNameStr = pNetworkChange->variableName();
 				SET_STRING_ELT(NETTYPE, 0, Rf_mkChar("oneMode"));
 			}
 			else
 			{
-				netwName = pBehaviorChange->variableName().c_str();
+				netwNameStr = pBehaviorChange->variableName();
 				SET_STRING_ELT(NETTYPE, 0, Rf_mkChar("behavior"));
 			}
+			const char * netwName = netwNameStr.c_str();
 			for (int ii = 0; ii < Rf_length(EFFECTSLIST); ii++)
 			{
 				const char * networkName = CHAR(STRING_ELT(VECTOR_ELT(
@@ -1473,11 +1474,6 @@ SEXP flattenChangeContributionsWide(SEXP changeContributionChains,
                 }
             }
         }
-        /* Release this chain's nested data so R's GC can reclaim it
-           while we continue filling the (already allocated) output.
-           Reduces peak resident memory from (input + output) towards
-           just output as the fill progresses. */
-        SET_VECTOR_ELT(changeContributionChains, ch, R_NilValue);
     }
 
     /* --- set colnames on contribMat -------------------------------------- */

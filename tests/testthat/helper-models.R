@@ -56,7 +56,14 @@ if (.in_test_run()) {
     "mydata_cm", "mymodel_cm", "mycontrols_cm", "ans_cm",
     "mydata_2int", "mymodel_2int", "mycontrols_2int", "ans_2int"
   )
-  needed <- if (FULL) c(minimal_names, full_names) else minimal_names
+  snap_names_static <- c(
+    "snap_me_static_transTrip",
+    "snap_me_static_secondDiff",
+    "snap_me_delta_transTrip",
+    "snap_predict_changeProb",
+    "snap_predict_tieProb"
+  )
+  needed <- if (FULL) c(minimal_names, full_names, snap_names_static) else c(minimal_names, snap_names_static)
   needed_paths <- file.path(cache_dir, paste0(needed, ".rds"))
 
   if (!rebuild && all(file.exists(needed_paths))) {
@@ -69,12 +76,12 @@ if (.in_test_run()) {
     mydata   <- sienaDataCreate(mynet)
     mymodel  <- getEffects(mydata)
     mymodel  <- includeEffects(mymodel, transTrip, name = "mynet")
-    mycontrols <- sienaAlgorithmCreate(projname = NULL, n3 = 50, cond = FALSE, seed = 42)
+    mycontrols <- sienaAlgorithmCreate(projname = NULL, n3 = 200, cond = FALSE, seed = 42)
     ans <- siena07(
       mycontrols,
       data    = mydata,
       effects = mymodel,
-      returnDeps               = TRUE,
+      returnDeps               = FALSE,
       returnChangeContributions = TRUE,
       returnDataFrame          = TRUE
     )
@@ -112,6 +119,84 @@ if (.in_test_run()) {
 
     for (nm in minimal_names) {
       saveRDS(get(nm), file.path(cache_dir, paste0(nm, ".rds")))
+    }
+
+    # ── Numerical snapshots (built from ans / mydata above) ──────────────────
+    # These are golden-value baselines for the postestimation refactor.
+    # Rebuilt whenever minimal_names are rebuilt (same RSENA_REBUILD_MODELS=1 flag).
+    # All calls use uncertainty=FALSE or deterministic uncertainty (delta) so
+    # the cached numbers are exactly reproducible — no set.seed needed.
+    snap_names <- c(
+      "snap_me_static_transTrip",
+      "snap_me_static_secondDiff",
+      "snap_me_delta_transTrip",
+      "snap_predict_changeProb",
+      "snap_predict_tieProb"
+    )
+    snap_paths <- file.path(cache_dir, paste0(snap_names, ".rds"))
+
+    if (rebuild || !all(file.exists(snap_paths))) {
+      message("Building numerical snapshot fixtures…")
+
+      # (a) firstDiff static — transTrip, period level, no uncertainty
+      snap_me_static_transTrip <- marginalEffects(
+        object    = ans,
+        data      = mydata,
+        effectName1 = "transTrip", diff1 = 1,
+        type      = "tieProb", depvar = "mynet",
+        level     = "period", condition = "density",
+        uncertainty = FALSE, verbose = FALSE
+      )
+
+      # (b) secondDiff static — transTrip × recip, period level, no uncertainty
+      snap_me_static_secondDiff <- marginalEffects(
+        object    = ans,
+        data      = mydata,
+        effectName1 = "transTrip", diff1 = 1,
+        second    = TRUE,
+        effectName2 = "recip", contrast2 = c(0, 1),
+        type      = "tieProb", depvar = "mynet",
+        level     = "period", condition = "density",
+        uncertainty = FALSE, verbose = FALSE
+      )
+
+      # (c) delta SE — transTrip, period level, uncertaintyMode="delta"
+      # Deterministic: no MCMC draws, pure finite-difference Jacobian.
+      snap_me_delta_transTrip <- marginalEffects(
+        object    = ans,
+        data      = mydata,
+        effectName1 = "transTrip", diff1 = 1,
+        type      = "tieProb", depvar = "mynet",
+        level     = "period", condition = "density",
+        uncertainty = TRUE, uncertaintyMode = "delta",
+        uncertaintySd = TRUE, uncertaintyCi = FALSE,
+        uncertaintyMean = FALSE,
+        nsim = 1L,   # delta needs nsim >= 1 to enable uncertainty path
+        verbose = FALSE
+      )
+
+      # (d) predict changeProb — period level, no uncertainty
+      snap_predict_changeProb <- predict(
+        object  = ans,
+        newdata = mydata,
+        type    = "changeProb",
+        level   = "period", condition = "density",
+        uncertainty = FALSE, verbose = FALSE
+      )
+
+      # (e) predict tieProb — period level, no uncertainty
+      snap_predict_tieProb <- predict(
+        object  = ans,
+        newdata = mydata,
+        type    = "tieProb",
+        level   = "period", condition = "density",
+        uncertainty = FALSE, verbose = FALSE
+      )
+
+      for (nm in snap_names) {
+        saveRDS(get(nm), file.path(cache_dir, paste0(nm, ".rds")))
+      }
+      message("Saved numerical snapshot fixtures to ", cache_dir)
     }
 
     if (FULL) {

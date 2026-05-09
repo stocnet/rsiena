@@ -390,6 +390,179 @@ Rcpp::List grouped_agg_cpp(const Rcpp::NumericVector& x,
 }
 
 // ---------------------------------------------------------------------------
+// build_scatter_idx — given a pre-sorted group-key matrix G_sorted (nRows × K)
+// and the permutation `ord` that produced this sorted order from the original
+// data, build an integer label vector of length nRows where
+//   result[ord[sorted_pos]] = group_index_of(sorted_pos)
+//
+// Group indices are 0-based and contiguous (groups are contiguous runs in
+// G_sorted, as guaranteed by grouped_agg_cpp's input convention).
+//
+// Used by buildAggCache to precompute row→group mappings for scatter-aggregate.
+// [[Rcpp::export]]
+Rcpp::IntegerVector build_scatter_idx(const Rcpp::IntegerMatrix& G_sorted,
+                                      const Rcpp::IntegerVector& ord) {
+    int n = G_sorted.nrow(), K = G_sorted.ncol();
+    if (ord.size() != n)
+        Rcpp::stop("nrow(G_sorted) must equal length(ord)");
+
+    Rcpp::IntegerVector result(n);
+    std::vector<const int*> cols(K);
+    for (int c = 0; c < K; c++) cols[c] = &G_sorted(0, c);
+
+    int gi = 0, start = 0;
+    while (start < n) {
+        int end = start + 1;
+        while (end < n) {
+            bool same = true;
+            for (int c = 0; c < K && same; c++)
+                if (cols[c][end] != cols[c][start]) same = false;
+            if (!same) break;
+            end++;
+        }
+        // 0-based R integer vector write — ord is 1-based (R index)
+        for (int i = start; i < end; i++)
+            result[ord[i] - 1] = gi;
+        gi++;
+        start = end;
+    }
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// scatter_agg_1d — sequential scan of `vals` with scatter-writes into nGroups
+// accumulators using a precomputed group-label vector `row_group`.
+//
+// row_group[i] must be in range [0, nGroups).
+// na_rm: if true, NA values in vals are skipped.
+//
+// Returns a named list:
+//   $sum   numeric vector of length nGroups — per-group sum
+//   $count integer vector of length nGroups — per-group non-NA count
+//
+// Performance: O(n) sequential reads of vals + row_group, O(nGroups) random
+// writes into accumulators.  When nGroups is small (e.g. < 1e5), the accumulators
+// fit in L1/L2 cache, so this is dramatically faster than random-read permutation.
+// [[Rcpp::export]]
+Rcpp::List scatter_agg_1d(const Rcpp::NumericVector& vals,
+                           const Rcpp::IntegerVector& row_group,
+                           int nGroups,
+                           bool na_rm = true) {
+    int n = vals.size();
+    if (row_group.size() != n)
+        Rcpp::stop("vals and row_group must have the same length");
+
+    Rcpp::NumericVector  sums(nGroups, 0.0);
+    Rcpp::IntegerVector  cnts(nGroups, 0);
+    const double* vp   = REAL(vals);
+    const int*    gp   = INTEGER(row_group);
+
+    for (int i = 0; i < n; i++) {
+        double v = vp[i];
+        if (na_rm && ISNAN(v)) continue;
+        int g = gp[i];
+        sums[g] += v;
+        cnts[g]++;
+    }
+    return Rcpp::List::create(
+        Rcpp::Named("sum")   = sums,
+        Rcpp::Named("count") = cnts
+    );
+}
+
+// ---------------------------------------------------------------------------
+// grouped_agg_matrix_cpp — like grouped_agg_cpp but aggregates M outcome
+// columns in a single sort pass.
+//
+// X:      n × M numeric matrix; each column is one outcome to aggregate.
+// G:      n × K integer group-key matrix (pre-sorted by the caller, same as
+//         grouped_agg_cpp expects).
+// na_rm:  if true, NAs in each X column are excluded from sums/counts.
+// do_mean: if true compute within-group mean; else compute sum.
+//
+// Returns a named List:
+//   $values  nGroups × M numeric matrix — row i, col j = agg of X[,j] in group i
+//   $counts  nGroups × M integer matrix — non-NA count per (group, outcome)
+//   $key     nGroups × K integer matrix — unique group keys (same as grouped_agg_cpp)
+// ---------------------------------------------------------------------------
+// [[Rcpp::export]]
+Rcpp::List grouped_agg_matrix_cpp(const Rcpp::NumericMatrix& X,
+                                   const Rcpp::IntegerMatrix& G,
+                                   bool na_rm  = true,
+                                   bool do_mean = false) {
+    int n = X.nrow(), M = X.ncol(), K = G.ncol();
+    if (G.nrow() != n)
+        Rcpp::stop("nrow(X) must equal nrow(G)");
+
+    // Pointers into each column of G for group comparison
+    std::vector<const int*> gcols(K);
+    for (int c = 0; c < K; c++) gcols[c] = &G(0, c);
+
+    // Pointers into each outcome column of X
+    std::vector<const double*> xcols(M);
+    for (int m = 0; m < M; m++) xcols[m] = &X(0, m);
+
+    // Count groups (single pass — assumes G is pre-sorted contiguous blocks)
+    int nG = 0;
+    {
+        int start = 0;
+        while (start < n) {
+            nG++;
+            int end = start + 1;
+            while (end < n) {
+                bool same = true;
+                for (int c = 0; c < K && same; c++)
+                    if (gcols[c][end] != gcols[c][start]) same = false;
+                if (!same) break;
+                end++;
+            }
+            start = end;
+        }
+    }
+
+    // Allocate output
+    Rcpp::NumericMatrix values(nG, M);
+    Rcpp::IntegerMatrix counts(nG, M);
+    Rcpp::IntegerMatrix key(nG, K);
+
+    // Fill pass — one group at a time, all M outcomes together
+    int gi = 0, start = 0;
+    while (start < n) {
+        for (int c = 0; c < K; c++) key(gi, c) = gcols[c][start];
+
+        int end = start + 1;
+        while (end < n) {
+            bool same = true;
+            for (int c = 0; c < K && same; c++)
+                if (gcols[c][end] != gcols[c][start]) same = false;
+            if (!same) break;
+            end++;
+        }
+
+        for (int m = 0; m < M; m++) {
+            double sum = 0.0;
+            int count = 0;
+            for (int i = start; i < end; i++) {
+                double xi = xcols[m][i];
+                if (na_rm && ISNAN(xi)) continue;
+                sum += xi;
+                count++;
+            }
+            values(gi, m) = do_mean ? (count > 0 ? sum / count : NA_REAL) : sum;
+            counts(gi, m) = count;
+        }
+        gi++;
+        start = end;
+    }
+
+    return Rcpp::List::create(
+        Rcpp::Named("values") = values,
+        Rcpp::Named("counts") = counts,
+        Rcpp::Named("key")    = key
+    );
+}
+
+// ---------------------------------------------------------------------------
 // Fused encode + sort + aggregate + decode in a single C++ call.
 // Replaces the R-side encodeGroupKeys -> order -> grouped_agg_cpp -> decodeGroupKeys
 // pipeline with zero intermediate R allocations.
@@ -810,6 +983,51 @@ Rcpp::IntegerVector contribToCS_eval_inplace(Rcpp::NumericMatrix mat,
     }
 
     return density;
+}
+
+// Softmax Jacobian matrix w.r.t. parameters.
+//
+// Given per-row choice probabilities p_j and the raw change-contribution
+// matrix τ (contribMat) satisfying u_j = τ[j,·] · θ exactly, computes:
+//
+//   J[j, k] = ∂p_j / ∂θ_k = p_j * (τ[j,k] − τ̄_{G(j),k})
+//
+// where τ̄_{G(j),k} = Σ_{j'∈G(j)} p_{j'} · τ[j',k] is the
+// probability-weighted group mean for parameter k.
+//
+// Arguments:
+//   changeProb — [n] choice probabilities at θ̂ (output of softmax_arma_by_group)
+//   contribMat — [n × K] raw change-contribution matrix (cc$contribMat)
+//   group_id   — [n] contiguous group identifiers (same as used by softmax)
+//
+// Returns: [n × K] matrix of ∂p_j/∂θ_k values.
+// group_id must form contiguous blocks (matching convention of softmax_arma_by_group).
+// [[Rcpp::export]]
+arma::mat softmax_jac_arma(const arma::vec& changeProb,
+                            const arma::mat& contribMat,
+                            const arma::ivec& group_id) {
+    int n = changeProb.n_elem;
+    int K = contribMat.n_cols;
+    arma::mat out(n, K, arma::fill::zeros);
+
+    int start = 0;
+    while (start < n) {
+        int g   = group_id[start];
+        int end = start + 1;
+        while (end < n && group_id[end] == g) end++;
+
+        // tau_bar[k] = Σ_{j in group} p_j * contribMat[j, k]
+        arma::rowvec tau_bar(K, arma::fill::zeros);
+        for (int i = start; i < end; i++)
+            tau_bar += changeProb[i] * contribMat.row(i);
+
+        // out[j, k] = p_j * (contribMat[j, k] − tau_bar[k])
+        for (int i = start; i < end; i++)
+            out.row(i) = changeProb[i] * (contribMat.row(i) - tau_bar);
+
+        start = end;
+    }
+    return out;
 }
 
 // [[Rcpp::export]]

@@ -318,37 +318,6 @@ test_that("groupColsList: dynamic (with chain) returns correct names", {
   expect_equal(result$ministep, c(10L, 20L, 30L))
 })
 
-# ── alignThetaNoRate ─────────────────────────────────────────────────────────
-
-test_that("alignThetaNoRate: named theta — selects by name", {
-  theta <- c(density = -2, recip = 1.5, transTrip = 0.5)
-  result <- alignThetaNoRate(theta, c("recip", "transTrip"))
-  expect_named(result, c("recip", "transTrip"))
-  expect_equal(unname(result["recip"]), 1.5)
-})
-
-test_that("nameThetaFromEffects + alignThetaNoRate: cond=FALSE full-theta alignment", {
-  # Simulate a cond=FALSE model where theta includes rate parameters.
-  # nameThetaFromEffects warns and names unnamed theta; alignThetaNoRate then
-  # selects the eval params.
-  theta_raw <- c(-2.38, 5.1, 4.9, 3.06, -0.07)  # density, rate1, rate2, recip, unspInt
-  effs <- data.frame(
-    shortName = c("density", "rateX", "rateX", "recip", "unspInt"),
-    type      = c("eval",    "rate",  "rate",  "eval",  "eval"),
-    stringsAsFactors = FALSE
-  )
-  theta_named <- expect_warning(
-    nameThetaFromEffects(theta_raw, effs),
-    "theta has no names"
-  )
-  effectNames <- c("density_eval", "recip_eval", "unspInt_eval")
-  result <- alignThetaNoRate(theta_named, effectNames)
-  expect_named(result, effectNames)
-  expect_equal(unname(result[["density_eval"]]), -2.38)
-  expect_equal(unname(result[["recip_eval"]]),    3.06)
-  expect_equal(unname(result[["unspInt_eval"]]), -0.07)
-})
-
 test_that("nameThetaFromEffects: returns named theta unchanged; warns for unnamed", {
   # Already-named theta is returned as-is.
   theta_named <- c(mynet_density_eval = -2, mynet_recip_eval = 1.5, mynet_transTrip_eval = 0.5)
@@ -371,6 +340,8 @@ test_that("nameThetaFromEffects: returns named theta unchanged; warns for unname
 })
 
 # ── planBatch ───────────────────────────────────────────────────────────────
+# FRAGILE: planBatch() is an internal helper in predict.R. If it moves or its
+# signature changes in Phase 2/3, update these tests.
 
 test_that("planBatch: result is always >= 1 and <= nsim", {
   dv <- array(0, dim = c(50, 50, 3))
@@ -411,7 +382,7 @@ test_that("predictFirstDiff: density==0 rows excluded; contrib cols present", {
   n_valid    <- sum(cc$contribMat[, "density"] != 0L)
 
   result <- predictFirstDiff(
-    changeContributions = cc, theta_use = theta_use, type = "changeProb",
+    changeContributions = cc, theta = theta_use, type = "changeProb",
     effectName = "recip", diff = 1, contrast = NULL,
     interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
@@ -428,7 +399,7 @@ test_that("predictFirstDiff: details=TRUE attaches utilDiff, changeProb", {
   theta_use <- c(density = -2, recip = 1.5)
 
   result <- predictFirstDiff(
-    changeContributions = cc, theta_use = theta_use, type = "changeProb",
+    changeContributions = cc, theta = theta_use, type = "changeProb",
     effectName = "recip", diff = 1, contrast = NULL,
     interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     details = TRUE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
@@ -442,7 +413,7 @@ test_that("predictFirstDiff: tieProb type attaches tieProb col when details=TRUE
   theta_use <- c(density = -2, recip = 1.5)
 
   result <- predictFirstDiff(
-    changeContributions = cc, theta_use = theta_use, type = "tieProb",
+    changeContributions = cc, theta = theta_use, type = "tieProb",
     effectName = "recip", diff = 1, contrast = NULL,
     interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     details = TRUE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
@@ -458,7 +429,7 @@ test_that("predictFirstDiff: output is always data.frame", {
   theta_use <- c(density = -2, recip = 1.5)
 
   result <- predictFirstDiff(
-    changeContributions = cc, theta_use = theta_use, type = "changeProb",
+    changeContributions = cc, theta = theta_use, type = "changeProb",
     effectName = "recip", diff = 1, contrast = NULL,
     interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
@@ -473,7 +444,7 @@ test_that("predictFirstDiff: base R output is plain data.frame", {
       theta_use <- c(density = -2, recip = 1.5)
 
       result <- predictFirstDiff(
-        changeContributions = cc, theta_use = theta_use, type = "changeProb",
+        changeContributions = cc, theta = theta_use, type = "changeProb",
         effectName = "recip", diff = 1, contrast = NULL,
         interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
         details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
@@ -490,7 +461,7 @@ test_that("predictSecondDiff: density==0 rows excluded; secondDiff col present",
   n_valid    <- sum(cc$contribMat[, "density"] != 0L)
 
   result <- predictSecondDiff(
-    changeContributions = cc, theta_use = theta_use, type = "changeProb",
+    changeContributions = cc, theta = theta_use, type = "changeProb",
     effectName1 = "recip",     diff1 = 1, contrast1 = NULL,
     interaction1 = FALSE, intEffectNames1 = NULL, modEffectNames1 = NULL,
     effectName2 = "transTrip", diff2 = 1, contrast2 = NULL,
@@ -507,7 +478,7 @@ test_that("predictSecondDiff: details=TRUE attaches utility and prob columns", {
   theta_use <- c(density = -2, recip = 1.5, transTrip = 0.5)
 
   result <- predictSecondDiff(
-    changeContributions = cc, theta_use = theta_use, type = "changeProb",
+    changeContributions = cc, theta = theta_use, type = "changeProb",
     effectName1 = "recip",     diff1 = 1, contrast1 = NULL,
     interaction1 = FALSE, intEffectNames1 = NULL, modEffectNames1 = NULL,
     effectName2 = "transTrip", diff2 = 1, contrast2 = NULL,
@@ -518,6 +489,8 @@ test_that("predictSecondDiff: details=TRUE attaches utility and prob columns", {
 })
 
 # ── getGroupVars ─────────────────────────────────────────────────────────────
+# FRAGILE: getGroupVars() is an aggregation helper in postestimate.R. May be
+# renamed or signature may change during Phase 4 aggregation consolidation.
 
 test_that("getGroupVars: composite condition appended to level vars", {
   expect_equal(getGroupVars("period", "transTrip_eval"),
@@ -540,6 +513,7 @@ test_that("getGroupVars: NULL condition returns only level vars", {
 # test_that("makeGroupKey: empty group_vars returns __all__", { ... })
 
 # ── agg: bare-name resolution ────────────────────────────────────────────────
+# FRAGILE: agg() will be renamed to aggMean() in Phase 4. Update call sites.
 
 test_that("agg: bare condition resolves to _eval variant column", {
   df <- data.frame(period = c(1L, 1L, 2L),
@@ -597,6 +571,7 @@ test_that("agg: co-evolution — separate depvar data aggregates independently",
 # test_that("updateStream + finalizeStream: creation/endow condition column works", { ... })
 
 # ── mergeEstimates ────────────────────────────────────────────────────────────
+# FRAGILE: mergeEstimates() may be renamed or absorbed in Phase 4. Update if so.
 
 test_that("mergeEstimates: composite condition merges point estimate with uncertainty", {
   df1 <- data.frame(period = 1L:2L, `transTrip_eval` = c(0, 1),
@@ -828,7 +803,7 @@ test_that("agg egoNormalize works with complex sum_fun (summarizeValue)", {
   r <- agg("tieProb", df, level = "none", condition = "cond",
            sum_fun = summarizeValue, egoNormalize = TRUE)
   expect_true("Mean" %in% names(r))
-  expect_true("cases" %in% names(r))
+  expect_false("cases" %in% names(r))
 })
 
 test_that("agg egoNormalize: Rcpp grouped_agg_cpp path works correctly", {
@@ -847,6 +822,147 @@ test_that("agg egoNormalize: Rcpp grouped_agg_cpp path works correctly", {
   raw_sorted <- raw[order(raw$cond), ]
   # egoNormalize with extra ego columns should produce different results than raw
   expect_false(identical(r_sorted$tieProb, raw_sorted$tieProb))
+})
+
+# ── aggUncertainty / collapseSimEgo ──────────────────────────────────────────
+
+# Mock sim draws: 3 sims × 2 egos (ego 1 has 2 alters, ego 2 has 1 alter)
+# Hand-computed expected values documented inline.
+make_sim_ego_df <- function() {
+  data.frame(
+    sim     = c(1L,1L,1L, 2L,2L,2L, 3L,3L,3L),
+    period  = 1L,
+    ego     = c(1L,1L,2L, 1L,1L,2L, 1L,1L,2L),
+    tieProb = c(0.2,0.4,0.8, 0.1,0.3,0.9, 0.5,0.5,0.1),
+    stringsAsFactors = FALSE
+  )
+  # sim=1: ego1 mean=0.3, ego2 mean=0.8 → sim mean=0.55
+  # sim=2: ego1 mean=0.2, ego2 mean=0.9 → sim mean=0.55
+  # sim=3: ego1 mean=0.5, ego2 mean=0.1 → sim mean=0.30
+}
+
+test_that("collapseSimEgo: produces one row per sim with correct ego-averaged values", {
+  df <- make_sim_ego_df()
+  group_vars <- character(0)
+  collapsed <- collapseSimEgo("tieProb", df, group_vars, na.rm = TRUE)
+  expect_equal(nrow(collapsed), 3L)
+  expect_true("sim" %in% names(collapsed))
+  expect_true("tieProb" %in% names(collapsed))
+  # Sort by sim for stable comparison
+  collapsed <- collapsed[order(collapsed$sim), ]
+  expect_equal(collapsed$tieProb, c(0.55, 0.55, 0.30), tolerance = 1e-10)
+})
+
+test_that("aggUncertainty: summarizer sees nsim values, not ego count", {
+  df <- make_sim_ego_df()
+  # Custom sum_fun that reports how many values it received
+  count_fun <- function(x, na.rm = TRUE) {
+    if (na.rm) x <- x[!is.na(x)]
+    list(Mean = mean(x), n_values = length(x))
+  }
+  r <- aggUncertainty("tieProb", df, level = "none", condition = NULL,
+                       sum_fun = count_fun, egoNormalize = TRUE)
+  expect_equal(r$n_values, 3L)  # nsim = 3, not n_egos = 2
+  expect_equal(r$Mean, mean(c(0.55, 0.55, 0.30)), tolerance = 1e-10)
+})
+
+test_that("agg on sim data (without aggUncertainty) sees ego count", {
+  df <- make_sim_ego_df()
+  count_fun <- function(x, na.rm = TRUE) {
+    if (na.rm) x <- x[!is.na(x)]
+    list(Mean = mean(x), n_values = length(x))
+  }
+  # agg() ignores sim: preAggEgo groups by {period, ego}, averaging across sims
+  r <- agg("tieProb", df, level = "none", condition = NULL,
+           sum_fun = count_fun, egoNormalize = TRUE)
+  expect_equal(r$n_values, 2L)  # n_egos = 2, not nsim = 3
+})
+
+test_that("aggUncertainty: SE reflects between-sim variance", {
+  df <- make_sim_ego_df()
+  sum_fun <- makeUncertaintySummarizer(return_sd = TRUE, return_ci = FALSE,
+                                        return_mean = TRUE)
+  r <- aggUncertainty("tieProb", df, sum_fun = sum_fun, egoNormalize = TRUE)
+  sim_values <- c(0.55, 0.55, 0.30)
+  expect_equal(r$Mean, mean(sim_values), tolerance = 1e-10)
+  expect_equal(r$SE,   sd(sim_values),   tolerance = 1e-10)
+})
+
+test_that("aggUncertainty with condition: sim-level values per group", {
+  # 2 sims × 2 egos × 2 conditions, 1 alter per condition per ego
+  df <- data.frame(
+    sim     = c(1L,1L,1L,1L, 2L,2L,2L,2L),
+    period  = 1L,
+    ego     = c(1L,1L,2L,2L, 1L,1L,2L,2L),
+    cond    = c("A","B","A","B", "A","B","A","B"),
+    tieProb = c(0.2, 0.3, 0.6, 0.7, 0.4, 0.5, 0.8, 0.9),
+    stringsAsFactors = FALSE
+  )
+  count_fun <- function(x, na.rm = TRUE) {
+    if (na.rm) x <- x[!is.na(x)]
+    list(Mean = mean(x), n_values = length(x))
+  }
+  r <- aggUncertainty("tieProb", df, level = "none", condition = "cond",
+                       sum_fun = count_fun, egoNormalize = TRUE)
+  r <- r[order(r$cond), ]
+  # Each condition should see nsim=2 values
+  expect_equal(r$n_values, c(2L, 2L))
+  # A: sim1=mean(0.2,0.6)=0.4, sim2=mean(0.4,0.8)=0.6 → mean=0.5
+  # B: sim1=mean(0.3,0.7)=0.5, sim2=mean(0.5,0.9)=0.7 → mean=0.6
+  expect_equal(r$Mean, c(0.5, 0.6), tolerance = 1e-10)
+})
+
+test_that("aggMultiUncertainty: multi-column collapse is consistent with single-column", {
+  df <- make_sim_ego_df()
+  df$altProb <- df$tieProb * 2
+  sum_fun <- makeUncertaintySummarizer(return_sd = TRUE, return_ci = FALSE,
+                                        return_mean = TRUE)
+  multi <- aggMultiUncertainty(c("tieProb", "altProb"), df,
+                                sum_fun = sum_fun, egoNormalize = TRUE)
+  single_tie <- aggUncertainty("tieProb", df, sum_fun = sum_fun,
+                                egoNormalize = TRUE)
+  single_alt <- aggUncertainty("altProb", df, sum_fun = sum_fun,
+                                egoNormalize = TRUE)
+  expect_equal(multi[["tieProb"]]$Mean, single_tie$Mean, tolerance = 1e-10)
+  expect_equal(multi[["tieProb"]]$SE,   single_tie$SE,   tolerance = 1e-10)
+  expect_equal(multi[["altProb"]]$Mean,  single_alt$Mean, tolerance = 1e-10)
+  expect_equal(multi[["altProb"]]$SE,    single_alt$SE,   tolerance = 1e-10)
+})
+
+test_that("aggUncertainty falls back to agg when no sim column", {
+  df <- make_ego_norm_df()  # no sim column
+  r_unc <- aggUncertainty("tieProb", df, level = "none", condition = "cond",
+                           egoNormalize = TRUE)
+  r_agg <- agg("tieProb", df, level = "none", condition = "cond",
+                egoNormalize = TRUE)
+  expect_equal(r_unc, r_agg)
+})
+
+test_that("agg point estimate: ego-normalized mean is correct without sim", {
+  df <- make_ego_norm_df()
+  r <- agg("tieProb", df, level = "none", condition = "cond",
+           egoNormalize = TRUE)
+  r <- r[order(r$cond), ]
+  # Ego 1 in A: mean(0.1, 0.2) = 0.15 ; Ego 2 in A: 0.4 ; Ego 3 in A: 0.7
+  # Ego-first mean for A: mean(0.15, 0.4, 0.7) = 0.41667
+  # Ego 1 in B: 0.3 ; Ego 2 in B: mean(0.5, 0.6) = 0.55 ; Ego 3 in B: 0.8
+  # Ego-first mean for B: mean(0.3, 0.55, 0.8) = 0.55
+  expect_equal(r$tieProb[r$cond == "A"],
+               mean(c(mean(c(0.1, 0.2)), 0.4, 0.7)), tolerance = 1e-10)
+  expect_equal(r$tieProb[r$cond == "B"],
+               mean(c(0.3, mean(c(0.5, 0.6)), 0.8)), tolerance = 1e-10)
+})
+
+test_that("agg point estimate: flat mean differs from ego-normalized when alter counts unequal", {
+  df <- make_ego_norm_df()
+  flat <- agg("tieProb", df, level = "none", condition = "cond",
+              egoNormalize = FALSE)
+  ego_norm <- agg("tieProb", df, level = "none", condition = "cond",
+                   egoNormalize = TRUE)
+  flat <- flat[order(flat$cond), ]
+  ego_norm <- ego_norm[order(ego_norm$cond), ]
+  # They should differ because ego 1 has more alters in A
+  expect_false(isTRUE(all.equal(flat$tieProb, ego_norm$tieProb)))
 })
 
 # ── Two user-specified interactions (unspInt numbering) ───────────────────────

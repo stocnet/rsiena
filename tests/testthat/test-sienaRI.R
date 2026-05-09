@@ -51,8 +51,14 @@ test_that("interpret_size.sienaFit with uncertainty adds uncertainty slot", {
                        nsim = 5, uncertaintyMean = TRUE, verbose = FALSE)
   expect_s3_class(ri, "sienaRI")
   expect_true(!is.null(ri$uncertainty))
-  expect_true(is.data.frame(ri$uncertainty))
-  expect_true("Mean" %in% names(ri$uncertainty))
+  # New format: named list of data.frames (one per RI column)
+  expect_true(is.list(ri$uncertainty))
+  riCols <- grep("^RI_", names(ri$data), value = TRUE)
+  expect_equal(length(ri$uncertainty), length(riCols))
+  expect_true(all(riCols %in% names(ri$uncertainty)))
+  # Each element is a data.frame with uncertainty columns
+  expect_true(is.data.frame(ri$uncertainty[[1]]))
+  expect_true("Mean" %in% names(ri$uncertainty[[1]]))
 })
 
 test_that("interpret_size rejects endowment effects", {

@@ -1,0 +1,347 @@
+% ==========================================================================
+%  RSiena Post-Estimation Framework: Overview
+%
+%  Describes the unified pipeline for predict, marginalEffects (AME),
+%  fitted, residuals, relative importance, entropy, and
+%  selection/influence tables.
+% ==========================================================================
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage[margin=2.5cm]{geometry}
+
+\title{RSiena Post-Estimation Framework\\{\large Architecture \& User Guide}}
+\author{Daniel Gotthardt}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+% ------------------------------------------------------------------
+\section{Overview}
+% ------------------------------------------------------------------
+
+The RSiena post-estimation framework provides a unified pipeline for
+computing derived quantities from estimated Stochastic Actor-oriented
+Models (SAOMs).  All quantities that go through the shared pipeline
+have three layers:
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Change contributions} (wide struct) --- the matrix of
+    objective function change statistics, one row per ego--choice (static)
+    or ministep--choice (dynamic).
+  \item \textbf{Per-$\theta$ prediction functions} (\texttt{predictFun}) ---
+    compute the quantity of interest for a given parameter vector.
+  \item \textbf{Uncertainty orchestration} (\texttt{sienaPostestimate}) ---
+    draws $\theta^{(s)} \sim \mathcal{N}(\hat\theta, \hat\Sigma_\theta)$
+    and aggregates uncertainty.
+\end{enumerate}
+
+Table~\ref{tab:inventory} gives a complete inventory of post-estimation
+functions, their S3 method status, and whether they use the shared
+uncertainty pipeline.
+
+\begin{table}[ht]
+\centering
+\caption{Post-estimation function inventory (current state).}
+\label{tab:inventory}
+\small
+\begin{tabular}{llccccl}
+\toprule
+Function & Class & \texttt{print} & \texttt{summary} & \texttt{plot}
+  & Pipeline & Notes \\
+\midrule
+\texttt{predict.sienaFit}
+  & (data.frame) & -- & -- & -- & Yes & \\
+\texttt{marginalEffects}
+  & (data.frame) & -- & -- & -- & Yes & \\
+\texttt{interpret\_size}
+  & \texttt{sienaRI} & \checkmark & \checkmark & \checkmark & Yes$^*$
+  & $^*$optional; delegates to \texttt{relativeImportance} \\
+\texttt{entropy}
+  & (data.frame) & -- & -- & -- & Yes & \\
+\texttt{selectionTable}
+  & \texttt{selectionTable} & \checkmark & -- & -- & No & \\
+\texttt{influenceTable}
+  & \texttt{influenceTable} & \checkmark & -- & -- & No & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two dispatch generics exist: \texttt{marginalEffects} (dispatches on
+\texttt{sienaFit} with full uncertainty, or \texttt{sienaEffects} for
+point-estimate only) and \texttt{entropy} (dispatches on \texttt{sienaFit}
+or \texttt{default}).  \texttt{interpret\_size} dispatches on
+\texttt{sienaFit} or \texttt{sienaEffects} and delegates RI computation to
+\texttt{relativeImportance}.  The functions \texttt{interpret\_selection} and
+\texttt{interpret\_influence} are thin wrappers around \texttt{selectionTable}
+and \texttt{influenceTable}, respectively.
+
+
+% ------------------------------------------------------------------
+\section{Quantities}
+% ------------------------------------------------------------------
+
+\subsection{Predicted Probabilities (\texttt{predict.sienaFit})}
+For each ego--choice pair, the change probability is
+\[
+  P_j = \frac{\exp(u_j)}{\sum_h \exp(u_h)},
+  \qquad u_j = \sum_k \theta_k \, \delta_k(j),
+\]
+where $\delta_k(j)$ are the change contributions for effect~$k$ and choice~$j$.
+The \texttt{tieProb} variant adjusts for density direction:
+$r_{ij} = P_j$ if $x_{ij}=0$ (creation), $r_{ij} = 1 - P_j$ if $x_{ij}=1$
+(dissolution).
+
+\subsection{Average Marginal Effects (\texttt{marginalEffects})}
+
+The first difference uses one of two counterfactual update formulas,
+selected by perturbation mode:
+
+\paragraph{Alter (one-alternative) mode.}
+When the change statistic varies across alters
+(e.g.\ density, reciprocity):
+\[
+  P_j^{\mathrm{cf}}
+    = \frac{P_j \exp(\Delta u_j)}{1 - P_j + P_j \exp(\Delta u_j)}.
+\]
+
+\paragraph{Ego-wide mode.}
+When the change statistic is constant across alters
+(e.g.\ \texttt{egoX}):
+\[
+  P_j^{\mathrm{cf}}
+    = \frac{P_j \exp(\Delta u_j)}{\sum_k P_k \exp(\Delta u_k)}.
+\]
+
+Here $\Delta u_j = \theta_e \delta_e$ for a unit change in effect~$e$.
+The update formula is implemented in C++ (\texttt{mlogit\_update}) and
+wrapped by the R helper \texttt{mlogit\_update\_r()}, which accepts
+string perturbation types (\texttt{"alter"}/\texttt{"ego"}).
+
+Auto-detection is based on the \texttt{interactionType} column of the
+effects object (\texttt{"ego"} $\to$ ego-wide, otherwise alter).  Users
+can override via \texttt{perturbType1}/\texttt{perturbType2}.
+
+Second differences compose two such counterfactuals to measure
+interaction effects.
+
+\paragraph{Mass contrasts.}
+In ego-wide mode, the output includes two extra columns:
+\texttt{massCreation} ($\Delta P_i^+$) and \texttt{massDissolution}
+($\Delta P_i^-$), summing dyad-level change-probability first differences
+within the creation and dissolution risk sets per ego.
+
+\paragraph{Risk ratios.}
+\texttt{mainEffect = "riskRatio"} returns $P'/P$ instead of $P'-P$. Not fully 
+tested yet for different perturbation types and second differences, but 
+the same auto-detection should apply.
+
+\subsection{Relative Importance (\texttt{interpret\_size})}
+For each ego, the $L^1$ distance between the full-$\theta$ distribution
+and each leave-one-out distribution (effect~$k$ set to zero) measures
+the importance of effect~$k$.  Normalising gives relative importance:
+\[
+  RI_k(i) = \frac{\sum_j |P_j - P_j^{(-k)}|}
+                  {\sum_{k'} \sum_j |P_j - P_j^{(-k')}|}.
+\]
+When \texttt{uncertainty = TRUE}, the calculation now runs through
+\texttt{sienaPostestimate}; the default path calls the legacy
+\texttt{sienaRI()} directly.
+
+The return object has class \texttt{sienaRI} with \texttt{print},
+\texttt{summary}, and \texttt{plot} methods (base~R graphics:
+\texttt{barplot} for static, \texttt{matplot} for dynamic).
+
+\subsection{Entropy (\texttt{entropy})}
+The normalised entropy (degree of certainty) is
+\[
+  R_H = 1 - \frac{H}{\log J}, \qquad
+  H = -\sum_j p_j \log p_j,
+\]
+as defined in Snijders (2004) and now has a separate dispatch method. 
+The \texttt{sienaFit} method computes $R_H$ for each ego--choice pair, 
+while the \texttt{default} method computes $R_H$ for a single probability
+vector (e.g.\ the average distribution across egos).  The former can be used to 
+identify egos with more or less deterministic choice patterns; the latter can be used to summarise overall model fit (lower entropy indicates better fit).
+
+\subsection{Selection and Influence Tables}
+
+\texttt{selectionTable()} and \texttt{influenceTable()} compute
+interpretive summaries of network--behaviour co-evolution models.
+Both return typed data frames (\texttt{selectionTable},
+\texttt{influenceTable}) with \texttt{print} methods but no
+\texttt{plot} or \texttt{summary}.  They do not use the shared
+uncertainty pipeline.
+
+
+
+% ------------------------------------------------------------------
+\section{Pipeline Architecture}
+% ------------------------------------------------------------------
+
+\begin{verbatim}
+  Callers (predict.sienaFit / marginalEffects / entropy.sienaFit)
+    build: specs (via makeSpec) + contribFun (via makeContribFun/chainStore)
+                                     |
+                  sienaPostestimate(specs, contribFun, thetaHat, covTheta, ...)
+                                     |
+                     +---------------+----------------+
+                     |                                |
+               point estimate                   uncertainty
+                     |                                |
+          makeEstimatorFun(specs,         makeEstimatorFun(specs,
+            contribFun, ...)               uncertContribFun, ...)
+                     |                                |
+            estimatorFun(thetaHat)         drawSimBatch(estimatorFun,
+               → named list                 thetaHat, covTheta, ...)
+               of data.frames              → named list of stacked
+                                             sim data.frames
+                     |                                |
+                     +---------------+----------------+
+                                     |
+                     aggregatePostEstimation(expects, raw_sims_list, specs)
+                                     |
+                          Final result (named list of data.frames)
+\end{verbatim}
+
+\noindent\textbf{contribFun} is a closure \texttt{function(theta)} $\to$
+wide contrib struct.  For static models it ignores \texttt{theta} and
+returns the precomputed struct.  For dynamic models it runs
+\texttt{getDynamicChangeContributions} in batches via the \texttt{chainStore}
+interface, accumulating partial estimates with streaming sum/count accumulators
+(\texttt{makeEstimatorFun} handles the n3 batching internally, transparent to
+\texttt{drawSimBatch}).
+
+\noindent\textbf{specs} is a named list of per-effect spec entries (built
+by \texttt{makeSpec}).  Each entry carries \texttt{predictFun},
+\texttt{outcomeName}, \texttt{level}, \texttt{condition}, and effect-specific
+arguments.  The multi-effect case (N~effects in one \texttt{marginalEffects}
+call) runs all N~predictions inside a single closure invocation, sharing the
+contrib struct and baseline probabilities.
+
+% ------------------------------------------------------------------
+\section{Key Helper Functions}
+% ------------------------------------------------------------------
+
+\begin{description}[style=nextline]
+  \item[\texttt{makeSpec(predictFun, outcomeName, ...)}]
+    Construct and validate a spec entry.  Required fields: \texttt{predictFun},
+    \texttt{outcomeName}.  Optional: \texttt{level}, \texttt{condition},
+    \texttt{aggFun}, and caller-specific extras (e.g.\ \texttt{massContrasts}).
+  \item[\texttt{makeContribFun(mode, store, effects, ...)}]
+    Wraps a \texttt{chainStore} backend into a \texttt{function(theta)}
+    $\to$ wide contrib struct closure.  Handles
+    \texttt{"memory"}/\texttt{"disk"}/\texttt{"simulate"} modes and calls
+    \texttt{flattenAndEnrichWide} internally.
+  \item[\texttt{chainStore\_disk(chains, batchSize, dir)}]
+    Flush raw chains to RDS files before forking workers; returns a
+    \texttt{chainStore} with \texttt{getBatch}/\texttt{cleanup} interface.
+    Zero copy-on-write overhead under \texttt{FORK} parallelism.
+  \item[\texttt{chainStore\_simulate(dynArgs, batchSize, n3Total)}]
+    On-the-fly backend: re-runs \texttt{getDynamicChangeContributions} for
+    each batch rather than reading stored chains.  Used when
+    \texttt{useChangeContributions = FALSE}.
+  \item[\texttt{makeEstimatorFun(specs, contribFun, nBatches, type, ...)}]
+    Core closure builder.  Returns \texttt{function(theta)} $\to$ named list
+    of data.frames (one per spec).  Internally loops over chain batches,
+    accumulates partial sum/count accumulators, and finalises the batch mean.
+    n3~batching is fully encapsulated here.
+  \item[\texttt{drawSimBatch(estimatorFun, thetaHat, covTheta, nsim, ...)}]
+    Theta-draw loop: samples $\theta^{(s)} \sim \mathcal{N}(\hat\theta,
+    \hat\Sigma)$, calls \texttt{estimatorFun} per draw.  Supports batch-to-disk
+    persistence, resume, PSOCK/FORK parallelism via
+    \texttt{openCluster}/\texttt{closeCluster}.
+  \item[\texttt{aggregatePostEstimation(expects, raw\_sims\_list, specs, ...)}]
+    Combines the point-estimate named list (\texttt{expects}) with the
+    stacked sim draws (\texttt{raw\_sims\_list}) into final merged output.
+    Calls \texttt{makeUncertaintySummarizer} and \texttt{mergeEstimates}.
+  \item[\texttt{agg(outcomeName, data, level, condition, sum\_fun)}]
+    Flexible group-by aggregation (data.table fast path + base~R fallback).
+    \texttt{aggMulti} handles the N-effect case.
+  \item[\texttt{makeUncertaintySummarizer(...)}]
+    Builds summary function (mean, SD, CI, MCSE) from user-specified
+    probability arguments.
+  \item[\texttt{alignThetaNoRate(theta, effectNames, ans)}]
+    Aligns $\theta$ to effect names, dropping rate effects.
+  \item[\texttt{mergeEstimates(pointEst, uncertainty)}]
+    Joins point estimate with uncertainty summary.
+  \item[\texttt{openCluster / closeCluster}]
+    PSOCK/FORK cluster lifecycle.  \texttt{openCluster} exports the
+    \texttt{estimatorFun} closure (which captures all required state)
+    to workers.
+  \item[\texttt{planBatch(data, depvar, nsim, nbrNodes, ...)}]
+    Compute \texttt{batchSize} from data dimensions, memory budget, and
+    parallel topology.  Formula: peak $= W \cdot U_\text{call} +
+    B_\text{batch} \cdot U_\text{agg}$; solves for the largest batch that
+    fits within the budget.
+\end{description}
+
+
+% ------------------------------------------------------------------
+\section{Limitation: Network DVs Only}
+% ------------------------------------------------------------------
+
+The shared pipeline currently supports only \textbf{network dependent
+variables}.  Behaviour DVs (discrete and continuous) trigger a
+\texttt{stop()} in \texttt{marginalEffects}.
+
+Continuous behaviour DVs in RSiena use an SDE model (Ornstein--Uhlenbeck
+with a Wiener process) rather than the multinomial-logit choice model.
+Marginal effects for continuous behaviour would require a different
+perturbation approach (shifting drift parameters rather than choice
+utilities).
+
+
+% ------------------------------------------------------------------
+\section{Backward Compatibility}
+% ------------------------------------------------------------------
+
+The original \texttt{sienaRI}, \texttt{sienaRIDynamics},
+\texttt{print.sienaRI}, \texttt{summary.sienaRI}, \texttt{plot.sienaRI}
+remain fully functional.  The default path in \texttt{interpret\_size.sienaFit}
+still calls \texttt{sienaRI()} directly; the new path is activated by
+\texttt{uncertainty = TRUE}.
+
+
+% ------------------------------------------------------------------
+\section{Outlook}
+% ------------------------------------------------------------------
+
+The near-term priority is adding an S3 class (\texttt{"sienaMarginal"})
+to the \texttt{marginalEffects} return value, together with
+\texttt{print}, \texttt{summary}, and \texttt{plot} methods (base~R
+only, following \texttt{plot.sienaRI}).  This would bring
+\texttt{marginalEffects} in line with the other postestimation tools
+that already carry typed classes.
+
+The \texttt{drawSimBatch} function is the current draw loop; a planned
+Step~7 (see \texttt{docs/design/postestimation/sienaPostEstimationNewPlan.md})
+will merge \texttt{drawSimBatch} into a unified \texttt{drawSim} that also
+supports list-valued estimators.
+
+Longer-term extensions include support for behaviour dependent variables
+(discrete and continuous) and period-level expected change counts that
+integrate the rate and choice components.
+
+
+% ------------------------------------------------------------------
+\section{References}
+% ------------------------------------------------------------------
+
+\begin{itemize}
+  \item Gotthardt, D.\ and Steglich, C.E.G.\ (2026).
+    Marginal effects for the stochastic actor-oriented model.
+  \item Indlekofer, N.\ and Brandes, U.\ (2013).
+    Relative Importance of Effects in Stochastic Actor-oriented Models.
+    \emph{Network Science}, 1, 278--304.
+  \item Snijders, T.A.B.\ (2004).
+    Explained Variation in Dynamic Network Models.
+    \emph{Math\'{e}matiques et Sciences Humaines}, 168, 31--41.
+\end{itemize}
+
+\end{document}

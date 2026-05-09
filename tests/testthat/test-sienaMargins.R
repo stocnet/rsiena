@@ -53,7 +53,7 @@ test_that("marginalEffects static with uncertainty: MCSE columns, no CI", {
     verbose = FALSE
   )
   expect_true(is.data.frame(out))
-  expect_true(all(c("Mean", "SE", "cases", "mcse_Mean", "mcse_SE") %in% names(out)))
+  expect_true(all(c("Mean", "SE", "mcse_Mean", "mcse_SE") %in% names(out)))
   expect_false("q_025" %in% names(out))
 })
 
@@ -178,7 +178,7 @@ test_that("marginalEffects dynamic: MCSE + CI structure", {
     verbose = FALSE
   )
   expect_true(is.data.frame(out))
-  expect_true(all(c("Mean", "cases", "mcse_Mean", "q_025", "q_975", "Median") %in% names(out)))
+  expect_true(all(c("Mean", "mcse_Mean", "q_025", "q_975", "Median") %in% names(out)))
   expect_false("SE" %in% names(out))
   expect_false("mcse_SE" %in% names(out))
 })

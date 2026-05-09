@@ -144,6 +144,26 @@ sienaSetupModelOptionsForCpp <- function(ans = NULL, algorithm = NULL, data, eff
         simpleRates, normSetRates)
 }
 
+# Compute direction vector (+1 creation, -1 dissolution, 0 self-selection)
+# for models without a density effect (upOnly/downOnly).
+# ego, choice: integer vectors (1-indexed actor/alter indices).
+# upOnly, downOnly: logical scalars from data attributes.
+# Returns integer vector of same length as ego.
+computeDirectionFromConstraint <- function(ego, choice, upOnly, downOnly) {
+  direction <- integer(length(ego))
+  # Self-selection (ego == choice) → 0 (no change)
+  self <- ego == choice
+  direction[self] <- 0L
+  if (upOnly) {
+    # Only tie creation is possible
+    direction[!self] <- 1L
+  } else if (downOnly) {
+    # Only tie dissolution is possible
+    direction[!self] <- -1L
+  }
+  direction
+}
+
 getStaticChangeContributions <- function(ans = NULL,
                                          data,
                                          effects = NULL,
@@ -220,24 +240,32 @@ getStaticChangeContributions <- function(ans = NULL,
   }
 
   # Derive effect metadata in C++ output order.
-  # sienaSetupEffectsForCpp uses split(effects, effects$name) which sorts
-  # dep var names alphabetically.  The C++ iterates over this split list,
-  # so its output order is: effects for the alphabetically-first dep var,
-  # then the next, etc.  We must use the same ordering here.
+  # Important: naming must follow getNamesFromEffects() semantics from the
+  # original R effects object (effectNumber-based interaction identity), not
+  # pointer-based identities in cppEffects.
   cppEffects <- do.call(rbind, setup$myeffects)
-  effectNames            <- numberIntShortNames(cppEffects$shortName)
   effectDepvars          <- cppEffects$name
   effectNetTypes         <- cppEffects$netType
   effectTypes            <- cppEffects$type
   effectInteractionTypes <- cppEffects$interactionType
-  # Enrich shortNames with covariate identifiers so e.g. two egoX effects
-  # (for different covariates) get unique names: egoX_gender, egoX_age.
-  effectCovarSuffixes <- effectCovarSuffix(
-    if (!is.null(cppEffects$interaction1)) cppEffects$interaction1 else rep("", length(effectNames)),
-    if (!is.null(cppEffects$interaction2)) cppEffects$interaction2 else rep("", length(effectNames))
-  )
-  effectNamesEnriched <- ifelse(effectCovarSuffixes == "", effectNames,
-                                paste(effectNames, effectCovarSuffixes, sep = "_"))
+
+  incEff <- effects[effects$include, , drop = FALSE]
+  incFull <- getNamesFromEffects(incEff)
+  incBase <- .parseEffectFullNames(incFull)$baseName
+  baseByEffectNumber <- setNames(incBase, as.character(incEff$effectNumber))
+
+  effectBaseNames <- unname(baseByEffectNumber[as.character(cppEffects$effectNumber)])
+
+  # Fail hard if C++ output rows cannot be mapped back to included effects.
+  missing <- is.na(effectBaseNames)
+  if (any(missing)) {
+    missingNums <- unique(as.character(cppEffects$effectNumber[missing]))
+    stop(
+      "Could not map static contribution effects to canonical names. ",
+      "Unmatched effectNumber(s): ", paste(missingNums, collapse = ", "), ". ",
+      "This indicates a mismatch between included effects and C++ output ordering."
+    )
+  }
 
   staticChangeContributions_effectNames <- attr(staticChangeContributions,
     "effectNames")
@@ -260,8 +288,8 @@ getStaticChangeContributions <- function(ans = NULL,
     permData <- attr(staticChangeContributions, "permitted")
     for (dv in depvar) {
       effectIdx <- which(effectDepvars == dv)
-      effectNamesDv <- effectNamesEnriched[effectIdx]
-      compositeNames <- paste(dv, effectNamesDv, effectTypes[effectIdx], sep = "_")
+      effectNamesDv <- effectBaseNames[effectIdx]
+      compositeNames <- paste(effectNamesDv, effectTypes[effectIdx], sep = "_")
       nEffects <- length(effectIdx)
       nEgos <- dim(data[["depvars"]][[dv]])[1]
       netType <- unique(effectNetTypes[effectDepvars == dv])
@@ -323,22 +351,38 @@ getStaticChangeContributions <- function(ans = NULL,
       effectNames = effectNames_out,
       effectInteractionTypes = setNames(effectInteractionTypes[
           match(effectNames_out,
-                paste(effectDepvars, effectNamesEnriched, effectTypes, sep = "_"))],
+            paste(effectBaseNames, effectTypes, sep = "_"))],
           effectNames_out)
     )
     if (includePermitted) {
       out$permitted <- unlist(all_permitted, use.names = FALSE)
     }
+    # Compute direction for upOnly/downOnly models (no density effect).
+    hasDensity <- any(grepl("density", effectNames_out, fixed = TRUE))
+    if (!hasDensity) {
+      upOnly   <- any(vapply(depvar, function(dv)
+        isTRUE(attr(data$depvars[[dv]], "uponly")), logical(1L)))
+      downOnly <- any(vapply(depvar, function(dv)
+        isTRUE(attr(data$depvars[[dv]], "downonly")), logical(1L)))
+      if (upOnly || downOnly) {
+        out$direction <- computeDirectionFromConstraint(
+          out$ego, out$choice, upOnly, downOnly)
+      }
+    }
+    # compute changeStats so downstream consumers don't need to.
+    out$changeStats <- contribToChangeStats(out$contribMat, out$effectNames,
+                                            direction = out$direction)
     return(out)
   }
 
   results <- list()
   for (dv in depvar) {
     effectIdx <- which(effectDepvars == dv)
-    effectNamesDepvar <- effectNamesEnriched[effectIdx]
-    compositeNames <- paste(dv, effectNamesDepvar, effectTypes[effectIdx], sep = "_")
+    effectNamesDepvar <- effectBaseNames[effectIdx]
+    effectNamesShort <- sub(paste0("^", dv, "_"), "", effectNamesDepvar)
+    compositeNames <- paste(effectNamesDepvar, effectTypes[effectIdx], sep = "_")
     typeMap <- setNames(effectTypes[effectIdx], compositeNames)
-    nameMap <- setNames(effectNamesDepvar, compositeNames)
+    nameMap <- setNames(effectNamesShort, compositeNames)
     nEffects <- length(effectIdx)
     nEgos <- dim(data[["depvars"]][[dv]])[1]
     netType <- unique(effectNetTypes[effectDepvars == dv])
@@ -409,43 +453,8 @@ getStaticChangeContributions <- function(ans = NULL,
       # }
     }
   }
-  # data.table removed — use do.call(rbind, ...)
-  # if (requireNamespace("data.table", quietly = TRUE)) {
-  #   data.table::rbindlist(results, use.names = TRUE, fill = TRUE)
-  # } else {
     do.call(rbind, results)
-  # }
 }
-
-# widenStaticContribution <- function(changeContributions){
-#   ## currently only works for dynamic case and data has to be pre filtered to only one depvar
-#   if (all(c("effectname", "contribution") %in% names(changeContributions))) {
-#     if (requireNamespace("data.table", quietly = TRUE)) {
-#         changeContributions <- data.table::dcast(
-#           changeContributions, group + period + ego + choice ~ effectname,
-#           value.var = "contribution"
-#         )
-#       } else {
-#         ## in the dynamic case, this might lose some information that we should keep
-#         needed <- c("group", 
-#           "period", 
-#           "ego", 
-#           "choice", 
-#           "effectname", 
-#           "contribution")
-#         changeContributions <- as.data.frame(changeContributions)[, needed, drop = FALSE]
-#         changeContributions <- reshape(
-#           changeContributions,
-#           idvar = c("group", "period", "ego", "choice"),
-#           timevar = "effectname", v.names = "contribution",
-#           direction = "wide"
-#         )
-#         colnames(changeContributions) <- sub("^contribution\\.", "", 
-#           colnames(changeContributions))
-#       }
-#     }
-#   changeContributions
-# }
 
 ## extracts dynamic contributions from ans or simulates sequences ministeps to 
 ## generate them. Changed and extracted from sienaRIDynamics
@@ -462,7 +471,8 @@ getDynamicChangeContributions <- function(
   returnWide = FALSE,
   batch = TRUE,
   silent = TRUE,
-  seed = NULL) {
+  seed = NULL,
+  includeScores = FALSE) {
   if(returnWide && returnDataFrame) stop("Can not return wide data.frame")
   # Set silent according to batch if not explicitly set
 
@@ -568,8 +578,6 @@ getDynamicChangeContributions <- function(
     # where rate params live in ans$rate), fill in missing effects from
     # ans$theta or — for conditional models — from ans$rate spliced into
     # the condEffects rows that marginalEffects added to effects.
-    # The preferred path is for callers to supply full theta, making
-    # this a no-op safety net.
     if (!is.null(names(theta)) && length(theta) < length(allEffNames)) {
       if (!is.null(ans) && !is.null(ans$theta) &&
           length(ans$theta) == length(allEffNames)) {
@@ -594,6 +602,9 @@ getDynamicChangeContributions <- function(
       theta[allEffNames[inTheta]]
 
     if (is.null(silent)) silent <- batch
+    # Nullify projname so concurrent FORK workers do not all write to the same
+    # output file, which causes OS-level serialization (file lock contention).
+    algorithm$projname <- NULL
     ans <- siena07(
         algorithm, 
         data=data, 
@@ -606,6 +617,14 @@ getDynamicChangeContributions <- function(
         batch = batch,
         silent = silent)
   }
+
+  # Per-chain wave-summed score contributions: [n3 x pp] matrix.
+  # Used by the delta-method SE path (includeScores = TRUE only).
+  ssc_sum <- if (includeScores && !is.null(ans$ssc) &&
+                 length(dim(ans$ssc)) == 3L)
+    apply(ans$ssc, c(1L, 3L), sum)
+  else
+    NULL
 
   changeContributions <- ans$changeContributions
 
@@ -625,6 +644,7 @@ getDynamicChangeContributions <- function(
         )
       )
     }
+    if (!is.null(ssc_sum)) attr(changeContributions, "ssc_sum") <- ssc_sum
     return(changeContributions)
   }
   if (returnWide) {
@@ -640,7 +660,7 @@ getDynamicChangeContributions <- function(
       inc    <- inc[order(inc[["name"]]), ]   # alphabetical by depvar name
       inc_dv <- inc[inc[["name"]] == depvar, ]
       if (nrow(inc_dv) == ncol(wide$contribMat)) {
-        sn <- numberIntShortNames(inc_dv[["shortName"]])
+        sn <- numberIntShortNames(inc_dv[["shortName"]], key = intKey(inc_dv))
         i1 <- if (!is.null(inc_dv[["interaction1"]])) inc_dv[["interaction1"]] else rep("", nrow(inc_dv))
         i2 <- if (!is.null(inc_dv[["interaction2"]])) inc_dv[["interaction2"]] else rep("", nrow(inc_dv))
         cs <- effectCovarSuffix(i1, i2)
@@ -658,6 +678,22 @@ getDynamicChangeContributions <- function(
       names(iTypes) <- wide$effectNames
       wide$effectInteractionTypes <- iTypes
     }
+    # Compute direction for upOnly/downOnly models (no density effect).
+    hasDensity <- any(grepl("density", wide$effectNames, fixed = TRUE))
+    if (!hasDensity && !is.null(data)) {
+      upOnly   <- any(vapply(depvar, function(dv)
+        isTRUE(attr(data$depvars[[dv]], "uponly")), logical(1L)))
+      downOnly <- any(vapply(depvar, function(dv)
+        isTRUE(attr(data$depvars[[dv]], "downonly")), logical(1L)))
+      if (upOnly || downOnly) {
+        wide$direction <- computeDirectionFromConstraint(
+          wide$ego, wide$choice, upOnly, downOnly)
+      }
+    }
+    # Eagerly compute changeStats so downstream consumers don't need to.
+    wide$changeStats <- contribToChangeStats(wide$contribMat, wide$effectNames,
+                                             direction = wide$direction)
+    if (!is.null(ssc_sum)) wide$ssc_sum <- ssc_sum
     return(wide)
   }
   if(returnDataFrame == TRUE) {
@@ -749,6 +785,54 @@ flattenChangeContributionsWide <- function(changeContributions, depvar = NULL) {
   }
   result$effectNames <- colnames(result$contribMat)
   result
+}
+
+# Flatten a raw chain subset and enrich column names from the effects object.
+# This replicates the flatten+enrich logic from getDynamicChangeContributions
+# (returnWide=TRUE) so it can be called on an arbitrary chain subset.
+flattenAndEnrichWide <- function(rawChains, effects, depvar, data = NULL) {
+  wide <- flattenChangeContributionsWide(rawChains, depvar)
+  if (!is.null(effects) && length(depvar) == 1L) {
+    noRate <- effects[["type"]] != "rate"
+    inc    <- effects[noRate & effects[["include"]], ]
+    inc    <- inc[order(inc[["name"]]), ]
+    inc_dv <- inc[inc[["name"]] == depvar, ]
+    if (nrow(inc_dv) == ncol(wide$contribMat)) {
+        sn <- numberIntShortNames(inc_dv[["shortName"]], key = intKey(inc_dv))
+      i1 <- if (!is.null(inc_dv[["interaction1"]])) inc_dv[["interaction1"]]
+            else rep("", nrow(inc_dv))
+      i2 <- if (!is.null(inc_dv[["interaction2"]])) inc_dv[["interaction2"]]
+            else rep("", nrow(inc_dv))
+      cs <- effectCovarSuffix(i1, i2)
+      snWithCovar    <- ifelse(cs == "", sn, paste(sn, cs, sep = "_"))
+      enrichedNames  <- paste(depvar, snWithCovar, inc_dv[["type"]], sep = "_")
+      colnames(wide$contribMat) <- enrichedNames
+      wide$effectNames          <- enrichedNames
+    }
+  }
+  if (!is.null(effects) && "interactionType" %in% names(effects)) {
+    noRate <- effects$type != "rate"
+    eff <- effects[noRate & effects$include, ]
+    iTypes <- eff[eff$name == depvar, "interactionType"]
+    names(iTypes) <- wide$effectNames
+    wide$effectInteractionTypes <- iTypes
+  }
+  # Compute direction for upOnly/downOnly models (no density effect).
+  hasDensity <- any(grepl("density", wide$effectNames, fixed = TRUE))
+  if (!hasDensity && !is.null(data)) {
+    upOnly   <- any(vapply(depvar, function(dv)
+      isTRUE(attr(data$depvars[[dv]], "uponly")), logical(1L)))
+    downOnly <- any(vapply(depvar, function(dv)
+      isTRUE(attr(data$depvars[[dv]], "downonly")), logical(1L)))
+    if (upOnly || downOnly) {
+      wide$direction <- computeDirectionFromConstraint(
+        wide$ego, wide$choice, upOnly, downOnly)
+    }
+  }
+  # Eagerly compute changeStats so downstream consumers don't need to.
+  wide$changeStats <- contribToChangeStats(wide$contribMat, wide$effectNames,
+                                           direction = wide$direction)
+  wide
 }
 
 # Wrapper to use in R code (RCPP style)
