@@ -98,9 +98,14 @@
 ## .evalSpecChainBuckets — evaluate spec on delta_wide at thetaHat and
 ## aggregate by (chain, cell) to obtain [n_chains × R] sum/count matrices.
 ##
-## Used by deltaMethodUncertainty for multi-row specs (n_out > 1) when
-## fullMode = TRUE.  Returns NULL if the spec is accumulated, predictFun
-## returns a data.frame (no outcomesOnly support), or required columns are absent.
+## Uses the same buildAggCache / aggWithCache machinery as the main estimation
+## path, with "chain" prepended to group_vars.  This means egoNormalize is
+## handled identically: Stage 1 pre-aggregates by
+##   unique(c(ego_id_cols, c("chain", gvars)))   (= chain-scoped ego means)
+## and Stage 2 collapses to (chain, cell).
+##
+## Returns NULL if the spec is accumulated, predictFun returns a data.frame
+## (no outcomesOnly support), or required columns are absent.
 ##
 ## @param spec     spec entry (predictFun, predictArgs, outcomeName, level,
 ##                 condition, egoNormalize, accumulated).
@@ -140,87 +145,75 @@
   density <- wide$changeStats$density
   perm    <- wide$permitted
   keep    <- density != 0L & (if (is.null(perm)) TRUE else perm)
-  ov_k    <- ov[keep]
-  chain_k <- wide$chain[keep]
 
-  ## Structural grouping columns for kept rows.
+  ## Structural frame (kept rows) — includes chain, group, period, ego, ministep.
   structural_k <- groupColsList(wide, keep = which(keep))
 
-  ## Condition column values (if any) from changeStats$csMat.
+  ## Add condition column from changeStats$csMat if needed.
   cond_resolved <- if (!is.null(spec$condition))
     resolveEffectName(spec$condition, wide$changeStats$csNames) else NULL
-  cond_vals <- if (!is.null(cond_resolved)) {
+  if (!is.null(cond_resolved)) {
     cm <- wide$changeStats$csMat
-    if (!is.null(cm) && cond_resolved %in% colnames(cm))
-      cm[, cond_resolved][keep]
-    else return(NULL)
-  } else NULL
-
-  ## Build a scalar cell key per row; match to key_df ordering.
-  gvars <- getGroupVars(level = spec$level, condition = cond_resolved)
-  row_parts <- lapply(gvars, function(v) {
-    if (v %in% names(structural_k)) return(structural_k[[v]])
-    if (!is.null(cond_resolved) && v == cond_resolved) return(cond_vals)
-    NULL
-  })
-  if (any(vapply(row_parts, is.null, logical(1L)))) return(NULL)
-  row_keys <- if (length(row_parts) == 1L) as.character(row_parts[[1L]])
-              else do.call(paste, c(row_parts, list(sep = "\r")))
-
-  ref_parts <- lapply(gvars, function(v) key_df[[v]])
-  if (any(vapply(ref_parts, is.null, logical(1L)))) return(NULL)
-  ref_keys <- if (length(ref_parts) == 1L) as.character(ref_parts[[1L]])
-              else do.call(paste, c(ref_parts, list(sep = "\r")))
-
-  cell_idx <- match(row_keys, ref_keys)
-  valid    <- !is.na(cell_idx)
-  if (!any(valid)) return(NULL)
-
-  chains_uniq <- sort(unique(chain_k[valid]))
-  n_chains    <- length(chains_uniq)
-  chain_idx   <- match(chain_k[valid], chains_uniq)   # 1..n_chains
-  cell_idx_v  <- cell_idx[valid]                       # 1..R
-  ov_v        <- ov_k[valid]
-  na_rm       <- isTRUE(spec$na.rm)
-
-  egoNorm <- isTRUE(spec$egoNormalize)
-  ego_k   <- structural_k$ego
-
-  if (egoNorm && !is.null(ego_k)) {
-    ## Two-stage aggregation: choice → (chain, cell, ego) means → (chain, cell) means.
-    ego_k_v   <- ego_k[valid]
-    ego_uniq  <- sort(unique(ego_k_v))
-    n_ego_all <- length(ego_uniq)
-    ego_idx   <- match(ego_k_v, ego_uniq)   # 1..n_ego_all
-
-    ## Stage 1: per-(chain, cell, ego) mean.
-    ## Linear index: ((chain-1)*R + (cell-1))*n_ego_all + ego_idx
-    s1_key <- ((chain_idx - 1L) * R + (cell_idx_v - 1L)) * n_ego_all + ego_idx
-    s1     <- scatter_agg_1d(ov_v, s1_key, n_chains * R * n_ego_all,
-                             na_rm = na_rm)
-    ego_means <- ifelse(s1$count > 0L, s1$sum / s1$count, NA_real_)
-
-    ## Stage 2: per-(chain, cell) sum and count of ego means.
-    ## Decode (chain, cell) from the stage-1 linear position.
-    has_ego  <- s1$count > 0L
-    if (!any(has_ego)) return(NULL)
-    pos_0    <- which(has_ego) - 1L          # 0-based into s1 output
-    cc_0     <- pos_0 %/% n_ego_all          # 0-based chain-cell index
-    cc_lin_2 <- cc_0 + 1L                   # 1-based into n_chains*R vector
-    s2 <- scatter_agg_1d(ego_means[has_ego], cc_lin_2, n_chains * R,
-                         na_rm = na_rm)
-  } else {
-    ## Direct: choice → (chain, cell) sum/count.
-    ## Linear index fills chain-major order: cell varies fastest (1..R per chain).
-    lin_idx <- (chain_idx - 1L) * R + cell_idx_v
-    s2      <- scatter_agg_1d(ov_v, lin_idx, n_chains * R, na_rm = na_rm)
+    if (is.null(cm) || !all(cond_resolved %in% colnames(cm))) return(NULL)
+    for (cn in cond_resolved)
+      structural_k[[cn]] <- cm[, cn][keep]
   }
 
-  ## Reshape into [n_chains × R] matrices (byrow=TRUE: first R entries = chain 1).
-  Y <- matrix(s2$sum,              nrow = n_chains, ncol = R, byrow = TRUE)
-  N <- matrix(as.double(s2$count), nrow = n_chains, ncol = R, byrow = TRUE)
+  ## Group vars for output cells; prepend "chain" to get per-(chain, cell) agg.
+  gvars       <- getGroupVars(level = spec$level, condition = cond_resolved)
+  gvars_chain <- c("chain", gvars)
+  ego_id_cols <- detectEgoUnit(structural_k)
+  egoNorm     <- isTRUE(spec$egoNormalize)
+  na_rm       <- isTRUE(spec$na.rm)
 
-  list(Y = Y, N = N, chain_ids = as.integer(chains_uniq))
+  ## One buildAggCache call handles egoNormalize correctly:
+  ## pre_agg_vars = unique(c(ego_id_cols, gvars_chain)) groups by all ego-id
+  ## columns first (chain-scoped ego means), then collapses to (chain, cell).
+  cache_bc <- tryCatch(
+    buildAggCache(structural_k, group_vars = gvars_chain,
+                  ego_id_cols = ego_id_cols,
+                  egoNormalize = egoNorm, na.rm = na_rm),
+    error = function(e) NULL)
+  if (is.null(cache_bc)) return(NULL)
+
+  bc_agg  <- aggWithCache(spec$outcomeName, ov[keep], cache_bc)
+
+  sumCol <- paste0(spec$outcomeName, "_sum")
+  cntCol <- paste0(spec$outcomeName, "_n")
+  if (!all(c(sumCol, cntCol, "chain") %in% names(bc_agg))) return(NULL)
+
+  chains_all <- sort(unique(bc_agg$chain))
+  n_chains   <- length(chains_all)
+  if (n_chains == 0L) return(NULL)
+
+  ## Match bc_agg rows to (chain_idx, cell_idx) for matrix filling.
+  chain_idx_m <- match(bc_agg$chain, chains_all)
+
+  if (length(gvars) > 0L) {
+    ref_parts <- lapply(gvars, function(v) key_df[[v]])
+    if (any(vapply(ref_parts, is.null, logical(1L)))) return(NULL)
+    ref_keys <- if (length(ref_parts) == 1L) as.character(ref_parts[[1L]])
+                else do.call(paste, c(ref_parts, list(sep = "\r")))
+    row_parts <- lapply(gvars, function(v) bc_agg[[v]])
+    if (any(vapply(row_parts, is.null, logical(1L)))) return(NULL)
+    row_keys <- if (length(row_parts) == 1L) as.character(row_parts[[1L]])
+                else do.call(paste, c(row_parts, list(sep = "\r")))
+    cell_idx <- match(row_keys, ref_keys)
+  } else {
+    cell_idx <- rep(1L, nrow(bc_agg))
+  }
+
+  valid_m <- !is.na(cell_idx)
+  if (!any(valid_m)) return(NULL)
+
+  Y <- matrix(0, nrow = n_chains, ncol = R)
+  N <- matrix(0, nrow = n_chains, ncol = R)
+  for (i in which(valid_m)) {
+    Y[chain_idx_m[i], cell_idx[i]] <- bc_agg[[sumCol]][i]
+    N[chain_idx_m[i], cell_idx[i]] <- bc_agg[[cntCol]][i]
+  }
+
+  list(Y = Y, N = N, chain_ids = as.integer(chains_all))
 }
 
 
