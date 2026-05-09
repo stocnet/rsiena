@@ -218,15 +218,18 @@ sienaPostestimate <- function(
                                         mc.cores = nbrNodes)
 
     # Step 3+4 — hat + Jacobian in one sweep, then SE / CI assembly.
-    # For accumulated specs the analytical path is unavailable; fall back to
-    # FD inside deltaMethodUncertainty (hat will be computed there too).
+    # For accumulated or rate-weighted specs the analytical path is
+    # unavailable/unsafe; fall back to FD inside deltaMethodUncertainty
+    # (hat will be computed there too).
     has_accumulated <- any(vapply(specs, function(s) isTRUE(s$accumulated),
                                   logical(1L)))
+    has_rateweight <- any(vapply(specs, function(s) isTRUE(s$rateWeight),
+                   logical(1L)))
     if (isFullMode && (!dynamic || is.null(ssc_sum)))
         stop("uncertaintyMode = 'deltaFull' requires dynamic = TRUE and ",
              "score statistics (includeScores = TRUE in dynArgs).")
 
-    if (!has_accumulated) {
+    if (!has_accumulated && !has_rateweight) {
         # Analytical path: one estimator call returns both hat and Jacobian.
         # Suppress warnings here — if it fails, deltaMethodUncertainty will
         # detect the failure itself and emit the appropriate warning.

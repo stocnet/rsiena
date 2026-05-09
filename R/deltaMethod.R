@@ -505,15 +505,25 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
   ##   Analytical: one batch sweep, O(n * K) — fast (~7 s for Glasgow dynamic).
   ##               Works for all non-accumulated specs; requires cc$contribMat.
   ##   FD fallback: 2*K batch sweeps, O(n * K * n_sort) — slow (~1200 s).
-  ##               Always correct; used when any spec is accumulated or when
-  ##               the analytical path is explicitly disabled.
+  ##               Always correct; used when any spec is accumulated,
+  ##               rate-weighted, or when the analytical path is explicitly
+  ##               disabled.
   has_accumulated <- any(vapply(specs, function(s) isTRUE(s$accumulated),
                                 logical(1L)))
-  use_analytical  <- !has_accumulated
+  has_rateweight <- any(vapply(specs, function(s) isTRUE(s$rateWeight),
+                               logical(1L)))
+  if (has_rateweight) {
+    warning(
+      "rateWeight detected: forcing finite-difference Jacobian because ",
+      "analytical rateWeight Jacobian correction is not yet implemented.",
+      call. = FALSE
+    )
+  }
+  use_analytical  <- !(has_accumulated || has_rateweight)
 
   # If the caller already ran mode="jacobian" (analytical path), reuse the
   # result directly — avoids a redundant full estimation sweep.
-  if (!is.null(precomputed)) {
+  if (!is.null(precomputed) && use_analytical) {
     jac_result     <- precomputed
     use_analytical <- TRUE
   } else if (use_analytical) {

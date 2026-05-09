@@ -80,6 +80,20 @@ make_scalar_spec <- function() {
   )
 }
 
+make_fd_estimator_scalar <- function(spec_name = "spec", outcome_name = "me_out") {
+  function(theta, perturbations = NULL,
+           useChangeContributions = FALSE, mode = "outcome") {
+    eval_at <- function(th) {
+      val <- th[["density"]] + 2 * th[["recip"]]
+      setNames(list(data.frame(me_out = val)), spec_name)
+    }
+    hat <- eval_at(theta)
+    if (is.null(perturbations)) return(hat)
+    perts_out <- lapply(perturbations, eval_at)
+    list(hat = hat, perturbations = perts_out)
+  }
+}
+
 ## ── 1. Orchestrator-level parity (scalar spec) ────────────────────────────────
 ##
 ## "Before": SE computed via .evalSpecScalar + gradReinforceDolby (old path).
@@ -150,22 +164,17 @@ test_that("deltaMethodUncertainty: accumulated spec falls back with warning", {
   spec$accumulated <- TRUE
   theta    <- c(density = -2, recip = 1)
   n_chains <- length(unique(wide$chain))
+  est <- make_fd_estimator_scalar(spec_name = "acc")
   set.seed(77L)
   ssc_sum  <- matrix(rnorm(n_chains * 2L), nrow = n_chains,
                      dimnames = list(NULL, names(theta)))
 
-  J_cond  <- matrix(c(0.1, -0.05), nrow = 1L, dimnames = list(NULL, names(theta)))
-  precomp <- list(
-    jac = list(acc = J_cond),
-    hat = list(acc = data.frame(me_out = 0.25))
-  )
-
   expect_warning(
     res <- deltaMethodUncertainty(
-      wide = wide, estimator = NULL, ssc_sum = ssc_sum,
+      wide = wide, estimator = est, ssc_sum = ssc_sum,
       thetaHat = theta, covTheta = diag(c(0.01, 0.02)),
       specs = list(acc = spec), type = "changeProb",
-      fullMode = TRUE, precomputed = precomp
+      fullMode = TRUE
     ),
     regexp = "bucketed REINFORCE not available"
   )
@@ -187,22 +196,17 @@ test_that("deltaMethodUncertainty: no chain column forces fallback", {
   spec  <- make_scalar_spec()
   theta <- c(density = -2, recip = 1)
   n_chains <- 3L
+  est <- make_fd_estimator_scalar(spec_name = "s")
   set.seed(77L)
   ssc_sum <- matrix(rnorm(n_chains * 2L), nrow = n_chains,
                     dimnames = list(NULL, names(theta)))
 
-  J_cond  <- matrix(c(0.1, -0.05), nrow = 1L, dimnames = list(NULL, names(theta)))
-  precomp <- list(
-    jac = list(s = J_cond),
-    hat = list(s = data.frame(me_out = 0.25))
-  )
-
   expect_warning(
     res <- deltaMethodUncertainty(
-      wide = wide, estimator = NULL, ssc_sum = ssc_sum,
+      wide = wide, estimator = est, ssc_sum = ssc_sum,
       thetaHat = theta, covTheta = diag(c(0.01, 0.02)),
       specs = list(s = spec), type = "changeProb",
-      fullMode = TRUE, precomputed = precomp
+      fullMode = TRUE
     ),
     regexp = "bucketed REINFORCE not available"
   )
