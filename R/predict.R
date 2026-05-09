@@ -74,6 +74,7 @@ predict.sienaFit <- function(
 
   # ---- Build contribFun ----
   if (dynamic) {
+    if (is.null(effects)) effects <- object$requestedEffects
     dynArgs <- list(
         ans                    = object,
         data                   = newdata,
@@ -85,6 +86,19 @@ predict.sienaFit <- function(
         silent                 = silent,
         returnWide             = TRUE
     )
+    memCheck <- .checkDynMemory(
+        data         = newdata,
+        depvar       = depvar,
+        effects      = effects,
+        n3_per_batch = n3,
+        n3_uncert    = if (uncertainty) n3 else 0L,
+        useCluster   = useCluster,
+        nbrNodes     = nbrNodes,
+        clusterType  = clusterType,
+        uncertainty  = uncertainty,
+        verbose      = verbose
+    )
+    nbrNodes <- memCheck$nbrNodes
     contribFun <- makeContribFun("per_batch", dynArgs = dynArgs)
   } else {
     staticContributions <- getStaticChangeContributions(
