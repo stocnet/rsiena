@@ -93,6 +93,169 @@
          ssc_sum       = ssc_sum)
 }
 
+## ── Chain-bucket evaluation for bucketed REINFORCE ───────────────────────────
+##
+## .evalSpecChainBuckets — evaluate spec on delta_wide at thetaHat and
+## aggregate by (chain, cell) to obtain [n_chains × R] sum/count matrices.
+##
+## Used by deltaMethodUncertainty for multi-row specs (n_out > 1) when
+## fullMode = TRUE.  Returns NULL if the spec is accumulated, predictFun
+## returns a data.frame (no outcomesOnly support), or required columns are absent.
+##
+## @param spec     spec entry (predictFun, predictArgs, outcomeName, level,
+##                 condition, egoNormalize, accumulated).
+## @param wide     delta_wide from flattenAndEnrichWide; must have chain,
+##                 period, ego, permitted, changeStats.
+## @param theta    named numeric (thetaHat).
+## @param type     model type string passed to predictProbability.
+## @param key_df   data.frame [R × k] of cell key columns in the row order
+##                 matching Q_hat_r (from hat[[specName]][, gvars, drop=FALSE]).
+##
+## @return list(Y, N, chain_ids) or NULL.
+##   Y, N        — [n_chains × R] double matrices (row = chain, col = cell).
+##   chain_ids   — integer vector of chain labels mapping Y rows to ssc_sum rows.
+.evalSpecChainBuckets <- function(spec, wide, theta, type, key_df) {
+  if (isTRUE(spec$accumulated)) return(NULL)
+  if (is.null(wide$chain))      return(NULL)
+
+  R <- nrow(key_df)
+  if (R == 0L) return(NULL)
+
+  ## Evaluate predictFun with outcomesOnly on delta_wide at theta.
+  wide_eval                   <- wide
+  wide_eval$changeUtility     <- NULL
+  wide_eval$changeProbability <- NULL
+  baseline <- predictProbability(wide_eval, theta, type, returnComponents = TRUE)
+  extra    <- c(list(changeContributions = wide_eval,
+                     theta               = theta,
+                     baseline            = baseline,
+                     outcomesOnly        = TRUE),
+                spec$predictArgs)
+  outcomes <- tryCatch(do.call(spec$predictFun, extra), error = function(e) NULL)
+  if (is.null(outcomes) || is.data.frame(outcomes)) return(NULL)
+  ov <- outcomes[[spec$outcomeName]]
+  if (is.null(ov) || length(ov) == 0L) return(NULL)
+
+  ## Keep mask — same logic as .evalSpecScalar.
+  density <- wide$changeStats$density
+  perm    <- wide$permitted
+  keep    <- density != 0L & (if (is.null(perm)) TRUE else perm)
+  ov_k    <- ov[keep]
+  chain_k <- wide$chain[keep]
+
+  ## Structural grouping columns for kept rows.
+  structural_k <- groupColsList(wide, keep = which(keep))
+
+  ## Condition column values (if any) from changeStats$csMat.
+  cond_resolved <- if (!is.null(spec$condition))
+    resolveEffectName(spec$condition, wide$changeStats$csNames) else NULL
+  cond_vals <- if (!is.null(cond_resolved)) {
+    cm <- wide$changeStats$csMat
+    if (!is.null(cm) && cond_resolved %in% colnames(cm))
+      cm[, cond_resolved][keep]
+    else return(NULL)
+  } else NULL
+
+  ## Build a scalar cell key per row; match to key_df ordering.
+  gvars <- getGroupVars(level = spec$level, condition = cond_resolved)
+  row_parts <- lapply(gvars, function(v) {
+    if (v %in% names(structural_k)) return(structural_k[[v]])
+    if (!is.null(cond_resolved) && v == cond_resolved) return(cond_vals)
+    NULL
+  })
+  if (any(vapply(row_parts, is.null, logical(1L)))) return(NULL)
+  row_keys <- if (length(row_parts) == 1L) as.character(row_parts[[1L]])
+              else do.call(paste, c(row_parts, list(sep = "\r")))
+
+  ref_parts <- lapply(gvars, function(v) key_df[[v]])
+  if (any(vapply(ref_parts, is.null, logical(1L)))) return(NULL)
+  ref_keys <- if (length(ref_parts) == 1L) as.character(ref_parts[[1L]])
+              else do.call(paste, c(ref_parts, list(sep = "\r")))
+
+  cell_idx <- match(row_keys, ref_keys)
+  valid    <- !is.na(cell_idx)
+  if (!any(valid)) return(NULL)
+
+  chains_uniq <- sort(unique(chain_k[valid]))
+  n_chains    <- length(chains_uniq)
+  chain_idx   <- match(chain_k[valid], chains_uniq)   # 1..n_chains
+  cell_idx_v  <- cell_idx[valid]                       # 1..R
+  ov_v        <- ov_k[valid]
+  na_rm       <- isTRUE(spec$na.rm)
+
+  egoNorm <- isTRUE(spec$egoNormalize)
+  ego_k   <- structural_k$ego
+
+  if (egoNorm && !is.null(ego_k)) {
+    ## Two-stage aggregation: choice → (chain, cell, ego) means → (chain, cell) means.
+    ego_k_v   <- ego_k[valid]
+    ego_uniq  <- sort(unique(ego_k_v))
+    n_ego_all <- length(ego_uniq)
+    ego_idx   <- match(ego_k_v, ego_uniq)   # 1..n_ego_all
+
+    ## Stage 1: per-(chain, cell, ego) mean.
+    ## Linear index: ((chain-1)*R + (cell-1))*n_ego_all + ego_idx
+    s1_key <- ((chain_idx - 1L) * R + (cell_idx_v - 1L)) * n_ego_all + ego_idx
+    s1     <- scatter_agg_1d(ov_v, s1_key, n_chains * R * n_ego_all,
+                             na_rm = na_rm)
+    ego_means <- ifelse(s1$count > 0L, s1$sum / s1$count, NA_real_)
+
+    ## Stage 2: per-(chain, cell) sum and count of ego means.
+    ## Decode (chain, cell) from the stage-1 linear position.
+    has_ego  <- s1$count > 0L
+    if (!any(has_ego)) return(NULL)
+    pos_0    <- which(has_ego) - 1L          # 0-based into s1 output
+    cc_0     <- pos_0 %/% n_ego_all          # 0-based chain-cell index
+    cc_lin_2 <- cc_0 + 1L                   # 1-based into n_chains*R vector
+    s2 <- scatter_agg_1d(ego_means[has_ego], cc_lin_2, n_chains * R,
+                         na_rm = na_rm)
+  } else {
+    ## Direct: choice → (chain, cell) sum/count.
+    ## Linear index fills chain-major order: cell varies fastest (1..R per chain).
+    lin_idx <- (chain_idx - 1L) * R + cell_idx_v
+    s2      <- scatter_agg_1d(ov_v, lin_idx, n_chains * R, na_rm = na_rm)
+  }
+
+  ## Reshape into [n_chains × R] matrices (byrow=TRUE: first R entries = chain 1).
+  Y <- matrix(s2$sum,              nrow = n_chains, ncol = R, byrow = TRUE)
+  N <- matrix(as.double(s2$count), nrow = n_chains, ncol = R, byrow = TRUE)
+
+  list(Y = Y, N = N, chain_ids = as.integer(chains_uniq))
+}
+
+
+## ── Per-row Dolby REINFORCE gradient (bucketed multi-cell specs) ─────────────
+##
+## For each output cell r, computes the Dolby-corrected REINFORCE gradient:
+##   A_c_r    = (Y_c_r − Q_hat_r * N_c_r) / mean_c(N_c_r)
+##   g_score_r = gradReinforceDolby(A_c_r, ssc_aligned)
+##
+## @param Y           [n_chains × R] per-chain cell sum matrix.
+## @param N           [n_chains × R] per-chain cell count matrix.
+## @param ssc_aligned [n_chains × nParams] score matrix (rows match Y rows).
+##
+## @return [R × nParams] score gradient matrix (unnamed columns).
+gradReinforceRowwise <- function(Y, N, ssc_aligned) {
+  R         <- ncol(Y)
+  n_chains  <- nrow(Y)
+  nParams   <- ncol(ssc_aligned)
+
+  Q_hat_r  <- colSums(Y, na.rm = TRUE) / pmax(colSums(N, na.rm = TRUE), 1)
+  mean_N_r <- colMeans(N, na.rm = TRUE)
+  ## Avoid division by zero for empty cells.
+  mean_N_r[mean_N_r == 0] <- 1
+
+  ## A_c_r = (Y_c_r − Q_hat_r * N_c_r) / mean_c(N_c_r)   [n_chains × R]
+  A <- (Y - outer(rep(1, n_chains), Q_hat_r) * N) /
+         outer(rep(1, n_chains), mean_N_r)
+
+  g_score <- matrix(0, nrow = R, ncol = nParams)
+  for (r in seq_len(R))
+    g_score[r, ] <- gradReinforceDolby(A[, r], ssc_aligned)
+  g_score
+}
+
+
 ## ── Dolby regression coefficient ─────────────────────────────────────────────
 ##
 ## Optimal scalar baseline for the k-th parameter:
@@ -446,24 +609,42 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
           fallback <- FALSE
         }
       } else {
-        ## Multi-row aggregated spec: per-bucket REINFORCE not yet implemented.
-        ## Fall back to conditional SE and warn (one-shot).
-        ## TODO(deltaFull-bucketed): implement per-bucket Dolby REINFORCE for
-        ## level={period,ego} and condition=* specs by computing a
-        ## [n3 x R] per-chain × per-bucket Y matrix at thetaHat, with
-        ## row-count weighting matching the Q aggregation. Fall back for
-        ## accumulated/egoNormalize specs (different inner reduction).
-        if (!fallback_warned) {
-          warning(
-            "uncertaintyMode = 'deltaFull' is not yet implemented for ",
-            "aggregated specs (level != 'none' or with `condition`). ",
-            "Falling back to conditional delta SE for those specs. ",
-            "Note: conditional SE only captures parameter uncertainty + ",
-            "frozen-chain noise; it does NOT include path-distribution ",
-            "sensitivity. For publication-quality SE on aggregated outputs, ",
-            "use uncertaintyMode = 'batch' (parametric bootstrap).",
-            call. = FALSE)
-          fallback_warned <- TRUE
+        ## Multi-row spec: attempt bucketed REINFORCE via .evalSpecChainBuckets.
+        ## Falls back to conditional SE for accumulated specs, when wide is NULL,
+        ## or when predictFun does not support outcomesOnly on delta_wide.
+        bucket_res <- NULL
+        if (!is.null(wide)) {
+          cond_resolved_b <- if (!is.null(spec$condition))
+            resolveEffectName(spec$condition, wide$changeStats$csNames) else NULL
+          gvars_b  <- getGroupVars(level = spec$level, condition = cond_resolved_b)
+          key_cols <- intersect(gvars_b, names(hat[[specName]]))
+          key_df_b <- if (length(key_cols) > 0L)
+            hat[[specName]][, key_cols, drop = FALSE]
+          else
+            data.frame(.row = seq_len(n_out))
+          bucket_res <- tryCatch(
+            .evalSpecChainBuckets(spec, wide, thetaHat, type, key_df_b),
+            error = function(e) NULL)
+        }
+
+        if (!is.null(bucket_res)) {
+          ssc_aligned  <- ssc_sum[bucket_res$chain_ids, , drop = FALSE]
+          g_score      <- gradReinforceRowwise(bucket_res$Y, bucket_res$N,
+                                               ssc_aligned)
+          J_full       <- J_cond + g_score
+          dimnames(J_full) <- dimnames(J_cond)
+          SE_deltaFull <- seDeltaRows(J_full, covTheta)
+          fallback     <- FALSE
+        } else {
+          if (!fallback_warned) {
+            warning(
+              "uncertaintyMode = 'deltaFull': bucketed REINFORCE not available ",
+              "for this aggregated spec (accumulated, egoNormalize, or ",
+              "predictFun incompatibility). Falling back to conditional delta ",
+              "SE. For publication-quality SE use uncertaintyMode = 'batch'.",
+              call. = FALSE)
+            fallback_warned <- TRUE
+          }
         }
       }
     }
