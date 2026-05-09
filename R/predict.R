@@ -40,6 +40,8 @@ predict.sienaFit <- function(
     batchUnitBudget = 2.5e8,
     dynamicMinistepFactor = 10,
     egoNormalize = TRUE,
+    accumulated = FALSE,
+    rateWeight = FALSE,
     returnDecisionDetails = FALSE,
     ...
 ) {
@@ -50,6 +52,15 @@ predict.sienaFit <- function(
   if (is.null(depvar)) depvar <- names(newdata[["depvars"]])[1]
   if (dynamic && is.null(algorithm)) stop("'algorithm' must be provided when dynamic = TRUE")
   if (dynamic && is.null(silent)) silent <- batch
+
+  # ---- accumulated / rateWeight guards ----
+  if (accumulated && !dynamic)
+    stop("'accumulated = TRUE' requires 'dynamic = TRUE' ",
+         "(accumulated prediction sums over simulated ministep chains).")
+  if (rateWeight && dynamic)
+    message("Note: for dynamic estimation, rate-weighting is absorbed ",
+            "by the simulation. 'rateWeight' has no additional effect ",
+            "and is ignored.")
   # add option to never batch? but then should do streaming...?
   if (is.null(batchSize)) {
       batchSize <- planBatch(
@@ -66,8 +77,44 @@ predict.sienaFit <- function(
       )
   }
 
-  thetaHat <- object[["theta"]]
-  covTheta <- object[["covtheta"]]
+  # ---- Theta / covariance with rate handling for rateWeight ----
+  anyRateWeight <- rateWeight
+  if (anyRateWeight && !dynamic) {
+    if (isTRUE(object$cconditional)) {
+      thetaHat <- coef(object)
+      covTheta <- vcov(object)
+    } else {
+      eff_df  <- as.data.frame(object$requestedEffects)
+      eff_inc <- eff_df[eff_df$include, ]
+      hasNonConstantRates <- any(!eff_inc$basicRate & eff_inc$type == "rate")
+      if (hasNonConstantRates)
+        stop("rateWeight = TRUE is not supported when the model includes ",
+             "non-constant rate effects (structural or covariate-dependent).")
+      thetaHat <- coef(object, dropRates = FALSE)
+      covTheta <- vcov(object, dropRates = FALSE)
+    }
+  } else {
+    thetaHat <- coef(object)
+    covTheta <- vcov(object)
+  }
+
+  # ---- Rate parameters for rateWeight (static path) ----
+  rateParams <- NULL
+  rateIdx    <- NULL
+  if (anyRateWeight && !dynamic) {
+    if (isTRUE(object$cconditional)) {
+      rateParams <- object$rate
+    } else {
+      eff_df   <- as.data.frame(object$requestedEffects)
+      eff_inc  <- eff_df[eff_df$include, ]
+      rate_idx <- which(eff_inc$basicRate)
+      theta_full <- coef(object, dropRates = FALSE)
+      rateParams <- theta_full[rate_idx]
+      rateIdx    <- rate_idx
+    }
+    if (length(rateParams) == 0L)
+      stop("rateWeight = TRUE but no basic rate parameters found.")
+  }
 
   # ---- Resolve condition ----
   if (!is.null(condition)) condition <- resolveCondition(condition)
@@ -127,7 +174,9 @@ predict.sienaFit <- function(
     na.rm        = na.rm,
     egoNormalize = egoNormalize,
     dynamic      = dynamic,
-    jacobianFun  = predictProbabilityJac,
+    accumulated  = accumulated,
+    rateWeight   = rateWeight,
+    jacobianFun  = if (!accumulated) predictProbabilityJac else NULL,
     metadata     = metadata
   )), type)
 
@@ -147,6 +196,8 @@ predict.sienaFit <- function(
     specs        = specs,
     thetaHat     = thetaHat,
     covTheta     = covTheta,
+    rateParams   = rateParams,
+    rateIdx      = rateIdx,
     dynamic       = dynamic,
     dynArgs       = if (dynamic) dynArgs else NULL,
     n3            = n3,
