@@ -24,10 +24,11 @@ class CovariateEgoEffect : public CovariateDependentNetworkEffect
 {
 public:
 	explicit CovariateEgoEffect(const EffectInfo * pEffectInfo,
-					const bool leftThresholded, const bool rightThresholded);
+					const bool leftThresholded, const bool rightThresholded,
+					const bool nc);
 	CovariateEgoEffect(const EffectInfo * pEffectInfo,
 					const bool leftThresholded, const bool rightThresholded,
-					const bool simulatedState);
+					const bool simulatedState, const bool nc);
 
 	virtual double calculateContribution(int alter) const;
 	virtual bool egoEffect() const;
@@ -40,6 +41,7 @@ private:
 	bool lleftThresholded {};
 	bool lrightThresholded {};
 	double lthreshold {};
+	double lnc{};
 };
 
 }

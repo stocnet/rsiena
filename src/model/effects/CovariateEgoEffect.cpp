@@ -23,10 +23,12 @@ namespace siena
  * @param[in] pEffectInfo the effect descriptor
  */
 CovariateEgoEffect::CovariateEgoEffect(const EffectInfo * pEffectInfo,
-		const bool leftThresholded, const bool rightThresholded) :
+		const bool leftThresholded, const bool rightThresholded,
+		const bool nc) :
 	CovariateDependentNetworkEffect(pEffectInfo) {
 	this->lleftThresholded = leftThresholded;
 	this->lrightThresholded = rightThresholded;
+	this->lnc = nc;
 	this->lthreshold = pEffectInfo->internalEffectParameter();
 	// to make sure that there will be no numerical equality difficulties:
 	if (this->lleftThresholded)
@@ -48,10 +50,11 @@ CovariateEgoEffect::CovariateEgoEffect(const EffectInfo * pEffectInfo,
  */
 CovariateEgoEffect::CovariateEgoEffect(const EffectInfo * pEffectInfo,
 		const bool leftThresholded, const bool rightThresholded,
-		const bool simulatedState) :
+		const bool simulatedState, const bool nc) :
 	CovariateDependentNetworkEffect(pEffectInfo, simulatedState) {
 	this->lleftThresholded = leftThresholded;
 	this->lrightThresholded = rightThresholded;
+	this->lnc = nc;
 	this->lthreshold = pEffectInfo->internalEffectParameter();
 	// to make sure that there will be no numerical equality difficulties:
 	if (this->lleftThresholded)
@@ -71,9 +74,10 @@ CovariateEgoEffect::CovariateEgoEffect(const EffectInfo * pEffectInfo,
 double CovariateEgoEffect::calculateContribution(int alter) const
 {
 	double contribution = 0;
+	double alterValue = this->lnc ? this->rawValue(this->ego()) : this->value(this->ego());
 	if (this->lleftThresholded)
 	{
-		if (this->value(this->ego()) <= this->lthreshold)
+		if (alterValue <= this->lthreshold)
 		{
 			contribution = 1;
 		}
@@ -82,14 +86,14 @@ double CovariateEgoEffect::calculateContribution(int alter) const
 	{
 		if (this->lrightThresholded)
 		{
-			if (this->value(this->ego()) >= this->lthreshold)
+			if (alterValue >= this->lthreshold)
 			{
 				contribution = 1;
 			}
 		}
 		else
 		{
-			contribution = this->value(this->ego());
+			contribution = alterValue;
 		}
 	}
 	return contribution;

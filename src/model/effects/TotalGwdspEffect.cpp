@@ -3,15 +3,15 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: TotalGwdspAlterNCEffect.cpp
+ * File: TotalGwdspEffect.cpp
  *
  * Description: This file contains the implementation of the class
- * TotalGwdspAlterNCEffect.
+ * TotalGwdspEffect.
  *****************************************************************************/
 
 #include <stdexcept>
 #include <cmath>
-#include "TotalGwdspAlterNCEffect.h"
+#include "TotalGwdspEffect.h"
 #include "network/Network.h"
 #include "model/State.h"
 #include "model/tables/Cache.h"
@@ -24,8 +24,6 @@
 #include "NetworkDependentBehaviorEffect.h"
 #include "model/EffectInfo.h"
 
-// would probably be nice if GwespFunction could be used -> implement as network method?
-
 using namespace std;
 
 namespace siena
@@ -35,7 +33,7 @@ namespace siena
 /**
  * Constructor.
  */
-TotalGwdspAlterNCEffect::TotalGwdspAlterNCEffect(const EffectInfo * pEffectInfo, bool forward) :
+TotalGwdspEffect::TotalGwdspEffect(const EffectInfo * pEffectInfo, bool forward, bool nc) :
 	NetworkDependentBehaviorEffect(pEffectInfo)
 {
 	this->linternalEffectParameter = pEffectInfo->internalEffectParameter();
@@ -47,8 +45,7 @@ TotalGwdspAlterNCEffect::TotalGwdspAlterNCEffect(const EffectInfo * pEffectInfo,
 	{
 		throw runtime_error("Gwdsp must have nonnegative internal effect parameter");
 	}
-//	this->lpNetwork = 0;
-//	this->lpNetworkCache = 0;
+	this->lnc = nc;
 }
 
 
@@ -60,7 +57,7 @@ TotalGwdspAlterNCEffect::TotalGwdspAlterNCEffect(const EffectInfo * pEffectInfo,
  * @param[in] period the period of interest
  * @param[in] pCache the cache object to be used to speed up calculations
  */
-void TotalGwdspAlterNCEffect::initialize(const Data * pData,
+void TotalGwdspEffect::initialize(const Data * pData,
 	State * pState,
 	int period,
 	Cache * pCache)
@@ -82,7 +79,7 @@ void TotalGwdspAlterNCEffect::initialize(const Data * pData,
 /**
  * Calculates the contribution of a tie flip to the given actor.
  */
-double TotalGwdspAlterNCEffect::calculateChangeContribution(int actor,
+double TotalGwdspEffect::calculateChangeContribution(int actor,
 		int difference)
 {
 	double contribution = 0;
@@ -90,8 +87,6 @@ double TotalGwdspAlterNCEffect::calculateChangeContribution(int actor,
 	
 	if (pNetwork->outDegree(actor) > 0) 
 	{
-		// The formula for the effect:
-		// tbd
 
 		this->lpInitialisedTable = 0;
 
@@ -100,36 +95,17 @@ double TotalGwdspAlterNCEffect::calculateChangeContribution(int actor,
 				else
 					this->lpInitialisedTable = this->pInStarTable();
 
-		double sumAlterValue = 0;
-		// double denom = 0;
+		double sum = 0;
 		for (int j = 0; j < this->n(); j++) //inefficient?
 		{
-			double alterValue = 0;
 			int twoc = 0;
 			if (j != actor)
 			{
-				if (this->lforward)
-					twoc = this->lpInitialisedTable->get(j);
-				else 
-					twoc = this->lpInitialisedTable->get(j);
-				alterValue = this->value(j) * this->lcumulativeWeight[twoc];
-				// int tieValue =  this->pNetwork()->tieValue(actor, j);
-				// if (((pNetwork->inDegree(j) - tieValue)> 0) && (this->ldivide2))
-				// {
-				// 	alterValue /= (pNetwork->inDegree(j) - tieValue);
-				// }
-				sumAlterValue += alterValue;
+				twoc = this->lpInitialisedTable->get(j);
+				sum += this->lcumulativeWeight[twoc];
 			}
 		}
-		contribution = difference * sumAlterValue;
-		// if (denom != 0)
-		// {
-		// 	contribution /= denom; //what happens if denom == 0 but sumaAlterValue != 0 ?
-		// }
-	// 	if (this->ldivide1)
-	// 	{
-	// 		contribution /= pNetwork->outDegree(actor);
-	// 	}
+		contribution = difference * sum;
 	}
 	return contribution;
 }
@@ -138,7 +114,7 @@ double TotalGwdspAlterNCEffect::calculateChangeContribution(int actor,
 /**
  * Calculates the statistic corresponding to the given ego.
  */
-double TotalGwdspAlterNCEffect::egoStatistic(int ego, double * currentValues)
+double TotalGwdspEffect::egoStatistic(int ego, double * currentValues)
 {
 	double statistic = 0;
 	const Network * pNetwork = this->pNetwork();
@@ -151,12 +127,10 @@ double TotalGwdspAlterNCEffect::egoStatistic(int ego, double * currentValues)
 				pathCount = pNetwork->twoPathCount(ego, j);
 			else
 				pathCount = pNetwork->inTwoStarCount(ego, j);
-			statistic += (currentValues[j] + this->overallCenterMean()) *
-					this->lcumulativeWeight[pathCount];
+			statistic += this->lcumulativeWeight[pathCount];
 		}
 	}
-	statistic *= (currentValues[ego] + this->overallCenterMean());
-
+	statistic *= lnc ? currentValues[ego] : currentValues[ego] + this->overallCenterMean();
 	return statistic;
 }
 

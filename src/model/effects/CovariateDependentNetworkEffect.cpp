@@ -164,6 +164,33 @@ double CovariateDependentNetworkEffect::value(const int i) const
 
 
 /**
+ * Returns the non-centered covariate value for the given actor.
+ */
+double CovariateDependentNetworkEffect::rawValue(const int i) const
+{
+	double value = 0;
+
+	if (this->lpConstantCovariate)
+	{
+		value = this->lpConstantCovariate->value(i);
+	}
+	else if (this->lpChangingCovariate)
+	{
+		value = this->lpChangingCovariate->value(i, this->period() + lSimulatedOffset);
+	}
+	else if (this->lpBehaviorData)
+	{
+		value = this->lvalues[i];
+	}
+	else
+	{
+		value = this->lcontinuousValues[i];
+	}
+
+	return value;
+}
+
+/**
  * Returns if the covariate value for the given actor is missing.
  */
 bool CovariateDependentNetworkEffect::missing(int i) const

@@ -3,14 +3,14 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: IndegreeWeightedAverageGroupEffect.h
+ * File: DegreeWeightedAverageGroupEffect.h
  *
  * Description: This file contains the definition of the
- * IndegreeWeightedAverageGroupEffect class.
+ * DegreeWeightedAverageGroupEffect class.
  *****************************************************************************/
 
-#ifndef INDEGREEWEIGHTEDAVERAGEGROUPEFFECT_H_
-#define INDEGREEWEIGHTEDAVERAGEGROUPEFFECT_H_
+#ifndef DEGREEWEIGHTEDAVERAGEGROUPEFFECT_H_
+#define DEGREEWEIGHTEDAVERAGEGROUPEFFECT_H_
 
 #include "NetworkDependentBehaviorEffect.h"
 
@@ -18,12 +18,13 @@ namespace siena
 {
 
 /**
- * Average of the statistic z_j weighted by indegree for the group.
+ * Average of the statistic z_j weighted by in or outdegree for the group.
  */
-class IndegreeWeightedAverageGroupEffect : public NetworkDependentBehaviorEffect
+class DegreeWeightedAverageGroupEffect : public NetworkDependentBehaviorEffect
 {
 public:
-	IndegreeWeightedAverageGroupEffect(const EffectInfo * pEffectInfo, bool divide);
+	DegreeWeightedAverageGroupEffect(const EffectInfo * pEffectInfo, bool divide,
+	bool outdegree, bool nc);
 
 	virtual void initialize(const Data * pData,
 		State * pState,
@@ -42,8 +43,10 @@ private:
 	// if not lcenter, centering is about the following value
 	double lcenteringValue {};
 	bool ldivide {};
+	bool loutdegree {}; // true = weight by outdegree rather than indegree
+	bool lnc {};
 };
 
 }
 
-#endif /*INDEGREEWEIGHTEDAVERAGEGROUPEFFECT_H_*/
+#endif /* DEGREEWEIGHTEDAVERAGEGROUPEFFECT_H_ */

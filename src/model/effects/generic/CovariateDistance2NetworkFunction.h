@@ -21,7 +21,7 @@ class CovariateDistance2NetworkFunction: public CovariateNetworkAlterFunction
 {
 public:
 	CovariateDistance2NetworkFunction(std::string networkName, std::string covariateName,
-						bool excludeMissing, bool outgoing);
+						bool excludeMissing, bool outgoing, bool raw = false);
 	virtual ~CovariateDistance2NetworkFunction();
 	virtual void initialize(const Data * pData,
 		State * pState,
@@ -44,6 +44,7 @@ protected:
 private:
 	bool lexcludeMissing {};
 	bool loutgoing {};
+	bool lraw {};
 	double * laverageAlterValues {};
 	double * ltotalAlterValues {};
 	bool * laverageAlterMissing {};

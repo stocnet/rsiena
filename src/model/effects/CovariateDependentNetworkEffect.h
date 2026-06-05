@@ -50,6 +50,7 @@ public:
 
 protected:
 	double value(const int i) const;
+	double rawValue(const int i) const;
 	bool missing(int i) const;
 	double actor_similarity(int i, int j) const;
 	double covariateMaximum() const;

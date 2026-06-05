@@ -114,6 +114,25 @@ double CovariateNetworkAlterFunction::covmean() const
 }
 
 /**
+ * Returns the non-centered (raw) covariate value for the given actor.
+ * For constant/changing covariates this is identical to covvalue().
+ * This assumes that the user has not centered the covariate values in R.
+ * For behavior variables this returns lvalues[alter] without mean subtraction.
+ */
+double CovariateNetworkAlterFunction::rawCovvalue(int alter) const
+{
+	if (this->lpConstantCovariate)
+	{
+		return this->lpConstantCovariate->value(alter);
+	}
+	if (this->lpChangingCovariate)
+	{
+		return this->lpChangingCovariate->value(alter, this->lperiod);
+	}
+	return this->lvalues[alter];
+}
+
+/**
  * Returns the covariate value for the given actor.
  * For behavior, returns the centered value.
  */

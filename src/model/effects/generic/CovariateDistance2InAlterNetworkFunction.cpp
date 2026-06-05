@@ -24,17 +24,19 @@ namespace siena
  * associated with
  * @param[in] covariateName the name of the covariate this function is
  * associated with
- * @param[in] parameter the value of the internal effect parameter this
- * function is associated with
  * @param[in] excludeMissing: whether to exclude missing values
+ * @param[in] total: whether to calculate the total value
+ * @param[in] raw: whether to use raw values (non-centered) of a behavior
+ * variable instead of centered values
  */
 CovariateDistance2InAlterNetworkFunction::
 CovariateDistance2InAlterNetworkFunction(string networkName, string
-	covariateName, bool excludeMissing, bool total) :
-	CovariateDistance2NetworkFunction(networkName, covariateName, excludeMissing, false)
+	covariateName, bool excludeMissing, bool total, bool raw) :
+	CovariateDistance2NetworkFunction(networkName, covariateName, excludeMissing, false, raw)
 {
 	this->lexcludeMissing = excludeMissing;
 	this->ltotal = total;
+	this->lraw = raw;
 }
 
 
@@ -78,22 +80,23 @@ double CovariateDistance2InAlterNetworkFunction::value(int alter) const
 		
 		if (this->pNetwork()->tieValue(this->ego(), alter) == 1)
 		{
+			double egoVal = this->lraw
+				? CovariateNetworkAlterFunction::rawCovvalue(this->ego())
+				: CovariateNetworkAlterFunction::covvalue(this->ego());
 			if (this->ltotal)
 			{
-				value = (value -
-					CovariateNetworkAlterFunction::covvalue(this->ego()));
+				value = (value - egoVal);
 			}
 			else
 			{
 				int degree = this->pNetwork()->inDegree(alter);
 				if (degree > 1)
 				{
-					value = (degree * value -
-				CovariateNetworkAlterFunction::covvalue(this->ego()))/(degree - 1);
+					value = (degree * value - egoVal) / (degree - 1);
 				}
 				else
 				{
-					value = CovariateNetworkAlterFunction::covmean();
+					value = this->lraw ? 0 : CovariateNetworkAlterFunction::covmean();
 				}
 			}
 		}

@@ -24,7 +24,8 @@ class CovariateAlterEffect : public CovariateDependentNetworkEffect
 {
 public:
 	CovariateAlterEffect(const EffectInfo * pEffectInfo, const bool leftThresholded,
-							const bool rightThresholded, const bool squared);
+							const bool rightThresholded, const bool squared, 
+							const bool nc);
 
 	virtual double calculateContribution(int alter) const;
 
@@ -36,6 +37,7 @@ private:
 	bool lrightThresholded {};
 	double lthreshold {};
 	bool lsquared {};
+	bool lnc {};
 };
 
 }

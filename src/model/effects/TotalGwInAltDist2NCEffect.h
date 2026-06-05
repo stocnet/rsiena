@@ -1,0 +1,43 @@
+/******************************************************************************
+ * SIENA: Simulation Investigation for Empirical Network Analysis
+ *
+ * Web: http://www.stats.ox.ac.uk/~snijders/siena/
+ *
+ * File: TotalGwInAltDist2NCEffect.h
+ *
+ * Description: This file contains the definition of the
+ * TotalGwInAltDist2NCEffect class.
+ *****************************************************************************/
+
+#ifndef TOTALGWINALTDIST2NCEFFECT_H_
+#define TOTALGWINALTDIST2NCEFFECT_H_
+
+#include "NetworkDependentBehaviorEffect.h"
+
+namespace siena
+{
+
+/**
+ * Non-centered alter-wise geometrically weighted in-distance-2 effect.
+ */
+class TotalGwInAltDist2NCEffect : public NetworkDependentBehaviorEffect
+{
+public:
+	explicit TotalGwInAltDist2NCEffect(const EffectInfo * pEffectInfo);
+
+	virtual double calculateChangeContribution(int actor,
+		int difference);
+	virtual double egoStatistic(int ego, double * currentValues);
+
+private:
+	double gwWeight(double total) const;
+
+	double linternalEffectParameter {};
+	double lweight {};
+	double lexpmweight {};
+	double lexpfactor {};
+};
+
+}
+
+#endif /* TOTALGWINALTDIST2NCEFFECT_H_ */
