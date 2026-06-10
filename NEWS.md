@@ -1,3 +1,19 @@
+2026-06-10
+
+# RSiena 1.6.9
+
+## Changes in RSiena:
+### Functionality
+  * `print.sienaGroup` now also specifies the node sets for covariates
+    and restricts printed line lengths to 64.
+  * Use of `r` in `estimate_onestep` effectuated.
+  * `checkEffects.R` corrected so that it will run without errors
+    and can be used for batch checking (will take a long time).
+### Bug correction
+  * `make_specification` corrected for a continuous dependent behavior variable
+    and for two dependent networks and varying actor covariates (`effects.r`).
+  * Use of `prevAns` with one-step estimator corrected (`initializeFRAN.r`). 
+
 2026-06-06
 
 # RSiena 1.6.8
@@ -7,7 +23,7 @@
   * Selection of effects for combinations of two dependent networks
     and an actor covariate improved, which leads to including
     more effects for combinations where one of the dependent networks
-    is bipartite.
+    is bipartite (`effects.r`, `effectsDocumentation.r`).
 ### Functionality
   * New function `estimate_onestep`.
   * Option `onestep` for `update_theta.sienaEffects` changed.

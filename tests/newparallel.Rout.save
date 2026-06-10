@@ -1725,9 +1725,14 @@ Simulated statistics are in x$sf, where x is the created object.
 
 Total of 605 iteration steps.
 
+> print('test25')
+[1] "test25"
+> effectsDocumentation()
+Effects documentation written to file effects.html .
 > ## delete output files
 > if (file.exists('mydata_out.txt')){unlink('mydata_out.txt')}
+> if (file.exists('effects.html')){unlink('effects.html')}
 > 
 > proc.time()
    user  system elapsed 
-  42.39    0.81   43.34 
+  41.65    1.17   43.81 

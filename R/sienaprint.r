@@ -13,6 +13,39 @@
 ## * even if these main effects were not requested.
 ## *
 ## ****************************************************************************/
+
+##@printWithLineMax for print.siena; prints character strings
+printWithLineMax <- function(heading, contents, contentkinds){
+# function to print contents with categories contentkinds
+# with a heading; line length maximum 4 + 60
+# heading is a character string,
+# contents and contentkinds are characters strings of the same length
+	if (length(contents) != length(contentkinds))
+	{
+		stop("Error in printWithLineMax: contents and contentkinds have different length")
+	}
+	vsets <- unique(contentkinds)
+	for (vk in vsets)
+	{
+		cat(heading, "<", vk, "> : \n")
+		contentk <- contents[contentkinds==vk]
+		cumlength <- 0
+		cat("   ")
+		for (k in seq_along(contentk))
+		{
+			cumlength <- cumlength + nchar(contentk[k])
+			if (cumlength > 60)
+			{
+				cat("\n   ")
+				cumlength <- 0
+			}
+			cat(contentk[k])
+			if (k < length(contentk)){cat(", ")}				
+		}
+		cat("\n")
+	}
+	cat("\n")
+}	
 ##@print.sienadata Methods
 print.sienadata <- function(x, ...)
 {
@@ -51,38 +84,6 @@ print.sienadata <- function(x, ...)
 			}
 		}
 	}
-    ##@printWithLineMax internal print.siena; prints character strings
-	printWithLineMax <- function(heading, contents, contentkinds){
-	# function to print contents with categories contentkinds
-	# with a heading; line length maximum 4 + 60
-	# heading is a character string, 
-	# contents and contentkinds are characters strings of the same length
-		if (length(contents) != length(contentkinds))
-		{
-			stop("Error in printWithLineMax: contents and contentkinds have different length")
-		}
-		vsets <- unique(contentkinds)
-		for (vk in vsets)
-		{
-			cat(heading, "<", vk, "> : \n")
-			contentk <- contents[contentkinds==vk]
-			cumlength <- 0
-			cat("   ")
-			for (k in seq_along(contentk))
-			{
-				cumlength <- cumlength + nchar(contentk[k])
-				if (cumlength > 60)
-				{
-					cat("\n   ")
-					cumlength <- 0
-				}
-				cat(contentk[k])
-				if (k < length(contentk)){cat(", ")}				
-			}
-			cat("\n")
-		}
-		cat("\n")
-	}	
 # begin main method siena.print proper
 	if ((!inherits(x, "sienadata")) & (!inherits(x, "siena")))
 	{
@@ -243,16 +244,20 @@ print.sienaGroup <- function(x, ...)
 	cat('Dependent variables: \n')
 	cat(paste(att$netnames, ":", att$types,'\n'))
 	cat('Total number of groups:', length(x),'\n')
-	cat('Total number of periods:', att$observations,'\n')
+	cat('Total number of periods:', att$observations,'\n')	
 	if (length(x[[1]]$vCovars) > 0)
 	{
-		cat('Changing covariates: ',
-			paste(names(x[[1]]$vCovars), collapse = ", "), "\n")
-	}
+		vnodesets <- sapply(x[[1]]$vCovars, function(v){attr(v,"nodeSet")})
+		printWithLineMax("Changing covariates for node set", names(x[[1]]$vCovars), vnodesets)
+	}		
 	if (length(x[[1]]$dyvCovars) > 0)
 	{
-		cat('Changing dyadic covariates: ',
-			paste(names(x[[1]]$dyvCovars), collapse=", "), "\n")
+		kindNodeSets <- rep("", length(x[[1]]$dyvCovars))
+		for (k in seq_along(x[[1]]$dyvCovars))
+		{
+			kindNodeSets[k] <- paste(attr(x[[1]]$dyvCovars[[k]],"nodeSet"), collapse=", ")
+		}
+		printWithLineMax("Changing dyadic covariates for node sets", names(x[[1]]$dyvCovars), kindNodeSets)
 	}
 	cat("\n")
 	invisible(x)

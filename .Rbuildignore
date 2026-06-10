@@ -6,6 +6,8 @@
 ^\.github$
 ^\.git$
 ^checkEffects.R$
+^checkTheEffects.R$
+^checkEffects*.out$
 ^ONEWS$
 ^ONEWS_gh$
 ^README.md$
