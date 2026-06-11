@@ -331,5 +331,8 @@ myalg <- set_algorithm_saom(nsub=2, n3=50, cond=FALSE, seed=5, simOnly=TRUE,
 				thetaValue=thv)
 print('test24')
 (ans <- siena(mymodel, data=mydata, effects=myeff, control_algo=myalg, batch=TRUE, silent=TRUE))
+print('test25')
+effectsDocumentation()
 ## delete output files
 if (file.exists('mydata_out.txt')){unlink('mydata_out.txt')}
+if (file.exists('effects.html')){unlink('effects.html')}

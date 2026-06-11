@@ -216,7 +216,7 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version1.6.8.
+This version was renewed for \RS version1.6.9.
 
 In version 1.6, the names of \RS functions have undergone
 important changes. This manual is for the new names.
@@ -1187,7 +1187,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g., 1.6.8).
+  identified by a version number (e.g., 1.6.9).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -6616,6 +6616,21 @@ it by, e.g., a factor 2 or a factor 5, and then try again
 a few estimation runs.
 
 
+\subsubsection{Treatment of missing data}
+
+For missing data in the dependent variables (not in the covariates!),
+a different procedure is used than the one in the Methods of Moments
+estimation procedure.
+The missing data at the beginning of the wave are modeled as random
+variables with a simple prior distribution, given by the
+distribution of the non-missing entries for this wave.
+(For Maximum Likelihood estimation, this is a Bayesian incursion
+in an otherwise frequentist approach...) 
+The missing data at the end of the wave are modeled
+as random variables with the distribution implied
+by the Markov chain model with the estimated parameters.
+
+
 \iffalse
 \SI supplies three alternative MCMC algorithms for the
 Bayesian estimation of the objective function parameters:
@@ -8884,11 +8899,25 @@ will be significant.
   determined by parameter \texttt{mult} (`multiplication factor')
   in the call of \textsf{set\_algorithm\_saom} that created the algorithm object.
 \end{enumerate}
-  The function \textsf{multi\_siena} is time-consuming. When starting to use it, it is advisable
+  The function \textsf{multi\_siena} is time-consuming. When starting to use it, 
+  it is advisable
   to start with low values of \texttt{nmain} to explore computing time.
   When the procedure seems to diverge, and for very small groups, it is
   advisable to use smaller values of the parameters \texttt{initgainGlobal}
   and \texttt{initgainGroupwise}; and perhaps \texttt{reductionFactor}.
+
+
+\subsubsection{Treatment of missing data}
+
+For missing data in the dependent variables (not in the covariates!), 
+a different procedure is used than the one in the Methods of Moments
+estimation procedure.
+The missing data at the beginning of the wave are modeled as random
+variables with a simple prior distribution, given by the
+distribution of the non-missing entries for this wave.
+The missing data at the end of the wave are modeled
+as random variables with the distribution implied
+by the Markov chain model with the estimated parameters.
 
 
 \subsubsection{Which data sets to use for multi\_siena}
@@ -8961,8 +8990,8 @@ Non-constant rate functions currently are not supported in \textsf{multi\_siena}
 The extra part of model specification for \textsf{multi\_siena},
 compared to \textsf{siena},
 is that it is required to specify which parameters are
-randomly varying from group to group, and which are fixed across groups.
-The specification of fixed vs.\ randomly varying
+randomly varying from group to group, and which are constant across groups.
+The specification of constant vs.\ randomly varying
 for the other parameters is done in the function
 \textsf{set\_effect}, by its parameter \texttt{random}.
 To be able to see which of the effects are specified in this way,
@@ -8981,7 +9010,7 @@ that perhaps you do not want to see.
 The exception to the rate parameters being always randomly varying
 is that they may be fixed --- in which case all of them need to be fixed,
 and input parameter \\
-\texttt{priorRatesFromData} needs to be set to --2.
+\texttt{priorRatesFromData} needs to be set to --1.
 \medskip
 
 There currently is little advice about which effects to specify
@@ -8999,21 +9028,21 @@ The basic issues are the following.
    varying for which the time heterogeneity is largest according to the
    groupwise results.)
 \item[\emph{misspecification:}] if it would be erroneously assumed
-    that the effect is fixed across groups, would this affect
+    that the effect is constant across groups, would this affect
     the parameter estimates of primary interest?\\
     (About this we have little general knowledge; it can be tried out
     by running estimations for different specifications of this
     part of the model.)
 \item[\emph{convergence:}] specifying effects as random will
     influence convergence. Up to a point, randomly varying parameters
-    will have better convergence properties than fixed parameters;
+    will have better convergence properties than constant parameters;
     but if their number is too large, given the number of groups,
     convergence can deteriorate again.
     This may then lead to outliers in the posterior means,
     which can be diagnosed by function \sfn{plotPostMeansMDS}.
 \item[\emph{amount of information:}] which specification will
      use the information in the data most efficiently?\\
-     (Here finally we do have a provisional answer. Assuming that an effect is fixed
+     (Here finally we do have a provisional answer. Assuming that an effect is constant
      across groups will give a smaller uncertainty ---posterior standard
      deviation, interpreted as standard error--- in the estimated parameter
      than assuming it varies randomly;
@@ -9023,7 +9052,7 @@ The basic issues are the following.
      there is no strong prior knowledge that they are variable across groups,
      and which are tested as a primary issue for answering the research question,
      from the point of view of statistical power
-     it is advisable to specify that they are fixed.)
+     it is advisable to specify that they are constant.)
 \end{description}
 
 
@@ -9526,10 +9555,10 @@ initial estimate by the multiple groups method and may be disregarded.
 \medskip
 
 When comparing results for specifications that differ with respect
-to specifying the effects as fixed or varying across groups,
+to specifying the effects as constant or varying across groups,
 it will be noted that posterior standard deviations for the means
 are larger when specifying the effects as randomly varying, as compared
-to specifying them as fixed. This is natural, and it is associated
+to specifying them as constant. This is natural, and it is associated
 with a difference in interpretation.
 Specifying the effect as randomly varying implies that there also is
 an important step of generalization from the observed groups to the population
@@ -17736,12 +17765,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type
-\verb|R CMD check RSiena_1.6.8.tar.gz|\\
+\verb|R CMD check RSiena_1.6.9.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.6.8.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.6.9.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -18408,7 +18437,7 @@ Changes in RSiena:
 \fi
 
 
-\item 2026-06-06 GitHub, package version 1.6.8.
+\item 2026-06-10 GitHub, package version 1.6.9.
 
 Changes in RSiena:
 \begin{itemize}
@@ -18424,9 +18453,9 @@ Changes in RSiena:
   \item New function \sfn{estimate\_onestep}.
   \item Option \texttt{onestep} for \sfn{update\_theta.sienaEffects} changed.
   \item Hidden option to use the one-step estimator with 
-      \texttt{prevAns} in \sfn{siena}.
-  \item \sfn{print.sienadata} now specifies the node sets for covariates
-    and restricts printed line lengths to 64.
+      \texttt{prevAns} in \sfn{siena} (experimental).
+  \item \sfn{print.sienadata} and \sfn{print.sienaGroup} now specify 
+    the node sets for covariates and restricts printed line lengths to 64.
   \item More informative error message in \sfn{make\_data\_rsiena} if the number
     of elements of the second node set for bipartite networks is not correct.
   \item In \sfn{transformScript}, the replacement for \sfn{descriptives.sienaGOF}
@@ -18437,7 +18466,7 @@ Changes in RSiena:
   \item Reorganization and clarification of \texttt{effectGroups} for combinations
     of two dependent networks and an actor covariate:
     these now are \texttt{covarNetNetObjective}, \\
-    \texttt{covarANetNetObjective},\texttt{covarAWNetNetObjective},\\
+    \texttt{covarANetNetObjective}, \texttt{covarAWNetNetObjective},\\
     \texttt{covarADNetNetObjective}, 
     \texttt{covarBNetNetObjective},\\
     \texttt{covarBXNetNetObjective}.

@@ -421,8 +421,7 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 				}
 				for (k in seq(along=xx$depvars))
 				{
-					if ((types[k] %in% c('behavior', 'continuous')) &&
-						(attr(xx$depvars[[k]], 'nodeSet') == nodeSet))
+					if (types[k] %in% c('behavior', 'continuous'))
 					{
 						objEffects <-
 							rbind(objEffects,
@@ -1214,7 +1213,7 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 							covarname=names(xx$vCovars)[k],
 							nodeSets, # this is attr(depvar, 'nodeSet')
 							attr(xx$depvars[[j]], 'nodeSet'),
-							attr(xx$cCovars[[k]], 'nodeSet'),
+							attr(xx$vCovars[[k]], 'nodeSet'),
 							name=varname))
 				}
 				for (k in seq(along = xx$dycCovars))
@@ -1247,15 +1246,16 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 				}
 				for (k in seq(along=xx$depvars))
 				{
-					if (types[k] %in% c('behavior', 'continuous') &&
-						attr(xx$depvars[[k]], 'nodeSet') == nodeSets[1])
+					if (types[k] %in% c('behavior', 'continuous'))
 					{
 						objEffects <-
 							rbind(objEffects,
-								createEffects("covarABipNetObjective", otherName,
-									names(xx$depvars)[k], name=varname,
-									groupName=groupName, group=group,
-									netType=netType))
+								covarNetNetEff(otherName,
+									covarname=names(xx$depvars)[k],
+									nodeSets, # this is attr(depvar, 'nodeSet')
+									attr(xx$depvars[[j]], 'nodeSet'),
+									attr(xx$depvars[[k]], 'nodeSet'),
+									name=varname))
 					}
 				}
 			}

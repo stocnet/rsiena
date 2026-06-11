@@ -35,9 +35,9 @@ DyadicCovariateAvAltEffect::DyadicCovariateAvAltEffect(
 	// Indicates that the dyadic covariate is used as a weight;
 	// if not, used as the variable.
 	this->lpar2 = (pEffectInfo->internalEffectParameter() >= 2);
-	// Indicates wether in or outgoing ties should be used
-	this->loutgoing = outgoing;
 	// specifies type of denominator
+	this->loutgoing = outgoing;
+	// Indicates wether in or outgoing ties should be used
 	if (!lasWeight) {lpar2 = false;}
 }
 

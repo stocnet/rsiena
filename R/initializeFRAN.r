@@ -278,7 +278,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 				if (x$useOneStep)
 				{
 					keepStill <- which(prevAns$fixed)
-					if (length(keepStill == 0))
+					if (length(keepStill) == 0)
 					{
 						keepStill <- 0
 					}				
@@ -2153,7 +2153,7 @@ update_theta.sienaEffects <- function(x, prevAns, varName=NULL,
 	eff <- updateTheta(x, prevAns=prevAns, varName=varName)
 	if (onestep)
 	{
-		est_onestep <- estimate_onestep(prevAns, fixed=keepUnchanged)
+		est_onestep <- estimate_onestep(prevAns, fixed=keepUnchanged, r=r)
 		effsF <- prevAns$requestedEffects 
 		requested <- which(names(prevAns$requestedEffects)=="requested")
 		effsF$initialValue <- est_onestep
