@@ -416,7 +416,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 				SEXP thisChain;
 				if (returnDataFrame)
 				{
-					thisChain = getChainDFPlus(*(pEpochSimulation->pChain()), true);
+					thisChain = getChainDFPlus(*(pEpochSimulation->pChain()), false);
 				}
 				else
 				{
@@ -665,7 +665,7 @@ SEXP mlPeriod(SEXP DERIV, SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
 		if (returnDataFrame)
 		{
 			PROTECT(theseValues =
-				Rf_duplicate(getChainDFPlus(*(pMLSimulation->pChain()), true)));
+				Rf_duplicate(getChainDFPlus(*(pMLSimulation->pChain()), false)));
 		}
 		else
 		{
