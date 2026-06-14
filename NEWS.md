@@ -1,3 +1,15 @@
+2026-06-14
+
+# RSiena 1.6.10
+
+## Changes in RSiena:
+### Bug correction
+  * Running `siena` with `returnChains = TRUE, returnDataFrame = TRUE`
+    corrected.
+### Functionality
+  * Undo sorting of returned data frames for `returnChains=TRUE`
+    (`siena07models.cpp`).
+
 2026-06-10
 
 # RSiena 1.6.9
