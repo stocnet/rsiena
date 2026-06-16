@@ -10,7 +10,7 @@
  *****************************************************************************/
 
 #include <stdexcept>
-#include <math.h> /* round */
+#include <cmath> /* round, sqrt */
 #include "DoubleCovariateFunction.h"
 #include "data/Data.h"
 #include "data/ConstantCovariate.h"

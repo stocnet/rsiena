@@ -10,7 +10,7 @@
  *****************************************************************************/
 
 #include "DoubleCovariateCatFunction.h"
-#include <math.h> /* round, sqrt */
+#include <cmath> /* round, sqrt */
 #include "utils/Utils.h"
 #include "network/Network.h"
 #include "network/IncidentTieIterator.h"

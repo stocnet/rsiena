@@ -535,8 +535,14 @@ sienaTimeTest <- function (x, effects=NULL, excludedEffects=NULL,
 		groupTestP <- NA
 		cat('No first dummy tested ...\n')
 	}
+	sienaFitName <- deparse(substitute(x))
+# Check if it looks like a pipe chain 
+	if (grepl("%>%|\\|>", sienaFitName)) 
+	{
+		sienaFitName <- "sienaFitObject"
+	}
 	returnObj <- list(
-		sienaFitName=deparse(substitute(x)),
+		sienaFitName=sienaFitName,
 		JointTest=jointTestP,
 		EffectTest=effectTestP,
 		IndividualTest=thetaStar,

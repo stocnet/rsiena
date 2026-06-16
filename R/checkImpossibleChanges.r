@@ -26,7 +26,7 @@ notNetwork <- function(depv){
 ##@checkImpossibleChanges checks for likelihood calculations
 checkImpossibleChanges <- function(x)
 {
-	if (!inherits(x,'sienadata'))
+	if (!(inherits(x, "sienadata") | inherits(x, "siena")))
 	{
 		stop('checkImpossibleChanges can only be applied to siena data objects')
 	}
@@ -76,7 +76,7 @@ checkImpossibleChanges <- function(x)
 ##@checkZeroChanges checks for likelihood calculations
 checkZeroChanges <- function(x)
 {
-	if (!inherits(x,'sienadata'))
+	if (!(inherits(x, "sienadata") | inherits(x, "siena")))
 	{
 		stop('checkZeroChanges can only be applied to siena data objects')
 	}

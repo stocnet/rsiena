@@ -41,24 +41,27 @@
   set_algorithm_saom(maxlike = FALSE, gmm = FALSE,
     cond = NA, condvarno = 0, condname = "",
     simOnly = FALSE,
-    targets = NULL, thetaValues = NULL, seed = NULL,
+    targets = NULL, thetaValues = NULL,
+    seed = NULL,
     n3 = 1000, nsub = 4, n2start = NULL, firstg = 0.2, reduceg = 0.5,
     truncation = 5, doubleAveraging = 0,
     diagonalize = 0.2*!maxlike, standardizeVar = (diagonalize<1),
-    dolby = TRUE, useStdInits = FALSE, findiff = FALSE,
+    dolby = TRUE, splitDepvars = 0,
+    useStdInits = FALSE, findiff = FALSE,
     mult = 5, prML = 1, maximumPermutationLength = 40,
     minimumPermutationLength = 2, initialPermutationLength = 20,
     localML = FALSE)
 
 set_output_saom(outputName = NULL, lessMem = FALSE,
-    returnThetas = FALSE, 
+    returnThetas = FALSE,
     returnChains = FALSE, returnDataFrame = FALSE,
     returnChangeContributions = FALSE)
 
 sienaAlgorithmCreate(fn, projname = "Siena", MaxDegree = NULL,
-     Offset = NULL, useStdInits = FALSE, 
+     Offset = NULL, useStdInits = FALSE,
      n3 = 1000, nsub = 4, n2start = NULL,
-     dolby = TRUE, maxlike = FALSE, gmm = FALSE, 
+     dolby = TRUE, splitDepvars = 0,
+     maxlike = FALSE, gmm = FALSE,
      diagonalize = 0.2*!maxlike,
      condvarno = 0, condname = "", firstg = 0.2, reduceg = 0.5,
      cond = NA, findiff = FALSE, seed = NULL,
@@ -69,9 +72,10 @@ sienaAlgorithmCreate(fn, projname = "Siena", MaxDegree = NULL,
      standardizeVar = (diagonalize<1), lessMem = FALSE, silent = FALSE)
 
 sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL,
-     Offset = NULL, useStdInits = FALSE, 
+     Offset = NULL, useStdInits = FALSE,
      n3 = 1000, nsub = 4, n2start = NULL,
-     dolby = TRUE, maxlike = FALSE, gmm = FALSE, 
+     dolby = TRUE,  splitDepvars = 0,
+     maxlike = FALSE, gmm = FALSE,
      diagonalize = 0.2*!maxlike,
      condvarno = 0, condname = "", firstg = 0.2, reduceg = 0.5,
      cond = NA, findiff = FALSE, seed = NULL,
@@ -132,9 +136,9 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL,
     Method of Moments estimation.}
   \item{cond}{Boolean. Only relevant for Method of Moments
     simulation/estimation.
-    If TRUE, use conditional simulation; if FALSE, unconditional simulation.
+    If \code{TRUE}, use conditional simulation; if FALSE, unconditional simulation.
     If missing, decision is deferred until \code{\link{siena}},
-    when it is set to TRUE if there is only one dependent variable,
+    when it is set to \code{TRUE} if there is only one dependent variable,
     FALSE otherwise.}
   \item{condvarno}{If \code{cond} (conditional simulation), the
     sequential number of the network
@@ -142,7 +146,7 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL,
   \item{condname}{If conditional, the name of the dependent variable on
     which to condition. Use one or other of \code{condname} or
     \code{condvarno} to specify the variable.}
-  \item{simOnly}{Logical: If TRUE, then the calculation of the covariance
+  \item{simOnly}{Logical: If \code{TRUE}, then the calculation of the covariance
     matrix and standard errors of the estimates at the end of
     Phase 3 of the estimation algorithm is skipped.
     This is suitable if nsub = 0 and \code{\link{siena}}
@@ -189,14 +193,19 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL,
   \item{standardizeVar}{Logical: whether to limit deviations used in
     Robbins-Monro updates to unit variances.}
   \item{dolby}{Boolean. Should there be noise reduction by regression
-    on augmented data score. In most cases dolby = TRUE yields better
+    on augmented data score. In most cases \code{dolby = TRUE} yields better
     convergence, but takes some extra computing time;
-    if convergence is problematic, however, dolby = FALSE may be tried.
+    if convergence is problematic, however, \code{dolby = FALSE} may be tried.
     Just use whatever works best.}
-  \item{useStdInits}{Boolean. If TRUE, the initial values in the effects
+  \item{splitDepvars}{Integer with possible values \code{-1, 0, +1}.
+    If \code{-1}, obtain results as in versions
+    prior to 1.3.6. If \code{+1}, Robbins-Monro updates for a given dependent
+    variable will not depend on deviations for other dependent variables.
+    See Details.}
+  \item{useStdInits}{Boolean. If \code{TRUE}, the initial values in the effects
     object will be ignored and default values used instead.
     If FALSE, the initial values in the effects object will be used.}
-  \item{findiff}{ Boolean: If TRUE, estimate derivatives using finite
+  \item{findiff}{ Boolean: If \code{TRUE}, estimate derivatives using finite
     differences. If FALSE, use scores.}
   \item{mult}{Multiplication factor for maximum likelihood and Bayes. Number of
     steps per iteration is set to this multiple of the total distance
@@ -219,7 +228,7 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL,
     in steps in MLestimation.}
   \item{initialPermutationLength}{Initial length of permutation
     in steps in MLestimation.}
-  \item{localML}{Logical: If TRUE, and \code{maxlike}, then calculations
+  \item{localML}{Logical: If \code{TRUE}, and \code{maxlike}, then calculations
     are sped up for models with all local effects.}
   For \code{set_output_saom}:
   \item{outputName}{If \code{outputName = NULL} and the Siena data set
@@ -259,6 +268,12 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL,
   This function creates an object with the elements required to control the
   Robbins-Monro algorithm. Those not
   available as arguments can be changed manually when desired.\cr
+  The matrix \code{D} transforming deviations from targets to updates
+  in the Robbins Monro steps are partially diagonalized
+  if \code{diagonalize > 0}; and its between-dependent variable blocks
+  are put to \code{0} if \code{splitDepvars=1}. Diagonalization is omitted
+  for the update step immediately at the end of Phase if \code{splitDepvars=-1}.
+
   The value \code{prML = 1} defines the defaults valid in RSiena up to version
   1.3.16. For ML estimation with only one dependent variable,
   \code{prML = 2} may be more efficient.\cr

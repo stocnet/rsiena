@@ -19,7 +19,7 @@
   or score-type tests (if the parameters were fixed and tested).\cr
   The function \code{test_parameter} chooses among the
   functions \code{Wald.RSiena},  \code{Multipar.RSiena},
-  \code{testSame.RSiena},   and \code{score.Test},
+  \code{testSame.RSiena}, and \code{score.Test},
   based on the input given. The export of the latter three functions is superfluous,
   but they are kept for backward compatibility.
 }
@@ -33,7 +33,7 @@ Multipar.RSiena(x, tested)
 
 testSame.RSiena(x, e1, e2)
 
-score.Test(x, tested=x$test)
+score.Test(x, tested=x$test, onestep=FALSE)
 
 }
 \arguments{
@@ -44,8 +44,10 @@ score.Test(x, tested=x$test)
       where \code{p = x$pp}, the number of parameters in \code{x}
       excluding the basic rate parameters used for
       conditional estimation; these indicate the tested parameters.
-      Can also be a logical vector of length \code{p}; \cr
-      or, for \code{test_parameter}, a \code{k} * \code{p} matrix. }
+      Can also be a logical vector, of length \code{p}; \cr
+      or, for \code{test_parameter}, a \code{k} * \code{p} matrix; \cr
+      or, still for \code{method="score"}, a logical vector
+      for which \code{all(tested)} evaluates to \code{TRUE}. }
   \item{tested2}{A single number or vector as mentioned for \code{tested};
      these two parameters are tested for equality for \code{method = "same"}.}
   \item{A}{A \code{k} * \code{p} matrix, where \code{p = ans$pp},
@@ -54,6 +56,7 @@ score.Test(x, tested=x$test)
   \item{e1,e2}{Each an integer number between 1 and \code{p}, or a vector
     of such numbers; the hypothesis tested is that the parameters for effects
     with number/s \code{e1} are equal to those in \code{e2}.}
+  \item{onestep}{Boolean. Whether also to compute the one-step estimates.}
  \item{...}{Additional arguments (currently not used.)}
 }
 
@@ -68,19 +71,25 @@ score.Test(x, tested=x$test)
     For \code{test_parameter} and \code{Multipar.RSiena}
     if \code{tested} is a number or vector, a multivariate
     (i.e., simultaneous) test  is given of the hypothesis that
-    the  parameters mentioned in \code{tested} are 0.   \cr
-    For \code{test_parameter} if \code{"all"},
-    a test is given of all parameters in the model.\cr
-    For \code{test_parameter}
-    if \code{"same"}, the items \code{"tested"} and  \code{"tested2"}
+    the  parameters mentioned in \code{tested} are 0.
+
+    For \code{test_parameter} if \code{method="all"},
+    a test is given of all estimated parameters in the model.
+
+    For \code{test_parameter} if \code{method="same"},
+    the items \code{"tested"} and  \code{"tested2"}
     should be single numbers or vectors of equal length, and the test
-    of equality of the corresponding two parameters is given.\cr
-    For \code{test_parameter} if \code{"score"}, and for \code{score.Test},
+    of equality of the corresponding two parameters is given.
+
+    For \code{test_parameter} if \code{method="score"}, and for \code{score.Test},
     the parameters with numbers in \code{"tested"}
     should all be used in \code{x} as fixed-and-tested parameters,
     and the multivariate score test of these parameters is given
     of the hypothesis that the tested parameters have
-    the value indicated in the effects object used for obtaining \code{x}.  \cr
+    the value indicated in the effects object used for obtaining \code{x};  \cr
+    if \code{method="score"} and \code{all{tested}} evaluates to TRUE,
+    all fixed parameters are tested.
+
     The numbering of parameters is as in \code{print(x)};
     if conditional estimation was used, numbered
     as the 'Other parameters').
@@ -117,9 +126,10 @@ myalgo <- set_algorithm_saom(nsub=1, n3=40, seed=1777)
 mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
 mydata <- make_data_rsiena(mynet)
 myeff <- make_specification(mydata)
-myeff <- set_effect(myeff, list(transTrip, transTies))
+myeff <- set_effect(myeff, list(gwespFF,gwespFB))
 myeff <- set_effect(myeff, list(outAct, outPop), fix=TRUE, test=TRUE)
 (ans <- siena(mydata, effects=myeff, control_algo=myalgo, batch=TRUE))
+test_parameter(ans, tested=3)
 A <- matrix(0, 2, 6)
 A[1, 3] <- 1
 A[2, 4] <- 1
@@ -132,19 +142,18 @@ sct <- test_parameter(ans, method="score",
                 tested=c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE))
 sct <- test_parameter(ans, method="score", tested=6)
 print(sct)
+test_parameter(ans, method="score", tested=TRUE)
 # Getting all 1-df score tests separately:
 for (i in which(ans$test)){
    sct <- test_parameter(ans, method="score", tested=i)
    print(sct)}
 # Testing that endowment and creation effects are identical:
 myeff1 <- make_specification(mydata)
-myeff1 <- set_effect(myeff1, list(transTrip, transTies))
-
-myeff1 <- make_specification(mydata)
+myeff1 <- set_effect(myeff1, transTrip)
 myeff1 <- set_effect(myeff1, recip, include=FALSE)
 myeff1 <- set_effect(myeff1, recip, type='creation')
 (myeff1 <- set_effect(myeff1, recip, type='endow'))
-ans1 <- siena(mydata, effects=myeff1, control_algo=myalgo, batch=TRUE)
+(ans1 <- siena(mydata, effects=myeff1, control_algo=myalgo, batch=TRUE))
 test_parameter(ans1, method="same", tested=2, tested2=3)
 }
 \keyword{tests}

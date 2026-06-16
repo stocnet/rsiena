@@ -558,11 +558,10 @@ void Chain::connect(int period, MLSimulation * pMLSimulation)
 		//	Rprintf("****** count %d\n", count);
 		if (miniSteps.size() > 0)
 		{
-			for (unsigned i = 0; i < miniSteps.size(); i++)
-			{
-				Rf_PrintValue(getMiniStepDF(*miniSteps[i]));
-			}
-
+		//	for (unsigned i = 0; i < miniSteps.size(); i++)
+		//	{
+		//		Rf_PrintValue(getMiniStepDF(*miniSteps[i]));
+		//	}
 			Rf_error("Cannot create minimal chain due to constraints");
 		}
 	}
@@ -1223,10 +1222,12 @@ MiniStep * Chain::pFirstMiniStepForLink(const MiniStep * pLinkMiniStep) const
 	}
 	if (pMiniStep != this->lpLast)
 	{
-		Rf_PrintValue(getMiniStepDF(*pMiniStep));
+	//	Rf_PrintValue(getMiniStepDF(*pMiniStep));
+		Rf_error("There is no last ministep.");
 	}
 	else
-		Rprintf("last\n");
+//		Rprintf("last\n")
+			;
 	return pMiniStep;
 }
 

@@ -122,7 +122,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 	}
 	if (!initC) ## i.e. first time round
 	{
-		if (!inherits(data,"sienadata"))
+		if ((!inherits(data,"siena")) && (!inherits(data, "sienadata")))
 		{
 			stop("not valid siena data object")
 		}
@@ -271,7 +271,20 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		{
 			if (!is.null(prevAns) && inherits(prevAns, "sienaFit"))
 			{
-				effects <- updateTheta(effects, prevAns)
+				if (is.null(x$useOneStep))
+				{
+					x$useOneStep <- FALSE
+				}
+				if (x$useOneStep)
+				{
+					keepStill <- which(prevAns$fixed)
+					if (length(keepStill) == 0)
+					{
+						keepStill <- 0
+					}				
+				}
+				effects <- update_theta(effects, prevAns, 
+							onestep=x$useOneStep, keepUnchanged=keepStill)
 			}
 		}
 		## add any effects needed for settings model
@@ -524,19 +537,28 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 				z$dfra <- prevAns$dfra
 				z$dinv <- prevAns$dinv
 				# z$dinvv must not be taken from prevAns,
-				# because the value of diagonalize
+				# because the values of diagonalize and splitDepvars
 				# is defined in x and may have changed.
 				# Therefore here we copy the corresponding lines
 				# from phase1.r.
 				# Partial diagonalization of derivative matrix
 				# for use if 0 < x$diagonalize < 1.
-				if (any(!z$gmm))
+				splitDepvars <- "splitDepvars" %in% names(x)
+				if (splitDepvars)
+				{
+					splitDepvars <- x$splitDepvars
+				}
+				if (any(!z$gmm)) 
 				{
 				  temp <- (1-x$diagonalize)*z$dfra +
 				    x$diagonalize*diag(diag(z$dfra), nrow=dim(z$dfra)[1])
 				  temp[z$fixed, ] <- 0.0
 				  temp[, z$fixed] <- 0.0
 				  diag(temp)[z$fixed] <- 1.0
+				  if (splitDepvars)
+				  {	
+						temp[outer(effects$name, effects$name, '!=')] <- 0
+				  }
 				  # Invert this matrix
 				  z$dinvv <- solve(temp)
 				}
@@ -2126,11 +2148,24 @@ updateTheta <- function(effects, prevAns, varName=NULL)
 update_theta  <- function(x, ...) UseMethod("update_theta", x)
 
 ##@updateTheta.sienaEffects Copy theta values from previous fit
-update_theta.sienaEffects <- function(x, prevAns, varName=NULL, ...){
-	updateTheta(x, prevAns=prevAns, varName=varName)
+update_theta.sienaEffects <- function(x, prevAns, varName=NULL, 
+				onestep=FALSE, keepUnchanged=0, r=1, ...){
+	eff <- updateTheta(x, prevAns=prevAns, varName=varName)
+	if (onestep)
+	{
+		est_onestep <- estimate_onestep(prevAns, fixed=keepUnchanged, r=r)
+		effsF <- prevAns$requestedEffects 
+		requested <- which(names(prevAns$requestedEffects)=="requested")
+		effsF$initialValue <- est_onestep
+# If this leads to an error, perhaps use (?)
+#	effsF$initialValue[!effsF$basicRate[effsF$include]] <- prevAns$theta + r*prevAns$oneStep
+		eff[eff$effectNumber %in% effsF$effectNumber,] <- subset(effsF ,select = -requested)
+	}
+	eff	
 }
 
-##@ numberIntn siena07 sienaBayes, number of network interaction effects used for getEffects
+
+##@ numberIntn siena07 multi_siena, number of network interaction effects used for getEffects
 numberIntn <- function(myeff){
 	if (!is.null(myeff)){	
 		numnet <- length(unique(myeff$name[myeff$shortName=="density"])) # number of dependent networks
@@ -2143,7 +2178,7 @@ numberIntn <- function(myeff){
 	ifelse((numnet <= 0), 10, nintn/numnet) # 10 is the default in getEffects
 }
 
-##@ numberIntn siena07 sienaBayes, number of behavior interaction effects used for getEffects
+##@ numberIntn siena07 multi_siena, number of behavior interaction effects used for getEffects
 numberBehIntn <- function(myeff){
 	if (!is.null(myeff)){
 		numbeh <- length(unique(myeff$name[myeff$shortName=="linear"])) # number of discrete behaviors

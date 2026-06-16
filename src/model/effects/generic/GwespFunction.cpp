@@ -13,7 +13,7 @@
 #include "network/Network.h"
 #include "model/tables/NetworkCache.h"
 #include "model/tables/EgocentricConfigurationTable.h"
-#include <math.h>
+#include <cmath>
 #include <stdexcept>
 
 using namespace std;

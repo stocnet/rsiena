@@ -119,7 +119,7 @@ maxlikec <- function(z, x, data=NULL, effects=NULL,
 				sims <- 'no simulated dependent variables'
 			}
 		}
-		else ##onlyLoglik is always byGroup (sienaBayes)
+		else ##onlyLoglik is always byGroup (multi_siena)
 		{
 			ans[[1]] <- sum(sapply(anss, '[[', 1))## loglik
 			ans[[2]] <- lapply(anss, "[[", 2)

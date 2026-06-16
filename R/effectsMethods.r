@@ -94,6 +94,7 @@ set_interaction.sienaEffects <- function(x, shortNames, type="eval",
 {
 # Same beginning as set_effect;
 # I (TS) did not succeed in making this part into a common function.
+	stop23 <- "shortNames should be a list of 2 or 3 shortNames"
 	if (!hasArg(shortNames))
 	{
 		stop("Function set_interaction needs a list of two or three shortNames")
@@ -106,6 +107,7 @@ set_interaction.sienaEffects <- function(x, shortNames, type="eval",
 		if (length(substitute(shortNames))==1)
 		{
 			shn1 <- substitute(shortNames)
+			stop(stop23)
 		}
 		else
 		{
@@ -118,12 +120,20 @@ set_interaction.sienaEffects <- function(x, shortNames, type="eval",
 		if (length(shortNames)==1)
 		{
 			shn2 <- shortNames
+			if (length(shn2) <= 1)
+			{
+				stop(stop23)
+			}
 		}
 # else test whether the shortNames are {names of objects} or {character strings}:
 # (of course those objects also must be character strings)
 		else if (is.symbol(substitute(shortNames)[[2]])) # names of objects
 		{
 			shn2 <- unlist(shortNames)
+			if (length(shn2) <= 1)
+			{
+				stop(stop23)
+			}
 		}
 		else # character strings
 		{

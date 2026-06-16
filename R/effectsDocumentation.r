@@ -31,8 +31,8 @@ effectsDocumentation <- function(effects= NULL, type="html",
 #  }
 	storage.mode(x$parm) <- "integer"
 	names(x)[4] <- ifelse(is.null(effects), "endow?", "type")
-	names(x)[5] <- "inter1"
-	names(x)[6] <- "inter2"
+	names(x)[5] <- "covar1"
+	names(x)[6] <- "covar2"
 	names(x)[8] <- "interactionType"
 	if (is.null(effects))
 	{
@@ -65,18 +65,17 @@ effectsDocumentation <- function(effects= NULL, type="html",
 				"nonSymmetricObjective",
 				"dyadObjective",
 				"covarNonSymmetricObjective",
-				"unspecifiedNetInteraction",
 				"nonSymmetricNonSymmetricObjective",
 				"nonSymmetricSymmetricObjective",
 				"nonSymmetricSymmetricSObjective",
 				"nonSymmetricBipartiteObjective",
 				"covarNetNetObjective",
 				"covarANetNetObjective",
-				"covarABNetNetObjective",
+				"covarAWNetNetObjective",
+				"covarADNetNetObjective",
 				"covarBNetNetObjective",
+				"covarBXNetNetObjective",
 				"tripleNetworkObjective",
-				"dyadANetNetObjective",
-				"covarABipNetObjective",
 				"dyadANetNetObjective",
 				"dyadBNetNetObjective",
 				"settingsObjective",
@@ -89,7 +88,6 @@ effectsDocumentation <- function(effects= NULL, type="html",
 				"dyadSecondBipartiteObjective",
 				"covarBipartiteObjective",
 				"doubleCovarNetObjective", 
-				"unspecifiedNetInteraction",
 				"bipartiteNonSymmetricObjective",
 				"bipartiteSymmetricObjective",
 				"bipartiteBipartiteObjective",
@@ -115,10 +113,18 @@ effectsDocumentation <- function(effects= NULL, type="html",
 				"continuousIntercept",
 				"continuousOneModeObjective",
 				"continuousBipartiteObjective",
-				"unspecifiedContinuousInteraction")
-
+				"covarContinuousObjective",
+				"unspecifiedContinuousInteraction")				
+# The following check is meant only for a check during coding,
+# to ensure that nothing was forgotten - or superfluous.
+	equality <- all.equal(sort(unique(RSiena::allEffects$effectGroup)),
+							sort(myorder))
+	if (class(equality) == "character")
+	{
+		cat(equality, "\n")
+		stop("effectsDocumentation does not contain the effectGroups in allEffects.csv")
+	}
 	mytab <- table(RSiena::allEffects[,1])
-
 	addtorowPos <- cumsum(c(0, mytab[myorder]))[1:length(myorder)]
 	addtorowText <- names(mytab[myorder])
 	x[is.na(x)] <- "FALSE" ## endow? field

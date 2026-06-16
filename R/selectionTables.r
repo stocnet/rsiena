@@ -560,9 +560,9 @@ interpret_selection.sienaFit <- function(x, xd, name, vname,
 					silent=FALSE, ...)
 { 	
 		selectionTable(x, xd, name, vname,
-                    as.matrix=FALSE,
-                    levls=NULL, levls.alt=levls, nfirst=x$nwarm+1,
-                    multiplier=1,
-					include.endow=FALSE, include.creation=FALSE,
-					silent=FALSE, ...)
+                    as.matrix=as.matrix,
+                    levls=levls, levls.alt=levls.alt, nfirst=nfirst,
+                    multiplier=multiplier,
+					include.endow=include.endow, include.creation=include.creation,
+					silent=silent, ...)
 }

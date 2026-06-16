@@ -52,9 +52,9 @@ Bug reports can be submitted at
   \tabular{ll}{
     Package: \tab RSiena\cr
     Type: \tab Package\cr
-    Version: \tab 1.6.0\cr
-    Date: \tab 2026-01-04\cr
-    Depends: \tab R (>= 3.5.0)\cr
+    Version: \tab 1.6.10\cr
+    Date: \tab 2026-06-14\cr
+    Depends: \tab R (>= 4.5.0)\cr
     Imports: \tab Matrix, lattice, parallel, MASS, methods, xtable\cr
     Suggests: \tab network, tools, codetools, tcltk\cr
     SystemRequirements: \tab GNU make\cr

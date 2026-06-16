@@ -101,7 +101,7 @@ influenceTable(x, xd, netname, behname,
 
 \references{
   \url{https://www.stats.ox.ac.uk/~snijders/siena/}\cr
-  See the manual, Sections 13.2 and 13.4.
+  See the manual, Sections 14.2 and 14.4.
 }
 \author{Tom Snijders}
 \seealso{\code{\link{siena}}, \code{\link{meta_siena}} }
@@ -117,4 +117,5 @@ myalgo <- set_algorithm_saom(nsub=2, n3=100, seed=1291)
                                             silent=TRUE, batch=TRUE))
 interpret_influence(ans, mydata, "mynet", "mybeh")
 }
-\keyword{models, methods}
+\keyword{models}
+\keyword{methods}

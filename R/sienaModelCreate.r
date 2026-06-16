@@ -61,13 +61,14 @@ set_algorithm_saom <- function(
 # Sets SAOM estimation procedure:
 	maxlike = FALSE, gmm = FALSE,
 	cond = NA, condvarno = 0, condname = "",
-	simOnly=FALSE,
-	targets=NULL, thetaValues = NULL, 
+	simOnly = FALSE,
+	targets = NULL, thetaValues = NULL, 
 	seed = NULL,
 # Specification of Robbins Monro algorithm:
 	n3 = 1000, nsub = 4, n2start = NULL, firstg = 0.2, reduceg = 0.5,
-	truncation=5, doubleAveraging=0,
-	diagonalize=0.2*!maxlike, standardizeVar=(diagonalize<1), dolby=TRUE,
+	truncation = 5, doubleAveraging = 0,
+	diagonalize = 0.2*!maxlike, standardizeVar = (diagonalize<1), dolby = TRUE,
+	splitDepvars = 0,
 	useStdInits = FALSE, findiff = FALSE,
 # Specification of likelihood algorithm,
 # relevant only for maximum likelihood and Bayesian estimation:
@@ -143,6 +144,7 @@ set_algorithm_saom <- function(
 	model$nsub <- nsub
 	model$n2start <- n2start
 	model$dolby <- (dolby && (!maxlike)&& (!gmm))
+	model$splitDepvars <- splitDepvars
 	if (diagonalize < 0) {diagonalize <- 0}
 	if (diagonalize > 1) {diagonalize <- 1}
 	model$diagg <- (diagonalize >= 0.9999)
@@ -251,6 +253,7 @@ sienaModelCreate <- function(fn,
 	projname="Siena", MaxDegree=NULL, Offset=NULL,
 	useStdInits=FALSE,
 	n3=1000, nsub=4, n2start = NULL, dolby=TRUE,
+	splitDepvars=0,
 	maxlike=FALSE, gmm=FALSE, diagonalize=0.2*!maxlike,
 	condvarno=0, condname='',
 	firstg=0.2, reduceg=0.5, cond=NA, findiff=FALSE,  seed=NULL,
@@ -265,6 +268,14 @@ sienaModelCreate <- function(fn,
 {
 	model <- NULL
 	checking <- any(grepl("_R_CHECK", names(Sys.getenv())))
+	fromTransformFunction <- (exists("FromTransformScript", parent.frame()))
+# TRUE means that this function was called from TransformScript,
+# and then FromTransformScript is TRUE.
+# This will lead to output that can be written to file.
+	if (fromTransformFunction)
+	{
+		silent <- TRUE
+	}
 	if (maxlike && (!is.null(MaxDegree)))
 	{
 		warning("maxlike and MaxDegree are incompatible")
@@ -274,18 +285,18 @@ sienaModelCreate <- function(fn,
 		model$projname <- tempfile("Siena")
 		if (!silent)
 		{
-		if (checking)
-		{
+			if (checking)
+			{
 	cat('If you use this algorithm object, siena07 will create/use an output file',
 				paste('Siena','.txt',sep=''),'.\n')
-		}
-			else
-		{
+			}
+				else
+			{
 	cat('If you use this algorithm object, siena07 will create/use an output file',
 				paste(model$projname,'.txt',sep=''),'.\n')
 			cat('This is a temporary file for this R session.\n')
+			}
 		}
-	}
 	}
 	else
 	{
@@ -296,7 +307,7 @@ sienaModelCreate <- function(fn,
 			{
 			cat('If you use this algorithm object, siena07 will create/use an output file',
 				paste(model$projname,'.txt',sep=''),'.\n')
-		}
+			}
 		}
 		else
 		{
@@ -305,7 +316,14 @@ sienaModelCreate <- function(fn,
 	}
 	model$useStdInits <- useStdInits
 	model$checktime <- TRUE
-	model$n3 <- n3
+	if (fromTransformFunction)
+	{
+		model$n3 <- deparse1(substitute(n3))
+	}
+	else
+	{
+		model$n3 <- n3
+	}
 	model$firstg <- firstg
 	model$reduceg <- reduceg
 	model$maxrat <- 1.0
@@ -355,9 +373,31 @@ sienaModelCreate <- function(fn,
 		model$condname <- condname
 	}
 	model$FinDiff.method <-  findiff
-	model$nsub <- nsub
-	model$n2start <- n2start
-	model$dolby <- (dolby && (!maxlike)&& (!gmm))
+	if (fromTransformFunction)
+	{
+		model$nsub <- deparse1(substitute(nsub))
+	}
+	else
+	{
+		model$nsub <- nsub
+	}
+	if (fromTransformFunction)
+	{
+		model$n2start <- deparse1(substitute(n2start))
+	}
+	else
+	{
+		model$n2start <- n2start
+	}
+	if (fromTransformFunction)
+	{
+		model$dolby <- deparse1(substitute(dolby))
+	}
+	else
+	{
+		model$dolby <- (dolby && (!maxlike)&& (!gmm))
+	}	
+	model$splitDepvars <- splitDepvars
 	if (diagonalize < 0) {diagonalize <- 0}
 	if (diagonalize > 1) {diagonalize <- 1}
 	model$diagg <- (diagonalize >= 0.9999)
@@ -401,7 +441,16 @@ sienaModelCreate <- function(fn,
 		}
 		model$UniversalOffset <- Offset
 	}
-	model$randomSeed <- seed
+#	model$randomSeed <- seed
+	
+	if (fromTransformFunction)
+	{
+		model$randomSeed <- deparse1(substitute(seed))
+	}
+	else
+	{
+		model$randomSeed <- seed
+	}
 	model$prML <- prML
 	if (length (prML) == 1)
 	{
@@ -451,7 +500,14 @@ sienaModelCreate <- function(fn,
 	model$maximumPermutationLength <- maximumPermutationLength
 	model$minimumPermutationLength <- minimumPermutationLength
 	model$initialPermutationLength <- initialPermutationLength
-	model$mult <- mult
+	if (exists(deparse1(substitute(mult))))
+	{
+		model$mult <- mult
+	}
+	else
+	{
+		model$mult <- substitute(mult)
+	}
 	model$truncation <- truncation
 	model$doubleAveraging <- doubleAveraging
 	model$sf2.byIteration <- !lessMem

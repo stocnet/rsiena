@@ -28,14 +28,14 @@
 \method{vcov}{sienaFit}(object, dropRates=TRUE, shortenNames=TRUE, ...)
 
 \method{write_result}{sienaFit}(x, type="tex",
-    fileName=paste(deparse(substitute(x)),".",type,sep=""),
+    fileName=NULL,
     vertLine=TRUE, tstatPrint=FALSE, sig=FALSE, d=3, ...)
 
 \method{xtable}{sienaFit}(x, caption = NULL, label = NULL, align = NULL,
     digits = NULL, display = NULL, ...)
 
 siena_table(x, type="tex",
-    fileName=paste(deparse(substitute(x)), ".", type,sep=""),
+    fileName=NULL,
     vertLine=TRUE, tstatPrint=FALSE, sig=FALSE, d=3, nfirst=NULL)
 }
 \arguments{

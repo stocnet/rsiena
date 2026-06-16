@@ -333,7 +333,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 						{
 							PutRNGstate();
 							SET_VECTOR_ELT(VECTOR_ELT(seedstore, group),
-								period, Rf_findVar(rs, R_GlobalEnv));
+								period, R_getVar(rs, R_GlobalEnv, TRUE));
 						}
 					}
 				}
@@ -416,7 +416,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 				SEXP thisChain;
 				if (returnDataFrame)
 				{
-					thisChain = getChainDFPlus(*(pEpochSimulation->pChain()), true);
+					thisChain = getChainDFPlus(*(pEpochSimulation->pChain()), false);
 				}
 				else
 				{
@@ -446,7 +446,7 @@ SEXP forwardModel(SEXP DERIV, SEXP DATAPTR, SEXP SEEDS,
 
 	/* send the .Random.seed back to R */
 	PutRNGstate();
-	NEWRANDOMSEED = Rf_findVar(rs, R_GlobalEnv);
+	NEWRANDOMSEED = R_getVar(rs, R_GlobalEnv, TRUE);
 
 	/* set up the return object */
 	if (!fromFiniteDiff)
@@ -665,7 +665,7 @@ SEXP mlPeriod(SEXP DERIV, SEXP DATAPTR, SEXP MODELPTR, SEXP EFFECTSLIST,
 		if (returnDataFrame)
 		{
 			PROTECT(theseValues =
-				Rf_duplicate(getChainDFPlus(*(pMLSimulation->pChain()), true)));
+				Rf_duplicate(getChainDFPlus(*(pMLSimulation->pChain()), false)));
 		}
 		else
 		{

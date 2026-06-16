@@ -9,7 +9,7 @@
  * OutdegreePopularityEffect class.
  *****************************************************************************/
 
-#include <cmath>
+#include <cmath> /* round, sqrt */
 #include "data/NetworkLongitudinalData.h"
 #include "OutdegreePopularityEffect.h"
 #include "utils/SqrtTable.h"
@@ -38,24 +38,19 @@ OutdegreePopularityEffect::OutdegreePopularityEffect(
 	this->lcentering = 0.0;
 	this->lthreshold = threshold;
 	this->ltrunc = trunc;
+	this->lp = pEffectInfo->internalEffectParameter();
 	if (this->ltrunc)
 	{
-		int p = pEffectInfo->internalEffectParameter();
 		if (this->lroot)
 		{
-			this->lp = this->lsqrtTable->sqrt(p);
-		}
-		else
-		{
-			this->lp = p;
+			this->lp = this->lsqrtTable->sqrt(int(round(this->lp)));
 		}
 	}
-	else
-	{
-		this->lp = 0;
-	}
+	this->luseStart = (int(round(this->lp)) == 0);
+	this->luseBoth = (int(round(this->lp)) <= 0);
 	this->lvariableName = pEffectInfo->variableName();
 // centering and root cannot occur simultaneously
+// truncation and (useStart or useBoth) cannot occur simultaneously
 }
 
 /**
@@ -124,7 +119,26 @@ double OutdegreePopularityEffect::calculateContribution(int alter) const
  */
 double OutdegreePopularityEffect::tieStatistic(int alter)
 {
-	return this->calculateContribution(alter);
+	double statistic = 0;
+	if (this->luseBoth)
+	{
+		statistic = this->pNetwork()->outDegree(alter);
+		const Network* pStart = this->pData()->pNetwork(this->period());
+		int prevOutDegree = pStart->outDegree(alter);
+		if (this->luseStart)
+		{
+			statistic = prevOutDegree;			
+		}
+		else
+		{
+			statistic = statistic + prevOutDegree;			
+		}
+	}
+	else
+	{
+		statistic = calculateContribution(alter);
+	}
+	return statistic;
 }
 
 }

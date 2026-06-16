@@ -33,12 +33,12 @@
 \method{test_gof}{sienaFit}(object, auxiliaryFunction,
     period=NULL, verbose=FALSE, join=TRUE, twoTailed=FALSE,
     cluster=NULL, robust=FALSE, groupName="Data1",
-    varName, tested=NULL, iterations=NULL, giveNAWarning=TRUE, \dots)
+    varName, tested=FALSE, iterations=NULL, giveNAWarning=TRUE, \dots)
 
 sienaGOF(object, auxiliaryFunction,
     period=NULL, verbose=FALSE, join=TRUE, twoTailed=FALSE,
     cluster=NULL, robust=FALSE, groupName="Data1",
-    varName, tested=NULL, iterations=NULL, giveNAWarning=TRUE, \dots)
+    varName, tested=FALSE, iterations=NULL, giveNAWarning=TRUE, \dots)
 \method{plot}{sienaGOF}(x, center=FALSE, scale=FALSE, violin=TRUE, key=NULL,
     perc=.05, period=1, showAll=FALSE, position=4, fontsize=12, \dots)
 \method{descriptives}{sienaGOF}(x, center=FALSE, scale=FALSE, perc=.05, key=NULL,

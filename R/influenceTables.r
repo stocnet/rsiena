@@ -89,7 +89,7 @@ influenceTable.basis <- function(x, xd, netname, behname,
     {
         stop("x should be a sienaFit or sienaBayesFit object")
     }
-    if (!inherits(xd, "sienadata"))
+    if (!(inherits(xd, "sienadata") | inherits(xd, "siena")))
     {
         stop("xd should be a siena data set")
     }
@@ -414,8 +414,8 @@ interpret_influence.sienaFit <- function(x, xd, netname, behname,
                     include.endow=FALSE, include.creation=FALSE, ...)
 {
 	influenceTable(x, xd, netname, behname,
-                    as.matrix=FALSE,
-                    levls=NULL, levls.alt=levls, out.ego=1, 
-					silent=FALSE, nfirst=x$nwarm+1,
-                    include.endow=FALSE, include.creation=FALSE, ...)
+                    as.matrix=as.matrix,
+                    levls=levls, levls.alt=levls.alt, out.ego=out.ego, 
+					silent=silent, nfirst=nfirst,
+                    include.endow=include.endow, include.creation=include.creation, ...)
 }

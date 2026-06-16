@@ -11,16 +11,16 @@
 }
 \usage{
 simstats0c(z, x, data=NULL, effects=NULL, fromFiniteDiff=FALSE,
-           returnDeps=FALSE, returnChains=FALSE, 
+           returnDeps=FALSE, returnChains=FALSE,
            returnChangeContributions=FALSE,
            byWave=FALSE, returnDataFrame=FALSE, returnLoglik=FALSE)
 maxlikec(z, x, data=NULL, effects=NULL,
-           returnChains=FALSE, byGroup = FALSE, 
-           byWave=FALSE, returnDataFrame=FALSE, 
+           returnChains=FALSE, byGroup = FALSE,
+           byWave=FALSE, returnDataFrame=FALSE,
            returnLoglik=FALSE, onlyLoglik=FALSE)
 initializeFRAN(z, x, data, effects, prevAns=NULL, initC,
            profileData=FALSE, returnDeps=FALSE, returnChains=FALSE,
-           returnChangeContributions=FALSE, 
+           returnChangeContributions=FALSE,
            byGroup=FALSE, returnDataFrame=FALSE,
            byWave=FALSE, returnLoglik=FALSE, onlyLoglik=FALSE)
 terminateFRAN(z, x)
@@ -28,7 +28,7 @@ terminateFRAN(z, x)
 \arguments{
   \item{z}{Control object, passed in automatically in  \code{\link{siena}}.}
   \item{x}{A sienaAlgorithm object, passed in automatically in  \code{\link{siena}}.}
-  \item{data}{A \code{\link{sienadata}} object as returned by 
+  \item{data}{A \code{\link{sienadata}} object as returned by
     \code{\link{make_data_rsiena}}.}
   \item{effects}{A sienaEffects object as
     returned by \code{\link{make_specification}}.}
@@ -61,7 +61,7 @@ terminateFRAN(z, x)
     the new model will be used as initial
     values, but phase 1 will still be carried out.
     If the results used as \code{prevAns} are a reasonable starting point,
-    this will increase the efficiency of the algorithm. }
+    this will increase the efficiency of the algorithm.  }
   \item{initC}{If TRUE, call is to setup the data and model in C++. For
     use with multiple processes only.}
  \item{profileData}{Boolean to force dumping of the data for profiling
@@ -105,9 +105,9 @@ terminateFRAN(z, x)
     value of \code{returnDataFrame}.
     Only if \code{returnChains} is TRUE.}
   \item{changeContributions}{A list of sampled chains, one for
-    each period. Each list consists a list for each dependent variable, each 
-    of which consists of a list for each period, each component of which 
-    is a matrix of effects times choices containing the changeContributions 
+    each period. Each list consists a list for each dependent variable, each
+    of which consists of a list for each period, each component of which
+    is a matrix of effects times choices containing the changeContributions
     (+- change statistics) for each ministep. \cr
     Only if \code{returnChangeContributions} is TRUE.}
   \item{accepts}{Number of accepted MH steps by dependent variable
@@ -131,7 +131,7 @@ mynet1 <- as_dependent_rsiena(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
 mydata <- make_data_rsiena(mynet1)
 myeff <- make_specification(mydata)
 myeff <- set_effect(myeff, transTrip)
-myalgorithm <- sienaAlgorithmCreate(fn=simstats0c, 
+myalgorithm <- sienaAlgorithmCreate(fn=simstats0c,
                                     nsub=2, n3=100, projname=NULL)
 ans <- siena07(myalgorithm, data=mydata, effects=myeff,  batch=TRUE)
 }

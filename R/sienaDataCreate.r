@@ -245,7 +245,12 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 			warning(paste("node set",nodeSetName,"not found in",nodeSetNames,'\n'),
 					immediate. = TRUE)
 		}
-		n == length(nodeSets[[sub]])
+		valid <- (n == length(nodeSets[[sub]]))
+		if (!valid)
+		{
+			cat("node set",nodeSetName,"has", length(nodeSets[[sub]]), ", not", n, "elements\n")
+		}
+		valid
 	}
 	if (getDocumentation)
 	{
@@ -658,10 +663,10 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 		sparse <- attr(depvars[[i]], 'sparse')
 		myarray <- depvars[[i]]
 		if (!validNodeSet(nattr[1], netdims[1]))
-			stop('1st net dimension wrong')
+			stop('1st net dimension is wrong')
 		if (type =='bipartite')
 			if (!validNodeSet(nattr[2], netdims[2]))
-				stop('2nd net dimension wrong')
+				stop('2nd net dimension is wrong')
 		attr(depvars[[i]], 'uponly') <- rep(FALSE, observations - 1)
 		attr(depvars[[i]], 'downonly') <- rep(FALSE, observations - 1)
 		attr(depvars[[i]], 'distance') <- rep(FALSE, observations - 1)
@@ -1586,7 +1591,7 @@ namedVector <- function(vectorValue, vectorNames, listType=FALSE)
 createSettings <- function(x, varName=1, model=TRUE)
 ##
 {
-	if (!inherits(x, 'sienadata'))
+	if (!(inherits(x, "sienadata") | inherits(x, "siena")))
 	{
 		stop('x should be a siena data object')
 	}
@@ -1612,7 +1617,7 @@ createSettings <- function(x, varName=1, model=TRUE)
 # this refers only to the indicated variable.
 hasSettings <- function(x, varName=NULL)
 {
-	if (!inherits(x, 'sienadata'))
+	if (!(inherits(x, "sienadata") | inherits(x, "siena")))
 	{
 		stop('x should be a siena data object')
 	}
@@ -1714,8 +1719,8 @@ sienaGroupCreate <- function(objlist, singleOK=FALSE, getDocumentation=FALSE)
 	if (!is.list(objlist))
 	{
 		stop('Need a list of objects')
-	}
-	if (any (sapply(objlist, function(x) !inherits(x, 'sienadata'))))
+	} 
+	if (any (sapply(objlist, function(x) (!(inherits(x, "sienadata") | inherits(x, "siena"))))))
 	{
 		stop('Not a list of valid sienadata objects')
 	}
@@ -2089,7 +2094,7 @@ sienaGroupCreate <- function(objlist, singleOK=FALSE, getDocumentation=FALSE)
 		names(group) <- paste('Data', 1:length(group), sep="")
 	}
 # This is where the names Data1 etc. are created.
-	class(group)<- c("sienaGroup", "sienadata")
+	class(group)<- c("sienaGroup", "siena")
 	attr(group, "version") <- packageDescription(pkgname, fields = "Version")
 	balmeans <- calcBalmeanGroup (group)
 	names(balmeans) <- netnames

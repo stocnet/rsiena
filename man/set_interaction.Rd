@@ -21,13 +21,12 @@ includeInteraction(x, ..., include = TRUE, name = x$name[1],
     character = FALSE, verbose = TRUE)
 }
 \arguments{
-  \item{x}{a Siena effects object as created by \code{\link{make_specification}},
+  \item{x}{A Siena effects object as created by \code{\link{make_specification}},
     which is either an object of class \code{sienaEffects}
     or \code{sienaGroupEffects}.
   }
-  \item{shortNames}{2 or 3 shortNames to identify the effects
-    which should be interacted. Should be given as character strings
-    for \code{set_interaction}.
+  \item{shortNames}{List of 2 or 3 shortNames to identify the effects
+    which should be interacted.
   }
   \item{type}{
     Type of effects to be interacted.
@@ -84,10 +83,11 @@ includeInteraction(x, ..., include = TRUE, name = x$name[1],
   effects. If so, an interaction effect will be created and included or
   not in the model. \cr
   Whether interactions between two or three given effects
-  can be created depends on their \cr
+  can be created depends on their
   \code{interactionType} (which can be, for
-  dependent network variables, empty, ego, or dyadic; and for dependent
-  behavioral variables, empty or OK). Consult the section on Interaction
+  dependent network variables, \code{empty}, \code{ego}, or \code{dyadic};
+  and for dependent behavioral variables, \code{empty} \code{or OK}).
+  Consult the section on Interaction
   Effects in the manual for this. The \code{interactionType} is shown
   in the list of effects obtained from the function \cr
   \code{\link{effectsDocumentation}}.\cr
@@ -186,8 +186,9 @@ myeff <- make_specification(mydata)
 myeff
 myeff <- set_effect(myeff, inPop)
 myeff <- set_interaction(myeff, list(recip, inPop))
+myeff <- set_interaction(myeff, list("recip", "inPop"))
 myeff
-myeff <- set_effect(myeff, list(egoX, altX, simX), interaction1="alc")
+myeff <- set_interaction(myeff, list(egoX, altX, simX), covar1=c("alc", "alc", "alc"))
 myeff <- set_interaction(myeff, list(egoX, altX), covar1=c("alc", "sm"))
 myeff <- set_interaction(myeff, list(recip, simX), covar1=c("", "alc"))
 myeff

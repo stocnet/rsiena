@@ -35,6 +35,9 @@ IndegreeActivityEffect::IndegreeActivityEffect(
 	this->lcentered = centered;
 	this->lcentering = 0.0;
 	this->lvariableName = pEffectInfo->variableName();
+	int p = int(round(pEffectInfo->internalEffectParameter()));
+	this->luseStart = (p == 0);
+	this->luseBoth= (p <= 0);
 // centering and root cannot occur simultaneously
 }
 
@@ -85,7 +88,21 @@ double IndegreeActivityEffect::tieStatistic(int alter)
 {
 	const Network * pNetwork = this->pNetwork();
 	int inDegree = pNetwork->inDegree(this->ego());
-	double statistic = inDegree - this->lcentering;;
+	if (this->luseBoth)
+	{
+		const Network* pStart = this->pData()->pNetwork(this->period());
+		int prevInDegree = pStart->inDegree(this->ego());
+		if (this->luseStart)
+		{
+			inDegree = prevInDegree;			
+		}
+		else
+		{
+			inDegree = inDegree + prevInDegree;			
+		}
+	}
+	
+	double statistic = inDegree - this->lcentering;
 
 	if (this->lroot)
 	{

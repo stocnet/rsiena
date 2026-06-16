@@ -235,7 +235,8 @@ phase1.2 <- function(z, x, ...)
 		Report(c('Diagonal elements(s)', sml,
 				'of derivative matrix amended in phase 1.'), cf, fill=80)
 	}
-	# Invert derivative matrix and define step fchange that will not be made.
+	# Invert derivative matrix and define step fchange 
+	# that will be made at the end of Phase 1.
 	if (inherits(try(dinv <- solve(z$dfra), silent=TRUE), "try-error") & !z$gmm)
 	{
 		Report('Error message for inversion of dfra: \n', cf)
@@ -294,6 +295,16 @@ phase1.2 <- function(z, x, ...)
 		fchange <- as.vector(dinv %*% z$mnfra)
 		z$dinv <- dinv
 	}
+	splitDepvars <- "splitDepvars" %in% names(x)
+	if (splitDepvars)
+	{
+		 splitDepvars <- (x$splitDepvars >= 1)
+		 oldNRstep <- (x$splitDepvars < 0)
+	}
+	else
+	{
+		oldNRstep <- FALSE
+	}
 	# Partial diagonalization of derivative matrix
 	# for use if 0 < x$diagonalize < 1.
 	if (!z$gmm)
@@ -303,6 +314,11 @@ phase1.2 <- function(z, x, ...)
 	  temp[z$fixed, ] <- 0.0
 	  temp[, z$fixed] <- 0.0
 	  diag(temp)[z$fixed] <- 1.0
+      if ((splitDepvars) & (length(unique(z$effects$name)) > 1))
+	  {
+		temp[outer(z$effects$name, z$effects$name, '!=')] <- 0
+		Report('Split updates between dependent variables \n', cf)
+	  }
 	  # Invert this matrix
 	  z$dinvv <- solve(temp)
 	}
@@ -314,16 +330,29 @@ phase1.2 <- function(z, x, ...)
 	                                         # also next 2 lines
 	  temp[, z$fixed[!z$gmmEffects]] <- 0.0
 	  diag(temp)[z$fixed[!z$gmmEffects]] <- 1.0
-	  # Invert this matrix
+# Invert this matrix
 	  z$dinvv <- solve(temp)%*%B
 	}
+
+	if (!z$gmm)
+	{
+		if (oldNRstep)
+		{
+# This was used before version 1.6.3
+			fchange <- as.vector(z$dinv %*% z$mnfra)
+		}
+		else
+		{
+			fchange <- as.vector(z$dinvv %*% z$mnfra)
+		}		
+	}	
 
 	Report('dfra :\n', cf)
 	##  browser()
 	PrtOutMat(z$dfra, cf)
-	Report('inverse of dfra :\n', cf)
+	Report('inverse of dfra: dinv = \n', cf)
 	PrtOutMat(dinv, cf)
-	Report('dinvv :\n', cf)
+	Report('Modified dinv: dinvv  = \n', cf)
 	PrtOutMat(z$dinvv, cf)
 	Report('Full Quasi-Newton-Raphson step after phase 1:\n', cf)
 	Report(c(paste(1:z$pp, '. ', format(-fchange, width = 12, digits = 6,

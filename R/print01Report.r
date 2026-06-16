@@ -873,9 +873,17 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 		Report("\n\n", outf) ## end of reportDataObject
 	}
 	## create output file. ## start of print01Report proper
-	if (!(inherits(data, "sienadata")))
+	if 	(!(inherits(data, "sienadata") | inherits(data, "siena")))
 	{
 		stop("The first argument needs to be a siena data object.")
+	}
+	if (is.null(attr(data, "dataname"))) 
+	{
+		dataname <- modelname
+	}
+	else # then the call comes from write_report.sienadata
+	{
+		dataname <- attr(data, "dataname")
 	}
 	if (!(inherits(modelname, "character")))
 	{
@@ -898,8 +906,8 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 		sep='', outf)
 	Report("							************************\n\n", outf)
 	Report(c("Filename is ", modelname, ".txt.\n\n"), sep="", outf)
-	Report(c("This file contains primary output for SIENA project <<",
-		modelname, ">>.\n\n"), sep="", outf)
+	Report(c("This file contains basic descriptives for SIENA data set <<",
+		dataname, ">>.\n\n"), sep="", outf)
 	Report(c("Date and time:", format(Sys.time(), "%d/%m/%Y %X"), "\n\n"), outf)
 	packageValues <- packageDescription(pkgname, fields=c("Version", "Date"))
 	Report(c(paste(pkgname, "version "), packageValues[[1]],
@@ -1131,7 +1139,8 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 		}
 	}
 
-	if (sum(atts$types == 'oneMode') > 0)
+# The following is dropped in version 1.6.3 because the balance effect is hardly used.
+	if ((sum(atts$types == 'oneMode') > 0) & (FALSE))
 	{
 		netnames <- atts$netnames[nets]
 		if (nData > 1)
@@ -1340,9 +1349,33 @@ print01Report <- function(data, modelname="Siena", getDocumentation=FALSE)
 		}
 	}
 	myeff <- getEffects(data)
+	attr(data, "dataname") <- dataname
 	printInitialDescription(data, myeff, modelName=modelname)
 	##close the files
 	Report(closefiles=TRUE)
+}
+
+##@write_report Methods Reporting
+write_report <- function(x, ...) UseMethod("write_report", x)
+
+##@ write_report Interpretation method for siena data sets
+write_report.sienadata <- function(x, outputName=NULL, ...)
+{	
+	dataName <- deparse(substitute(x))
+# Check if it looks like a pipe chain 
+	if (grepl("%>%|\\|>", dataName)) 
+	{
+		stop("Cannot auto-generate filename from piped data. Please provide filename explicitly.") 
+	}
+	if (is.null(outputName))
+	{
+		outputName <- paste(dataName, "_report", sep="")
+	}	
+# to get the dataName into print01Report
+	attr(x, "dataname") <- dataName
+	print01Report(data=x, modelname=outputName,	getDocumentation=FALSE)
+	cat("Basic data description written to text file", 
+						paste(outputName, ".txt. \n", sep=""))
 }
 
 

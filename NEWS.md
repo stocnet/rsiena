@@ -1,3 +1,198 @@
+2026-06-14
+
+# RSiena 1.6.10
+
+## Changes in RSiena:
+### Bug correction
+  * Running `siena` with `returnChains = TRUE, returnDataFrame = TRUE`
+    corrected.
+### Functionality
+  * Undo sorting of returned data frames for `returnChains=TRUE`
+    (`siena07models.cpp`).
+
+2026-06-10
+
+# RSiena 1.6.9
+
+## Changes in RSiena:
+### Functionality
+  * `print.sienaGroup` now also specifies the node sets for covariates
+    and restricts printed line lengths to 64.
+  * Use of `r` in `estimate_onestep` effectuated.
+  * `checkEffects.R` corrected so that it will run without errors
+    and can be used for batch checking (will take a long time).
+### Bug correction
+  * `make_specification` corrected for a continuous dependent behavior variable
+    and for two dependent networks and varying actor covariates (`effects.r`).
+  * Use of `prevAns` with one-step estimator corrected (`initializeFRAN.r`). 
+
+2026-06-06
+
+# RSiena 1.6.8
+
+## Changes in RSiena:
+### Effects
+  * Selection of effects for combinations of two dependent networks
+    and an actor covariate improved, which leads to including
+    more effects for combinations where one of the dependent networks
+    is bipartite (`effects.r`, `effectsDocumentation.r`).
+### Functionality
+  * New function `estimate_onestep`.
+  * Option `onestep` for `update_theta.sienaEffects` changed.
+  * Hidden option to use the one-step estimator with `prevAns` in `siena`
+    (`initializeFRAN.r`).
+  * `print.sienadata` now specifies the node sets for covariates
+    and restricts printed line lengths to 64.
+  * More informative error message in `make_data_rsiena` if the number
+    of elements of the second node set for bipartite networks is not correct.
+  * In `transformScript`, the replacement for `descriptives.sienaGOF`
+    was put before the replacement for `sienaGOF`. 
+  * Error message in `effectsDocumentation` if the set of `effectGroups`
+    included is incorrect (meaningful only for checking the package).
+### Coding
+  * Reorganization and clarification of `effectGroups` for combinations 
+    of two dependent networks and an actor covariate: 
+    these now are `covarNetNetObjective`, `covarAWNetNetObjective`,
+    `covarADNetNetObjective`, `covarBNetNetObjective`, `covarBXNetNetObjective`
+    (`effects.r`, `effectsDocumentation.r`).
+
+2026-05-15
+
+# RSiena 1.6.7
+
+## Changes in RSiena:
+### Functionality
+  * Option `onestep` for `test_parameter(..., method="score", ...)`.
+  * Option `onestep` for `update_theta`.
+  * Name `sienaNet` added to `transformScript` as one of the names
+    to be replaced.
+  * Small comment changes in `initializeFRAN.r` and `maxlikec.r`.
+  * `make_effects` also works for `sienadata` objects older than 1.4.10
+    (due to small change in `effects.r`).
+
+2026-04-20
+
+# RSiena 1.6.6
+
+## Changes in RSiena:
+### Sanity checks 
+  * Stack handling of `getChangeContributionsList' improved in
+  `siena07utilities.cpp', for compliance with CRAN.
+
+
+2026-04-08
+
+# RSiena 1.6.5
+
+## Changes in RSiena:
+### Sanity checks 
+  * In help files for `interpret_influence', `interpret_selection',
+  `make_specification', `set_effect', `test_gof_auxiliary', and `test_time',
+  keyword handling corrected.
+  * In help file for `interpret_size_dynamics', part of example code disabled
+  for testing due to time exceeding 5 seconds.
+
+
+2026-04-07
+
+# RSiena 1.6.4
+
+## Changes in RSiena:
+### Bug correction
+  * For `test_gof`,  
+    a bug in the handling of auxiliary functions was fixed.
+
+
+2026-03-23
+
+# RSiena 1.6.3
+
+## Changes in RSiena:
+### New function
+  * Auxiliary function `egoAlterCovarComb` for `test_gof`. 
+### Effects
+  * New effects `outdegMixedPop` and `indegMixedPop`.
+  * `endowment`=TRUE for `XWX1`, `XWX2`, and `cl.XWX1`.
+### Functionality
+  * Option `splitDepvars` for `set_algorithm_saom`.
+  * The quasi-Newton Raphson update step at the end of Phase 1 used
+    matrix `dinvv`, which is the partially diagonalized version of `dinv`.
+    This now uses `dinvv`, unless `splitDepvars`=-1.
+  * Column names `inter1` and `inter2` of the result of `effectsDocumentation` 
+    changed to `covar1` and `covar2`.
+  * Better error message for `set_interaction` in case `shortNames`
+    is not a list.
+  * In `sienaTest` objects, if the test is one-dimensional, the standard error
+    of the linear combination is given as an additional component `sterror`
+    and included in `print.sienaTest`. 
+  * Mean structural dissimilarity values for balance calculations
+    dropped from `write_report` (almost never used, therefore confusing).
+  * Several checks for objects being of class 'siena' extended to 
+    alternatively being of class 'sienadata'.
+  * `newparallel.R' extended by a test using `test_gof`. 
+  * `importFrom` used for package `network`.
+  * " " and "." changed to "_" in `fromObjectToText` (names for `coef` 
+    and `vcov`) and `fromObjectToText` (in `siena_table`). 
+### C++ coding
+  * `Rf_PrintValue` in `Chain.cpp` dropped 
+    (was leftover from earlier debugging). 
+  * `Rf_findVar` replaced by `R_getVar` in `siena07models.cpp`
+    in view of requirements of `R 4.5.3`; requires at least `R 4.5.0`.
+  * Depends on R changed to `(>= 4.5.0)`. 
+### Bug correction
+  * For `transformScript`, processing of `Multipar.RSiena` added. 
+  * For `test_gof`,  
+    all arguments are transferred to the call of `sienaGOF`.
+  * For `interpret_selection`,  
+    all arguments are transferred to the call of `selectionTable`. 
+  * For `interpret_influence`,  
+    all arguments are transferred to the call of `influenceTable`. 
+### Documentation 
+  * Manual updated to new function names and use of `autograph` for
+    plotting influence and selection tables. 
+  * In help file for `set_interaction`, treatment of `shortNames`
+    corrected.
+  * In help file for `set_effect`, treatment of `covar1` and `covar2`
+    corrected.
+
+
+2026-02-26
+
+# RSiena 1.6.2
+
+## Changes in RSiena:
+### New function
+  * Function `transformScript`.
+### Function names for exported functions in R
+  * New method `write_report` for `sienadata` objects, 
+    replacing `print01Report` (which still is retained).
+### Functionality
+  * Attribute `EgoAlter` added to `sienaGOF` results,
+    which is `TRUE` currently only for `egoAlterCombi` 
+    (the purpose is to use it for plotting). 
+### Coding
+  * `returnDeps` mentioned explicitly as an argument for `siena`
+    (and not just as an element of ...). 
+  * Some occurrences of deparse(substitute(.)) accompanied by
+    a check and subsequent potential stop in case of 
+    objects resulting from piping.
+  * `sienaAlgorithmCreate` modified for different operation 
+    in case it is called from `transformScript`.
+  * 'parallel.R' in the `tests` directory is replaced by 'newparallel.R' 
+    which uses the new names and no `parallelTesting`. 
+
+2026-01-20
+
+# RSiena 1.6.1
+
+## Changes in RSiena:
+### New effects
+  * Effects `sameXOutAct`, `diffXOutAct`, `crossXOutAct` also implemented
+    for two-mode networks.
+  * Parameter values 0 and -1 added for `outAct` and `inPop`. 
+### Coding
+  * <math.h> replaced by <cmath> in C++ code.
+
 2026-01-04
 
 # RSiena 1.6.0

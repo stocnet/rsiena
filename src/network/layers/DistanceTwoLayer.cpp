@@ -12,7 +12,7 @@
 #include "DistanceTwoLayer.h"
 
 #include <vector>
-#include <math.h>
+#include <cmath> 
 
 #include "../IncidentTieIterator.h"
 #include "../iterators/UnionTieIterator.h"

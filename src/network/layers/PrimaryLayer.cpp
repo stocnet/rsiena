@@ -14,10 +14,8 @@
 #include "PrimaryLayer.h"
 
 #include <vector>
-#include <math.h>
-
+#include <cmath> 
 #include "network/OneModeNetwork.h"
-
 #include "../IncidentTieIterator.h"
 #include "../iterators/UnionTieIterator.h"
 #include "../iterators/AdvUnionTieIterator.h"

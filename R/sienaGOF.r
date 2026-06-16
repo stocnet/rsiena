@@ -15,24 +15,12 @@
 
 test_gof <- function(object, ...) UseMethod("test_gof", object)
 
-##@test_gof.sienaFit gof method for sienaFit
-test_gof.sienaFit <- function(object, auxiliaryFunction,
-		period=NULL, verbose=FALSE, join=TRUE, twoTailed=FALSE,
-		cluster=NULL, robust=FALSE,
-		groupName="Data1", varName, tested=NULL, iterations=NULL,
-		giveNAWarning=TRUE, ...)
-{
-	sienaGOF(object, auxiliaryFunction, period, verbose, join, twoTailed,
-		cluster, robust, groupName, varName, tested, iterations,
-		giveNAWarning, ...)
-}
-
 ##@sienaGOF siena07 Does test for goodness of fit
 sienaGOF <- function(
 		object,	auxiliaryFunction,
 		period=NULL, verbose=FALSE, join=TRUE, twoTailed=FALSE,
 		cluster=NULL, robust=FALSE,
-		groupName="Data1", varName, tested=NULL, iterations=NULL,
+		groupName="Data1", varName, tested=FALSE, iterations=NULL,
 		giveNAWarning=TRUE, ...)
 	{
 	## require(MASS)
@@ -194,12 +182,17 @@ sienaGOF <- function(
 	}
 	plotKey <- names(auxiliaryFunction(NULL, sFO$f,
 				sFO$sims, 1, groupName, varName, ...))
+	EA <- attr(auxiliaryFunction(NULL, sFO$f,
+				sFO$sims, 1, groupName, varName, ...), "EgoAlter")
+	EA <- ifelse(is.null(EA), FALSE, EA)
 	class(obsStats) <- "observedAuxiliaryStatistics"
 	attr(obsStats,"auxiliaryStatisticName") <-
 			deparse(substitute(auxiliaryFunction))
 	attr(obsStats,"joint") <- join
-
-
+	if (attr(obsStats,"auxiliaryStatisticName") == "egoAlterCombi")
+	{
+		EA <- TRUE
+	}
 	##	Calculate the simulated auxiliary statistics
 	if (verbose)
 	{
@@ -550,8 +543,12 @@ sienaGOF <- function(
 	attr(res, "twoTailed") <- twoTailed
 	attr(res, "joined") <- join
 	attr(res, "nmissings") <- nmissings
+	attr(res, "EgoAlter") <- EA
 	res
 }
+
+##@test_gof.sienaFit gof method for sienaFit
+test_gof.sienaFit <- sienaGOF
 
 ##@print.sienaGOF siena07 Print method for sienaGOF
 print.sienaGOF <- function (x, ...) {
@@ -659,8 +656,6 @@ summary.sienaGOF <- function(object, ...) {
 		}
 		cat("\n-----")
 	}
-	cat("\nComputation time for auxiliary statistic calculations on simulations: ",
-			attr(x, "simTime")["elapsed"] , "seconds.\n")
 	invisible(x)
 }
 
@@ -1595,7 +1590,7 @@ egoAlterCombi <- function (i, obsData, sims, period, groupName, varName,
      trafo=NULL)
 {
 # An auxiliary function calculating the number of ties
-# for each ego-alter combination of values of the dependent variable;
+# for each ego-alter combination of values of the dependent behavior variable;
 # the dependent variable is transformed by trafo.
 	if (length(varName) != 2){
 		stop("egoAlterCombi expects two varName parameters")
@@ -1628,6 +1623,37 @@ egoAlterCombi <- function (i, obsData, sims, period, groupName, varName,
 	# pad names with leading 0s, if necessary:
 	pp.names <- ifelse(nchar(ppnames)==1, paste("0",ppnames,sep=""),ppnames)
 	names(teax) <- pp.names
+	attr(teax, "EgoAlter") <- TRUE
 	teax
 }
 
+egoAlterCovarComb <- function (i, obsData, sims, period, groupName, varName,
+     covar)
+{
+# An auxiliary function calculating the number of ties
+# for each ego-alter combination of values of covar.
+	varName1 <- varName[1]
+	varName2 <- varName[2]
+	m <- sparseMatrixExtraction(i, obsData, sims, period, groupName,
+		varName1)
+	m <- m[!is.na(covar), !is.na(covar)]
+	x <- covar[!is.na(covar)]
+	branges <- range(covar, na.rm = TRUE)
+	brange <- branges[1]:branges[2]
+	combi.egoalter <- outer(10*x, x ,'+')
+	possible.pairs <-
+		sort(unique(as.vector(outer(10*brange, brange, '+'))))
+	if ((length(possible.pairs) >= 100) && is.null(i))
+	{
+	warning("The variables used for egoAlterCovarComb has too many values.")
+	}
+	tmeax <- table((m * combi.egoalter)@x, useNA = "no")
+	ppnames <- as.character(possible.pairs)
+	teax <- setNames(0*possible.pairs, ppnames)
+	teax[dimnames(tmeax)[[1]]] <- tmeax
+	# pad names with leading 0s, if necessary:
+	pp.names <- ifelse(nchar(ppnames)==1, paste("0",ppnames,sep=""),ppnames)
+	names(teax) <- pp.names
+	attr(teax, "EgoAlter") <- TRUE
+	teax
+}

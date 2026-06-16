@@ -186,7 +186,7 @@ RIDynamics1 <- interpret_size_dynamics(mydata, ans=ans,
 RIDynamics1
 \dontrun{
 plot(RIDynamics1)
-}
+
 
 myalgo2 <- set_algorithm_saom(nsub=1, n3=32, seed=1777, cond=TRUE)
 (ans2 <- siena(mydata, effects=mymodel, control_algo=myalgo2,
@@ -216,7 +216,7 @@ RIDynamics4 <- interpret_size_dynamics(mydata2, ans=ans3, depvar="mybeh")
 RIDynamics4
 
 RI5 <- interpret_size(ans3, data=mydata2)
-\dontrun{
+
 RIDynamics5 <- interpret_size_dynamics(mydata2, ans=ans3,
                                        depvar="mynet2", n3 = 50)
 RIDynamics5
