@@ -44,6 +44,7 @@ predict.sienaFit <- function(
     accumulated = FALSE,
     rateWeight = FALSE,
     returnDecisionDetails = FALSE,
+    returnComponents = FALSE,
     ...
 ) {
   if (inherits(newdata, "sienaGroup"))
@@ -149,7 +150,21 @@ predict.sienaFit <- function(
         verbose      = verbose
     )
     nbrNodes <- memCheck$nbrNodes
-    contribFun <- makeContribFun("per_batch", dynArgs = dynArgs)
+    # contribFun <- makeContribFun("per_batch", dynArgs = dynArgs)
+    .chains <- if (useChangeContributions) object$changeContributions else NULL
+    if (!is.null(.chains)) {
+        n3Hat <- if (!is.null(n3PointEst)) n3PointEst else n3
+        n3Batch <- if (!is.null(n3BatchSize)) min(n3BatchSize, n3Hat) else n3Hat
+        built <- .buildDynChainStore(.chains, dynArgs, length(.chains), n3Batch,
+                                      depvar, effects, newdata, verbose,
+                                      chainStoreMode = "auto")
+        contribFun    <- built$contribFun
+        nChainBatches <- built$nChainBatches
+        rm(.chains); gc(verbose = FALSE)
+    } else {
+        contribFun    <- makeContribFun("per_batch", dynArgs = dynArgs)
+        nChainBatches <- 1L
+    }
   } else {
     staticContributions <- getStaticChangeContributions(
         ans              = object,
@@ -187,7 +202,8 @@ predict.sienaFit <- function(
   if (returnDecisionDetails) {
     cc_hat <- contribFun(thetaHat, 1L, 1L)
     decisionDetails <- predictProbability(cc_hat, thetaHat, type,
-                                          attachContribs = TRUE)
+                                          attachContribs = TRUE,
+                                          returnComponents = returnComponents)
     rm(cc_hat)
   }
 
@@ -427,6 +443,7 @@ calculateUtility <- function(mat, theta, permitted = NULL, densityIdx = NULL) {
     # (pure eval effects).  Use creation column when theta is a matrix.
     th <- if (is.matrix(theta)) theta[, "creation"] else theta
     util <- as.numeric(mat %*% th)
+    # what about no change?
   } else if (!is.matrix(theta)) {
     # Legacy path: simple matrix-vector multiply.
     util <- as.numeric(mat %*% theta)

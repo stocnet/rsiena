@@ -68,6 +68,7 @@ makeContribFun <- function(mode = NULL, store = NULL, effects = NULL,
   if (is.null(keepContribMat))
     keepContribMat <- is_static
 
+# Force evaluation for use in closure below.
   force(store)
   force(effects)
   force(depvar)

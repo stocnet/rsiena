@@ -730,6 +730,7 @@ chainStore_simulate <- function(dynArgs, batchSize, n3Total) {
 # --------------------------------------------------------------------------
 makeEstimatorFun <- function(specs, contribFun, nBatches,
     type, rateParams = NULL, rateIdx = NULL, verbose = FALSE, mc.cores = 1L) {
+  # Force evaluation for use in closure below.
   force(specs); force(contribFun); force(nBatches)
   force(type); force(rateParams); force(rateIdx); force(verbose); force(mc.cores)
   N         <- length(specs)
@@ -1376,63 +1377,6 @@ aggregatePostEstimation <- function(expects, raw_sims_list, specs,
   }
 
   results
-}
-
-# --------------------------------------------------------------------------
-# combinePostestResults — opt-in wide merge for specs sharing (level, condition)
-#
-# When multiple effects in `results` were computed at the same (level, condition)
-# and the user opts in via combineSameLevel = TRUE, merge them into a single
-# wider data.frame rather than returning N separate ones.
-#
-# `results`: named list of data.frames (output of aggregatePostEstimation or
-#            sienaPostestimate). Each element may carry class-level attributes.
-# `specs`:   named list of spec entries (same keys as results).
-#
-# Returns: named list of data.frames. Each group-of-same-level specs is replaced
-# by a single wider data.frame keyed on group columns; elements that are alone at
-# their (level, condition) stay as single-element lists (unchanged).
-# --------------------------------------------------------------------------
-combinePostestResults <- function(results, specs) {
-  if (length(results) == 0L) return(results)
-
-  # Group specs by (level, condition) key.
-  group_key <- vapply(names(specs), function(nm) {
-    sp  <- specs[[nm]]
-    lv  <- if (!is.null(sp$level)) sp$level else "none"
-    cnd <- if (!is.null(sp$condition)) paste(sp$condition, collapse = ",") else ""
-    paste0(lv, "|", cnd)
-  }, character(1L))
-
-  out <- list()
-  for (gk in unique(group_key)) {
-    nms <- names(group_key)[group_key == gk]
-    if (length(nms) == 1L) {
-      out[[nms]] <- results[[nms]]
-    } else {
-      # Identify the structural (group) columns shared by all frames in group.
-      # These are columns that appear in all frames with identical values.
-      first <- results[[nms[1L]]]
-      sp    <- specs[[nms[1L]]]
-      lv    <- if (!is.null(sp$level)) sp$level else "none"
-      cnd   <- if (!is.null(sp$condition))
-                  resolveEffectName(sp$condition, names(first)) else NULL
-      key_cols <- getGroupVars(level = lv, condition = cnd)
-
-      # Merge all frames on key_cols.
-      merged <- Reduce(function(a, b) {
-        if (length(key_cols) > 0L)
-          merge(a, b, by = key_cols, all = TRUE, sort = FALSE)
-        else
-          cbind(a, b[, setdiff(names(b), names(a)), drop = FALSE])
-      }, lapply(nms, function(nm) results[[nm]]))
-
-      # Name the combined element after the group's effects joined by "+".
-      combined_nm <- paste(nms, collapse = "+")
-      out[[combined_nm]] <- merged
-    }
-  }
-  out
 }
 
 openCluster <- function(nbrNodes, clusterType, cl, export_vars, export_envir, verbose) {
@@ -2146,27 +2090,24 @@ encodeGroupKeys <- function(data, group_vars) {
     col <- data[[group_vars[j]]]
     if (is.integer(col)) {
       G[, j] <- col
-      decode[j] <- list(NULL)  # identity mapping (note: [[j]]<-NULL would delete)
+      decode[j] <- list(NULL)             # identity; NULL would delete the element
     } else if (is.numeric(col)) {
-      icol <- as.integer(col)
-
-      if (identical(as.numeric(icol), as.numeric(col))) {
-        G[, j] <- icol
-        decode[j] <- list(NULL)
+      f <- factor(col, levels = as.character(sort(unique(col))))
+      G[, j] <- as.integer(f)
+      decode[[j]] <- sort(unique(col))    # numeric → decodes back to numeric
+    } else {
+      # character / factor: try to parse as numeric for correct sort order
+      # and to preserve type on decode
+      vals_num <- suppressWarnings(as.numeric(as.character(col)))
+      if (all(!is.na(vals_num))) {
+        f <- factor(col, levels = as.character(sort(unique(vals_num))))
+        G[, j] <- as.integer(f)
+        decode[[j]] <- sort(unique(vals_num))  # numeric → decodes back to numeric
       } else {
         f <- factor(col)
         G[, j] <- as.integer(f)
-        decode[[j]] <- levels(f)
+        decode[[j]] <- levels(f)              # character, stays character
       }
-    } else {
-      vals_num <- suppressWarnings(as.numeric(as.character(col)))
-      f <- if (all(!is.na(vals_num))) {
-        factor(col, levels = as.character(sort(unique(vals_num))))
-      } else {
-        factor(col)
-      }
-      G[, j] <- as.integer(f)
-      decode[[j]] <- levels(f)
     }
   }
   storage.mode(G) <- "integer"

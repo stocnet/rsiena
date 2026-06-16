@@ -1,6 +1,8 @@
 ##@marginalEffects Generic
 marginalEffects <- function(object, ...) UseMethod("marginalEffects", object)
 
+
+## COMPUTNIG DENSITY MARGINAL EFFECTS WITH WRONG CONTRAST SILENTLY FAILS!
 ##@marginalEffects.sienaFit Method
 marginalEffects.sienaFit <- function(
     object,
@@ -32,6 +34,7 @@ marginalEffects.sienaFit <- function(
     accumulated = FALSE,
     rateWeight = FALSE,
     returnDecisionDetails = FALSE,
+    returnComponents = FALSE,
     dynamic = FALSE,
     algorithm = NULL,
     n3 = 200,
@@ -69,6 +72,7 @@ marginalEffects.sienaFit <- function(
     gcEachSim = FALSE,
     uncertaintyMode = c("bootstrap", "delta", "deltaFull"),
     combineSameLevel = FALSE,
+    format = c("wide", "long"),
     ...
 ) {
     if (inherits(data, "sienaGroup"))
@@ -135,7 +139,8 @@ marginalEffects.sienaFit <- function(
             perturbType1    = perturbType1,
             perturbType2    = perturbType2,
             massContrasts   = massContrasts,
-            returnDecisionDetails = returnDecisionDetails
+            returnDecisionDetails = returnDecisionDetails,
+            returnComponents = returnComponents
         ))
         .single_effect <- TRUE
     }
@@ -242,7 +247,8 @@ marginalEffects.sienaFit <- function(
                 stop("rateWeight = TRUE but no basic rate parameters found.")
         }
 
-        # ---- saveDir: check for completed effects --
+        # ---- saveDir: check for completed effects ----
+        # check if everything below is necessary!
         if (!is.null(saveDir)) {
             if (!dir.exists(saveDir))
                 dir.create(saveDir, recursive = TRUE)
@@ -266,7 +272,7 @@ marginalEffects.sienaFit <- function(
                 list(level = attr(r, "level"),
                    condition = attr(r, "condition")))
               names(loaded_specs) <- names(results)
-              results <- combinePostestResults(results, loaded_specs)
+              results <- combinePostestResults(results, loaded_specs, format = format)
               results <- lapply(results, function(r) {
                 if (!inherits(r, "sienaMarginalEffect"))
                   class(r) <- c("sienaMarginalEffect", class(r))
@@ -277,6 +283,7 @@ marginalEffects.sienaFit <- function(
                 return(if (.single_effect) results[["single"]] else results)
             }
         }
+        # currently returns list with 1 element even if all effects are combineSameLevel
 
         # ---- Build shared contribution function ----
         if (!dynamic) {
@@ -516,6 +523,7 @@ marginalEffects.sienaFit <- function(
                 dynamic               = dynamic,
                 massContrasts         = eff_massC,
                 returnDecisionDetails = eff_retDet,
+                returnComponents       = isTRUE(spec$returnComponents),
                 jacobianFun           = if (!eff_second) predictFirstDiffJac
                                         else NULL,
                 metadata = list(
@@ -658,7 +666,8 @@ marginalEffects.sienaFit <- function(
                     decision_details[[nm]] <- do.call(spec$predictFun,
                         c(list(changeContributions = cc,
                                theta = thetaHat,
-                               baseline = baseline), pe_args))
+                               baseline = baseline,
+                               returnComponents = TRUE), pe_args))
                 }
             }
             rm(cc, baseline); gc(verbose = FALSE)
@@ -719,7 +728,7 @@ marginalEffects.sienaFit <- function(
 
     # Opt-in: merge specs sharing the same (level, condition) into wider frames.
     if (isTRUE(combineSameLevel) && !.single_effect) {
-        results <- combinePostestResults(results, builtSpecList)
+        results <- combinePostestResults(results, builtSpecList, format = format)
         results <- lapply(results, function(r) {
             if (!inherits(r, "sienaMarginalEffect"))
                 class(r) <- c("sienaMarginalEffect", class(r))
@@ -1638,4 +1647,91 @@ computeMassContrasts <- function(firstDiff, density, ego, period, group,
     massDissolution[is.na(massDissolution)] <- 0
 
     data.frame(massCreation = massCreation, massDissolution = massDissolution)
+}
+
+# --------------------------------------------------------------------------
+# combinePostestResults — opt-in wide merge for specs sharing (level, condition)
+#
+# When multiple effects in `results` were computed at the same (level, condition)
+# and the user opts in via combineSameLevel = TRUE, merge them into a single
+# wider data.frame rather than returning N separate ones.
+#
+# `results`: named list of data.frames (output of aggregatePostEstimation or
+#            sienaPostestimate). Each element may carry class-level attributes.
+# `specs`:   named list of spec entries (same keys as results).
+#
+# Returns: named list of data.frames. Each group-of-same-level specs is replaced
+# by a single wider data.frame keyed on group columns; elements that are alone at
+# their (level, condition) stay as single-element lists (unchanged).
+# --------------------------------------------------------------------------
+combinePostestResults <- function(results, specs, format = c("wide", "long")) {
+  format <- match.arg(format)
+  if (length(results) == 0L) return(results)
+
+  group_key <- vapply(names(specs), function(nm) {
+    sp  <- specs[[nm]]
+    lv  <- if (!is.null(sp$level)) sp$level else "none"
+    cnd <- if (!is.null(sp$condition)) paste(sp$condition, collapse = ",") else ""
+    paste0(lv, "|", cnd)
+  }, character(1L))
+
+  out <- list()
+  for (gk in unique(group_key)) {
+    nms <- names(group_key)[group_key == gk]
+    if (length(nms) == 1L) {
+      out[[nms]] <- results[[nms]]
+      next
+    }
+
+    sp       <- specs[[nms[1L]]]
+    lv       <- if (!is.null(sp$level)) sp$level else "none"
+    cnd      <- if (!is.null(sp$condition))
+                  resolveEffectName(sp$condition, names(results[[nms[1L]]])) else NULL
+    key_cols <- getGroupVars(level = lv, condition = cnd)
+    combined_nm <- paste(nms, collapse = "+")
+
+    if (format == "long") {
+      # rbind with an added effect column — safe, base R, O(N*nrow)
+      frames <- lapply(nms, function(nm) {
+        df <- results[[nm]]
+        df[["effect"]] <- nm
+        df
+      })
+      merged <- do.call(rbind, frames)
+      # Reorder: key cols, effect, then outcomes
+      other_cols <- setdiff(names(merged), c(key_cols, "effect"))
+      merged <- merged[, c(key_cols, "effect", other_cols), drop = FALSE]
+
+    } else {
+      # Wide: cbind non-key columns with effect-name suffix.
+      # All frames share identical key columns (same chain/ministep/ego/...
+      # rows in the same order) so we can cbind directly without merge.
+      # Verify row count consistency first.
+      nrows <- vapply(nms, function(nm) nrow(results[[nm]]), integer(1L))
+      if (length(unique(nrows)) > 1L)
+        stop("combinePostestResults (wide): frames for group '", gk,
+             "' have differing row counts: ",
+             paste(nms, nrows, sep = "=", collapse = ", "),
+             ". Use format='long' instead.")
+
+      # Start with key columns from first frame
+      first      <- results[[nms[1L]]]
+      merged     <- first[, key_cols, drop = FALSE]
+
+      for (nm in nms) {
+        df          <- results[[nm]]
+        value_cols  <- setdiff(names(df), key_cols)
+        suffix_cols <- paste0(value_cols, "_", nm)
+        extra       <- df[, value_cols, drop = FALSE]
+        # Rename via setNames to avoid match() fragility with duplicate names
+        names(extra) <- suffix_cols
+        merged <- cbind(merged, extra)
+      }
+    }
+
+    attr(merged, "row.names") <- .set_row_names(nrow(merged))
+    class(merged) <- "data.frame"
+    out[[combined_nm]] <- merged
+  }
+  out
 }
