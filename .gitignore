@@ -46,8 +46,7 @@ docs/manual/*.fls
 .vscode/
 
 # Makevars
-Makevars
-Makevars.win
+
 
 # Mac OS
 .DS_Store
