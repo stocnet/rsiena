@@ -3479,16 +3479,20 @@ mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
 (ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE))
 ans$targets
 (mbh <- mean(mybeh))
-sum(mybeh[,,2] - mbh) # OK linear shape
-sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
+mybeh_centered <- mybeh - mbh
+sum(mybeh_centered[,,2]) # OK linear shape
+sum((mybeh_centered[,,2])^2) # OK quadratic shape
 
 # for indegAvGroup effect:
-## The target statistic equals the sum over s_i^beh, weighted by
-##substracting c_p from the mean for p > 0.5
+## The target statistic equals the sum over s_i^beh, weighted by indegree
+## substracting c_p from the mean for p > 0.5
 
 c_p <- ifelse(p <= 0.5, 0, p - mbh)
-sum( (mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) /
-  sum(colSums(mynet[,,1])) ) - c_p )) # 15.74569 OK
+sum( 
+  (mybeh_centered[,,2]) * 
+    (( sum((mybeh_centered[,,2]) * colSums(mynet[,,1])) / 
+    sum(colSums(mynet[,,1])) ) - c_p )
+) # 15.74569 OK
 
 ## Test for three networks without shape effects
 
@@ -3509,8 +3513,20 @@ mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
 ans$targets
 (mbh <- mean(mybeh))
 c_p <- ifelse(p <= 0.5, 0, p - mbh)
-sum((mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) / sum(colSums(mynet[,,1])) ) - c_p )) +
-  sum((mybeh[,,3]-mbh) * (( sum((mybeh[,,3]-mbh) * colSums(mynet[,,2])) / sum(colSums(mynet[,,2])) ) - c_p )) # 28.37791 ok
+mybeh_centered <- mybeh - mbh
+sum(
+    (mybeh_centered[,,2]) * 
+      (
+        (sum((mybeh_centered[,,2]) * colSums(mynet[,,1])) / sum(colSums(mynet[,,1]))) 
+          - c_p 
+      )
+) +
+sum(
+  (mybeh_centered[,,3]) * 
+    (
+      (sum((mybeh_centered[,,3]) * colSums(mynet[,,2])) / sum(colSums(mynet[,,2])) )
+       - c_p )
+) # 28.37791 ok
 
 
 ################################################################################
@@ -4337,3 +4353,72 @@ effs <- make_specification(mydata)
 (ans <- siena(data=mydata, effects=effs, control_algo=myalg))
 ans$targets
 sum((mybeh[,1,2]- mean(mybeh))* (t(s501) %*% pop)) #  74.07 OK
+
+################################################################################
+### check actAlt
+################################################################################
+
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,1:2], type="behavior")
+(mydata <- make_data_rsiena(mynet1, mybeh))
+myalg <- set_algorithm_saom(seed=123)
+
+effs <- make_specification(mydata)
+(effs <- set_effect(effs, list(actAlt, totActAlt), depvar='mybeh', covar1='mynet1'))
+(ans <- siena(data=mydata, effects=effs, control_algo=myalg))
+ans$targets
+outdeg <- rowSums(s501)
+mybeh_centered <- mybeh - mean(mybeh)
+divi <- function(a,b){ifelse(b==0, 0, a/b)}
+sum((mybeh_centered[,1,2]) * divi(s501 %*% outdeg, outdeg))  # actAlt 21.32617 ok
+sum((mybeh_centered[,1,2])* (s501 %*% outdeg))  # totActAlt 80 ok
+
+effs <- make_specification(mydata)
+(effs <- set_effect(effs, list(actAlt_nc, totActAlt_nc), depvar='mybeh', covar1='mynet1'))
+(ans <- siena(data=mydata, effects=effs, control_algo=myalg))
+ans$targets
+sum((mybeh[,1,2]) * divi(s501 %*% outdeg, outdeg))  # actAlt_nc 382.9667 ok
+sum((mybeh[,1,2])* (s501 %*% outdeg))  # totActAlt_nc 977 ok
+
+# no need to also check contributions as they are using the same function
+
+################################################################################
+### check non centered popAlt and totPopAlt versions
+################################################################################
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
+
+# popAlt
+mymodel <- includeEffects(mymodel, popAlt_nc, name='mybeh', interaction1='mynet')
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+indeg <- colSums(mynet[, , 1])
+outdeg <- rowSums(mynet[, , 1])
+avg_popularity <- vapply(1:nrow(mynet[, , 1]), function(i) {
+  alters <- which(mynet[, , 1][i, ] != 0)
+  if (length(alters) > 0) {
+    mean(indeg[alters])
+  } else {
+    0
+  }
+}, FUN.VALUE=1)
+
+sum((mybeh[,,2])*avg_popularity) # popAlt 514.2333 ok
+
+# totPopAlt
+mymodel <- getEffects(mydata)
+mymodel <- includeEffects(mymodel, totPopAlt_nc, name='mybeh', interaction1='mynet')
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+popalt_stat <- vapply(1:nrow(s502), function(i) {
+  alters <- which(s502[i, ] != 0)
+  sum(indeg[alters])
+}, FUN.VALUE=1)
+
+sum((mybeh[,,2])*popalt_stat) # totPopAlt 1346‚ ok

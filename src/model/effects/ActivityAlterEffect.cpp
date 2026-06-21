@@ -20,11 +20,13 @@ namespace siena
  * Constructor.
  */
 ActivityAlterEffect::ActivityAlterEffect(
-		const EffectInfo * pEffectInfo, bool divide) :
+		const EffectInfo * pEffectInfo, bool divide, bool nc) :
 	NetworkDependentBehaviorEffect(pEffectInfo)
 {
 	this->ldivide = divide;
 	// Indicates whether there will be division by the outdegree of ego
+	this->lnc = nc;
+	// Indicates whether behavior values will not be centered
 }
 
 /**
@@ -44,7 +46,9 @@ double ActivityAlterEffect::calculateChangeContribution(int actor,
  */
 double ActivityAlterEffect::egoStatistic(int ego, double * currentValues)
 {
-	return currentValues[ego] * this->averageOutDegree(ego);
+	double egoValue = this->lnc ? currentValues[ego] + this->overallCenterMean() :
+								 currentValues[ego];
+	return egoValue * this->averageOutDegree(ego);
 }
 
 

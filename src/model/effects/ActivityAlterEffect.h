@@ -25,7 +25,7 @@ namespace siena
 class ActivityAlterEffect : public NetworkDependentBehaviorEffect
 {
 public:
-	ActivityAlterEffect(const EffectInfo * pEffectInfo, bool divide);
+	ActivityAlterEffect(const EffectInfo * pEffectInfo, bool divide, bool nc);
 
 	virtual double calculateChangeContribution(int actor,
 		int difference);
@@ -35,6 +35,7 @@ private:
 	double averageOutDegree(int i) const;
 	// divide indicates whether there will be division by the outdegree of ego
 	bool ldivide {};
+	bool lnc {};
 };
 
 }

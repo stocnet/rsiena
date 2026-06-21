@@ -15070,19 +15070,42 @@ The list of these effects is the following.
 
 
  \item
- {\em total popularity alter effect} \texttt{(popAlt)}, defined by the
- sum of in-degrees of the other actors $j$ to whom $i$ is tied,\\
+ {\em average popularity alter effect} \texttt{(totPopAlt)}, defined by the
+ sum of in-degree of the other actors $j$ to whom $i$ is tied,\\
  $s^{\rm beh}_{i\vit}(x, z) =   z_i \, \sum_j x_{ij} x_{+j}  $;\\
  this effect may be useful, e.g., as a control effect for the total
  similarity $\times$ popularity alter effect and in distance 2 influence effects;
+ for using no centering, work with the effect
+ \texttt{(totPopAlt\_nc)} instead;
 
   \item
- {\em total popularity alter effect} \texttt{(totPopAlt)}, defined by the
+ {\em total popularity alter effect} \texttt{(popAlt)}, defined by the
  average in-degrees of the other actors $j$ to whom $i$ is tied,\\
  $s^{\rm beh}_{i\vit}(x, z) =   z_i\,x_{i+}^{-1} \, \sum_j x_{ij} x_{+j}  $;\\
  (and 0 if $x_{i+} = 0$) ;\\
  this effect may be useful, e.g., as a control effect for the average
- similarity $\times$ popularity alter effect;
+ similarity $\times$ popularity alter effect; 
+ for using no centering, work with the effect
+ \texttt{(popAlt\_nc)} instead;
+
+ \item
+ {\em total activity alter effect} \texttt{(totActAlt)}, defined by the
+ sum of out-degrees of the other actors $j$ to whom $i$ is tied,\\
+ $s^{\rm beh}_{i\vit}(x, z) =   z_i \, \sum_j x_{ij} x_{j+}  $;\\
+ this effect may be useful, e.g., as a control effect for the total
+ alter at distance 2 influence effects; for using
+ no centering, work with the effect
+ \texttt{(totActAlt\_nc)} instead;
+
+  \item
+ {\em average acvtivity alter effect} \texttt{(actAlt)}, defined by the
+ average out-degrees of the other actors $j$ to whom $i$ is tied,\\
+ $s^{\rm beh}_{i\vit}(x, z) =   z_i\,x_{i+}^{-1} \, \sum_j x_{ij} x_{j+}  $;\\
+ (and 0 if $x_{i+} = 0$) ;\\
+ this effect may be useful, e.g., as a control effect for the average
+ alter at distance 2 influence effects; for using
+ no centering, work with the effect
+ \texttt{(actAlt\_nc)} instead;
 
  \item
  {\em total similarity  $\times$ popularity alter effect}

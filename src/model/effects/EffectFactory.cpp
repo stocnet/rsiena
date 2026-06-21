@@ -2378,19 +2378,35 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "popAlt")
 	{
-		pEffect = new PopularityAlterEffect(pEffectInfo, true);
+		pEffect = new PopularityAlterEffect(pEffectInfo, true, false);
+	}
+	else if (effectName == "popAlt_nc")
+	{
+		pEffect = new PopularityAlterEffect(pEffectInfo, true, true);
 	}
 	else if (effectName == "totPopAlt")
 	{
-		pEffect = new PopularityAlterEffect(pEffectInfo, false);
+		pEffect = new PopularityAlterEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "totPopAlt_nc")
+	{
+		pEffect = new PopularityAlterEffect(pEffectInfo, false, true);
 	}
 	else if (effectName == "actAlt")
 	{
-		pEffect = new ActivityAlterEffect(pEffectInfo, true);
+		pEffect = new ActivityAlterEffect(pEffectInfo, true, false);
+	}
+	else if (effectName == "actAlt_nc")
+	{
+		pEffect = new ActivityAlterEffect(pEffectInfo, true, true);
 	}
 	else if (effectName == "totActAlt")
 	{
-		pEffect = new ActivityAlterEffect(pEffectInfo, false);
+		pEffect = new ActivityAlterEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "totActAlt_nc")
+	{
+		pEffect = new ActivityAlterEffect(pEffectInfo, false, true);
 	}
 	else if (effectName == "totGwdspFF")
 	{
