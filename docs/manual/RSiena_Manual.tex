@@ -14897,6 +14897,26 @@ with the behavioral variable itself.
  note that this also is an influence effect from \underline{all} actors in the network,
  which does not take a network into account;
 
+ \medskip \label{avGroupNote}
+ \noindent \emph{Ego exclusion (\texttt{\_noEgo}) and non-centered (\texttt{\_nc}) variants.}
+ Each of the following six effects -- \texttt{avGroup}, \texttt{totGroup},
+ \texttt{indegAvGroup}, \texttt{indegTotGroup}, \texttt{outdegAvGroup}, and
+ \texttt{outdegTotGroup} -- has two further variants, which can also be combined
+ (e.g.\ \texttt{avGroup\_noEgo\_nc}).:
+ \begin{itemize}
+ \item \texttt{..\_noEgo}: ego is excluded from the group of actors $h$ that the statistic is
+ computed over, e.g.\ for \texttt{avGroup\_noEgo}. Ego's behavior is compared to
+ the rest of the group, not including ego's own value. This does not make much of
+ a difference if the (network) group size is relatively large. By default (no suffix), 
+ ego is  included among the actors $h$, as in the formulas given below.
+ \item \texttt{..\_nc}: the non-centered values of $Z$ are used in place of the values
+ centered around $m_Z$. Unlike the \texttt{\_nc} suffix elsewhere in this manual (e.g.\
+ \texttt{quad\_nc}), this also disables the $p$-recentering described below entirely:
+ $c_p$ is not applied, regardless of the value of $p$. This is because, for non-centered
+ values, $p$-recentering and the choice of representation are not independent adjustments;
+ supplying both would not have an unambiguous combined meaning.
+ \end{itemize}
+
  \item {\em group average} \texttt{(avGroup)}, defined by ego's value multiplied by the
  average of \underline{all} values $z_h$ for this period,  \\
  $s^{\rm beh}_{i\vit}(x, z) =  z_{i} \,( \overline {z} - c_p) $;\\
@@ -14915,13 +14935,22 @@ with the behavioral variable itself.
  close to the median of $Z$.
  (Note that the centering in a multi-group data set
  will affect the linear shape parameter.)
+ By default, ego is included among the actors $h$ summed over; for the
+ variant excluding ego from its own reference group
+ (\texttt{avGroup\_noEgo}), see the note abive for this effect family.
+ For using non-centered values of $Z$, with no $p$-recentering applied at
+ all, use \texttt{avGroup\_nc} instead -- see the note above.
 
  \item {\em group total} \texttt{(totGroup)}, defined by ego's value multiplied by the
 sum of \underline{all} values $z_h$ for this period,  \\
-$s^{\rm beh}_{i\vit}(x, z) =  z_{i} \left( \sum_{h} z_h - c_p \right) $;\\
+$s^{\rm beh}_{i\vit}(x, z) =  z_{i} \left( \sum_{h} z_h - n\, c_p \right) $;\\
 here $\sum_{h} z_h$ is the sum of the values $z_h$ for all actors $h$
-in the group, and $c_p$ is a centering constant depending on the internal effect
-parameter $p$, defined as for the \texttt{avGroup} effect above.
+in the group, $n$ is the number of actors in the group, and $c_p$ is a centering constant
+depending on the internal effect parameter $p$, defined as for the \texttt{avGroup} effect
+above. The factor $n$ keeps the recentering on the same scale as the sum: since $c_p$ is a
+per-actor (mean-scale) quantity, e.g. with $p$ close to the median of $Z$, it must be scaled up by
+group size $n$ to remain a meaningful adjustment to a group \emph{total} rather than a group
+\emph{average}.
 
  \item {\em constant effect}    \texttt{(constant)},\\
   an elementary effect for behavior,
@@ -15435,6 +15464,12 @@ in all but the final wave; \\
  because of collinearity, under the Method of Moments this cannot be estimated
  together with the average similarity $\times$ popularity alter effect;
 
+ \medskip
+ \noindent \emph{Ego exclusion and non-centered variants.} The following four 
+ effects are weighted versions of the group effects. The note about
+ alternative effect versions \texttt{\_noEgo} and \texttt{\_nc} (p.~\pageref{avGroupNote}) 
+ applies here as well.
+
  \item {\em indegree-weighted group average} \texttt{(indegAvGroup)}, defined
  by ego's value multiplied by the  indegree-weighted average of all values
  $z_h$ for this period,  \\
@@ -15447,9 +15482,27 @@ in all but the final wave; \\
  defined by ego's value multiplied by the indegree-weighted sum of all values
  $z_h$ for this period,  \\
  $s^{\rm beh}_{i\vit}(x, z) =  z_{i}
- \left( \sum_{h} x_{+h} z_{h} - c_p \right) $;\\
+ \left( \sum_{h} x_{+h} z_{h} - n\, c_p \right) $;\\
  here $x_{+h}$ is the indegree of actor $h$ in the specified network,
- and $c_p$ is a centering constant as for \texttt{totGroup}.
+ $n$ is the number of actors in the group, and $c_p$ is a centering constant
+ as for \texttt{avGroup}.
+
+ \item {\em outdegree-weighted group average} \texttt{(outdegAvGroup)}, defined
+ by ego's value multiplied by the outdegree-weighted average of all values
+ $z_h$ for this period,  \\
+ $s^{\rm beh}_{i\vit}(x, z) =  z_{i} \left( \frac{ \sum_{h} x_{h+} z_{h} }
+      {\sum_{h} x_{h+}  } - c_p \right) $;\\
+ here $x_{h+}$ is the outdegree of actor $h$ in the specified network, and
+ $c_p$ is a centering constant as for \texttt{avGroup}.
+
+ \item {\em outdegree-weighted group total} \texttt{(outdegTotGroup)},
+ defined by ego's value multiplied by the outdegree-weighted sum of all values
+ $z_h$ for this period,  \\
+ $s^{\rm beh}_{i\vit}(x, z) =  z_{i}
+ \left( \sum_{h} x_{h+} z_{h} - n\, c_p \right) $;\\
+ here $x_{h+}$ is the outdegree of actor $h$ in the specified network,
+ $n$ is the number of actors in the group, and $c_p$ is a centering constant
+ as for \texttt{avGroup}.
 
 \end{followenum}
 

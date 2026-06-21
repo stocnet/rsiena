@@ -2119,19 +2119,35 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "indegAvGroup")
 	{
-		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, false, false);
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, false, false, true);
+	}
+	else if (effectName == "indegAvGroup_noEgo")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, false, false, false);
 	}
 	else if (effectName == "indegAvGroup_nc")
 	{
-		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, false, true);
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, false, true, true);
+	}
+	else if (effectName == "indegAvGroup_nc_noEgo")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, false, true, false);
 	}
 	else if (effectName == "indegTotGroup")
 	{
-		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, false, false);
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, false, false, true);
+	}
+	else if (effectName == "indegTotGroup_noEgo")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, false, false, false);
 	}
 	else if (effectName == "indegTotGroup_nc")
 	{
-		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, false, true);
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, false, true, true);
+	}
+	else if (effectName == "indegTotGroup_nc_noEgo")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, false, true, false);
 	}
 	else if (effectName == "indeg")
 	{
@@ -2153,20 +2169,36 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "outdegAvGroup")
 	{
-		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, true, false);
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, true, false, true);
+	}
+	else if (effectName == "outdegAvGroup_noEgo")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, true, false, false);
 	}
 	else if (effectName == "outdegAvGroup_nc")
 	{
-		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, true, true);
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, true, true, true);
+	}
+	else if (effectName == "outdegAvGroup_nc_noEgo")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, true, true, false);
 	}
 	else if (effectName == "outdegTotGroup")
 	{
-		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, true, false);
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, true, false, true);
+	}
+	else if (effectName == "outdegTotGroup_noEgo")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, true, false, false);
 	}
 	else if (effectName == "outdegTotGroup_nc")
 	{
-		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, true, true);
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, true, true, true);
 	}
+	else if (effectName == "outdegTotGroup_nc_noEgo")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, true, true, false);
+	}	
 	else if (effectName == "outdeg")
 	{
 		if (pContinuousData)
@@ -2433,11 +2465,35 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "avGroup")
 	{
-		pEffect = new AverageGroupEffect(pEffectInfo, true);
+		pEffect = new AverageGroupEffect(pEffectInfo, true, false, true);
 	}
-		else if (effectName == "totGroup")
+	else if (effectName == "avGroup_noEgo")
 	{
-		pEffect = new AverageGroupEffect(pEffectInfo, false);
+		pEffect = new AverageGroupEffect(pEffectInfo, true, false, false);
+	}
+	else if (effectName == "avGroup_nc")
+	{
+		pEffect = new AverageGroupEffect(pEffectInfo, true, true, true);
+	}
+	else if (effectName == "avGroup_nc_noEgo")
+	{
+		pEffect = new AverageGroupEffect(pEffectInfo, true, true, false);
+	}
+	else if (effectName == "totGroup")
+	{
+		pEffect = new AverageGroupEffect(pEffectInfo, false, false, true);
+	}
+	else if (effectName == "totGroup_noEgo")
+	{
+		pEffect = new AverageGroupEffect(pEffectInfo, false, false, false);
+	}
+	else if (effectName == "totGroup_nc")
+	{
+		pEffect = new AverageGroupEffect(pEffectInfo, false, true, true);
+	}
+	else if (effectName == "totGroup_nc_noEgo")
+	{
+		pEffect = new AverageGroupEffect(pEffectInfo, false, true, false);
 	}
 	else if (effectName == "totAlt")
 	{

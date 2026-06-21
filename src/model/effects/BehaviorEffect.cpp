@@ -115,6 +115,16 @@ double BehaviorEffect::centeredValue(int actor) const
 	return this->lvalues[actor] - this->lpBehaviorData->overallMean();
 }
 
+/**
+ * Returns the behavior value of a given actor in the requested form,
+ * e.g. centered around the overall mean of all observed values or not.
+ * @param[in] actor the index of the actor
+ * @param[in] nc whether the value should not be centered
+ */
+double BehaviorEffect::resolvedValue(int actor, bool nc) const
+{
+	return nc ? this->value(actor) : this->centeredValue(actor);
+}
 
 /**
  * Returns if the value of the behavioral variable is missing for the given

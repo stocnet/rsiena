@@ -23,7 +23,7 @@ namespace siena
 class AverageGroupEffect : public BehaviorEffect
 {
 public:
-	AverageGroupEffect(const EffectInfo * pEffectInfo, bool divide);
+	AverageGroupEffect(const EffectInfo * pEffectInfo, bool divide, bool nc, bool ego);
 
 	virtual void initialize(const Data * pData,
 		State * pState,
@@ -37,12 +37,18 @@ public:
 		double * currentValues);
 
 private:
+	// groupsize is the number of actors in the group, potentially excluding ego
+	int lgroupSize {};
 	// lcentermean = whether to center about the general mean
 	bool lcenterMean {};
 	// if not lcenter, centering is about the following value
 	double lcenteringValue {};
 	// divide indicates whether there will be division by the number of actors
 	bool ldivide {};
+	// nc indicates whether the behavior variable should be non centered
+	bool lnc {};
+	// ego indicates wheter ego should be included in the group statistic
+	bool lego {};
 };
 
 }

@@ -24,7 +24,7 @@ class DegreeWeightedAverageGroupEffect : public NetworkDependentBehaviorEffect
 {
 public:
 	DegreeWeightedAverageGroupEffect(const EffectInfo * pEffectInfo, bool divide,
-	bool outdegree, bool nc);
+	bool outdegree, bool nc, bool ego);
 
 	virtual void initialize(const Data * pData,
 		State * pState,
@@ -45,6 +45,7 @@ private:
 	bool ldivide {};
 	bool loutdegree {}; // true = weight by outdegree rather than indegree
 	bool lnc {};
+	bool lego {};
 };
 
 }

@@ -35,7 +35,7 @@ namespace siena
  * Constructor.
  */
 DegreeWeightedAverageGroupEffect::DegreeWeightedAverageGroupEffect(const EffectInfo * pEffectInfo, 
-		bool divide, bool outdegree, bool nc) :
+		bool divide, bool outdegree, bool nc, bool ego) :
 	NetworkDependentBehaviorEffect(pEffectInfo)
 {
 	this->lcenterMean = (pEffectInfo->internalEffectParameter() <= 0.5);
@@ -50,6 +50,7 @@ DegreeWeightedAverageGroupEffect::DegreeWeightedAverageGroupEffect(const EffectI
 	this->ldivide = divide;
 	this->loutdegree = outdegree;
 	this->lnc = nc;
+	this->lego = ego;
 }
 
 /**
@@ -75,55 +76,48 @@ void DegreeWeightedAverageGroupEffect::initialize(const Data * pData,
 double DegreeWeightedAverageGroupEffect::calculateChangeContribution(int actor,
 	int difference)
 {
-	double statistic = 0;
+	double contribution = 0;
     int weightedN = 0;
+	double multiplier = 1.0;
+
 /* 	const Network * pNetwork = this->pNetwork();*/
 	for (int i = 0; i < this->n(); i++)
 	{
-		double value = this->lnc ? this->value(i) : this->centeredValue(i);
-		if (this->loutdegree)
+		if (i == actor && !this->lego)
 		{
-			statistic += value * this->pNetwork()->outDegree(i);
-			if (this->ldivide)
-			{
-		        weightedN += this->pNetwork()->outDegree(i);
-			}
+			continue; // Pure normative context: skip ego!
 		}
-		else
+		int degree = 0;
+		degree = this->loutdegree ? this->pNetwork()->outDegree(i) :
+										   this->pNetwork()->inDegree(i);
+		contribution += resolvedValue(i, this->lnc) * degree;
+		if (this->ldivide || !this->lcenterMean)
 		{
-			statistic += value * this->pNetwork()->inDegree(i);
-			if (this->ldivide)
-			{
-		        weightedN += this->pNetwork()->inDegree(i);
-			}
+	        weightedN += degree;
 		}
 	}
-	if (this->loutdegree)
+	int actorDegree = 0;
+	actorDegree = this->loutdegree ? this->pNetwork()->outDegree(actor) :
+										  this->pNetwork()->inDegree(actor);
+	if (this->lego)
 	{
-		double value = this->lnc ? this->value(actor) : this->centeredValue(actor);
-		statistic += value * this->pNetwork()->outDegree(actor) + difference;
-		if (this->ldivide)
-		{
-		    weightedN += this->pNetwork()->outDegree(actor);
-		    statistic /= weightedN;
-		}
+		contribution += (resolvedValue(actor, this->lnc) + difference) * actorDegree;
 	}
-	else
+	if (this->ldivide)
 	{
-		double value = this->lnc ? this->value(actor) : this->centeredValue(actor);
-		statistic += value * this->pNetwork()->inDegree(actor) + difference;
-		if (this->ldivide)
-		{
-		    weightedN += this->pNetwork()->inDegree(actor);
-		    statistic /= weightedN;
-		}
+	    contribution /= weightedN;
 	}
-	if (!this->lnc && !this->lcenterMean) // recentering makes no cense if non-centered values are used
+	else if (!this->lcenterMean)
 	{
-		statistic += (this->overallCenterMean() - this->lcenteringValue);
+		multiplier = weightedN;
 	}
-
-	return difference * statistic; 
+	// recentering is not meaningful for the uncentered branch
+	if (!this->lcenterMean && !this->lnc)
+	{
+		contribution += multiplier * (this->overallCenterMean() - this->lcenteringValue);
+	}
+	contribution *= difference;
+	return contribution; 
 }
 
 /**
@@ -133,37 +127,40 @@ double DegreeWeightedAverageGroupEffect::calculateChangeContribution(int actor,
 double DegreeWeightedAverageGroupEffect::egoStatistic(int ego, 
 	double * currentValues)
 {
-	double thesum = 0;
+	double statistic = 0;
     int weightsum = 0;
+	double multiplier = 1.0;
  	for (int i = 0; i < this->n(); i++)
 	{
-		double value = this->lnc ? currentValues[i] : this->centeredValue(i);
-		if (this->loutdegree)
+		if (!this->lego && i == ego)
 		{
-			thesum += value * this->pNetwork()->outDegree(i);
-			if (this->ldivide)
-			{
-		        weightsum += this->pNetwork()->outDegree(i);
-			}
+			continue;
 		}
-		else
+		double value = this->lnc ? currentValues[i] + this->overallCenterMean() : 
+								   currentValues[i];
+		double degree = this->loutdegree ? this->pNetwork()->outDegree(i) : 
+										   this->pNetwork()->inDegree(i);
+		statistic += value * degree;
+		if (this->ldivide || !this->lcenterMean)
 		{
-			thesum += value * this->pNetwork()->inDegree(i);
-			if (this->ldivide)
-			{
-		        weightsum += this->pNetwork()->inDegree(i);
-			}
+			weightsum += degree;
 		}
 	}
 	if (this->ldivide)
 	{
-	    thesum /= weightsum;    
+	    statistic /= weightsum;    
+	}
+	else if (!this->lcenterMean)
+	{
+		multiplier = weightsum;
 	}
 	if (!this->lnc && !this->lcenterMean) // recentering makes no cense if non-centered values are used	
 	{
-		thesum += (this->overallCenterMean() - this->lcenteringValue);
+		statistic += multiplier * (this->overallCenterMean() - this->lcenteringValue);
 	}
-	return thesum * currentValues[ego];
+	statistic *= this->lnc ? currentValues[ego] + this->overallCenterMean()  : 
+							  currentValues[ego];
+	return statistic;
 }
 
 

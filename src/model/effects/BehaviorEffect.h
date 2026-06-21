@@ -71,6 +71,9 @@ protected:
 	int initialValue(int actor) const;
 	double centeredValue(int actor) const;
 	double overallCenterMean() const;
+	// nc indicates whether the behavior variable should be non centered,
+	// can be generalized to any centering option
+	double resolvedValue(int actor, bool nc) const;
 	bool missing(int observation, int actor) const;
 	double range() const;
 	double similarity(double a, double b) const;

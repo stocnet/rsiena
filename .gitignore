@@ -45,8 +45,5 @@ docs/manual/*.fls
 # VsCode settings
 .vscode/
 
-# Makevars
-
-
 # Mac OS
 .DS_Store

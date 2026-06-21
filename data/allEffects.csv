@@ -9,7 +9,21 @@ behaviorOneModeObjective,xxxxxx total attraction lower,xxxxxx total attraction l
 behaviorOneModeObjective,xxxxxx average in-similarity,xxxxxx average in-similarity,avInSim,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 behaviorOneModeObjective,xxxxxx total in-similarity,xxxxxx total in-similarity,totInSim,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 behaviorOneModeObjective,xxxxxx indegree weight ave. group,xxxxxx indegree weight ave. group,indegAvGroup,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorOneModeObjective,xxxxxx indegree weight ave. group (ego excl.),xxxxxx indegree weight ave. group (ego excl.),indegAvGroup_noEgo,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorOneModeObjective,xxxxxx indegree weight ave. group (non-centered),xxxxxx indegree weight ave. group (non-centered),indegAvGroup_nc,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorOneModeObjective,xxxxxx indegree weight ave. group (non-centered ego excl.),xxxxxx indegree weight ave. group (non-centered ego excl.),indegAvGroup_nc_noEgo,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 behaviorOneModeObjective,xxxxxx indegree weight tot. group,xxxxxx indegree weight tot. group,indegTotGroup,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorOneModeObjective,xxxxxx indegree weight tot. group (ego excl.),xxxxxx indegree weight tot. group (ego excl.),indegTotGroup_noEgo,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorOneModeObjective,xxxxxx indegree weight tot. group (non-centered),xxxxxx indegree weight tot. group (non-centered),indegTotGroup_nc,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorOneModeObjective,xxxxxx indegree weight tot. group (non-centered ego excl.),xxxxxx indegree weight tot. group (non-centered ego excl.),indegTotGroup_nc_noEgo,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorOneModeObjective,xxxxxx outdegree weight ave. group,xxxxxx outdegree weight ave. group,outdegAvGroup,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorOneModeObjective,xxxxxx outdegree weight ave. group (ego excl.),xxxxxx outdegree weight ave. group (ego excl.),outdegAvGroup_noEgo,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorOneModeObjective,xxxxxx outdegree weight ave. group (non-centered),xxxxxx outdegree weight ave. group (non-centered),outdegAvGroup_nc,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorOneModeObjective,xxxxxx outdegree weight ave. group (non-centered ego excl.),xxxxxx outdegree weight ave. group (non-centered ego excl.),outdegAvGroup_nc_noEgo,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorOneModeObjective,xxxxxx outdegree weight tot. group,xxxxxx outdegree weight tot. group,outdegTotGroup,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorOneModeObjective,xxxxxx outdegree weight tot. group (ego excl.),xxxxxx outdegree weight tot. group (ego excl.),outdegTotGroup_noEgo,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorOneModeObjective,xxxxxx outdegree weight tot. group (non-centered),xxxxxx outdegree weight tot. group (non-centered),outdegTotGroup_nc,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorOneModeObjective,xxxxxx outdegree weight tot. group (non-centered ego excl.),xxxxxx outdegree weight tot. group (non-centered ego excl.),outdegTotGroup_nc_noEgo,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 behaviorOneModeObjective,xxxxxx group-av. ego,Sum of outdegr. x aver. xxxxxx,avGroupEgoX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 behaviorOneModeObjective,xxxxxx group-tot. ego,Sum of outdegr. x tot. xxxxxx,totGroupEgoX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 behaviorOneModeObjective,xxxxxx indegree,xxxxxx indegrees,indeg,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
@@ -62,7 +76,6 @@ behaviorOneModeObjective,xxxxxx tot. GWDSP I -> K -> J (#),xxxxxx total dyadw. s
 behaviorOneModeObjective,xxxxxx tot. GWDSP I -> K <- J (#),xxxxxx total dyadw. shrd. by two stars,totGwdspFB,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx tot. GWDSP I -> K -> J (#) (nc),xxxxxx total dyadw. shrd. by two path (nc),totGwdspFF_nc,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx tot. GWDSP I -> K <- J (#) (nc),xxxxxx total dyadw. shrd. by two stars (nc),totGwdspFB_nc,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
-behaviorOneModeObjective,xxxxxx outdegree weight tot. group,xxxxxx outdegree weight tot. group,outdegTotGroup,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 behaviorOneModeObjective,xxxxxx max. alter,xxxxxx max. alters,maxAlt,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx max. alter,xxxxxx max. alters,maxAlt_gmm,FALSE,yyyyyy,,gmm,FALSE,FALSE,FALSE,TRUE,FALSE,",",0,0,gmm,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx min. alter,xxxxxx min. alters,minAlt,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
@@ -80,7 +93,13 @@ behaviorSymmetricObjective,xxxxxx total similarity,xxxxxx total similarity,totSi
 behaviorSymmetricObjective,xxxxxx total attraction higher,xxxxxx total attraction higher,totAttHigher,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 behaviorSymmetricObjective,xxxxxx total attraction lower,xxxxxx total attraction lower,totAttLower,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 behaviorSymmetricObjective,xxxxxx degree weight ave. group,xxxxxx degree weight ave. group,indegAvGroup,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorSymmetricObjective,xxxxxx degree weight ave. group (ego excl.),xxxxxx degree weight ave. group (ego excl.),indegAvGroup_noEgo,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorSymmetricObjective,xxxxxx degree weight ave. group (non-centered),xxxxxx degree weight ave. group (non-centered),indegAvGroup_nc,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorSymmetricObjective,xxxxxx degree weight ave. group (non-centered ego excl.),xxxxxx degree weight ave. group (non-centered ego excl.),indegAvGroup_nc_noEgo,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 behaviorSymmetricObjective,xxxxxx degree weight tot. group,xxxxxx degree weight tot. group,indegTotGroup,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorSymmetricObjective,xxxxxx degree weight tot. group (ego excl.),xxxxxx degree weight tot. group (ego excl.),indegTotGroup_noEgo,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorSymmetricObjective,xxxxxx degree weight tot. group (non-centered),xxxxxx degree weight tot. group (non-centered),indegTotGroup_nc,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
+behaviorSymmetricObjective,xxxxxx degree weight tot. group (non-centered ego excl.),xxxxxx degree weight tot. group (non-centered ego excl.),indegTotGroup_nc_noEgo,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 behaviorSymmetricObjective,xxxxxx group-av. ego,Sum of outdegr. x aver. xxxxxx,avGroupEgoX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 behaviorSymmetricObjective,xxxxxx group-tot. ego,Sum of outdegr. x tot. xxxxxx,totGroupEgoX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 behaviorSymmetricObjective,xxxxxx degree,xxxxxx outdegrees,outdeg,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
@@ -155,7 +174,13 @@ behaviorObjective,xxxxxx threshold (#),xxxxxx number cent. >= #,threshold4,TRUE,
 behaviorObjective,xxxxxx #-near similarity,xxxxxx sum #- abs dif <= #,simAllNear,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,2,objective,NA,NA,0,0,0,0,,TRUE
 behaviorObjective,xxxxxx #-far similarity,xxxxxx sum #- abs dif >= #,simAllFar,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,4,objective,NA,NA,0,0,0,0,,TRUE
 behaviorObjective,xxxxxx average group,xxxxxx average group,avGroup,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorObjective,xxxxxx average group (ego excl.),xxxxxx average group (ego excl.),avGroup_noEgo,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorObjective,xxxxxx average group (non-centered),xxxxxx average group (non-centered),avGroup_nc,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorObjective,xxxxxx average group (non-centered ego excl.),xxxxxx average group (non-centered ego excl.),avGroup_nc_noEgo,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorObjective,xxxxxx total group,xxxxxx total group,totGroup,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorObjective,xxxxxx total group (ego excl.),xxxxxx total group (ego excl.),totGroup_noEgo,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorObjective,xxxxxx total group (non-centered),xxxxxx total group (non-centered),totGroup_nc,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorObjective,xxxxxx total group (non-centered ego excl.),xxxxxx total group (non-centered ego excl.),totGroup_nc_noEgo,TRUE,,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorRate,rate xxxxxx period 1,Amount of behavioral change,Rate,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,1,NA,0,0,0,0,,FALSE
 behaviorRate,rate xxxxxx (period nnnnnn),Amount of behavioral change in period nnnnnn on xxxxxx,Rate,NA,,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,nnnnnn,NA,0,0,0,0,,FALSE
 behaviorOneModeRate,outdegree effect on rate xxxxxx,Amount of change on xxxxxx x outdegree,outRate,NA,yyyyyy,,rate,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,rate,NA,structural,0,0,0,0,,FALSE
