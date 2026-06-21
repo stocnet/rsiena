@@ -32,7 +32,7 @@ AC_SUBST(PKG_CPPFLAGS)
 AC_SUBST(PKG_LIBS)
 
 # substitute externalized source list
-PKG_SOURCES=$(cat src/sources.list)
+PKG_SOURCES=$(tr '\n' ' ' < src/sources.list)
 AC_SUBST(PKG_SOURCES)
 
 # copy from GitHub repository neurodata/knorR repository
