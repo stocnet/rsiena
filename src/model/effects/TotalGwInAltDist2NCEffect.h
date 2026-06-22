@@ -23,7 +23,7 @@ namespace siena
 class TotalGwInAltDist2NCEffect : public NetworkDependentBehaviorEffect
 {
 public:
-	explicit TotalGwInAltDist2NCEffect(const EffectInfo * pEffectInfo);
+	explicit TotalGwInAltDist2NCEffect(const EffectInfo * pEffectInfo, bool forward);
 
 	virtual double calculateChangeContribution(int actor,
 		int difference);
@@ -36,6 +36,7 @@ private:
 	double lweight {};
 	double lexpmweight {};
 	double lexpfactor {};
+	bool lforward {};
 };
 
 }

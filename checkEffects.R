@@ -4422,3 +4422,53 @@ popalt_stat <- vapply(1:nrow(s502), function(i) {
 }, FUN.VALUE=1)
 
 sum((mybeh[,,2])*popalt_stat) # totPopAlt 1346‚ ok
+
+################################################################################
+### check non centered totGwInAltDist2 (FB) totGwAltDist2 (FF) version
+################################################################################
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+mymodel <- getEffects(mydata)
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
+
+alpha <- 0.69
+mymodel <- includeEffects(mymodel, totGwInAltDist2_nc, totGwAltDist2_nc, name='mybeh',
+	interaction1='mynet', parameter=alpha)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+
+adj <- s502
+beh <- mybeh[, , 2]
+n <- nrow(adj)
+
+# totGwAltDist2_nc
+
+weighted_alter_sum <- vapply(1:n, function(i) {
+	total_contrib <- 0
+	for (j in which(adj[i, ] != 0)) {		# i's out-ties: i -> j (FF first hop)
+		total <- sum(adj[j, ] * beh * (seq_len(n) != i))	# j's out-ties: j -> h,
+			# excluding h == i (FF second hop, ego-exclusion guard)
+		total_contrib <- total_contrib +
+			exp(alpha) * (1 - (1 - exp(-alpha))^total)
+	}
+	total_contrib
+}, FUN.VALUE=1)
+
+sum(beh * weighted_alter_sum) # 707.6383 ok
+
+# totGwInAltDist2_nc
+
+weighted_alter_sum <- vapply(1:n, function(i) {
+	total_contrib <- 0
+	for (j in which(adj[i, ] != 0)) {		# i's out-ties: i -> j (FF first hop)
+		total <- sum(adj[, j] * beh * (seq_len(n) != i))	# j's in-ties: j <- h,
+			# excluding h == i (FF second hop, ego-exclusion guard)
+		total_contrib <- total_contrib +
+			exp(alpha) * (1 - (1 - exp(-alpha))^total)
+	}
+	total_contrib
+}, FUN.VALUE=1)
+
+sum(beh * weighted_alter_sum) #715.7743 ok

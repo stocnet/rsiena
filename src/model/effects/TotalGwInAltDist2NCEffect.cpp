@@ -26,13 +26,14 @@ namespace siena
  * Constructor.
  */
 TotalGwInAltDist2NCEffect::TotalGwInAltDist2NCEffect(
-	const EffectInfo * pEffectInfo) :
+	const EffectInfo * pEffectInfo, bool forward) :
 	NetworkDependentBehaviorEffect(pEffectInfo)
 {
 	this->linternalEffectParameter = pEffectInfo->internalEffectParameter();
 	this->lweight = -0.01 * this->linternalEffectParameter;
 	this->lexpmweight = exp(-this->lweight);
 	this->lexpfactor = 1 - exp(this->lweight);
+	this->lforward = forward;
 
 	if (this->linternalEffectParameter < 0)
 	{
@@ -61,8 +62,11 @@ double TotalGwInAltDist2NCEffect::calculateChangeContribution(int actor,
 			iter.next())
 		{
 			int alter = iter.actor();
-			double total = this->totalInAlterValue(alter) +
-				pNetwork->inDegree(alter) * this->overallCenterMean();
+			int degree = this->lforward ? pNetwork->outDegree(alter) :
+											 pNetwork->inDegree(alter);
+			double altervalue = this->lforward ? this->totalAlterValue(alter) :
+												 this->totalInAlterValue(alter);
+			double total = altervalue + degree * this->overallCenterMean();
 			total -= this->value(actor);
 			weightedAlterSum += this->gwWeight(total);
 		}
@@ -91,15 +95,16 @@ double TotalGwInAltDist2NCEffect::egoStatistic(int ego,
 		int alter = iter.actor();
 		double total = 0;
 
-		for (IncidentTieIterator inIter = pNetwork->inTies(alter);
-			inIter.valid();
-			inIter.next())
+		for (IncidentTieIterator iter = this->lforward ?
+				pNetwork->outTies(alter) : pNetwork->inTies(alter);
+			iter.valid();
+			iter.next())
 		{
-			int inAlter = inIter.actor();
+			int alter = iter.actor();
 
-			if (inAlter != ego)
+			if (alter != ego)
 			{
-				total += currentValues[inAlter] + this->overallCenterMean();
+				total += currentValues[alter] + this->overallCenterMean();
 			}
 		}
 

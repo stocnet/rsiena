@@ -2412,13 +2412,13 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new TotalGwdspEffect(pEffectInfo, true, false);
 	}
-	else if (effectName == "totGwdspFB")
-	{
-		pEffect = new TotalGwdspEffect(pEffectInfo, false, false);
-	}
 	else if (effectName == "totGwdspFF_nc")
 	{
 		pEffect = new TotalGwdspEffect(pEffectInfo, true, true);
+	}
+	else if (effectName == "totGwdspFB")
+	{
+		pEffect = new TotalGwdspEffect(pEffectInfo, false, false);
 	}
 	else if (effectName == "totGwdspFB_nc")
 	{
@@ -2627,7 +2627,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "totGwInAltDist2_nc")
 	{
-		pEffect = new TotalGwInAltDist2NCEffect(pEffectInfo);
+		pEffect = new TotalGwInAltDist2NCEffect(pEffectInfo, false);
+	}
+	else if (effectName == "totGwAltDist2_nc")
+	{
+		pEffect = new TotalGwInAltDist2NCEffect(pEffectInfo, true);
 	}
     else if (effectName == "varAlt")
     {

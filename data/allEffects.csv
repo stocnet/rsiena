@@ -76,6 +76,8 @@ behaviorOneModeObjective,xxxxxx tot. GWDSP I -> K -> J (#) alter,xxxxxx total dy
 behaviorOneModeObjective,xxxxxx tot. GWDSP I -> K <- J (#) alter,xxxxxx total dyadw. shrd alt.by two stars,totGwdspFBAlt,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx tot. GWDSP I -> K -> J (#) alter (non cent.),xxxxxx total dyadw. shrd alt.by two path (non cent.),totGwdspFFAlt_nc,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx tot. GWDSP I -> K <- J (#) alter (non cent.),xxxxxx total dyadw. shrd alt.by two stars (non cent.),totGwdspFBAlt_nc,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorOneModeObjective,xxxxxx tot. alt. altw-gw. dist. 2 (no cent.),xxxxxx tot. alt. altw-gw. dist. 2 (no cent.),totGwAltDist2_nc,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorOneModeObjective,xxxxxx tot. in-alt. altw-gw. dist. 2 (no cent.),xxxxxx tot. in-alt. altw-gw. dist. 2 (no cent.),totGwInAltDist2_nc,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx tot. GWDSP I -> K -> J (#),xxxxxx total dyadw. shrd. by two path,totGwdspFF,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx tot. GWDSP I -> K <- J (#),xxxxxx total dyadw. shrd. by two stars,totGwdspFB,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx tot. GWDSP I -> K -> J (#) (nc),xxxxxx total dyadw. shrd. by two path (nc),totGwdspFF_nc,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
@@ -130,6 +132,7 @@ behaviorSymmetricObjective,xxxxxx av. sim. dist. 2,xxxxxx av. sim. dist. 2,avInS
 behaviorSymmetricObjective,xxxxxx tot. sim. dist. 2,xxxxxx tot. sim. dist. 2,totInSimDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorSymmetricObjective,xxxxxx tot. GWDSP I -> K -> J (#) alter,xxxxxx total dyadw. shrd alt.by two path,totGwdspFFAlt,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorSymmetricObjective,xxxxxx tot. GWDSP I -> K -> J (#) alter (non cent.),xxxxxx total dyadw. shrd alt.by two path (non cent.),totGwdspFFAlt_nc,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorSymmetricObjective,xxxxxx tot. alt. altw-gw. dist. 2 (no cent.),xxxxxx tot. alt. altw-gw. dist. 2 (no cent.),totGwAltDist2_nc,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorSymmetricObjective,xxxxxx tot. GWDSP I -> K -> J (#),xxxxxx total dyadw. shrd. by two path,totGwdspFF,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorSymmetricObjective,xxxxxx tot. GWDSP I -> K -> J (#) (non cent.),xxxxxx total dyadw. shrd. by two path (non cent.),totGwdspFF_nc,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorSymmetricObjective,xxxxxx max. alter,xxxxxx max. alters,maxAlt,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
@@ -153,6 +156,7 @@ behaviorBipartiteObjective,xxxxxx av. in-alt. tot. dist. 2 (no cent.),xxxxxx av.
 behaviorBipartiteObjective,xxxxxx tot. in-alt. av. dist. 2 (no cent.),xxxxxx tot. in-alt. av. dist. 2 (no cent.),totAInAltDist2_nc,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorBipartiteObjective,xxxxxx tot. GWDSP I -> K <- J (#) alter,xxxxxx total dyadw. shrd alt.by two stars,totGwdspFBAlt,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorBipartiteObjective,xxxxxx tot. GWDSP I -> K <- J (#) alter (non cent.),xxxxxx total dyadw. shrd alt.by two stars (non cent.),totGwdspFBAlt_nc,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
+behaviorBipartiteObjective,xxxxxx tot. in-alt. altw-gw. dist. 2 (no cent.),xxxxxx tot. in-alt. altw-gw. dist. 2 (no cent.),totGwInAltDist2_nc,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorBipartiteObjective,xxxxxx av. in-sim.dist. 2,xxxxxx av. in-sim. dist. 2,avInSimDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorBipartiteObjective,xxxxxx tot. in-sim.dist. 2,xxxxxx tot. in-sim. dist. 2,totInSimDist2,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneOneModeObjective,xxxxxx double outdegree (#),xxxxxx joint outdegree sum (#),FFDeg,TRUE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE

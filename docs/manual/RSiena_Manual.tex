@@ -11835,7 +11835,11 @@ where $\bar v$ is (again) the global mean of $V$.
                         \,=\ \sum_j x_{ij} \sum_{h \neq i} x_{hj}\,v_h  \ .
 \]
     For a non-centered binary variable $V$ with values $v_j$ = 0 or~1,
-    this is a $V$-restricted version of indegree popularity.
+    this is a $V$-restricted version of indegree popularity; for 
+    using this without centering a behavior variable $z$, use
+     \texttt{totInDist2\_nc} instead.
+
+\item \emph{total covariate - in - alter at distance 2} \texttt{(gwInAltDist2_nc)}.
 
 \item \emph{ego-(in-alter-distance-2) covariate - similarity} \texttt{(simEgoInDist2)},
       defined as the sum of centered similarity  between $i$
@@ -15386,12 +15390,44 @@ where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values in
                         \sum_{j=1} x_{ij}x_{hj} }  \Big\}
             \, \ ;
       \end{equation}
+in contrast to the next effect, this one converges towards a pure
+social circle effect for $alpha \to \infty$, where the number of two-paths
+connecting $i$ to his distance 2 alters is ignored.
 for using no centering, work with the effect
 \texttt{(totGwdspFFAlt\_nc)} respectively
 \texttt{(totGwdspFBAlt\_nc)} instead;
 
-% the versions penalizing additional alters of distance 2's behavior
-% is not implemented yet
+\item {\em total incoming alter-wise geometrically weighted at distance 2 effect} \texttt{(totGwInAltDist2\_nc)},
+which is a gometrically weighted version of \texttt{totInAltDist2} that penalizes 
+additional distance 2 incoming alters' behavior for the same direct alter:
+      \begin{equation}
+      s^{\rm beh}_{i\vit}(x, z, \alpha) \,=\,
+            z_{i} \,
+                  \sum_{j;}^n \, x_{ij}
+                  e^{\alpha}\,\Big\{1\,-\,\big(1 - e^{-\alpha}\big)^{
+                        \sum_{h=1\; h \neq i} x_{hj} z_{h}}   \Big\}
+            \, \;
+      \end{equation}
+there is no centered version of this effect, as the weighting scheme assumes
+integer values for the behavior kernel. With strong weighting, this effect
+converges to a pure similarity effect, as only the first alter in distance 2
+matters, while the number of two-paths connecting him to ego are counted
+fully.
+
+\item {\em total alter-wise geometrically weighted at distance 2 effect} \texttt{(totGwAltDist2\_nc)},
+which is a gometrically weighted version of \texttt{totAltDist2} that penalizes 
+additional distance 2 alters' behavior for the same direct alter:
+      \begin{equation}
+      s^{\rm beh}_{i\vit}(x, z, \alpha) \,=\,
+            z_{i} \,
+                  \sum_{j;}^n \, x_{ij}
+                  e^{\alpha}\,\Big\{1\,-\,\big(1 - e^{-\alpha}\big)^{
+                        \sum_{h=1\; h \neq i} x_{jh} z_{h}}   \Big\}
+            \, \;
+      \end{equation}
+this is just the FF version of \texttt{totGwInAltDist2\_nc}, which can be
+used in symmetric networks to represent a geometrically weighted sructural
+equivalence influence effect.
 
  \item {\em average in-similarity effect at distance 2} \texttt{(avInSimDist2)},
  defined by  $i$'s average similarity to the incoming alter
