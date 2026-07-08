@@ -24,8 +24,6 @@ behaviorOneModeObjective,xxxxxx outdegree weight tot. group,xxxxxx outdegree wei
 behaviorOneModeObjective,xxxxxx outdegree weight tot. group (ego excl.),xxxxxx outdegree weight tot. group (ego excl.),outdegTotGroup_noEgo,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 behaviorOneModeObjective,xxxxxx outdegree weight tot. group (no. cent.),xxxxxx outdegree weight tot. group (no. cent.),outdegTotGroup_nc,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 behaviorOneModeObjective,xxxxxx outdegree weight tot. group (no. cent. ego excl.),xxxxxx outdegree weight tot. group (no. cent. ego excl.),outdegTotGroup_nc_noEgo,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
-behaviorOneModeObjective,xxxxxx group-av. ego,Sum of outdegr. x aver. xxxxxx,avGroupEgoX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
-behaviorOneModeObjective,xxxxxx group-tot. ego,Sum of outdegr. x tot. xxxxxx,totGroupEgoX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 behaviorOneModeObjective,xxxxxx indegree,xxxxxx indegrees,indeg,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx outdegree,xxxxxx outdegrees,outdeg,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorOneModeObjective,xxxxxx in-isolate,xxxxxx in-isolate,isolate,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
@@ -106,8 +104,6 @@ behaviorSymmetricObjective,xxxxxx degree weight tot. group,xxxxxx degree weight 
 behaviorSymmetricObjective,xxxxxx degree weight tot. group (ego excl.),xxxxxx degree weight tot. group (ego excl.),indegTotGroup_noEgo,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 behaviorSymmetricObjective,xxxxxx degree weight tot. group (no. cent.),xxxxxx degree weight tot. group (no. cent.),indegTotGroup_nc,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 behaviorSymmetricObjective,xxxxxx degree weight tot. group (no. cent. ego excl.),xxxxxx degree weight tot. group (no. cent. ego excl.),indegTotGroup_nc_noEgo,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
-behaviorSymmetricObjective,xxxxxx group-av. ego,Sum of outdegr. x aver. xxxxxx,avGroupEgoX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
-behaviorSymmetricObjective,xxxxxx group-tot. ego,Sum of outdegr. x tot. xxxxxx,totGroupEgoX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,ego,FALSE
 behaviorSymmetricObjective,xxxxxx degree,xxxxxx outdegrees,outdeg,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorSymmetricObjective,xxxxxx isolate,xxxxxx isolate,isolate,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 behaviorSymmetricObjective,xxxxxx ave. sim. x reciprocity,xxxxxx ave. similarity x reciprocity,avSimRecip,FALSE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
@@ -483,14 +479,6 @@ covarNonSymmetricObjective,4 cycles (#) same xxxxxx,sum 4 cycles^1/# same xxxxxx
 covarNonSymmetricObjective,4 cycles (#) same in-xxxxxx,sum 4 cycles^1/# same in-xxxxxx,sameInXCycle4,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 covarNonSymmetricObjective,xxxxxx ego x xxxxxx alter,Sum xxxxxx ego x xxxxxx alter,egoXaltX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,xxxxxx ego x xxxxxx alter (no cent.),Sum xxxxxx ego x xxxxxx alter (no cent.),egoXaltX_nc,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarNonSymmetricObjective,xxxxxx ego-alt x GWESP FF (#),Sum xxxxxx ego x alt x GWESP FF (#),egoXaltX_gwespFF,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarNonSymmetricObjective,xxxxxx ego-alt x GWESP FF (#) (nc),Sum xxxxxx ego x alt x GWESP FF (#) (nc),egoXaltX_gwespFF_nc,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarNonSymmetricObjective,xxxxxx ego-alt x GWESP FB (#),Sum xxxxxx ego x alt x GWESP FB (#),egoXaltX_gwespFB,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarNonSymmetricObjective,xxxxxx ego-alt x GWESP FB (#) (nc),Sum xxxxxx ego x alt x GWESP FB (#) (nc),egoXaltX_gwespFB_nc,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarNonSymmetricObjective,xxxxxx ego-alt x GWESP BF (#),Sum xxxxxx ego x alt x GWESP BF (#),egoXaltX_gwespBF,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarNonSymmetricObjective,xxxxxx ego-alt x GWESP BF (#) (nc),Sum xxxxxx ego x alt x GWESP BF (#) (nc),egoXaltX_gwespBF_nc,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarNonSymmetricObjective,xxxxxx ego-alt x GWESP BB (#),Sum xxxxxx ego x alt x GWESP BB (#),egoXaltX_gwespBB,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,dyadic,FALSE
-covarNonSymmetricObjective,xxxxxx ego-alt x GWESP BB (#) (nc),Sum xxxxxx ego x alt x GWESP BB (#) (nc),egoXaltX_gwespBB_nc,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,69,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,xxxxxx ego x xxxxxx alter x recipr.,Sum xxxxxx ego x xxxxxx rec.alter,egoXaltXRecip,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,xxxxxx of indirect ties,Sum xxxxxx of indirect ties,IndTies,FALSE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarNonSymmetricObjective,xxxxxx alter at dist 2 (#),xxxxxx alter at dist 2 (#),altDist2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE

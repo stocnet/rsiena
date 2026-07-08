@@ -1,3 +1,44 @@
+2026-07-08
+
+# RSiena 1.6.11
+
+## Changes in RSiena:
+### Effects
+  * New `activity alter` effect, with a non-centered variant
+    (`ActivityAlterEffect.cpp`).
+  * New non-centered variant of the `popularity alter` effect
+    (`PopularityAlterEffect.cpp`).
+  * New alter-wise geometrically weighted version of the distance-2
+    family behavior effects, available in non-centered form only
+    (`TotalGwInAltDist2NCEffect.cpp`).
+  * New `totGwdspFF`/`totGwdspFB` effects (`TotalGwdspEffect.cpp`,
+    plus `_nc` non-centered variants), the network-only controls for
+    the existing `totGwdspFFAlt`/`totGwdspFBAlt` effects: they depend
+    on ego's (geometrically weighted) count of two-paths/two-stars
+    only, not on the alters' behavior values.
+  * New geometrically weighted distance-2 exposure effect and
+    `gwdspExposure` effect for behavior dynamics
+    (`GwDist2ExposureEffect.cpp`, `GwdspExposureEffect.cpp`,
+    `GwCovariateInAlterFunction.cpp`).
+  * Group-level effects (`AverageGroupEffect`,
+    `DegreeWeightedAverageGroupEffect`) corrected and expanded; added
+    `resolvedValue` option to select between centered and non-centered
+    behavior effect variants.
+  * Added non-centered (`_nc`) variants of the `altX`, `egoX`,
+    `egoXaltX` covariate effects and the `totInDist2`/`gwInAltDist2`
+    distance-2 effects, as lower-order controls.
+  * Removed unused/superseded effect classes `AverageTwoInStarAlterEffect`,
+    `DoubleMixedStarEffect`, `StarMixedStarEffect` and the generic
+    helpers `MixedOnlyTwoPathFunction`, `SameCovariateInTiesFunction2`.
+  * Cleanup of other diffusion rate effects.
+### Functionality
+  * `src/sources.list` restructured to a multi-line, more easily
+    editable format; `update_sources_list.sh` / `update_sources_unix.sh`
+    scripts added to regenerate it automatically, and `configure` /
+    `configure.ac` / `configure.win` / `Makevars` updated accordingly,
+    avoiding a build-time dependency on shell globbing
+    (see Writing R Extensions on `Makevars`).
+
 2026-06-14
 
 # RSiena 1.6.10
