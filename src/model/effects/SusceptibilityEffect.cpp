@@ -18,24 +18,54 @@
 #include "data/ConstantCovariate.h"
 #include "data/ChangingCovariate.h"
 #include "network/IncidentTieIterator.h"
+#include "model/EffectInfo.h"
 #include <R_ext/Print.h>
 
 namespace siena
 {
 
+// --- CONSTRUCTOR: Parsed once at runtime birth ---
+SusceptibilityEffect::SusceptibilityEffect(const EffectInfo* pEffectInfo)
+    : DiffusionRateEffect(pEffectInfo)
+{
+    int rawParam = static_cast<int>(std::round(pEffectInfo->internalEffectParameter()));
+    this->labsThreshold = std::abs(rawParam);
+    this->lhasThreshold = (rawParam != 0);
+    this->lcapAtThreshold = (rawParam < 0);
+
+    this->lIsSusceptAvIn = (this->leffectName == "susceptAvIn");
+    this->lIsSusceptAvCovar = (this->leffectName == "susceptAvCovar");
+
+}
+
+void SusceptibilityEffect::initialize(const Data* pData, State* pState, int period, Cache* pCache)
+{
+    DiffusionRateEffect::initialize(pData, pState, period, pCache);
+
+    if (this->lIsSusceptAvCovar && !this->lpConstantCovariate && !this->lpChangingCovariate)
+    {
+        throw std::logic_error("Covariate data missing for susceptAvCovar.");
+    }
+}
+
+// --- HOT PATH WRAPPER ---
+double SusceptibilityEffect::applyThreshold(double value, int numInfectedAlter) const
+{
+    return DiffusionRateEffect::applyThreshold(value, numInfectedAlter, this->labsThreshold, this->lcapAtThreshold);
+}
+
+// --- SIMULATION EXECUTION: Executed millions of times ---
 double SusceptibilityEffect::proximityValue(const Network* pNetwork, int i) const
 {
     int egoNumer = 1;
     int egoDenom = 1;
 
-    // susceptAvIn: numerator is in-degree, denominator is out-degree
-    if (this->leffectName == "susceptAvIn")
+    if (this->lIsSusceptAvIn)
     {
         egoNumer = pNetwork->inDegree(i);
         egoDenom = std::max(1, pNetwork->outDegree(i));
     }
-    // susceptAvCovar: denominator is out-degree
-    else if (this->leffectName == "susceptAvCovar")
+    else if (this->lIsSusceptAvCovar)
     {
         egoDenom = std::max(1, pNetwork->outDegree(i));
     }
@@ -56,36 +86,22 @@ double SusceptibilityEffect::proximityValue(const Network* pNetwork, int i) cons
         }
     }
 
-    // Internal effect parameter thresholding
-    totalAlterValue = this->applyThreshold(totalAlterValue, numInfectedAlter);
+    if (this->lhasThreshold)
+    {
+        totalAlterValue = this->applyThreshold(totalAlterValue, numInfectedAlter);
+    }
 
     totalAlterValue *= egoNumer;
 
-    double rawStatistic;
-    if (egoDenom > 1)
-    {
-        rawStatistic = totalAlterValue / egoDenom;
-    }
-    else
-    {
-        rawStatistic = totalAlterValue;
-    }
+    double rawStatistic = (egoDenom > 1) ? totalAlterValue / egoDenom : totalAlterValue;
 
-    if (this->leffectName == "susceptAvCovar")
-    {
-        if (this->lpConstantCovariate)
+    if (this->lIsSusceptAvCovar)
         {
-            rawStatistic *= this->lpConstantCovariate->value(i);
+            // Safe to execute without checking for total nulls because the constructor guaranteed validity!
+            rawStatistic *= this->lpChangingCovariate ? 
+                            this->lpChangingCovariate->value(i, this->period()) : 
+                            this->lpConstantCovariate->value(i);
         }
-        else if (this->lpChangingCovariate)
-        {
-            rawStatistic *= this->lpChangingCovariate->value(i, this->period());
-        }
-        else
-        {
-            throw std::logic_error("No individual covariate found for susceptAvCovar.");
-        }
-    }
 
     return rawStatistic;
 }

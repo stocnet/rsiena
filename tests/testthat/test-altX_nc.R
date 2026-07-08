@@ -40,14 +40,14 @@ altx_nc_ans <- siena07(
 
 
 test_that("Target statistics are correct", {
-	adj <- mynet[, , 1]
-	beh <- mybeh[, , 2]
-	beh_centered <- beh - mean(beh)
+	adj <- mynet[, , 2]
+	beh <- mybeh[, , 1]
+	beh_centered <- beh - mean(mybeh)
 
 	altx_nc_target <- sum(adj * rep(beh, each = nrow(adj)))
 	altx_target <- sum(adj * rep(beh_centered, each = nrow(adj)))
 
-	expect_equal(altx_target, altx_ans$targets[7])
-	expect_equal(altx_nc_target, altx_nc_ans$targets[7])
-	expect_false(isTRUE(all.equal(altx_ans$targets[7], altx_nc_ans$targets[7])));
-});
+	expect_equal(altx_target, altx_ans$targets[4])
+	expect_equal(altx_nc_target, altx_nc_ans$targets[4])
+	expect_false(isTRUE(all.equal(altx_ans$targets[4], altx_nc_ans$targets[4])))
+})

@@ -3357,6 +3357,31 @@ thecontrols <- sienaAlgorithmCreate(seed=1234)
 	targets = results$targets
 ))
 
+################################################################################
+### check altX and altX_nc
+################################################################################
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+
+adj <- mynet[, , 2]
+(mbh <- mean(mybeh))
+beh1 <- mybeh[, , 1]
+
+altx_model <- getEffects(mydata)
+altx_model <- setEffect(altx_model, altX, name = "mynet", interaction1 = "mybeh")
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=42)
+(altx_ans <- siena07(mycontrols, data=mydata, effects=altx_model, batch=TRUE, silent=TRUE))
+altx_ans$targets
+sum(adj * rep(beh1 - mbh, each = nrow(adj))) # altX -0.06 ok
+
+altx_nc_model <- getEffects(mydata)
+altx_nc_model <- setEffect(altx_nc_model, altX_nc, name = "mynet", interaction1 = "mybeh")
+(altx_nc_ans <- siena07(mycontrols, data=mydata, effects=altx_nc_model, batch=TRUE, silent=TRUE))
+altx_nc_ans$targets # different from altX
+sum(adj * rep(beh1, each = nrow(adj))) # altX_nc 394 ok
+
 # control calculations for targets:
 cc <- mean(s50a[,2]) # contemporaneous mean at end of period
 gm <- mean(s50a[,1:2]) # grand mean over both observations
@@ -3578,6 +3603,99 @@ ans$targets
 c_p <- ifelse(p <= 0.5, 0, p - mbh)
 sum( (mybeh[,,2]-mbh) * ( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) - c_p )) +
 sum( (mybeh[,,3]-mbh) * ( sum((mybeh[,,3]-mbh) * colSums(mynet[,,2])) - c_p )) # 456.7178 ok
+
+################################################################################
+### check indegAvGroup_nc, indegAvGroup_noEgo, indegAvGroup_nc_noEgo
+################################################################################
+
+mynet <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+mybeh <- sienaDependent(s50a[,1:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+p <- 1
+(mbh <- mean(mybeh))
+c_p <- ifelse(p <= 0.5, 0, p - mbh)
+mybeh_centered <- mybeh - mbh
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
+
+mymodel <- getEffects(mydata)
+mymodel <- includeEffects(mymodel, linear, quad, name='mybeh', include=FALSE)
+mymodel <- setEffect(mymodel, indegAvGroup_nc, name='mybeh', interaction1='mynet', parameter=p)
+mymodel
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, silent=TRUE))
+ans$targets
+sum(mybeh[,,2] * (sum(mybeh[,,2] * colSums(mynet[,,1])) / sum(colSums(mynet[,,1])))) +
+sum(mybeh[,,3] * (sum(mybeh[,,3] * colSums(mynet[,,2])) / sum(colSums(mynet[,,2])))) # indegAvGroup_nc 1078.373 ok
+
+mymodel <- getEffects(mydata)
+mymodel <- includeEffects(mymodel, linear, quad, name='mybeh', include=FALSE)
+mymodel <- setEffect(mymodel, indegAvGroup_noEgo, name='mybeh', interaction1='mynet', parameter=p)
+mymodel
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, silent=TRUE))
+ans$targets
+sum(
+  (mybeh_centered[,,2]) *
+    (((sum((mybeh_centered[,,2]) * colSums(mynet[,,1])) - (mybeh_centered[,,2]) * colSums(mynet[,,1])) / (sum(colSums(mynet[,,1])) - colSums(mynet[,,1]))) - c_p)
+) +
+sum(
+  (mybeh_centered[,,3]) *
+    (((sum((mybeh_centered[,,3]) * colSums(mynet[,,2])) - (mybeh_centered[,,3]) * colSums(mynet[,,2])) / (sum(colSums(mynet[,,2])) - colSums(mynet[,,2]))) - c_p)
+) # indegAvGroup_noEgo 25.64693 ok
+
+mymodel <- getEffects(mydata)
+mymodel <- includeEffects(mymodel, linear, quad, name='mybeh', include=FALSE)
+mymodel <- setEffect(mymodel, indegAvGroup_nc_noEgo, name='mybeh', interaction1='mynet', parameter=p)
+mymodel
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, silent=TRUE))
+ans$targets
+sum(
+  (mybeh[,,2]) *
+    ((sum((mybeh[,,2]) * colSums(mynet[,,1])) - (mybeh[,,2]) * colSums(mynet[,,1])) / (sum(colSums(mynet[,,1])) - colSums(mynet[,,1])))
+) +
+sum(
+  (mybeh[,,3]) *
+    ((sum((mybeh[,,3]) * colSums(mynet[,,2])) - (mybeh[,,3]) * colSums(mynet[,,2])) / (sum(colSums(mynet[,,2])) - colSums(mynet[,,2])))
+) # indegAvGroup_nc_noEgo 1075.618 ok
+
+################################################################################
+### check indegTotGroup_nc, indegTotGroup_noEgo, indegTotGroup_nc_noEgo
+################################################################################
+
+mymodel <- getEffects(mydata)
+mymodel <- includeEffects(mymodel, linear, quad, name='mybeh', include=FALSE)
+mymodel <- setEffect(mymodel, indegTotGroup_nc, name='mybeh', interaction1='mynet', parameter=p)
+mymodel
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, silent=TRUE))
+ans$targets
+sum(mybeh[,,2] * (sum(mybeh[,,2] * colSums(mynet[,,1])))) +
+sum(mybeh[,,3] * (sum(mybeh[,,3] * colSums(mynet[,,2])))) # indegTotGroup_nc 123581 ok
+
+mymodel <- getEffects(mydata)
+mymodel <- includeEffects(mymodel, linear, quad, name='mybeh', include=FALSE)
+mymodel <- setEffect(mymodel, indegTotGroup_noEgo, name='mybeh', interaction1='mynet', parameter=p)
+mymodel
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, silent=TRUE))
+ans$targets
+z_w2 <- mybeh[,,2] - mbh
+z_w3 <- mybeh[,,3] - mbh
+deg_w1 <- colSums(mynet[,,1])
+deg_w2 <- colSums(mynet[,,2])
+gs_w2 <- sum(z_w2 * deg_w1)
+gs_w3 <- sum(z_w3 * deg_w2)
+sum(z_w2 * ((gs_w2 - z_w2 * deg_w1) - (sum(deg_w1) - deg_w1) * c_p)) +
+sum(z_w3 * ((gs_w3 - z_w3 * deg_w2) - (sum(deg_w2) - deg_w2) * c_p)) # indegTotGroup_noEgo 2873.967 ok
+
+mymodel <- getEffects(mydata)
+mymodel <- includeEffects(mymodel, linear, quad, name='mybeh', include=FALSE)
+mymodel <- setEffect(mymodel, indegTotGroup_nc_noEgo, name='mybeh', interaction1='mynet', parameter=p)
+mymodel
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, silent=TRUE))
+ans$targets
+z_w2 <- mybeh[,,2]
+z_w3 <- mybeh[,,3]
+gs_w2 <- sum(z_w2 * deg_w1)
+gs_w3 <- sum(z_w3 * deg_w2)
+sum(z_w2 * (gs_w2 - z_w2 * deg_w1)) +
+sum(z_w3 * (gs_w3 - z_w3 * deg_w2)) # indegTotGroup_nc_noEgo 120729 ok
 
 ################################################################################
 ### check totInAltDist2 and totInAltDist2_nc
@@ -3883,6 +4001,32 @@ weight_mat <- exp(alpha) * (1 - (1 - exp(-alpha))^instarmat)
 weighted_beh <- (mybeh[, , 2] - mbh) %*% weight_mat
 sum((mybeh[, , 2] - mbh) * weighted_beh) # 89.68582 ok
 
+## Check Contributions
+## calculateChangeContribution: difference * sum_{j!=ego} centeredValue(j) *
+## lcumulativeWeight[inTwoStarCount(ego,j)], evaluated at wave 1
+
+staticChangeContributions <- RSiena:::getChangeContributions(data=mydata, effects=mymodel)
+conts <- staticChangeContributions[[1]][[1]][[5]] # period 1, effect 5 (totGwdspFBAlt)
+conts <- do.call(rbind, conts)
+
+adj <- mynet[, , 1]
+n <- nrow(adj)
+manual_contribs <- matrix(NA, n, 3)
+for (ego in 1:n) {
+  current_value <- mybeh[, , 1][ego]
+  for (delta in c(-1, 0, 1)) {
+    newval <- current_value + delta
+    col <- delta + 2
+    if (newval < 1 || newval > 5) {
+      manual_contribs[ego, col] <- NA
+    } else {
+      change_stat <- sum((mybeh[, , 1][-ego] - mbh) * weight_mat[ego, -ego])
+      manual_contribs[ego, col] <- delta * change_stat
+    }
+  }
+}
+all.equal(manual_contribs, conts) # TRUE
+
 
 
 mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
@@ -3904,6 +4048,30 @@ alpha <- 0.69
 weight_mat <- exp(alpha) * (1 - (1 - exp(-alpha))^instarmat)
 weighted_beh <- (mybeh[, , 2]) %*% weight_mat
 sum((mybeh[, , 2]) * weighted_beh) # 3118.14 ok
+
+## Check Contributions (non-centered: raw value(j), not centeredValue(j))
+
+staticChangeContributions <- RSiena:::getChangeContributions(data=mydata, effects=mymodel)
+conts <- staticChangeContributions[[1]][[1]][[5]] # period 1, effect 5 (totGwdspFBAlt_nc)
+conts <- do.call(rbind, conts)
+
+adj <- mynet[, , 1]
+n <- nrow(adj)
+manual_contribs <- matrix(NA, n, 3)
+for (ego in 1:n) {
+  current_value <- mybeh[, , 1][ego]
+  for (delta in c(-1, 0, 1)) {
+    newval <- current_value + delta
+    col <- delta + 2
+    if (newval < 1 || newval > 5) {
+      manual_contribs[ego, col] <- NA
+    } else {
+      change_stat <- sum(mybeh[, , 1][-ego] * weight_mat[ego, -ego])
+      manual_contribs[ego, col] <- delta * change_stat
+    }
+  }
+}
+all.equal(manual_contribs, conts) # TRUE
 
 ################################################################################
 ### check totGwdspFFAlt and totGwdspFFAlt_nc
@@ -3937,6 +4105,31 @@ twopath_mat <- forward_twopaths(adj)
 weight_mat <- exp(alpha) * (1 - (1 - exp(-alpha))^twopath_mat)
 weighted_beh <- (mybeh[, , 2] - mbh) %*% weight_mat
 sum((mybeh[, , 2] - mbh) * weighted_beh) # 87.40375 ok
+
+## Check Contributions
+## calculateChangeContribution: difference * sum_{j!=ego} centeredValue(j) *
+## lcumulativeWeight[twoPathCount(ego,j)], evaluated at wave 1
+
+staticChangeContributions <- RSiena:::getChangeContributions(data=mydata, effects=mymodel)
+conts <- staticChangeContributions[[1]][[1]][[5]] # period 1, effect 5 (totGwdspFFAlt)
+conts <- do.call(rbind, conts)
+
+n <- nrow(adj)
+manual_contribs <- matrix(NA, n, 3)
+for (ego in 1:n) {
+  current_value <- mybeh[, , 1][ego]
+  for (delta in c(-1, 0, 1)) {
+    newval <- current_value + delta
+    col <- delta + 2
+    if (newval < 1 || newval > 5) {
+      manual_contribs[ego, col] <- NA
+    } else {
+      change_stat <- sum((mybeh[, , 1][-ego] - mbh) * weight_mat[ego, -ego])
+      manual_contribs[ego, col] <- delta * change_stat
+    }
+  }
+}
+all.equal(manual_contribs, conts) # TRUE
 
 
 mynet <- sienaDependent(array(c(s501,s502, s503), dim=c(50, 50, 3)))
@@ -4434,7 +4627,7 @@ mymodel <- getEffects(mydata)
 mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
 
 alpha <- 0.69
-mymodel <- includeEffects(mymodel, totGwInAltDist2_nc, totGwAltDist2_nc, name='mybeh',
+mymodel <- includeEffects(mymodel, totGwdist2FBAlt_nc, totGwdist2FFAlt_nc, name='mybeh',
 	interaction1='mynet', parameter=alpha)
 (ans <- siena07(mycontrols, data=mydata, effects=mymodel))
 ans$targets
@@ -4443,7 +4636,7 @@ adj <- s502
 beh <- mybeh[, , 2]
 n <- nrow(adj)
 
-# totGwAltDist2_nc
+# totGwdist2FFAlt_nc
 
 weighted_alter_sum <- vapply(1:n, function(i) {
 	total_contrib <- 0
@@ -4458,7 +4651,36 @@ weighted_alter_sum <- vapply(1:n, function(i) {
 
 sum(beh * weighted_alter_sum) # 707.6383 ok
 
-# totGwInAltDist2_nc
+## Check Contributions for totGwdist2FFAlt_nc
+
+staticChangeContributions <- RSiena:::getChangeContributions(data=mydata, effects=mymodel)
+conts <- staticChangeContributions[[1]][[1]][[5]] # period 1, effect 5 (totGwdist2FFAlt_nc)
+conts <- do.call(rbind, conts)
+
+adj1 <- mynet[, , 1]
+beh1 <- mybeh[, , 1]
+gwWeight <- function(total) ifelse(total <= 0, 0, exp(alpha) * (1 - (1 - exp(-alpha))^total))
+manual_contribs <- matrix(NA, n, 3)
+for (ego in 1:n) {
+  current_value <- beh1[ego]
+  for (delta in c(-1, 0, 1)) {
+    newval <- current_value + delta
+    col <- delta + 2
+    if (newval < 1 || newval > 5) {
+      manual_contribs[ego, col] <- NA
+    } else {
+      wsum <- 0
+      for (j in which(adj1[ego, ] != 0)) {
+        total <- sum(adj1[j, ] * beh1 * (seq_len(n) != ego))
+        wsum <- wsum + gwWeight(total)
+      }
+      manual_contribs[ego, col] <- delta * wsum
+    }
+  }
+}
+all.equal(manual_contribs, conts) # TRUE
+
+# totGwdist2FBAlt_nc
 
 weighted_alter_sum <- vapply(1:n, function(i) {
 	total_contrib <- 0
@@ -4472,3 +4694,151 @@ weighted_alter_sum <- vapply(1:n, function(i) {
 }, FUN.VALUE=1)
 
 sum(beh * weighted_alter_sum) #715.7743 ok
+
+## Check Contributions for totGwdist2FBAlt_nc
+## Same as the FF check above, but j's IN-ties (h -> j) instead of out-ties.
+
+conts <- staticChangeContributions[[1]][[1]][[6]] # period 1, effect 6 (totGwdist2FBAlt_nc)
+conts <- do.call(rbind, conts)
+
+manual_contribs <- matrix(NA, n, 3)
+for (ego in 1:n) {
+  current_value <- beh1[ego]
+  for (delta in c(-1, 0, 1)) {
+    newval <- current_value + delta
+    col <- delta + 2
+    if (newval < 1 || newval > 5) {
+      manual_contribs[ego, col] <- NA
+    } else {
+      wsum <- 0
+      for (j in which(adj1[ego, ] != 0)) {
+        total <- sum(adj1[, j] * beh1 * (seq_len(n) != ego))
+        wsum <- wsum + gwWeight(total)
+      }
+      manual_contribs[ego, col] <- delta * wsum
+    }
+  }
+}
+all.equal(manual_contribs, conts) # TRUE
+
+################################################################################
+### check totInExposureDist2, avTinExposureDist2, totAInExposureDist2,
+### anyInExposureDist2 (Distance2ExposureEffect diffusion rate effects)
+################################################################################
+
+mynet <- sienaDependent(array(c(s501, s502), dim = c(50, 50, 2)))
+sm1 <- 1 * (s50s[, 2] >= 2)
+sm2 <- 1 * (s50s[, 3] >= 2)
+sm2 <- pmax(sm1, sm2)
+sm2[c(33, 28, 29, 44)] <- 1
+mybeh <- sienaDependent(cbind(sm1, sm2), type = "behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+
+mycontrols <- sienaAlgorithmCreate(projname = NULL, seed = 1234, firstg = 0.1)
+mycontrols2 <- sienaAlgorithmCreate(projname = NULL, seed = 1234, firstg = 0.001)
+
+instars <- function(mat){
+	# for each pair (i,j), number of common out-neighbors h (h != i,j)
+	matrix_vals <- mat
+	matrix_vals[] <- 0
+	for (i in 1:nrow(mat)){
+		for (j in 1:nrow(mat)){
+			a_row <- mat[i, c(-i, -j)]
+			b_row <- mat[j, c(-i, -j)]
+			matrix_vals[i, j] <- sum(a_row * b_row)
+		}
+	}
+	diag(matrix_vals) <- 0
+	matrix_vals
+}
+
+divi <- function(x, y) {ifelse(y == 0, 0, x / y)}
+
+# totInExposureDist2
+mymodel <- getEffects(mydata)
+ans <- siena07(mycontrols, data = mydata, effects = mymodel,
+               batch = TRUE, silent = TRUE)
+mymodel0 <- updateTheta(mymodel, ans)
+mymodel <- includeEffects(mymodel0, totInExposureDist2,
+                          type = "rate", name = "mybeh", interaction1 = "mynet")
+(ans1 <- siena07(mycontrols2, data = mydata, effects = mymodel,
+                batch = TRUE, silent = TRUE)) # terrible convergence, as in the testthat version
+ans1$targets
+
+instarmat <- instars(mynet[, , 1])
+weighted <- (mybeh[, , 1]) %*% instarmat
+sum((mybeh[, , 2] - mybeh[, , 1]) * weighted) # 24 ok
+
+# avTinExposureDist2
+mymodel <- getEffects(mydata)
+ans <- siena07(mycontrols, data = mydata, effects = mymodel,
+               batch = TRUE, silent = TRUE)
+mymodel0 <- updateTheta(mymodel, ans)
+mymodel <- includeEffects(mymodel0, avTinExposureDist2,
+                          type = "rate", name = "mybeh", interaction1 = "mynet")
+(ans1 <- siena07(mycontrols2, data = mydata, effects = mymodel,
+                batch = TRUE, silent = TRUE))
+ans1$targets
+
+instarmat <- instars(mynet[, , 1])
+outdegree <- rowSums(mynet[, , 1])
+weighted <- divi((mybeh[, , 1]) %*% instarmat, outdegree)
+sum((mybeh[, , 2] - mybeh[, , 1]) * weighted) # 8.833333 ok
+
+# totAInExposureDist2
+mymodel <- getEffects(mydata)
+ans <- siena07(mycontrols, data = mydata, effects = mymodel,
+               batch = TRUE, silent = TRUE)
+mymodel0 <- updateTheta(mymodel, ans)
+mymodel <- includeEffects(mymodel0, totAInExposureDist2,
+                          type = "rate", name = "mybeh", interaction1 = "mynet")
+(ans1 <- siena07(mycontrols2, data = mydata, effects = mymodel,
+                batch = TRUE, silent = TRUE))
+ans1$targets
+
+adj <- mynet[, , 1]
+beh <- mybeh[, , 1]
+n <- nrow(adj)
+indeg <- colSums(adj)
+# stat[i] = sum_{h != i} z_h * sum_j (adj[i, j] * adj[h, j] / (indeg[j] - adj[i, j]))
+stat <- numeric(n)
+for (i in 1:n) {
+	xi <- adj[i, ]
+	denom <- indeg - xi
+	denom[denom == 0] <- NA  # avoid division by zero
+	for (h in setdiff(1:n, i)) {
+		xhj <- adj[h, ]
+		contrib <- xi * xhj / denom
+		contrib[is.na(contrib)] <- 0
+		stat[i] <- stat[i] + beh[h] * sum(contrib)
+	}
+}
+sum((mybeh[, , 2] - mybeh[, , 1]) * stat) # 8.190476 ok
+
+# anyInExposureDist2
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel, anyInExposureDist2, type = "rate",
+                     name = "mybeh", interaction1 = "mynet")
+# Does not actually finish with normal control setting!                     
+(ans <- siena07(mycontrols2, data = mydata, effects = mymodel,
+               batch = TRUE, silent = TRUE, returnChains = FALSE))
+ans$targets
+
+adj <- mynet[, , 1]
+beh1 <- mybeh[, , 1]
+n <- nrow(adj)
+dist2behaviorsum <- t(adj) %*% beh1
+mat <- matrix(0, n, n)
+for (i in 1:n) {
+	for (j in 1:n) {
+		if (adj[i, j] == 1) {
+			h_count <- dist2behaviorsum[j]
+			if (beh1[i] == 1) {
+				h_count <- h_count - 1  # exclude self if i also has behavior and i->j
+			}
+			mat[i, j] <- as.integer(h_count > 0)
+		}
+	}
+}
+mindist2beh <- rowSums(mat)
+sum((mybeh[, , 2] - mybeh[, , 1]) * mindist2beh) # 

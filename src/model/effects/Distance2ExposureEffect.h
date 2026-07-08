@@ -24,10 +24,21 @@ namespace siena
 class Distance2ExposureEffect : public DiffusionRateEffect
 {
 public:
-    using DiffusionRateEffect::DiffusionRateEffect; // Inherit constructors
-
+    Distance2ExposureEffect(const EffectInfo* pEffectInfo);
+    void initialize(const Data* pData, State* pState, int period, Cache* pCache) override;
+    
 protected:
-    double proximityValue(const Network* pNetwork, int i) const;
+    double proximityValue(const Network* pNetwork, int i) const override;
+private:
+    double applyThreshold(double value, int numInfectedAlter) const;
+
+    int labsThreshold{0};
+    bool lcapAtThreshold{false};
+    bool lhasThreshold{false};
+
+    bool lIsAvTinExposureDist2{false};
+    bool lIsTotAInExposureDist2{false};
+    bool lIsAnyInExposureDist2{false};
 };
 
 }

@@ -317,6 +317,8 @@ model/effects/InfectEffect.cpp
 model/effects/ExposureEffect.cpp
 model/effects/SusceptibilityEffect.cpp
 model/effects/Distance2ExposureEffect.cpp
+model/effects/GwdspExposureEffect.cpp
+model/effects/GwDist2ExposureEffect.cpp
 model/effects/TotalGwInAltDist2NCEffect.cpp
 model/effects/generic/EqualsZeroFunction.cpp
 model/effects/TotalGwdspEffect.cpp

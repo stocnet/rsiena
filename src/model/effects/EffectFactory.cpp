@@ -2625,11 +2625,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	{
 		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, false, true);
 	}
-	else if (effectName == "totGwInAltDist2_nc")
+	else if (effectName == "totGwdist2FBAlt_nc")
 	{
 		pEffect = new TotalGwInAltDist2NCEffect(pEffectInfo, false);
 	}
-	else if (effectName == "totGwAltDist2_nc")
+	else if (effectName == "totGwdist2FFAlt_nc")
 	{
 		pEffect = new TotalGwInAltDist2NCEffect(pEffectInfo, true);
 	}

@@ -12,6 +12,7 @@
 #ifndef TOTALGWINALTDIST2NCEFFECT_H_
 #define TOTALGWINALTDIST2NCEFFECT_H_
 
+#include <vector>
 #include "NetworkDependentBehaviorEffect.h"
 
 namespace siena
@@ -25,14 +26,16 @@ class TotalGwInAltDist2NCEffect : public NetworkDependentBehaviorEffect
 public:
 	explicit TotalGwInAltDist2NCEffect(const EffectInfo * pEffectInfo, bool forward);
 
+	virtual void initialize(const Data * pData, State * pState, int period,
+		Cache * pCache) override;
 	virtual double calculateChangeContribution(int actor,
-		int difference);
-	virtual double egoStatistic(int ego, double * currentValues);
+		int difference) override;
+	virtual double egoStatistic(int ego, double * currentValues) override;
 
 private:
-	double gwWeight(double total) const;
+	std::vector<double> lcumulativeWeight;
 
-	double linternalEffectParameter {};
+	double lparameter {};
 	double lweight {};
 	double lexpmweight {};
 	double lexpfactor {};

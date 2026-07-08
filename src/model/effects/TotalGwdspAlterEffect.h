@@ -44,7 +44,7 @@ public:
 private:	
 	// NetworkCache * lpNetworkCache;
 	// ConfigurationTable * (NetworkCache::*lpTable)() const;
-	double linternalEffectParameter {};
+	double lparameter {};
 	std::vector<double> lcumulativeWeight;
 	double lforward {};
 	double lweight {};

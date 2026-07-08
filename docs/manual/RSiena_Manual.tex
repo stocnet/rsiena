@@ -11084,7 +11084,8 @@ the following effects are available:
  \item {\em covariate-alter} or {\em covariate-related popularity}
  \texttt{(altX)},
  defined by the sum of the covariate over all actors to whom $i$ has a tie,\\
- $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, v_j$;
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, v_j$;\\
+ for using no centering, work with the effect \texttt{(altX\_nc)} instead;
 
  \item {\em covariate squared - alter} or {\em squared covariate-related popularity} \texttt{(altSqX)},
  defined by the sum of the squared covariate over all actors to whom $i$ has a tie,
@@ -11121,7 +11122,8 @@ defined by \\
  \item {\em covariate-ego} or {\em covariate-related activity}
  \texttt{(egoX)},
  defined by $i$'s out-degree weighted by his covariate value,\\
- $s^{\rm net}_{i\vit}(x) = v_i \, x_{i+} $;
+ $s^{\rm net}_{i\vit}(x) = v_i \, x_{i+} $;\\
+ for using no centering, work with the effect \texttt{(egoX\_nc)} instead;
 
  \item {\em covariate squared - ego} or {\em squared covariate-related activity}
  \texttt{(egoSqX)},
@@ -11839,7 +11841,6 @@ where $\bar v$ is (again) the global mean of $V$.
     using this without centering a behavior variable $z$, use
      \texttt{totInDist2\_nc} instead.
 
-\item \emph{total covariate - in - alter at distance 2} \texttt{(gwInAltDist2_nc)}.
 
 \item \emph{ego-(in-alter-distance-2) covariate - similarity} \texttt{(simEgoInDist2)},
       defined as the sum of centered similarity  between $i$
@@ -14508,7 +14509,7 @@ where $\bar v$ is the overall mean of variable $V$.
          \frac{\sum_{h \neq i} w_{hj}\,v_h}{x_{+j} - x_{ij}}  &
                                        \text{ if } x_{+j} > 0     \\
          \bar v                                &  \text{ if } x_{+j} = 0  ,
-  \end{array}   \right.            \label{alt_inav2}
+  \end{array}   \right.            \label{alt_inav2w}
 \end{equation}
 where $\bar v$ is (again) the global mean of $V$.
 
@@ -14906,7 +14907,7 @@ with the behavioral variable itself.
  Each of the following six effects -- \texttt{avGroup}, \texttt{totGroup},
  \texttt{indegAvGroup}, \texttt{indegTotGroup}, \texttt{outdegAvGroup}, and
  \texttt{outdegTotGroup} -- has two further variants, which can also be combined
- (e.g.\ \texttt{avGroup\_noEgo\_nc}).:
+ (e.g.\ \texttt{avGroup\_nc\_noEgo}).:
  \begin{itemize}
  \item \texttt{..\_noEgo}: ego is excluded from the group of actors $h$ that the statistic is
  computed over, e.g.\ for \texttt{avGroup\_noEgo}. Ego's behavior is compared to
@@ -15390,44 +15391,52 @@ where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values in
                         \sum_{j=1} x_{ij}x_{hj} }  \Big\}
             \, \ ;
       \end{equation}
-in contrast to the next effect, this one converges towards a pure
-social circle effect for $alpha \to \infty$, where the number of two-paths
-connecting $i$ to his distance 2 alters is ignored.
+in contrast to the next effect, this weighting scheme dampens structural path 
+redundancy to a single actor. For $alpha \to 0$, it converges towards a pure
+social circle effect, where the number of two-paths
+connecting $i$ to his distance 2 alters  (dyadwise shared partners) is ignored 
+while each distance 2 alters behavior is counted once fully.
 for using no centering, work with the effect
 \texttt{(totGwdspFFAlt\_nc)} respectively
 \texttt{(totGwdspFBAlt\_nc)} instead;
 
-\item {\em total incoming alter-wise geometrically weighted at distance 2 effect} \texttt{(totGwInAltDist2\_nc)},
-which is a gometrically weighted version of \texttt{totInAltDist2} that penalizes 
-additional distance 2 incoming alters' behavior for the same direct alter:
+\item Two variations of the
+   \emph{GWDIST2 (geometrically weighted distance 2)} alter effects:
+    {\em total GWDIST2 I -> K -> J alter} \texttt{(totGwdist2FFAlt\_nc)} and
+    {\em total GWDIST2 I -> K <- J alter} \texttt{(totGwdist2FBAlt\_nc)}.
+   In contrast to the GWDSP variants, these geometric weightings apply directly to the 
+   distance 2 neighborhood itself, penalizing the accumulation of additional distance 2 
+   alters' behavior exposed through the same direct intermediary. They are defined by
       \begin{equation}
       s^{\rm beh}_{i\vit}(x, z, \alpha) \,=\,
             z_{i} \,
-                  \sum_{j;}^n \, x_{ij}
+                  \sum_{j=1}^n \, x_{ij}
                   e^{\alpha}\,\Big\{1\,-\,\big(1 - e^{-\alpha}\big)^{
-                        \sum_{h=1\; h \neq i} x_{hj} z_{h}}   \Big\}
-            \, \;
+                        \sum_{h=1;\; h \neq i} x_{jh} z_{h}}   \Big\}
+            \, \ ;
       \end{equation}
-there is no centered version of this effect, as the weighting scheme assumes
-integer values for the behavior kernel. With strong weighting, this effect
-converges to a pure similarity effect, as only the first alter in distance 2
-matters, while the number of two-paths connecting him to ego are counted
-fully.
-
-\item {\em total alter-wise geometrically weighted at distance 2 effect} \texttt{(totGwAltDist2\_nc)},
-which is a gometrically weighted version of \texttt{totAltDist2} that penalizes 
-additional distance 2 alters' behavior for the same direct alter:
+      and
       \begin{equation}
       s^{\rm beh}_{i\vit}(x, z, \alpha) \,=\,
             z_{i} \,
-                  \sum_{j;}^n \, x_{ij}
+                  \sum_{j=1}^n \, x_{ij}
                   e^{\alpha}\,\Big\{1\,-\,\big(1 - e^{-\alpha}\big)^{
-                        \sum_{h=1\; h \neq i} x_{jh} z_{h}}   \Big\}
+                        \sum_{h=1;\; h \neq i} x_{hj} z_{h}}   \Big\}
             \, \;
       \end{equation}
-this is just the FF version of \texttt{totGwInAltDist2\_nc}, which can be
-used in symmetric networks to represent a geometrically weighted sructural
-equivalence influence effect.
+while GWDSP dampens multiple paths to the same source, GWDIST2 models exposure 
+saturation via a single gateway. With strong weighting ($\alpha \to 0$), this effect 
+converges to a pure similarity effect, as only the presence of a behaviorally 
+active distance 2 alter via a direct neighbor matters, while the total volume 
+of such alters reached through that neighbor is discounted. These specific statistics 
+have their most natural count-like interpretation for binary behavior variables. 
+For non-negative valued behavior, the statistic remains coherent, but its interpretation 
+shifts from counting configuration multiplicity to aggregating behavioral intensity with 
+geometric decay. In symmetric networks, the FF variant \texttt{(totGwdist2FFAlt\_nc)} 
+represents a geometrically weighted structural equivalence influence effect. There is no 
+centered version of these GWDIST2 effects, as the weighting scheme requires non-negative 
+values for the behavior kernel $\sum_{h=1;\; h \neq i} x_{jh} z_{h}$ (or its incoming 
+equivalent).
 
  \item {\em average in-similarity effect at distance 2} \texttt{(avInSimDist2)},
  defined by  $i$'s average similarity to the incoming alter
@@ -15949,8 +15958,8 @@ denoted $v_j$), there are the following effects.
  this is similar to \texttt{avInAltDist2}, but now for covariate $V$
  instead of the behavior $Z$;
 
- \item {\em alter's distance-two incoming covariate total} effect on behavior $z$ \texttt{(totXInAltDist2)},
- defined by  $i$'s
+ \item {\em alter's distance-two incoming covariate total} effect on behavior $z$ 
+ \texttt{(totXInAltDist2)}, defined by  $i$'s
  behavior multiplied by the total of the incoming alter-totals on $V$ of his alters,
  excluding the contribution from a tie $i \rightarrow j$ (if any),\\
  $s^{\rm beh}_{i\vit}(x, z) = z_i \sum_j x_{ij}\, \sum_{h \neq i} x_{hj}\,v_h =
@@ -15958,8 +15967,8 @@ denoted $v_j$), there are the following effects.
  this is similar to \texttt{totInAltDist2}, but now for covariate $V$
  instead of the behavior $Z$;
 
- \item {\em average total incoming covariate alter effect at distance 2} \texttt{(avTXInAltDist2)},
- defined by  $i$'s
+ \item {\em average total incoming covariate alter effect at distance 2} 
+ \texttt{(avTXInAltDist2)}, defined by  $i$'s
  behavior multiplied by the average of the incoming alter-totals on $V$ of his alters,
  excluding the contribution from a tie $i \rightarrow j$ (if any),\\[0.3ex]
  $s^{\rm beh}_{i\vit}(x, z) =  z_i \big( \sum_j x_{ij}\,(x_{+j}- x_{ij}) \, \check v_j^{(-i)} \big)
@@ -15968,8 +15977,8 @@ denoted $v_j$), there are the following effects.
  this is similar to \texttt{avTInAltDist2}, but now for covariate $V$
  instead of the behavior $Z$;
 
- \item {\em total average incoming covariate alter effect at distance 2} \texttt{(totAXInAltDist2)},
- defined by  $i$'s
+ \item {\em total average incoming covariate alter effect at distance 2} 
+ \texttt{(totAXInAltDist2)}, defined by  $i$'s
  behavior multiplied by the total of the incoming alter-averages on $V$ of his alters,
  excluding the contribution from a tie $i \rightarrow j$ (if any), \\[0.3ex]
  $s^{\rm beh}_{i\vit}(x, z) =  z_i \big( \sum_j x_{ij}\, \check v_j^{(-i)} \big) $;\\[0.5ex]
@@ -16098,20 +16107,7 @@ It is then important how to define the zero point of the covariate!
   \breve w_h = \left\{\begin{array}{ll} \displaystyle
          \frac{\sum_h x_{hi}w_{hi}}{x_{+i}}  &  \text{ if } x_{+i} > 0     \\
          0                                &  \text{ if } x_{+i} = 0  .
-  \end{array}   \right.            \label{alt_avwa}
-\end{equation}
-      leading to the effect \\
-       $s^{\rm beh}_{i\vit}(x, z) = z_i \, \breve w_h $.\\
-
-\item \emph{in-alter's  average of dyadic covariate } effect on behavior $z$
- \texttt{(avWInAlt)},\\
-      defined as the product of $i$'s behavior $z_i$ and
-      $i$'s in-alters' dyadic covariate-average $\breve w_h$ as defined by
-\begin{equation}
-  \breve w_h = \left\{\begin{array}{ll} \displaystyle
-         \frac{\sum_h x_{hi}w_{ih}}{x_{+i}}  &  \text{ if } x_{+i} > 0     \\
-         0                                &  \text{ if } x_{+i} = 0  .
-  \end{array}   \right.            \label{alt_avwa}
+  \end{array}   \right.            \label{inalt_avwa}
 \end{equation}
       leading to the effect \\
        $s^{\rm beh}_{i\vit}(x, z) = z_i \, \breve w_h $.\\
@@ -16303,8 +16299,7 @@ reciprocated degrees.
    If $v_{h}$ is a behavioral variable, the non-centered value is used.
 % see DependentVariable::behaviorVariableRate and StatisticCalculator::calculateBehaviorRateStatistics
 
-
- \item[{\hspace*{-1ex}$\bigodot$}]
+\item[{\hspace*{-1ex}$\bigodot$}]
  For the analysis of diffusion of innovations,
   which is applicable if the behavior variable
   is a non-decreasing variable with values 0 and 1,

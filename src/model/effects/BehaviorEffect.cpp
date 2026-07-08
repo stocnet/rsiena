@@ -137,6 +137,24 @@ bool BehaviorEffect::missing(int observation, int actor) const
 
 
 /**
+ * Returns the smallest observed value of the respective behavior variable.
+ */
+int BehaviorEffect::min() const
+{
+	return this->lpBehaviorData->min();
+}
+
+
+/**
+ * Returns the largest observed value of the respective behavior variable.
+ */
+int BehaviorEffect::max() const
+{
+	return this->lpBehaviorData->max();
+}
+
+
+/**
  * Returns the observed range of the respective behavior variable.
  */
 double BehaviorEffect::range() const

@@ -14,19 +14,27 @@
 
 #include "DiffusionRateEffect.h"
 
-namespace siena
-{
+namespace siena {
 
-/**
- * Handles all susceptibility-based diffusion rate effects (e.g., susceptAvIn, susceptAvCovar).
- */
-class SusceptibilityEffect : public DiffusionRateEffect
+class SusceptibilityEffect : public DiffusionRateEffect 
 {
 public:
-    using DiffusionRateEffect::DiffusionRateEffect; // Inherit constructors etc.
+    SusceptibilityEffect(const EffectInfo* pEffectInfo);
+
+    void initialize(const Data* pData, State* pState, int period, Cache* pCache) override;
 
 protected:
-    double proximityValue(const Network* pNetwork, int i) const;
+    double proximityValue(const Network* pNetwork, int i) const override;
+
+private:
+    int labsThreshold{0};
+    bool lcapAtThreshold{false};
+    bool lhasThreshold{false};
+
+    bool lIsSusceptAvIn{false};
+    bool lIsSusceptAvCovar{false};
+
+    double applyThreshold(double value, int numInfectedAlter) const;
 };
 
 }

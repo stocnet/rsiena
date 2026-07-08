@@ -78,6 +78,8 @@ ans <- siena07(
 )
 
 
+
+
 test_that("Non-centered target statistics are correct", {
   # Wave 2
   z_w2 <- mybeh[, 1, 2]
@@ -117,6 +119,9 @@ ans <- siena07(
   effects = mymodel,
   returnChains = FALSE
 )
+
+mybeh_centered <- mybeh - mbh
+
 
 test_that("Centered Target statistics excluding Ego are correct", {
   z_w2 <- mybeh_centered[, 1, 2]

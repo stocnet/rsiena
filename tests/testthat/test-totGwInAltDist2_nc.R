@@ -7,16 +7,16 @@ skip_on_cran()
 ################################################################################
 
 ################################################################################
-### Check totGwInAltDist2_nc effect ###
+### Check totGwdist2FBAlt_nc effect ###
 ################################################################################
 
-# Use internal data set to test totGwInAltDist2_nc effect
+# Use internal data set to test totGwdist2FBAlt_nc effect
 mynet <- sienaDependent(array(c(s502, s503), dim = c(50, 50, 2)))
 mybeh <- sienaDependent(s50a[, 2:3], type = "behavior")
 mydata <- sienaDataCreate(mynet, mybeh)
 mymodel <- getEffects(mydata)
 p <- 69
-mymodel <- setEffect(mymodel, totGwInAltDist2_nc,
+mymodel <- setEffect(mymodel, totGwdist2FBAlt_nc,
   name = "mybeh", interaction1 = "mynet", parameter = p)
 mycontrols <- sienaAlgorithmCreate(projname = NULL, seed = 42)
 ans <- siena07(
@@ -44,17 +44,17 @@ test_that("Target statistics are correct", {
     }
   }
 
-  totGwInAltDist2_nc_target <- sum(beh * weighted_alter_sum)
+  totGwdist2FBAlt_nc_target <- sum(beh * weighted_alter_sum)
 
   expect_equal(
-    totGwInAltDist2_nc_target,
+    totGwdist2FBAlt_nc_target,
     ans$targets[7]
   )
 }
 )
 
 mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, totGwAltDist2_nc,
+mymodel <- setEffect(mymodel, totGwdist2FFAlt_nc,
   name = "mybeh", interaction1 = "mynet", parameter = p)
 mycontrols <- sienaAlgorithmCreate(projname = NULL, seed = 42)
 ans <- siena07(
@@ -82,13 +82,11 @@ for (i in seq_len(nrow(adj))) {
   }
 }
 
-  totGwAltDist2_nc_target <- sum(beh * weighted_alter_sum)
+  totGwdist2FFAlt_nc_target <- sum(beh * weighted_alter_sum)
 
   expect_equal(
-    totGwAltDist2_nc_target,
+    totGwdist2FFAlt_nc_target,
     ans$targets[7]
   )
 }
 )
-
-# MISSING IN CHECK EFFECTS!

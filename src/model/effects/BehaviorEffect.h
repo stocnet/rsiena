@@ -75,6 +75,8 @@ protected:
 	// can be generalized to any centering option
 	double resolvedValue(int actor, bool nc) const;
 	bool missing(int observation, int actor) const;
+	int min() const;
+	int max() const;
 	double range() const;
 	double similarity(double a, double b) const;
 	double similarityMean() const;

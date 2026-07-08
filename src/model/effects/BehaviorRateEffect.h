@@ -13,6 +13,7 @@
 #define BEHAVIORERATEFFECT_H_
 
 #include "Effect.h"
+#include <string>
 #include <utility>
 
 namespace siena
@@ -50,11 +51,15 @@ protected:
 	double centeredValue(int actor) const;
 	double overallCenterMean() const;
 	bool missing(int observation, int actor) const;
+	int min() const;
+	int max() const;
 	double range() const;
 	double similarity(double a, double b) const;
 	double similarityMean() const;
     double variance() const;
 	const int * initialValues();
+
+	std::string leffectName;
 
 private:
 	BehaviorLongitudinalData * lpBehaviorData;

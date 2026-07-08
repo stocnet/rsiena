@@ -19,9 +19,17 @@ namespace siena {
 class ExposureEffect : public DiffusionRateEffect
 {
 public:
-    using DiffusionRateEffect::DiffusionRateEffect;
+    ExposureEffect(const EffectInfo* pEffectInfo);
+
 protected:
-    double proximityValue(const Network* pNetwork, int i) const;
+    double proximityValue(const Network* pNetwork, int i) const override;
+private:
+    int labsThreshold{0};
+    bool lcapAtThreshold{false};
+    bool lhasThreshold{false};
+    bool lIsAvExposure{false};
+
+    double applyThreshold(double value, int numInfectedAlter) const;
 };
 
 }

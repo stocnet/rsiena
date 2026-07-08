@@ -29,16 +29,52 @@ TotalGwInAltDist2NCEffect::TotalGwInAltDist2NCEffect(
 	const EffectInfo * pEffectInfo, bool forward) :
 	NetworkDependentBehaviorEffect(pEffectInfo)
 {
-	this->linternalEffectParameter = pEffectInfo->internalEffectParameter();
-	this->lweight = -0.01 * this->linternalEffectParameter;
+	this->lparameter = pEffectInfo->internalEffectParameter();
+	this->lweight = -0.01 * this->lparameter;
 	this->lexpmweight = exp(-this->lweight);
 	this->lexpfactor = 1 - exp(this->lweight);
 	this->lforward = forward;
 
-	if (this->linternalEffectParameter < 0)
+	if (this->lparameter < 0)
 	{
 		throw runtime_error(
-			"TotalGwInAltDist2 must have nonnegative internal effect parameter");
+			"TotalGwInAltDist2_nc must have nonnegative internal effect parameter");
+	}
+}
+
+
+/**
+ * Initializes this effect, then builds the precomputed geometrically
+ * weighted transform lookup. The "total" evaluated in
+ * calculateChangeContribution()/egoStatistic() is a sum of raw (non-
+ * centered) int-valued behavior scores of at most n() actors, each
+ * <= max(); n() * max() is therefore the tight upper bound on the index,
+ * so sizing to n() * max() + 1 makes every reachable index valid 
+ * The value-sum index is only well defined for
+ * non-negative behavior (a negative value could push it below zero),
+ * matching the precondition already documented for the analogous
+ * diffusion rate effects.
+ */
+void TotalGwInAltDist2NCEffect::initialize(const Data * pData,
+	State * pState,
+	int period,
+	Cache * pCache)
+{
+	NetworkDependentBehaviorEffect::initialize(pData, pState, period, pCache);
+
+	if (this->min() < 0)
+	{
+		throw runtime_error(
+			"TotalGwInAltDist2_nc requires a non-negative behavior variable");
+	}
+
+	double pow_ = 1;
+	int size = this->pNetwork()->n() * this->max() + 1;
+	this->lcumulativeWeight.resize(size); // default values 0
+	for (int i = 1; i < size; i++)
+	{
+		pow_ *= this->lexpfactor;
+		this->lcumulativeWeight[i] = this->lexpmweight * (1 - pow_);
 	}
 }
 
@@ -67,8 +103,25 @@ double TotalGwInAltDist2NCEffect::calculateChangeContribution(int actor,
 			double altervalue = this->lforward ? this->totalAlterValue(alter) :
 												 this->totalInAlterValue(alter);
 			double total = altervalue + degree * this->overallCenterMean();
-			total -= this->value(actor);
-			weightedAlterSum += this->gwWeight(total);
+			if (this->lforward)
+			{
+				// totalAlterValue(alter) sums over alter's OUT-neighbors, so
+				// actor is only a member of that sum if alter has a tie back
+				// to actor; not guaranteed just because actor -> alter exists.
+				if (pNetwork->tieValue(alter, actor) == 1)
+				{
+					total -= this->value(actor);
+				}
+			}
+			else
+			{
+				// totalInAlterValue(alter) sums over alter's IN-neighbors, and
+				// actor is always one of them here: alter was only reached via
+				// actor's own out-tie to it, i.e. there always is a tie
+				// actor -> alter.
+				total -= this->value(actor);
+			}
+			weightedAlterSum += this->lcumulativeWeight[(int) total];
 		}
 
 		contribution = difference * weightedAlterSum;
@@ -108,26 +161,12 @@ double TotalGwInAltDist2NCEffect::egoStatistic(int ego,
 			}
 		}
 
-		statistic += this->gwWeight(total);
+		statistic += this->lcumulativeWeight[(int) total];
 	}
 
 	statistic *= currentValues[ego] + this->overallCenterMean();
 
 	return statistic;
-}
-
-
-/**
- * Returns the geometrically weighted transform of the given alter total.
- */
-double TotalGwInAltDist2NCEffect::gwWeight(double total) const
-{
-	if (total <= 0)
-	{
-		return 0;
-	}
-
-	return this->lexpmweight * (1 - pow(this->lexpfactor, total));
 }
 
 }

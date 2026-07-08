@@ -140,3 +140,43 @@ indegedAverage_noEgo_target <- sum(
 
 }
 )
+
+mymodel <- getEffects(mydata)
+p <- 1
+mymodel <- includeEffects (mymodel, linear, quad,  name='mybeh', include=FALSE)
+mymodel <- setEffect(mymodel,indegAvGroup_nc_noEgo,
+                     name='mybeh', interaction1='mynet', parameter=p)
+mycontrols <- sienaAlgorithmCreate(projname=NULL)
+
+ans <- siena07(
+  mycontrols,
+  batch = TRUE,
+  silent = TRUE,
+  data = mydata,
+  effects = mymodel,
+  returnChains = FALSE
+)
+
+test_that("Non-centered target statistics excluding ego are correct", {
+
+indegedAverage_nc_noEgo_target <- sum(
+    (mybeh[,,2]) *
+      (
+        (sum((mybeh[,,2]) * colSums(mynet[,,1])) - (mybeh[,,2]) * colSums(mynet[,,1]))  / (sum(colSums(mynet[,,1])) - colSums(mynet[,,1]))
+      )
+  ) +
+  sum(
+    (mybeh[,,3]) *
+      (
+        (sum((mybeh[,,3]) * colSums(mynet[,,2])) - (mybeh[,,3]) * colSums(mynet[,,2])) / (sum(colSums(mynet[,,2])) - colSums(mynet[,,2]))
+      )
+  )
+
+
+  expect_equal(
+    indegedAverage_nc_noEgo_target,
+    ans$targets[7]
+  )
+
+}
+)

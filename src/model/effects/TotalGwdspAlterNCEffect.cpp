@@ -38,12 +38,12 @@ namespace siena
 TotalGwdspAlterNCEffect::TotalGwdspAlterNCEffect(const EffectInfo * pEffectInfo, bool forward) :
 	NetworkDependentBehaviorEffect(pEffectInfo)
 {
-	this->linternalEffectParameter = pEffectInfo->internalEffectParameter();
-	this->lweight = -0.01 * this->linternalEffectParameter;
+	this->lparameter = pEffectInfo->internalEffectParameter();
+	this->lweight = -0.01 * this->lparameter;
 	this->lexpmweight = exp(-this->lweight);
 	this->lexpfactor = (1 - exp(this->lweight));
 	this->lforward = forward;
-	if (this->linternalEffectParameter < 0)
+	if (this->lparameter < 0)
 	{
 		throw runtime_error("Gwdsp must have nonnegative internal effect parameter");
 	}

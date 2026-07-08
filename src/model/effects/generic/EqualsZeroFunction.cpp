@@ -12,6 +12,7 @@
  *****************************************************************************/
 
 #include <cmath>
+#include "utils/Utils.h"
 #include "EqualsZeroFunction.h"
 
 namespace siena

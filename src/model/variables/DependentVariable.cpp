@@ -37,6 +37,8 @@
 #include "model/effects/InfectEffect.h"
 #include "model/effects/Distance2ExposureEffect.h"
 #include "model/effects/SusceptibilityEffect.h"
+#include "model/effects/GwDist2ExposureEffect.h"
+#include "model/effects/GwdspExposureEffect.h"
 #include "model/variables/NetworkVariable.h"
 #include "model/variables/EffectValueTable.h"
 #include "model/settings/Setting.h"
@@ -424,6 +426,18 @@ namespace siena
 					{
 						this->ldiffusionRateEffects.push_back(
 							new Distance2ExposureEffect(pEffectInfo));
+					}
+					else if(effectName == "gwdist2FBExposure" ||
+						effectName == "gwdist2FFExposure")
+					{
+						this->ldiffusionRateEffects.push_back(
+							new GwDist2ExposureEffect(pEffectInfo));
+					}
+					else if(effectName == "gwdspFBExposure" ||
+						effectName == "gwdspFFExposure")
+					{
+						this->ldiffusionRateEffects.push_back(
+							new GwdspExposureEffect(pEffectInfo));
 					}
 					else
 					{

@@ -78,13 +78,6 @@ void DiffusionRateEffect::initialize(
         this->lpConstantCovariate = pData->pConstantCovariate(name);
 	    this->lpChangingCovariate = pData->pChangingCovariate(name);
     }
-    this->leffectName = this->pEffectInfo()->effectName(); // not always necessary?
-    this->linternalEffectParameter = this->pEffectInfo()->internalEffectParameter();
-    this->linternalEffectParameter = round(this->linternalEffectParameter); // why round?
-    this->labsInternalEffectParameter = std::abs(this->linternalEffectParameter);
-    this->linternalNonZero = (this->linternalEffectParameter != 0);
-
-
 }
 
 
@@ -113,11 +106,11 @@ void DiffusionRateEffect::initialize(
 //     this->lpConstantCovariate = pConstantCovariate;
 //     this->leffectName = effectName;
 //     this->lparameter = parameter;
-//     this->linternalEffectParameter = round(internalEffectParameter);
-//     this->labsInternalEffectParameter = std::abs(this->linternalEffectParameter);
-//     this->linternalNonZero = (this->linternalEffectParameter != 0);
+//     this->lparameter = round(internalEffectParameter);
+//     this->labsInternalEffectParameter = std::abs(this->lparameter);
+//     this->linternalNonZero = (this->lparameter != 0);
 
-//     if ((effectName == "infectCovar") && (this->linternalEffectParameter < 0))
+//     if ((effectName == "infectCovar") && (this->lparameter < 0))
 //     {
 //         throw logic_error("Negative internal parameter not permitted for effect "+effectName);
 //     }
@@ -130,24 +123,38 @@ double DiffusionRateEffect::proximityValue(const Network* pNetwork, int i) const
     throw std::logic_error("proximityValue not implemented for this effect type.");
 }
 
-double DiffusionRateEffect::applyThreshold(double value, int numInfectedAlter) const
+/**
+ * Abstract Threshold method, that has to be wrapped with the concrete
+ * threshold values at construction from the concrete effect implementation class.
+ */
+double DiffusionRateEffect::applyThreshold(double value, int numInfectedAlter, int absThreshold, bool capAtThreshold)
 {
-    if (this->linternalNonZero)
+    if (numInfectedAlter < absThreshold)
     {
-        if (numInfectedAlter < this->labsInternalEffectParameter)
-        {
-            value = 0;
-        }
-        else if (this->linternalEffectParameter < 0)
-        {
-            if (value > this->labsInternalEffectParameter)
-            {
-                value = this->labsInternalEffectParameter;
-            }
-        }
+        return 0.0;
     }
-    return value;
+
+    return capAtThreshold ? std::min<double>(value, absThreshold) : value;
 }
+
+// double DiffusionRateEffect::applyThreshold(double value, int numInfectedAlter) const
+// {
+//     if (this->linternalNonZero)
+//     {
+//         if (numInfectedAlter < this->labsInternalEffectParameter)
+//         {
+//             value = 0;
+//         }
+//         else if (this->lparameter < 0)
+//         {
+//             if (value > this->labsInternalEffectParameter)
+//             {
+//                 value = this->labsInternalEffectParameter;
+//             }
+//         }
+//     }
+//     return value;
+// }
 
 /**
  * Returns the rate contribution (for scores and statistics calculation).
@@ -158,22 +165,22 @@ double DiffusionRateEffect::calculateContribution(int i) const
     return this->proximityValue(this->lpNetwork, i);
 }
 
-/**
- * Stores the internal effect parameter for the diffusion rate effect.
- */
-void DiffusionRateEffect::setInternalEffectParameter(int parValue)
-{
-    this->linternalEffectParameter = parValue;
-    this->labsInternalEffectParameter = std::abs(this->linternalEffectParameter);
-    this->linternalNonZero = (this->linternalEffectParameter != 0);
-}
+// /**
+//  * Stores the internal effect parameter for the diffusion rate effect.
+//  */
+// void DiffusionRateEffect::setInternalEffectParameter(int parValue)
+// {
+//     this->lparameter = parValue;
+//     this->labsInternalEffectParameter = std::abs(this->lparameter);
+//     this->linternalNonZero = (this->lparameter != 0);
+// }
 
-/**
- * Returns the internal effect parameter for the diffusion rate effect.
- */
-int DiffusionRateEffect::getInternalEffectParameter() const
-{
-    return this->linternalEffectParameter;
-}
+// /**
+//  * Returns the internal effect parameter for the diffusion rate effect.
+//  */
+// int DiffusionRateEffect::getInternalEffectParameter() const
+// {
+//     return this->lparameter;
+// }
 
 }

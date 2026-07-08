@@ -34,14 +34,15 @@ ans <- siena07(
 test_that("Target statistics are correct for actAlt", {
   adj <- mynet[, , 1]
   beh <- mybeh[, , 2]
-  beh_cent <- beh - mean(beh)
+  beh_cent <- beh - mean(mybeh)  # centered by the overall mean across all waves
 
   # actAlt: z_i(centered) * sum_j x_ij * outdeg(j) / outdeg(i)
+  outdeg_j <- rowSums(adj)  # x_{j+}, out-degree of alter j
   actAlt_target <- numeric(nrow(adj))
   for (i in seq_len(nrow(adj))) {
     outdeg_i <- sum(adj[i, ])
     if (outdeg_i > 0) {
-      actAlt_target[i] <- beh_cent[i] * sum(adj[i, ] * colSums(adj)) / outdeg_i
+      actAlt_target[i] <- beh_cent[i] * sum(adj[i, ] * outdeg_j) / outdeg_i
     }
   }
 
@@ -55,12 +56,13 @@ test_that("Target statistics are correct for actAlt", {
 test_that("Target statistics are correct for totActAlt", {
   adj <- mynet[, , 1]
   beh <- mybeh[, , 2]
-  beh_cent <- beh - mean(beh)
+  beh_cent <- beh - mean(mybeh)  # centered by the overall mean across all waves
 
   # totActAlt: z_i(centered) * sum_j x_ij * outdeg(j)
+  outdeg_j <- rowSums(adj)  # x_{j+}, out-degree of alter j
   totActAlt_target <- numeric(nrow(adj))
   for (i in seq_len(nrow(adj))) {
-    totActAlt_target[i] <- beh_cent[i] * sum(adj[i, ] * colSums(adj))
+    totActAlt_target[i] <- beh_cent[i] * sum(adj[i, ] * outdeg_j)
   }
 
   expect_equal(
