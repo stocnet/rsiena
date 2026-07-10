@@ -50,7 +50,7 @@ CovariateAlterEffect::CovariateAlterEffect(const EffectInfo * pEffectInfo,
 double CovariateAlterEffect::calculateContribution(int alter) const
 {
 	double change = 0;
-	double alterValue = this->lnc ? this->rawValue(alter) : this->value(alter);
+	double alterValue = this->lnc ? this->uncenteredValue(alter) : this->value(alter);
 
 	if (this->lleftThresholded)
 	{

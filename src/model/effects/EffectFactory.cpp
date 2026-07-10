@@ -60,6 +60,7 @@
 #include "model/effects/generic/CovariateDistance2AlterNetworkFunction.h"
 #include "model/effects/generic/CovariateDistance2InAlterNetworkFunction.h"
 #include "model/effects/generic/GwCovariateInAlterFunction.h"
+#include "model/effects/generic/GwCovariateAlterFunction.h"
 #include "model/effects/generic/CovariateDistance2SimilarityNetworkFunction.h"
 #include "model/effects/generic/CovariateDistance2EgoAltSameNetworkFunction.h"
 #include "model/effects/generic/CovariateDistance2EgoAltSimNetworkFunction.h"
@@ -3037,7 +3038,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}
-	else if (effectName == "gwInAltDist2_nc")
+	else if (effectName == "gwdist2FBX_nc")
 	{
 		string networkName = pEffectInfo->variableName();
 		string covariateName = pEffectInfo->interactionName1();
@@ -3048,6 +3049,32 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			new GwCovariateInAlterFunction(networkName, covariateName, true, parameter);
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
+	}
+	else if (effectName == "gwdist2FFX_nc")
+	{
+		string networkName = pEffectInfo->variableName();
+		string covariateName = pEffectInfo->interactionName1();
+		double parameter = pEffectInfo->internalEffectParameter();
+		AlterFunction * pChangeFunction =
+			new GwCovariateAlterFunction(networkName, covariateName, false, parameter);
+		AlterFunction * pStatisticFunction =
+			new GwCovariateAlterFunction(networkName, covariateName, true, parameter);
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			pChangeFunction, pStatisticFunction);
+	}
+	else if (effectName == "gwdspFBX" || effectName == "gwdspFBX_nc")
+	{
+		EgocentricConfigurationTable * (NetworkCache::*mytable)() const =
+			&NetworkCache::pInStarTable;
+		pEffect = new CovariateGwdspEffect(pEffectInfo, mytable, false,
+			effectName == "gwdspFBX_nc");
+	}
+	else if (effectName == "gwdspFFX" || effectName == "gwdspFFX_nc")
+	{
+		EgocentricConfigurationTable * (NetworkCache::*mytable)() const =
+			&NetworkCache::pTwoPathTable;
+		pEffect = new CovariateGwdspEffect(pEffectInfo, mytable, true,
+			effectName == "gwdspFFX_nc");
 	}
 	else if (effectName == "altDist2W")
 	{
@@ -3074,6 +3101,20 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		AlterFunction * pStatisticFunction =
 			new CovariateDistance2AlterNetworkFunction(networkName,
 				covariateName, parameter, true, true);
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			pChangeFunction, pStatisticFunction);
+	}
+	else if (effectName == "totDist2_nc")
+	{
+		string networkName = pEffectInfo->interactionName1();
+		string covariateName = pEffectInfo->interactionName2();
+		double parameter = pEffectInfo->internalEffectParameter();
+		AlterFunction * pChangeFunction =
+			new CovariateDistance2AlterNetworkFunction(networkName,
+				covariateName, parameter, false, true, true);
+		AlterFunction * pStatisticFunction =
+			new CovariateDistance2AlterNetworkFunction(networkName,
+				covariateName, parameter, true, true, true);
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}

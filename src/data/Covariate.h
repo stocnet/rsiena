@@ -43,6 +43,10 @@ public:
 
 	inline double mean() const;
 	void mean(double value);
+	inline double obsmean() const;
+	void obsmean(double value);
+	inline bool centered() const;
+	void centered(bool value);
 	inline double range() const;
 	void range(double range);
 	inline double similarityMean() const;
@@ -60,10 +64,20 @@ private:
 	// The underlying set of actors
 	const ActorSet * lpActorSet;
 
-	// The average covariate value (to be passed from outside)
-	// If centered, this is 0.
+	// The average value of the stored covariate (to be passed from outside).
+	// If the covariate was centered, the stored values have this subtracted,
+	// so this is 0; otherwise it equals the observed mean.
 	double lmean {};
-	
+
+	// The observed (raw) mean of the covariate, regardless of centering
+	// (to be passed from outside). For a covariate declared centered, the raw
+	// value is recovered by adding this back to the stored (centered) value.
+	double lobsmean {};
+
+	// Whether the covariate was declared centered at data entry, i.e. whether
+	// the stored values have had the observed mean subtracted.
+	bool lcentered {};
+
 	// The overall range of values (to be passed from outside)
 	double lrange {};
 
@@ -85,6 +99,22 @@ private:
 double Covariate::mean() const
 {
 	return this->lmean;
+}
+
+/**
+ * Returns the observed (raw) mean of this covariate, regardless of centering.
+ */
+double Covariate::obsmean() const
+{
+	return this->lobsmean;
+}
+
+/**
+ * Returns whether this covariate was declared centered at data entry.
+ */
+bool Covariate::centered() const
+{
+	return this->lcentered;
 }
 
 /**

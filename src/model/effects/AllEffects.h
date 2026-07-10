@@ -73,6 +73,7 @@
 #include "HigherCovariateEffect.h"
 #include "HomCovariateActivityEffect.h"
 #include "GwdspEffect.h"
+#include "CovariateGwdspEffect.h"
 #include "IndegreeEffect.h"
 #include "IndegreeActivityEffect.h"
 #include "IndegreeContinuousEffect.h"

@@ -30,6 +30,8 @@ Covariate::Covariate(string name, const ActorSet * pActorSet) :
 {
 	this->lpActorSet = pActorSet;
 	this->lmean = 0;
+	this->lobsmean = 0;
+	this->lcentered = false;
 	this->lrange = 0;
 	this->lsimilarityMean = 0;
 }
@@ -54,6 +56,22 @@ const ActorSet * Covariate::pActorSet() const
 void Covariate::mean(double value)
 {
 	this->lmean = value;
+}
+
+/**
+ * Stores the observed (raw) mean of this covariate, regardless of centering.
+ */
+void Covariate::obsmean(double value)
+{
+	this->lobsmean = value;
+}
+
+/**
+ * Stores whether this covariate was declared centered at data entry.
+ */
+void Covariate::centered(bool value)
+{
+	this->lcentered = value;
 }
 
 /**

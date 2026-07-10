@@ -3,16 +3,16 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: GwCovariateInAlterFunction.cpp
+ * File: GwCovariateAlterFunction.cpp
  *
  * Description: This file contains the implementation of the class
- * GwCovariateInAlterFunction.
+ * GwCovariateAlterFunction.
  *****************************************************************************/
 
 #include <cmath>
 #include <stdexcept>
 
-#include "GwCovariateInAlterFunction.h"
+#include "GwCovariateAlterFunction.h"
 #include "network/Network.h"
 
 using namespace std;
@@ -24,13 +24,13 @@ namespace siena
  * Constructor.
  * @param[in] networkName the name of the network variable
  * @param[in] covariateName the name of the behavior variable used as covariate
- * @param[in] excludeMissing whether to return 0 when all in-alters are missing
+ * @param[in] excludeMissing whether to return 0 when all out-alters are missing
  * @param[in] parameter the GW decay parameter (must be >= 0)
  */
-GwCovariateInAlterFunction::GwCovariateInAlterFunction(string networkName,
+GwCovariateAlterFunction::GwCovariateAlterFunction(string networkName,
 	string covariateName, bool excludeMissing, double parameter) :
 	CovariateDistance2NetworkFunction(networkName, covariateName,
-		excludeMissing, false, true) // loutgoing=false, lraw=true
+		excludeMissing, true, true) // loutgoing=true, nc=true
 {
 	this->lexcludeMissing = excludeMissing;
 	this->lweight = -0.01 * parameter;
@@ -40,27 +40,28 @@ GwCovariateInAlterFunction::GwCovariateInAlterFunction(string networkName,
 	if (parameter < 0)
 	{
 		throw runtime_error(
-			"GwCovariateInAlterFunction must have nonnegative effect parameter");
+			"GwCovariateAlterFunction must have nonnegative effect parameter");
 	}
 }
 
 
 /**
- * Returns the GW-weighted raw in-alter behavior total for the given alter,
+ * Returns the GW-weighted raw out-alter behavior total for the given alter,
  * excluding ego's own contribution.
  */
-double GwCovariateInAlterFunction::value(int alter) const
+double GwCovariateAlterFunction::value(int alter) const
 {
-	if (this->lexcludeMissing && this->missingInDummy(alter))
+	if (this->lexcludeMissing && this->missingDummy(alter))
 	{
 		return 0;
 	}
 
-	double total = this->totalInAlterValue(alter);
+	double total = this->totalAlterValue(alter);
 
-	// If ego -> alter tie exists, the cache includes ego's raw behavior;
-	// subtract it to get T_alter^{(-ego)}.
-	if (this->pNetwork()->tieValue(this->ego(), alter) == 1)
+	// totalAlterValue(alter) sums over alter's OUT-neighbors; ego is one of
+	// them only if a tie alter -> ego exists. Subtract ego's raw behavior in
+	// that case to get T_alter^{(-ego)}.
+	if (this->pNetwork()->tieValue(alter, this->ego()) == 1)
 	{
 		total -= CovariateNetworkAlterFunction::uncenteredCovvalue(this->ego());
 	}
@@ -72,7 +73,7 @@ double GwCovariateInAlterFunction::value(int alter) const
 /**
  * Returns e^alpha * (1 - (1 - e^{-alpha})^total), or 0 if total <= 0.
  */
-double GwCovariateInAlterFunction::gwWeight(double total) const
+double GwCovariateAlterFunction::gwWeight(double total) const
 {
 	if (total <= 0)
 	{

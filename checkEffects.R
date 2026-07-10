@@ -4842,3 +4842,318 @@ for (i in 1:n) {
 }
 mindist2beh <- rowSums(mat)
 sum((mybeh[, , 2] - mybeh[, , 1]) * mindist2beh) # 
+
+
+################################################################################
+### check gwdspFBX, gwdspFBX_nc, gwdspFFX_nc,
+### gwdspFFX - distance 2 covariate weighted by gw (two-path count)
+################################################################################
+
+alpha <- 0.69
+par <- 100 * alpha
+
+instars <- function(mat){
+	# for each pair (i,j), number of common out-neighbors h (h != i,j)
+	matrix_vals <- mat
+	matrix_vals[] <- 0
+	for (i in 1:nrow(mat)){
+		for (j in 1:nrow(mat)){
+			a_row <- mat[i, c(-i, -j)]
+			b_row <- mat[j, c(-i, -j)]
+			matrix_vals[i, j] <- sum(a_row * b_row)
+		}
+	}
+	diag(matrix_vals) <- 0
+	matrix_vals
+}
+
+forward_twopaths <- function(adj) {
+  mat <- adj %*% adj
+  diag(mat) <- 0
+  mat
+}
+
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mycovar <- as_covariate_rsiena(s50a[,2])
+mydata <- sienaDataCreate(mynet, mycovar)
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
+mymodel <- getEffects(mydata)
+mymodel <- set_effect(mymodel, egoX, depvar = "mynet", covar1 = "mycovar")
+mymodel <- set_effect(mymodel, gwdspFBX, parameter = par,
+                      depvar = "mynet", covar1 = "mycovar")
+mymodel <- set_effect (mymodel, gwdspFFX, parameter = par,
+                     name = "mynet", covar1 = "mycovar")
+mymodel <- set_interaction(mymodel, c(egoX, gwdspFBX),
+  covar1 = c("mycovar", "mycovar"))
+mymodel <- set_interaction(mymodel, c(egoX, gwdspFFX),
+  covar1 = c("mycovar", "mycovar"))
+
+(ans <- siena07(mycontrols, data = mydata, effects = mymodel,
+               batch = TRUE, silent = TRUE, returnChains = FALSE))
+ans$targets
+
+mynet2 <- mynet[, , 2]
+gwWeight <- function(total, alpha = log(2)) ifelse(total <= 0, 0, exp(alpha) * (1 - (1 - exp(-alpha))^total))
+
+# check gwdspFBX
+
+
+mycovar_centered <- mycovar - mean(mycovar)
+instarmat <- instars(mynet2)
+gwinstarmat <- gwWeight(instarmat, alpha = alpha)
+egostat <- sweep(gwinstarmat, 2, mycovar_centered, "*")
+sum(egostat) # 48.20488 ok
+
+# check egoX x gwdspFBX
+
+egostat <- mycovar_centered * sweep(gwinstarmat, 2, mycovar_centered, "*")
+sum(egostat) # NOT corect
+
+# check gwdspFFX
+
+mycovar_centered <- mycovar - mean(mycovar)
+fftwopaths <- forward_twopaths(mynet2)
+gwfftwopaths <- gwWeight(fftwopaths, alpha = alpha)
+egostat <- sweep(gwfftwopaths, 2, mycovar_centered, "*")
+sum(egostat) #  57.39124  ok
+
+# check egoX x gwdspFFX
+
+egostat <- mycovar_centered * sweep(gwfftwopaths, 2, mycovar_centered, "*")
+sum(egostat) #  146.36016  ok
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mycovar <- as_covariate_rsiena(s50a[,2], centered = FALSE)
+mydata <- sienaDataCreate(mynet, mycovar)
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
+mymodel <- getEffects(mydata)
+mymodel <- getEffects(mydata)
+mymodel <- set_effect(mymodel, egoX_nc, depvar = "mynet", covar1 = "mycovar")
+mymodel <- set_effect(mymodel, gwdspFBX_nc, parameter = par,
+                      depvar = "mynet", covar1 = "mycovar")
+mymodel <- set_effect (mymodel, gwdspFFX_nc, parameter = par,
+                     name = "mynet", covar1 = "mycovar")
+mymodel <- set_interaction(mymodel, c(egoX_nc, gwdspFBX_nc),
+  covar1 = c("mycovar", "mycovar"))
+mymodel <- set_interaction(mymodel, c(egoX_nc, gwdspFFX_nc),
+  covar1 = c("mycovar", "mycovar"))
+
+(ans <- siena07(mycontrols, data = mydata, effects = mymodel,
+               batch = TRUE, silent = TRUE, returnChains = FALSE))
+ans$targets
+
+# check gwdspFBX_nc
+
+egostat <- sweep(gwinstarmat, 2, mycovar, "*")
+sum(egostat) # 812.0541 ok
+
+# check egoX_nc x gwdspFBX_nc
+egostat <- mycovar * sweep(gwinstarmat, 2, mycovar, "*")
+sum(egostat) # 2832.846 ok
+
+# check gwdspFFX_nc
+egostat <- sweep(gwfftwopaths, 2, mycovar, "*")
+sum(egostat) #  779.2663  ok
+
+# check egoX_nc x gwdspFFX_nc
+
+egostat <- mycovar * sweep(gwfftwopaths, 2, mycovar, "*")
+sum(egostat) #  2746.218  ok
+
+################################################################################
+### check totGwdspFB and totGwdspFB_nc (structural GWDSP behavior effect)
+###
+###########################################################################
+
+instars_count <- function(mat){
+  # for each pair (i,j): number of common out-neighbors h (shared receivers)
+  S <- mat %*% t(mat)
+  diag(S) <- 0
+  S
+}
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+
+alpha <- 0.69
+gw <- function(s) exp(alpha) * (1 - (1 - exp(-alpha))^s)
+W <- gw(instars_count(mynet[, , 1]))   # 50 x 50, diag 0
+structsum <- rowSums(W)                 # sum_{j != i} w(S_ij), per ego
+(mbh <- mean(mybeh))
+z2 <- mybeh[, , 2]
+z2_cent <- z2 - mbh
+
+## --- centered version: totGwdspFB ---
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel, totGwdspFB, name='mybeh', interaction1 = "mynet")
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+sum(z2_cent * structsum)  # 67.58029 ok
+
+## --- non-centered version: totGwdspFB_nc ---
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel, totGwdspFB_nc, name='mybeh', interaction1 = "mynet")
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets  # different from totGwdspFB
+sum(z2 * structsum) # 870.0215 ok
+
+## Check Contributions: contribution = difference * structsum(ego), i.e. the
+## derivative of z_i * structsum(i) w.r.t. z_i -- identical for centered/nc
+## (the mean is a constant), evaluated at wave 1.
+staticChangeContributions <- RSiena:::getChangeContributions(data=mydata, effects=mymodel)
+conts <- staticChangeContributions[[1]][[1]][[5]]
+conts <- do.call(rbind, conts)
+n <- nrow(mynet[, , 1])
+manual_contribs <- matrix(NA, n, 3)
+for (ego in 1:n) {
+  current_value <- mybeh[, , 1][ego]
+  for (delta in c(-1, 0, 1)) {
+    newval <- current_value + delta
+    col <- delta + 2
+    if (newval < 1 || newval > 5) {
+      manual_contribs[ego, col] <- NA
+    } else {
+      manual_contribs[ego, col] <- delta * structsum[ego]
+    }
+  }
+}
+all.equal(manual_contribs, conts) # TRUE
+
+
+################################################################################
+### check totGwdspFF and totGwdspFF_nc (structural GWDSP behavior effect, FF)
+###
+### As above but with forward two-paths: z_i * sum_{j != i} w(twoPathCount(i,j)).
+###   totGwdspFF     -> CENTERED ego value
+###   totGwdspFF_nc  -> RAW      ego value
+################################################################################
+
+forward_twopaths <- function(adj) {
+  mat <- adj %*% adj
+  diag(mat) <- 0
+  mat
+}
+
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+
+alpha <- 0.69
+gw <- function(s) exp(alpha) * (1 - (1 - exp(-alpha))^s)
+W <- gw(forward_twopaths(mynet[, , 1]))
+structsum <- rowSums(W)
+(mbh <- mean(mybeh))
+z2 <- mybeh[, , 2]
+
+## --- centered version: totGwdspFF ---
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel, totGwdspFF, name='mybeh', interaction1 = "mynet")
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+sum((z2 - mbh) * structsum)  # 58.86044 ok
+
+## --- non-centered version: totGwdspFF_nc ---
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel, totGwdspFF_nc, name='mybeh', interaction1 = "mynet")
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets  # different from totGwdspFF
+sum(z2 * structsum) # 762.8172 ok
+
+## Check Contributions: difference * structsum(ego), evaluated at wave 1.
+staticChangeContributions <- RSiena:::getChangeContributions(data=mydata, effects=mymodel)
+conts <- staticChangeContributions[[1]][[1]][[5]]
+conts <- do.call(rbind, conts)
+n <- nrow(mynet[, , 1])
+manual_contribs <- matrix(NA, n, 3)
+for (ego in 1:n) {
+  current_value <- mybeh[, , 1][ego]
+  for (delta in c(-1, 0, 1)) {
+    newval <- current_value + delta
+    col <- delta + 2
+    if (newval < 1 || newval > 5) {
+      manual_contribs[ego, col] <- NA
+    } else {
+      manual_contribs[ego, col] <- delta * structsum[ego]
+    }
+  }
+}
+all.equal(manual_contribs, conts) # TRUE
+
+################################################################################
+### check gwInAltDist2_nc and gwAltDist2_nc (targets and change contributions)
+################################################################################
+### Network (selection) effects: for each tie i -> j, gw-weight the raw
+### (non-centered) covariate/behaviour total over j's other distance-2 partners:
+###   gwInAltDist2_nc uses j's IN-neighbours  (h -> j), ego excluded iff i -> j,
+###   gwAltDist2_nc   uses j's OUT-neighbours (j -> h), ego excluded iff j -> i.
+### The value is taken at the start of the period, i.e. the wave paired with the
+### start network s502 (behaviour/covariate value s50a[,2]). The target sums the
+### gw-weighted totals over the observed ties of the end network (s503); the
+### change contribution is the tie-flip contribution on the start network
+### (s502), with sign +1 when adding an absent tie and -1 when removing a
+### present one. getChangeContributions drops the rate effects, so the gw effect
+### is entry 3 (density, recip, gw, then any behaviour effects). Checked with a
+### behaviour covariate for the in-alter case and a constant covariate for the
+### alter case.
+
+alpha <- 0.69                       # internal parameter 69 -> weight 0.69
+gwWeight <- function(total) ifelse(total <= 0, 0,
+                exp(alpha) * (1 - (1 - exp(-alpha))^total))
+mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
+
+endmat <- s503; diag(endmat) <- 0     # end network (target)
+startmat <- s502; diag(startmat) <- 0 # start network (contributions)
+n <- nrow(endmat)
+edges <- which(endmat == 1, arr.ind=TRUE)
+egoE <- edges[,1]                     # i
+altE <- edges[,2]                     # j
+toggle <- 1 - 2 * startmat            # +1 if tie absent, -1 if present
+
+# gwInAltDist2_nc, behaviour covariate; ego is always an in-neighbour of j (i->j)
+# network waves are s502, s503, so the aligned behaviour waves are s50a[,2:3];
+# the value at the start of the period is therefore s50a[,2].
+mybeh <- sienaDependent(s50a[,2:3], type="behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+z <- as.double(s50a[,2])              # behaviour at start of the period
+
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel, gwInAltDist2_nc, name="mynet",
+                interaction1="mybeh", parameter=69)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets
+# target: over end-network ties, gw of j's other in-neighbours' behaviour
+totIn <- as.vector(t(endmat) %*% z)
+sum(gwWeight(totIn[altE] - z[egoE])) # gwInAltDist2_nc 212.9638 ok
+# contribution: tie-flip on the start network (same fitted model)
+scc <- RSiena:::getChangeContributions(data=mydata, effects=mymodel)
+cIn <- do.call(rbind, scc[[1]][[1]][[3]]); diag(cIn) <- 0
+totInS <- matrix(as.vector(t(startmat) %*% z), n, n, byrow=TRUE)
+handIn <- toggle * gwWeight(totInS - startmat * z) # startmat*z: exclude ego iff i->j
+diag(handIn) <- 0
+all.equal(cIn, handIn, check.attributes=FALSE) # TRUE
+
+# gwAltDist2_nc, constant covariate; ego is an out-neighbour of j only if j -> i
+mycov <- coCovar(s50a[,2])
+mydata <- sienaDataCreate(mynet, mycov)
+z <- s50a[,2]              # raw (non-centered) covariate
+
+mymodel <- getEffects(mydata)
+mymodel <- setEffect(mymodel, gwAltDist2_nc, name="mynet",
+                interaction1="mycov", parameter=69)
+(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+ans$targets # different from gwInAltDist2_nc
+# target: over end-network ties, gw of j's other out-neighbours' covariate
+totOut <- as.vector(endmat %*% z)
+sum(gwWeight(totOut[altE] - z[egoE] * endmat[cbind(altE, egoE)])) # gwAltDist2_nc 209.8626 ok
+# contribution: tie-flip on the start network (same fitted model)
+scc <- RSiena:::getChangeContributions(data=mydata, effects=mymodel)
+cOut <- do.call(rbind, scc[[1]][[1]][[3]]); diag(cOut) <- 0
+totOutS <- matrix(as.vector(startmat %*% z), n, n, byrow=TRUE)
+handOut <- toggle * gwWeight(totOutS - t(startmat) * z) # t(startmat)*z: exclude ego iff j->i
+diag(handOut) <- 0
+all.equal(cOut, handOut, check.attributes=FALSE) # TRUE

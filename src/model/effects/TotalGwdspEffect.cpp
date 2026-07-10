@@ -130,7 +130,8 @@ double TotalGwdspEffect::egoStatistic(int ego, double * currentValues)
 			statistic += this->lcumulativeWeight[pathCount];
 		}
 	}
-	statistic *= lnc ? currentValues[ego] : currentValues[ego] + this->overallCenterMean();
+	statistic *= lnc ? currentValues[ego] + this->overallCenterMean(): 
+					   currentValues[ego];
 	return statistic;
 }
 

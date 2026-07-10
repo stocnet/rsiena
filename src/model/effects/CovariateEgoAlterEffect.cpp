@@ -44,8 +44,8 @@ double CovariateEgoAlterEffect::calculateContribution(int alter) const
 
 	if (!this->lreciprocal || this->inTieExists(alter))
 	{
-		double egoValue = this->lnc ? this->rawValue(this->ego()) : this->value(this->ego());
-		double alterValue = this->lnc ? this->rawValue(alter) : this->value(alter);
+		double egoValue = this->lnc ? this->uncenteredValue(this->ego()) : this->value(this->ego());
+		double alterValue = this->lnc ? this->uncenteredValue(alter) : this->value(alter);
 		change = egoValue * alterValue;
 	}
 
@@ -65,8 +65,8 @@ double CovariateEgoAlterEffect::tieStatistic(int alter)
 	if (!this->missing(this->ego()) && !this->missing(alter) &&
 		(!this->lreciprocal || this->inTieExists(alter)))
 	{
-		double egoValue = this->lnc ? this->rawValue(this->ego()) : this->value(this->ego());
-		double alterValue = this->lnc ? this->rawValue(alter) : this->value(alter);
+		double egoValue = this->lnc ? this->uncenteredValue(this->ego()) : this->value(this->ego());
+		double alterValue = this->lnc ? this->uncenteredValue(alter) : this->value(alter);
 		statistic = egoValue * alterValue;
 	}
 

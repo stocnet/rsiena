@@ -52,7 +52,7 @@ protected:
 	double covvalue(int alter) const;
 	// non-centered (raw) value; for constant/changing covariates identical to
 	// covvalue(); for behavior variables returns the raw (non-mean-subtracted) value.
-	double rawCovvalue(int alter) const;
+	double uncenteredCovvalue(int alter) const;
 	int covIntValue(int i) const;
 	bool missing(int i) const;
 	int covariateN() const;

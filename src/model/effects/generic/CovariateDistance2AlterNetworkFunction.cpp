@@ -30,8 +30,8 @@ namespace siena
  */
 CovariateDistance2AlterNetworkFunction::
 CovariateDistance2AlterNetworkFunction(string networkName, string
-	covariateName, double parameter,  bool excludeMissing, bool total) :
-	CovariateDistance2NetworkFunction(networkName, covariateName, excludeMissing, true)
+	covariateName, double parameter,  bool excludeMissing, bool total, bool nc) :
+	CovariateDistance2NetworkFunction(networkName, covariateName, excludeMissing, true, nc)
 {
 	this->lparameter = parameter;
 	this->lexcludeMissing = excludeMissing;
@@ -69,6 +69,9 @@ double CovariateDistance2AlterNetworkFunction::value(int alter) const
 			int tieValue =  this->pNetwork()->tieValue(alter, this->ego());
 			if (tieValue == 1)
 			{
+				double egoVal = this->nc()
+					? CovariateNetworkAlterFunction::uncenteredCovvalue(this->ego())
+					: CovariateNetworkAlterFunction::covvalue(this->ego());
 				int degree = this->pNetwork()->outDegree(alter);
 				//			Rprintf("before %d %f %d %f\n", degree, value,
 				//this->ego(), CovariateDistance2NetworkFunction::value(this->ego()) );
@@ -76,18 +79,16 @@ double CovariateDistance2AlterNetworkFunction::value(int alter) const
 				{
 					if (ltotal)
 					{
-						value = (value -
-							CovariateNetworkAlterFunction::covvalue(this->ego()));
+						value = (value - egoVal);
 					}
 					else
 					{
-						value = (degree * value -
-				CovariateNetworkAlterFunction::covvalue(this->ego()))/(degree - 1);
+						value = (degree * value - egoVal)/(degree - 1);
 					}
 				}
 				else
 				{
-					value = CovariateNetworkAlterFunction::covmean();
+					value = this->nc() ? 0 : CovariateNetworkAlterFunction::covmean();
 				}
 				//Rprintf("stat after %d %f %d %f\n", degree, value,
 				//	this->ego(),

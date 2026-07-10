@@ -33,7 +33,6 @@ public:
 private:
 	bool lexcludeMissing {};
 	bool ltotal {};
-	bool lraw {};
 };
 
 }

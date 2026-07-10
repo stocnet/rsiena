@@ -177,6 +177,7 @@ model/effects/generic/AlterPredicate.cpp
 model/effects/generic/CovariateNetworkAlterFunction.cpp
 model/effects/generic/GwespFunction.cpp
 model/effects/generic/GwCovariateInAlterFunction.cpp
+model/effects/generic/GwCovariateAlterFunction.cpp
 model/effects/generic/NetworkAlterFunction.cpp
 model/effects/generic/DoubleOutActFunction.cpp
 model/effects/generic/OneModeNetworkAlterFunction.cpp
@@ -322,3 +323,4 @@ model/effects/GwDist2ExposureEffect.cpp
 model/effects/TotalGwInAltDist2NCEffect.cpp
 model/effects/generic/EqualsZeroFunction.cpp
 model/effects/TotalGwdspEffect.cpp
+model/effects/CovariateGwdspEffect.cpp

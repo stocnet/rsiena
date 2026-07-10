@@ -11734,7 +11734,9 @@ of $\breve v_j$ would be the same as the alter effect of $v_j$.
  s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} (x_{j+} - x_{ji}) \breve v_j^{(-i)} \hfill
                           (\text{parameter 2}) \hfill
 \]
-      where $\breve v_j$ and $\breve v_j^{(-i)}$ are as above.
+      where $\breve v_j$ and $\breve v_j^{(-i)}$ are as above; for
+      using non-centered covariate and behavior values use \textt{{totDist2\_nc}}.
+
 
 \item \emph{ego-(alter-distance-2) covariate - similarity} \texttt{(simEgoDist2)},
       defined as the sum of centered similarity  between $i$
@@ -11827,6 +11829,9 @@ with $v_h = v_i\,$:
 \end{equation}
 where $\bar v$ is (again) the global mean of $V$.
 
+% ADD gwInAltDist2_nc
+
+% ADD gwdspFBX gwdspFBX_nc gwdspFFX gwdspFFX_nc
 
 \item \emph{total covariate - in - alter at distance 2} \texttt{(totInDist2)}.
      This is defined as the sum of alters' values for
