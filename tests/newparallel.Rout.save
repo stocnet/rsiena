@@ -1,19 +1,19 @@
 
-R version 4.6.0 (2026-04-24 ucrt) -- "Because it was There"
-Copyright (C) 2026 The R Foundation for Statistical Computing
-Platform: x86_64-w64-mingw32/x64
+R version 4.5.2 (2025-10-31) -- "[Not] Part in a Rumble"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin24.4.0
 
-R is free software and comes with ABSOLUTELY NO WARRANTY.
-You are welcome to redistribute it under certain conditions.
-Type 'license()' or 'licence()' for distribution details.
+R ist freie Software und kommt OHNE JEGLICHE GARANTIE.
+Sie sind eingeladen, es unter bestimmten Bedingungen weiter zu verbreiten.
+Tippen Sie 'license()' or 'licence()' für Details dazu.
 
-R is a collaborative project with many contributors.
-Type 'contributors()' for more information and
-'citation()' on how to cite R or R packages in publications.
+R ist ein Gemeinschaftsprojekt mit vielen Beitragenden.
+Tippen Sie 'contributors()' für mehr Information und 'citation()',
+um zu erfahren, wie R oder R packages in Publikationen zitiert werden können.
 
-Type 'demo()' for some demos, 'help()' for on-line help, or
-'help.start()' for an HTML browser interface to help.
-Type 'q()' to quit R.
+Tippen Sie 'demo()' für einige Demos, 'help()' für on-line Hilfe, oder
+'help.start()' für eine HTML Browserschnittstelle zur Hilfe.
+Tippen Sie 'q()', um R zu verlassen.
 
 > library(RSiena)
 > 
@@ -30,6 +30,7 @@ Type 'q()' to quit R.
 > alg_alg <- set_algorithm_saom(cond=FALSE, seed=3, n3=50, nsub=2, findiff=TRUE)
 > ans <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg)
+siena will create/use an output file mydata_out.txt .
 > ans
 Estimates, standard errors and convergence t-ratios
 
@@ -71,6 +72,7 @@ Total of 441 iteration steps.
 > alg_alg <- set_algorithm_saom(cond=TRUE, condvarno=1, seed=3, n3=50, nsub=2, findiff=TRUE)
 > ans <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg)
+siena will create/use an output file mydata_out.txt .
 > ans
 Estimates, standard errors and convergence t-ratios
 
@@ -99,6 +101,7 @@ Total of 319 iteration steps.
 > alg_alg <- set_algorithm_saom(cond=FALSE, seed=5, n3=50, nsub=2)
 > ans <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg)
+siena will create/use an output file mydata_out.txt .
 > ans
 Estimates, standard errors and convergence t-ratios
 
@@ -162,6 +165,7 @@ Total of 569 iteration steps.
 > alg_alg <- set_algorithm_saom(cond=FALSE, seed=5, n3=50, nsub=2)
 > ans <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg, returnDeps=TRUE)
+siena will create/use an output file mydata_out.txt .
 > ans
 Estimates, standard errors and convergence t-ratios
 
@@ -246,6 +250,7 @@ MHD                                   -0.801
 > alg_alg <- set_algorithm_saom(cond=FALSE, seed=5, n3=50, nsub=2)
 > ans <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg)
+siena will create/use an output file mydata_out.txt .
 > ans
 Estimates, standard errors and convergence t-ratios
 
@@ -276,6 +281,7 @@ Total of 569 iteration steps.
 > alg_alg <- set_algorithm_saom(cond=FALSE, seed=5, n3=50, nsub=2)
 > ans <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg)
+siena will create/use an output file mydata_out.txt .
 > ans
 Estimates, standard errors and convergence t-ratios
 
@@ -305,6 +311,7 @@ chi-squared = 1.79, d.f. = 1; standard error = 1.13; one-sided Z = 1.34; two-sid
 +          diagonalize=0.5)
 > ans <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg)
+siena will create/use an output file mydata_out.txt .
 > ans
 Estimates, standard errors and convergence t-ratios
 
@@ -325,6 +332,7 @@ Total of 537 iteration steps.
 > alg_alg <- set_algorithm_saom(cond=TRUE, condvarno=1, seed=5, n3=50, nsub=1)
 > ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg)
+siena will create/use an output file mydata_out.txt .
 > ans
 Estimates, standard errors and convergence t-ratios
 
@@ -350,12 +358,12 @@ Total of 322 iteration steps.
 > myeff <- make_specification(mydata)
 > myeff <- set_effect(myeff, linear, depvar="mynet2", initialValue=0.34699930338)
   effectNumber effectName          shortName include fix   test  initialValue
-1 501          mynet2 linear shape linear    TRUE    FALSE FALSE      0.347  
+1 538          mynet2 linear shape linear    TRUE    FALSE FALSE      0.347  
   parm
 1 0   
 > myeff <- set_effect(myeff, avAlt, depvar="mynet2", covar1="mynet1")
   effectNumber effectName           shortName include fix   test  initialValue
-1 590          mynet2 average alter avAlt     TRUE    FALSE FALSE          0  
+1 687          mynet2 average alter avAlt     TRUE    FALSE FALSE          0  
   parm
 1 0   
 > ##test10
@@ -364,10 +372,12 @@ Total of 322 iteration steps.
 > alg_alg <- set_algorithm_saom(cond=TRUE, condvarno=1, seed=5, n3=50, nsub=1)
 > ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg)
+siena will create/use an output file mydata_out.txt .
 > alg_alg2 <- set_algorithm_saom(cond=TRUE, condvarno=1, seed=5, n3=50, nsub=1,
 + 			splitDepvars=1)
 > ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg2)
+siena will create/use an output file mydata_out.txt .
 > ##, verbose=TRUE)
 > ans
 Estimates, standard errors and convergence t-ratios
@@ -403,6 +413,7 @@ Total of 335 iteration steps.
 > alg_alg <- set_algorithm_saom(seed=6, n3=50, nsub=1)
 > (ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_model=alg_model, control_algo=alg_alg))
+siena will create/use an output file mydata_out.txt .
 Estimates, standard errors and convergence t-ratios
 
                                           Estimate   Standard   Convergence 
@@ -454,6 +465,7 @@ Total of 340 iteration steps.
 > alg_alg <- set_algorithm_saom(seed=1, n3=50, nsub=2)
 > ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg)
+siena will create/use an output file mydata_out.txt .
 > ans
 Estimates, standard errors and convergence t-ratios
 
@@ -536,6 +548,7 @@ Type "?test_time" for more information on this output.
 > alg_alg <- set_algorithm_saom(seed=1, n3=50, nsub=2)
 > (ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg))
+siena will create/use an output file mydata_out.txt .
 Estimates, standard errors and convergence t-ratios
 
                                  Estimate   Standard   Convergence 
@@ -569,6 +582,7 @@ Total of 535 iteration steps.
 +          diagonalize=0, mult=1)
 > (ans  <- siena(data=dataset, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg))
+siena will create/use an output file dataset_out.txt .
 Estimated by Maximum Likelihood
 
 Estimates, standard errors and convergence t-ratios
@@ -609,8 +623,8 @@ Total of 266 iteration steps.
 9 mynet2 mynet2 quadratic shape          TRUE    FALSE FALSE    0.00000   0   
 > (myeff <- set_effect(myeff, list(egoX, simX), covar1="mynet2"))
   effectNumber effectName        shortName include fix   test  initialValue
-1 278          mynet2 ego        egoX      TRUE    FALSE FALSE          0  
-2 324          mynet2 similarity simX      TRUE    FALSE FALSE          0  
+1 281          mynet2 ego        egoX      TRUE    FALSE FALSE          0  
+2 330          mynet2 similarity simX      TRUE    FALSE FALSE          0  
   parm
 1 0   
 2 0   
@@ -628,7 +642,7 @@ Total of 266 iteration steps.
 11 mynet2 mynet2 quadratic shape          TRUE    FALSE FALSE    0.00000   0   
 > (myeff <- set_effect(myeff, avSim, depvar="mynet2", covar1="mynet1"))
   effectNumber effectName                shortName include fix   test 
-1 534          mynet2 average similarity avSim     TRUE    FALSE FALSE
+1 589          mynet2 average similarity avSim     TRUE    FALSE FALSE
   initialValue parm
 1          0   0   
    name   effectName                      include fix   test  initialValue parm
@@ -696,6 +710,7 @@ Total of 266 iteration steps.
 > alg_alg <- set_algorithm_saom(gmm=TRUE, seed=6, n3=100, nsub=1)
 > (ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg))
+siena will create/use an output file mydata_out.txt .
 Estimated by Generalized Method of Moments
 
 Estimates, standard errors and convergence t-ratios
@@ -764,6 +779,7 @@ SDE par stand errors: 0.04669358 0.1223113 0.08791327
 > alg_alg <- set_algorithm_saom(seed=321, n3=20, nsub=1)
 > (ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg))
+siena will create/use an output file mydata_out.txt .
 SDE init parameters:  -0.1117176 -0.864023 0.8576913 
 SDE par stand errors: 0.04669358 0.1223113 0.08791327 
 Estimates, standard errors and convergence t-ratios
@@ -824,7 +840,7 @@ Range              0 - 1
 > (myeff <- set_effect(myeff, avExposure, type="rate", depvar="mybeh",
 +          covar1="mynet", parameter=2))
   effectNumber effectName                            shortName  include fix  
-1 489          average exposure effect on rate mybeh avExposure TRUE    FALSE
+1 522          average exposure effect on rate mybeh avExposure TRUE    FALSE
   test  initialValue parm
 1 FALSE          0   2   
   name  effectName                            include fix   test  initialValue
@@ -842,6 +858,7 @@ Range              0 - 1
 > alg_alg <- set_algorithm_saom(seed=1234, n3=10, nsub=1, firstg=0.001)
 > (ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg))
+siena will create/use an output file mydata_out.txt .
 Estimates, standard errors and convergence t-ratios
 
                                                 Estimate   Standard   Convergence 
@@ -872,10 +889,11 @@ Total of 290 iteration steps.
 > myeff <- make_specification(mygroup)
 > myeff <- set_effect(myeff, simX, covar1="cova")
   effectNumber effectName      shortName include fix   test  initialValue parm
-1 324          cova similarity simX      TRUE    FALSE FALSE          0   0   
+1 330          cova similarity simX      TRUE    FALSE FALSE          0   0   
 > alg_alg <- set_algorithm_saom(seed=1293, n3=10, nsub=1)
 > (ans  <- siena(data=mygroup, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg))
+siena will create/use an output file mygroup_out.txt .
 Estimates, standard errors and convergence t-ratios
 
                                    Estimate   Standard   Convergence 
@@ -922,17 +940,18 @@ Total of 285 iteration steps.
 +          "smoke", "alc"))
   effectNumber effectName                               shortName include fix  
 1 132          outdegree-trunc(2)                       outTrunc  FALSE   FALSE
-2 278          alc ego                                  egoX      FALSE   FALSE
-3 462          smoke ego                                egoX      FALSE   FALSE
-4 631          smoke ego x alc ego x outdegree-trunc(2) unspInt   TRUE    FALSE
+2 281          alc ego                                  egoX      FALSE   FALSE
+3 498          smoke ego                                egoX      FALSE   FALSE
+4 697          smoke ego x alc ego x outdegree-trunc(2) unspInt   TRUE    FALSE
   test  initialValue parm effect1 effect2 effect3
 1 FALSE          0   2      0       0       0    
 2 FALSE          0   0      0       0       0    
 3 FALSE          0   0      0       0       0    
-4 FALSE          0   0    132     462     278    
+4 FALSE          0   0    132     498     281    
 > alg_alg <- set_algorithm_saom(seed=1943, n3=20, nsub=1)
 > (ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg))
+siena will create/use an output file mydata_out.txt .
 Estimates, standard errors and convergence t-ratios
 
                                                    Estimate   Standard   Convergence 
@@ -1008,6 +1027,7 @@ Total of 297 iteration steps.
 > alg_alg <- set_algorithm_saom(seed=1293, n3=50, nsub=2)
 > (ans  <- siena(data=mydata, effects=myeff[myeff$type != "gmm", ], batch=TRUE,
 +          silent=TRUE, control_algo=alg_alg))
+siena will create/use an output file mydata_out.txt .
 Estimates, standard errors and convergence t-ratios
 
                                             Estimate   Standard   Convergence 
@@ -1029,6 +1049,7 @@ Total of 593 iteration steps.
 > alg_alg <- set_algorithm_saom(gmm=TRUE, seed=1293, n3=50, nsub=2)
 > (ans1  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg))
+siena will create/use an output file mydata_out.txt .
 Estimated by Generalized Method of Moments
 
 Estimates, standard errors and convergence t-ratios
@@ -1052,6 +1073,7 @@ Total of 405 iteration steps.
 > alg_alg <- set_algorithm_saom(gmm=TRUE, seed=1293, n3=50, nsub=2)
 > (ans2  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          prevAns=ans1, control_algo=alg_alg))
+siena will create/use an output file mydata_out.txt .
 Estimated by Generalized Method of Moments
 
 Estimates, standard errors and convergence t-ratios
@@ -1092,6 +1114,7 @@ Total of 590 iteration steps.
 > alg_alg <- set_algorithm_saom(cond=FALSE, seed=42, n3=60, nsub=1)
 > ans  <- siena(data=mydata, effects=mymodel, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg, control_out=alg_out)
+siena will create/use an output file mydata_out.txt .
 > length(ans$changeContributions) # 60 as expected
 [1] 60
 > head(ans$changeContributions[[1]][[1]][[1]])
@@ -1260,6 +1283,7 @@ attr(,"networkType")
 > alg_alg <- set_algorithm_saom(cond=FALSE, seed=42, n3=60, nsub=1)
 > ans2  <- siena(data=mydata, effects=mymodel, batch=TRUE, prevAns=ans,
 +          control_algo=alg_alg, control_out=alg_out)
+siena will create/use an output file mydata_out.txt .
 > length(ans$changeContributions) # 60 chains as expected
 [1] 60
 > head(ans$changeContributions[[1]][[1]][[1]])
@@ -1485,6 +1509,7 @@ If you use this algorithm object, siena07 will create/use an output file Siena.t
 > alg_alg <- set_algorithm_saom(cond=FALSE, seed=84, n3=60, nsub=2)
 > ans2  <- siena(data=mydata2, effects=mymodel2, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg)
+siena will create/use an output file mydata2_out.txt .
 > RIDynamics2 <-  interpret_size_dynamics(mydata2, ans=ans2)
 > RIDynamics2
 
@@ -1539,6 +1564,7 @@ Period 1:
 > alg_alg <- set_algorithm_saom(cond=TRUE, condvarno=1, seed=4242, n3=60, nsub=2)
 > ans3  <- siena(data=mydata2, effects=mymodel2, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg)
+siena will create/use an output file mydata2_out.txt .
 > RIDynamics4 <- interpret_size_dynamics(mydata2, ans=ans3, effects = mymodel2)
 > RIDynamics4
 
@@ -1586,6 +1612,7 @@ Period 1:
 > alg_alg <- set_algorithm_saom(seed=8484, n3=60, nsub=2)
 > ans4  <- siena(data=mydata3, effects=mymodel3, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg, control_out=alg_out)
+siena will create/use an output file mydata3_out.txt .
 > length(ans4$changeContributions) # 60 chains as expected
 [1] 60
 > length(ans4$changeContributions[[1]][[1]]) # 2 periods as expected
@@ -1703,6 +1730,7 @@ Period 2:
 > print('test24')
 [1] "test24"
 > (ans <- siena(mymodel, data=mydata, effects=myeff, control_algo=myalg, batch=TRUE, silent=TRUE))
+siena will create/use an output file mydata_out.txt .
 Parameter values used for simulations
 
                                       Mean      Standard      
@@ -1734,5 +1762,6 @@ Effects documentation written to file effects.html .
 > if (file.exists('effects.html')){unlink('effects.html')}
 > 
 > proc.time()
-   user  system elapsed 
-  41.65    1.17   43.81 
+       User      System verstrichen 
+     20.854       0.385      21.287 
+The file /Users/daniel/Documents/projects/github/rsiena/effects.html does not exist.

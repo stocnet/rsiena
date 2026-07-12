@@ -1,4 +1,4 @@
-2026-07-08
+2026-07-12
 
 # RSiena 1.6.11
 
@@ -16,17 +16,37 @@
     the existing `totGwdspFFAlt`/`totGwdspFBAlt` effects: they depend
     on ego's (geometrically weighted) count of two-paths/two-stars
     only, not on the alters' behavior values.
-  * New geometrically weighted distance-2 exposure effect and
-    `gwdspExposure` effect for behavior dynamics
-    (`GwDist2ExposureEffect.cpp`, `GwdspExposureEffect.cpp`,
-    `GwCovariateInAlterFunction.cpp`).
+  * New covariate `gwdspFFX`/`gwdspFBX` effects (+ `_nc` variants,
+    `CovariateGwdspEffect.cpp`), the geometrically weighted
+    dyadwise-shared-partner kernel on the network side: for each
+    distance-2 alter, its covariate value is weighted by the GW count
+    of shared partners linking it to ego. Used as a building block for
+    weighted indirect homophily (e.g. in interaction with `egoX`).
+  * New covariate `gwdist2XFF_nc`/`gwdist2XFB_nc` effects
+    (`GwCovariateAlterFunction.cpp`/`GwCovariateInAlterFunction.cpp`):
+    unlike the `gwdspX` kernel above, the geometric weighting here
+    applies to the distance-2 neighborhood reached through a single
+    intermediary, modeling exposure saturation through one gateway
+    rather than damping redundant paths to the same alter. Only
+    available non-centered.
+  * New `gwdspFFExposure`/`gwdspFBExposure` and
+    `gwdist2FFExposure`/`gwdist2FBExposure` diffusion-rate effects
+    (`GwDist2ExposureEffect.cpp`, `GwdspExposureEffect.cpp`), the
+    geometrically weighted counterparts of `totInExposureDist2`/
+    `anyInExposureDist2`.
   * Group-level effects (`AverageGroupEffect`,
     `DegreeWeightedAverageGroupEffect`) corrected and expanded; added
     `resolvedValue` option to select between centered and non-centered
     behavior effect variants.
   * Added non-centered (`_nc`) variants of the `altX`, `egoX`,
     `egoXaltX` covariate effects and the `totInDist2`/`gwInAltDist2`
-    distance-2 effects, as lower-order controls.
+    distance-2 effects, as lower-order controls; covariate effects now
+    more consistently respect non-centering even when the covariate
+    itself is centered by the user.
+  * `AverageAlterInDist2NCEffect`/`TotalGwdspAlterNCEffect` (separate
+    non-centered classes) replaced by an `nc` constructor flag on
+    `AverageAlterInDist2Effect`/`TotalGwdspAlterEffect`; fixed a bug in
+    `QuadraticShapeNCEffect` (not previously reachable/live).
   * Removed unused/superseded effect classes `AverageTwoInStarAlterEffect`,
     `DoubleMixedStarEffect`, `StarMixedStarEffect` and the generic
     helpers `MixedOnlyTwoPathFunction`, `SameCovariateInTiesFunction2`.

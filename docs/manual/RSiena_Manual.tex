@@ -6333,7 +6333,8 @@ and statistics operating for parameter estimation is lost.
 13 mybeh mybeh total similarity         Regular
 14 mynet mybeh ego                      GMoM
 15 mynet mybeh similarity               GMoM
-\end{verbatim}}
+\end{verbatim}
+}
 \normalsize
 \bigskip
 
@@ -11735,7 +11736,7 @@ of $\breve v_j$ would be the same as the alter effect of $v_j$.
                           (\text{parameter 2}) \hfill
 \]
       where $\breve v_j$ and $\breve v_j^{(-i)}$ are as above; for
-      using non-centered covariate and behavior values use \textt{{totDist2\_nc}}.
+      using non-centered covariate and behavior values use \texttt{totDist2\_nc}.
 
 
 \item \emph{ego-(alter-distance-2) covariate - similarity} \texttt{(simEgoDist2)},
@@ -16503,8 +16504,8 @@ version of penalizing many indirect alters.
 
 \item two \emph{GWDSP (geometrically weighted dyadwise shared partners) exposure 
       at Distance 2} effects,
-{\em GWDSPFF exposure} (\verb|gwdspFBExposure|)  and
-{\em WDSPFB exposure} (\verb|gwdspFFExposure|) :
+{\em GWDSPFB exposure} (\verb|gwdspFBExposure|)  and
+{\em GWDSPFF exposure} (\verb|gwdspFFExposure|) :
 \[
       a_{i14}(x, z) = \sum_{h \neq i} z_h \,
             e^{\alpha}\Big\{1 - \big(1 - e^{-\alpha}\big)^{\sum_j x_{ij} x_{hj}}\Big\}
@@ -18664,6 +18665,41 @@ Changes in RSiena:
     \end{itemize}
 \end{itemize}
 \fi
+
+
+\item 2026-07-12 GitHub, package version 1.6.11.
+
+Changes in RSiena:
+\begin{itemize}
+  \item Effects:
+    \begin{itemize}
+  \item New \texttt{activity alter} effect and non-centered variant
+    of \texttt{popularity alter}.
+  \item New alter-wise geometrically weighted distance-2 behavior effect
+    \texttt{totGwInAltDist2\_nc}.
+  \item New \texttt{totGwdspFF}/\texttt{totGwdspFB} (+ \texttt{\_nc}) effects,
+    network-only structural controls for \texttt{totGwdspFFAlt}/\texttt{totGwdspFBAlt}.
+  \item New covariate \texttt{gwdspFFX}/\texttt{gwdspFBX} (+ \texttt{\_nc})
+    and \texttt{gwdist2XFF\_nc}/\texttt{gwdist2XFB\_nc} effects, building blocks
+    for weighted indirect homophily.
+  \item New diffusion-rate effects \texttt{gwdspFFExposure}/\texttt{gwdspFBExposure}
+    and \texttt{gwdist2FFExposure}/\texttt{gwdist2FBExposure}.
+  \item Group-level effects (\texttt{avGroup}/\texttt{totGroup} family) corrected
+    and expanded, with a \texttt{resolvedValue} option for centered/non-centered
+    behavior effect variants.
+  \item Added non-centered (\texttt{\_nc}) variants of \texttt{altX}, \texttt{egoX},
+    \texttt{egoXaltX}, \texttt{totInDist2}, \texttt{gwInAltDist2} as lower-order
+    controls; covariate effects now more consistently respect non-centering.
+    \end{itemize}
+  \item Coding:
+    \begin{itemize}
+  \item \texttt{src/sources.list} restructured to a multi-line, more easily
+    editable format, with an automated update script; \texttt{configure}
+    updated accordingly, avoiding a build-time dependency on shell globbing.
+  \item Several non-centered effect classes consolidated into an \texttt{nc}
+    constructor flag on the corresponding main effect class.
+    \end{itemize}
+\end{itemize}
 
 
 \item 2026-06-10 GitHub, package version 1.6.9.
