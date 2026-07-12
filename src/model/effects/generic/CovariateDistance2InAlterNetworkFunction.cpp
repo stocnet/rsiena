@@ -79,9 +79,7 @@ double CovariateDistance2InAlterNetworkFunction::value(int alter) const
 		
 		if (this->pNetwork()->tieValue(this->ego(), alter) == 1)
 		{
-			double egoVal = this->nc()
-				? CovariateNetworkAlterFunction::uncenteredCovvalue(this->ego())
-				: CovariateNetworkAlterFunction::covvalue(this->ego());
+			double egoVal = CovariateNetworkAlterFunction::resolvedCovvalue(this->ego(), this->nc());
 			if (this->ltotal)
 			{
 				value = (value - egoVal);

@@ -69,9 +69,7 @@ double CovariateDistance2AlterNetworkFunction::value(int alter) const
 			int tieValue =  this->pNetwork()->tieValue(alter, this->ego());
 			if (tieValue == 1)
 			{
-				double egoVal = this->nc()
-					? CovariateNetworkAlterFunction::uncenteredCovvalue(this->ego())
-					: CovariateNetworkAlterFunction::covvalue(this->ego());
+				double egoVal = CovariateNetworkAlterFunction::resolvedCovvalue(this->ego(), this->nc());
 				int degree = this->pNetwork()->outDegree(alter);
 				//			Rprintf("before %d %f %d %f\n", degree, value,
 				//this->ego(), CovariateDistance2NetworkFunction::value(this->ego()) );

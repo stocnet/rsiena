@@ -161,6 +161,18 @@ double CovariateNetworkAlterFunction::covvalue(int alter) const
 }
 
 /**
+ * Returns the covariate value of a given actor in the requested form, e.g.
+ * centered around the overall mean of all observed values or not. Mirrors
+ * BehaviorEffect::resolvedValue / CovariateDependentNetworkEffect::resolvedValue.
+ * @param[in] alter the index of the actor
+ * @param[in] nc whether the value should not be centered
+ */
+double CovariateNetworkAlterFunction::resolvedCovvalue(int alter, bool nc) const
+{
+	return nc ? this->uncenteredCovvalue(alter) : this->covvalue(alter);
+}
+
+/**
  * Returns the covariate value for the given actor, rounded to integer.
  * For behavior, this is the non-centered value.
  */
