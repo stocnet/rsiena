@@ -14,3 +14,10 @@
 ^.*\.code-workspace$
 NEWSnew.md
 man/Show.*
+^\.lintr$
+^add_effects\.sh$
+^tests/benchmarks$
+^tests/testthat$
+^\.vscode$
+^update_sources_unix\.sh$
+Rsiena.Rcheck/*
