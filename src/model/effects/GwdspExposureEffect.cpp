@@ -63,6 +63,9 @@ void GwdspExposureEffect::initialize(const Data* pData,
         pow_ *= this->lexpfactor;
         this->lcumulativeWeight[i] = this->lexpmweight * (1 - pow_);
     }
+
+    this->lTwoPathCount.assign(this->pNetwork()->n(), 0);
+    this->lTouched.clear();
 }
 
 /**
@@ -70,32 +73,50 @@ void GwdspExposureEffect::initialize(const Data* pData,
  *
  * pathCount(i,h) = Sum_j x_ij*x_hj (FB, gwdspFBExposure) or
  * Sum_j x_ij*x_jh (FF, gwdspFFExposure) -- the number of two-paths
- * from i to h. Unlike the GWDIST2 kernel, the
- * saturating transform here applies per DESTINATION h, accumulated across
- * every gateway j, so it cannot be computed inside a single pass over j;
- * h's count must be complete before the lookup is applied to it.
+ * from i to h.
+ *
+ * Rather than looping h over all n actors and asking pNetwork->twoPathCount/
+ * inTwoStarCount(i, h) from scratch for each (an O(n) sweep, each query an
+ * O(deg) merge-walk -- expensive because it interrogates every possible h,
+ * including the vast majority sharing nothing with i), this accumulates the
+ * same counts by summing over i's actual out-ties instead:
+ *
+ *   pathCount(i,h) = Sum_j [i->j] * [h->j]           (FB)
+ *                  = Sum_j [i->j] * [j->h]           (FF)
  */
-double GwdspExposureEffect::proximityValue(const Network* pNetwork, int i) const
+double GwdspExposureEffect::proximityValue(const Network* pNetwork, int i)
 {
+    for (IncidentTieIterator iter = pNetwork->outTies(i); iter.valid(); iter.next())
+    {
+        int j = iter.actor();
+
+        IncidentTieIterator iterH = this->lforward ?
+            pNetwork->outTies(j) : pNetwork->inTies(j);
+
+        for (; iterH.valid(); iterH.next())
+        {
+            int h = iterH.actor();
+            if (h == i)
+            {
+                continue;
+            }
+            if (this->lTwoPathCount[h] == 0)
+            {
+                this->lTouched.push_back(h);
+            }
+            this->lTwoPathCount[h]++;
+        }
+    }
 
     double totalAlterValue = 0;
-    int n = pNetwork->n();
-
-    // Loop over all N actors in the network
-    for (int h = 0; h < n; h++)
+    // No bounds clamp: initialize() sizes lcumulativeWeight to m() + 1,
+    // so every reachable partner count (0 .. m()) is a valid index.
+    for (int h : this->lTouched)
     {
-        if (h == i) 
-        {
-            continue;
-        }
-
-        int pathCount = this->lforward ? pNetwork->twoPathCount(i, h)
-                                       : pNetwork->inTwoStarCount(i, h);
-
-        // No bounds clamp: initialize() sizes lcumulativeWeight to m() + 1,
-        // so every reachable partner count (0 .. m()) is a valid index.
-        totalAlterValue += this->value(h) * this->lcumulativeWeight[pathCount];
+        totalAlterValue += this->value(h) * this->lcumulativeWeight[this->lTwoPathCount[h]];
+        this->lTwoPathCount[h] = 0;
     }
+    this->lTouched.clear();
 
     return totalAlterValue;
 }

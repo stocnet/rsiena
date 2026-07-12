@@ -109,7 +109,7 @@ void GwDist2ExposureEffect::initialize(const Data* pData,
  * reachable value-sum (0 .. n()*max()) is a valid index, and the
  * non-negativity of the behavior is enforced there too.
  */
-double GwDist2ExposureEffect::proximityValue(const Network* pNetwork, int i) const
+double GwDist2ExposureEffect::proximityValue(const Network* pNetwork, int i)
 {
     double totalAlterValue = 0;
 

@@ -40,7 +40,7 @@ public:
 
 
 protected:
-    virtual double proximityValue(const Network* pNetwork, int i) const override;
+    virtual double proximityValue(const Network* pNetwork, int i) override;
 
 private:
 	std::vector<double> lcumulativeWeight;
@@ -49,6 +49,9 @@ private:
 	double lweight {};
 	double lexpmweight {};
 	double lexpfactor {};
+
+	std::vector<int> lTwoPathCount;
+	std::vector<int> lTouched;
 
 };
 

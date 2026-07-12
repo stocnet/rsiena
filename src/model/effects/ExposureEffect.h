@@ -22,7 +22,7 @@ public:
     ExposureEffect(const EffectInfo* pEffectInfo);
 
 protected:
-    double proximityValue(const Network* pNetwork, int i) const override;
+    double proximityValue(const Network* pNetwork, int i) override;
 private:
     int labsThreshold{0};
     bool lcapAtThreshold{false};

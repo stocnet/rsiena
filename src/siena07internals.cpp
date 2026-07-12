@@ -1993,7 +1993,11 @@ void getStatistics(SEXP EFFECTSLIST,
 								strcmp(effectName, "anyInExposureDist2") == 0 ||
 								strcmp(effectName, "totInExposureDist2") == 0 ||
 								strcmp(effectName, "avTinExposureDist2") == 0 ||
-								strcmp(effectName, "totAInExposureDist2") == 0)
+								strcmp(effectName, "totAInExposureDist2") == 0 ||
+								strcmp(effectName, "gwdspFBExposure") == 0 ||
+								strcmp(effectName, "gwdspFFExposure") == 0 ||
+								strcmp(effectName, "gwdist2FBExposure") == 0 ||
+								strcmp(effectName, "gwdist2FFExposure") == 0)
 						{
 							score = pEpochSimulation->score(pEffectInfo);
 						}

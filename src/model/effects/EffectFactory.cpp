@@ -3038,7 +3038,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}
-	else if (effectName == "gwdist2FBX_nc")
+	else if (effectName == "gwdist2XFB_nc")
 	{
 		string networkName = pEffectInfo->variableName();
 		string covariateName = pEffectInfo->interactionName1();
@@ -3050,7 +3050,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}
-	else if (effectName == "gwdist2FFX_nc")
+	else if (effectName == "gwdist2XFF_nc")
 	{
 		string networkName = pEffectInfo->variableName();
 		string covariateName = pEffectInfo->interactionName1();

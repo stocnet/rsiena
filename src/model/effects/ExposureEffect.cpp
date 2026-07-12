@@ -41,7 +41,7 @@ double ExposureEffect::applyThreshold(double value, int numInfectedAlter) const
     return DiffusionRateEffect::applyThreshold(value, numInfectedAlter, this->labsThreshold, this->lcapAtThreshold);
 }
 
-double ExposureEffect::proximityValue(const Network* pNetwork, int i) const
+double ExposureEffect::proximityValue(const Network* pNetwork, int i)
 {
     int egoNumer = 1;
     int egoDenom = 1;

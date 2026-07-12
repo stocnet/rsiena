@@ -38,7 +38,7 @@ TotalGwInAltDist2NCEffect::TotalGwInAltDist2NCEffect(
 	if (this->lparameter < 0)
 	{
 		throw runtime_error(
-			"Totalgwdist2FBX_nc must have nonnegative internal effect parameter");
+			"Totalgwdist2XFB_nc must have nonnegative internal effect parameter");
 	}
 }
 
@@ -65,7 +65,7 @@ void TotalGwInAltDist2NCEffect::initialize(const Data * pData,
 	if (this->min() < 0)
 	{
 		throw runtime_error(
-			"Totalgwdist2FBX_nc requires a non-negative behavior variable");
+			"Totalgwdist2XFB_nc requires a non-negative behavior variable");
 	}
 
 	double pow_ = 1;

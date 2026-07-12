@@ -48,16 +48,15 @@ public:
     virtual void initialize(const Data* pData, 
         State* pState, int period, Cache* pCache);
     
-    double calculateContribution(int i) const;
+    double calculateContribution(int i);
 
 protected:
     inline const Network * pNetwork() const;
     
     // Helper method that calculates raw proximity/exposure statistic
     // Contains all effect-specific conditional logic
-    // double proximityValue(const Network* pNetwork, int i, int period) const;
     // Only declare as pure virtual, do not implement here:
-    virtual double proximityValue(const Network* pNetwork, int i) const;
+    virtual double proximityValue(const Network* pNetwork, int i);
     // Pure stateless utility used in most diffusionRate effects
     static double applyThreshold(double value, int numInfectedAlter, int absThreshold, bool capAtThreshold);
 

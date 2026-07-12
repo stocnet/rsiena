@@ -11829,9 +11829,70 @@ with $v_h = v_i\,$:
 \end{equation}
 where $\bar v$ is (again) the global mean of $V$.
 
-% ADD gwInAltDist2_nc
+ \item two variations of the
+   \emph{GWDSP (geometrically weighted dyadwise shared partners)} covariate effects:
+    {\em GWDSPFF covariate} \texttt{(gwdspFFX)} and
+    {\em GWDSPFB covariate} \texttt{(gwdspFBX)}.
+   For each distance-2 alter $h$, its covariate value $v_h$ is weighted by the
+   geometrically weighted number of shared partners linking $i$ and $h$,
+      \begin{equation}
+      s^{\rm net}_{i\vit}(x, v, \alpha) \,=\,
+                  \sum_{h;\; h \neq i}^n \, v_{h}\,
+                  e^{\alpha}\,\Big\{1\,-\,\big(1 - e^{-\alpha}\big)^{
+                        \sum_{j} x_{ij}x_{jh} }  \Big\}
+            \, \
+      \end{equation}
+      and
+      \begin{equation}
+      s^{\rm net}_{i\vit}(x, v, \alpha) \,=\,
+                  \sum_{h;\; h \neq i}^n  \, v_{h}\,
+                  e^{\alpha}\,\Big\{1\,-\,\big(1-e^{-\alpha}\big)^{
+                        \sum_{j} x_{ij}x_{hj} }  \Big\}
+            \, \ ;
+      \end{equation}
+   the FF variant uses the two-path $i \rightarrow j \rightarrow h$, the FB variant
+   the shared partner $i \rightarrow j \leftarrow h$. On its own this is only the
+   distance-2 kernel (no $v_i$ factor); in an interaction with \texttt{egoX} it
+   becomes the full indirect-homophily statistic $v_i \sum_h v_h\, w(\cdot)$ -
+   the selection analogue of the influence effect \texttt{totGwdspFBAlt}. The
+   weighting damps redundant paths to the same distance-2 alter: with strong
+   weighting ($\alpha \to 0$) it converges to a social-circle effect in which each
+   distance-2 alter's covariate value counts once, regardless of how many shared
+   partners connect it to $i$. For a non-centered covariate use
+   \texttt{(gwdspFFX\_nc)} / \texttt{(gwdspFBX\_nc)} instead;
 
-% ADD gwdspFBX gwdspFBX_nc gwdspFFX gwdspFFX_nc
+\item Two variations of the
+   \emph{GWDIST2 (geometrically weighted distance 2) covariate} effects:
+    {\em GWDIST2 covariate FF} \texttt{(gwdist2XFF\_nc)} and
+    {\em GWDIST2 covariate FB} \texttt{(gwdist2XFB\_nc)}.
+   In contrast to the GWDSP variants, the geometric weighting here applies to the
+   distance-2 neighbourhood itself, penalizing the accumulation of covariate values
+   reached through the same intermediary $j$,
+      \begin{equation}
+      s^{\rm net}_{i\vit}(x, v, \alpha) \,=\,
+                  \sum_{j}^n \, x_{ij}\,
+                  e^{\alpha}\,\Big\{1\,-\,\big(1 - e^{-\alpha}\big)^{
+                        \sum_{h;\; h \neq i} x_{jh} v_{h}}   \Big\}
+            \, \ ;
+      \end{equation}
+      and
+      \begin{equation}
+      s^{\rm net}_{i\vit}(x, v, \alpha) \,=\,
+                  \sum_{j}^n \, x_{ij}\,
+                  e^{\alpha}\,\Big\{1\,-\,\big(1 - e^{-\alpha}\big)^{
+                        \sum_{h;\; h \neq i} x_{hj} v_{h}}   \Big\}
+            \, \;
+      \end{equation}
+   the FF variant sums $v_h$ over $j$'s out-neighbours ($i \rightarrow j \rightarrow
+   h$), the FB variant over $j$'s in-neighbours ($i \rightarrow j \leftarrow h$).
+   Whereas GWDSP damps multiple paths to the same alter, GWDIST2 models exposure
+   saturation through a single gateway $j$: with strong weighting ($\alpha \to 0$)
+   only \emph{whether} a direct alter $j$ reaches some distance-2 alter with $v_h > 0$ matters, not how many or how much (for
+   binary $V$ it then counts such direct alters $j$). The sum behind $gw(\cdot)$
+   must be non-negative, so only the non-centered form exists; in an interaction
+   with \texttt{egoX\_nc} it models indirect homophily by relational mimesis, where
+   having ties to the same alters as others with high covariate values matters more
+   than the overall covariate volume of ego and the indirect alters.
 
 \item \emph{total covariate - in - alter at distance 2} \texttt{(totInDist2)}.
      This is defined as the sum of alters' values for
@@ -15117,13 +15178,43 @@ The list of these effects is the following.
  no centering, work with the effect
  \texttt{(actAlt\_nc)} instead;
 
+ \item two \emph{total GWDSP (geometrically weighted dyadwise shared partners)} effects:
+    {\em total GWDSPFF} \texttt{(totGwdspFF)} and
+    {\em total GWDSPFB} \texttt{(totGwdspFB)}.
+   They are defined by the geometrically weighted 
+   number of shared partners (two-paths $i \rightarrow j \rightarrow h$ for FF, 
+   shared in-partners $i \rightarrow j \leftarrow h$ for FB) linking $i$ to the other 
+   actors $h$,
+      \begin{equation}
+      s^{\rm beh}_{i\vit}(x, z, \alpha) \,=\,
+            z_{i} \,
+                  \sum_{h;\; h \neq i}^n
+                  e^{\alpha}\,\Big\{1\,-\,\big(1 - e^{-\alpha}\big)^{
+                        \sum_{j} x_{ij}x_{jh} }  \Big\}
+            \, \
+      \end{equation}
+      and
+      \begin{equation}
+      s^{\rm beh}_{i\vit}(x, z, \alpha) \,=\,
+            z_{i} \,
+                  \sum_{h;\; h \neq i}^n
+                  e^{\alpha}\,\Big\{1\,-\,\big(1-e^{-\alpha}\big)^{
+                        \sum_{j} x_{ij}x_{hj} }  \Big\}
+            \, \ ;
+      \end{equation}
+   These can be useful structural controls for the corresponding indirect influence
+   effects \texttt{totGwdspFFAlt} / \texttt{totGwdspFBAlt} below. Ego's behaviour 
+   weighted can depend on how structurally embedded ego is with diminishing returns
+   for a large number of paths two an indirect alter. For using no 
+   centering of $z_i$, work with the effect \texttt{(totGwdspFF\_nc)} 
+   respectively \texttt{(totGwdspFB\_nc)} instead;
+
  \item
  {\em total similarity  $\times$ popularity alter effect}
  \texttt{(totSimPopAlt)}, defined by the
  sum of centered similarity scores ${\rm sim}^z_{ij}$ between $i$
  and the other actors $j$ to whom he is tied, multiplied by their indegrees,\\
  $s^{\rm beh}_{i\vit}(x, z) =  \sum_j x_{ij} x_{+j} ({\rm sim}^z_{ij} - \widehat{{\rm sim}^z}) $;
-
 
  \item
  {\em total similarity  $\times$ popularity alter effect}
@@ -15373,9 +15464,9 @@ where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values in
  \texttt{(totAInAltDist2\_nc)} instead;
 
  \item two variations of the
-   \emph{GWDSP (geometrically weighted dyadwise shared partners)} alter effects:
-    {\em total GWDSP I -> K -> J alter} \texttt{(totGwdspFFAlt)} and
-    {\em total GWDSP I -> K <- J alter} \texttt{(totGwdspFBAlt)}.
+   \emph{GWDSP (geometrically weighted dyadwise shared partners) alter} effects:
+    {\em total GWDSPFF alter} \texttt{(totGwdspFFAlt)} and
+    {\em total GWDSPFB alter} \texttt{(totGwdspFBAlt)}.
    These are geometrically weighted versions of \texttt{totAltDist2} and
    \texttt{totInAltDist2}, respectively, penalizing additional paths between ego
    and his distance 2 alters defined by
@@ -15397,7 +15488,7 @@ where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values in
             \, \ ;
       \end{equation}
 in contrast to the next effect, this weighting scheme dampens structural path 
-redundancy to a single actor. For $alpha \to 0$, it converges towards a pure
+redundancy to a single actor. For $\alpha \to 0$, it converges towards a pure
 social circle effect, where the number of two-paths
 connecting $i$ to his distance 2 alters  (dyadwise shared partners) is ignored 
 while each distance 2 alters behavior is counted once fully.
@@ -15406,9 +15497,9 @@ for using no centering, work with the effect
 \texttt{(totGwdspFBAlt\_nc)} instead;
 
 \item Two variations of the
-   \emph{GWDIST2 (geometrically weighted distance 2)} alter effects:
-    {\em total GWDIST2 I -> K -> J alter} \texttt{(totGwdist2FFAlt\_nc)} and
-    {\em total GWDIST2 I -> K <- J alter} \texttt{(totGwdist2FBAlt\_nc)}.
+   \emph{GWDIST2 (geometrically weighted distance 2) alter} effects:
+    {\em total GWDIST2 alter FF} \texttt{(totGwdist2FFAlt\_nc)} and
+    {\em total GWDIST2 alter FB} \texttt{(totGwdist2FBAlt\_nc)}.
    In contrast to the GWDSP variants, these geometric weightings apply directly to the 
    distance 2 neighborhood itself, penalizing the accumulation of additional distance 2 
    alters' behavior exposed through the same direct intermediary. They are defined by
@@ -16402,13 +16493,39 @@ defined as 0.
 \[
       a_{i13}(x, z) = \sum_{j}
       \begin{cases}
-      1  & \text{if } x_{ij} \sum_{h} z_h  x_{hj} > 0 \\
+      1  & \text{if } x_{ij} \sum_{h \neq i} z_h  x_{hj} > 0 \\
       0 & \text{otherwise}
       \end{cases}
 \]
 This effect counts, for each alter $j$ connected to $i$, whether there is at
 least one other actor $h$ (with $z_h>0$) also connected to $j$. This is a
 version of penalizing many indirect alters.
+
+\item two \emph{GWDSP (geometrically weighted dyadwise shared partners) exposure 
+      at Distance 2} effects,
+{\em GWDSPFF exposure} (\verb|gwdspFBExposure|)  and
+{\em WDSPFB exposure} (\verb|gwdspFFExposure|) :
+\[
+      a_{i14}(x, z) = \sum_{h \neq i} z_h \,
+            e^{\alpha}\Big\{1 - \big(1 - e^{-\alpha}\big)^{\sum_j x_{ij} x_{hj}}\Big\}
+\]
+the FF variant replaces $x_{hj}$ by $x_{jh}$. This is the geometrically weighted,
+diffusion-rate counterpart of \verb|totInExposureDist2|: additional shared
+partners to the same source $h$ are damped, so with strong weighting
+($\alpha \to 0$) each distance-2 source $h$ with $z_h>0$ counts once.
+
+\item two \emph{GWDIST2-weighted in-exposure} effects at distance 2,
+{\em GWDIST2 exposure FF} (\verb|gwdist2FBExposure|)  and
+{\em GWDIST2 exposure FB} (\verb|gwdist2FFExposure|):
+\[
+      a_{i15}(x, z) = \sum_j x_{ij} \,
+            e^{\alpha}\Big\{1 - \big(1 - e^{-\alpha}\big)^{\sum_{h \neq i} x_{hj} z_h}\Big\}
+\]
+with $x_{jh}$ in place of $x_{hj}$ for the FF variant. The weighting here sits on
+the behaviour accumulated behind each direct alter $j$ (exposure saturation
+through a single gateway): with strong weighting ($\alpha \to 0$) it counts the
+direct alters $j$ leading to at least one adopter, a flexible variant of
+\verb|anyInExposureDist2|.
 
 \end{enumerate}
 

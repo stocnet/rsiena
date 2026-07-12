@@ -55,7 +55,7 @@ double SusceptibilityEffect::applyThreshold(double value, int numInfectedAlter) 
 }
 
 // --- SIMULATION EXECUTION: Executed millions of times ---
-double SusceptibilityEffect::proximityValue(const Network* pNetwork, int i) const
+double SusceptibilityEffect::proximityValue(const Network* pNetwork, int i)
 {
     int egoNumer = 1;
     int egoDenom = 1;

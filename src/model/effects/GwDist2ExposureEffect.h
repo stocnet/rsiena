@@ -44,7 +44,7 @@ public:
     virtual void initialize(const Data* pData, State* pState, int period, Cache* pCache) override;
 
 protected:
-    virtual double proximityValue(const Network* pNetwork, int i) const override;
+    virtual double proximityValue(const Network* pNetwork, int i) override;
 
 private:
 	std::vector<double> lcumulativeWeight;

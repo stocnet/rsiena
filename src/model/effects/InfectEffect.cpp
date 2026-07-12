@@ -54,7 +54,7 @@ double InfectEffect::applyThreshold(double value, int numInfectedAlter) const
     return DiffusionRateEffect::applyThreshold(value, numInfectedAlter, this->labsThreshold, this->lcapAtThreshold);
 }
 
-double InfectEffect::proximityValue(const Network* pNetwork, int i) const
+double InfectEffect::proximityValue(const Network* pNetwork, int i)
 {
     double totalAlterValue = 0;
     int numInfectedAlter = 0;

@@ -28,7 +28,7 @@ public:
     void initialize(const Data* pData, State* pState, int period, Cache* pCache) override;
     
 protected:
-    double proximityValue(const Network* pNetwork, int i) const override;
+    double proximityValue(const Network* pNetwork, int i) override;
 private:
     double applyThreshold(double value, int numInfectedAlter) const;
 

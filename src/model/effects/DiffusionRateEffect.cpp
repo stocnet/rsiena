@@ -118,7 +118,7 @@ void DiffusionRateEffect::initialize(
 
 
 
-double DiffusionRateEffect::proximityValue(const Network* pNetwork, int i) const
+double DiffusionRateEffect::proximityValue(const Network* pNetwork, int i)
 {
     throw std::logic_error("proximityValue not implemented for this effect type.");
 }
@@ -160,7 +160,7 @@ double DiffusionRateEffect::applyThreshold(double value, int numInfectedAlter, i
  * Returns the rate contribution (for scores and statistics calculation).
  * Simple transformer: just returns the proximity value.
  */
-double DiffusionRateEffect::calculateContribution(int i) const
+double DiffusionRateEffect::calculateContribution(int i)
 {
     return this->proximityValue(this->lpNetwork, i);
 }

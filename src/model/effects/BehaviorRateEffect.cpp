@@ -179,7 +179,7 @@ double BehaviorRateEffect::variance() const
 /**
  * Calculates the behavior rate contribution corresponding to the given ego.
  */
-double BehaviorRateEffect::calculateContribution(int ego) const
+double BehaviorRateEffect::calculateContribution(int ego)
 {
 	throw runtime_error("calculateContribution not implemented for " +
 		this->pEffectInfo()->effectName());
