@@ -4821,7 +4821,7 @@ mymodel <- setEffect(mymodel, anyInExposureDist2, type = "rate",
                      name = "mybeh", interaction1 = "mynet")
 # Does not actually finish with normal control setting!                     
 (ans <- siena07(mycontrols2, data = mydata, effects = mymodel,
-               batch = TRUE, silent = TRUE, returnChains = FALSE))
+               batch = TRUE, silent = FALSE, returnChains = FALSE))
 ans$targets
 
 adj <- mynet[, , 1]
@@ -4843,6 +4843,8 @@ for (i in 1:n) {
 mindist2beh <- rowSums(mat)
 sum((mybeh[, , 2] - mybeh[, , 1]) * mindist2beh) # 
 
+                           # gwdist2FFExposure target (run to confirm)
+
 
 ################################################################################
 ### check gwdspFBX, gwdspFBX_nc, gwdspFFX_nc,
@@ -4861,7 +4863,7 @@ instars <- function(mat){
 			a_row <- mat[i, c(-i, -j)]
 			b_row <- mat[j, c(-i, -j)]
 			matrix_vals[i, j] <- sum(a_row * b_row)
-		}
+		}ƒ
 	}
 	diag(matrix_vals) <- 0
 	matrix_vals
@@ -5084,21 +5086,8 @@ for (ego in 1:n) {
 all.equal(manual_contribs, conts) # TRUE
 
 ################################################################################
-### check gwInAltDist2_nc and gwAltDist2_nc (targets and change contributions)
+### check gwdist2XFB_nc and gwdist2XFF_nc (targets and change contributions)
 ################################################################################
-### Network (selection) effects: for each tie i -> j, gw-weight the raw
-### (non-centered) covariate/behaviour total over j's other distance-2 partners:
-###   gwInAltDist2_nc uses j's IN-neighbours  (h -> j), ego excluded iff i -> j,
-###   gwAltDist2_nc   uses j's OUT-neighbours (j -> h), ego excluded iff j -> i.
-### The value is taken at the start of the period, i.e. the wave paired with the
-### start network s502 (behaviour/covariate value s50a[,2]). The target sums the
-### gw-weighted totals over the observed ties of the end network (s503); the
-### change contribution is the tie-flip contribution on the start network
-### (s502), with sign +1 when adding an absent tie and -1 when removing a
-### present one. getChangeContributions drops the rate effects, so the gw effect
-### is entry 3 (density, recip, gw, then any behaviour effects). Checked with a
-### behaviour covariate for the in-alter case and a constant covariate for the
-### alter case.
 
 alpha <- 0.69                       # internal parameter 69 -> weight 0.69
 gwWeight <- function(total) ifelse(total <= 0, 0,
@@ -5114,7 +5103,7 @@ egoE <- edges[,1]                     # i
 altE <- edges[,2]                     # j
 toggle <- 1 - 2 * startmat            # +1 if tie absent, -1 if present
 
-# gwInAltDist2_nc, behaviour covariate; ego is always an in-neighbour of j (i->j)
+# gwdist2XFB_nc, behaviour covariate; ego is always an in-neighbour of j (i->j)
 # network waves are s502, s503, so the aligned behaviour waves are s50a[,2:3];
 # the value at the start of the period is therefore s50a[,2].
 mybeh <- sienaDependent(s50a[,2:3], type="behavior")
@@ -5122,13 +5111,13 @@ mydata <- sienaDataCreate(mynet, mybeh)
 z <- as.double(s50a[,2])              # behaviour at start of the period
 
 mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, gwInAltDist2_nc, name="mynet",
+mymodel <- setEffect(mymodel, gwdist2XFB_nc, name="mynet",
                 interaction1="mybeh", parameter=69)
 (ans <- siena07(mycontrols, data=mydata, effects=mymodel))
 ans$targets
 # target: over end-network ties, gw of j's other in-neighbours' behaviour
-totIn <- as.vector(t(endmat) %*% z)
-sum(gwWeight(totIn[altE] - z[egoE])) # gwInAltDist2_nc 212.9638 ok
+totIn <- as.vector(t(endmat) %*% z)ƒ
+sum(gwWeight(totIn[altE] - z[egoE])) # gwdist2XFB_nc 212.9638 ok
 # contribution: tie-flip on the start network (same fitted model)
 scc <- RSiena:::getChangeContributions(data=mydata, effects=mymodel)
 cIn <- do.call(rbind, scc[[1]][[1]][[3]]); diag(cIn) <- 0
@@ -5137,19 +5126,19 @@ handIn <- toggle * gwWeight(totInS - startmat * z) # startmat*z: exclude ego iff
 diag(handIn) <- 0
 all.equal(cIn, handIn, check.attributes=FALSE) # TRUE
 
-# gwAltDist2_nc, constant covariate; ego is an out-neighbour of j only if j -> i
+# gwdist2XFF_nc, constant covariate; ego is an out-neighbour of j only if j -> i
 mycov <- coCovar(s50a[,2])
 mydata <- sienaDataCreate(mynet, mycov)
 z <- s50a[,2]              # raw (non-centered) covariate
 
 mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, gwAltDist2_nc, name="mynet",
+mymodel <- setEffect(mymodel, gwdist2XFF_nc, name="mynet",
                 interaction1="mycov", parameter=69)
 (ans <- siena07(mycontrols, data=mydata, effects=mymodel))
-ans$targets # different from gwInAltDist2_nc
+ans$targets # different from gwdist2XFB_nc
 # target: over end-network ties, gw of j's other out-neighbours' covariate
 totOut <- as.vector(endmat %*% z)
-sum(gwWeight(totOut[altE] - z[egoE] * endmat[cbind(altE, egoE)])) # gwAltDist2_nc 209.8626 ok
+sum(gwWeight(totOut[altE] - z[egoE] * endmat[cbind(altE, egoE)])) # gwdist2XFF_nc 209.8626 ok
 # contribution: tie-flip on the start network (same fitted model)
 scc <- RSiena:::getChangeContributions(data=mydata, effects=mymodel)
 cOut <- do.call(rbind, scc[[1]][[1]][[3]]); diag(cOut) <- 0
@@ -5157,3 +5146,85 @@ totOutS <- matrix(as.vector(startmat %*% z), n, n, byrow=TRUE)
 handOut <- toggle * gwWeight(totOutS - t(startmat) * z) # t(startmat)*z: exclude ego iff j->i
 diag(handOut) <- 0
 all.equal(cOut, handOut, check.attributes=FALSE) # TRUE
+
+# ---------------------------------------------------------------------------
+# GW-weighted distance-2 exposure (rate) effects:
+#   gwdspFB/FFExposure  -- gw of the shared-partner count (S-core),
+#   gwdist2FB/FFExposure -- gw of the behaviour-sum behind a gateway (T-core).
+
+alpha <- 0.69
+gwWeight <- function(total) ifelse(total <= 0, 0,
+                exp(alpha) * (1 - (1 - exp(-alpha))^total))
+X  <- mynet[, , 1]
+z1 <- as.double(mybeh[, , 1])
+dz <- as.double(mybeh[, , 2] - mybeh[, , 1])
+n  <- nrow(X)
+
+instars <- function(mat){
+  m <- mat; m[] <- 0
+  for (i in 1:nrow(mat)) for (j in 1:nrow(mat))
+    m[i, j] <- sum(mat[i, c(-i, -j)] * mat[j, c(-i, -j)])
+  diag(m) <- 0
+  m
+}
+
+
+mynet <- sienaDependent(array(c(s501, s502), dim = c(50, 50, 2)))
+sm1 <- 1 * (s50s[, 2] >= 2)
+sm2 <- 1 * (s50s[, 3] >= 2)
+sm2 <- pmax(sm1, sm2)
+sm2[c(33, 28, 29, 44)] <- 1
+mybeh <- sienaDependent(cbind(sm1, sm2), type = "behavior")
+mydata <- sienaDataCreate(mynet, mybeh)
+
+base <- getEffects(mydata)
+baseFit <- siena07(sienaAlgorithmCreate(projname = NULL, seed = 1234),
+                   data = mydata, effects = base, batch = TRUE, silent = TRUE)
+
+# Normal settings do not really work, but we also lack data to well estimate
+# diffusion with the s50 data
+algGW <- sienaAlgorithmCreate(projname = NULL, seed = 1234,
+                              firstg = 0.005, diagonalize = 0.2,
+                              dolby = TRUE, nsub = 4, n3 = 500)
+
+base <- updateTheta(base, baseFit)
+
+
+eff1 <- setEffect(base, gwdspFBExposure, type = "rate",
+                  name = "mybeh", interaction1 = "mynet", parameter = 69)
+(ans1 <- siena07(algGW, data = mydata, effects = eff1, batch = TRUE, silent = FALSE))
+ans1$targets
+
+# gwdspFBExposure: a_i = sum_{h!=i} gw(S_ih) z_h, S_ih = # shared out-partners (FB)
+Sfb <- instars(X)
+sum(dz * as.vector(gwWeight(Sfb) %*% z1))   # ok 21.99370
+
+eff2 <- setEffect(base, gwdspFFExposure, type = "rate",
+                  name = "mybeh", interaction1 = "mynet", parameter = 69)
+(ans2 <- siena07(algGW, data = mydata, effects = eff2, batch = TRUE, silent = FALSE))
+ans2$targets
+
+# gwdspFFExposure: a_i = sum_{h!=i} gw(P_ih) z_h, P_ih = # two-paths i->k->h (FF)
+Pff <- X %*% X; diag(Pff) <- 0
+sum(dz * as.vector(gwWeight(Pff) %*% z1))   # ok 16.49842
+
+eff3 <- setEffect(base, gwdist2FBExposure, type = "rate",
+                  name = "mybeh", interaction1 = "mynet", parameter = 69)
+(ans3 <- siena07(algGW, data = mydata, effects = eff3, batch = TRUE, silent = FALSE))
+ans3$targets
+
+# gwdist2FBExposure: a_i = sum_{j: i->j} gw( sum_{h!=i} x_hj z_h )  (in-nbrs of gateway j)
+Tin <- as.vector(t(X) %*% z1)
+sum(dz * sapply(1:n, function(i) sum(X[i, ] * gwWeight(Tin - z1[i]))))   # ok -> 15.32594
+
+# gwdist2FFExposure
+eff4 <- setEffect(base, gwdist2FFExposure, type = "rate",
+                  name = "mybeh", interaction1 = "mynet", parameter = 69)
+(ans4 <- siena07(algGW, data = mydata, effects = eff4, batch = TRUE, silent = FALSE))
+ans4$targets
+
+# gwdist2FFExposure: a_i = sum_{j: i->j} gw( sum_{h!=i} x_jh z_h )  (out-nbrs of gateway j)
+Tout <- as.vector(X %*% z1)
+sum(dz * sapply(1:n, function(i) sum(X[i, ] * gwWeight(Tout - X[, i] * z1[i]))))   # ok -> 13.74055
+
+
