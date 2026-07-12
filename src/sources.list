@@ -310,9 +310,7 @@ model/effects/PrimaryCompressionEffect.cpp
 model/effects/VarianceAlterEffect.cpp
 model/effects/VarianceAlterSimilarityEffect.cpp
 model/effects/DegreeWeightedAverageGroupEffect.cpp
-model/effects/AverageAlterInDist2NCEffect.cpp
 model/effects/TotalGwdspAlterEffect.cpp
-model/effects/TotalGwdspAlterNCEffect.cpp
 model/effects/BehaviorRateEffect.cpp
 model/effects/InfectEffect.cpp
 model/effects/ExposureEffect.cpp

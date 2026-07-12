@@ -2447,19 +2447,19 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "totGwdspFFAlt")
 	{
-		pEffect = new TotalGwdspAlterEffect(pEffectInfo, true);
+		pEffect = new TotalGwdspAlterEffect(pEffectInfo, true, false);
 	}
 	else if (effectName == "totGwdspFBAlt")
 	{
-		pEffect = new TotalGwdspAlterEffect(pEffectInfo, false);
+		pEffect = new TotalGwdspAlterEffect(pEffectInfo, false, false);
 	}
 	else if (effectName == "totGwdspFFAlt_nc")
 	{
-		pEffect = new TotalGwdspAlterNCEffect(pEffectInfo, true);
+		pEffect = new TotalGwdspAlterEffect(pEffectInfo, true, true);
 	}
 	else if (effectName == "totGwdspFBAlt_nc")
 	{
-		pEffect = new TotalGwdspAlterNCEffect(pEffectInfo, false);
+		pEffect = new TotalGwdspAlterEffect(pEffectInfo, false, true);
 	}
 	else if (effectName == "avAlt")
 	{
@@ -2596,35 +2596,35 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "avInAltDist2")
 	{
-		pEffect = new AverageAlterInDist2Effect(pEffectInfo, true, true);
+		pEffect = new AverageAlterInDist2Effect(pEffectInfo, true, true, false);
 	}
 	else if (effectName == "totInAltDist2")
 	{
-		pEffect = new AverageAlterInDist2Effect(pEffectInfo, false, false);
+		pEffect = new AverageAlterInDist2Effect(pEffectInfo, false, false, false);
 	}
 	else if (effectName == "avTInAltDist2")
 	{
-		pEffect = new AverageAlterInDist2Effect(pEffectInfo, true, false);
+		pEffect = new AverageAlterInDist2Effect(pEffectInfo, true, false, false);
 	}
 	else if (effectName == "totAInAltDist2")
 	{
-		pEffect = new AverageAlterInDist2Effect(pEffectInfo, false, true);
+		pEffect = new AverageAlterInDist2Effect(pEffectInfo, false, true, false);
 	}
 	else if (effectName == "avInAltDist2_nc")
 	{
-		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, true, true);
+		pEffect = new AverageAlterInDist2Effect(pEffectInfo, true, true, true);
 	}
 	else if (effectName == "totInAltDist2_nc")
 	{
-		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, false, false);
+		pEffect = new AverageAlterInDist2Effect(pEffectInfo, false, false, true);
 	}
 	else if (effectName == "avTInAltDist2_nc")
 	{
-		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, true, false);
+		pEffect = new AverageAlterInDist2Effect(pEffectInfo, true, false, true);
 	}
 	else if (effectName == "totAInAltDist2_nc")
 	{
-		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, false, true);
+		pEffect = new AverageAlterInDist2Effect(pEffectInfo, false, true, true);
 	}
 	else if (effectName == "totGwdist2FBAlt_nc")
 	{

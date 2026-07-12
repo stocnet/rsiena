@@ -51,7 +51,7 @@ GwDist2ExposureEffect::GwDist2ExposureEffect(const EffectInfo* pEffectInfo) :
  * Initializes this effect, then re-validates that the internal effect
  * parameter (the GW decay rate alpha for this effect) is nonnegative,
  * matching the precedent set by the analogous behavior effects
- * (TotalGwdspAlterNCEffect, TotalGwInAltDist2NCEffect).
+ * (TotalGwdspAlterEffect, TotalGwInAltDist2NCEffect).
  */
 void GwDist2ExposureEffect::initialize(const Data* pData,
     State* pState,

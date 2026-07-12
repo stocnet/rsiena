@@ -49,7 +49,7 @@ double QuadraticShapeNCEffect::egoStatistic(int ego, double * currentValues)
 /**
  * Returns the statistic corresponding to this effect as part of
  * the endowment function with respect to the initial values of a
- * behavior variable and the current values.
+ * behavior variable and the current values. (not activated in the allEffects.csv!)
  */
 double QuadraticShapeNCEffect::endowmentStatistic(const int * difference,
 	double * currentValues)
@@ -63,8 +63,8 @@ double QuadraticShapeNCEffect::endowmentStatistic(const int * difference,
 		{
 			double currentValues_nc = currentValues[i]+this->overallCenterMean();
 			statistic += currentValues_nc * currentValues_nc
-				- (currentValues_nc + difference[i] + currentValues_nc) *
-				(currentValues_nc + difference[i] + currentValues_nc);
+				- (currentValues_nc + difference[i]) *
+				(currentValues_nc + difference[i]);
 		}
 	}
 

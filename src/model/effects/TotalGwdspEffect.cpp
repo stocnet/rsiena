@@ -13,6 +13,7 @@
 #include <cmath>
 #include "TotalGwdspEffect.h"
 #include "network/Network.h"
+#include "network/IncidentTieIterator.h"
 #include "model/State.h"
 #include "model/tables/Cache.h"
 #include "model/tables/NetworkCache.h"
@@ -74,6 +75,9 @@ void TotalGwdspEffect::initialize(const Data * pData,
 		pow *= this->lexpfactor;
 		this->lcumulativeWeight[i] = this->lexpmweight * (1 - pow);
 	}
+
+	this->lTwoPathCount.assign(this->pNetwork()->n(), 0);
+	this->lTouched.clear();
 }
 
 /**
@@ -116,21 +120,31 @@ double TotalGwdspEffect::calculateChangeContribution(int actor,
  */
 double TotalGwdspEffect::egoStatistic(int ego, double * currentValues)
 {
-	double statistic = 0;
 	const Network * pNetwork = this->pNetwork();
-	for (int j = 0; j < this->pNetwork()->n(); j++) // was m() until and including 1.3.11.
+	// Scatter: accumulate pathCount(ego, j) for every reachable focal actor j, by
+	// walking ego's gateways h (out-ties) and, through each, the j reached (FF: out-
+	// ties of h; FB: in-ties of h).
+	for (IncidentTieIterator iterH = pNetwork->outTies(ego); iterH.valid(); iterH.next())
 	{
-		if (j != ego)
-		{	
-			int pathCount = 0;
-			if (this->lforward) // tables can not be used here because ego is not preprocessed?
-				pathCount = pNetwork->twoPathCount(ego, j);
-			else
-				pathCount = pNetwork->inTwoStarCount(ego, j);
-			statistic += this->lcumulativeWeight[pathCount];
+		int h = iterH.actor();
+		IncidentTieIterator iterJ = this->lforward ?
+			pNetwork->outTies(h) : pNetwork->inTies(h);
+		for (; iterJ.valid(); iterJ.next())
+		{
+			int j = iterJ.actor();
+			if (j == ego) continue;
+			if (this->lTwoPathCount[j] == 0) this->lTouched.push_back(j);
+			this->lTwoPathCount[j]++;
 		}
 	}
-	statistic *= lnc ? currentValues[ego] + this->overallCenterMean(): 
+	double statistic = 0;
+	for (int j : this->lTouched)
+	{
+		statistic += this->lcumulativeWeight[this->lTwoPathCount[j]];
+		this->lTwoPathCount[j] = 0;
+	}
+	this->lTouched.clear();
+	statistic *= lnc ? currentValues[ego] + this->overallCenterMean() :
 					   currentValues[ego];
 	return statistic;
 }

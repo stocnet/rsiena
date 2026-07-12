@@ -46,6 +46,8 @@ private:
 	// ConfigurationTable * (NetworkCache::*lpTable)() const;
 	double lparameter {};
 	std::vector<double> lcumulativeWeight;
+	std::vector<int> lTwoPathCount;
+	std::vector<int> lTouched;
 	double lforward {};
 	double lweight {};
 	double lexpmweight {};

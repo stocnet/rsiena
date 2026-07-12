@@ -26,13 +26,14 @@ namespace siena
  * Constructor.
  */
 AverageAlterInDist2Effect::AverageAlterInDist2Effect(
-	const EffectInfo * pEffectInfo, bool divide1, bool divide2) :
+	const EffectInfo * pEffectInfo, bool divide1, bool divide2, bool nc) :
 		NetworkDependentBehaviorEffect(pEffectInfo)
 {
 	this->ldivide1 = divide1;
 	// Indicates whether there will be division by the outdegree of ego
 	this->ldivide2 = divide2;
 	// Indicates whether there will be division by the indegree of alter
+	this->lnc = nc;
 }
 
 /**
@@ -72,11 +73,12 @@ double AverageAlterInDist2Effect::calculateChangeContribution(int actor,
 			iter.valid();
 			iter.next())
 		{
-			double alterValue = this->totalInAlterValue(iter.actor());
+			double alterValue = this->totalInAlterValue(iter.actor()) +
+				(this->lnc ? pNetwork->inDegree(iter.actor()) * this->overallCenterMean() : 0);
 			int tieValue =  this->pNetwork()->tieValue(actor, iter.actor());
 			if (tieValue == 1)
 			{
-				alterValue -= this->centeredValue(actor);
+				alterValue -= (this->lnc ? this->value(actor) : this->centeredValue(actor));
 			}
 			if (((pNetwork->inDegree(iter.actor()) - tieValue)> 0) && (this->ldivide2))
 			{
@@ -102,6 +104,7 @@ double AverageAlterInDist2Effect::egoStatistic(int i, double * currentValues)
 	double statistic = 0;
 	const Network * pNetwork = this->pNetwork();
 	int neighborCount = 0;
+	double center = this->lnc ? this->overallCenterMean() : 0;
 
 	for (IncidentTieIterator iter = pNetwork->outTies(i);
 		 iter.valid();
@@ -115,7 +118,7 @@ double AverageAlterInDist2Effect::egoStatistic(int i, double * currentValues)
 		{
 			if (i != iteri.actor())
 			{
-				alterValue += currentValues[iteri.actor()];
+				alterValue += currentValues[iteri.actor()] + center;
 			}
 		}
 // tieFromi =  this->pNetwork()->tieValue(i, iter.actor());
@@ -130,7 +133,7 @@ double AverageAlterInDist2Effect::egoStatistic(int i, double * currentValues)
 
 	if (neighborCount > 0)
 	{
-		statistic *= currentValues[i];
+		statistic *= currentValues[i] + center;
 		if (this->ldivide1)
 		{
 			statistic /= neighborCount;

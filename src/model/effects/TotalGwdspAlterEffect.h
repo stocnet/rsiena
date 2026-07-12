@@ -28,7 +28,7 @@ class NetworkCache;
 class TotalGwdspAlterEffect : public NetworkDependentBehaviorEffect
 {
 public:
-	TotalGwdspAlterEffect(const EffectInfo * pEffectInfo, bool forward);
+	TotalGwdspAlterEffect(const EffectInfo * pEffectInfo, bool forward, bool nc);
 	virtual void initialize(const Data * pData, State * pState,	int period,
 			Cache * pCache);
 	// do we need a deallocator?
@@ -46,7 +46,10 @@ private:
 	// ConfigurationTable * (NetworkCache::*lpTable)() const;
 	double lparameter {};
 	std::vector<double> lcumulativeWeight;
+	std::vector<int> lTwoPathCount;
+	std::vector<int> lTouched;
 	double lforward {};
+	bool lnc {};
 	double lweight {};
 	double lexpmweight {};
 	double lexpfactor {};
