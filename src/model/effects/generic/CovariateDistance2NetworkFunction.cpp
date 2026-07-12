@@ -29,11 +29,12 @@ namespace siena
  * associated with
  */
 CovariateDistance2NetworkFunction::CovariateDistance2NetworkFunction(
-		string networkName, string covariateName, bool excludeMissing, bool outgoing) :
+		string networkName, string covariateName, bool excludeMissing, bool outgoing, bool nc) :
 	CovariateNetworkAlterFunction(networkName, covariateName)
 {
 	this->lexcludeMissing = excludeMissing;
 	this->loutgoing = outgoing;
+	this->lnc = nc;
 	this->laverageAlterValues = 0;
 	this->ltotalAlterValues = 0;
 	this->laverageAlterMissing = 0;
@@ -179,8 +180,10 @@ void CovariateDistance2NetworkFunction::preprocessEgo(int ego)
 				int j = iter.actor();
 				if (!((this->lexcludeMissing) && (this->missing(j))))
 				{
-					this->ltotalAlterValues[i] += CovariateNetworkAlterFunction::covvalue(j);
-					numberUsed++;
+					this->ltotalAlterValues[i] += this->lnc
+						? CovariateNetworkAlterFunction::uncenteredCovvalue(j)
+						: CovariateNetworkAlterFunction::covvalue(j);
+					numberUsed++;;
 				}
 			}
 
@@ -219,7 +222,9 @@ void CovariateDistance2NetworkFunction::preprocessEgo(int ego)
 				int j = iter.actor();
 				if (!((this->lexcludeMissing) && (this->missing(j))))
 				{
-					this->ltotalInAlterValues[i] += CovariateNetworkAlterFunction::covvalue(j);
+					this->ltotalInAlterValues[i] += this->lnc
+						? CovariateNetworkAlterFunction::uncenteredCovvalue(j)
+						: CovariateNetworkAlterFunction::covvalue(j);
 					numberUsed++;
 				}
 			}

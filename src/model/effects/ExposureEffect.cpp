@@ -16,16 +16,37 @@
 #include "model/variables/BehaviorVariable.h"
 #include "network/OneModeNetwork.h"
 #include "network/IncidentTieIterator.h"
+#include "model/EffectInfo.h"
 #include <R_ext/Print.h>
 
 namespace siena {
+ExposureEffect::ExposureEffect(const EffectInfo* pEffectInfo)
+    : DiffusionRateEffect(pEffectInfo)
+{
+    // 1. Process threshold configuration once
+    int rawParam = static_cast<int>(std::round(pEffectInfo->internalEffectParameter()));
+    this->labsThreshold = std::abs(rawParam);
+    this->lhasThreshold = (rawParam != 0);
+    this->lcapAtThreshold = (rawParam < 0);
 
-double ExposureEffect::proximityValue(const Network* pNetwork, int i) const
+    // 2. Process string match once. The heavy character checking ends here!
+    this->lIsAvExposure = (this->leffectName == "avExposure");
+}
+
+/**
+ * Wrapper to fix abstract threshold utility to concrete threshold values.
+ */
+double ExposureEffect::applyThreshold(double value, int numInfectedAlter) const
+{
+    return DiffusionRateEffect::applyThreshold(value, numInfectedAlter, this->labsThreshold, this->lcapAtThreshold);
+}
+
+double ExposureEffect::proximityValue(const Network* pNetwork, int i)
 {
     int egoNumer = 1;
     int egoDenom = 1;
 
-    if (this->leffectName == "avExposure")
+    if (this->lIsAvExposure)
     {
         egoDenom = std::max(1, pNetwork->outDegree(i));
     }
@@ -46,12 +67,14 @@ double ExposureEffect::proximityValue(const Network* pNetwork, int i) const
         }
     }
 
-    totalAlterValue = this->applyThreshold(totalAlterValue, numInfectedAlter);
-
+    if (this->lhasThreshold)
+    {
+        totalAlterValue = this->applyThreshold(totalAlterValue, numInfectedAlter);
+    }
     totalAlterValue *= egoNumer;
 
-    double rawStatistic = (egoDenom > 1) ? totalAlterValue / egoDenom : totalAlterValue;
-    return rawStatistic;
+    return (egoDenom > 1) ? totalAlterValue / egoDenom : 
+                            totalAlterValue;
 }
 
 }

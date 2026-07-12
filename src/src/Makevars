@@ -1,0 +1,12 @@
+# -*- Makefile -*-
+# vim:ft=make:
+
+
+SOURCES = init.cpp 
+OBJECTS = $(SOURCES:.cpp=.o)
+
+PKG_CPPFLAGS = -I. -DR_NO_REMAP 
+PKG_LIBS     = $(ARCHLIB) 
+
+
+all: $(SHLIB)

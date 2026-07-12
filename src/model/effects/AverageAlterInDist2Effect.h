@@ -25,7 +25,7 @@ class AverageAlterInDist2Effect : public NetworkDependentBehaviorEffect
 {
 public:
 	AverageAlterInDist2Effect(const EffectInfo * pEffectInfo,
-						bool divide1, bool divide2);
+						bool divide1, bool divide2, bool nc);
 	virtual ~AverageAlterInDist2Effect();
 	virtual double calculateChangeContribution(int actor,
 		int difference);
@@ -36,6 +36,7 @@ private:
 	// Indicates whether there will be division by the outdegree of ego
 	bool ldivide2 {};
 	// Indicates whether there will be division by the indegree of alter
+	bool lnc {};
 };
 
 }

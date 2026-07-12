@@ -33,6 +33,8 @@ BehaviorRateEffect::BehaviorRateEffect(const EffectInfo * pEffectInfo) :
 	this->lpBehaviorData = 0;
 	this->linitialValues = 0;
 	this->lvalues = 0;
+
+	this->leffectName = pEffectInfo->effectName();
 }
 
 
@@ -121,6 +123,24 @@ bool BehaviorRateEffect::missing(int observation, int actor) const
 
 
 /**
+ * Returns the smallest observed value of the respective behavior variable.
+ */
+int BehaviorRateEffect::min() const
+{
+	return this->lpBehaviorData->min();
+}
+
+
+/**
+ * Returns the largest observed value of the respective behavior variable.
+ */
+int BehaviorRateEffect::max() const
+{
+	return this->lpBehaviorData->max();
+}
+
+
+/**
  * Returns the observed range of the respective behavior variable.
  */
 double BehaviorRateEffect::range() const
@@ -159,7 +179,7 @@ double BehaviorRateEffect::variance() const
 /**
  * Calculates the behavior rate contribution corresponding to the given ego.
  */
-double BehaviorRateEffect::calculateContribution(int ego) const
+double BehaviorRateEffect::calculateContribution(int ego)
 {
 	throw runtime_error("calculateContribution not implemented for " +
 		this->pEffectInfo()->effectName());

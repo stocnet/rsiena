@@ -1,3 +1,73 @@
+2026-07-12
+
+# RSiena 1.6.11
+
+## Changes in RSiena:
+### Effects
+  * New `activity alter` effect, with a non-centered variant
+    (`ActivityAlterEffect.cpp`).
+  * New non-centered variant of the `popularity alter` effect
+    (`PopularityAlterEffect.cpp`).
+  * New alter-wise geometrically weighted version of the distance-2
+    family behavior effects, available in non-centered form only
+    (`TotalGwInAltDist2NCEffect.cpp`).
+  * New `totGwdspFF`/`totGwdspFB` effects (`TotalGwdspEffect.cpp`,
+    plus `_nc` non-centered variants), the network-only controls for
+    the existing `totGwdspFFAlt`/`totGwdspFBAlt` effects: they depend
+    on ego's (geometrically weighted) count of two-paths/two-stars
+    only, not on the alters' behavior values.
+  * New covariate `gwdspFFX`/`gwdspFBX` effects (+ `_nc` variants,
+    `CovariateGwdspEffect.cpp`), the geometrically weighted
+    dyadwise-shared-partner kernel on the network side: for each
+    distance-2 alter, its covariate value is weighted by the GW count
+    of shared partners linking it to ego. Used as a building block for
+    weighted indirect homophily (e.g. in interaction with `egoX`).
+  * New covariate `gwdist2XFF_nc`/`gwdist2XFB_nc` effects
+    (`GwCovariateAlterFunction.cpp`/`GwCovariateInAlterFunction.cpp`):
+    unlike the `gwdspX` kernel above, the geometric weighting here
+    applies to the distance-2 neighborhood reached through a single
+    intermediary, modeling exposure saturation through one gateway
+    rather than damping redundant paths to the same alter. Only
+    available non-centered.
+  * New `gwdspFFExposure`/`gwdspFBExposure` and
+    `gwdist2FFExposure`/`gwdist2FBExposure` diffusion-rate effects
+    (`GwDist2ExposureEffect.cpp`, `GwdspExposureEffect.cpp`), the
+    geometrically weighted counterparts of `totInExposureDist2`/
+    `anyInExposureDist2`.
+  * Group-level effects (`AverageGroupEffect`,
+    `DegreeWeightedAverageGroupEffect`) corrected and expanded.
+  * Added non-centered (`_nc`) variants of the `altX`, `egoX`,
+    `egoXaltX` covariate effects and the `totInDist2`/`gwInAltDist2`
+    distance-2 effects, as lower-order controls; covariate effects now
+    more consistently respect non-centering even when the covariate
+    itself is centered by the user.
+  * `AverageAlterInDist2NCEffect`/`TotalGwdspAlterNCEffect` (separate
+    non-centered classes) replaced by an `nc` constructor flag on
+    `AverageAlterInDist2Effect`/`TotalGwdspAlterEffect`; fixed a bug in
+    `QuadraticShapeNCEffect` (not previously reachable/live).
+  * Removed unused/superseded effect classes `AverageTwoInStarAlterEffect`,
+    `DoubleMixedStarEffect`, `StarMixedStarEffect` and the generic
+    helpers `MixedOnlyTwoPathFunction`, `SameCovariateInTiesFunction2`.
+  * Cleanup of other diffusion rate effects.
+### Coding
+  * Added `BehaviorEffect::resolvedValue(actor, nc)` and
+    `CovariateDependentNetworkEffect::resolvedValue(actor, nc)`, helpers
+    that resolve a stored actor/covariate value to its centered or
+    non-centered form depending on an `nc` flag, and switched all effect
+    classes with such a flag to use them instead of duplicating the
+    centering logic inline. Note that `BehaviorEffect::value()` returns
+    the non-centered value while `CovariateDependentNetworkEffect::value()`
+    returns the centered value (opposite conventions for the same method
+    name); this is called out in a code comment but worth keeping in mind
+    before extending either further.
+### Functionality
+  * `src/sources.list` restructured to a multi-line, more easily
+    editable format; `update_sources_list.sh` / `update_sources_unix.sh`
+    scripts added to regenerate it automatically, and `configure` /
+    `configure.ac` / `configure.win` / `Makevars` updated accordingly,
+    avoiding a build-time dependency on shell globbing
+    (see Writing R Extensions on `Makevars`).
+
 2026-06-14
 
 # RSiena 1.6.10

@@ -18,11 +18,43 @@
 #include "data/ConstantCovariate.h"
 #include "data/ChangingCovariate.h"
 #include "network/IncidentTieIterator.h"
+#include "model/EffectInfo.h"
 #include <R_ext/Print.h>
 
 namespace siena {
 
-double InfectEffect::proximityValue(const Network* pNetwork, int i) const
+InfectEffect::InfectEffect(const EffectInfo* pEffectInfo)
+    : DiffusionRateEffect(pEffectInfo)
+{
+    int rawParam = static_cast<int>(std::round(pEffectInfo->internalEffectParameter()));
+    this->labsThreshold = std::abs(rawParam);
+    this->lhasThreshold = (rawParam != 0);
+    this->lcapAtThreshold = (rawParam < 0);
+
+    // Cache string identifiers as lightweight booleans
+    this->lIsInfectIn = (this->leffectName == "infectIn");
+    this->lIsInfectDegOrOut = (this->leffectName == "infectDeg" || this->leffectName == "infectOut");
+    this->lIsInfectCovar = (this->leffectName == "infectCovar");
+}
+
+void InfectEffect::initialize(const Data* pData, State* pState, int period, Cache* pCache)
+{
+    // 1. Parent binds the network pointers and covariates
+    DiffusionRateEffect::initialize(pData, pState, period, pCache);
+
+    // 2. Safely validate covariate presence once per wave/period setup
+    if (this->lIsInfectCovar && !this->lpConstantCovariate && !this->lpChangingCovariate)
+    {
+        throw std::logic_error("Covariate data missing for infectCovar.");
+    }
+}
+
+double InfectEffect::applyThreshold(double value, int numInfectedAlter) const
+{
+    return DiffusionRateEffect::applyThreshold(value, numInfectedAlter, this->labsThreshold, this->lcapAtThreshold);
+}
+
+double InfectEffect::proximityValue(const Network* pNetwork, int i)
 {
     double totalAlterValue = 0;
     int numInfectedAlter = 0;
@@ -31,42 +63,37 @@ double InfectEffect::proximityValue(const Network* pNetwork, int i) const
     {
         for (IncidentTieIterator iter = pNetwork->outTies(i); iter.valid(); iter.next())
         {
-            double alterValue = this->value(iter.actor());
+            int alterActor = iter.actor();
+            double alterValue = this->value(alterActor);
 
             if (alterValue >= 0.5)
             {
                 numInfectedAlter++;
             }
-            // infectIn: weighted by in-degree
-            if (this->leffectName == "infectIn")
+
+            if (this->lIsInfectIn)
             {
-                alterValue *= pNetwork->inDegree(iter.actor());
+                alterValue *= pNetwork->inDegree(alterActor);
             }
-            // infectDeg or infectOut: weighted by out-degree
-            else if (this->leffectName == "infectDeg" || this->leffectName == "infectOut")
+            else if (this->lIsInfectDegOrOut)
             {
-                alterValue *= pNetwork->outDegree(iter.actor());
+                alterValue *= pNetwork->outDegree(alterActor);
             }
-             else if (this->leffectName == "infectCovar")
+            else if (this->lIsInfectCovar)
             {
-                if (this->lpConstantCovariate)
-                {
-                    alterValue *= this->lpConstantCovariate->value(iter.actor());
-                }
-                else if (this->lpChangingCovariate)
-                {
-                    alterValue *= this->lpChangingCovariate->value(iter.actor(), this->period());
-                }
-                else
-                {
-                    throw std::logic_error("No individual covariate found for infectCovar.");
-                }
+                alterValue *= this->lpChangingCovariate ? 
+                              this->lpChangingCovariate->value(alterActor, this->period()) : 
+                              this->lpConstantCovariate->value(alterActor);
             }
+
             totalAlterValue += alterValue;
         }
     }
 
-    totalAlterValue = this->applyThreshold(totalAlterValue, numInfectedAlter);
+    if (this->lhasThreshold)
+    {
+        totalAlterValue = this->applyThreshold(totalAlterValue, numInfectedAlter);
+    }
 
     return totalAlterValue;
 }

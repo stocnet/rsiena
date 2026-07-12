@@ -19,10 +19,26 @@ namespace siena {
 class InfectEffect : public DiffusionRateEffect
 {
 public:
-    using DiffusionRateEffect::DiffusionRateEffect;
+    InfectEffect(const EffectInfo* pEffectInfo);
+
+    void initialize(const Data* pData, State* pState, int period, Cache* pCache) override;
 
 protected:
-    double proximityValue(const Network* pNetwork, int i) const;
+    double proximityValue(const Network* pNetwork, int i) override;
+
+private:
+    // Threshold state variables
+    int labsThreshold{0};
+    bool lcapAtThreshold{false};
+    bool lhasThreshold{false};
+
+    // Optimization flags: pre-parsed routing switches to avoid string matching in the loop
+    bool lIsInfectIn{false};
+    bool lIsInfectDegOrOut{false};
+    bool lIsInfectCovar{false};
+
+    // Fast threshold application wrapper
+    double applyThreshold(double value, int numInfectedAlter) const;
 };
 
 }

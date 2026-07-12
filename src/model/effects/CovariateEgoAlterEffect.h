@@ -24,7 +24,8 @@ namespace siena
 class CovariateEgoAlterEffect : public CovariateDependentNetworkEffect
 {
 public:
-	CovariateEgoAlterEffect(const EffectInfo * pEffectInfo, bool reciprocal);
+	CovariateEgoAlterEffect(const EffectInfo * pEffectInfo, bool reciprocal, 
+		bool nc);
 
 	virtual double calculateContribution(int alter) const;
 
@@ -34,6 +35,7 @@ protected:
 private:
 	// Indicates if the reciprocal version of the effect is required
 	bool lreciprocal {};
+	bool lnc {};
 };
 
 }

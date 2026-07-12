@@ -23,7 +23,8 @@ class CovariateDistance2AlterNetworkFunction: public
 {
 public:
 	CovariateDistance2AlterNetworkFunction(std::string networkName,
-		std::string covariateName, double parameter, bool excludeMissing, bool total);
+		std::string covariateName, double parameter, bool excludeMissing, bool total,
+		bool nc = false);
 	virtual ~CovariateDistance2AlterNetworkFunction();
 
 	virtual double value(int alter) const;

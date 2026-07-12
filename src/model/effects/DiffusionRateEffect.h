@@ -48,34 +48,25 @@ public:
     virtual void initialize(const Data* pData, 
         State* pState, int period, Cache* pCache);
     
-    double calculateContribution(int i) const;
+    double calculateContribution(int i);
 
-    void setInternalEffectParameter(int parValue);
-    int getInternalEffectParameter() const;
 protected:
     inline const Network * pNetwork() const;
     
     // Helper method that calculates raw proximity/exposure statistic
     // Contains all effect-specific conditional logic
-    // double proximityValue(const Network* pNetwork, int i, int period) const;
     // Only declare as pure virtual, do not implement here:
-    virtual double proximityValue(const Network* pNetwork, int i) const;
-
-	double applyThreshold(double value, int numInfectedAlter) const;
+    virtual double proximityValue(const Network* pNetwork, int i);
+    // Pure stateless utility used in most diffusionRate effects
+    static double applyThreshold(double value, int numInfectedAlter, int absThreshold, bool capAtThreshold);
 
     // The covariates some effects depend on
     const ConstantCovariate * lpConstantCovariate;
-    const ChangingCovariate * lpChangingCovariate;
-    
-    std::string leffectName {};
+    const ChangingCovariate * lpChangingCovariate;  
 
 private:
      // The network variable this effect depends on
     const Network * lpNetwork;
-
-    int linternalEffectParameter {};
-    int labsInternalEffectParameter {};
-    bool linternalNonZero {};
 
 };
 

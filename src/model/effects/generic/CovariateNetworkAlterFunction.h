@@ -50,6 +50,13 @@ protected:
 	double covmean() const;
 // value of the covariate:
 	double covvalue(int alter) const;
+	// non-centered (raw) value; for constant/changing covariates identical to
+	// covvalue(); for behavior variables returns the raw (non-mean-subtracted) value.
+	double uncenteredCovvalue(int alter) const;
+	// nc indicates whether the covariate/behavior value should be non
+	// centered; mirrors BehaviorEffect::resolvedValue /
+	// CovariateDependentNetworkEffect::resolvedValue
+	double resolvedCovvalue(int alter, bool nc) const;
 	int covIntValue(int i) const;
 	bool missing(int i) const;
 	int covariateN() const;

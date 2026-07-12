@@ -22,8 +22,8 @@ namespace siena
 /**
  * Constructor.
  */
-AverageGroupEffect::AverageGroupEffect(const EffectInfo * pEffectInfo, bool divide) :
-	BehaviorEffect(pEffectInfo)
+AverageGroupEffect::AverageGroupEffect(const EffectInfo * pEffectInfo, bool divide,
+	bool nc, bool ego) : BehaviorEffect(pEffectInfo)
 {
 	this->lcenterMean = (pEffectInfo->internalEffectParameter() <= 0.5);
 	if (!this->lcenterMean)
@@ -36,6 +36,8 @@ AverageGroupEffect::AverageGroupEffect(const EffectInfo * pEffectInfo, bool divi
 	}
 	this->ldivide = divide;
 	// Indicates whether there will be division by the number of actors.
+	this->lnc = nc;
+	this->lego = ego;
 }
 
 /**
@@ -51,8 +53,9 @@ void AverageGroupEffect::initialize(const Data * pData,
 	Cache * pCache)
 {
 	BehaviorEffect::initialize(pData, pState, period, pCache);
+	/// calculate groupsize that is constant over egos
+	this->lgroupSize = !this->lego ? this->n() - 1 : this->n();
 }
-
 
 /**
  * Calculates the change in the statistic corresponding to this effect if
@@ -61,24 +64,39 @@ void AverageGroupEffect::initialize(const Data * pData,
 double AverageGroupEffect::calculateChangeContribution(int actor,
 	int difference)
 {
-	double statistic = 0;
+	double contribution = 0;
+	double multiplier = 1.0;
 
 	for (int i = 0; i < this->n(); i++)
 	{
-		statistic += this->centeredValue(i);
+		if (!this->lego && i == actor)
+		{
+			continue; // Pure normative context: skip ego!
+		}
+		contribution += this->resolvedValue(i, this->lnc);
 	}
-	statistic += this->centeredValue(actor) + difference;
+	if (this->lego)
+	{
+		contribution += this->resolvedValue(actor, this->lnc) + difference;
+	}
 	if (this->ldivide) 
 	{
-		statistic /= this->n();
+		contribution /= lgroupSize;
+	}
+	else if (!this->lcenterMean)
+	{
+		multiplier = lgroupSize;
 	}
 //Rprintf("calculateSumPlus %f ", thesum);
 //Rprintf(" and %f \n", thesum);
-	if (!this->lcenterMean)
+	// recentering only makes sense for the centered branch
+	if (!this->lcenterMean && !this->lnc)
 	{
-		statistic += (this->overallCenterMean() - this->lcenteringValue);
+		// multiply by n for the sum to scale correctly for total change
+		contribution += multiplier * (this->overallCenterMean() - this->lcenteringValue);
 	}
-	return difference * statistic;
+	contribution *= difference;
+	return contribution;
 }
 
 /**
@@ -87,20 +105,33 @@ double AverageGroupEffect::calculateChangeContribution(int actor,
  */
 double AverageGroupEffect::egoStatistic(int ego, double * currentValues)
 {
-	double thesum = 0;
-	for (int i = 0; i < this->n(); i++)
+	double statistic = 0;
+	double multiplier = 1.0;
+    for (int i = 0; i < this->n(); i++)
+    {
+        if (!this->lego && i == ego)
+		{
+			continue;
+		}
+        statistic += this->lnc ? currentValues[i] + this->overallCenterMean() : 
+							     currentValues[i];
+    }
+	if (this->ldivide)
 	{
-		thesum += currentValues[i];
+		statistic /= this->lgroupSize;
 	}
-	if (this->ldivide) 
+	else if (!this->lcenterMean)
 	{
-		thesum /= this->n();
+		multiplier = this->lgroupSize;
 	}
-	if (!this->lcenterMean)
+	// recentering only makes sense for the centered branch
+	if (!this->lcenterMean && !this->lnc)
 	{
-		thesum += (this->overallCenterMean() - this->lcenteringValue);
+		statistic += multiplier * (this->overallCenterMean() - this->lcenteringValue);
 	}
-	return thesum * currentValues[ego];
+	statistic *= this->lnc ? currentValues[ego] + this->overallCenterMean()  : 
+							 currentValues[ego];
+	return statistic;
 }
 
 

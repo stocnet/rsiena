@@ -6333,7 +6333,8 @@ and statistics operating for parameter estimation is lost.
 13 mybeh mybeh total similarity         Regular
 14 mynet mybeh ego                      GMoM
 15 mynet mybeh similarity               GMoM
-\end{verbatim}}
+\end{verbatim}
+}
 \normalsize
 \bigskip
 
@@ -11084,7 +11085,8 @@ the following effects are available:
  \item {\em covariate-alter} or {\em covariate-related popularity}
  \texttt{(altX)},
  defined by the sum of the covariate over all actors to whom $i$ has a tie,\\
- $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, v_j$;
+ $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, v_j$;\\
+ for using no centering, work with the effect \texttt{(altX\_nc)} instead;
 
  \item {\em covariate squared - alter} or {\em squared covariate-related popularity} \texttt{(altSqX)},
  defined by the sum of the squared covariate over all actors to whom $i$ has a tie,
@@ -11121,7 +11123,8 @@ defined by \\
  \item {\em covariate-ego} or {\em covariate-related activity}
  \texttt{(egoX)},
  defined by $i$'s out-degree weighted by his covariate value,\\
- $s^{\rm net}_{i\vit}(x) = v_i \, x_{i+} $;
+ $s^{\rm net}_{i\vit}(x) = v_i \, x_{i+} $;\\
+ for using no centering, work with the effect \texttt{(egoX\_nc)} instead;
 
  \item {\em covariate squared - ego} or {\em squared covariate-related activity}
  \texttt{(egoSqX)},
@@ -11732,7 +11735,9 @@ of $\breve v_j$ would be the same as the alter effect of $v_j$.
  s^{\rm net}_{i\vit}(x) = \sum_j x_{ij} (x_{j+} - x_{ji}) \breve v_j^{(-i)} \hfill
                           (\text{parameter 2}) \hfill
 \]
-      where $\breve v_j$ and $\breve v_j^{(-i)}$ are as above.
+      where $\breve v_j$ and $\breve v_j^{(-i)}$ are as above; for
+      using non-centered covariate and behavior values use \texttt{totDist2\_nc}.
+
 
 \item \emph{ego-(alter-distance-2) covariate - similarity} \texttt{(simEgoDist2)},
       defined as the sum of centered similarity  between $i$
@@ -11825,6 +11830,70 @@ with $v_h = v_i\,$:
 \end{equation}
 where $\bar v$ is (again) the global mean of $V$.
 
+ \item two variations of the
+   \emph{GWDSP (geometrically weighted dyadwise shared partners)} covariate effects:
+    {\em GWDSPFF covariate} \texttt{(gwdspFFX)} and
+    {\em GWDSPFB covariate} \texttt{(gwdspFBX)}.
+   For each distance-2 alter $h$, its covariate value $v_h$ is weighted by the
+   geometrically weighted number of shared partners linking $i$ and $h$,
+      \begin{equation}
+      s^{\rm net}_{i\vit}(x, v, \alpha) \,=\,
+                  \sum_{h;\; h \neq i}^n \, v_{h}\,
+                  e^{\alpha}\,\Big\{1\,-\,\big(1 - e^{-\alpha}\big)^{
+                        \sum_{j} x_{ij}x_{jh} }  \Big\}
+            \, \
+      \end{equation}
+      and
+      \begin{equation}
+      s^{\rm net}_{i\vit}(x, v, \alpha) \,=\,
+                  \sum_{h;\; h \neq i}^n  \, v_{h}\,
+                  e^{\alpha}\,\Big\{1\,-\,\big(1-e^{-\alpha}\big)^{
+                        \sum_{j} x_{ij}x_{hj} }  \Big\}
+            \, \ ;
+      \end{equation}
+   the FF variant uses the two-path $i \rightarrow j \rightarrow h$, the FB variant
+   the shared partner $i \rightarrow j \leftarrow h$. On its own this is only the
+   distance-2 kernel (no $v_i$ factor); in an interaction with \texttt{egoX} it
+   becomes the full indirect-homophily statistic $v_i \sum_h v_h\, w(\cdot)$ -
+   the selection analogue of the influence effect \texttt{totGwdspFBAlt}. The
+   weighting damps redundant paths to the same distance-2 alter: with strong
+   weighting ($\alpha \to 0$) it converges to a social-circle effect in which each
+   distance-2 alter's covariate value counts once, regardless of how many shared
+   partners connect it to $i$. For a non-centered covariate use
+   \texttt{(gwdspFFX\_nc)} / \texttt{(gwdspFBX\_nc)} instead;
+
+\item Two variations of the
+   \emph{GWDIST2 (geometrically weighted distance 2) covariate} effects:
+    {\em GWDIST2 covariate FF} \texttt{(gwdist2XFF\_nc)} and
+    {\em GWDIST2 covariate FB} \texttt{(gwdist2XFB\_nc)}.
+   In contrast to the GWDSP variants, the geometric weighting here applies to the
+   distance-2 neighbourhood itself, penalizing the accumulation of covariate values
+   reached through the same intermediary $j$,
+      \begin{equation}
+      s^{\rm net}_{i\vit}(x, v, \alpha) \,=\,
+                  \sum_{j}^n \, x_{ij}\,
+                  e^{\alpha}\,\Big\{1\,-\,\big(1 - e^{-\alpha}\big)^{
+                        \sum_{h;\; h \neq i} x_{jh} v_{h}}   \Big\}
+            \, \ ;
+      \end{equation}
+      and
+      \begin{equation}
+      s^{\rm net}_{i\vit}(x, v, \alpha) \,=\,
+                  \sum_{j}^n \, x_{ij}\,
+                  e^{\alpha}\,\Big\{1\,-\,\big(1 - e^{-\alpha}\big)^{
+                        \sum_{h;\; h \neq i} x_{hj} v_{h}}   \Big\}
+            \, \;
+      \end{equation}
+   the FF variant sums $v_h$ over $j$'s out-neighbours ($i \rightarrow j \rightarrow
+   h$), the FB variant over $j$'s in-neighbours ($i \rightarrow j \leftarrow h$).
+   Whereas GWDSP damps multiple paths to the same alter, GWDIST2 models exposure
+   saturation through a single gateway $j$: with strong weighting ($\alpha \to 0$)
+   only \emph{whether} a direct alter $j$ reaches some distance-2 alter with $v_h > 0$ matters, not how many or how much (for
+   binary $V$ it then counts such direct alters $j$). The sum behind $gw(\cdot)$
+   must be non-negative, so only the non-centered form exists; in an interaction
+   with \texttt{egoX\_nc} it models indirect homophily by relational mimesis, where
+   having ties to the same alters as others with high covariate values matters more
+   than the overall covariate volume of ego and the indirect alters.
 
 \item \emph{total covariate - in - alter at distance 2} \texttt{(totInDist2)}.
      This is defined as the sum of alters' values for
@@ -11835,7 +11904,10 @@ where $\bar v$ is (again) the global mean of $V$.
                         \,=\ \sum_j x_{ij} \sum_{h \neq i} x_{hj}\,v_h  \ .
 \]
     For a non-centered binary variable $V$ with values $v_j$ = 0 or~1,
-    this is a $V$-restricted version of indegree popularity.
+    this is a $V$-restricted version of indegree popularity; for 
+    using this without centering a behavior variable $z$, use
+     \texttt{totInDist2\_nc} instead.
+
 
 \item \emph{ego-(in-alter-distance-2) covariate - similarity} \texttt{(simEgoInDist2)},
       defined as the sum of centered similarity  between $i$
@@ -14504,7 +14576,7 @@ where $\bar v$ is the overall mean of variable $V$.
          \frac{\sum_{h \neq i} w_{hj}\,v_h}{x_{+j} - x_{ij}}  &
                                        \text{ if } x_{+j} > 0     \\
          \bar v                                &  \text{ if } x_{+j} = 0  ,
-  \end{array}   \right.            \label{alt_inav2}
+  \end{array}   \right.            \label{alt_inav2w}
 \end{equation}
 where $\bar v$ is (again) the global mean of $V$.
 
@@ -14897,6 +14969,26 @@ with the behavioral variable itself.
  note that this also is an influence effect from \underline{all} actors in the network,
  which does not take a network into account;
 
+ \medskip \label{avGroupNote}
+ \noindent \emph{Ego exclusion (\texttt{\_noEgo}) and non-centered (\texttt{\_nc}) variants.}
+ Each of the following six effects -- \texttt{avGroup}, \texttt{totGroup},
+ \texttt{indegAvGroup}, \texttt{indegTotGroup}, \texttt{outdegAvGroup}, and
+ \texttt{outdegTotGroup} -- has two further variants, which can also be combined
+ (e.g.\ \texttt{avGroup\_nc\_noEgo}).:
+ \begin{itemize}
+ \item \texttt{..\_noEgo}: ego is excluded from the group of actors $h$ that the statistic is
+ computed over, e.g.\ for \texttt{avGroup\_noEgo}. Ego's behavior is compared to
+ the rest of the group, not including ego's own value. This does not make much of
+ a difference if the (network) group size is relatively large. By default (no suffix), 
+ ego is  included among the actors $h$, as in the formulas given below.
+ \item \texttt{..\_nc}: the non-centered values of $Z$ are used in place of the values
+ centered around $m_Z$. Unlike the \texttt{\_nc} suffix elsewhere in this manual (e.g.\
+ \texttt{quad\_nc}), this also disables the $p$-recentering described below entirely:
+ $c_p$ is not applied, regardless of the value of $p$. This is because, for non-centered
+ values, $p$-recentering and the choice of representation are not independent adjustments;
+ supplying both would not have an unambiguous combined meaning.
+ \end{itemize}
+
  \item {\em group average} \texttt{(avGroup)}, defined by ego's value multiplied by the
  average of \underline{all} values $z_h$ for this period,  \\
  $s^{\rm beh}_{i\vit}(x, z) =  z_{i} \,( \overline {z} - c_p) $;\\
@@ -14915,13 +15007,22 @@ with the behavioral variable itself.
  close to the median of $Z$.
  (Note that the centering in a multi-group data set
  will affect the linear shape parameter.)
+ By default, ego is included among the actors $h$ summed over; for the
+ variant excluding ego from its own reference group
+ (\texttt{avGroup\_noEgo}), see the note abive for this effect family.
+ For using non-centered values of $Z$, with no $p$-recentering applied at
+ all, use \texttt{avGroup\_nc} instead -- see the note above.
 
  \item {\em group total} \texttt{(totGroup)}, defined by ego's value multiplied by the
 sum of \underline{all} values $z_h$ for this period,  \\
-$s^{\rm beh}_{i\vit}(x, z) =  z_{i} \left( \sum_{h} z_h - c_p \right) $;\\
+$s^{\rm beh}_{i\vit}(x, z) =  z_{i} \left( \sum_{h} z_h - n\, c_p \right) $;\\
 here $\sum_{h} z_h$ is the sum of the values $z_h$ for all actors $h$
-in the group, and $c_p$ is a centering constant depending on the internal effect
-parameter $p$, defined as for the \texttt{avGroup} effect above.
+in the group, $n$ is the number of actors in the group, and $c_p$ is a centering constant
+depending on the internal effect parameter $p$, defined as for the \texttt{avGroup} effect
+above. The factor $n$ keeps the recentering on the same scale as the sum: since $c_p$ is a
+per-actor (mean-scale) quantity, e.g. with $p$ close to the median of $Z$, it must be scaled up by
+group size $n$ to remain a meaningful adjustment to a group \emph{total} rather than a group
+\emph{average}.
 
  \item {\em constant effect}    \texttt{(constant)},\\
   an elementary effect for behavior,
@@ -15041,19 +15142,73 @@ The list of these effects is the following.
 
 
  \item
- {\em total popularity alter effect} \texttt{(popAlt)}, defined by the
- sum of in-degrees of the other actors $j$ to whom $i$ is tied,\\
+ {\em average popularity alter effect} \texttt{(totPopAlt)}, defined by the
+ sum of in-degree of the other actors $j$ to whom $i$ is tied,\\
  $s^{\rm beh}_{i\vit}(x, z) =   z_i \, \sum_j x_{ij} x_{+j}  $;\\
  this effect may be useful, e.g., as a control effect for the total
  similarity $\times$ popularity alter effect and in distance 2 influence effects;
+ for using no centering, work with the effect
+ \texttt{(totPopAlt\_nc)} instead;
 
   \item
- {\em total popularity alter effect} \texttt{(totPopAlt)}, defined by the
+ {\em total popularity alter effect} \texttt{(popAlt)}, defined by the
  average in-degrees of the other actors $j$ to whom $i$ is tied,\\
  $s^{\rm beh}_{i\vit}(x, z) =   z_i\,x_{i+}^{-1} \, \sum_j x_{ij} x_{+j}  $;\\
  (and 0 if $x_{i+} = 0$) ;\\
  this effect may be useful, e.g., as a control effect for the average
- similarity $\times$ popularity alter effect;
+ similarity $\times$ popularity alter effect; 
+ for using no centering, work with the effect
+ \texttt{(popAlt\_nc)} instead;
+
+ \item
+ {\em total activity alter effect} \texttt{(totActAlt)}, defined by the
+ sum of out-degrees of the other actors $j$ to whom $i$ is tied,\\
+ $s^{\rm beh}_{i\vit}(x, z) =   z_i \, \sum_j x_{ij} x_{j+}  $;\\
+ this effect may be useful, e.g., as a control effect for the total
+ alter at distance 2 influence effects; for using
+ no centering, work with the effect
+ \texttt{(totActAlt\_nc)} instead;
+
+  \item
+ {\em average acvtivity alter effect} \texttt{(actAlt)}, defined by the
+ average out-degrees of the other actors $j$ to whom $i$ is tied,\\
+ $s^{\rm beh}_{i\vit}(x, z) =   z_i\,x_{i+}^{-1} \, \sum_j x_{ij} x_{j+}  $;\\
+ (and 0 if $x_{i+} = 0$) ;\\
+ this effect may be useful, e.g., as a control effect for the average
+ alter at distance 2 influence effects; for using
+ no centering, work with the effect
+ \texttt{(actAlt\_nc)} instead;
+
+ \item two \emph{total GWDSP (geometrically weighted dyadwise shared partners)} effects:
+    {\em total GWDSPFF} \texttt{(totGwdspFF)} and
+    {\em total GWDSPFB} \texttt{(totGwdspFB)}.
+   They are defined by the geometrically weighted 
+   number of shared partners (two-paths $i \rightarrow j \rightarrow h$ for FF, 
+   shared in-partners $i \rightarrow j \leftarrow h$ for FB) linking $i$ to the other 
+   actors $h$,
+      \begin{equation}
+      s^{\rm beh}_{i\vit}(x, z, \alpha) \,=\,
+            z_{i} \,
+                  \sum_{h;\; h \neq i}^n
+                  e^{\alpha}\,\Big\{1\,-\,\big(1 - e^{-\alpha}\big)^{
+                        \sum_{j} x_{ij}x_{jh} }  \Big\}
+            \, \
+      \end{equation}
+      and
+      \begin{equation}
+      s^{\rm beh}_{i\vit}(x, z, \alpha) \,=\,
+            z_{i} \,
+                  \sum_{h;\; h \neq i}^n
+                  e^{\alpha}\,\Big\{1\,-\,\big(1-e^{-\alpha}\big)^{
+                        \sum_{j} x_{ij}x_{hj} }  \Big\}
+            \, \ ;
+      \end{equation}
+   These can be useful structural controls for the corresponding indirect influence
+   effects \texttt{totGwdspFFAlt} / \texttt{totGwdspFBAlt} below. Ego's behaviour 
+   weighted can depend on how structurally embedded ego is with diminishing returns
+   for a large number of paths two an indirect alter. For using no 
+   centering of $z_i$, work with the effect \texttt{(totGwdspFF\_nc)} 
+   respectively \texttt{(totGwdspFB\_nc)} instead;
 
  \item
  {\em total similarity  $\times$ popularity alter effect}
@@ -15061,7 +15216,6 @@ The list of these effects is the following.
  sum of centered similarity scores ${\rm sim}^z_{ij}$ between $i$
  and the other actors $j$ to whom he is tied, multiplied by their indegrees,\\
  $s^{\rm beh}_{i\vit}(x, z) =  \sum_j x_{ij} x_{+j} ({\rm sim}^z_{ij} - \widehat{{\rm sim}^z}) $;
-
 
  \item
  {\em total similarity  $\times$ popularity alter effect}
@@ -15311,9 +15465,9 @@ where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values in
  \texttt{(totAInAltDist2\_nc)} instead;
 
  \item two variations of the
-   \emph{GWDSP (geometrically weighted dyadwise shared partners)} alter effects:
-    {\em total GWDSP I -> K -> J alter} \texttt{(totGwdspFFAlt)} and
-    {\em total GWDSP I -> K <- J alter} \texttt{(totGwdspFBAlt)}.
+   \emph{GWDSP (geometrically weighted dyadwise shared partners) alter} effects:
+    {\em total GWDSPFF alter} \texttt{(totGwdspFFAlt)} and
+    {\em total GWDSPFB alter} \texttt{(totGwdspFBAlt)}.
    These are geometrically weighted versions of \texttt{totAltDist2} and
    \texttt{totInAltDist2}, respectively, penalizing additional paths between ego
    and his distance 2 alters defined by
@@ -15334,12 +15488,52 @@ where $\widehat{{\rm var}^z}$ is the variance of the observed behavior values in
                         \sum_{j=1} x_{ij}x_{hj} }  \Big\}
             \, \ ;
       \end{equation}
+in contrast to the next effect, this weighting scheme dampens structural path 
+redundancy to a single actor. For $\alpha \to 0$, it converges towards a pure
+social circle effect, where the number of two-paths
+connecting $i$ to his distance 2 alters  (dyadwise shared partners) is ignored 
+while each distance 2 alters behavior is counted once fully.
 for using no centering, work with the effect
 \texttt{(totGwdspFFAlt\_nc)} respectively
 \texttt{(totGwdspFBAlt\_nc)} instead;
 
-% the versions penalizing additional alters of distance 2's behavior
-% is not implemented yet
+\item Two variations of the
+   \emph{GWDIST2 (geometrically weighted distance 2) alter} effects:
+    {\em total GWDIST2 alter FF} \texttt{(totGwdist2FFAlt\_nc)} and
+    {\em total GWDIST2 alter FB} \texttt{(totGwdist2FBAlt\_nc)}.
+   In contrast to the GWDSP variants, these geometric weightings apply directly to the 
+   distance 2 neighborhood itself, penalizing the accumulation of additional distance 2 
+   alters' behavior exposed through the same direct intermediary. They are defined by
+      \begin{equation}
+      s^{\rm beh}_{i\vit}(x, z, \alpha) \,=\,
+            z_{i} \,
+                  \sum_{j=1}^n \, x_{ij}
+                  e^{\alpha}\,\Big\{1\,-\,\big(1 - e^{-\alpha}\big)^{
+                        \sum_{h=1;\; h \neq i} x_{jh} z_{h}}   \Big\}
+            \, \ ;
+      \end{equation}
+      and
+      \begin{equation}
+      s^{\rm beh}_{i\vit}(x, z, \alpha) \,=\,
+            z_{i} \,
+                  \sum_{j=1}^n \, x_{ij}
+                  e^{\alpha}\,\Big\{1\,-\,\big(1 - e^{-\alpha}\big)^{
+                        \sum_{h=1;\; h \neq i} x_{hj} z_{h}}   \Big\}
+            \, \;
+      \end{equation}
+while GWDSP dampens multiple paths to the same source, GWDIST2 models exposure 
+saturation via a single gateway. With strong weighting ($\alpha \to 0$), this effect 
+converges to a pure similarity effect, as only the presence of a behaviorally 
+active distance 2 alter via a direct neighbor matters, while the total volume 
+of such alters reached through that neighbor is discounted. These specific statistics 
+have their most natural count-like interpretation for binary behavior variables. 
+For non-negative valued behavior, the statistic remains coherent, but its interpretation 
+shifts from counting configuration multiplicity to aggregating behavioral intensity with 
+geometric decay. In symmetric networks, the FF variant \texttt{(totGwdist2FFAlt\_nc)} 
+represents a geometrically weighted structural equivalence influence effect. There is no 
+centered version of these GWDIST2 effects, as the weighting scheme requires non-negative 
+values for the behavior kernel $\sum_{h=1;\; h \neq i} x_{jh} z_{h}$ (or its incoming 
+equivalent).
 
  \item {\em average in-similarity effect at distance 2} \texttt{(avInSimDist2)},
  defined by  $i$'s average similarity to the incoming alter
@@ -15435,6 +15629,12 @@ in all but the final wave; \\
  because of collinearity, under the Method of Moments this cannot be estimated
  together with the average similarity $\times$ popularity alter effect;
 
+ \medskip
+ \noindent \emph{Ego exclusion and non-centered variants.} The following four 
+ effects are weighted versions of the group effects. The note about
+ alternative effect versions \texttt{\_noEgo} and \texttt{\_nc} (p.~\pageref{avGroupNote}) 
+ applies here as well.
+
  \item {\em indegree-weighted group average} \texttt{(indegAvGroup)}, defined
  by ego's value multiplied by the  indegree-weighted average of all values
  $z_h$ for this period,  \\
@@ -15447,9 +15647,27 @@ in all but the final wave; \\
  defined by ego's value multiplied by the indegree-weighted sum of all values
  $z_h$ for this period,  \\
  $s^{\rm beh}_{i\vit}(x, z) =  z_{i}
- \left( \sum_{h} x_{+h} z_{h} - c_p \right) $;\\
+ \left( \sum_{h} x_{+h} z_{h} - n\, c_p \right) $;\\
  here $x_{+h}$ is the indegree of actor $h$ in the specified network,
- and $c_p$ is a centering constant as for \texttt{totGroup}.
+ $n$ is the number of actors in the group, and $c_p$ is a centering constant
+ as for \texttt{avGroup}.
+
+ \item {\em outdegree-weighted group average} \texttt{(outdegAvGroup)}, defined
+ by ego's value multiplied by the outdegree-weighted average of all values
+ $z_h$ for this period,  \\
+ $s^{\rm beh}_{i\vit}(x, z) =  z_{i} \left( \frac{ \sum_{h} x_{h+} z_{h} }
+      {\sum_{h} x_{h+}  } - c_p \right) $;\\
+ here $x_{h+}$ is the outdegree of actor $h$ in the specified network, and
+ $c_p$ is a centering constant as for \texttt{avGroup}.
+
+ \item {\em outdegree-weighted group total} \texttt{(outdegTotGroup)},
+ defined by ego's value multiplied by the outdegree-weighted sum of all values
+ $z_h$ for this period,  \\
+ $s^{\rm beh}_{i\vit}(x, z) =  z_{i}
+ \left( \sum_{h} x_{h+} z_{h} - n\, c_p \right) $;\\
+ here $x_{h+}$ is the outdegree of actor $h$ in the specified network,
+ $n$ is the number of actors in the group, and $c_p$ is a centering constant
+ as for \texttt{avGroup}.
 
 \end{followenum}
 
@@ -15837,8 +16055,8 @@ denoted $v_j$), there are the following effects.
  this is similar to \texttt{avInAltDist2}, but now for covariate $V$
  instead of the behavior $Z$;
 
- \item {\em alter's distance-two incoming covariate total} effect on behavior $z$ \texttt{(totXInAltDist2)},
- defined by  $i$'s
+ \item {\em alter's distance-two incoming covariate total} effect on behavior $z$ 
+ \texttt{(totXInAltDist2)}, defined by  $i$'s
  behavior multiplied by the total of the incoming alter-totals on $V$ of his alters,
  excluding the contribution from a tie $i \rightarrow j$ (if any),\\
  $s^{\rm beh}_{i\vit}(x, z) = z_i \sum_j x_{ij}\, \sum_{h \neq i} x_{hj}\,v_h =
@@ -15846,8 +16064,8 @@ denoted $v_j$), there are the following effects.
  this is similar to \texttt{totInAltDist2}, but now for covariate $V$
  instead of the behavior $Z$;
 
- \item {\em average total incoming covariate alter effect at distance 2} \texttt{(avTXInAltDist2)},
- defined by  $i$'s
+ \item {\em average total incoming covariate alter effect at distance 2} 
+ \texttt{(avTXInAltDist2)}, defined by  $i$'s
  behavior multiplied by the average of the incoming alter-totals on $V$ of his alters,
  excluding the contribution from a tie $i \rightarrow j$ (if any),\\[0.3ex]
  $s^{\rm beh}_{i\vit}(x, z) =  z_i \big( \sum_j x_{ij}\,(x_{+j}- x_{ij}) \, \check v_j^{(-i)} \big)
@@ -15856,8 +16074,8 @@ denoted $v_j$), there are the following effects.
  this is similar to \texttt{avTInAltDist2}, but now for covariate $V$
  instead of the behavior $Z$;
 
- \item {\em total average incoming covariate alter effect at distance 2} \texttt{(totAXInAltDist2)},
- defined by  $i$'s
+ \item {\em total average incoming covariate alter effect at distance 2} 
+ \texttt{(totAXInAltDist2)}, defined by  $i$'s
  behavior multiplied by the total of the incoming alter-averages on $V$ of his alters,
  excluding the contribution from a tie $i \rightarrow j$ (if any), \\[0.3ex]
  $s^{\rm beh}_{i\vit}(x, z) =  z_i \big( \sum_j x_{ij}\, \check v_j^{(-i)} \big) $;\\[0.5ex]
@@ -15986,20 +16204,7 @@ It is then important how to define the zero point of the covariate!
   \breve w_h = \left\{\begin{array}{ll} \displaystyle
          \frac{\sum_h x_{hi}w_{hi}}{x_{+i}}  &  \text{ if } x_{+i} > 0     \\
          0                                &  \text{ if } x_{+i} = 0  .
-  \end{array}   \right.            \label{alt_avwa}
-\end{equation}
-      leading to the effect \\
-       $s^{\rm beh}_{i\vit}(x, z) = z_i \, \breve w_h $.\\
-
-\item \emph{in-alter's  average of dyadic covariate } effect on behavior $z$
- \texttt{(avWInAlt)},\\
-      defined as the product of $i$'s behavior $z_i$ and
-      $i$'s in-alters' dyadic covariate-average $\breve w_h$ as defined by
-\begin{equation}
-  \breve w_h = \left\{\begin{array}{ll} \displaystyle
-         \frac{\sum_h x_{hi}w_{ih}}{x_{+i}}  &  \text{ if } x_{+i} > 0     \\
-         0                                &  \text{ if } x_{+i} = 0  .
-  \end{array}   \right.            \label{alt_avwa}
+  \end{array}   \right.            \label{inalt_avwa}
 \end{equation}
       leading to the effect \\
        $s^{\rm beh}_{i\vit}(x, z) = z_i \, \breve w_h $.\\
@@ -16191,8 +16396,7 @@ reciprocated degrees.
    If $v_{h}$ is a behavioral variable, the non-centered value is used.
 % see DependentVariable::behaviorVariableRate and StatisticCalculator::calculateBehaviorRateStatistics
 
-
- \item[{\hspace*{-1ex}$\bigodot$}]
+\item[{\hspace*{-1ex}$\bigodot$}]
  For the analysis of diffusion of innovations,
   which is applicable if the behavior variable
   is a non-decreasing variable with values 0 and 1,
@@ -16290,13 +16494,39 @@ defined as 0.
 \[
       a_{i13}(x, z) = \sum_{j}
       \begin{cases}
-      1  & \text{if } x_{ij} \sum_{h} z_h  x_{hj} > 0 \\
+      1  & \text{if } x_{ij} \sum_{h \neq i} z_h  x_{hj} > 0 \\
       0 & \text{otherwise}
       \end{cases}
 \]
 This effect counts, for each alter $j$ connected to $i$, whether there is at
 least one other actor $h$ (with $z_h>0$) also connected to $j$. This is a
 version of penalizing many indirect alters.
+
+\item two \emph{GWDSP (geometrically weighted dyadwise shared partners) exposure 
+      at Distance 2} effects,
+{\em GWDSPFB exposure} (\verb|gwdspFBExposure|)  and
+{\em GWDSPFF exposure} (\verb|gwdspFFExposure|) :
+\[
+      a_{i14}(x, z) = \sum_{h \neq i} z_h \,
+            e^{\alpha}\Big\{1 - \big(1 - e^{-\alpha}\big)^{\sum_j x_{ij} x_{hj}}\Big\}
+\]
+the FF variant replaces $x_{hj}$ by $x_{jh}$. This is the geometrically weighted,
+diffusion-rate counterpart of \verb|totInExposureDist2|: additional shared
+partners to the same source $h$ are damped, so with strong weighting
+($\alpha \to 0$) each distance-2 source $h$ with $z_h>0$ counts once.
+
+\item two \emph{GWDIST2-weighted in-exposure} effects at distance 2,
+{\em GWDIST2 exposure FF} (\verb|gwdist2FBExposure|)  and
+{\em GWDIST2 exposure FB} (\verb|gwdist2FFExposure|):
+\[
+      a_{i15}(x, z) = \sum_j x_{ij} \,
+            e^{\alpha}\Big\{1 - \big(1 - e^{-\alpha}\big)^{\sum_{h \neq i} x_{hj} z_h}\Big\}
+\]
+with $x_{jh}$ in place of $x_{hj}$ for the FF variant. The weighting here sits on
+the behaviour accumulated behind each direct alter $j$ (exposure saturation
+through a single gateway): with strong weighting ($\alpha \to 0$) it counts the
+direct alters $j$ leading to at least one adopter, a flexible variant of
+\verb|anyInExposureDist2|.
 
 \end{enumerate}
 
@@ -18435,6 +18665,40 @@ Changes in RSiena:
     \end{itemize}
 \end{itemize}
 \fi
+
+
+\item 2026-07-12 GitHub, package version 1.6.11.
+
+Changes in RSiena:
+\begin{itemize}
+  \item Effects:
+    \begin{itemize}
+  \item New \texttt{activity alter} effect and non-centered variant
+    of \texttt{popularity alter}.
+  \item New alter-wise geometrically weighted distance-2 behavior effect
+    \texttt{totGwInAltDist2\_nc}.
+  \item New \texttt{totGwdspFF}/\texttt{totGwdspFB} (+ \texttt{\_nc}) effects,
+    network-only structural controls for \texttt{totGwdspFFAlt}/\texttt{totGwdspFBAlt}.
+  \item New covariate \texttt{gwdspFFX}/\texttt{gwdspFBX} (+ \texttt{\_nc})
+    and \texttt{gwdist2XFF\_nc}/\texttt{gwdist2XFB\_nc} effects, building blocks
+    for weighted indirect homophily.
+  \item New diffusion-rate effects \texttt{gwdspFFExposure}/\texttt{gwdspFBExposure}
+    and \texttt{gwdist2FFExposure}/\texttt{gwdist2FBExposure}.
+  \item Group-level effects (\texttt{avGroup}/\texttt{totGroup} family) corrected
+    and expanded.
+  \item Added non-centered (\texttt{\_nc}) variants of \texttt{altX}, \texttt{egoX},
+    \texttt{egoXaltX}, \texttt{totInDist2}, \texttt{gwInAltDist2} as lower-order
+    controls; covariate effects now more consistently respect non-centering.
+    \end{itemize}
+  \item Coding:
+    \begin{itemize}
+  \item \texttt{src/sources.list} restructured to a multi-line, more easily
+    editable format, with an automated update script; \texttt{configure}
+    updated accordingly, avoiding a build-time dependency on shell globbing.
+  \item Several non-centered effect classes consolidated into an \texttt{nc}
+    constructor flag on the corresponding main effect class.
+    \end{itemize}
+\end{itemize}
 
 
 \item 2026-06-10 GitHub, package version 1.6.9.

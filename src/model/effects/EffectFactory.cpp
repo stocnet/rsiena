@@ -59,6 +59,8 @@
 #include "model/effects/generic/DoubleOutActFunction.h"
 #include "model/effects/generic/CovariateDistance2AlterNetworkFunction.h"
 #include "model/effects/generic/CovariateDistance2InAlterNetworkFunction.h"
+#include "model/effects/generic/GwCovariateInAlterFunction.h"
+#include "model/effects/generic/GwCovariateAlterFunction.h"
 #include "model/effects/generic/CovariateDistance2SimilarityNetworkFunction.h"
 #include "model/effects/generic/CovariateDistance2EgoAltSameNetworkFunction.h"
 #include "model/effects/generic/CovariateDistance2EgoAltSimNetworkFunction.h"
@@ -630,19 +632,35 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "altX")
 	{
-		pEffect = new CovariateAlterEffect(pEffectInfo, false, false, false);
+		pEffect = new CovariateAlterEffect(pEffectInfo, false, false, false, false);
+	}
+	else if (effectName == "altX_nc")
+	{
+		pEffect = new CovariateAlterEffect(pEffectInfo, false, false, false, true);
 	}
 	else if (effectName == "altSqX")
 	{
-		pEffect = new CovariateAlterEffect(pEffectInfo, false, false, true);
+		pEffect = new CovariateAlterEffect(pEffectInfo, false, false, true, false);
+	}
+	else if (effectName == "altSqX")
+	{
+		pEffect = new CovariateAlterEffect(pEffectInfo, false, false, true, true);
 	}
 	else if (effectName == "altLThresholdX")
 	{
-		pEffect = new CovariateAlterEffect(pEffectInfo, true, false, false);
+		pEffect = new CovariateAlterEffect(pEffectInfo, true, false, false, false);
+	}
+	else if (effectName == "altLThresholdX_nc")
+	{
+		pEffect = new CovariateAlterEffect(pEffectInfo, true, false, false, true);
 	}
 	else if (effectName == "altRThresholdX")
 	{
-		pEffect = new CovariateAlterEffect(pEffectInfo, false, true, false);
+		pEffect = new CovariateAlterEffect(pEffectInfo, false, true, false, false);
+	}
+	else if (effectName == "altRThresholdX_nc")
+	{
+		pEffect = new CovariateAlterEffect(pEffectInfo, false, true, false, true);
 	}
 	else if (effectName == "outXMore")
 	{
@@ -650,7 +668,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "egoX")
 	{
-		pEffect = new CovariateEgoEffect(pEffectInfo, false, false);
+		pEffect = new CovariateEgoEffect(pEffectInfo, false, false, false);
+	}
+    else if (effectName == "egoX_nc")
+	{
+		pEffect = new CovariateEgoEffect(pEffectInfo, false, false, true);
 	}
 	else if (effectName == "egoSqX")
 	{
@@ -670,11 +692,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "egoLThresholdX")
 	{
-		pEffect = new CovariateEgoEffect(pEffectInfo, true, false);
+		pEffect = new CovariateEgoEffect(pEffectInfo, true, false, false);
 	}
 	else if (effectName == "egoRThresholdX")
 	{
-		pEffect = new CovariateEgoEffect(pEffectInfo, false, true);
+		pEffect = new CovariateEgoEffect(pEffectInfo, false, true, false);
 	}
 	else if (effectName == "degAbsDiffX")
 	{
@@ -908,11 +930,15 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "egoXaltX")
 	{
-		pEffect = new CovariateEgoAlterEffect(pEffectInfo, false);
+		pEffect = new CovariateEgoAlterEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "egoXaltX_nc")
+	{
+		pEffect = new CovariateEgoAlterEffect(pEffectInfo, false, true);
 	}
 	else if (effectName == "egoXaltXRecip")
 	{
-		pEffect = new CovariateEgoAlterEffect(pEffectInfo, true);
+		pEffect = new CovariateEgoAlterEffect(pEffectInfo, true, false);
 	}
 	else if (effectName == "IndTies")
 	{
@@ -2094,11 +2120,35 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "indegAvGroup")
 	{
-		pEffect = new IndegreeWeightedAverageGroupEffect(pEffectInfo, true);
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, false, false, true);
+	}
+	else if (effectName == "indegAvGroup_noEgo")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, false, false, false);
+	}
+	else if (effectName == "indegAvGroup_nc")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, false, true, true);
+	}
+	else if (effectName == "indegAvGroup_nc_noEgo")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, false, true, false);
 	}
 	else if (effectName == "indegTotGroup")
 	{
-		pEffect = new IndegreeWeightedAverageGroupEffect(pEffectInfo, false);
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, false, false, true);
+	}
+	else if (effectName == "indegTotGroup_noEgo")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, false, false, false);
+	}
+	else if (effectName == "indegTotGroup_nc")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, false, true, true);
+	}
+	else if (effectName == "indegTotGroup_nc_noEgo")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, false, true, false);
 	}
 	else if (effectName == "indeg")
 	{
@@ -2118,6 +2168,38 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 			pEffect = new IndegreeContinuousEffect(pEffectInfo, true);
 		}
 	}
+	else if (effectName == "outdegAvGroup")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, true, false, true);
+	}
+	else if (effectName == "outdegAvGroup_noEgo")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, true, false, false);
+	}
+	else if (effectName == "outdegAvGroup_nc")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, true, true, true);
+	}
+	else if (effectName == "outdegAvGroup_nc_noEgo")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, true, true, true, false);
+	}
+	else if (effectName == "outdegTotGroup")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, true, false, true);
+	}
+	else if (effectName == "outdegTotGroup_noEgo")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, true, false, false);
+	}
+	else if (effectName == "outdegTotGroup_nc")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, true, true, true);
+	}
+	else if (effectName == "outdegTotGroup_nc_noEgo")
+	{
+		pEffect = new DegreeWeightedAverageGroupEffect(pEffectInfo, false, true, true, false);
+	}	
 	else if (effectName == "outdeg")
 	{
 		if (pContinuousData)
@@ -2126,7 +2208,7 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		}
 		else
 		{
-		pEffect = new OutdegreeEffect(pEffectInfo);
+			pEffect = new OutdegreeEffect(pEffectInfo);
 		}
 	}
 	else if (effectName == "outdegSqrt")
@@ -2297,11 +2379,51 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "popAlt")
 	{
-		pEffect = new PopularityAlterEffect(pEffectInfo, true);
+		pEffect = new PopularityAlterEffect(pEffectInfo, true, false);
+	}
+	else if (effectName == "popAlt_nc")
+	{
+		pEffect = new PopularityAlterEffect(pEffectInfo, true, true);
 	}
 	else if (effectName == "totPopAlt")
 	{
-		pEffect = new PopularityAlterEffect(pEffectInfo, false);
+		pEffect = new PopularityAlterEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "totPopAlt_nc")
+	{
+		pEffect = new PopularityAlterEffect(pEffectInfo, false, true);
+	}
+	else if (effectName == "actAlt")
+	{
+		pEffect = new ActivityAlterEffect(pEffectInfo, true, false);
+	}
+	else if (effectName == "actAlt_nc")
+	{
+		pEffect = new ActivityAlterEffect(pEffectInfo, true, true);
+	}
+	else if (effectName == "totActAlt")
+	{
+		pEffect = new ActivityAlterEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "totActAlt_nc")
+	{
+		pEffect = new ActivityAlterEffect(pEffectInfo, false, true);
+	}
+	else if (effectName == "totGwdspFF")
+	{
+		pEffect = new TotalGwdspEffect(pEffectInfo, true, false);
+	}
+	else if (effectName == "totGwdspFF_nc")
+	{
+		pEffect = new TotalGwdspEffect(pEffectInfo, true, true);
+	}
+	else if (effectName == "totGwdspFB")
+	{
+		pEffect = new TotalGwdspEffect(pEffectInfo, false, false);
+	}
+	else if (effectName == "totGwdspFB_nc")
+	{
+		pEffect = new TotalGwdspEffect(pEffectInfo, false, true);
 	}
 	else if (effectName == "avSimRecPop")
 	{
@@ -2323,21 +2445,21 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
     {
         pEffect = new VarianceAlterSimilarityEffect(pEffectInfo, true, false, false);
 	}
-		else if (effectName == "totGwdspFFAlt")
+	else if (effectName == "totGwdspFFAlt")
 	{
-		pEffect = new TotalGwdspAlterEffect(pEffectInfo, true);
+		pEffect = new TotalGwdspAlterEffect(pEffectInfo, true, false);
 	}
 	else if (effectName == "totGwdspFBAlt")
 	{
-		pEffect = new TotalGwdspAlterEffect(pEffectInfo, false);
+		pEffect = new TotalGwdspAlterEffect(pEffectInfo, false, false);
 	}
 	else if (effectName == "totGwdspFFAlt_nc")
 	{
-		pEffect = new TotalGwdspAlterNCEffect(pEffectInfo, true);
+		pEffect = new TotalGwdspAlterEffect(pEffectInfo, true, true);
 	}
 	else if (effectName == "totGwdspFBAlt_nc")
 	{
-		pEffect = new TotalGwdspAlterNCEffect(pEffectInfo, false);
+		pEffect = new TotalGwdspAlterEffect(pEffectInfo, false, true);
 	}
 	else if (effectName == "avAlt")
 	{
@@ -2360,11 +2482,35 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "avGroup")
 	{
-		pEffect = new AverageGroupEffect(pEffectInfo, true);
+		pEffect = new AverageGroupEffect(pEffectInfo, true, false, true);
 	}
-		else if (effectName == "totGroup")
+	else if (effectName == "avGroup_noEgo")
 	{
-		pEffect = new AverageGroupEffect(pEffectInfo, false);
+		pEffect = new AverageGroupEffect(pEffectInfo, true, false, false);
+	}
+	else if (effectName == "avGroup_nc")
+	{
+		pEffect = new AverageGroupEffect(pEffectInfo, true, true, true);
+	}
+	else if (effectName == "avGroup_nc_noEgo")
+	{
+		pEffect = new AverageGroupEffect(pEffectInfo, true, true, false);
+	}
+	else if (effectName == "totGroup")
+	{
+		pEffect = new AverageGroupEffect(pEffectInfo, false, false, true);
+	}
+	else if (effectName == "totGroup_noEgo")
+	{
+		pEffect = new AverageGroupEffect(pEffectInfo, false, false, false);
+	}
+	else if (effectName == "totGroup_nc")
+	{
+		pEffect = new AverageGroupEffect(pEffectInfo, false, true, true);
+	}
+	else if (effectName == "totGroup_nc_noEgo")
+	{
+		pEffect = new AverageGroupEffect(pEffectInfo, false, true, false);
 	}
 	else if (effectName == "totAlt")
 	{
@@ -2450,35 +2596,43 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	}
 	else if (effectName == "avInAltDist2")
 	{
-		pEffect = new AverageAlterInDist2Effect(pEffectInfo, true, true);
+		pEffect = new AverageAlterInDist2Effect(pEffectInfo, true, true, false);
 	}
 	else if (effectName == "totInAltDist2")
 	{
-		pEffect = new AverageAlterInDist2Effect(pEffectInfo, false, false);
+		pEffect = new AverageAlterInDist2Effect(pEffectInfo, false, false, false);
 	}
 	else if (effectName == "avTInAltDist2")
 	{
-		pEffect = new AverageAlterInDist2Effect(pEffectInfo, true, false);
+		pEffect = new AverageAlterInDist2Effect(pEffectInfo, true, false, false);
 	}
 	else if (effectName == "totAInAltDist2")
 	{
-		pEffect = new AverageAlterInDist2Effect(pEffectInfo, false, true);
+		pEffect = new AverageAlterInDist2Effect(pEffectInfo, false, true, false);
 	}
 	else if (effectName == "avInAltDist2_nc")
 	{
-		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, true, true);
+		pEffect = new AverageAlterInDist2Effect(pEffectInfo, true, true, true);
 	}
 	else if (effectName == "totInAltDist2_nc")
 	{
-		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, false, false);
+		pEffect = new AverageAlterInDist2Effect(pEffectInfo, false, false, true);
 	}
 	else if (effectName == "avTInAltDist2_nc")
 	{
-		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, true, false);
+		pEffect = new AverageAlterInDist2Effect(pEffectInfo, true, false, true);
 	}
 	else if (effectName == "totAInAltDist2_nc")
 	{
-		pEffect = new AverageAlterInDist2NCEffect(pEffectInfo, false, true);
+		pEffect = new AverageAlterInDist2Effect(pEffectInfo, false, true, true);
+	}
+	else if (effectName == "totGwdist2FBAlt_nc")
+	{
+		pEffect = new TotalGwInAltDist2NCEffect(pEffectInfo, false);
+	}
+	else if (effectName == "totGwdist2FFAlt_nc")
+	{
+		pEffect = new TotalGwInAltDist2NCEffect(pEffectInfo, true);
 	}
     else if (effectName == "varAlt")
     {
@@ -2871,6 +3025,57 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}
+	else if (effectName == "totInDist2_nc")
+	{
+		string networkName = pEffectInfo->variableName();
+		string covariateName = pEffectInfo->interactionName1();
+		AlterFunction * pChangeFunction =
+			new CovariateDistance2InAlterNetworkFunction(networkName,
+				covariateName, false, true, true);
+		AlterFunction * pStatisticFunction =
+			new CovariateDistance2InAlterNetworkFunction(networkName,
+				covariateName, true, true, true);
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			pChangeFunction, pStatisticFunction);
+	}
+	else if (effectName == "gwdist2XFB_nc")
+	{
+		string networkName = pEffectInfo->variableName();
+		string covariateName = pEffectInfo->interactionName1();
+		double parameter = pEffectInfo->internalEffectParameter();
+		AlterFunction * pChangeFunction =
+			new GwCovariateInAlterFunction(networkName, covariateName, false, parameter);
+		AlterFunction * pStatisticFunction =
+			new GwCovariateInAlterFunction(networkName, covariateName, true, parameter);
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			pChangeFunction, pStatisticFunction);
+	}
+	else if (effectName == "gwdist2XFF_nc")
+	{
+		string networkName = pEffectInfo->variableName();
+		string covariateName = pEffectInfo->interactionName1();
+		double parameter = pEffectInfo->internalEffectParameter();
+		AlterFunction * pChangeFunction =
+			new GwCovariateAlterFunction(networkName, covariateName, false, parameter);
+		AlterFunction * pStatisticFunction =
+			new GwCovariateAlterFunction(networkName, covariateName, true, parameter);
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			pChangeFunction, pStatisticFunction);
+	}
+	else if (effectName == "gwdspFBX" || effectName == "gwdspFBX_nc")
+	{
+		EgocentricConfigurationTable * (NetworkCache::*mytable)() const =
+			&NetworkCache::pInStarTable;
+		pEffect = new CovariateGwdspEffect(pEffectInfo, mytable, false,
+			effectName == "gwdspFBX_nc");
+	}
+	else if (effectName == "gwdspFFX" || effectName == "gwdspFFX_nc")
+	{
+		EgocentricConfigurationTable * (NetworkCache::*mytable)() const =
+			&NetworkCache::pTwoPathTable;
+		pEffect = new CovariateGwdspEffect(pEffectInfo, mytable, true,
+			effectName == "gwdspFFX_nc");
+	}
 	else if (effectName == "altDist2W")
 	{
 		string networkName = pEffectInfo->interactionName1();
@@ -2896,6 +3101,20 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 		AlterFunction * pStatisticFunction =
 			new CovariateDistance2AlterNetworkFunction(networkName,
 				covariateName, parameter, true, true);
+		pEffect = new GenericNetworkEffect(pEffectInfo,
+			pChangeFunction, pStatisticFunction);
+	}
+	else if (effectName == "totDist2_nc")
+	{
+		string networkName = pEffectInfo->interactionName1();
+		string covariateName = pEffectInfo->interactionName2();
+		double parameter = pEffectInfo->internalEffectParameter();
+		AlterFunction * pChangeFunction =
+			new CovariateDistance2AlterNetworkFunction(networkName,
+				covariateName, parameter, false, true, true);
+		AlterFunction * pStatisticFunction =
+			new CovariateDistance2AlterNetworkFunction(networkName,
+				covariateName, parameter, true, true, true);
 		pEffect = new GenericNetworkEffect(pEffectInfo,
 			pChangeFunction, pStatisticFunction);
 	}

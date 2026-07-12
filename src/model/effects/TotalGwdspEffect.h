@@ -3,14 +3,14 @@
  *
  * Web: http://www.stats.ox.ac.uk/~snijders/siena/
  *
- * File: TotalGwdspAlterNCEffect.h
+ * File: TotalGwdspEffect.h
  *
- * Description: This file contains the declaration of the class GwdspEffect.
+ * Description: This file contains the declaration of the class TotalGwdspEffect.
  *
  *****************************************************************************/
 
-#ifndef TOTALGWDSPALTERNCEFFECT_H_
-#define TOTALGWDSPALTERNCEFFECT_H_
+#ifndef TOTALGWDSPEFFECT_H_
+#define TOTALGWDSPEFFECT_H_
 
 #include "NetworkDependentBehaviorEffect.h"
 #include <vector>
@@ -25,10 +25,10 @@ class NetworkCache;
 /**
  * This class defines the total geometrically weighted alter effect.
  */
-class TotalGwdspAlterNCEffect : public NetworkDependentBehaviorEffect
+class TotalGwdspEffect : public NetworkDependentBehaviorEffect
 {
 public:
-	TotalGwdspAlterNCEffect(const EffectInfo * pEffectInfo, bool forward);
+	TotalGwdspEffect(const EffectInfo * pEffectInfo, bool forward, bool nc);
 	virtual void initialize(const Data * pData, State * pState,	int period,
 			Cache * pCache);
 	// do we need a deallocator?
@@ -44,13 +44,16 @@ public:
 private:	
 	// NetworkCache * lpNetworkCache;
 	// ConfigurationTable * (NetworkCache::*lpTable)() const;
-	double linternalEffectParameter {};
+	double lparameter {};
 	std::vector<double> lcumulativeWeight;
+	std::vector<int> lTwoPathCount;
+	std::vector<int> lTouched;
 	double lforward {};
 	double lweight {};
 	double lexpmweight {};
 	double lexpfactor {};
 	ConfigurationTable *lpInitialisedTable;
+	bool lnc {};
 };
 
 // ----------------------------------------------------------------------------
@@ -60,11 +63,11 @@ private:
 // should not be necessary
 
 
-// NetworkCache * TotalGwdspAlterNCEffect::pNetworkCache() const
+// NetworkCache * TotalGwdspffect::pNetworkCache() const
 // {
 // 	return this->lpNetworkCache;
 // }
 
 }
 
-#endif /*TOTALGWDSPALTERNCEFFECT_H_*/
+#endif /*TOTALGWDSPEFFECT_H_*/

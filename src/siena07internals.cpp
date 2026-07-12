@@ -977,6 +977,8 @@ void setupConstantCovariateGroup(SEXP COCOVARGROUP, Data *pData)
 		PROTECT(cn = Rf_install("centered"));
 		SEXP ans = Rf_getAttrib(VECTOR_ELT(COCOVARGROUP, constantCovariate), cn);
 		bool centered = LOGICAL(ans)[0];
+		pConstantCovariate->obsmean(REAL(obsmean)[0]);
+		pConstantCovariate->centered(centered);
 		if (centered)
 		{
 			pConstantCovariate->mean(0);
@@ -1131,6 +1133,8 @@ void setupChangingCovariateGroup(SEXP VARCOVARGROUP, Data *pData)
 		PROTECT(cn = Rf_install("centered"));
 		SEXP ans = Rf_getAttrib(VECTOR_ELT(VARCOVARGROUP, changingCovariate), cn);
 		bool centered = LOGICAL(ans)[0];
+		pChangingCovariate->obsmean(REAL(obsmean)[0]);
+		pChangingCovariate->centered(centered);
 		if (centered)
 		{
 			pChangingCovariate->mean(0);
@@ -1989,7 +1993,11 @@ void getStatistics(SEXP EFFECTSLIST,
 								strcmp(effectName, "anyInExposureDist2") == 0 ||
 								strcmp(effectName, "totInExposureDist2") == 0 ||
 								strcmp(effectName, "avTinExposureDist2") == 0 ||
-								strcmp(effectName, "totAInExposureDist2") == 0)
+								strcmp(effectName, "totAInExposureDist2") == 0 ||
+								strcmp(effectName, "gwdspFBExposure") == 0 ||
+								strcmp(effectName, "gwdspFFExposure") == 0 ||
+								strcmp(effectName, "gwdist2FBExposure") == 0 ||
+								strcmp(effectName, "gwdist2FFExposure") == 0)
 						{
 							score = pEpochSimulation->score(pEffectInfo);
 						}

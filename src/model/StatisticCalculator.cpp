@@ -50,6 +50,8 @@
 #include "model/effects/InfectEffect.h"
 #include "model/effects/Distance2ExposureEffect.h"
 #include "model/effects/SusceptibilityEffect.h"
+#include "model/effects/GwDist2ExposureEffect.h"
+#include "model/effects/GwdspExposureEffect.h"
 
 using namespace std;
 
@@ -1624,6 +1626,16 @@ void StatisticCalculator::calculateBehaviorRateStatistics(
 					effectName == "totAInExposureDist2")
 				{
 					pEffect = new Distance2ExposureEffect(pEffectInfo);
+				}
+				else if(effectName == "gwdist2FBExposure" ||
+					effectName == "gwdist2FFExposure")
+				{
+					pEffect = new GwDist2ExposureEffect(pEffectInfo);
+				}
+				else if(effectName == "gwdspFBExposure" ||
+					effectName == "gwdspFFExposure")
+				{
+					pEffect = new GwdspExposureEffect(pEffectInfo);
 				}
 				else
 				{

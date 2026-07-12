@@ -24,7 +24,7 @@ namespace siena
  */
 CovariateAlterEffect::CovariateAlterEffect(const EffectInfo * pEffectInfo,
 		const bool leftThresholded, const bool rightThresholded,
-		const bool squared) :
+		const bool squared, const bool nc) :
 		CovariateDependentNetworkEffect(pEffectInfo)
 {
 	this->lleftThresholded = leftThresholded;
@@ -40,6 +40,7 @@ CovariateAlterEffect::CovariateAlterEffect(const EffectInfo * pEffectInfo,
 		this->lthreshold -= 1e-12;
 	}
 	this->lsquared = squared;
+	this->lnc = nc;
 }
 
 
@@ -49,10 +50,11 @@ CovariateAlterEffect::CovariateAlterEffect(const EffectInfo * pEffectInfo,
 double CovariateAlterEffect::calculateContribution(int alter) const
 {
 	double change = 0;
+	double alterValue = this->resolvedValue(alter, this->lnc);
 
 	if (this->lleftThresholded)
 	{
-		if (this->value(alter) <= this->lthreshold)
+		if (alterValue <= this->lthreshold)
 		{
 			change = 1;
 		}
@@ -61,14 +63,14 @@ double CovariateAlterEffect::calculateContribution(int alter) const
 	{
 		if (this->lrightThresholded)
 		{
-			if (this->value(alter) >= this->lthreshold)
+			if (alterValue >= this->lthreshold)
 			{
 				change = 1;
 			}
 		}
 		else
 		{
-			change = this->value(alter);
+			change = alterValue;
 			if (this->lsquared)
 			{
 				change *= change;

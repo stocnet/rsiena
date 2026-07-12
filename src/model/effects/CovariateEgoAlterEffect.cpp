@@ -22,14 +22,16 @@ namespace siena
  * Constructor.
  * @param[in] pEffectInfo the effect descriptor
  * @param[in] reciprocal indicates if only reciprocal ties have to be
+ * @param[in] nc indicates if the non-centered version of the effect is requested
  * considered
  */
 CovariateEgoAlterEffect::CovariateEgoAlterEffect(
 	const EffectInfo * pEffectInfo,
-	bool reciprocal) :
+	bool reciprocal, bool nc) :
 		CovariateDependentNetworkEffect(pEffectInfo)
 {
 	this->lreciprocal = reciprocal;
+	this->lnc = nc;
 }
 
 
@@ -42,7 +44,9 @@ double CovariateEgoAlterEffect::calculateContribution(int alter) const
 
 	if (!this->lreciprocal || this->inTieExists(alter))
 	{
-		change = this->value(this->ego()) * this->value(alter);
+		double egoValue = this->resolvedValue(this->ego(), this->lnc);
+		double alterValue = this->resolvedValue(alter, this->lnc);
+		change = egoValue * alterValue;
 	}
 
 	return change;
@@ -61,7 +65,9 @@ double CovariateEgoAlterEffect::tieStatistic(int alter)
 	if (!this->missing(this->ego()) && !this->missing(alter) &&
 		(!this->lreciprocal || this->inTieExists(alter)))
 	{
-		statistic = this->value(this->ego()) * this->value(alter);
+		double egoValue = this->resolvedValue(this->ego(), this->lnc);
+		double alterValue = this->resolvedValue(alter, this->lnc);
+		statistic = egoValue * alterValue;
 	}
 
 	return statistic;

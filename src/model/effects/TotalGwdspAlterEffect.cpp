@@ -13,6 +13,7 @@
 #include <cmath>
 #include "TotalGwdspAlterEffect.h"
 #include "network/Network.h"
+#include "network/IncidentTieIterator.h"
 #include "model/State.h"
 #include "model/tables/Cache.h"
 #include "model/tables/NetworkCache.h"
@@ -35,20 +36,19 @@ namespace siena
 /**
  * Constructor.
  */
-TotalGwdspAlterEffect::TotalGwdspAlterEffect(const EffectInfo * pEffectInfo, bool forward) :
+TotalGwdspAlterEffect::TotalGwdspAlterEffect(const EffectInfo * pEffectInfo, bool forward, bool nc) :
 	NetworkDependentBehaviorEffect(pEffectInfo)
 {
-	this->linternalEffectParameter = pEffectInfo->internalEffectParameter();
-	this->lweight = -0.01 * this->linternalEffectParameter;
+	this->lparameter = pEffectInfo->internalEffectParameter();
+	this->lweight = -0.01 * this->lparameter;
 	this->lexpmweight = exp(-this->lweight);
 	this->lexpfactor = (1 - exp(this->lweight));
 	this->lforward = forward;
-	if (this->linternalEffectParameter < 0)
+	if (this->lparameter < 0)
 	{
 		throw runtime_error("Gwdsp must have nonnegative internal effect parameter");
 	}
-//	this->lpNetwork = 0;
-//	this->lpNetworkCache = 0;
+	this->lnc = nc;
 }
 
 
@@ -77,6 +77,9 @@ void TotalGwdspAlterEffect::initialize(const Data * pData,
 		pow *= this->lexpfactor;
 		this->lcumulativeWeight[i] = this->lexpmweight * (1 - pow);
 	}
+
+	this->lTwoPathCount.assign(this->pNetwork()->n(), 0);
+	this->lTouched.clear();
 }
 
 /**
@@ -90,9 +93,6 @@ double TotalGwdspAlterEffect::calculateChangeContribution(int actor,
 	
 	if (pNetwork->outDegree(actor) > 0) 
 	{
-		// The formula for the effect:
-		// tbd
-
 		this->lpInitialisedTable = 0;
 
 		if (lforward)
@@ -101,7 +101,6 @@ double TotalGwdspAlterEffect::calculateChangeContribution(int actor,
 					this->lpInitialisedTable = this->pInStarTable();
 
 		double sumAlterValue = 0;
-		// double denom = 0;
 		for (int j = 0; j < this->n(); j++) //inefficient?
 		{
 			double alterValue = 0;
@@ -112,24 +111,12 @@ double TotalGwdspAlterEffect::calculateChangeContribution(int actor,
 					twoc = this->lpInitialisedTable->get(j);
 				else 
 					twoc = this->lpInitialisedTable->get(j);
-				alterValue = this->centeredValue(j) * this->lcumulativeWeight[twoc];
-				// int tieValue =  this->pNetwork()->tieValue(actor, j);
-				// if (((pNetwork->inDegree(j) - tieValue)> 0) && (this->ldivide2))
-				// {
-				// 	alterValue /= (pNetwork->inDegree(j) - tieValue);
-				// }
+				alterValue = this->resolvedValue(j, this->lnc) *
+						this->lcumulativeWeight[twoc];
 				sumAlterValue += alterValue;
 			}
 		}
 		contribution = difference * sumAlterValue;
-		// if (denom != 0)
-		// {
-		// 	contribution /= denom; //what happens if denom == 0 but sumaAlterValue != 0 ?
-		// }
-	// 	if (this->ldivide1)
-	// 	{
-	// 		contribution /= pNetwork->outDegree(actor);
-	// 	}
 	}
 	return contribution;
 }
@@ -140,22 +127,33 @@ double TotalGwdspAlterEffect::calculateChangeContribution(int actor,
  */
 double TotalGwdspAlterEffect::egoStatistic(int ego, double * currentValues)
 {
-	double statistic = 0;
 	const Network * pNetwork = this->pNetwork();
-	for (int j = 0; j < this->pNetwork()->n(); j++) // was m() until and including 1.3.11.
+	// Scatter over ego's gateways h (out-ties) to accumulate pathCount(ego, j) for
+	// each focal distance-2 actor j (FF: out-ties of h; FB: in-ties of h).
+	for (IncidentTieIterator iterH = pNetwork->outTies(ego); iterH.valid(); iterH.next())
 	{
-		if (j != ego)
-		{	
-			int pathCount = 0;
-			if (this->lforward) // tables can not be used here because ego is not preprocessed?
-				pathCount = pNetwork->twoPathCount(ego, j);
-			else
-				pathCount = pNetwork->inTwoStarCount(ego, j);
-			statistic += (currentValues[j]) *
-					this->lcumulativeWeight[pathCount];
+		int h = iterH.actor();
+		IncidentTieIterator iterJ = this->lforward ?
+			pNetwork->outTies(h) : pNetwork->inTies(h);
+		for (; iterJ.valid(); iterJ.next())
+		{
+			int j = iterJ.actor();
+			if (j == ego) continue;
+			if (this->lTwoPathCount[j] == 0) this->lTouched.push_back(j);
+			this->lTwoPathCount[j]++;
 		}
 	}
-	statistic *= (currentValues[ego]);
+	double statistic = 0;
+	for (int j : this->lTouched)
+	{
+		statistic += (this->lnc ? currentValues[j] + this->overallCenterMean() :
+								  currentValues[j]) *
+				this->lcumulativeWeight[this->lTwoPathCount[j]];
+		this->lTwoPathCount[j] = 0;
+	}
+	this->lTouched.clear();
+	statistic *= this->lnc ?  currentValues[ego] + this->overallCenterMean() :
+							  currentValues[ego];
 
 	return statistic;
 }

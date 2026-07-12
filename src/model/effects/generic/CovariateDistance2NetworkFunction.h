@@ -21,7 +21,7 @@ class CovariateDistance2NetworkFunction: public CovariateNetworkAlterFunction
 {
 public:
 	CovariateDistance2NetworkFunction(std::string networkName, std::string covariateName,
-						bool excludeMissing, bool outgoing);
+						bool excludeMissing, bool outgoing, bool nc = false);
 	virtual ~CovariateDistance2NetworkFunction();
 	virtual void initialize(const Data * pData,
 		State * pState,
@@ -41,9 +41,15 @@ protected:
 	double varOutAvSimilarity(int i, int j) const;
 	double varInAvSimilarity(int i, int j) const;
 
+	// Whether _nc variants use raw (non-centered) covariate values.
+	// Single source of truth for the distance-2 family; read by derived
+	// alter/in-alter functions.
+	inline bool nc() const;
+
 private:
 	bool lexcludeMissing {};
 	bool loutgoing {};
+	bool lnc {};
 	double * laverageAlterValues {};
 	double * ltotalAlterValues {};
 	bool * laverageAlterMissing {};
@@ -52,6 +58,18 @@ private:
 	bool * laverageInAlterMissing {};
 
 };
+
+// ----------------------------------------------------------------------------
+// Section: Inline methods
+// ----------------------------------------------------------------------------
+
+/**
+ * Returns whether _nc variants use raw (non-centered) covariate values.
+ */
+bool CovariateDistance2NetworkFunction::nc() const
+{
+	return this->lnc;
+}
 
 }
 

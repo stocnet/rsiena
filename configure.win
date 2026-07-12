@@ -11,7 +11,7 @@ else
   exit 1
 fi
 
-PKG_SOURCES="$(cat src/sources.list)"
+PKG_SOURCES=$(tr '\n' ' ' < src/sources.list)
 
 # Take care that variables do not contain '\' backslashes or '#' hashes!
 sed "

@@ -50,6 +50,10 @@ public:
 
 protected:
 	double value(const int i) const;
+	double uncenteredValue(const int i) const;
+	// nc indicates whether the covariate/behavior value should be non
+	// centered; mirrors BehaviorEffect::resolvedValue
+	double resolvedValue(const int i, bool nc) const;
 	bool missing(int i) const;
 	double actor_similarity(int i, int j) const;
 	double covariateMaximum() const;

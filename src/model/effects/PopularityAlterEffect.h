@@ -24,7 +24,7 @@ namespace siena
 class PopularityAlterEffect : public NetworkDependentBehaviorEffect
 {
 public:
-	PopularityAlterEffect(const EffectInfo * pEffectInfo, bool divide);
+	PopularityAlterEffect(const EffectInfo * pEffectInfo, bool divide, bool nc);
 
 	virtual double calculateChangeContribution(int actor,
 		int difference);
@@ -34,6 +34,7 @@ private:
 	double averageInDegree(int i) const;
 	// divide indicates whether there will be division by the outdegree
 	bool ldivide {};
+	bool lnc {};
 };
 
 }

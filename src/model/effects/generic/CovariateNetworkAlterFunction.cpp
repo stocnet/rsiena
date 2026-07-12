@@ -114,6 +114,36 @@ double CovariateNetworkAlterFunction::covmean() const
 }
 
 /**
+ * Returns the non-centered (raw) covariate value for the given actor.
+ * For a constant or changing covariate that was declared centered, the stored
+ * value has the observed mean subtracted, so it is added back; a non-centered
+ * covariate is already raw and is returned unchanged.
+ * For behavior variables this returns lvalues[alter] without mean subtraction.
+ */
+double CovariateNetworkAlterFunction::uncenteredCovvalue(int alter) const
+{
+	if (this->lpConstantCovariate)
+	{
+		double value = this->lpConstantCovariate->value(alter);
+		if (this->lpConstantCovariate->centered())
+		{
+			value += this->lpConstantCovariate->obsmean();
+		}
+		return value;
+	}
+	if (this->lpChangingCovariate)
+	{
+		double value = this->lpChangingCovariate->value(alter, this->lperiod);
+		if (this->lpChangingCovariate->centered())
+		{
+			value += this->lpChangingCovariate->obsmean();
+		}
+		return value;
+	}
+	return this->lvalues[alter];
+}
+
+/**
  * Returns the covariate value for the given actor.
  * For behavior, returns the centered value.
  */
@@ -128,6 +158,18 @@ double CovariateNetworkAlterFunction::covvalue(int alter) const
 		return this->lpChangingCovariate->value(alter, this->lperiod);
 	}
 	return this->lvalues[alter] - this->lpBehaviorData->overallMean();
+}
+
+/**
+ * Returns the covariate value of a given actor in the requested form, e.g.
+ * centered around the overall mean of all observed values or not. Mirrors
+ * BehaviorEffect::resolvedValue / CovariateDependentNetworkEffect::resolvedValue.
+ * @param[in] alter the index of the actor
+ * @param[in] nc whether the value should not be centered
+ */
+double CovariateNetworkAlterFunction::resolvedCovvalue(int alter, bool nc) const
+{
+	return nc ? this->uncenteredCovvalue(alter) : this->covvalue(alter);
 }
 
 /**
