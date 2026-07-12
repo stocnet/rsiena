@@ -78,7 +78,7 @@ double AverageAlterInDist2Effect::calculateChangeContribution(int actor,
 			int tieValue =  this->pNetwork()->tieValue(actor, iter.actor());
 			if (tieValue == 1)
 			{
-				alterValue -= (this->lnc ? this->value(actor) : this->centeredValue(actor));
+				alterValue -= this->resolvedValue(actor, this->lnc);
 			}
 			if (((pNetwork->inDegree(iter.actor()) - tieValue)> 0) && (this->ldivide2))
 			{

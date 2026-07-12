@@ -203,6 +203,18 @@ double CovariateDependentNetworkEffect::uncenteredValue(const int i) const
 }
 
 /**
+ * Returns the covariate/behavior value of a given actor in the requested
+ * form, e.g. centered around the overall mean of all observed values or
+ * not. Mirrors BehaviorEffect::resolvedValue.
+ * @param[in] i the index of the actor
+ * @param[in] nc whether the value should not be centered
+ */
+double CovariateDependentNetworkEffect::resolvedValue(const int i, bool nc) const
+{
+	return nc ? this->uncenteredValue(i) : this->value(i);
+}
+
+/**
  * Returns if the covariate value for the given actor is missing.
  */
 bool CovariateDependentNetworkEffect::missing(int i) const

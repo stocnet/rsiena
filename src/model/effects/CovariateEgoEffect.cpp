@@ -74,7 +74,7 @@ CovariateEgoEffect::CovariateEgoEffect(const EffectInfo * pEffectInfo,
 double CovariateEgoEffect::calculateContribution(int alter) const
 {
 	double contribution = 0;
-	double alterValue = this->lnc ? this->uncenteredValue(this->ego()) : this->value(this->ego());
+	double alterValue = this->resolvedValue(this->ego(), this->lnc);
 	if (this->lleftThresholded)
 	{
 		if (alterValue <= this->lthreshold)

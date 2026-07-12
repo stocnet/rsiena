@@ -35,9 +35,7 @@
     geometrically weighted counterparts of `totInExposureDist2`/
     `anyInExposureDist2`.
   * Group-level effects (`AverageGroupEffect`,
-    `DegreeWeightedAverageGroupEffect`) corrected and expanded; added
-    `resolvedValue` option to select between centered and non-centered
-    behavior effect variants.
+    `DegreeWeightedAverageGroupEffect`) corrected and expanded.
   * Added non-centered (`_nc`) variants of the `altX`, `egoX`,
     `egoXaltX` covariate effects and the `totInDist2`/`gwInAltDist2`
     distance-2 effects, as lower-order controls; covariate effects now
@@ -51,6 +49,17 @@
     `DoubleMixedStarEffect`, `StarMixedStarEffect` and the generic
     helpers `MixedOnlyTwoPathFunction`, `SameCovariateInTiesFunction2`.
   * Cleanup of other diffusion rate effects.
+### Coding
+  * Added `BehaviorEffect::resolvedValue(actor, nc)` and
+    `CovariateDependentNetworkEffect::resolvedValue(actor, nc)`, helpers
+    that resolve a stored actor/covariate value to its centered or
+    non-centered form depending on an `nc` flag, and switched all effect
+    classes with such a flag to use them instead of duplicating the
+    centering logic inline. Note that `BehaviorEffect::value()` returns
+    the non-centered value while `CovariateDependentNetworkEffect::value()`
+    returns the centered value (opposite conventions for the same method
+    name); this is called out in a code comment but worth keeping in mind
+    before extending either further.
 ### Functionality
   * `src/sources.list` restructured to a multi-line, more easily
     editable format; `update_sources_list.sh` / `update_sources_unix.sh`

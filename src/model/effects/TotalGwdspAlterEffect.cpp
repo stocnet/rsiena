@@ -111,8 +111,7 @@ double TotalGwdspAlterEffect::calculateChangeContribution(int actor,
 					twoc = this->lpInitialisedTable->get(j);
 				else 
 					twoc = this->lpInitialisedTable->get(j);
-				alterValue = (this->lnc ? this->value(j) : 
-										  this->centeredValue(j)) *
+				alterValue = this->resolvedValue(j, this->lnc) *
 						this->lcumulativeWeight[twoc];
 				sumAlterValue += alterValue;
 			}

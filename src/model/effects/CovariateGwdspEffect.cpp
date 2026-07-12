@@ -113,9 +113,7 @@ double CovariateGwdspEffect::calculateContribution(int alter) const
 				increment = this->lcumulativeWeight[twoc + 1] -
 						this->lcumulativeWeight[twoc];
 			}
-			contribution = this->lnc ?
-					this->uncenteredValue(iter.actor()) * increment :
-					this->value(iter.actor()) * increment;
+			contribution = this->resolvedValue(iter.actor(), this->lnc) * increment;
 		}
 	}
 	return contribution;
@@ -135,8 +133,7 @@ double CovariateGwdspEffect::egoStatistic(int ego,
 	{
 		if (h != ego && !this->missing(h))
 		{
-			double covVal = this->lnc ? this->uncenteredValue(h) : 
-										   this->value(h);
+			double covVal = this->resolvedValue(h, this->lnc);
 			statistic += covVal *
 						this->lcumulativeWeight[this->lpInitialisedTable->get(h)];
 		}
