@@ -37,6 +37,7 @@
 \method{predict}{sienaFit}(object, newdata, type = c("changeProb", "tieProb"),
     newParams = NULL, effects = NULL, depvar = NULL,
     dynamic = FALSE, algorithm = NULL, n3 = 1000,
+    n3PointEst = NULL, n3BatchSize = NULL,
     useChangeContributions = FALSE,
     level = "period", condition = NULL, sum_fun = mean, na.rm = TRUE,
     uncertainty = TRUE,
@@ -48,8 +49,10 @@
     batchDir = "temp", prefix = "simBatch_b",
     combineBatch = TRUE, batch = TRUE, silent = NULL,
     batchSize = NULL, keepBatch = FALSE, verbose = TRUE,
-    memoryScale = NULL, batchUnitBudget = 5e8,
-    dynamicMinistepFactor = 10, \dots)
+    memoryScale = NULL, batchUnitBudget = 2.5e8,
+    dynamicMinistepFactor = 10,
+    egoNormalize = TRUE, accumulated = FALSE, rateWeight = FALSE,
+    returnDecisionDetails = FALSE, returnComponents = FALSE, \dots)
 }
 \arguments{
   \item{object}{A \code{sienaFit} object.}
@@ -68,6 +71,10 @@
       \code{dynamic = TRUE}.}
   \item{n3}{Number of simulated chains for dynamic predictions
       (default 1000).}
+  \item{n3PointEst}{Optional number of chains used for the point
+      estimate (dynamic predictions); defaults to \code{n3}.}
+  \item{n3BatchSize}{Optional batch size for chain simulation
+      (dynamic predictions).}
   \item{useChangeContributions}{Logical.  If \code{TRUE}, reuse
       change contributions stored in \code{object} (from the
       estimation run) instead of re-extracting them.}
@@ -100,6 +107,16 @@
   \item{verbose}{Logical: print progress messages.}
   \item{memoryScale, batchUnitBudget, dynamicMinistepFactor}{Memory
       management parameters for batch sizing.}
+  \item{egoNormalize}{Logical: normalise contributions per ego
+      (default \code{TRUE}).}
+  \item{accumulated}{Logical: accumulate predictions across ministeps
+      (default \code{FALSE}).}
+  \item{rateWeight}{Logical: weight by the rate function (default
+      \code{FALSE}).}
+  \item{returnDecisionDetails}{Logical: include per-decision detail
+      columns in the output (default \code{FALSE}).}
+  \item{returnComponents}{Logical: include utility component
+      breakdowns in the output (default \code{FALSE}).}
   \item{\dots}{Additional arguments (currently unused).}
 }
 \details{

@@ -255,7 +255,7 @@ calculateFirstDiffSpec <- function(rspec, effectName,
 
   # Contrast flip
   if (!is.null(contrastInfo)) {
-    flipIdx <- which(contrastInfo$newCS == min(contrastInfo$contrast))
+    flipIdx <- which(contrastInfo$newCS == contrastInfo$contrast[1])
     firstDiff[flipIdx] <- -firstDiff[flipIdx]
   }
 
@@ -264,7 +264,7 @@ calculateFirstDiffSpec <- function(rspec, effectName,
     firstRiskRatio <- if (type == "tieProb") tieProbCf / tieProb
                       else changeProbCf / changeProb
     if (!is.null(contrastInfo)) {
-      flipIdx <- which(contrastInfo$newCS == min(contrastInfo$contrast))
+      flipIdx <- which(contrastInfo$newCS == contrastInfo$contrast[1])
       firstRiskRatio[flipIdx] <- 1 / firstRiskRatio[flipIdx]
     }
   }
@@ -351,14 +351,14 @@ calculateSecondDiffSpec <- function(rspec, effectName1, effectName2,
   # Step 5: second difference
   secondDiff <- fd2[["firstDiff"]] - fd1[["firstDiff"]]
   if (!is.null(contrastInfo2)) {
-    flipIdx <- which(contrastInfo2$newCS == min(contrastInfo2$contrast))
+    flipIdx <- which(contrastInfo2$newCS == contrastInfo2$contrast[1])
     secondDiff[flipIdx] <- -secondDiff[flipIdx]
   }
 
   if (mainEffect == "riskRatio") {
     secondRiskRatio <- fd2[["firstRiskRatio"]] / fd1[["firstRiskRatio"]]
     if (!is.null(contrastInfo2)) {
-      flipIdx <- which(contrastInfo2$newCS == min(contrastInfo2$contrast))
+      flipIdx <- which(contrastInfo2$newCS == contrastInfo2$contrast[1])
       secondRiskRatio[flipIdx] <- 1 / secondRiskRatio[flipIdx]
     }
   }

@@ -974,7 +974,7 @@ predictFirstDiffJac <- function(cc, theta, changeProb, density,
     new_cs[effectContrib == contrast[1L]] <- contrast[2L]
     new_cs[effectContrib == contrast[2L]] <- contrast[1L]
     diff_j <- new_cs - effectContrib       # NA outside contrast range
-    sign_j <- ifelse(!is.na(new_cs) & new_cs == min(contrast), -1L, 1L)
+    sign_j <- ifelse(!is.na(new_cs) & new_cs == contrast[1L], -1L, 1L)
     sign_j[is.na(diff_j)] <- NA_integer_
   } else {
     diff_pa <- pa$diff
@@ -1212,7 +1212,7 @@ calculateFirstDiff <- function(densityValue,
   }
 
   if(!is.null(contrast)){
-    idx_flip <- which(newChangeStatistic == min(contrast))
+    idx_flip <- which(newChangeStatistic == contrast[1L])
     firstDiff[idx_flip] <- -firstDiff[idx_flip]
   }
 
@@ -1223,7 +1223,7 @@ calculateFirstDiff <- function(densityValue,
       firstRiskRatio <- changeProb_cf / changeProb
     }
     if (!is.null(contrast)) {
-      idx_flip <- which(newChangeStatistic == min(contrast))
+      idx_flip <- which(newChangeStatistic == contrast[1L])
       firstRiskRatio[idx_flip] <- 1 / firstRiskRatio[idx_flip]
     }
   }
@@ -1320,7 +1320,7 @@ calculateSecondDiff <- function(densityValue,
               call. = FALSE)
     diff2 <- newChangeStatistic2 - oldChangeStatistic2
     # Precompute sign-flip indices; free the full vectors early.
-    contrast2_flip_idx <- which(newChangeStatistic2 == min(contrast2))
+    contrast2_flip_idx <- which(newChangeStatistic2 == contrast2[1L])
     rm(oldChangeStatistic2, newChangeStatistic2)
   }
   # effectContribution2 is consumed; free it.

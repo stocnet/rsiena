@@ -43,11 +43,11 @@
                                   n3=500, useChangeContributions=FALSE,
                                   uncertainty=FALSE, level="ego",
                                   sum_fun=mean, na.rm=TRUE, nsim=1000,
+                                  uncertaintyMode=c("bootstrap","delta","deltaFull"),
                                   uncertaintySd=TRUE, uncertaintyCi=TRUE,
-                                  uncertaintyMean=FALSE, uncertaintyMedian=FALSE,
                                   ciInterval=c(0.025,0.975),
-                                  useCluster=FALSE, nbrNodes=1,
-                                  clusterType=c("PSOCK","FORK"),
+                                  nbrNodes=1,
+                                  clusterType=c("PSOCK","FORK"), cl=NULL,
                                   batchDir="temp", batchSize=NULL,
                                   keepBatch=FALSE, verbose=TRUE,
                                   memoryScale=NULL, batchUnitBudget=2.5e8,
@@ -96,14 +96,14 @@
   \item{sum_fun}{Function used to aggregate RI values across actors (default \code{mean}).}
   \item{na.rm}{Boolean: whether to remove \code{NA}s in aggregation (default \code{TRUE}).}
   \item{nsim}{Integer: number of theta draws for uncertainty quantification (default 1000).}
+  \item{uncertaintyMode}{Character: \code{"bootstrap"}, \code{"delta"}, or
+        \code{"deltaFull"} — the method used to quantify uncertainty.}
   \item{uncertaintySd}{Boolean: include posterior SD in uncertainty output.}
   \item{uncertaintyCi}{Boolean: include credible interval in uncertainty output.}
-  \item{uncertaintyMean}{Boolean: include mean of draws (default \code{FALSE}).}
-  \item{uncertaintyMedian}{Boolean: include median of draws (default \code{FALSE}).}
   \item{ciInterval}{Numeric length-2 vector: lower/upper CI bounds (default \code{c(0.025, 0.975)}).}
-  \item{useCluster}{Boolean: if \code{TRUE}, use a parallel cluster.}
   \item{nbrNodes}{Integer: number of cluster nodes (default 1).}
   \item{clusterType}{Character: cluster type (\code{"PSOCK"} or \code{"FORK"}).}
+  \item{cl}{An existing cluster object (optional).}
   \item{batchDir}{Character: directory for batch simulation files (default \code{"temp"}).}
   \item{batchSize}{Integer or \code{NULL}: number of simulations per batch.}
   \item{keepBatch}{Boolean: keep batch files after completion (default \code{FALSE}).}

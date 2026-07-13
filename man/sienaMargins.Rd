@@ -47,14 +47,23 @@
     effectName1, diff1 = NULL, contrast1 = NULL,
     interaction1 = FALSE, intEffectNames1 = NULL,
     modEffectNames1 = NULL,
-    effectName2 = NULL, diff2 = NULL, contrast2 = NULL,
+    second = FALSE, effectName2 = NULL, diff2 = NULL, contrast2 = NULL,
     interaction2 = FALSE, intEffectNames2 = NULL,
     modEffectNames2 = NULL,
-    type = c("changeProb", "tieProb"), second = FALSE,
-    level = "period", condition = NULL, sum_fun = mean, na.rm = TRUE,
-    dynamic = FALSE, algorithm = NULL, n3 = 500,
-    useChangeContributions = FALSE, uncertainty = TRUE,
-    nsim = 1000,
+    effectList = NULL,
+    level = "period", condition = NULL,
+    type = c("changeProb", "tieProb"),
+    mainEffect = "riskDifference",
+    perturbType1 = NULL, perturbType2 = NULL,
+    massContrasts = NULL,
+    egoNormalize = TRUE, accumulated = FALSE, rateWeight = FALSE,
+    returnDecisionDetails = FALSE, returnComponents = FALSE,
+    dynamic = FALSE, algorithm = NULL, n3 = 200,
+    n3PointEst = NULL, n3BatchSize = 100L,
+    chainStoreMode = c("auto", "disk", "memory"),
+    useChangeContributions = FALSE, chainStorePath = NULL,
+    uncertainty = TRUE, nsim = 1000,
+    uncertaintyMode = c("bootstrap", "delta", "deltaFull"),
     uncertaintySd = TRUE, uncertaintyCi = TRUE,
     uncertaintyMean = FALSE, uncertaintyMedian = FALSE,
     ciInterval = c(0.025, 0.975),
@@ -62,12 +71,11 @@
     clusterType = c("PSOCK", "FORK"), cl = NULL,
     batchDir = "temp", prefix = "simBatch_b",
     combineBatch = TRUE, batchSize = NULL,
-    keepBatch = FALSE, verbose = TRUE,
-    mainEffect = "riskDifference", details = FALSE,
-    perturbType1 = NULL, perturbType2 = NULL,
-    massContrasts = NULL,
+    keepBatch = FALSE, verbose = TRUE, details = FALSE,
     memoryScale = NULL, batchUnitBudget = 2.5e8,
-    dynamicMinistepFactor = 10, ...)
+    dynamicMinistepFactor = 10,
+    saveDir = NULL, gcEachBatch = FALSE, gcEachSim = FALSE,
+    combineSameLevel = FALSE, format = c("wide", "long"), ...)
 }
 \arguments{
   \item{object}{A \code{sienaFit} object resulting from a call to \code{\link{siena}}.}
@@ -97,6 +105,12 @@
   \item{effectName2}{For second differences: name of the second effect.}
   \item{diff2, contrast2, interaction2, intEffectNames2, modEffectNames2}{
       As above, for the second effect.}
+  \item{effectList}{Optional list of effect specifications for
+      computing several marginal effects in one batch call. When
+      supplied, each element is treated as a separate
+      \code{effectName1}/\code{diff1}/\code{contrast1}/... spec; the
+      return value is a named list (or a single data.frame if
+      \code{effectList} has exactly one element).}
   \item{perturbType1}{Perturbation mode for the first effect.
       \code{NULL} (default) auto-detects from the effect's
       \code{interactionType}: ego-type effects use \code{"ego"}
@@ -115,18 +129,37 @@
       \code{"chain"}, \code{"ministep"}, or \code{"ministepChoice"}.
       Default \code{"period"}.}
   \item{condition}{Optional conditioning variable for aggregation.}
-  \item{sum_fun}{Aggregation function. Default: \code{mean}.}
-  \item{na.rm}{Logical: remove NAs before aggregation.}
+  \item{egoNormalize}{Logical: normalise contributions per ego
+      (default \code{TRUE}).}
+  \item{accumulated}{Logical: accumulate predictions across ministeps
+      (default \code{FALSE}).}
+  \item{rateWeight}{Logical: weight by the rate function (default
+      \code{FALSE}).}
+  \item{returnDecisionDetails}{Logical: include per-decision detail
+      columns in the output (default \code{FALSE}).}
+  \item{returnComponents}{Logical: include utility component
+      breakdowns in the output (default \code{FALSE}).}
   \item{dynamic}{Logical: if \code{TRUE}, use dynamic contributions from
       simulated chains.}
   \item{algorithm}{Required when \code{dynamic = TRUE}: a
       \code{sienaAlgorithm} object.}
   \item{n3}{Number of chains for dynamic simulation.}
+  \item{n3PointEst}{Optional number of chains used for the point
+      estimate (dynamic predictions); defaults to \code{n3}.}
+  \item{n3BatchSize}{Batch size for chain simulation (dynamic
+      predictions; default 100).}
+  \item{chainStoreMode}{Character: \code{"auto"}, \code{"disk"}, or
+      \code{"memory"} — how simulated chains are cached for dynamic
+      predictions.}
   \item{useChangeContributions}{Use pre-stored change contributions from
       \code{ans}.}
+  \item{chainStorePath}{Optional path for on-disk chain storage when
+      \code{chainStoreMode = "disk"}.}
   \item{uncertainty}{Logical: whether to compute uncertainty via
       theta-draws (default \code{TRUE}).}
   \item{nsim}{Number of theta-draws for uncertainty.}
+  \item{uncertaintyMode}{Character: \code{"bootstrap"}, \code{"delta"}, or
+      \code{"deltaFull"} — the method used to quantify uncertainty.}
   \item{uncertaintySd, uncertaintyCi, uncertaintyMean, uncertaintyMedian,
       ciInterval}{Control output of uncertainty summaries. \code{ciInterval}
       gives the CI bounds (default \code{c(0.025, 0.975)}); the median (0.5)
@@ -142,6 +175,14 @@
       (\code{massCreation}, \code{massDissolution}).  Auto-detected from
       \code{perturbType} when \code{NULL} (the default).}
   \item{memoryScale, batchUnitBudget, dynamicMinistepFactor}{Memory management.}
+  \item{saveDir}{Optional directory to save intermediate batch results.}
+  \item{gcEachBatch, gcEachSim}{Logical: force garbage collection after
+      each batch / each simulation (memory management for large runs).}
+  \item{combineSameLevel}{Logical: combine results across calls that
+      share the same aggregation \code{level} (used with
+      \code{effectList}).}
+  \item{format}{Character: \code{"wide"} or \code{"long"} — output
+      layout when combining multiple effects/results.}
   \item{\dots}{Additional arguments passed to internal functions.}
 }
 \value{

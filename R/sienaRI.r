@@ -405,7 +405,6 @@ computeRelativeImportance <- function(contributions, theta,
         out[[paste0("stdRI_", effNames[k])]] <-
             ifelse(!is.na(sigK) & sigK > 0, riMat[, k] / sigK, NA_real_)
     }
-    if (requireNamespace("data.table", quietly = TRUE)) data.table::setDT(out)
     out
 }
 
@@ -477,9 +476,7 @@ print.sienaRI <- function(x, printSigma = FALSE, ...){
 	# ---- New format (data.frame-based) ----
 	if (!is.null(object$data)) {
 		rms <- function(xx) sqrt((1/ncol(xx)) * rowSums(xx^2, na.rm = TRUE))
-		riDF <- if (requireNamespace("data.table", quietly = TRUE) &&
-				data.table::is.data.table(object$data))
-			as.data.frame(object$data) else object$data
+		riDF <- object$data
 		effNames <- object$shortEffectNames
 		riCols   <- paste0("RI_", effNames)
 		sigCols  <- paste0("sigma_", effNames)
@@ -620,9 +617,7 @@ plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
 	}
 	# Convert new format to old-style fields for plotting
 	if (!is.null(object$data)) {
-		riDF <- if (requireNamespace("data.table", quietly = TRUE) &&
-				data.table::is.data.table(object$data))
-			as.data.frame(object$data) else object$data
+		riDF <- object$data
 		effNames <- object$shortEffectNames
 		riCols   <- paste0("RI_", effNames)
 		periods_vec <- sort(unique(riDF$period))

@@ -37,11 +37,12 @@ relativeImportance(object, \dots)
     uncertainty = FALSE,
     level = "ego", sum_fun = mean, na.rm = TRUE,
     nsim = 1000,
+    uncertaintyMode = c("bootstrap", "delta", "deltaFull"),
     uncertaintySd = TRUE, uncertaintyCi = TRUE,
     uncertaintyMean = FALSE, uncertaintyMedian = FALSE,
     ciInterval = c(0.025, 0.975),
     useCluster = FALSE, nbrNodes = 1,
-    clusterType = c("PSOCK", "FORK"),
+    clusterType = c("PSOCK", "FORK"), cl = NULL,
     batchDir = "temp", batchSize = NULL,
     keepBatch = FALSE, verbose = TRUE,
     memoryScale = NULL, batchUnitBudget = 2.5e8,
@@ -94,6 +95,8 @@ relativeImportance(object, \dots)
   \item{na.rm}{Logical: whether to remove \code{NA}s in aggregation.}
   \item{nsim}{Number of theta draws for uncertainty quantification
         (default 1000).}
+  \item{uncertaintyMode}{Character: \code{"bootstrap"}, \code{"delta"}, or
+        \code{"deltaFull"} — the method used to quantify uncertainty.}
   \item{uncertaintySd}{Logical: include Monte Carlo standard errors
         in uncertainty output?}
   \item{uncertaintyCi}{Logical: include confidence intervals?}
@@ -105,6 +108,7 @@ relativeImportance(object, \dots)
         computation?}
   \item{nbrNodes}{Number of cluster nodes.}
   \item{clusterType}{Type of cluster: \code{"PSOCK"} or \code{"FORK"}.}
+  \item{cl}{An existing cluster object (optional).}
   \item{batchDir}{Directory for temporary batch files.}
   \item{batchSize}{Batch size; \code{NULL} (default) for automatic sizing.}
   \item{keepBatch}{Logical: retain batch files after computation?}

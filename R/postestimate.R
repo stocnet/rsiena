@@ -2362,6 +2362,7 @@ contribToChangeStats <- function(contribMat, effectNames, theta = NULL,
   nChangeStats <- length(changeStatsOrder)
 
   # ---- Build csMat: sign-flip + merge eval/endow/creation columns ----
+  knownDirection <- TRUE
   if (hasDensity) {
     density <- as.integer(contribMat[, densityIdx])
     density[is.na(density)] <- 0L
@@ -2371,15 +2372,19 @@ contribToChangeStats <- function(contribMat, effectNames, theta = NULL,
     density <- as.integer(direction)
   } else {
     # No density effect and no direction supplied — cannot determine
-    # creation vs dissolution.  Use NA so downstream consumers fail
-    # visibly rather than silently producing wrong results.
+    # creation vs dissolution. This is expected (and harmless) whenever no
+    # effect actually needs the dissolution-row sign flip, e.g. behavior
+    # depvars, which never have creation/endow columns. Only an actual
+    # creation/endow column below (which structurally requires direction)
+    # triggers a visible error; otherwise there is simply nothing to flip.
+    knownDirection <- FALSE
     density <- rep(NA_integer_, nrow(contribMat))
   }
 
   # Dissolution-row sign flip is applied per column below during csMat
   # construction (avoids bulk COW copy of contribMat).
-  neg <- density == -1L
-  anyNeg <- any(neg)
+  neg <- if (knownDirection) density == -1L else rep(FALSE, nrow(contribMat))
+  anyNeg <- knownDirection && any(neg)
 
   # Build changeStats matrix: for each changeStats effect, take the eval column
   # if it exists; otherwise combine creation + endow.
@@ -2401,6 +2406,12 @@ contribToChangeStats <- function(contribMat, effectNames, theta = NULL,
     hasEval     <- "eval"     %in% memberTypes
     hasCreation <- "creation" %in% memberTypes
     hasEndow    <- "endow"    %in% memberTypes
+
+    if (!knownDirection && (hasCreation || hasEndow)) {
+      stop("contribToChangeStats: effect '", base_k, "' has creation/endow ",
+           "columns that require dissolution direction, but no density ",
+           "effect or 'direction' was supplied.")
+    }
 
     # Extract column(s) from contribMat.  R extracts a fresh vector,
     # so the per-column sign flip below is always in-place (no COW).
