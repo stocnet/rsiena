@@ -50,9 +50,7 @@ sienaPostestimate <- function(
     uncertaintyCi         = TRUE,
     uncertaintyMean       = FALSE,
     uncertaintyMedian     = FALSE,
-    uncertaintyProbs      = c(0.025, 0.5, 0.975),
-    uncertaintyMcse       = FALSE,
-    uncertaintymcseBatches = NULL,
+    ciInterval            = c(0.025, 0.975),
     decisionDetails = NULL,
     saveDir         = NULL,
     gcEachBatch     = FALSE,
@@ -137,9 +135,7 @@ sienaPostestimate <- function(
         uncertaintyCi          = uncertaintyCi,
         uncertaintyMean        = uncertaintyMean,
         uncertaintyMedian      = uncertaintyMedian,
-        uncertaintyProbs       = uncertaintyProbs,
-        uncertaintyMcse        = uncertaintyMcse,
-        uncertaintymcseBatches = uncertaintymcseBatches,
+        ciInterval             = ciInterval,
         decisionDetails        = decisionDetails,
         saveDir                = saveDir,
         gcEachBatch            = gcEachBatch,
@@ -303,8 +299,7 @@ sienaPostestimate <- function(
                                useCluster, clusterType, cl, batchDir, prefix,
                                keepBatch, na.rm, egoNormalize,
                                uncertaintySd, uncertaintyCi, uncertaintyMean,
-                               uncertaintyMedian, uncertaintyProbs,
-                               uncertaintyMcse, uncertaintymcseBatches,
+                               uncertaintyMedian, ciInterval,
                                decisionDetails, saveDir, gcEachBatch, gcEachSim) {
     # Step 1 — point estimates from the caller-supplied (hat) contribFun.
     hatEstimatorFun <- makeEstimatorFun(specs, contribFun, nChainBatches,
@@ -347,9 +342,7 @@ sienaPostestimate <- function(
         return_ci     = uncertaintyCi,
         return_mean   = uncertaintyMean,
         return_median = uncertaintyMedian,
-        probs         = uncertaintyProbs,
-        return_mcse   = uncertaintyMcse,
-        mcseBatches   = uncertaintymcseBatches
+        ci_interval   = ciInterval
     )
     keepBatch_internal <- if (!is.null(saveDir)) TRUE else keepBatch
     raw_sims_list <- drawSimBatch(

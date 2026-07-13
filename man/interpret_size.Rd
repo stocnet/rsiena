@@ -45,7 +45,7 @@
                                   sum_fun=mean, na.rm=TRUE, nsim=1000,
                                   uncertaintySd=TRUE, uncertaintyCi=TRUE,
                                   uncertaintyMean=FALSE, uncertaintyMedian=FALSE,
-                                  uncertaintyProbs=c(0.025,0.5,0.975),
+                                  ciInterval=c(0.025,0.975),
                                   useCluster=FALSE, nbrNodes=1,
                                   clusterType=c("PSOCK","FORK"),
                                   batchDir="temp", batchSize=NULL,
@@ -100,7 +100,7 @@
   \item{uncertaintyCi}{Boolean: include credible interval in uncertainty output.}
   \item{uncertaintyMean}{Boolean: include mean of draws (default \code{FALSE}).}
   \item{uncertaintyMedian}{Boolean: include median of draws (default \code{FALSE}).}
-  \item{uncertaintyProbs}{Numeric vector: quantile probabilities for credible intervals.}
+  \item{ciInterval}{Numeric length-2 vector: lower/upper CI bounds (default \code{c(0.025, 0.975)}).}
   \item{useCluster}{Boolean: if \code{TRUE}, use a parallel cluster.}
   \item{nbrNodes}{Integer: number of cluster nodes (default 1).}
   \item{clusterType}{Character: cluster type (\code{"PSOCK"} or \code{"FORK"}).}

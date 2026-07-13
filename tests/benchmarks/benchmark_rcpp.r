@@ -41,35 +41,35 @@ softmax_R_grouped_R_dt <- function(data){
   dt
 }
 
-softmax_arma_grouped_R_df <- function(data) {
+softmax_rcpp_grouped_R_df <- function(data) {
   grp <- cumsum(c(TRUE, diff(data$ego) != 0 | 
                         diff(data$period) != 0 | 
                         diff(data$sim) != 0))
-  data$changeProb <- ave(data$changeUtil, grp, FUN = softmax_arma)
+  data$changeProb <- ave(data$changeUtil, grp, FUN = softmax_rcpp)
   data
 }
 
-softmax_arma_grouped_R_dt <- function(data){
+softmax_rcpp_grouped_R_dt <- function(data){
   dt <- as.data.table(data)
   dt[, changeProb := {
-      softmax_arma(changeUtil)
+      softmax_rcpp(changeUtil)
     }, by = .(sim, period, ego)]
   dt
 }
 
-softmax_arma_by_group_df <- function(data){
+softmax_rcpp_by_group_df <- function(data){
   grp <- cumsum(c(TRUE, diff(data$ego) != 0 | 
                         diff(data$period) != 0 | 
                         diff(data$sim) != 0))
-  data$changeProb <- softmax_arma_by_group(data$changeUtil, grp)
+  data$changeProb <- softmax_rcpp_by_group(data$changeUtil, grp)
   data
 }
 
-softmax_arma_by_group_dt <- function(data) {
+softmax_rcpp_by_group_dt <- function(data) {
   grp <- cumsum(c(1L, diff(data$sim) != 0L | 
                       diff(data$period) != 0L | 
                       diff(data$ego) != 0L))
-  set(data, j = "changeProb", value = softmax_arma_by_group(data$changeUtil, grp))
+  set(data, j = "changeProb", value = softmax_rcpp_by_group(data$changeUtil, grp))
   data
 }
 
@@ -167,7 +167,7 @@ compare_changeProb_log <- function(df_list, tol = 1e-10, outfile=NULL) {
 }
 
 best_opponents <- c(
-  "softmax_arma_grouped_R_dt",
+  "softmax_rcpp_grouped_R_dt",
   "softmax_rcpp_grouped_df",
   "softmax_rcpp_grouped_dt",
   "softmax_rcpp_grouped_lst_df",
@@ -183,10 +183,10 @@ run_softmax_benchmarks <- function(
   fn_names = c(
     "softmax_R_grouped_R_df",
     "softmax_R_grouped_R_dt",
-    "softmax_arma_grouped_R_df",
-    "softmax_arma_grouped_R_dt",
-    "softmax_arma_by_group_df",
-    "softmax_arma_by_group_dt",
+    "softmax_rcpp_grouped_R_df",
+    "softmax_rcpp_grouped_R_dt",
+    "softmax_rcpp_by_group_df",
+    "softmax_rcpp_by_group_dt",
     "softmax_rcpp_grouped_df",
     "softmax_rcpp_grouped_dt",
     "softmax_rcpp_grouped_mat_df",

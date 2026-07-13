@@ -24,9 +24,7 @@ predict.sienaFit <- function(
     uncertaintyCi = TRUE,
     uncertaintyMean = FALSE,
     uncertaintyMedian = FALSE,
-    uncertaintyProbs = c(0.025, 0.5, 0.975),
-    uncertaintyMcse = FALSE,
-    uncertaintymcseBatches = NULL,
+    ciInterval = c(0.025, 0.975),
     clusterType = c("PSOCK", "FORK"),
     cl = NULL,
     batchDir = "temp",
@@ -238,9 +236,7 @@ predict.sienaFit <- function(
     uncertaintyCi         = uncertaintyCi,
     uncertaintyMean       = uncertaintyMean,
     uncertaintyMedian     = uncertaintyMedian,
-    uncertaintyProbs      = uncertaintyProbs,
-    uncertaintyMcse       = uncertaintyMcse,
-    uncertaintymcseBatches = uncertaintymcseBatches,
+    ciInterval            = ciInterval,
     decisionDetails = if (!is.null(decisionDetails))
                         setNames(list(decisionDetails), type) else NULL
   )
@@ -350,7 +346,7 @@ estimateDynMemory <- function(data, depvar, effects, n3,
 # --------------------------------------------------------------------------
 predictProbabilityJac <- function(cc, theta, changeProb, density,
                                    pa, cs, ...) {
-  Jp <- softmax_jac_arma(changeProb, cc$contribMat, cc$group_id)
+  Jp <- softmax_jac_rcpp(changeProb, cc$contribMat, cc$group_id)
   if (pa$type == "tieProb") density * Jp else Jp
 }
 
@@ -477,7 +473,7 @@ calculateUtility <- function(mat, theta, permitted = NULL, densityIdx = NULL) {
 
 calculateChangeProb <- function(utility, group_id) {
   # is as.numeric not already part of the rcpp softmax?
-  as.numeric(softmax_arma_by_group(utility, group_id))
+  as.numeric(softmax_rcpp_by_group(utility, group_id))
 }
 
 # wrapper not necessary anymore - clean up later

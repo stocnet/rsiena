@@ -13,9 +13,9 @@ extern "C"
 /* 
   Declare the Rcpp-exported wrappers manually
 */
- SEXP _RSiena_softmax_arma(SEXP);
- SEXP _RSiena_softmax_arma_by_group(SEXP, SEXP);
- SEXP _RSiena_softmax_rcpp_grouped_lst(SEXP, SEXP);
+ // SEXP _RSiena_softmax_rcpp(SEXP);                             // benchmark-only, commented out 2026-07-13
+ SEXP _RSiena_softmax_rcpp_by_group(SEXP, SEXP);
+ // SEXP _RSiena_softmax_rcpp_grouped_lst(SEXP, SEXP);           // benchmark-only, commented out 2026-07-13
  SEXP _RSiena_loo_change_probs(SEXP, SEXP, SEXP);
  SEXP _RSiena_l1d_grouped(SEXP, SEXP, SEXP);
  SEXP _RSiena_kld_grouped(SEXP, SEXP, SEXP);
@@ -23,7 +23,7 @@ extern "C"
  SEXP _RSiena_grouped_agg_cpp(SEXP, SEXP, SEXP, SEXP);
  SEXP _RSiena_grouped_agg_matrix_cpp(SEXP, SEXP, SEXP, SEXP);
  SEXP _RSiena_grouped_agg_from_cols(SEXP, SEXP, SEXP, SEXP);
- SEXP _RSiena_softmax_jac_arma(SEXP, SEXP, SEXP);
+ SEXP _RSiena_softmax_jac_rcpp(SEXP, SEXP, SEXP);
  SEXP _RSiena_calculate_tie_prob_cpp(SEXP, SEXP);
  SEXP _RSiena_contribToCS_eval_inplace(SEXP, SEXP, SEXP);
  SEXP _RSiena_build_scatter_idx(SEXP, SEXP);
@@ -66,9 +66,9 @@ static const R_CallMethodDef CallEntries[] = {
    CALLDEF(setupModelOptions, 12),
    CALLDEF(flattenChangeContributionsList, 1),
    CALLDEF(flattenChangeContributionsWide, 2),
-   {"_RSiena_softmax_arma",             (DL_FUNC) &_RSiena_softmax_arma,             1},
-   {"_RSiena_softmax_arma_by_group",    (DL_FUNC) &_RSiena_softmax_arma_by_group,    2},
-   {"_RSiena_softmax_rcpp_grouped_lst", (DL_FUNC) &_RSiena_softmax_rcpp_grouped_lst, 2},
+// {"_RSiena_softmax_rcpp",             (DL_FUNC) &_RSiena_softmax_rcpp,             1},   // benchmark-only, commented out 2026-07-13
+   {"_RSiena_softmax_rcpp_by_group",    (DL_FUNC) &_RSiena_softmax_rcpp_by_group,    2},
+// {"_RSiena_softmax_rcpp_grouped_lst", (DL_FUNC) &_RSiena_softmax_rcpp_grouped_lst, 2},   // benchmark-only, commented out 2026-07-13
    {"_RSiena_loo_change_probs",         (DL_FUNC) &_RSiena_loo_change_probs,         3},
    {"_RSiena_l1d_grouped",             (DL_FUNC) &_RSiena_l1d_grouped,             3},
    {"_RSiena_kld_grouped",             (DL_FUNC) &_RSiena_kld_grouped,             3},
@@ -76,7 +76,7 @@ static const R_CallMethodDef CallEntries[] = {
    {"_RSiena_grouped_agg_cpp",           (DL_FUNC) &_RSiena_grouped_agg_cpp,           4},
    {"_RSiena_grouped_agg_matrix_cpp",    (DL_FUNC) &_RSiena_grouped_agg_matrix_cpp,    4},
    {"_RSiena_grouped_agg_from_cols",      (DL_FUNC) &_RSiena_grouped_agg_from_cols,      4},
-   {"_RSiena_softmax_jac_arma",           (DL_FUNC) &_RSiena_softmax_jac_arma,           3},
+   {"_RSiena_softmax_jac_rcpp",           (DL_FUNC) &_RSiena_softmax_jac_rcpp,           3},
    {"_RSiena_calculate_tie_prob_cpp",     (DL_FUNC) &_RSiena_calculate_tie_prob_cpp,     2},
    {"_RSiena_contribToCS_eval_inplace",    (DL_FUNC) &_RSiena_contribToCS_eval_inplace,    3},
    {"_RSiena_build_scatter_idx",             (DL_FUNC) &_RSiena_build_scatter_idx,             2},

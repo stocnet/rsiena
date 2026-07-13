@@ -1,8 +1,9 @@
-// [[Rcpp::depends(RcppArmadillo)]]
-#include <RcppArmadillo.h>
+#include <Rcpp.h>
+#include <cmath>
+#include <algorithm>
+#include <vector>
 
 using namespace Rcpp;
-using namespace RcppArmadillo;
 
 // Not needed currently, because flattening function for one chain now in siena07Utilities
 // // [[Rcpp::export]]
@@ -68,123 +69,149 @@ static void softmax_inplace(const double* x, double* out, int n) {
   for (int i = 0; i < n; i++) out[i] /= s;
 }
 
-// [[Rcpp::export]]
-arma::vec softmax_arma(const arma::vec& x) {
-  arma::vec out(x.n_elem);
-  softmax_inplace(x.memptr(), out.memptr(), x.n_elem);
-  return out;
-}
+// ---------------------------------------------------------------------------
+// Benchmark-only softmax grouping variants — commented out 2026-07-13.
+// Only softmax_rcpp_by_group (below) is used in production (predict.R).
+// The variants below (ungrouped, 3-vector, matrix, list, dataframe grouping)
+// were experiments benchmarked in tests/benchmarks/benchmark_rcpp.r to pick
+// the fastest grouping API. Kept here (commented) so the benchmark or a future
+// production need can restore them easily. To restore: un-comment the block AND
+// re-add its entry to src/init.cpp, then run Rcpp::compileAttributes().
+// ---------------------------------------------------------------------------
+// // [[Rcpp::export]]
+// Rcpp::NumericVector softmax_rcpp(const Rcpp::NumericVector& x) {
+//   int n = x.size();
+//   Rcpp::NumericVector out(n);
+//   softmax_inplace(REAL(x), REAL(out), n);
+//   return out;
+// }
 
 // [[Rcpp::export]]
-arma::vec softmax_arma_by_group(const arma::vec& x, const arma::ivec& group) {
-  int n = x.n_elem;
-  arma::vec out(n);          // one allocation for everything
+Rcpp::NumericVector softmax_rcpp_by_group(const Rcpp::NumericVector& x,
+                                          const Rcpp::IntegerVector& group) {
+  int n = x.size();
+  Rcpp::NumericVector out(n);          // one allocation for everything
+  const double* xp = REAL(x);
+  const int*    gp = INTEGER(group);
+  double*       op = REAL(out);
   int start = 0;
   while (start < n) {
-    int g = group[start], end = start + 1;
-    while (end < n && group[end] == g) end++;           // find group boundary
-    softmax_inplace(x.memptr() + start,                 // pointer into input slice
-                    out.memptr() + start,               // pointer into output slice
+    int g = gp[start], end = start + 1;
+    while (end < n && gp[end] == g) end++;              // find group boundary
+    softmax_inplace(xp + start,                         // pointer into input slice
+                    op + start,                         // pointer into output slice
                     end - start);                       // group size
     start = end;
   }
   return out;
 }
 
-// [[Rcpp::export]]
-arma::vec softmax_rcpp_grouped(const arma::vec& x,
-                                const arma::ivec& g1,
-                                const arma::ivec& g2,
-                                const arma::ivec& g3) {
-  int n = x.n_elem;
-  arma::vec out(n);
-  int start = 0;
-  while (start < n) {
-    int end = start + 1;
-    while (end < n && g1[end] == g1[start] &&
-                      g2[end] == g2[start] &&
-                      g3[end] == g3[start]) end++;
-    softmax_inplace(x.memptr() + start, out.memptr() + start, end - start);
-    start = end;
-  }
-  return out;
-}
+// // [[Rcpp::export]]
+// Rcpp::NumericVector softmax_rcpp_grouped(const Rcpp::NumericVector& x,
+//                                          const Rcpp::IntegerVector& g1,
+//                                          const Rcpp::IntegerVector& g2,
+//                                          const Rcpp::IntegerVector& g3) {
+//   int n = x.size();
+//   Rcpp::NumericVector out(n);
+//   const double* xp = REAL(x);
+//   double*       op = REAL(out);
+//   const int* p1 = INTEGER(g1);
+//   const int* p2 = INTEGER(g2);
+//   const int* p3 = INTEGER(g3);
+//   int start = 0;
+//   while (start < n) {
+//     int end = start + 1;
+//     while (end < n && p1[end] == p1[start] &&
+//                       p2[end] == p2[start] &&
+//                       p3[end] == p3[start]) end++;
+//     softmax_inplace(xp + start, op + start, end - start);
+//     start = end;
+//   }
+//   return out;
+// }
 
-// [[Rcpp::export]]
-arma::vec softmax_rcpp_grouped_mat(const arma::vec& x, const arma::imat& G) {
-  int n = x.n_elem, ncols = G.n_cols;
-  arma::vec out(n);
-  std::vector<const int*> cols(ncols);
-  for (int c = 0; c < ncols; c++) cols[c] = G.colptr(c);  // contiguous per column
-  int start = 0;
-  while (start < n) {
-    int end = start + 1;
-    while (end < n) {
-      bool same = true;
-      for (int c = 0; c < ncols && same; c++)
-        if (cols[c][end] != cols[c][start]) same = false;
-      if (!same) break;
-      end++;
-    }
-    softmax_inplace(x.memptr() + start, out.memptr() + start, end - start);
-    start = end;
-  }
-  return out;
-}
+// // [[Rcpp::export]]
+// Rcpp::NumericVector softmax_rcpp_grouped_mat(const Rcpp::NumericVector& x,
+//                                              const Rcpp::IntegerMatrix& G) {
+//   int n = x.size(), ncols = G.ncol();
+//   Rcpp::NumericVector out(n);
+//   const double* xp = REAL(x);
+//   double*       op = REAL(out);
+//   std::vector<const int*> cols(ncols);
+//   for (int c = 0; c < ncols; c++) cols[c] = &G(0, c);  // contiguous per column
+//   int start = 0;
+//   while (start < n) {
+//     int end = start + 1;
+//     while (end < n) {
+//       bool same = true;
+//       for (int c = 0; c < ncols && same; c++)
+//         if (cols[c][end] != cols[c][start]) same = false;
+//       if (!same) break;
+//       end++;
+//     }
+//     softmax_inplace(xp + start, op + start, end - start);
+//     start = end;
+//   }
+//   return out;
+// }
 
-// [[Rcpp::export]]
-arma::vec softmax_rcpp_grouped_lst(const arma::vec& x, const Rcpp::List& G) {
-  int n = x.n_elem, ncols = G.size();
-  arma::vec out(n);
-  std::vector<const int*> cols(ncols);
-  for (int c = 0; c < ncols; c++) {
-    Rcpp::IntegerVector v = G[c];   // zero-copy wrap of existing R SEXP data
-    cols[c] = v.begin();
-  }
-  int start = 0;
-  while (start < n) {
-    int end = start + 1;
-    while (end < n) {
-      bool same = true;
-      for (int c = 0; c < ncols && same; c++)
-        if (cols[c][end] != cols[c][start]) same = false;
-      if (!same) break;
-      end++;
-    }
-    softmax_inplace(x.memptr() + start, out.memptr() + start, end - start);
-    start = end;
-  }
-  return out;
-}
+// // [[Rcpp::export]]
+// Rcpp::NumericVector softmax_rcpp_grouped_lst(const Rcpp::NumericVector& x,
+//                                              const Rcpp::List& G) {
+//   int n = x.size(), ncols = G.size();
+//   Rcpp::NumericVector out(n);
+//   const double* xp = REAL(x);
+//   double*       op = REAL(out);
+//   std::vector<const int*> cols(ncols);
+//   for (int c = 0; c < ncols; c++) {
+//     Rcpp::IntegerVector v = G[c];   // zero-copy wrap of existing R SEXP data
+//     cols[c] = v.begin();
+//   }
+//   int start = 0;
+//   while (start < n) {
+//     int end = start + 1;
+//     while (end < n) {
+//       bool same = true;
+//       for (int c = 0; c < ncols && same; c++)
+//         if (cols[c][end] != cols[c][start]) same = false;
+//       if (!same) break;
+//       end++;
+//     }
+//     softmax_inplace(xp + start, op + start, end - start);
+//     start = end;
+//   }
+//   return out;
+// }
 
-// [[Rcpp::export]]
-arma::vec softmax_rcpp_grouped_cols(const Rcpp::DataFrame& data,
-                                   const std::string& val_col,
-                                   const Rcpp::CharacterVector& group_cols) {
-  Rcpp::NumericVector x_r = data[val_col];
-  const double* x = x_r.begin();
-  int n = x_r.size(), ncols = group_cols.size();
-  arma::vec out(n);
-  std::vector<const int*> cols(ncols);
-  for (int c = 0; c < ncols; c++) {
-    Rcpp::IntegerVector v = data[Rcpp::as<std::string>(group_cols[c])];
-    cols[c] = v.begin();
-  }
-  int start = 0;
-  while (start < n) {
-    int end = start + 1;
-    while (end < n) {
-      bool same = true;
-      for (int c = 0; c < ncols && same; c++)
-        if (cols[c][end] != cols[c][start]) same = false;
-      if (!same) break;
-      end++;
-    }
-    softmax_inplace(x + start, out.memptr() + start, end - start);
-    start = end;
-  }
-  return out;
-}
+// // [[Rcpp::export]]
+// Rcpp::NumericVector softmax_rcpp_grouped_cols(const Rcpp::DataFrame& data,
+//                                    const std::string& val_col,
+//                                    const Rcpp::CharacterVector& group_cols) {
+//   Rcpp::NumericVector x_r = data[val_col];
+//   const double* x = x_r.begin();
+//   int n = x_r.size(), ncols = group_cols.size();
+//   Rcpp::NumericVector out(n);
+//   double* op = REAL(out);
+//   std::vector<const int*> cols(ncols);
+//   for (int c = 0; c < ncols; c++) {
+//     Rcpp::IntegerVector v = data[Rcpp::as<std::string>(group_cols[c])];
+//     cols[c] = v.begin();
+//   }
+//   int start = 0;
+//   while (start < n) {
+//     int end = start + 1;
+//     while (end < n) {
+//       bool same = true;
+//       for (int c = 0; c < ncols && same; c++)
+//         if (cols[c][end] != cols[c][start]) same = false;
+//       if (!same) break;
+//       end++;
+//     }
+//     softmax_inplace(x + start, op + start, end - start);
+//     start = end;
+//   }
+//   return out;
+// }
 
 // // [[Rcpp::export]]
 // Rcpp::List flattenChangeContributionsWide_rcpp(
@@ -764,29 +791,42 @@ Rcpp::List grouped_agg_from_cols(const Rcpp::NumericVector& x,
 // For each effect k, zeros theta[k] and recomputes grouped softmax using:
 //   util_k = util_full - contribMat.col(k) * theta[k]   (O(n) per effect)
 // instead of a full matrix multiply (O(n*nEff)) each time.
-// group_id must form contiguous blocks (same assumption as softmax_arma_by_group).
+// group_id must form contiguous blocks (same assumption as softmax_rcpp_by_group).
 // Returns an nRows x nEff matrix; column k holds the LOO probs for effect k.
 // [[Rcpp::export]]
-arma::mat loo_change_probs(const arma::mat& contribMat,
-                            const arma::vec& theta,
-                            const arma::ivec& group_id) {
-    int n = contribMat.n_rows, nEff = contribMat.n_cols;
+Rcpp::NumericMatrix loo_change_probs(const Rcpp::NumericMatrix& contribMat,
+                                     const Rcpp::NumericVector& theta,
+                                     const Rcpp::IntegerVector& group_id) {
+    int n = contribMat.nrow(), nEff = contribMat.ncol();
+    const int*    gid = INTEGER(group_id);
+    const double* th  = REAL(theta);
     std::vector<int> starts;
     starts.push_back(0);
     for (int i = 1; i < n; i++)
-        if (group_id[i] != group_id[i-1]) starts.push_back(i);
+        if (gid[i] != gid[i-1]) starts.push_back(i);
     starts.push_back(n);
     int nG = starts.size() - 1;
 
-    arma::vec util_full = contribMat * theta;  // O(n*nEff), computed once
-    arma::mat out(n, nEff);
-    arma::vec util(n);
+    // util_full = contribMat %*% theta  (dense mat-vec, computed once).
+    // Accumulated column-by-column: each column of contribMat is contiguous
+    // (column-major), so this is cache-friendly and needs no BLAS.
+    std::vector<double> util_full(n, 0.0);
     for (int k = 0; k < nEff; k++) {
-        util = util_full - contribMat.col(k) * theta[k];  // O(n)
-        double* out_col = out.colptr(k);
+        const double* col = &contribMat(0, k);
+        double tk = th[k];
+        for (int i = 0; i < n; i++) util_full[i] += col[i] * tk;
+    }
+
+    Rcpp::NumericMatrix out(n, nEff);
+    std::vector<double> util(n);
+    for (int k = 0; k < nEff; k++) {
+        const double* col = &contribMat(0, k);
+        double tk = th[k];
+        for (int i = 0; i < n; i++) util[i] = util_full[i] - col[i] * tk;  // O(n)
+        double* out_col = &out(0, k);
         for (int g = 0; g < nG; g++) {
             int s = starts[g], e = starts[g+1];
-            softmax_inplace(util.memptr() + s, out_col + s, e - s);
+            softmax_inplace(util.data() + s, out_col + s, e - s);
         }
     }
     return out;
@@ -795,32 +835,34 @@ arma::mat loo_change_probs(const arma::mat& contribMat,
 // L1 distance: sum_j |ref[j] - loo[j,k]|, aggregated by contiguous group.
 // Returns nGroups x nEff; rows with <= 1 valid ref entry are set to NA.
 // [[Rcpp::export]]
-arma::mat l1d_grouped(const arma::vec& ref,
-                       const arma::mat& loo,
-                       const arma::ivec& group_id) {
-    int n = ref.n_elem, nEff = loo.n_cols;
+Rcpp::NumericMatrix l1d_grouped(const Rcpp::NumericVector& ref,
+                                const Rcpp::NumericMatrix& loo,
+                                const Rcpp::IntegerVector& group_id) {
+    int n = ref.size(), nEff = loo.ncol();
+    const double* rp  = REAL(ref);
+    const int*    gid = INTEGER(group_id);
     std::vector<int> starts;
     starts.push_back(0);
     for (int i = 1; i < n; i++)
-        if (group_id[i] != group_id[i-1]) starts.push_back(i);
+        if (gid[i] != gid[i-1]) starts.push_back(i);
     starts.push_back(n);
     int nG = starts.size() - 1;
 
-    arma::mat out(nG, nEff, arma::fill::zeros);
+    Rcpp::NumericMatrix out(nG, nEff);  // zero-initialized
     for (int g = 0; g < nG; g++) {
         int s = starts[g], e = starts[g+1];
         int valid = 0;
-        for (int r = s; r < e; r++) if (!std::isnan(ref[r])) valid++;
+        for (int r = s; r < e; r++) if (!std::isnan(rp[r])) valid++;
         if (valid <= 1) {
             for (int k = 0; k < nEff; k++) out(g, k) = NA_REAL;
             continue;
         }
         for (int k = 0; k < nEff; k++) {
             double acc = 0.0;
-            const double* lc = loo.colptr(k);
+            const double* lc = &loo(0, k);
             for (int r = s; r < e; r++)
-                if (!std::isnan(ref[r]) && !std::isnan(lc[r]))
-                    acc += std::abs(ref[r] - lc[r]);
+                if (!std::isnan(rp[r]) && !std::isnan(lc[r]))
+                    acc += std::abs(rp[r] - lc[r]);
             out(g, k) = acc;
         }
     }
@@ -831,23 +873,25 @@ arma::mat l1d_grouped(const arma::vec& ref,
 // Returns nGroups x nEff; NA rows when group has <= 1 valid choice.
 // Terms where loo_k == 0 while ref > 0 are dropped (not Inf), matching na.rm.
 // [[Rcpp::export]]
-arma::mat kld_grouped(const arma::vec& ref,
-                       const arma::mat& loo,
-                       const arma::ivec& group_id) {
-    int n = ref.n_elem, nEff = loo.n_cols;
+Rcpp::NumericMatrix kld_grouped(const Rcpp::NumericVector& ref,
+                                const Rcpp::NumericMatrix& loo,
+                                const Rcpp::IntegerVector& group_id) {
+    int n = ref.size(), nEff = loo.ncol();
+    const double* rp  = REAL(ref);
+    const int*    gid = INTEGER(group_id);
     std::vector<int> starts;
     // do we not know size beforehand or pre-allocate with a first pass?
     starts.push_back(0);
     for (int i = 1; i < n; i++)
-        if (group_id[i] != group_id[i-1]) starts.push_back(i);
+        if (gid[i] != gid[i-1]) starts.push_back(i);
     starts.push_back(n);
     int nG = starts.size() - 1;
 
-    arma::mat out(nG, nEff, arma::fill::zeros);
+    Rcpp::NumericMatrix out(nG, nEff);  // zero-initialized
     for (int g = 0; g < nG; g++) {
         int s = starts[g], e = starts[g+1];
         int valid = 0;
-        for (int r = s; r < e; r++) if (!std::isnan(ref[r])) valid++;
+        for (int r = s; r < e; r++) if (!std::isnan(rp[r])) valid++;
         if (valid <= 1) {
             for (int k = 0; k < nEff; k++) out(g, k) = NA_REAL;
             continue;
@@ -855,11 +899,11 @@ arma::mat kld_grouped(const arma::vec& ref,
         double logN = std::log((double)valid);
         for (int k = 0; k < nEff; k++) {
             double acc = 0.0;
-            const double* lc = loo.colptr(k);
+            const double* lc = &loo(0, k);
             for (int r = s; r < e; r++) {
-                if (std::isnan(ref[r]) || std::isnan(lc[r])) continue;
-                if (ref[r] > 0.0 && lc[r] > 0.0)
-                    acc += ref[r] * (std::log(ref[r]) - std::log(lc[r]));
+                if (std::isnan(rp[r]) || std::isnan(lc[r])) continue;
+                if (rp[r] > 0.0 && lc[r] > 0.0)
+                    acc += rp[r] * (std::log(rp[r]) - std::log(lc[r]));
             }
             out(g, k) = acc / logN;
         }
@@ -881,48 +925,52 @@ arma::mat kld_grouped(const arma::vec& ref,
 //   This re-normalises across all alternatives in the choice set.
 //
 // NA values in delta_u propagate to the output as NA.
-// group_id must form contiguous blocks (same assumption as softmax_arma_by_group).
+// group_id must form contiguous blocks (same assumption as softmax_rcpp_by_group).
 // For perturbType = 0 group_id is unused but must be supplied.
 //
 // [[Rcpp::export]]
-arma::vec mlogit_update(const arma::vec& p,
-                        const arma::vec& delta_u,
-                        const arma::ivec& group_id,
-                        int perturbType) {
-    int n = p.n_elem;
-    arma::vec out(n);
+Rcpp::NumericVector mlogit_update(const Rcpp::NumericVector& p,
+                                  const Rcpp::NumericVector& delta_u,
+                                  const Rcpp::IntegerVector& group_id,
+                                  int perturbType) {
+    int n = p.size();
+    Rcpp::NumericVector out(n);
+    const double* pp  = REAL(p);
+    const double* du  = REAL(delta_u);
+    const int*    gid = INTEGER(group_id);
+    double*       op  = REAL(out);
 
     if (perturbType == 0) {
         // one-alternative update
         for (int i = 0; i < n; i++) {
-            if (std::isnan(delta_u[i])) {
-                out[i] = NA_REAL;
+            if (std::isnan(du[i])) {
+                op[i] = NA_REAL;
             } else {
-                double ed = std::exp(delta_u[i]);
-                out[i] = p[i] * ed / (1.0 - p[i] + p[i] * ed);
+                double ed = std::exp(du[i]);
+                op[i] = pp[i] * ed / (1.0 - pp[i] + pp[i] * ed);
             }
         }
     } else {
         // ego-wide update: re-normalise within each contiguous group
         int start = 0;
         while (start < n) {
-            int g = group_id[start], end = start + 1;
-            while (end < n && group_id[end] == g) end++;
+            int g = gid[start], end = start + 1;
+            while (end < n && gid[end] == g) end++;
 
             // weighted = p * exp(delta_u) for this group
             double denom = 0.0;
             for (int i = start; i < end; i++) {
-                double ed = std::isnan(delta_u[i]) ? 1.0 : std::exp(delta_u[i]);
-                out[i] = p[i] * ed;
-                denom += out[i];
+                double ed = std::isnan(du[i]) ? 1.0 : std::exp(du[i]);
+                op[i] = pp[i] * ed;
+                denom += op[i];
             }
             if (denom > 0.0) {
                 for (int i = start; i < end; i++)
-                    out[i] /= denom;
+                    op[i] /= denom;
             }
             // propagate NA from delta_u
             for (int i = start; i < end; i++)
-                if (std::isnan(delta_u[i])) out[i] = NA_REAL;
+                if (std::isnan(du[i])) op[i] = NA_REAL;
 
             start = end;
         }
@@ -996,34 +1044,47 @@ Rcpp::IntegerVector contribToCS_eval_inplace(Rcpp::NumericMatrix mat,
 // probability-weighted group mean for parameter k.
 //
 // Arguments:
-//   changeProb — [n] choice probabilities at θ̂ (output of softmax_arma_by_group)
+//   changeProb — [n] choice probabilities at θ̂ (output of softmax_rcpp_by_group)
 //   contribMat — [n × K] raw change-contribution matrix (cc$contribMat)
 //   group_id   — [n] contiguous group identifiers (same as used by softmax)
 //
 // Returns: [n × K] matrix of ∂p_j/∂θ_k values.
-// group_id must form contiguous blocks (matching convention of softmax_arma_by_group).
+// group_id must form contiguous blocks (matching convention of softmax_rcpp_by_group).
 // [[Rcpp::export]]
-arma::mat softmax_jac_arma(const arma::vec& changeProb,
-                            const arma::mat& contribMat,
-                            const arma::ivec& group_id) {
-    int n = changeProb.n_elem;
-    int K = contribMat.n_cols;
-    arma::mat out(n, K, arma::fill::zeros);
+Rcpp::NumericMatrix softmax_jac_rcpp(const Rcpp::NumericVector& changeProb,
+                                     const Rcpp::NumericMatrix& contribMat,
+                                     const Rcpp::IntegerVector& group_id) {
+    int n = changeProb.size();
+    int K = contribMat.ncol();
+    const double* cp  = REAL(changeProb);
+    const int*    gid = INTEGER(group_id);
+    Rcpp::NumericMatrix out(n, K);  // zero-initialized
 
+    std::vector<double> tau_bar(K);
     int start = 0;
     while (start < n) {
-        int g   = group_id[start];
+        int g   = gid[start];
         int end = start + 1;
-        while (end < n && group_id[end] == g) end++;
+        while (end < n && gid[end] == g) end++;
 
         // tau_bar[k] = Σ_{j in group} p_j * contribMat[j, k]
-        arma::rowvec tau_bar(K, arma::fill::zeros);
-        for (int i = start; i < end; i++)
-            tau_bar += changeProb[i] * contribMat.row(i);
+        // (column-major iteration: each contribMat column is contiguous)
+        std::fill(tau_bar.begin(), tau_bar.end(), 0.0);
+        for (int k = 0; k < K; k++) {
+            const double* col = &contribMat(0, k);
+            double acc = 0.0;
+            for (int i = start; i < end; i++) acc += cp[i] * col[i];
+            tau_bar[k] = acc;
+        }
 
         // out[j, k] = p_j * (contribMat[j, k] − tau_bar[k])
-        for (int i = start; i < end; i++)
-            out.row(i) = changeProb[i] * (contribMat.row(i) - tau_bar);
+        for (int k = 0; k < K; k++) {
+            const double* col  = &contribMat(0, k);
+            double*       ocol = &out(0, k);
+            double        tb   = tau_bar[k];
+            for (int i = start; i < end; i++)
+                ocol[i] = cp[i] * (col[i] - tb);
+        }
 
         start = end;
     }

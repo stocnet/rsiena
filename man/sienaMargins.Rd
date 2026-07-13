@@ -57,8 +57,7 @@
     nsim = 1000,
     uncertaintySd = TRUE, uncertaintyCi = TRUE,
     uncertaintyMean = FALSE, uncertaintyMedian = FALSE,
-    uncertaintyProbs = c(0.025, 0.5, 0.975),
-    uncertaintyMcse = FALSE, uncertaintymcseBatches = NULL,
+    ciInterval = c(0.025, 0.975),
     useCluster = FALSE, nbrNodes = 1,
     clusterType = c("PSOCK", "FORK"), cl = NULL,
     batchDir = "temp", prefix = "simBatch_b",
@@ -129,8 +128,9 @@
       theta-draws (default \code{TRUE}).}
   \item{nsim}{Number of theta-draws for uncertainty.}
   \item{uncertaintySd, uncertaintyCi, uncertaintyMean, uncertaintyMedian,
-      uncertaintyProbs, uncertaintyMcse,
-      uncertaintymcseBatches}{Control output of uncertainty summaries.}
+      ciInterval}{Control output of uncertainty summaries. \code{ciInterval}
+      gives the CI bounds (default \code{c(0.025, 0.975)}); the median (0.5)
+      is added when \code{uncertaintyMedian = TRUE}.}
   \item{useCluster, nbrNodes, clusterType, cl}{Parallelisation settings.}
   \item{batchDir, prefix, combineBatch, batchSize, keepBatch}{Batch mode
       settings.}
@@ -167,9 +167,9 @@
   \describe{
     \item{\code{Mean}}{Point estimate (mean across theta draws).}
     \item{\code{SE}}{Monte Carlo standard error of the mean.}
-    \item{Quantile columns}{Named by the requested
-      \code{uncertaintyProbs} (e.g.\ \code{2.5\%}, \code{50\%},
-      \code{97.5\%}).}
+    \item{Quantile columns}{Named by the requested \code{ciInterval}
+      bounds (e.g.\ \code{q_025}, \code{q_975}), plus \code{Median} when
+      \code{uncertaintyMedian = TRUE}.}
   }
 }
 \details{

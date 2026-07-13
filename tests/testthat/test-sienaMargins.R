@@ -40,23 +40,6 @@ test_that("marginalEffects static: firstDiff structure", {
 
 
 
-test_that("marginalEffects static with uncertainty: MCSE columns, no CI", {
-  out <- marginalEffects(
-    object = ans, data = mydata,
-    effectName1 = "recip", contrast1 = c(0, 1),
-    type = "tieProb", depvar = "mynet",
-    level = "period", condition = "density",
-    nsim = 20, uncertainty = TRUE,
-    uncertaintyMean = TRUE,
-    uncertaintyMcse = TRUE, uncertaintymcseBatches = 4,
-    uncertaintySd = TRUE, uncertaintyCi = FALSE,
-    verbose = FALSE
-  )
-  expect_true(is.data.frame(out))
-  expect_true(all(c("Mean", "SE", "mcse_Mean", "mcse_SE") %in% names(out)))
-  expect_false("q_025" %in% names(out))
-})
-
 test_that("marginalEffects static: secondDiff structure", {
   out <- marginalEffects(
     object = ans, data = mydata,
@@ -163,7 +146,7 @@ test_that("marginalEffects dynamic: firstDiff structure, uncertainty=FALSE", {
   expect_true("firstDiff" %in% names(out))
 })
 
-test_that("marginalEffects dynamic: MCSE + CI structure", {
+test_that("marginalEffects dynamic: CI structure", {
   skip_slow()
   out <- marginalEffects(
     object = ans, data = mydata,
@@ -173,14 +156,12 @@ test_that("marginalEffects dynamic: MCSE + CI structure", {
     type = "tieProb", condition = "density",
     uncertainty = TRUE,
     uncertaintyMean = TRUE, uncertaintyMedian = TRUE,
-    uncertaintyMcse = TRUE, uncertaintymcseBatches = 4,
     uncertaintySd = FALSE, uncertaintyCi = TRUE,
     verbose = FALSE
   )
   expect_true(is.data.frame(out))
-  expect_true(all(c("Mean", "mcse_Mean", "q_025", "q_975", "Median") %in% names(out)))
+  expect_true(all(c("Mean", "q_025", "q_975", "Median") %in% names(out)))
   expect_false("SE" %in% names(out))
-  expect_false("mcse_SE" %in% names(out))
 })
 
 

@@ -26,7 +26,7 @@
     uncertainty = TRUE,
     nsim = 1000, uncertaintySd = TRUE, uncertaintyCi = TRUE,
     uncertaintyMean = FALSE, uncertaintyMedian = FALSE,
-    uncertaintyProbs = c(0.025, 0.5, 0.975),
+    ciInterval = c(0.025, 0.975),
     useCluster = FALSE, nbrNodes = 1,
     clusterType = c("PSOCK", "FORK"),
     batchDir = "temp", batchSize = NULL,
@@ -58,8 +58,10 @@ sienaEntropy(x, group_id = NULL, level = "ego",
   \item{uncertainty}{Logical: compute uncertainty via theta-draws.}
   \item{nsim}{Number of theta-draws for uncertainty.}
   \item{uncertaintySd, uncertaintyCi, uncertaintyMean, uncertaintyMedian,
-      uncertaintyProbs}{Uncertainty
-      summary controls.}
+      ciInterval}{Uncertainty
+      summary controls. \code{ciInterval} gives the CI bounds (default
+      \code{c(0.025, 0.975)}); the median (0.5) is added when
+      \code{uncertaintyMedian = TRUE}.}
   \item{useCluster, nbrNodes, clusterType}{Parallelisation settings.}
   \item{batchDir, batchSize, keepBatch}{Batch mode settings.}
   \item{verbose}{Logical: print progress messages.}

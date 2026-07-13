@@ -9,7 +9,7 @@ entropy.sienaFit <- function(object, data, effects = NULL, depvar = NULL,
     uncertaintyCi = TRUE,
     uncertaintyMean = FALSE,
     uncertaintyMedian = FALSE,
-    uncertaintyProbs = c(0.025, 0.5, 0.975),
+    ciInterval = c(0.025, 0.975),
     useCluster = FALSE,
     nbrNodes = 1,
     clusterType = c("PSOCK", "FORK"),
@@ -98,7 +98,7 @@ entropy.sienaFit <- function(object, data, effects = NULL, depvar = NULL,
         uncertaintyCi     = uncertaintyCi,
         uncertaintyMean   = uncertaintyMean,
         uncertaintyMedian = uncertaintyMedian,
-        uncertaintyProbs  = uncertaintyProbs
+        ciInterval        = ciInterval
     )
 
     result[["R_entropy"]]

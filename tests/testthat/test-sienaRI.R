@@ -150,7 +150,7 @@ test_that("entropy.sienaFit returns data.frame with R_entropy", {
   expect_true("R_entropy" %in% names(ent) || "Mean" %in% names(ent))
 })
 
-test_that("entropy.sienaFit with uncertainty returns MCSE/CI columns", {
+test_that("entropy.sienaFit with uncertainty returns summary columns", {
   skip_slow()
   ent <- entropy(ans, data = mydata, nsim = 5,
                  uncertainty = TRUE, uncertaintyMean = TRUE,
@@ -237,7 +237,7 @@ test_that("loo_change_probs matches R-loop reference", {
     th_k    <- theta_use; th_k[k] <- 0
     util_k  <- as.numeric(cMat %*% th_k)
     loo_ref[, k] <- as.numeric(
-      RSiena:::softmax_arma_by_group(util_k, gid))
+      RSiena:::softmax_rcpp_by_group(util_k, gid))
   }
 
   # Rcpp: one call
@@ -258,7 +258,7 @@ test_that("l1d_grouped matches per-group R-loop reference", {
   nEff <- ncol(cMat)
 
   util_full <- as.numeric(cMat %*% theta_use)
-  fullProb  <- as.numeric(RSiena:::softmax_arma_by_group(util_full, gid))
+  fullProb  <- as.numeric(RSiena:::softmax_rcpp_by_group(util_full, gid))
   looProb   <- RSiena:::loo_change_probs(cMat, theta_use, as.integer(gid))
 
   uG  <- unique(gid)
@@ -295,12 +295,12 @@ test_that("computeRelativeImportance L1D matches R-loop reference", {
   theta_use <- thetaHat[contrib$effectNames]
   cMat <- contrib$contribMat; gid <- contrib$group_id; nEff <- ncol(cMat)
   util_full <- as.numeric(cMat %*% theta_use)
-  fullProb  <- as.numeric(RSiena:::softmax_arma_by_group(util_full, gid))
+  fullProb  <- as.numeric(RSiena:::softmax_rcpp_by_group(util_full, gid))
   loo_ref   <- matrix(NA_real_, nrow = nrow(cMat), ncol = nEff)
   for (k in seq_len(nEff)) {
     th_k <- theta_use; th_k[k] <- 0
     loo_ref[, k] <- as.numeric(
-      RSiena:::softmax_arma_by_group(as.numeric(cMat %*% th_k), gid))
+      RSiena:::softmax_rcpp_by_group(as.numeric(cMat %*% th_k), gid))
   }
   uG <- unique(gid); nG <- length(uG)
   ri_ref <- matrix(NA_real_, nrow = nG, ncol = nEff)

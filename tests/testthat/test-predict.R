@@ -31,7 +31,7 @@ test_that("predict.sienaFit static: no uncertainty, egoChoice level", {
   expect_true(is.data.frame(pred_df))
 })
 
-test_that("predict.sienaFit static: MCSE columns, no CI", {
+test_that("predict.sienaFit static: SE columns, no CI", {
   skip_slow()
   pred_df <- predict(
     object = ans,
@@ -42,15 +42,13 @@ test_that("predict.sienaFit static: MCSE columns, no CI", {
     level = "period",
     uncertainty = TRUE,
     uncertaintyMean = TRUE,
-    uncertaintyMcse = TRUE,
-    uncertaintymcseBatches = 4,
     uncertaintySd = TRUE,
     uncertaintyCi = FALSE,
     verbose = FALSE
   )
   expect_true(is.data.frame(pred_df))
-  expect_true("mcse_Mean" %in% names(pred_df))
-  expect_true("mcse_SE" %in% names(pred_df))
+  expect_true("Mean" %in% names(pred_df))
+  expect_true("SE" %in% names(pred_df))
   expect_false("q_025" %in% names(pred_df))
   expect_false("q_975" %in% names(pred_df))
   expect_false("Median" %in% names(pred_df))
@@ -126,7 +124,7 @@ test_that("predict.sienaFit dynamic: basic", {
   expect_true(is.data.frame(pred_df))
 })
 
-test_that("predict.sienaFit dynamic: MCSE, no SD", {
+test_that("predict.sienaFit dynamic: CI, no SD", {
   skip_slow()
   pred_df <- predict(
         object = ans,
@@ -140,16 +138,13 @@ test_that("predict.sienaFit dynamic: MCSE, no SD", {
         condition = "density_eval",
         uncertainty = TRUE,
         uncertaintyMean = TRUE,
-        uncertaintyMcse = TRUE,
-        uncertaintymcseBatches = 4,
         uncertaintySd = FALSE,
         uncertaintyCi = TRUE,
     verbose = FALSE
   )
   expect_true(is.data.frame(pred_df))
-  expect_true("mcse_Mean" %in% names(pred_df))
+  expect_true("Mean" %in% names(pred_df))
   expect_false("SE" %in% names(pred_df))
-  expect_false("mcse_SE" %in% names(pred_df))
   expect_true("q_025" %in% names(pred_df))
   expect_true("q_975" %in% names(pred_df))
 })

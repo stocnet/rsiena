@@ -39,7 +39,7 @@ relativeImportance(object, \dots)
     nsim = 1000,
     uncertaintySd = TRUE, uncertaintyCi = TRUE,
     uncertaintyMean = FALSE, uncertaintyMedian = FALSE,
-    uncertaintyProbs = c(0.025, 0.5, 0.975),
+    ciInterval = c(0.025, 0.975),
     useCluster = FALSE, nbrNodes = 1,
     clusterType = c("PSOCK", "FORK"),
     batchDir = "temp", batchSize = NULL,
@@ -99,8 +99,8 @@ relativeImportance(object, \dots)
   \item{uncertaintyCi}{Logical: include confidence intervals?}
   \item{uncertaintyMean}{Logical: include mean of draws (default \code{FALSE})?}
   \item{uncertaintyMedian}{Logical: include median of draws (default \code{FALSE})?}
-  \item{uncertaintyProbs}{Numeric vector of quantile probabilities for
-        confidence intervals (default \code{c(0.025, 0.5, 0.975)}).}
+  \item{ciInterval}{Numeric length-2 vector of lower/upper CI bounds
+        (default \code{c(0.025, 0.975)}).}
   \item{useCluster}{Logical: use a parallel cluster for uncertainty
         computation?}
   \item{nbrNodes}{Number of cluster nodes.}

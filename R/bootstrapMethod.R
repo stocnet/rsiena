@@ -291,50 +291,49 @@ makeUncertaintySummarizer <- function(
     return_mean = FALSE,
     return_median = FALSE,
     ci_interval = c(0.025, 0.975)
-    # na.rm = TRUE  # currently always remove NA; could make this an option if needed
 ) {
-  probs <- as.numeric(ci_interval)
-  if (any(!is.finite(probs)) || any(probs <= 0) || any(probs >= 1)) {
-    stop("'ci_interval' must be strictly between 0 and 1.")
+  ci_interval <- as.numeric(ci_interval)
+  if (length(ci_interval) != 2L || ci_interval[1] >= ci_interval[2]) {
+    stop("'ciInterval' must be a length-2 increasing vector, e.g. c(0.025, 0.975).")
   }
-  if (length(probs) != 2L || probs[1] >= probs[2]) {
-    stop("'ci_interval' must be a length-2 increasing vector, e.g. c(0.025, 0.975).")
+  if (any(!is.finite(ci_interval)) || any(ci_interval <= 0) || any(ci_interval >= 1)) {
+    stop("'ciInterval' must be strictly between 0 and 1.")
   }
 
   function(x, na.rm = TRUE) {
     if (na.rm) x <- x[!is.na(x)]
     n <- length(x)
-    need_q <- isTRUE(return_ci) || isTRUE(return_median)
 
     out <- list()
 
     if (isTRUE(return_mean)) {
-      out[["Mean"]] <- if (n) mean(x, na.rm = na.rm) else NA_real_
+      out[["Mean"]] <- if (n) mean(x) else NA_real_
     }
 
     if (isTRUE(return_sd)) {
-      out[["SE"]] <- if (n >= 2L) sd(x) else NA_real_
+      out[["SE"]] <- if (n >= 2L) stats::sd(x) else NA_real_
     }
 
-    if (need_q) {
+    if (isTRUE(return_ci) || isTRUE(return_median)) {
+      # median (0.5) is derived, not user-specified; CI bounds come from ci_interval
       qprobs <- if (isTRUE(return_median)) {
         c(ci_interval[1], 0.5, ci_interval[2])
       } else {
         ci_interval
       }
       if (n >= 2L) {
-        qu <- unname(quantile(x, probs = qprobs, na.rm = na.rm))
+        qu <- unname(stats::quantile(x, probs = qprobs, na.rm = FALSE))
       } else {
         qu <- rep(NA_real_, length(qprobs))
       }
       if (isTRUE(return_median)) out[["Median"]] <- qu[2]
       if (isTRUE(return_ci)) {
-        # should flexibly take any quantiles, but for now we only name three
-        # decimal places of the interval bounds (e.g. q_025, q_975)
-        out[[paste0("q_", sprintf("%03d", round(ci_interval[1] * 1000)))]] <- qu[1]
-        out[[paste0("q_", sprintf("%03d", round(ci_interval[2] * 1000)))]] <- qu[length(qu)]
+        # column names derive from the interval bounds, e.g. q_025 / q_975
+        out[[sprintf("q_%03d", round(ci_interval[1] * 1000))]] <- qu[1]
+        out[[sprintf("q_%03d", round(ci_interval[2] * 1000))]] <- qu[length(qu)]
       }
     }
+
     out
   }
 }

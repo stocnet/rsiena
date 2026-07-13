@@ -43,8 +43,7 @@
     useCluster = FALSE, nbrNodes = 1,
     nsim = 1000, uncertaintySd = TRUE, uncertaintyCi = TRUE,
     uncertaintyMean = FALSE, uncertaintyMedian = FALSE,
-    uncertaintyProbs = c(0.025, 0.5, 0.975),
-    uncertaintyMcse = FALSE, uncertaintymcseBatches = NULL,
+    ciInterval = c(0.025, 0.975),
     clusterType = c("PSOCK", "FORK"), cl = NULL,
     batchDir = "temp", prefix = "simBatch_b",
     combineBatch = TRUE, batch = TRUE, silent = NULL,
@@ -86,9 +85,10 @@
   \item{nbrNodes}{Number of cluster nodes.}
   \item{nsim}{Number of theta draws (default 1000).}
   \item{uncertaintySd, uncertaintyCi, uncertaintyMean, uncertaintyMedian,
-      uncertaintyProbs,
-      uncertaintyMcse, uncertaintymcseBatches}{Control output columns
-      for SE, confidence intervals, mean, median, quantiles, and Monte Carlo SE.}
+      ciInterval}{Control output columns for SE, confidence intervals, mean,
+      median, and quantiles. \code{ciInterval} gives the CI bounds (default
+      \code{c(0.025, 0.975)}); the median (0.5) is added when
+      \code{uncertaintyMedian = TRUE}.}
   \item{clusterType}{\code{"PSOCK"} or \code{"FORK"}.}
   \item{cl}{An existing cluster object (optional).}
   \item{batchDir, prefix, combineBatch, batchSize, keepBatch}{Batch

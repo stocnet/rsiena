@@ -53,14 +53,16 @@ relativeImportance.sienaFit <- function(object, data,
     sum_fun = mean,
     na.rm = TRUE,
     nsim = 1000,
+    uncertaintyMode = c("bootstrap", "delta", "deltaFull"),
     uncertaintySd = TRUE,
     uncertaintyCi = TRUE,
     uncertaintyMean = FALSE,
     uncertaintyMedian = FALSE,
-    uncertaintyProbs = c(0.025, 0.5, 0.975),
+    ciInterval = c(0.025, 0.975),
     useCluster = FALSE,
     nbrNodes = 1,
     clusterType = c("PSOCK", "FORK"),
+    cl = NULL,
     batchDir = "temp",
     batchSize = NULL,
     keepBatch = FALSE,
@@ -72,6 +74,7 @@ relativeImportance.sienaFit <- function(object, data,
     ...) {
 
     distFun <- match.arg(distFun)
+    uncertaintyMode <- match.arg(uncertaintyMode)
     if (is.null(effects)) effects <- object$requestedEffects
     if (!inherits(effects, "sienaEffects"))
         stop("effects is not a legitimate Siena effects object")
@@ -211,11 +214,13 @@ relativeImportance.sienaFit <- function(object, data,
                 useChangeContributions = if (dynamic)
                     useChangeContributions else FALSE,
                 uncertainty   = TRUE,
+                uncertaintyMode = uncertaintyMode,
                 nsim          = nsim,
                 batchSize     = batchSize,
                 useCluster    = useCluster,
                 nbrNodes      = nbrNodes,
                 clusterType   = clusterType,
+                cl            = cl,
                 batchDir      = batchDir,
                 keepBatch     = keepBatch,
                 verbose       = verbose,
@@ -225,7 +230,7 @@ relativeImportance.sienaFit <- function(object, data,
                 uncertaintyCi     = uncertaintyCi,
                 uncertaintyMean   = uncertaintyMean,
                 uncertaintyMedian = uncertaintyMedian,
-                uncertaintyProbs  = uncertaintyProbs
+                ciInterval        = ciInterval
             )
 
             riObj$uncertainty <- riResults

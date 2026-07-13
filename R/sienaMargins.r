@@ -49,9 +49,7 @@ marginalEffects.sienaFit <- function(
     uncertaintyCi = TRUE,
     uncertaintyMean = FALSE,
     uncertaintyMedian = FALSE,
-    uncertaintyProbs = c(0.025, 0.5, 0.975),
-    uncertaintyMcse = FALSE,
-    uncertaintymcseBatches = NULL,
+    ciInterval = c(0.025, 0.975),
     # Multicore
     useCluster = FALSE,
     nbrNodes = 1,
@@ -711,9 +709,7 @@ marginalEffects.sienaFit <- function(
             uncertaintyCi     = uncertaintyCi,
             uncertaintyMean   = uncertaintyMean,
             uncertaintyMedian = uncertaintyMedian,
-            uncertaintyProbs  = uncertaintyProbs,
-            uncertaintyMcse   = uncertaintyMcse,
-            uncertaintymcseBatches = uncertaintymcseBatches,
+            ciInterval        = ciInterval,
             decisionDetails = decision_details,
             saveDir         = saveDir,
             gcEachBatch     = gcEachBatch,
@@ -966,7 +962,7 @@ predictFirstDiffJac <- function(cc, theta, changeProb, density,
   eff_cs_name <- pa$effectName
   contrast    <- pa$contrast
   theta_use   <- theta[cc$effectNames]
-  Jp          <- softmax_jac_arma(changeProb, cc$contribMat, cc$group_id)
+  Jp          <- softmax_jac_rcpp(changeProb, cc$contribMat, cc$group_id)
 
   # ── resolve diff_j and sign_j (mirrors calculateFirstDiff) ───────────────
   if (!is.null(contrast)) {
