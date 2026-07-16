@@ -271,20 +271,23 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		{
 			if (!is.null(prevAns) && inherits(prevAns, "sienaFit"))
 			{
-				if (is.null(x$useOneStep))
+				if (is.null(x$useOneStep)) # undocumented feature; probably meaningless
 				{
 					x$useOneStep <- FALSE
 				}
 				if (x$useOneStep)
-				{
-					keepStill <- which(prevAns$fixed)
-					if (length(keepStill) == 0)
+				{	
+					if (is.null(x$keepStill))
 					{
-						keepStill <- 0
+						x$keepStill <- which(prevAns$fixed)
+					}
+					if (length(x$keepStill) == 0)
+					{
+						x$keepStill <- 0
 					}				
 				}
 				effects <- update_theta(effects, prevAns, 
-							onestep=x$useOneStep, keepUnchanged=keepStill)
+							onestep=x$useOneStep, keepUnchanged=x$keepStill)
 			}
 		}
 		## add any effects needed for settings model

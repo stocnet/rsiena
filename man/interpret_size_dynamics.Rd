@@ -169,7 +169,7 @@ A \code{interpret_size_dynamics} object consists of following components:
   Relative Importance of Effects in Stochastic Actor-oriented Models.
   \emph{Network Science}, \bold{1 (3)}, 275--297.
 }
-\author{Natalie Indlekofer}
+\author{Natalie Indlekofer, Tom Snijders, Daniel Gotthardt }
 \examples{
 
 myalgo <- set_algorithm_saom(nsub=1, n3=32, seed=1777, cond=FALSE)
@@ -184,9 +184,7 @@ mymodel <- set_effect(mymodel, list(inPop, outAct, transTrip))
 RIDynamics1 <- interpret_size_dynamics(mydata, ans=ans,
                  useChangeContributions=TRUE)
 RIDynamics1
-\dontrun{
 plot(RIDynamics1)
-
 
 myalgo2 <- set_algorithm_saom(nsub=1, n3=32, seed=1777, cond=TRUE)
 (ans2 <- siena(mydata, effects=mymodel, control_algo=myalgo2,
@@ -195,12 +193,14 @@ myalgo2 <- set_algorithm_saom(nsub=1, n3=32, seed=1777, cond=TRUE)
 RIDynamics2 <- interpret_size_dynamics(mydata, ans=ans2, effects=mymodel)
 RIDynamics2
 
-
 myalgo3 <- sienaAlgorithmCreate(nsub=1, n3=32, seed=1777, cond=TRUE)
 RIDynamics3 <- interpret_size_dynamics(data=mydata,
              theta=c(ans2$rate,ans2$theta),
              algorithm=myalgo3, effects=mymodel, intervalsPerPeriod=4)
 RIDynamics3
+
+
+\dontrun{
 
 myalgo4 <- set_algorithm_saom(nsub=1, n3=32)
 mynet2 <-  as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)))

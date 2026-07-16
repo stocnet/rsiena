@@ -81,8 +81,11 @@ siena <- function(data = NULL, effects = NULL,
 				stop("For piped data, you need to give an outputName in the output control object.")
 			}				
 			control_out$outputName <- paste(dataName, "_out", sep="")
-			cat('siena will create/use an output file',
-				paste(control_out$outputName,'.txt',sep=''),'.\n')
+			if (!silent)
+			{
+				cat('siena will create/use an output file',
+					paste(control_out$outputName,'.txt',sep=''),'.\n')
+			}
 		}
 		control_out$projname <- control_out$outputName
 	}
@@ -256,7 +259,7 @@ siena <- function(data = NULL, effects = NULL,
 		## need to reset the random number type to the normal one
 		assign(".Random.seed", z$oldRandomNumbers, pos=1)
 	}
-
+	class(z$theta) <- "coef_siena"
 	class(z) <- "sienaFit"
 	attr(z, "version") <- packageDescription(pkgname, fields = "Version")
 	z$tkvars <- NULL
@@ -281,7 +284,8 @@ estimate_onestep <- function(x, fixed=x$fixed, r=1, shortenNames=FALSE)
 		bfixed <- (1:x$pp) %in% fixed
 	}
 	else # it should be logical
-	{	if (length(fixed) != x$pp)
+	{
+	if (length(fixed) != x$pp)
 		{
 			stop(paste('The length of the boolean vector is ', length(fixed),
 				', but it should be ', x$pp, '.', sep=''))		
@@ -292,6 +296,7 @@ estimate_onestep <- function(x, fixed=x$fixed, r=1, shortenNames=FALSE)
 	dfrac <- x$dfra[!bfixed, !bfixed]
 	meandev <- colMeans(x$sf[ , !bfixed])
 	onestep <- x$theta
+	dinv <- matrix(NA, x$pp, x$pp)
 # This will keep the bfixed parameter values
 	if (!all(bfixed))
 	{
@@ -307,6 +312,7 @@ estimate_onestep <- function(x, fixed=x$fixed, r=1, shortenNames=FALSE)
 	{
 		names(onestep) <- fromObjectToText(names(onestep))
 	}
+	class(onestep) <- "coef_siena"
 	onestep
 }
 
@@ -820,7 +826,7 @@ errorHandler <- function()
 }
 
 ##@coef.sienaFit method for sienaFit
-coef.sienaFit <- function(object, dropRates=TRUE, shortenNames=TRUE, ...)
+coef.sienaFit <- function(object, dropRates=TRUE, shortenNames=FALSE, ...)
 {
 	result <- object$theta
 	if (shortenNames)
@@ -833,16 +839,23 @@ coef.sienaFit <- function(object, dropRates=TRUE, shortenNames=TRUE, ...)
 	}	
 	if (dropRates)
 	{
-		return(result[!object$requestedEffects$basicRate])
+		result <- result[!object$requestedEffects$basicRate]
 	}
-	else
-	{
-		return(result)
-	}
+	class(result) <- "coef_siena"
+	result
 }
 
+
+coefficients <- function(object, ...) UseMethod("coefficients", object)
+
+coefficients.sienaFit <- function(object,  dropRates=TRUE, shortenNames=FALSE, ...)
+{   
+	coef(object, dropRates, shortenNames, ...)
+}
+
+
 ##@vcov.sienaFit method for sienaFit
-vcov.sienaFit <- function(object, dropRates=TRUE, shortenNames=TRUE, ...)
+vcov.sienaFit <- function(object, dropRates=TRUE, shortenNames=FALSE, ...)
 {
 	result <- object$covtheta
 	if (shortenNames)
@@ -862,6 +875,13 @@ vcov.sienaFit <- function(object, dropRates=TRUE, shortenNames=TRUE, ...)
 	{
 		return(result)
 	}
+}
+
+##@print.coef_siena Methods
+print.coef_siena <- function(x, digits=4, ...)
+{
+	print(round(matrix(x,dimnames=list(names(x), "coef ")), digits))
+	invisible(x)
 }
 
 fromObjectToText <- function(a, type='notex'){

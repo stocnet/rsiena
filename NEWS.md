@@ -1,3 +1,21 @@
+2026-07-16
+
+# RSiena 1.6.11
+
+## Changes in RSiena:
+### Effects
+### Functionality
+  * New auxiliary functions `AC_Moran` and `AC_Geary`.
+  * In `transformScript`, the replacement for `sienaCompositionChangeFromFile`
+    was put before the replacement for `sienaCompositionChange`. 
+  * The component `theta` of results of function `siena`, the result of 
+    functions `coef`, and `estimate_onestep` have got a class `coef_siena`,
+    which has its own `print` method (to allow vertical printing).  
+  * Function `coef` now has default `shortenNames=FALSE`. 
+  * Alias `coefficients` for `coef`. 
+  * Remark to console about output file for `siena` only when
+    `silent=FALSE`. 
+
 2026-06-14
 
 # RSiena 1.6.10

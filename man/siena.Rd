@@ -1,6 +1,7 @@
 \name{siena}
 \alias{siena}
 \alias{siena07}
+\alias{coef_siena}
 \alias{estimate_onestep}
 \concept{estimation}
 \title{Function to estimate parameters in a Siena model}
@@ -109,13 +110,14 @@ estimate_onestep(x, fixed=x$fixed, r=1, shortenNames=FALSE)
     change statistics (contributions) should be returned;
     this may produce a very big file.}
   \item{x}{Object of class \code{sienaFit}.}
-  \item{fixed}{One number or a vector of numbers between 1 and \code{p},
+  \item{fixed}{One number or a vector of numbers between 0 and \code{p},
       where \code{p = x$pp}, the number of parameters in \code{x}
       excluding the basic rate parameters used for
       conditional estimation; these indicate the fixed parameters.
       Can also be a logical vector, of length \code{p} indicating
-      these by their numbers as given in the print of \code{x}.}
-  \item{r}{Real number, preferably in \code{(0.1]}.}
+      these by their numbers as given in the print of \code{x}.
+      If 0, nothing will be fixed.}
+  \item{r}{Real number, preferably in \code{(0,1]}.}
   \item{shortenNames}{Logical. Should the effect names
     be shortened?}
 }
@@ -240,7 +242,7 @@ estimate_onestep(x, fixed=x$fixed, r=1, shortenNames=FALSE)
  is multiplied by \code{r}.
 }
 \value{
-  Returns an object of class \code{\link{sienaFit}}, some parts of which are:
+  \code{siena} returns an object of class \code{\link{sienaFit}}, some parts of which are:
   \item{OK}{Boolean indicating successful termination}
   \item{termination }{Character string, values: "OK", "Error", or
     "UserInterrupt". "UserInterrupt" indicates that the user asked for early
@@ -250,7 +252,7 @@ estimate_onestep(x, fixed=x$fixed, r=1, shortenNames=FALSE)
   \item{effects}{The included effects in the effects object to which are added
     the main effects of the requested interaction effects, if any.}
   \item{theta}{Estimated value of theta, if \code{simOnly=FALSE}
-    in \code{control_algo}.}
+    in \code{control_algo}. Is of class \code{coef_siena}.}
   \item{thetas}{Matrix, returned if \code{returnThetas} and \code{x$nsub >= 1}.
     First column is subphase; further columns are values of theta as generated
     during this subphase of Phase 2.}
@@ -314,6 +316,10 @@ estimate_onestep(x, fixed=x$fixed, r=1, shortenNames=FALSE)
    of parameter values actually used in the simulations of Phase 3.}
   Writes text output to the file indicated for \code{siena}
   in \code{control_output} and for \code{siena07} in \code{alg}.
+
+  \code{estimate_onestep} returns the one-step estimate in which
+  the parameters indiated in \code{fixed}  are fixed. This is a vector
+  of class \code{coef_siena}.
 }
 \references{
     Amati, V., Schoenenberger, F., and Snijders, T.A.B. (2015),
