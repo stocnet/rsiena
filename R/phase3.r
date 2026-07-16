@@ -167,7 +167,7 @@ phase3.2 <- function(z, x, ...)
         toosmall2 <- abs(sf) < 1e-10 * z$scale
         dmsf[toosmall] <- 1e-20 * z$scale[toosmall] * z$scale[toosmall]
         tstat <- rep(NA, z$pp)
-        tstat[!toosmall]<- sf[!toosmall] / sqrt(dmsf[!toosmall])
+        tstat[!toosmall] <- sf[!toosmall] / sqrt(dmsf[!toosmall])
         tstat[toosmall & toosmall2] <- 0
         tstat[toosmall & !toosmall2] <- NA
         z$tstat <- tstat

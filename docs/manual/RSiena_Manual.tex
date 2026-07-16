@@ -216,7 +216,7 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version1.6.9.
+This version was renewed for \RS version1.6.11.
 
 In version 1.6, the names of \RS functions have undergone
 important changes. This manual is for the new names.
@@ -1187,7 +1187,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g., 1.6.9).
+  identified by a version number (e.g., 1.6.11).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -1376,15 +1376,10 @@ corresponding to the algorithm object used by this call of
 \sfn{siena07} or \sfn{sienaBayes}.
 These algorithm objects constructed always have the names, respectively,
 \texttt{alg\_model}, \texttt{alg\_alg}, and \texttt{alg\_out}.
-\medskip
-
-Function \sfn{transformScript} also produces a log file.
-If it leads to an error, it may be helpful to use\\
-\texttt{traceback()}\\
-immediately after the error occurs; and to look at
-the log file, which will have line numbers until the last
-line that was treated.
 \bigskip
+
+The function \sfn{transformScript} also produces a log file;
+its use is discussed below.
 
 If you want to transform to the new names
 all files in the working directory with extension name \texttt{.R},
@@ -1414,6 +1409,7 @@ for (h in (1:nfiles)){
 
 \newpage
 
+
 If and when errors in a newly created script occur,
 it is good to understand how the function  \sfn{transformScript}
 operates.
@@ -1435,7 +1431,38 @@ It passes three times through the old script:
      without being a function call (i.e., without being
      followed by "(")), they are replaced with the new names.
 \end{enumerate}
+These three passes are documented in the log file.m
 
+
+If in the algorithm used for  \sfn{siena07} or \sfn{sienaBayes}
+(or its call) a variable occurs,
+then this variable may be unknown to \sfn{transformScript}
+which will lead to an error.
+For example:
+\medskip
+
+\noindent
+\texttt{\small Error in eval(parse(text = newcommand1)) : object 'nodes' not found}
+\medskip
+
+\noindent
+Just create the missing object and give it a value,
+and run \sfn{transformScript}  again.
+In the generated script you probably will have to modify this object.
+
+If you cannot easily make sense of the error,
+ it may be helpful to look at
+the log file, which will have line numbers until the last
+line that was treated.\\
+If this does not help, you could use
+\medskip
+
+\noindent
+\texttt{traceback()}
+\medskip
+
+\noindent
+immediately after the error occurs; and try to understand.
 
 \clearpage
 
@@ -6093,14 +6120,14 @@ used for conditioning are not included in this matrix.
 In this case the covariance matrix is as follows.
 
 {\footnotesize
-\begin{verbatim}
-Covariance matrix of estimates (correlations below diagonal):)
+ \begin{verbatim}
+Covariance matrix of estimates (correlations below diagonal):
        0.021       -0.018       -0.010        0.006       -0.008
       -0.468        0.069        0.008       -0.034       -0.002
       -0.395        0.180        0.032       -0.049        0.003
        0.130       -0.378       -0.795        0.117       -0.001
       -0.223       -0.037        0.074       -0.007        0.062
-\end{verbatim}
+ \end{verbatim}
 }
 The diagonal values are the variances, i.e., the squares of the
 standard errors (e.g., for the reciprocity effect,
@@ -6625,7 +6652,7 @@ The missing data at the beginning of the wave are modeled as random
 variables with a simple prior distribution, given by the
 distribution of the non-missing entries for this wave.
 (For Maximum Likelihood estimation, this is a Bayesian incursion
-in an otherwise frequentist approach...) 
+in an otherwise frequentist approach...)
 The missing data at the end of the wave are modeled
 as random variables with the distribution implied
 by the Markov chain model with the estimated parameters.
@@ -8899,7 +8926,7 @@ will be significant.
   determined by parameter \texttt{mult} (`multiplication factor')
   in the call of \textsf{set\_algorithm\_saom} that created the algorithm object.
 \end{enumerate}
-  The function \textsf{multi\_siena} is time-consuming. When starting to use it, 
+  The function \textsf{multi\_siena} is time-consuming. When starting to use it,
   it is advisable
   to start with low values of \texttt{nmain} to explore computing time.
   When the procedure seems to diverge, and for very small groups, it is
@@ -8909,7 +8936,7 @@ will be significant.
 
 \subsubsection{Treatment of missing data}
 
-For missing data in the dependent variables (not in the covariates!), 
+For missing data in the dependent variables (not in the covariates!),
 a different procedure is used than the one in the Methods of Moments
 estimation procedure.
 The missing data at the beginning of the wave are modeled as random
@@ -10540,9 +10567,11 @@ which means they can be used in interactions  and in endowment and creation func
  this is left out in later versions of \si;
 
  \item {\em sum of (1/(out-degree + $p$)} \texttt{(outInv)},
- where $p$ is some constant,  defined by  \\
- $s^{\rm net}_{i\vit}(x) = 1/(x_{i+} + p)$;\\
- endowment effect only likelihood-based;
+ where $p$ is some constant, $ p \geq 1$,  defined by
+$  s^{\rm net}_{i\vit}(x) \,=\,   1/(x_{i+} + p) \ $ ;\\
+ endowment effect only likelihood-based;\\
+ also see \texttt{divOut\_ego}, which is similar but
+ suitable for interacting with other effects;
 
  \item {\em sum of (1/(out-degree + $p$)(out-degree + $p+1$))} \texttt{(outSqInv)},
  where $p$ is some constant, defined by  \\
@@ -16743,9 +16772,9 @@ from 1 to 5, with $\bar v = 2.99$.
 This is called the \emph{selection table}.
 It can be calculated by the \RS function \sfn{interpret\_selection}.
 
-Given that this script is available in the working directory,
-the data set is called \texttt{G129\_Data}, the answer
-(\sfn{sienaFit}) object is called \texttt{ans5}, the network \texttt{"friendship"},
+Given that the data set is called \texttt{G129\_Data}, the answer
+(\sfn{sienaFit}) object is called \texttt{ans5},
+the network \texttt{"friendship"},
 and the actor variable \texttt{"drinking"}, the following command
 can be used.
 
@@ -16753,7 +16782,7 @@ can be used.
 \begin{verbatim}
 st_dr <- interpret_selection(ans5, G129_Data, "friendship", "drinking")
 # It can be displayed
-sm.drink
+st_dr
 # and if package xtable is loaded, also be written
 # to a latex or html file. For example,
 tab.drink <- xtable(st_dr)
@@ -17765,12 +17794,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type
-\verb|R CMD check RSiena_1.6.9.tar.gz|\\
+\verb|R CMD check RSiena_1.6.11.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.6.9.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.6.11.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -18255,15 +18284,15 @@ sum(pmin(rowSums(s502),3))
 
 For two-mode networks the difference between the two node sets implies
 some peculiarities.
-Recall that effectGroups define combinations of dependent variable, 
-effect type, and covariates (if any). 
+Recall that effectGroups define combinations of dependent variable,
+effect type, and covariates (if any).
 They are used in the file \texttt{allEffects.csv}
 and in function \sfn{effects.r}.
-In the output of \sfn{effectsDocumentation()} 
-(mentioning no effects object), the effectGroups are 
+In the output of \sfn{effectsDocumentation()}
+(mentioning no effects object), the effectGroups are
 given as categories of the effects.
 
-In the function \textsf{make\_specification} in file \sfn{effects.r}, 
+In the function \textsf{make\_specification} in file \sfn{effects.r},
 some additional
 measures are taken for effects in effectGroup \sfn{covarBipartiteObjective},
 because this effect group does not differentiate between effects of covariates
@@ -18330,7 +18359,7 @@ the following effectGroups are defined:
 \item \sfn{covarNetNetObjective} is for effects where
         both networks are one-mode;
 \item \sfn{covarANetNetObjective} is for effects where
-        $X$ is one-mode, and if $W$ is two-mode, 
+        $X$ is one-mode, and if $W$ is two-mode,
         $V$ is defined for the first mode;
 \item \sfn{covarAWNetNetObjective} is for effects where
         $W$ is one-mode, and $V$ is defined for the first mode;
@@ -18437,6 +18466,33 @@ Changes in RSiena:
 \fi
 
 
+\item 2026-07-16 GitHub, package version 1.6.11.
+
+Changes in RSiena:
+\begin{itemize}
+  \item Functionality
+     \begin{itemize}
+  \item New auxiliary functions \sfn{AC\_Moran} and \sfn{AC\_Geary}.
+  \item In \sfn{transformScript}, the replacement for \texttt{sienaCompositionChangeFromFile}
+    was put before the replacement for \texttt{sienaCompositionChange}.
+  \item The component \texttt{theta} of results of function \sfn{siena}, the result of
+    functions \sfn{coef}, and \sfn{estimate\_onestep} have got a class \sfn{coef\_siena},
+    which has its own \sfn{print} method (to allow vertical printing).
+  \item Function \sfn{coef} now has default \texttt{shortenNames=FALSE}.
+  \item Alias \sfn{coefficients} for \sfn{coef}.
+  \item Remark to console about output file for \sfn{siena} only when
+    \texttt{silent=FALSE}.
+  \item Undo sorting of returned data frames for \texttt{returnChains=TRUE}\\
+      (in \texttt{siena07models.cpp}).
+    \end{itemize}
+  \item Bug corrections:
+    \begin{itemize}
+  \item Running \sfn{siena} with \texttt{returnChains = TRUE, returnDataFrame = TRUE}
+    corrected.
+    \end{itemize}
+\end{itemize}
+
+
 \item 2026-06-10 GitHub, package version 1.6.9.
 
 Changes in RSiena:
@@ -18452,9 +18508,9 @@ Changes in RSiena:
     \begin{itemize}
   \item New function \sfn{estimate\_onestep}.
   \item Option \texttt{onestep} for \sfn{update\_theta.sienaEffects} changed.
-  \item Hidden option to use the one-step estimator with 
+  \item Hidden option to use the one-step estimator with
       \texttt{prevAns} in \sfn{siena} (experimental).
-  \item \sfn{print.sienadata} and \sfn{print.sienaGroup} now specify 
+  \item \sfn{print.sienadata} and \sfn{print.sienaGroup} now specify
     the node sets for covariates and restricts printed line lengths to 64.
   \item More informative error message in \sfn{make\_data\_rsiena} if the number
     of elements of the second node set for bipartite networks is not correct.
@@ -18467,7 +18523,7 @@ Changes in RSiena:
     of two dependent networks and an actor covariate:
     these now are \texttt{covarNetNetObjective}, \\
     \texttt{covarANetNetObjective}, \texttt{covarAWNetNetObjective},\\
-    \texttt{covarADNetNetObjective}, 
+    \texttt{covarADNetNetObjective},
     \texttt{covarBNetNetObjective},\\
     \texttt{covarBXNetNetObjective}.
     See Section~\ref{S_notestwomode}.

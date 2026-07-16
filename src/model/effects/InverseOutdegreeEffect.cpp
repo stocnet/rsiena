@@ -24,9 +24,9 @@ namespace siena
  * Constructor.
  */
 InverseOutdegreeEffect::InverseOutdegreeEffect(
-	const EffectInfo * pEffectInfo) : NetworkEffect(pEffectInfo)
+    const EffectInfo * pEffectInfo) : NetworkEffect(pEffectInfo)
 {
-	this->lc = pEffectInfo->internalEffectParameter();
+    this->lc = pEffectInfo->internalEffectParameter();
 
 	if (this->lc < 1)
 	{
@@ -41,19 +41,19 @@ InverseOutdegreeEffect::InverseOutdegreeEffect(
  */
 double InverseOutdegreeEffect::calculateContribution(int alter) const
 {
-	double sum =
-		this->pNetwork()->outDegree(this->ego()) + this->lc;
+    double sum =
+        this->pNetwork()->outDegree(this->ego()) + this->lc;
 
-	if (this->outTieExists(alter))
-	{
-		// Tie withdrawal
-		return -1.0 / ((sum - 1) * sum);
-	}
-	else
-	{
-		// Tie introduction
-		return -1.0 / ((sum + 1) * sum);
-	}
+    if (this->outTieExists(alter))
+    {
+        // Tie withdrawal
+            return -1.0 / ((sum - 1) * sum);
+        }
+    else
+    {
+        // Tie introduction
+        return -1.0 / ((sum + 1) * sum);
+    }
 }
 
 
@@ -63,9 +63,9 @@ double InverseOutdegreeEffect::calculateContribution(int alter) const
  * of this kind.
  */
 double InverseOutdegreeEffect::egoStatistic(int ego,
-	const Network * pNetwork)
+    const Network * pNetwork)
 {
-	return 1.0 / (pNetwork->outDegree(ego) + this->lc);
+    return 1.0 / (pNetwork->outDegree(ego) + this->lc);
 }
 
 }
