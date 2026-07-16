@@ -1657,3 +1657,83 @@ egoAlterCovarComb <- function (i, obsData, sims, period, groupName, varName,
 	attr(teax, "EgoAlter") <- TRUE
 	teax
 }
+
+# define spatial autocorrelation functions:
+Moran <- function(x,z) {
+	n <- length(z)
+	z.ave <- mean(z,na.rm=TRUE)
+	numerator <- n*sum(x*outer(z-z.ave,z-z.ave),na.rm=TRUE)
+	denominator <- sum(x,na.rm=TRUE)*sum((z-z.ave)^2,na.rm=TRUE)
+	return(numerator/denominator)
+}
+
+Geary <- function(x,z) {
+	n <- length(z)
+	z.ave <- mean(z,na.rm=TRUE)
+	numerator <- (n-1)*sum(x*(outer(z,z,FUN='-')^2),na.rm=TRUE)
+	denominator <- 2*sum(x,na.rm=TRUE)*sum((z-z.ave)^2,na.rm=TRUE)
+	return(numerator/denominator)
+}
+
+
+
+AC_Moran <- function (i, obsData, sims, period, groupName, varName, depth=3) 
+{
+# An auxiliary function calculating the Moran autocorrelations
+# and rounding to 3 decimals
+	if (length(varName) != 2){
+		stop("AC_Moran expects two varName parameters")
+	}
+	varName1 <- varName[1]
+	varName2 <- varName[2]
+	m <- as.matrix(sparseMatrixExtraction(i, obsData, sims, period, groupName, 
+		varName1))
+	x <- behaviorExtraction(i, obsData, sims, period, groupName, 
+		varName2)
+# Construct a list of powers 1:depth of m
+	if (depth >= 2){
+		mList <- lapply(1:(depth-1), function(i){m})
+		mPowList <- Reduce(function(x,y){pmin(x %*% y,1)}, mList, init=m,accumulate=TRUE)
+		mPowList <- lapply(mPowList, function(mat){mat[!is.na(x), !is.na(x)]})
+		x <- x[!is.na(x)]		
+		Morans <- vapply(mPowList, function(mat){Moran(mat,x)}, FUN.VALUE=0)
+	}
+	else {
+		m <- m[!is.na(x), !is.na(x)]
+		x <- x[!is.na(x)]		
+		Morans <- Moran(m,x) 
+	}
+	names(Morans) <- paste("d=", 1:depth, sep="")
+	round(Morans, 3)
+}
+
+AC_Geary <- function (i, obsData, sims, period, groupName, varName, depth=3) 
+{
+# An auxiliary function calculating the Geary autocorrelations
+# and rounding to 3 decimals
+	if (length(varName) != 2){
+		stop("AC_Geary expects two varName parameters")
+	}
+	varName1 <- varName[1]
+	varName2 <- varName[2]
+	m <- as.matrix(sparseMatrixExtraction(i, obsData, sims, period, groupName, 
+		varName1))
+	x <- behaviorExtraction(i, obsData, sims, period, groupName, 
+		varName2)
+	if (depth >= 2){
+# Construct a list of powers 1:depth of m
+		mList <- lapply(1:(depth-1), function(i){m})
+		mPowList <- Reduce(function(x,y){pmin(x %*% y,1)}, mList, init=m,accumulate=TRUE)
+		mPowList <- lapply(mPowList, function(mat){mat[!is.na(x), !is.na(x)]})
+		x <- x[!is.na(x)]		
+		Gearys <- vapply(mPowList, function(mat){Geary(mat,x)}, FUN.VALUE=0)
+	}
+	else {
+		m <- m[!is.na(x), !is.na(x)]
+		x <- x[!is.na(x)]		
+		Gearys <- Geary(m,x) 
+	}
+	names(Gearys) <- paste("d=", 1:depth, sep="")
+	round(Gearys, 3)
+}
+
