@@ -216,7 +216,7 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version1.6.11.
+This version was renewed for \RS version 1.6.12.
 
 In version 1.6, the names of \RS functions have undergone
 important changes. This manual is for the new names.
@@ -1187,7 +1187,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g., 1.6.11).
+  identified by a version number (e.g., 1.6.12).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -17794,12 +17794,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type
-\verb|R CMD check RSiena_1.6.11.tar.gz|\\
+\verb|R CMD check RSiena_1.6.12.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.6.11.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.6.12.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -18321,6 +18321,16 @@ the following effectGroup is defined:
     coded in \sfn{effects.r}, \sfn{make\_data\_rsiena.r},
     and three C++ functions. That is perhaps overdone.)
 \end{itemize}
+For effects defined for one dependent two-mode network $X$ and one dyadic
+covariate, the following three effectGroups are defined:
+\begin{itemize}
+\item \sfn{dyadBipartiteObjective} is for effects where the dyadic covariate is 
+    also two-mode and matching the node sets of $X$;
+\item \sfn{dyadBipartiteSecondObjective} is for effects where the dyadic
+    covariate is one-mode and defined for the second mode of $X$;
+\item \sfn{dyadBipartiteThirdObjective} is for effects where the dyadic
+    covariate is one-mode and defined for the first mode of $X$.
+\end{itemize}
 \medskip
 
 Further some of the complex effectGroups are the following.
@@ -18464,6 +18474,29 @@ Changes in RSiena:
     \end{itemize}
 \end{itemize}
 \fi
+
+\item 2026-07-28 GitHub, package version 1.6.12.
+
+Changes in RSiena:
+\begin{itemize}
+  \item New effects:
+    \begin{itemize}
+  \item Effects \texttt{toU} and \texttt{WXX} now also available for two-mode networks.
+  \item New effectGroup \texttt{dyadThirdBipartiteObjective}.
+    \end{itemize}
+  \item Bug corrections:
+    \begin{itemize}
+\item Adherence to positivity constraints during parameter updates in Phase 2 
+   corrected for the \texttt{doubleAveraging=TRUE} option.
+    \end{itemize}
+\item Documentation:
+    \begin{itemize}
+  \item Explanation of effectGroups \texttt{dyadBipartiteObjective}, \\
+    \texttt{dyadSecondBipartiteObjective}, and \texttt{dyadThirdBipartiteObjective}, 
+    involving a dyadic covariate and a dependent two-mode network, added to 
+    Section~\ref{S_notestwomode}.
+    \end{itemize}
+\end{itemize}
 
 
 \item 2026-07-16 GitHub, package version 1.6.11.
