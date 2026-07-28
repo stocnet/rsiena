@@ -496,7 +496,8 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
                                    specs, type,
                                    fullMode = FALSE,
                                    eps = 1e-5,
-                                   precomputed = NULL) {
+                                   precomputed = NULL,
+                                   verbose = FALSE) {
 
   nParams     <- length(thetaHat)
   theta_names <- names(thetaHat)
@@ -513,10 +514,9 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
   has_rateweight <- any(vapply(specs, function(s) isTRUE(s$rateWeight),
                                logical(1L)))
   if (has_rateweight) {
-    warning(
+    if (verbose >= 1) message(
       "rateWeight detected: forcing finite-difference Jacobian because ",
-      "analytical rateWeight Jacobian correction is not yet implemented.",
-      call. = FALSE
+      "analytical rateWeight Jacobian correction is not yet implemented."
     )
   }
   use_analytical  <- !(has_accumulated || has_rateweight)
@@ -530,8 +530,8 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
     jac_result <- tryCatch(
       jacobianCondAnalytical(estimator, thetaHat, specs),
       error = function(e) {
-        warning("Analytical Jacobian failed (", conditionMessage(e),
-                "); falling back to finite-difference Jacobian.", call. = FALSE)
+        if (verbose >= 1) message("Analytical Jacobian failed (", conditionMessage(e),
+                "); falling back to finite-difference Jacobian.")
         NULL
       })
     if (is.null(jac_result))
@@ -546,11 +546,10 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
     null_specs <- Filter(function(sn) is.null(jac_result$jac[[sn]]),
                          names(jac_result$jac))
     if (length(null_specs) > 0L) {
-      warning(
+      if (verbose >= 1) message(
         "Analytical Jacobian unavailable for ", length(null_specs),
         " spec(s); using finite-difference fallback for: ",
-        paste(null_specs, collapse = ", "),
-        call. = FALSE
+        paste(null_specs, collapse = ", ")
       )
       fd_result <- jacobianCondDelta(estimator, thetaHat,
                                      specs[null_specs], eps)

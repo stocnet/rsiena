@@ -48,20 +48,21 @@ importFrom("parallel", "clusterCall", "parLapply", "parRapply",
            "clusterSetRNGStream", "makeCluster", "stopCluster")
 importFrom("xtable", "xtable", "print.xtable")
 importFrom("MASS", "cov.rob", "ginv", "mvrnorm")
-importFrom("grDevices", "rgb", "xy.coords")
+importFrom("grDevices", "rgb", "xy.coords", "dev.cur")
 importFrom("graphics", "axis", "barplot", "layout", "lines",
            "mtext", "pairs", "panel.smooth", "par", "pie", "plot",
-           "points", "strwidth", "text")
+           "points", "strwidth", "text", "matplot", "plot.new", "title")
 importFrom("methods", "as", "is", "hasArg")
 importFrom("stats", ".getXlevels", "acf", "as.formula", "ave", "coef",
            "contr.helmert", "cor", "cor.test", "cov", "density",
            "dnorm", "ecdf", "filter", "hatvalues", "lm", "lm.wfit", "mad",
            "mahalanobis", "median", "model.matrix", "model.offset",
            "model.response", "model.weights", "na.omit", "naprint",
-           "optim", "optimize", "pchisq", "plot.ts", "pnorm", 
+           "optim", "optimize", "pchisq", "plot.ts", "pnorm",
            "predict.lm", "pt", "qchisq", "qnorm", "quantile", "reshape",
-           "rnorm", "runif", "rWishart", "sd", "setNames", "ts", "uniroot", 
-           "var", "weighted.mean", "weights")
+           "rnorm", "runif", "rWishart", "sd", "setNames", "ts", "uniroot",
+           "var", "weighted.mean", "weights",
+           "approxfun", "terms", "vcov")
 importFrom("utils", "browseURL", "edit",
            "flush.console", "getFromNamespace", "object.size",
            "packageDescription", "read.csv",

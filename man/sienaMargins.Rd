@@ -57,7 +57,7 @@
     perturbType1 = NULL, perturbType2 = NULL,
     massContrasts = NULL,
     egoNormalize = TRUE, accumulated = FALSE, rateWeight = FALSE,
-    returnDecisionDetails = FALSE, returnComponents = FALSE,
+    returnDecisionDetails = FALSE,
     dynamic = FALSE, algorithm = NULL, n3 = 200,
     n3PointEst = NULL, n3BatchSize = 100L,
     chainStoreMode = c("auto", "disk", "memory"),
@@ -137,8 +137,6 @@
       \code{FALSE}).}
   \item{returnDecisionDetails}{Logical: include per-decision detail
       columns in the output (default \code{FALSE}).}
-  \item{returnComponents}{Logical: include utility component
-      breakdowns in the output (default \code{FALSE}).}
   \item{dynamic}{Logical: if \code{TRUE}, use dynamic contributions from
       simulated chains.}
   \item{algorithm}{Required when \code{dynamic = TRUE}: a

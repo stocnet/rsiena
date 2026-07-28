@@ -34,7 +34,6 @@ marginalEffects.sienaFit <- function(
     accumulated = FALSE,
     rateWeight = FALSE,
     returnDecisionDetails = FALSE,
-    returnComponents = FALSE,
     dynamic = FALSE,
     algorithm = NULL,
     n3 = 200,
@@ -137,8 +136,7 @@ marginalEffects.sienaFit <- function(
             perturbType1    = perturbType1,
             perturbType2    = perturbType2,
             massContrasts   = massContrasts,
-            returnDecisionDetails = returnDecisionDetails,
-            returnComponents = returnComponents
+            returnDecisionDetails = returnDecisionDetails
         ))
         .single_effect <- TRUE
     }
@@ -521,7 +519,6 @@ marginalEffects.sienaFit <- function(
                 dynamic               = dynamic,
                 massContrasts         = eff_massC,
                 returnDecisionDetails = eff_retDet,
-                returnComponents       = isTRUE(spec$returnComponents),
                 jacobianFun           = if (!eff_second) predictFirstDiffJac
                                         else NULL,
                 metadata = list(
@@ -1164,8 +1161,11 @@ calculateFirstDiff <- function(densityValue,
 
   if (effectName == "density") {
     if((!is.null(diff))) stop("firstDiff for density must be contrast c(-1,1)")
+    if (is.null(contrast))
+        stop("firstDiff for density requires contrast = c(-1, 1).")
     if(!is.null(contrast)){
-      if(any(setdiff(contrast, c(-1,1)))) {stop("firstDiff for density can only be be calculated for c(-1,1)")}
+      if (!setequal(contrast, c(-1, 1)))
+          stop("firstDiff for density requires contrast = c(-1, 1).")
       if(interaction == TRUE) {stop("Interaction with density is not possible")}
       oldChangeStatistic <- densityValue
       newChangeStatistic <- rep(NA, length(oldChangeStatistic))

@@ -36,7 +36,10 @@ test_that("rateWeight spec uses FD and skips analytical mode", {
     )
   )
 
-  expect_warning(
+  ## The FD fallback is a correct-but-slower path, not a defect: it must be
+  ## silent by default and only reported under verbose. See
+  ## docs/design/postestimation/postestimate_api_redesign.md (Sec. 1.3).
+  expect_no_warning(
     res <- deltaMethodUncertainty(
       wide = NULL,
       estimator = est,
@@ -46,6 +49,21 @@ test_that("rateWeight spec uses FD and skips analytical mode", {
       specs = specs,
       type = "changeProb",
       fullMode = FALSE
+    )
+  )
+
+  ## ...but the diagnostic is still available when asked for.
+  expect_message(
+    deltaMethodUncertainty(
+      wide = NULL,
+      estimator = est,
+      ssc_sum = NULL,
+      thetaHat = thetaHat,
+      covTheta = covTheta,
+      specs = specs,
+      type = "changeProb",
+      fullMode = FALSE,
+      verbose = 1
     ),
     regexp = "rateWeight detected: forcing finite-difference Jacobian"
   )

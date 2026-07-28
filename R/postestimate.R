@@ -249,7 +249,8 @@ sienaPostestimate <- function(
         specs       = specs,
         type        = type,
         fullMode    = isFullMode,
-        precomputed = precomputed
+        precomputed = precomputed,
+        verbose     = verbose
     )
     rm(hatEstimatorFun, contribFun)
     gc(verbose = FALSE)
@@ -832,7 +833,7 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
                     is.null(perturbations) && mode == "outcome"
 
     if (use_parallel) {
-      assertChainsFreed(verbose = FALSE)
+      assertChainsFreed(verbose = verbose)
       all_batch_results <- parallel::mclapply(
         seq_len(nBatches),
         function(b) one_batch(b, theta, useChangeContributions,
@@ -2674,8 +2675,11 @@ memReport <- function(label = "", verbose = TRUE) {
 }
 
 # assertChainsFreed: verify no live changeContributions in the calling
-# frame chain before fork.  Warns (not errors) so production runs proceed.
+# frame chain before fork.  Developer diagnostic only: silent (and does no
+# work at all) unless verbose >= 1, since the chains it finds usually belong
+# to the caller's sienaFit and cannot be freed from here.
 assertChainsFreed <- function(verbose = FALSE) {
+  if (!isTRUE(verbose >= 1)) return(invisible(NULL))
   # Best-effort diagnostics only: never fail the computation.
   get_cc <- function(x) {
     tryCatch({
@@ -2695,13 +2699,14 @@ assertChainsFreed <- function(verbose = FALSE) {
             as.numeric(object.size(cc)) / 1e6,
             error = function(e) NA_real_)
           msg <- sprintf(
-            paste0("Pre-fork warning: '%s' in frame %d still holds ",
-                 "live changeContributions (%d chains, ~%.0f MB). ",
-                 "These will be copy-on-write duplicated by fork()."),
-            nm, fi, length(cc),
-            if (!is.na(sz_mb)) sz_mb else 0)
-          if (verbose) message(msg)
-          warning(msg, call. = FALSE, immediate. = TRUE)
+            paste0("Pre-fork: '%s' still holds live changeContributions ",
+                 "(%d chains, ~%.0f MB); these may be copy-on-write ",
+                 "duplicated by fork(). If this object is in your ",
+                 "workspace, set %s$changeContributions <- NULL before ",
+                 "calling to avoid the duplication."),
+            nm, length(cc),
+            if (!is.na(sz_mb)) sz_mb else 0, nm)
+          message(msg)
         }
       }, error = function(e) NULL)
         }
@@ -2716,13 +2721,14 @@ assertChainsFreed <- function(verbose = FALSE) {
           as.numeric(object.size(cc)) / 1e6,
           error = function(e) NA_real_)
         msg <- sprintf(
-          paste0("Pre-fork warning: '%s' in .GlobalEnv still holds ",
-               "live changeContributions (%d chains, ~%.0f MB). ",
-               "These will be copy-on-write duplicated by fork()."),
+          paste0("Pre-fork: '%s' in .GlobalEnv still holds live ",
+               "changeContributions (%d chains, ~%.0f MB); these may be ",
+               "copy-on-write duplicated by fork(). Set ",
+               "%s$changeContributions <- NULL before calling to avoid ",
+               "the duplication."),
           nm, length(cc),
-          if (!is.na(sz_mb)) sz_mb else 0)
-        if (verbose) message(msg)
-        warning(msg, call. = FALSE, immediate. = TRUE)
+          if (!is.na(sz_mb)) sz_mb else 0, nm)
+        message(msg)
       }
     }, error = function(e) NULL)
     }
