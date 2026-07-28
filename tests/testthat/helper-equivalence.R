@@ -203,12 +203,22 @@ me_corpus <- function(fixtures) {
                               condition = "recip",
                               uncertainty = FALSE, verbose = FALSE))),
 
-    list(name = "static_format_long",
+    ## `format` is consumed ONLY inside combinePostestResults(), which is
+    ## reached only when combineSameLevel = TRUE AND there are several effects
+    ## (`.single_effect` is FALSE).  Miss either condition and the setting is
+    ## inert -- verified by mutation testing, which the earlier single-effect,
+    ## no-uncertainty version of this entry could not detect.
+    list(name = "static_format_long_combined",
          needs = c("ans", "mydata"), slow = FALSE,
-         args = c(base1, list(effectName1 = "transTrip", diff1 = 1,
-                              type = "tieProb", level = "period",
-                              format = "long",
-                              uncertainty = FALSE, verbose = FALSE))),
+         args = c(base1, list(
+           effectList = list(
+             tt = list(effectName1 = "transTrip", diff1 = 1),
+             rp = list(effectName1 = "recip", contrast1 = c(0, 1))),
+           type = "tieProb", level = "period",
+           combineSameLevel = TRUE, format = "long",
+           uncertainty = TRUE, uncertaintyMode = "delta",
+           uncertaintySd = TRUE, uncertaintyCi = TRUE,
+           nsim = 1L, verbose = FALSE))),
 
     list(name = "static_multi_effectList",
          needs = c("ans", "mydata"), slow = FALSE,
@@ -261,6 +271,32 @@ me_corpus <- function(fixtures) {
                               nsim = 12L, uncertaintySd = TRUE,
                               uncertaintyCi = TRUE, verbose = FALSE))),
 
+    ## Compound effects on BOTH sides of a second difference, with different
+    ## components -- the most demanding thing the flat effectList could express.
+    list(name = "static_two_unspInt_secondDiff",
+         needs = c("ans_2int", "mydata_2int", "mymodel_2int"), slow = TRUE,
+         args = list(object = f$ans_2int, data = f$mydata_2int,
+                     effects = f$mymodel_2int, depvar = "mynet_2int",
+                     effectList = list(rr = list(
+                       effectName1 = "recip", contrast1 = c(0, 1),
+                       interaction1 = TRUE, intEffectNames1 = "unspInt1",
+                       modEffectNames1 = "inPop",
+                       second = TRUE,
+                       effectName2 = "recip", contrast2 = c(0, 1),
+                       interaction2 = TRUE, intEffectNames2 = "unspInt2",
+                       modEffectNames2 = "outPop")),
+                     type = "tieProb", level = "period",
+                     condition = c("inPop", "outPop", "density"),
+                     uncertainty = FALSE, verbose = FALSE)),
+
+    ## perturbType forces the ego-wide mlogit update instead of the default.
+    list(name = "static_perturbType_ego",
+         needs = c("ans", "mydata"), slow = FALSE,
+         args = c(base1, list(effectName1 = "transTrip", diff1 = 1,
+                              perturbType1 = "ego",
+                              type = "tieProb", level = "period",
+                              uncertainty = FALSE, verbose = FALSE))),
+
     list(name = "dynamic_firstDiff",
          needs = c("ans", "mydata", "mymodel", "mycontrols"), slow = TRUE,
          args = c(base1, list(effectName1 = "transTrip", diff1 = 1,
@@ -289,7 +325,8 @@ me_corpus <- function(fixtures) {
 # Load every fixture the corpus can reference; missing ones stay NULL and the
 # corresponding entries skip rather than error.
 me_corpus_fixtures <- function() {
-  nms <- c("ans", "mydata", "ans2", "mydata2", "mymodel", "mycontrols")
+  nms <- c("ans", "mydata", "ans2", "mydata2", "mymodel", "mycontrols",
+           "ans_2int", "mydata_2int", "mymodel_2int")
   setNames(lapply(nms, load_fixture), nms)
 }
 
@@ -373,6 +410,13 @@ as_object_args <- function(args) {
   if (length(sp$control) > 0L)
     out$control_algo <- do.call(set_postest_algo_saom, sp$control)
 
+  ## Output domain.
+  out_flat <- intersect(.out_flat_names, names(args))
+  if (length(out_flat) > 0L) {
+    out <- out[setdiff(names(out), out_flat)]
+    out$control_out <- do.call(set_postest_output_saom, args[out_flat])
+  }
+
   ## Model domain: fold the effect specification onto a targets object and
   ## drop the flat equivalents.
   tg <- as_targets(args)
@@ -390,7 +434,10 @@ as_object_args <- function(args) {
 ## --------------------------------------------------------------------------
 .model_defaults_flat <- c("type", "mainEffect", "level", "condition",
                           "egoNormalize", "accumulated", "rateWeight",
-                          "massContrasts", "combineSameLevel")
+                          "massContrasts")
+
+## Shape of the returned R object -> set_postest_output_saom().
+.out_flat_names <- c("format", "details", "combineSameLevel")
 
 .model_spec_flat <- c("effectName1", "diff1", "contrast1", "interaction1",
                       "intEffectNames1", "modEffectNames1", "second",
@@ -439,6 +486,14 @@ as_targets <- function(args) {
                      c(sp$effectName1, sp$effectName2),
                      diff1 = sp$diff1, diff2 = sp$diff2,
                      contrast1 = sp$contrast1, contrast2 = sp$contrast2,
+                     interaction1 = sp$interaction1,
+                     intEffectNames1 = sp$intEffectNames1,
+                     modEffectNames1 = sp$modEffectNames1,
+                     interaction2 = sp$interaction2,
+                     intEffectNames2 = sp$intEffectNames2,
+                     modEffectNames2 = sp$modEffectNames2,
+                     perturbType1 = sp$perturbType1,
+                     perturbType2 = sp$perturbType2,
                      name = snm)), error = function(e) NULL)
             if (is.null(tg)) return(NULL)
         } else {

@@ -73,6 +73,7 @@ marginalEffects.sienaFit <- function(
     targets = NULL,
     control_uncertainty = NULL,
     control_algo = NULL,
+    control_out = NULL,
     ...
 ) {
     # ---- configuration objects ---------------------------------------------
@@ -132,6 +133,18 @@ marginalEffects.sienaFit <- function(
         ciInterval        <- .u$ciInterval
         uncertaintyMean   <- .u$simMean
         uncertaintyMedian <- .u$simMedian
+    }
+
+    if (!is.null(control_out)) {
+        if (!inherits(control_out, "sienaPostestOutput"))
+            stop("'control_out' must be a sienaPostestOutput object, as ",
+                 "returned by set_postest_output_saom().", call. = FALSE)
+        .clash <- .given(names(control_out))
+        if (length(.clash))
+            stop("'control_out' was supplied, so these arguments must be set ",
+                 "inside it instead of passed separately: ",
+                 paste(.clash, collapse = ", "), ".", call. = FALSE)
+        for (.nm in names(control_out)) assign(.nm, control_out[[.nm]])
     }
 
     if (!is.null(control_algo)) {

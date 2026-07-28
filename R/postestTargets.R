@@ -100,6 +100,29 @@ make_postest_targets.sienaFit <- function(x, data = NULL, effects = NULL,
     isRate <- rep(FALSE, nrow(reg))
     n      <- nrow(reg)
 
+    ## Declared dependencies shape the DEFAULT selection.  An effect that is
+    ## declared as the consequence of others is not an independent target:
+    ## perturbing it on its own contradicts the relationship just stated.  So
+    ## it is present in the table but not selected by default; the user can
+    ## still select it explicitly if that is genuinely what they want.
+    ##
+    ## Parsing here also validates the declaration against the model at
+    ## construction time, rather than several steps later at lowering.
+    derived <- character(0)
+    if (length(dependencies) > 0L) {
+        for (d in dependencies) {
+            pd  <- .parseDependency(d)
+            unk <- setdiff(c(pd$target, pd$terms), reg$short_raw)
+            if (length(unk))
+                stop("Dependency ", deparse(d), " names effect(s) not in the ",
+                     "model: ", paste(unk, collapse = ", "), ".\n",
+                     "Available: ", paste(reg$short_raw, collapse = ", "), ".",
+                     call. = FALSE)
+            derived <- c(derived, pd$target)
+        }
+        derived <- unique(derived)
+    }
+
     ## vector("list", n) is already all-NULL, so only NON-NULL defaults are
     ## assigned.  Writing `lst[[i]] <- NULL` would DELETE element i and shift
     ## every later element up, silently misaligning the column.
@@ -115,11 +138,16 @@ make_postest_targets.sienaFit <- function(x, data = NULL, effects = NULL,
     ## Assembled as a plain list and stamped afterwards: `$<-` on a data.frame
     ## silently DROPS NULL entries from a list column, which would shorten
     ## every column whose default is NULL.
+    ## Default names encode the KIND of quantity, not just the effect:
+    ##   <effect>_fd            first difference
+    ##   <effect1>_<effect2>_sd second difference (set_second_diff)
+    ## so a result list is self-describing.  `name =` overrides per target.
     tg <- list(
-        name            = reg$short_raw,
+        name            = paste0(reg$short_raw, "_fd"),
         effectName1     = reg$short_raw,
         effectType      = reg$effect_type,
-        include         = includeDefaults & !isRate,
+        include         = includeDefaults & !isRate &
+                          !(reg$short_raw %in% derived),
         second          = rep(FALSE, n),
         effectName2     = rep(NA_character_, n),
         diff1           = diff1,
@@ -131,6 +159,15 @@ make_postest_targets.sienaFit <- function(x, data = NULL, effects = NULL,
         modEffectNames1 = vector("list", n),
         perturbType1    = vector("list", n),
         perturbType2    = vector("list", n),
+        interaction2    = rep(FALSE, n),
+        intEffectNames2 = vector("list", n),
+        modEffectNames2 = vector("list", n),
+        returnDecisionDetails = rep(FALSE, n),
+        ## Selection order.  Starting from the full set, targets keep the
+        ## model's effect order; when building up from includeDefaults = FALSE,
+        ## each newly included target is appended, so results appear in the
+        ## order the user selected them rather than in table order.
+        .seq            = as.numeric(seq_len(n)),
         .overrides      = replicate(n, list(), simplify = FALSE)
     )
     attr(tg, "row.names") <- .set_row_names(n)
@@ -179,6 +216,8 @@ set_target.sienaPostestTargets <- function(x, shortNames,
                                            interaction = NULL,
                                            intEffectNames = NULL,
                                            modEffectNames = NULL,
+                                           returnDecisionDetails = NULL,
+                                           name = NULL,
                                            level, condition, accumulated,
                                            rateWeight, massContrasts,
                                            include = TRUE, verbose = TRUE,
@@ -189,6 +228,15 @@ set_target.sienaPostestTargets <- function(x, shortNames,
 
     if (!is.null(diff) && !is.null(contrast))
         stop("Supply either 'diff' or 'contrast', not both.", call. = FALSE)
+    ## `name` labels the output for this target, as an effectList entry's list
+    ## name does.  Only meaningful for a single target at a time.
+    if (!is.null(name)) {
+        if (length(nms) != 1L)
+            stop("'name' can only be given when setting a single target.",
+                 call. = FALSE)
+        if (!is.character(name) || length(name) != 1L || is.na(name))
+            stop("'name' must be a single non-NA string.", call. = FALSE)
+    }
 
     ## Only fields the caller actually named become overrides; an unset field
     ## must inherit from the model, and an explicit NULL must override it.
@@ -203,6 +251,10 @@ set_target.sienaPostestTargets <- function(x, shortNames,
 
     for (nm in nms) {
         i <- .targetRow(x, nm)
+        ## Re-tuning an already-selected target must not reorder it; only a
+        ## newly selected one moves to the end.
+        if (include && !isTRUE(x$include[i]))
+            x$.seq[i] <- max(c(x$.seq, 0), na.rm = TRUE) + 1
         x$include[i] <- include
         ## `x$col[[i]] <- NULL` would REMOVE the element and shift the column;
         ## `x$col[i] <- list(NULL)` sets it to NULL in place.
@@ -215,6 +267,14 @@ set_target.sienaPostestTargets <- function(x, shortNames,
         if (!is.null(interaction))    x$interaction1[i]       <- interaction
         if (!is.null(intEffectNames)) x$intEffectNames1[[i]]  <- intEffectNames
         if (!is.null(modEffectNames)) x$modEffectNames1[[i]]  <- modEffectNames
+        if (!is.null(returnDecisionDetails))
+            x$returnDecisionDetails[i] <- returnDecisionDetails
+        if (!is.null(name)) {
+            if (name %in% x$name[-i])
+                stop("A target named '", name, "' already exists.",
+                     call. = FALSE)
+            x$name[i] <- name
+        }
         if (length(ov))
             x$.overrides[[i]][names(ov)] <- ov
         if (verbose)
@@ -242,6 +302,15 @@ set_second_diff.sienaPostestTargets <- function(x, shortNames,
                                                 diff1 = NULL, diff2 = NULL,
                                                 contrast1 = NULL,
                                                 contrast2 = NULL,
+                                                interaction1 = NULL,
+                                                intEffectNames1 = NULL,
+                                                modEffectNames1 = NULL,
+                                                interaction2 = NULL,
+                                                intEffectNames2 = NULL,
+                                                modEffectNames2 = NULL,
+                                                perturbType1 = NULL,
+                                                perturbType2 = NULL,
+                                                returnDecisionDetails = FALSE,
                                                 name = NULL,
                                                 include = TRUE, verbose = TRUE,
                                                 ...) {
@@ -258,7 +327,7 @@ set_second_diff.sienaPostestTargets <- function(x, shortNames,
 
     for (nm in nms) .targetRow(x, nm)   # validate both exist
 
-    if (is.null(name)) name <- paste(nms, collapse = "_x_")
+    if (is.null(name)) name <- paste0(paste(nms, collapse = "_"), "_sd")
     if (name %in% x$name)
         stop("A target named '", name, "' already exists.", call. = FALSE)
 
@@ -278,13 +347,17 @@ set_second_diff.sienaPostestTargets <- function(x, shortNames,
     atomic_new <- list(
         name = name, effectName1 = nms[1L], effectType = NA_character_,
         include = include, second = TRUE, effectName2 = nms[2L],
-        interaction1 = FALSE
+        interaction1 = isTRUE(interaction1),
+        interaction2 = isTRUE(interaction2),
+        returnDecisionDetails = isTRUE(returnDecisionDetails),
+        .seq = max(c(x$.seq, 0), na.rm = TRUE) + 1
     )
     list_new <- list(
         diff1 = diff1, contrast1 = contrast1,
         diff2 = diff2, contrast2 = contrast2,
-        intEffectNames1 = NULL, modEffectNames1 = NULL,
-        perturbType1 = NULL, perturbType2 = NULL,
+        intEffectNames1 = intEffectNames1, modEffectNames1 = modEffectNames1,
+        intEffectNames2 = intEffectNames2, modEffectNames2 = modEffectNames2,
+        perturbType1 = perturbType1, perturbType2 = perturbType2,
         .overrides = list()
     )
 
@@ -323,8 +396,13 @@ print.sienaPostestTargets <- function(x, ...) {
             else "",
             ", mainEffect = ", d$mainEffect, "\n", sep = "")
     dep <- attr(x, "dependencies")
-    if (length(dep))
-        cat("  depends  : ", length(dep), " declared\n", sep = "")
+    if (length(dep)) {
+        ## Show the declarations themselves -- what was declared is the whole
+        ## point, and a count tells the reader nothing they can check.
+        cat("  depends  : ", deparse(dep[[1L]]), "\n", sep = "")
+        for (d in dep[-1L])
+            cat("             ", deparse(d), "\n", sep = "")
+    }
     if (nrow(inc) == 0L) {
         cat("  (none selected)\n")
         return(invisible(x))
@@ -372,6 +450,7 @@ print.sienaPostestTargets <- function(x, ...) {
         stop("'targets' must be a sienaPostestTargets object, as returned by ",
              "make_postest_targets().", call. = FALSE)
     keep <- which(tg$include)
+    keep <- keep[order(tg$.seq[keep])]
     if (length(keep) == 0L)
         stop("No targets selected: every row has include = FALSE.",
              call. = FALSE)
@@ -388,12 +467,16 @@ print.sienaPostestTargets <- function(x, ...) {
             modEffectNames1 = tg$modEffectNames1[[i]],
             second          = isTRUE(tg$second[i]),
             perturbType1    = tg$perturbType1[[i]],
-            perturbType2    = tg$perturbType2[[i]]
+            perturbType2    = tg$perturbType2[[i]],
+            returnDecisionDetails = isTRUE(tg$returnDecisionDetails[i])
         )
         if (isTRUE(tg$second[i])) {
-            e$effectName2 <- tg$effectName2[i]
-            e$diff2       <- tg$diff2[[i]]
-            e$contrast2   <- tg$contrast2[[i]]
+            e$effectName2     <- tg$effectName2[i]
+            e$diff2           <- tg$diff2[[i]]
+            e$contrast2       <- tg$contrast2[[i]]
+            e$interaction2    <- isTRUE(tg$interaction2[i])
+            e$intEffectNames2 <- tg$intEffectNames2[[i]]
+            e$modEffectNames2 <- tg$modEffectNames2[[i]]
         }
         ## Overrides are spliced in by name, so a field is "present in the
         ## spec" iff the user set it -- which is what the consumer tests.
@@ -428,8 +511,10 @@ print.sienaPostestTargets <- function(x, ...) {
 ## statistics that move with it.  Model-level: a relationship holds regardless
 ## of which effect is being perturbed, so it is stated once.
 ##
-## Stored but not yet acted on -- the engine is a later step.  Declaring a
-## dependency currently changes nothing about the result.
+## A declared dependency is applied when the targets are lowered: perturbing an
+## effect that participates in one also moves the dependent effect's change
+## statistic.  Only multiplicative relationships are supported; other forms are
+## rejected rather than approximated.
 set_dependency <- function(x, ...) UseMethod("set_dependency", x)
 
 ##@set_dependency.sienaPostestTargets Postestimation
@@ -440,20 +525,34 @@ set_dependency.sienaPostestTargets <- function(x, ..., verbose = TRUE) {
     ok <- vapply(deps, function(d) inherits(d, "formula"), logical(1L))
     if (!all(ok))
         stop("Dependencies must be one-sided formulas, e.g. ",
-             "egoXaltX ~ egoX * altX.", call. = FALSE)
+             "egoXaltX ~ egoX:altX.", call. = FALSE)
     for (d in deps)
         if (length(d) != 3L)
             stop("A dependency needs a left-hand side naming the dependent ",
-                 "effect: egoXaltX ~ egoX * altX.", call. = FALSE)
+                 "effect: egoXaltX ~ egoX:altX.", call. = FALSE)
+
+    ## A declared-derived effect that is CURRENTLY a selected target is
+    ## flagged, not deselected.  make_postest_targets() leaves such an effect
+    ## out of the DEFAULT selection, but once the object exists a selection may
+    ## be deliberate, and silently dropping it would override an explicit
+    ## choice.  So: say what the consequence is and leave the decision.
+    for (d in deps) {
+        lhs <- tryCatch(.parseDependency(d)$target, error = function(e) NULL)
+        if (!is.null(lhs) && lhs %in% x$effectName1[x$include])
+            warning("'", lhs, "' is a selected target and is now declared as ",
+                    "derived from other effects. Perturbing it directly holds ",
+                    "its components fixed, which the declaration says is not ",
+                    "achievable. Drop it with set_target(x, ", lhs,
+                    ", include = FALSE), or keep it if a direct perturbation ",
+                    "of its change statistic is what you intend.",
+                    call. = FALSE)
+    }
 
     cur <- attr(x, "dependencies")
     attr(x, "dependencies") <- c(cur, deps)
     if (verbose)
         message("set_dependency: ", length(deps), " added (",
-                length(cur) + length(deps), " total). ",
-                "NOTE: the dependency engine is not implemented yet -- ",
-                "marginalEffects() will refuse a targets object carrying ",
-                "dependencies rather than ignore them.")
+                length(cur) + length(deps), " total).")
     x
 }
 
@@ -461,11 +560,18 @@ set_dependency.sienaPostestTargets <- function(x, ..., verbose = TRUE) {
 ## --------------------------------------------------------------------------
 ## .parseDependency — one dependency formula -> list(target, op, terms)
 ##
-## Iteration 1 accepts multiplicative relationships only:
+## Iteration 1 accepts pure interactions only:
 ##
-##     egoXaltX ~ egoX * altX
+##     egoXaltX ~ egoX:altX
 ##
 ## meaning "egoXaltX's change statistic is the product of egoX's and altX's".
+##
+## `:` and not `*`, following R's formula algebra: `a * b` expands to
+## `a + b + a:b`, i.e. the main effects AND their interaction, which is not
+## what a dependency states.  `a:b` is the pure interaction.  Reusing formula
+## syntax obliges us to reuse its meaning, so `*` is rejected rather than
+## silently read as `:`.
+##
 ## Anything else is rejected rather than approximated -- silently treating an
 ## unsupported relationship as multiplicative is the failure this layer exists
 ## to remove.
@@ -478,13 +584,22 @@ set_dependency.sienaPostestTargets <- function(x, ..., verbose = TRUE) {
         stop("The left-hand side of a dependency must name exactly one ",
              "effect.", call. = FALSE)
     rhs <- f[[3L]]
-    if (!is.call(rhs) || !identical(as.character(rhs[[1L]]), "*"))
-        stop("Only multiplicative dependencies are supported so far: ",
-             "target ~ a * b. Got: ", deparse(f), call. = FALSE)
+    op  <- if (is.call(rhs)) as.character(rhs[[1L]]) else ""
+    if (identical(op, "*"))
+        stop("Use ':' rather than '*' for a dependency: ", deparse(f),
+             ". In R's formula algebra 'a * b' means 'a + b + a:b' -- the main ",
+             "effects as well as their interaction -- whereas a dependency ",
+             "states only the product. Write: ",
+             deparse(f[[2L]]), " ~ ",
+             paste(vapply(as.list(rhs)[-1L], deparse, character(1L)),
+                   collapse = ":"), call. = FALSE)
+    if (!identical(op, ":"))
+        stop("Only pure-interaction dependencies are supported so far: ",
+             "target ~ a:b. Got: ", deparse(f), call. = FALSE)
     terms <- vapply(as.list(rhs)[-1L], function(z) {
         v <- all.vars(z)
         if (length(v) != 1L)
-            stop("Each side of '*' must be a single effect name. Got: ",
+            stop("Each side of ':' must be a single effect name. Got: ",
                  deparse(f), call. = FALSE)
         v
     }, character(1L))

@@ -386,3 +386,46 @@ print.sienaPostestControl <- function(x, ...)
 
 	invisible(x)
 }
+
+
+## --------------------------------------------------------------------------
+## set_postest_output_saom — shape of the returned R object
+##
+## Holds only what the result looks like, not where intermediate files land:
+## batch directories, prefixes and saveDir are compute artefacts and belong in
+## set_postest_algo_saom().
+##
+## returnDecisionDetails is deliberately NOT here — it is set per target, so
+## that details can be requested for one target out of several.
+## --------------------------------------------------------------------------
+set_postest_output_saom <- function(format           = c("wide", "long"),
+                                    details          = FALSE,
+                                    combineSameLevel = FALSE) {
+    format <- match.arg(format)
+    .checkFlag(details,          "details")
+    .checkFlag(combineSameLevel, "combineSameLevel")
+
+    obj <- list(format = format, details = details,
+                combineSameLevel = combineSameLevel)
+    class(obj) <- "sienaPostestOutput"
+    attr(obj, "version") <- utils::packageDescription("RSiena",
+                                                      fields = "Version")
+    obj
+}
+
+
+##@print.sienaPostestOutput Postestimation
+print.sienaPostestOutput <- function(x, ...) {
+    cat("RSiena postestimation output
+")
+    cat("  format  : ", x$format,
+        if (identical(x$format, "long")) "  (one row per metric)"
+        else "  (one column per metric)", "
+", sep = "")
+    cat("  extras  : ",
+        if (x$details) "detail columns included" else "no detail columns",
+        if (x$combineSameLevel) "; same-level results combined" else "",
+        "
+", sep = "")
+    invisible(x)
+}
