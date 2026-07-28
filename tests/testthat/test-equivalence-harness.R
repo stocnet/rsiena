@@ -175,7 +175,7 @@ test_that("every equivalence-corpus entry runs and returns a data.frame", {
 
 test_that("flat and config-object forms produce identical output", {
   skip_if_not(exists("set_postest_uncertainty_saom", mode = "function") &&
-              exists("set_postest_control_saom", mode = "function"),
+              exists("set_postest_algo_saom", mode = "function"),
               "config-object constructors not implemented yet (step 3)")
 
   fixtures <- me_corpus_fixtures()
@@ -199,6 +199,20 @@ test_that("flat and config-object forms produce identical output", {
     set.seed(4242L); flat <- do.call(marginalEffects, entry$args)
     set.seed(4242L); objf <- do.call(marginalEffects, obj_args)
 
+    ## KNOWN, DELIBERATE DIFFERENCE (decision deferred to step 5):
+    ## marginalEffects unwraps a single-effect result only when the flat
+    ## `effectName1` form was used -- it is driven by an internal
+    ## `.single_effect` flag, not by the entry name, so a one-target `targets`
+    ## call always returns a length-1 named list.
+    ##
+    ## The exemption is deliberately narrow: the object form must still BE a
+    ## length-1 list, and its single element is then compared in full -- every
+    ## column, value, and row order.  Only the outer wrapper is excused.
+    if (is.data.frame(flat) && !is.data.frame(objf) && is.list(objf)) {
+      expect_length(objf, 1L)
+      objf <- objf[[1L]]
+    }
+
     res <- compare_me_output(flat, objf)
     expect_true(isTRUE(res),
       info = paste0("corpus entry '", entry$name, "': ",
@@ -213,7 +227,7 @@ test_that("flat and config-object forms produce identical output", {
 
 test_that("as_object_args actually routes arguments into the objects", {
   skip_if_not(exists("set_postest_uncertainty_saom", mode = "function") &&
-              exists("set_postest_control_saom", mode = "function"),
+              exists("set_postest_algo_saom", mode = "function"),
               "config-object constructors not implemented yet (step 3)")
 
   flat <- list(object = NULL, data = NULL, effectName1 = "transTrip",
@@ -230,12 +244,12 @@ test_that("as_object_args actually routes arguments into the objects", {
         info = paste0("'", nm, "' must be folded into a config object"))
 
   ## ...they must be inside the objects, with their values preserved
-  expect_s3_class(obj$uncertainty, "sienaPostestUncertainty")
-  expect_s3_class(obj$control, "sienaPostestControl")
-  expect_equal(obj$uncertainty$mode, "delta")
-  expect_equal(obj$uncertainty$nsim, 7L)
-  expect_equal(obj$control$n3, 33L)
-  expect_false(obj$control$dynamic)
+  expect_s3_class(obj$control_uncertainty, "sienaPostestUncertainty")
+  expect_s3_class(obj$control_algo, "sienaPostestControl")
+  expect_equal(obj$control_uncertainty$mode, "delta")
+  expect_equal(obj$control_uncertainty$nsim, 7L)
+  expect_equal(obj$control_algo$n3, 33L)
+  expect_false(obj$control_algo$dynamic)
 
   ## ...and the untouched ones must pass straight through
   expect_equal(obj$effectName1, "transTrip")

@@ -90,7 +90,7 @@ set_postest_uncertainty_saom(
   order.
 }
 \seealso{
-  \code{\link{set_postest_control_saom}} for the accompanying simulation /
+  \code{\link{set_postest_algo_saom}} for the accompanying simulation /
   parallelisation control object, and \code{\link{marginalEffects}} for
   the function these settings configure.
 }

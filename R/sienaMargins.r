@@ -70,7 +70,9 @@ marginalEffects.sienaFit <- function(
     uncertaintyMode = c("bootstrap", "delta", "deltaFull"),
     combineSameLevel = FALSE,
     format = c("wide", "long"),
-    control = NULL,
+    targets = NULL,
+    control_uncertainty = NULL,
+    control_algo = NULL,
     ...
 ) {
     # ---- configuration objects ---------------------------------------------
@@ -85,6 +87,32 @@ marginalEffects.sienaFit <- function(
     # ignoring the stray argument would change results without saying so.
     .mc    <- match.call()
     .given <- function(nms) intersect(nms, names(.mc)[-1L])
+
+    if (!is.null(targets)) {
+        .lowered <- .targetsToEffectList(targets)
+        .clash <- .given(c("effectList", "effectName1", "effects", "depvar",
+                           names(.lowered$defaults)))
+        if (length(.clash))
+            stop("'targets' was supplied, so these arguments must be set on ",
+                 "the targets object instead of passed separately: ",
+                 paste(.clash, collapse = ", "), ".", call. = FALSE)
+        effectList <- .lowered$effectList
+        effects    <- attr(targets, "effects")
+        depvar     <- attr(targets, "depvar")
+        for (.nm in names(.lowered$defaults))
+            assign(.nm, .lowered$defaults[[.nm]])
+    }
+
+    if (!is.null(control_uncertainty)) {
+        if (!inherits(control_uncertainty, "sienaPostestUncertainty"))
+            stop("'control_uncertainty' must be a sienaPostestUncertainty ",
+                 "object, as returned by set_postest_uncertainty_saom().",
+                 call. = FALSE)
+        if ("uncertainty" %in% names(.mc)[-1L])
+            stop("Supply either 'control_uncertainty' or 'uncertainty', ",
+                 "not both.", call. = FALSE)
+        uncertainty <- control_uncertainty
+    }
 
     if (inherits(uncertainty, "sienaPostestUncertainty")) {
         .clash <- .given(c("nsim", "uncertaintySd", "uncertaintyCi",
@@ -106,17 +134,17 @@ marginalEffects.sienaFit <- function(
         uncertaintyMedian <- .u$simMedian
     }
 
-    if (!is.null(control)) {
-        if (!inherits(control, "sienaPostestControl"))
-            stop("'control' must be a sienaPostestControl object, as returned ",
-                 "by set_postest_control_saom().", call. = FALSE)
-        .clash <- .given(names(control))
+    if (!is.null(control_algo)) {
+        if (!inherits(control_algo, "sienaPostestControl"))
+            stop("'control_algo' must be a sienaPostestControl object, as ",
+                 "returned by set_postest_algo_saom().", call. = FALSE)
+        .clash <- .given(names(control_algo))
         if (length(.clash))
-            stop("'control' was supplied, so these arguments must be set ",
+            stop("'control_algo' was supplied, so these arguments must be set ",
                  "inside it instead of passed separately: ",
                  paste(.clash, collapse = ", "), ".", call. = FALSE)
         # Every field of the object is named for the variable it feeds.
-        for (.nm in names(control)) assign(.nm, control[[.nm]])
+        for (.nm in names(control_algo)) assign(.nm, control_algo[[.nm]])
     }
 
     if (inherits(data, "sienaGroup"))

@@ -182,11 +182,11 @@ print.sienaPostestUncertainty <- function(x, ...)
 
 
 # ---------------------------------------------------------------------------
-# set_postest_control_saom
+# set_postest_algo_saom
 # ---------------------------------------------------------------------------
 
-##@set_postest_control_saom PostestConfig
-set_postest_control_saom <- function(
+##@set_postest_algo_saom PostestConfig
+set_postest_algo_saom <- function(
 	dynamic                = FALSE,
 	algorithm              = NULL,
 	n3                     = 200,

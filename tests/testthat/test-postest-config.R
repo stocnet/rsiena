@@ -1,5 +1,5 @@
 # Tests for the postestimation configuration-object constructors
-# (R/postestConfig.R): set_postest_uncertainty_saom(), set_postest_control_saom(),
+# (R/postestConfig.R): set_postest_uncertainty_saom(), set_postest_algo_saom(),
 # and their print methods.
 #
 # These constructors are purely additive: they bundle the flat arguments of
@@ -19,8 +19,8 @@ test_that("set_postest_uncertainty_saom returns a sienaPostestUncertainty object
   expect_type(attr(u, "version"), "character")
 })
 
-test_that("set_postest_control_saom returns a sienaPostestControl object with version", {
-  co <- set_postest_control_saom()
+test_that("set_postest_algo_saom returns a sienaPostestControl object with version", {
+  co <- set_postest_algo_saom()
   expect_s3_class(co, "sienaPostestControl")
   expect_false(is.null(attr(co, "version")))
   expect_type(attr(co, "version"), "character")
@@ -61,8 +61,8 @@ test_that("set_postest_uncertainty_saom defaults match marginalEffects.sienaFit 
   }
 })
 
-test_that("set_postest_control_saom defaults match marginalEffects.sienaFit flat defaults", {
-  co <- set_postest_control_saom()
+test_that("set_postest_algo_saom defaults match marginalEffects.sienaFit flat defaults", {
+  co <- set_postest_algo_saom()
 
   checks <- list(
     list(field = "dynamic",                formal = "dynamic"),
@@ -206,99 +206,99 @@ test_that("simMean/simMedian with mode='bootstrap' succeed", {
   expect_true(u3$simMean && u3$simMedian)
 })
 
-# ── C/F/G. Validation rules: set_postest_control_saom ──────────────────────
+# ── C/F/G. Validation rules: set_postest_algo_saom ──────────────────────
 
-test_that("set_postest_control_saom: chainStoreMode/clusterType are matched via match.arg", {
+test_that("set_postest_algo_saom: chainStoreMode/clusterType are matched via match.arg", {
   # match.arg()'s error text is localized; match on the (untranslated)
   # choice list rather than the surrounding English sentence.
-  expect_error(set_postest_control_saom(chainStoreMode = "bogus"),
+  expect_error(set_postest_algo_saom(chainStoreMode = "bogus"),
                regexp = "auto")
-  expect_error(set_postest_control_saom(clusterType = "bogus"),
+  expect_error(set_postest_algo_saom(clusterType = "bogus"),
                regexp = "PSOCK")
 })
 
-test_that("set_postest_control_saom: dynamic = TRUE without algorithm errors", {
-  expect_error(set_postest_control_saom(dynamic = TRUE),
+test_that("set_postest_algo_saom: dynamic = TRUE without algorithm errors", {
+  expect_error(set_postest_algo_saom(dynamic = TRUE),
                regexp = "'algorithm' must be provided when dynamic = TRUE")
 })
 
-test_that("set_postest_control_saom: dynamic = TRUE with a dummy algorithm succeeds", {
+test_that("set_postest_algo_saom: dynamic = TRUE with a dummy algorithm succeeds", {
   dummyAlgo <- list(dummy = TRUE)
-  expect_silent(co <- set_postest_control_saom(dynamic = TRUE, algorithm = dummyAlgo))
+  expect_silent(co <- set_postest_algo_saom(dynamic = TRUE, algorithm = dummyAlgo))
   expect_true(co$dynamic)
   expect_identical(co$algorithm, dummyAlgo)
 })
 
-test_that("set_postest_control_saom: logical flags must be single non-NA logical", {
-  expect_error(set_postest_control_saom(dynamic = NA), regexp = "'dynamic'.*logical")
-  expect_error(set_postest_control_saom(useChangeContributions = NA),
+test_that("set_postest_algo_saom: logical flags must be single non-NA logical", {
+  expect_error(set_postest_algo_saom(dynamic = NA), regexp = "'dynamic'.*logical")
+  expect_error(set_postest_algo_saom(useChangeContributions = NA),
                regexp = "'useChangeContributions'.*logical")
-  expect_error(set_postest_control_saom(useCluster = NA), regexp = "'useCluster'.*logical")
-  expect_error(set_postest_control_saom(combineBatch = NA), regexp = "'combineBatch'.*logical")
-  expect_error(set_postest_control_saom(keepBatch = NA), regexp = "'keepBatch'.*logical")
-  expect_error(set_postest_control_saom(details = NA), regexp = "'details'.*logical")
-  expect_error(set_postest_control_saom(gcEachBatch = NA), regexp = "'gcEachBatch'.*logical")
-  expect_error(set_postest_control_saom(gcEachSim = NA), regexp = "'gcEachSim'.*logical")
+  expect_error(set_postest_algo_saom(useCluster = NA), regexp = "'useCluster'.*logical")
+  expect_error(set_postest_algo_saom(combineBatch = NA), regexp = "'combineBatch'.*logical")
+  expect_error(set_postest_algo_saom(keepBatch = NA), regexp = "'keepBatch'.*logical")
+  expect_error(set_postest_algo_saom(details = NA), regexp = "'details'.*logical")
+  expect_error(set_postest_algo_saom(gcEachBatch = NA), regexp = "'gcEachBatch'.*logical")
+  expect_error(set_postest_algo_saom(gcEachSim = NA), regexp = "'gcEachSim'.*logical")
 })
 
-test_that("set_postest_control_saom: n3/nbrNodes/n3BatchSize must be single finite positive numeric", {
-  expect_error(set_postest_control_saom(n3 = 0), regexp = "'n3'.*> 0")
-  expect_error(set_postest_control_saom(n3 = -1), regexp = "'n3'.*> 0")
-  expect_error(set_postest_control_saom(nbrNodes = Inf), regexp = "'nbrNodes'.*finite")
-  expect_error(set_postest_control_saom(n3BatchSize = 0), regexp = "'n3BatchSize'.*> 0")
+test_that("set_postest_algo_saom: n3/nbrNodes/n3BatchSize must be single finite positive numeric", {
+  expect_error(set_postest_algo_saom(n3 = 0), regexp = "'n3'.*> 0")
+  expect_error(set_postest_algo_saom(n3 = -1), regexp = "'n3'.*> 0")
+  expect_error(set_postest_algo_saom(nbrNodes = Inf), regexp = "'nbrNodes'.*finite")
+  expect_error(set_postest_algo_saom(n3BatchSize = 0), regexp = "'n3BatchSize'.*> 0")
 })
 
-test_that("set_postest_control_saom: n3/n3BatchSize are coerced to integer", {
-  co <- set_postest_control_saom(n3 = 250.9, n3BatchSize = 50.1)
+test_that("set_postest_algo_saom: n3/n3BatchSize are coerced to integer", {
+  co <- set_postest_algo_saom(n3 = 250.9, n3BatchSize = 50.1)
   expect_true(is.integer(co$n3))
   expect_equal(co$n3, 250L)
   expect_true(is.integer(co$n3BatchSize))
   expect_equal(co$n3BatchSize, 50L)
 })
 
-test_that("set_postest_control_saom: n3PointEst/batchSize allow NULL, else same rule", {
-  expect_silent(co <- set_postest_control_saom(n3PointEst = NULL, batchSize = NULL))
+test_that("set_postest_algo_saom: n3PointEst/batchSize allow NULL, else same rule", {
+  expect_silent(co <- set_postest_algo_saom(n3PointEst = NULL, batchSize = NULL))
   expect_null(co$n3PointEst)
   expect_null(co$batchSize)
-  expect_error(set_postest_control_saom(n3PointEst = -1), regexp = "'n3PointEst'.*> 0")
-  expect_error(set_postest_control_saom(batchSize = 0), regexp = "'batchSize'.*> 0")
-  co2 <- set_postest_control_saom(n3PointEst = 300.7, batchSize = 20.2)
+  expect_error(set_postest_algo_saom(n3PointEst = -1), regexp = "'n3PointEst'.*> 0")
+  expect_error(set_postest_algo_saom(batchSize = 0), regexp = "'batchSize'.*> 0")
+  co2 <- set_postest_algo_saom(n3PointEst = 300.7, batchSize = 20.2)
   expect_equal(co2$n3PointEst, 300L)
   expect_equal(co2$batchSize, 20L)
 })
 
-test_that("set_postest_control_saom: batchUnitBudget/dynamicMinistepFactor must be finite positive, not coerced to integer", {
-  expect_error(set_postest_control_saom(batchUnitBudget = 0), regexp = "'batchUnitBudget'.*> 0")
-  expect_error(set_postest_control_saom(dynamicMinistepFactor = -1),
+test_that("set_postest_algo_saom: batchUnitBudget/dynamicMinistepFactor must be finite positive, not coerced to integer", {
+  expect_error(set_postest_algo_saom(batchUnitBudget = 0), regexp = "'batchUnitBudget'.*> 0")
+  expect_error(set_postest_algo_saom(dynamicMinistepFactor = -1),
                regexp = "'dynamicMinistepFactor'.*> 0")
-  co <- set_postest_control_saom(batchUnitBudget = 1.23e7, dynamicMinistepFactor = 7.5)
+  co <- set_postest_algo_saom(batchUnitBudget = 1.23e7, dynamicMinistepFactor = 7.5)
   expect_false(is.integer(co$batchUnitBudget))
   expect_equal(co$batchUnitBudget, 1.23e7)
   expect_false(is.integer(co$dynamicMinistepFactor))
   expect_equal(co$dynamicMinistepFactor, 7.5)
 })
 
-test_that("set_postest_control_saom: memoryScale allows NULL, else single finite positive numeric", {
-  expect_silent(co <- set_postest_control_saom(memoryScale = NULL))
+test_that("set_postest_algo_saom: memoryScale allows NULL, else single finite positive numeric", {
+  expect_silent(co <- set_postest_algo_saom(memoryScale = NULL))
   expect_null(co$memoryScale)
-  expect_error(set_postest_control_saom(memoryScale = 0), regexp = "'memoryScale'.*> 0")
-  co2 <- set_postest_control_saom(memoryScale = 2.5)
+  expect_error(set_postest_algo_saom(memoryScale = 0), regexp = "'memoryScale'.*> 0")
+  co2 <- set_postest_algo_saom(memoryScale = 2.5)
   expect_equal(co2$memoryScale, 2.5)
 })
 
-test_that("set_postest_control_saom: batchDir/prefix must be single non-NA character", {
-  expect_error(set_postest_control_saom(batchDir = NA), regexp = "'batchDir'.*character")
-  expect_error(set_postest_control_saom(prefix = c("a", "b")), regexp = "'prefix'.*character")
+test_that("set_postest_algo_saom: batchDir/prefix must be single non-NA character", {
+  expect_error(set_postest_algo_saom(batchDir = NA), regexp = "'batchDir'.*character")
+  expect_error(set_postest_algo_saom(prefix = c("a", "b")), regexp = "'prefix'.*character")
 })
 
-test_that("set_postest_control_saom: chainStorePath/saveDir allow NULL, else single non-NA character", {
-  expect_silent(co <- set_postest_control_saom(chainStorePath = NULL, saveDir = NULL))
+test_that("set_postest_algo_saom: chainStorePath/saveDir allow NULL, else single non-NA character", {
+  expect_silent(co <- set_postest_algo_saom(chainStorePath = NULL, saveDir = NULL))
   expect_null(co$chainStorePath)
   expect_null(co$saveDir)
-  expect_error(set_postest_control_saom(chainStorePath = NA),
+  expect_error(set_postest_algo_saom(chainStorePath = NA),
                regexp = "'chainStorePath'.*character")
-  expect_error(set_postest_control_saom(saveDir = NA), regexp = "'saveDir'.*character")
-  co2 <- set_postest_control_saom(chainStorePath = "/tmp/chains", saveDir = "/tmp/save")
+  expect_error(set_postest_algo_saom(saveDir = NA), regexp = "'saveDir'.*character")
+  co2 <- set_postest_algo_saom(chainStorePath = "/tmp/chains", saveDir = "/tmp/save")
   expect_equal(co2$chainStorePath, "/tmp/chains")
   expect_equal(co2$saveDir, "/tmp/save")
 })
@@ -307,14 +307,14 @@ test_that("set_postest_control_saom: chainStorePath/saveDir allow NULL, else sin
 
 test_that("passing cl with useCluster = FALSE turns useCluster on and sets nbrNodes", {
   dummyCl <- list(1, 2, 3)  # stand-in for a real cluster object; length is all that matters
-  co <- set_postest_control_saom(useCluster = FALSE, cl = dummyCl)
+  co <- set_postest_algo_saom(useCluster = FALSE, cl = dummyCl)
   expect_true(co$useCluster)
   expect_equal(co$nbrNodes, 3L)
 })
 
 test_that("cluster normalisation does not override an already-TRUE useCluster / explicit nbrNodes", {
   dummyCl <- list(1, 2, 3)
-  co <- set_postest_control_saom(useCluster = TRUE, nbrNodes = 8, cl = dummyCl)
+  co <- set_postest_algo_saom(useCluster = TRUE, nbrNodes = 8, cl = dummyCl)
   expect_true(co$useCluster)
   expect_equal(co$nbrNodes, 8L)
 })
@@ -322,15 +322,15 @@ test_that("cluster normalisation does not override an already-TRUE useCluster / 
 # ── G. verbose is a level, not a flag ───────────────────────────────────────
 
 test_that("verbose = 2 is accepted and stored as 2, not coerced to logical", {
-  co <- set_postest_control_saom(verbose = 2)
+  co <- set_postest_algo_saom(verbose = 2)
   expect_equal(co$verbose, 2)
   expect_false(is.logical(co$verbose))
 })
 
 test_that("verbose still rejects non-scalar / NA input", {
-  expect_error(set_postest_control_saom(verbose = NA), regexp = "'verbose'")
-  expect_error(set_postest_control_saom(verbose = c(1, 2)), regexp = "'verbose'")
-  expect_error(set_postest_control_saom(verbose = "loud"), regexp = "'verbose'")
+  expect_error(set_postest_algo_saom(verbose = NA), regexp = "'verbose'")
+  expect_error(set_postest_algo_saom(verbose = c(1, 2)), regexp = "'verbose'")
+  expect_error(set_postest_algo_saom(verbose = "loud"), regexp = "'verbose'")
 })
 
 # ── H. Print methods ─────────────────────────────────────────────────────────
@@ -361,7 +361,7 @@ test_that("print.sienaPostestUncertainty omits nsim and shows 'no draws' for del
 })
 
 test_that("print.sienaPostestControl prints key settings and shows single-core by default", {
-  co <- set_postest_control_saom()
+  co <- set_postest_algo_saom()
   expect_output(print(co), "RSiena postestimation control")
   expect_output(print(co), "static")
   expect_output(print(co), "single-core")
@@ -369,7 +369,7 @@ test_that("print.sienaPostestControl prints key settings and shows single-core b
 })
 
 test_that("print.sienaPostestControl shows cluster details when useCluster = TRUE", {
-  co <- set_postest_control_saom(useCluster = TRUE, nbrNodes = 4, clusterType = "PSOCK")
+  co <- set_postest_algo_saom(useCluster = TRUE, nbrNodes = 4, clusterType = "PSOCK")
   out <- capture.output(print(co))
   txt <- paste(out, collapse = "\n")
   expect_match(txt, "4 nodes")
@@ -378,10 +378,10 @@ test_that("print.sienaPostestControl shows cluster details when useCluster = TRU
 })
 
 test_that("print.sienaPostestControl shows saveDir only when non-NULL", {
-  co1 <- set_postest_control_saom()
+  co1 <- set_postest_algo_saom()
   expect_false(grepl("saveDir", paste(capture.output(print(co1)), collapse = "\n")))
 
-  co2 <- set_postest_control_saom(saveDir = "/tmp/saveHere")
+  co2 <- set_postest_algo_saom(saveDir = "/tmp/saveHere")
   expect_output(print(co2), "/tmp/saveHere")
 })
 
@@ -391,7 +391,7 @@ test_that("print methods return their argument invisibly", {
   expect_false(ret$visible)
   expect_identical(ret$value, u)
 
-  co <- set_postest_control_saom()
+  co <- set_postest_algo_saom()
   ret2 <- withVisible(print(co))
   expect_false(ret2$visible)
   expect_identical(ret2$value, co)

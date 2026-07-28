@@ -1,10 +1,10 @@
-\name{set_postest_control_saom}
-\alias{set_postest_control_saom}
+\name{set_postest_algo_saom}
+\alias{set_postest_algo_saom}
 \alias{print.sienaPostestControl}
 \alias{sienaPostestControl}
 \title{Configure simulation and parallelisation control for SAOM postestimation}
 \description{
-  \code{set_postest_control_saom} constructs a \code{sienaPostestControl}
+  \code{set_postest_algo_saom} constructs a \code{sienaPostestControl}
   object bundling the settings that control \emph{how} postestimation
   quantities (marginal effects, predictions) are computed by
   \code{\link{marginalEffects}} (and, prospectively,
@@ -13,7 +13,7 @@
   and logging.
 }
 \usage{
-set_postest_control_saom(
+set_postest_algo_saom(
     dynamic                = FALSE,
     algorithm              = NULL,
     n3                     = 200,
@@ -115,12 +115,12 @@ set_postest_control_saom(
   \item{gcEachSim}{Logical: force garbage collection after each individual
       simulation (trades more speed for even lower peak memory use).}
   \item{x}{A \code{sienaPostestControl} object, as returned by
-      \code{set_postest_control_saom}.}
+      \code{set_postest_algo_saom}.}
   \item{\dots}{Further arguments, currently ignored (present for S3
       consistency with \code{\link{print}}).}
 }
 \value{
-  \code{set_postest_control_saom} returns a list of class
+  \code{set_postest_algo_saom} returns a list of class
   \code{"sienaPostestControl"} with elements \code{dynamic},
   \code{algorithm}, \code{n3}, \code{n3PointEst}, \code{n3BatchSize},
   \code{chainStoreMode}, \code{useChangeContributions},
@@ -173,16 +173,16 @@ set_postest_control_saom(
 }
 \examples{
 ## Defaults: static predictions, single-core
-c1 <- set_postest_control_saom()
+c1 <- set_postest_algo_saom()
 print(c1)
 
 ## Dynamic predictions require an algorithm object
 myalgo <- set_algorithm_saom(nsub = 1, n3 = 50, seed = 1293)
-c2 <- set_postest_control_saom(dynamic = TRUE, algorithm = myalgo, n3 = 500)
+c2 <- set_postest_algo_saom(dynamic = TRUE, algorithm = myalgo, n3 = 500)
 print(c2)
 
 ## Parallel over 4 PSOCK workers, garbage-collect after each batch
-c3 <- set_postest_control_saom(useCluster = TRUE, nbrNodes = 4,
+c3 <- set_postest_algo_saom(useCluster = TRUE, nbrNodes = 4,
                                 gcEachBatch = TRUE)
 print(c3)
 }
