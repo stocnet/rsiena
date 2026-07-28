@@ -70,8 +70,55 @@ marginalEffects.sienaFit <- function(
     uncertaintyMode = c("bootstrap", "delta", "deltaFull"),
     combineSameLevel = FALSE,
     format = c("wide", "long"),
+    control = NULL,
     ...
 ) {
+    # ---- configuration objects ---------------------------------------------
+    # 'uncertainty' accepts a sienaPostestUncertainty object as well as a
+    # logical; 'control' takes a sienaPostestControl.  Both are unpacked into
+    # the individual variables the rest of the function already uses, so no
+    # code below this block needs to know which form the caller used.
+    #
+    # Supplying a configuration object AND one of the individual arguments it
+    # covers is an error rather than a silent precedence rule: that
+    # combination only arises from a partially converted call, where quietly
+    # ignoring the stray argument would change results without saying so.
+    .mc    <- match.call()
+    .given <- function(nms) intersect(nms, names(.mc)[-1L])
+
+    if (inherits(uncertainty, "sienaPostestUncertainty")) {
+        .clash <- .given(c("nsim", "uncertaintySd", "uncertaintyCi",
+                           "uncertaintyMean", "uncertaintyMedian",
+                           "ciInterval", "uncertaintyMode"))
+        if (length(.clash))
+            stop("'uncertainty' was given as a sienaPostestUncertainty object, ",
+                 "so these arguments must be set inside it instead of passed ",
+                 "separately: ", paste(.clash, collapse = ", "), ".",
+                 call. = FALSE)
+        .u <- uncertainty
+        uncertainty       <- .u$enabled
+        uncertaintyMode   <- .u$mode
+        nsim              <- .u$nsim
+        uncertaintySd     <- .u$sd
+        uncertaintyCi     <- .u$ci
+        ciInterval        <- .u$ciInterval
+        uncertaintyMean   <- .u$simMean
+        uncertaintyMedian <- .u$simMedian
+    }
+
+    if (!is.null(control)) {
+        if (!inherits(control, "sienaPostestControl"))
+            stop("'control' must be a sienaPostestControl object, as returned ",
+                 "by set_postest_control_saom().", call. = FALSE)
+        .clash <- .given(names(control))
+        if (length(.clash))
+            stop("'control' was supplied, so these arguments must be set ",
+                 "inside it instead of passed separately: ",
+                 paste(.clash, collapse = ", "), ".", call. = FALSE)
+        # Every field of the object is named for the variable it feeds.
+        for (.nm in names(control)) assign(.nm, control[[.nm]])
+    }
+
     if (inherits(data, "sienaGroup"))
       stop("marginalEffects does not support multi-group data (sienaGroup).")
     type           <- match.arg(type)

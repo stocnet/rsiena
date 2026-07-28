@@ -30,7 +30,8 @@ export(
    marginalEffects, entropy,
    relativeImportance,
    getChangeStatistics,
-   utilitySpec
+   utilitySpec,
+   set_postest_uncertainty_saom, set_postest_control_saom
 )
 
 # data.table removed — using pure base R + Rcpp
@@ -147,6 +148,8 @@ S3method(print, sienaPrediction)
 S3method(summary, sienaPrediction)
 S3method(print, sienaMarginalEffect)
 S3method(summary, sienaMarginalEffect)
+S3method(print, sienaPostestUncertainty)
+S3method(print, sienaPostestControl)
 
 
 
