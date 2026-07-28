@@ -1868,9 +1868,15 @@ batchAggSumCount <- function(outcomeVecs, data, level = "none",
 }
 
 # Like aggAccumulated() but returns sum + count at the final step.
-# Output columns: final_group_vars + "{outcomeName}_sum" + "{outcomeName}_n".
+# Output columns: extraGroup + final_group_vars + "{outcomeName}_sum" + "{outcomeName}_n".
+#
+# extraGroup: extra column(s) prepended to the final grouping.  Used by
+#   accumulatedByChain() (R/deltaMethod.R) to retain "chain" so that per-chain
+#   accumulated sums survive to the output instead of being collapsed away.
+#   Step 2 already groups by chain, so this only changes what step 3 collapses.
 aggAccumulatedSumCount <- function(outcomeName, data, level = "period",
-                                   condition = NULL, na.rm = TRUE) {
+                                   condition = NULL, na.rm = TRUE,
+                                   extraGroup = character(0)) {
   if (!"chain" %in% names(data))
     stop("Accumulated aggregation requires dynamic (chain-level) data.")
   if (!is.null(condition))
@@ -1904,6 +1910,10 @@ aggAccumulatedSumCount <- function(outcomeName, data, level = "period",
     "none"   = character(0),
     intersect(c("group", "period"), names(step2))
   )
+  # extraGroup (e.g. "chain") refines the final cells without changing which
+  # units are summed in step 2.
+  if (length(extraGroup) > 0L)
+    final_group <- unique(c(intersect(extraGroup, names(step2)), final_group))
 
   if (length(final_group) > 0) {
     enc2 <- encodeGroupKeys(step2, final_group)

@@ -21,6 +21,215 @@
 ##
 ## ─────────────────────────────────────────────────────────────────────────────
 
+## ── Orchestrator ─────────────────────────────────────────────────────────────
+##
+## Compute delta-method uncertainty for all specs.
+##
+## Per-row Jacobian: for each spec, the conditional FD Jacobian J_cond has
+## one row per output row (R rows when the spec is aggregated to level=
+## "period"/"ego" or has a `condition`). SE is computed per row as
+## sqrt(J_i Σ J_i').
+##
+## REINFORCE channel (deltaFull): bucketed per-(chain, cell), covering both
+## multi-row aggregated specs and accumulated specs.  Where the bucketed path
+## is unavailable we issue a one-shot warning and fall back to the conditional
+## SE.  That fallback is well-defined but omits the path-distribution channel;
+## it is NOT simply a lower bound — the corresponding variance term is a
+## covariance, 2*Cov(.,.), and can take either sign.
+##
+## @param wide         frozen wide struct (returnWide=TRUE from
+##                     getDynamicChangeContributions); must contain
+##                     `changeStats`, `chain`, `permitted` (can be NULL),
+##                     `changeUtility` / `changeProbability` (will be cleared).
+## @param ssc_sum      [n3 x nParams] per-chain wave-summed score matrix, or NULL.
+##                     Obtained via includeScores=TRUE.  NULL => grad_re = 0.
+## @param thetaHat     named numeric vector, length nParams.
+## @param covTheta     [nParams x nParams] covariance matrix of thetaHat.
+## @param specs        named list of spec entries (same as passed to
+##                     makeEstimatorFun; each needs predictFun, predictArgs,
+##                     outcomeName).
+## @param type         model type string (passed to predictProbability).
+## @param fullMode     logical; if TRUE compute Dolby REINFORCE correction
+##                     where applicable (requires ssc_sum != NULL).
+## @param eps          FD step size.
+##
+## @return Named list (one entry per spec name), each a list with:
+##   J_cond, J_full      — per-row Jacobians [n_out x nParams]
+##   SE_delta            — per-row SE (length n_out); conditional channel only
+##   SE_deltaFull        — per-row SE (length n_out); cond + REINFORCE where
+##                         supported, else equal to SE_delta with attr "fallback"
+##   baseline            — Dolby baseline coefficients (scalar specs only; NULL otherwise)
+##   ssc_colMeans        — colMeans(ssc_sum) diagnostic; NULL if no ssc_sum
+##   Q_hat               — point estimate (scalar for R=1; vector for R>1)
+##
+deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
+                                   specs, type,
+                                   fullMode = FALSE,
+                                   eps = 1e-5,
+                                   precomputed = NULL,
+                                   verbose = FALSE) {
+
+  nParams     <- length(thetaHat)
+  theta_names <- names(thetaHat)
+
+  ## Choose Jacobian method.
+  ##   Analytical: one batch sweep, O(n * K) — fast (~7 s for Glasgow dynamic).
+  ##               Works for all non-accumulated specs; requires cc$contribMat.
+  ##   FD fallback: 2*K batch sweeps, O(n * K * n_sort) — slow (~1200 s).
+  ##               Always correct; used when any spec is accumulated,
+  ##               rate-weighted, or when the analytical path is explicitly
+  ##               disabled.
+  has_accumulated <- any(vapply(specs, function(s) isTRUE(s$accumulated),
+                                logical(1L)))
+  has_rateweight <- any(vapply(specs, function(s) isTRUE(s$rateWeight),
+                               logical(1L)))
+  if (has_rateweight) {
+    if (verbose >= 1) message(
+      "rateWeight detected: forcing finite-difference Jacobian because ",
+      "analytical rateWeight Jacobian correction is not yet implemented."
+    )
+  }
+  use_analytical  <- !(has_accumulated || has_rateweight)
+
+  # If the caller already ran mode="jacobian" (analytical path), reuse the
+  # result directly — avoids a redundant full estimation sweep.
+  if (!is.null(precomputed) && use_analytical) {
+    jac_result     <- precomputed
+    use_analytical <- TRUE
+  } else if (use_analytical) {
+    jac_result <- tryCatch(
+      jacobianCondAnalytical(estimator, thetaHat, specs),
+      error = function(e) {
+        if (verbose >= 1) message("Analytical Jacobian failed (", conditionMessage(e),
+                "); falling back to finite-difference Jacobian.")
+        NULL
+      })
+    if (is.null(jac_result))
+      use_analytical <- FALSE
+  }
+  if (!use_analytical) {
+    jac_result <- jacobianCondDelta(estimator, thetaHat, specs, eps)
+  } else {
+    # evalBatchJacobian returns NULL for specs it cannot handle analytically
+    # (e.g. direction-split effects, interactions, predictSecondDiff).
+    # Fill those in via FD on just the NULL subset.
+    null_specs <- Filter(function(sn) is.null(jac_result$jac[[sn]]),
+                         names(jac_result$jac))
+    if (length(null_specs) > 0L) {
+      if (verbose >= 1) message(
+        "Analytical Jacobian unavailable for ", length(null_specs),
+        " spec(s); using finite-difference fallback for: ",
+        paste(null_specs, collapse = ", ")
+      )
+      fd_result <- jacobianCondDelta(estimator, thetaHat,
+                                     specs[null_specs], eps)
+      for (sn in null_specs)
+        jac_result$jac[[sn]] <- fd_result$jac[[sn]]
+    }
+  }
+
+  jac <- jac_result$jac
+  hat <- jac_result$hat
+
+  ## ssc_sum availability for REINFORCE.
+  have_scores <- !is.null(ssc_sum) && nrow(ssc_sum) > 1L
+  reinforce_requested <- isTRUE(fullMode) && have_scores
+
+  ## Names of specs that fell back to the conditional SE; warned once, after
+  ## the loop, so the message can name every affected spec rather than only
+  ## the first.
+  fallback_specs <- character(0)
+
+  results <- setNames(vector("list", length(specs)), names(specs))
+
+  for (specName in names(specs)) {
+    spec        <- specs[[specName]]
+    outcomeName <- spec$outcomeName
+
+    Q_vec <- hat[[specName]][[outcomeName]]
+    n_out <- length(Q_vec)
+    J_cond <- jac[[specName]]                      # [n_out x nParams]
+
+    SE_delta <- seDeltaRows(J_cond, covTheta)
+
+    ## Default: full == conditional (with attribute marking fallback path).
+    J_full       <- J_cond
+    SE_deltaFull <- SE_delta
+    baseline     <- NULL
+    fallback     <- TRUE
+
+    if (reinforce_requested) {
+      ## Unified REINFORCE path for all specs (scalar and multi-row).
+      ## .evalSpecChainBuckets handles the n_out==1 case with key_df = one-row
+      ## placeholder; gradReinforceRowwise handles [1×R] just as well as [C×R].
+      bucket_res <- NULL
+      if (!is.null(wide)) {
+        cond_resolved_b <- if (!is.null(spec$condition))
+          resolveEffectName(spec$condition, wide$changeStats$csNames) else NULL
+        gvars_b  <- getGroupVars(level = spec$level, condition = cond_resolved_b)
+        key_cols <- intersect(gvars_b, names(hat[[specName]]))
+        key_df_b <- if (length(key_cols) > 0L)
+          hat[[specName]][, key_cols, drop = FALSE]
+        else
+          data.frame(.row = seq_len(n_out))
+        bucket_res <- tryCatch(
+          .evalSpecChainBuckets(spec, wide, thetaHat, type, key_df_b),
+          error = function(e) NULL)
+      }
+
+      if (!is.null(bucket_res)) {
+        ssc_aligned  <- ssc_sum[bucket_res$chain_ids, , drop = FALSE]
+        g_score      <- gradReinforceRowwise(bucket_res$Y, bucket_res$N,
+                                             ssc_aligned)
+        J_full       <- J_cond + g_score
+        dimnames(J_full) <- dimnames(J_cond)
+        SE_deltaFull <- seDeltaRows(J_full, covTheta)
+        ## Dolby baseline diagnostic (scalar specs only; NULL for multi-row).
+        if (n_out == 1L) {
+          N_c      <- pmax(bucket_res$N[, 1L], 1)
+          Q_c      <- bucket_res$Y[, 1L] / N_c
+          Qsk_mat  <- outer(Q_c, rep(1, nParams)) * ssc_aligned
+          baseline <- .dolbyRegrCoef(Qsk_mat, ssc_aligned)
+          names(baseline) <- theta_names
+        }
+        fallback <- FALSE
+      } else {
+        fallback_specs <- c(fallback_specs, specName)
+      }
+    }
+
+    results[[specName]] <- list(
+      J_cond       = J_cond,
+      J_full       = J_full,
+      SE_delta     = SE_delta,
+      SE_deltaFull = structure(SE_deltaFull, fallback = fallback),
+      baseline     = baseline,
+      ssc_colMeans = if (have_scores) colMeans(ssc_sum) else NULL,
+      Q_hat        = Q_vec
+    )
+  }
+
+  ## Deliberately a warning(), not a verbose-gated message(): unlike the
+  ## FD-Jacobian fallbacks this returns a *different quantity* — an SE that
+  ## omits the path-distribution channel — rather than a slower route to the
+  ## same number.  Note it is not simply an under-estimate: the corresponding
+  ## variance term is 2*Cov(.,.) and can take either sign.
+  if (length(fallback_specs) > 0L)
+    warning(
+      "uncertaintyMode = 'deltaFull': bucketed REINFORCE unavailable for ",
+      "spec(s) ", paste0("'", fallback_specs, "'", collapse = ", "),
+      ". Reported SE for these is the conditional (frozen-chain) delta SE, ",
+      "which omits the path-distribution channel. Common causes: a custom ",
+      "predictFun without outcomesOnly support, or a 'condition' that cannot ",
+      "be resolved against the chain data (conditioning is not supported for ",
+      "accumulated specs). For an SE covering all channels use ",
+      "uncertaintyMode = 'bootstrap'.",
+      call. = FALSE)
+
+  results
+}
+
+
 
 # --------------------------------------------------------------------------
 # .initDeltaMode — set up chain store for delta / deltaFull modes
@@ -93,19 +302,59 @@
          ssc_sum       = ssc_sum)
 }
 
+## ── accumulatedByChain — per-(chain, cell) sum/count for accumulated specs ───
+##
+## Seam between the accumulated aggregation and the bucketed REINFORCE
+## consumer.  Returns the same shape aggWithCache() returns for the
+## non-accumulated path:
+##
+##     chain, <final group cols...>, <outcome>_sum, <outcome>_n
+##
+## Accumulated aggregation already groups by chain when summing over ministeps
+## (`acc_group` in aggAccumulatedSumCount); passing extraGroup = "chain" simply
+## stops the final stage from collapsing that away, so the per-chain
+## accumulated values survive to the output.
+##
+## NOTE: this is the seam the planned aggregation unification replaces (see
+## dev-notes/accumulated-deltafull-patch-plan.md Sec. 4) — the signature is
+## intended to outlive the body.
+##
+## @param spec       spec entry (outcomeName, level, na.rm).
+## @param structural structural columns for kept rows (chain, group, period,
+##                   ego, ministep).
+## @param vals       outcome values for kept rows (same length/order).
+## @return data.frame, or NULL if the accumulated path is unavailable.
+accumulatedByChain <- function(spec, structural, vals) {
+  acc_data <- structural
+  acc_data[[spec$outcomeName]] <- vals
+  attr(acc_data, "row.names") <- .set_row_names(length(structural[[1L]]))
+  class(acc_data) <- "data.frame"
+  tryCatch(
+    aggAccumulatedSumCount(spec$outcomeName, acc_data,
+                           level      = spec$level,
+                           condition  = NULL,   # unsupported; main path warns
+                           na.rm      = isTRUE(spec$na.rm),
+                           extraGroup = "chain"),
+    error = function(e) NULL)
+}
+
 ## ── Chain-bucket evaluation for bucketed REINFORCE ───────────────────────────
 ##
 ## .evalSpecChainBuckets — evaluate spec on delta_wide at thetaHat and
 ## aggregate by (chain, cell) to obtain [n_chains × R] sum/count matrices.
 ##
-## Uses the same buildAggCache / aggWithCache machinery as the main estimation
-## path, with "chain" prepended to group_vars.  This means egoNormalize is
-## handled identically: Stage 1 pre-aggregates by
+## Non-accumulated specs use the same buildAggCache / aggWithCache machinery as
+## the main estimation path, with "chain" prepended to group_vars.  This means
+## egoNormalize is handled identically: Stage 1 pre-aggregates by
 ##   unique(c(ego_id_cols, c("chain", gvars)))   (= chain-scoped ego means)
 ## and Stage 2 collapses to (chain, cell).
 ##
-## Returns NULL if the spec is accumulated, predictFun returns a data.frame
-## (no outcomesOnly support), or required columns are absent.
+## Accumulated specs route through accumulatedByChain() instead (below), which
+## sums over ministeps within (chain, ego) before the final sum/count.  Both
+## producers return the same shape, so everything downstream is shared.
+##
+## Returns NULL if predictFun returns a data.frame (no outcomesOnly support),
+## or required columns are absent.
 ##
 ## @param spec     spec entry (predictFun, predictArgs, outcomeName, level,
 ##                 condition, egoNormalize, accumulated).
@@ -119,8 +368,8 @@
 ## @return list(Y, N, chain_ids) or NULL.
 ##   Y, N        — [n_chains × R] double matrices (row = chain, col = cell).
 ##   chain_ids   — integer vector of chain labels mapping Y rows to ssc_sum rows.
+
 .evalSpecChainBuckets <- function(spec, wide, theta, type, key_df) {
-  if (isTRUE(spec$accumulated)) return(NULL)
   if (is.null(wide$chain))      return(NULL)
 
   R <- nrow(key_df)
@@ -166,17 +415,26 @@
   egoNorm     <- isTRUE(spec$egoNormalize)
   na_rm       <- isTRUE(spec$na.rm)
 
-  ## One buildAggCache call handles egoNormalize correctly:
+  ## Two producers, one consumer: everything below only needs bc_agg to carry
+  ## chain, <gvars>, <outcome>_sum, <outcome>_n.
+  ##
+  ## Accumulated: sum over ministeps within (chain, ego) before the final
+  ## sum/count, with chain retained (see accumulatedByChain above).
+  ## Otherwise: one buildAggCache call, which handles egoNormalize correctly —
   ## pre_agg_vars = unique(c(ego_id_cols, gvars_chain)) groups by all ego-id
   ## columns first (chain-scoped ego means), then collapses to (chain, cell).
-  cache_bc <- tryCatch(
-    buildAggCache(structural_k, group_vars = gvars_chain,
-                  ego_id_cols = ego_id_cols,
-                  egoNormalize = egoNorm, na.rm = na_rm),
-    error = function(e) NULL)
-  if (is.null(cache_bc)) return(NULL)
-
-  bc_agg  <- aggWithCache(spec$outcomeName, ov[keep], cache_bc)
+  bc_agg <- if (isTRUE(spec$accumulated)) {
+    accumulatedByChain(spec, structural_k, ov[keep])
+  } else {
+    cache_bc <- tryCatch(
+      buildAggCache(structural_k, group_vars = gvars_chain,
+                    ego_id_cols = ego_id_cols,
+                    egoNormalize = egoNorm, na.rm = na_rm),
+      error = function(e) NULL)
+    if (is.null(cache_bc)) NULL
+    else aggWithCache(spec$outcomeName, ov[keep], cache_bc)
+  }
+  if (is.null(bc_agg)) return(NULL)
 
   sumCol <- paste0(spec$outcomeName, "_sum")
   cntCol <- paste0(spec$outcomeName, "_n")
@@ -206,11 +464,19 @@
   valid_m <- !is.na(cell_idx)
   if (!any(valid_m)) return(NULL)
 
+  ## Accumulate rather than assign: bc_agg may carry finer grouping columns
+  ## than gvars (the accumulated path retains "group" from its level switch),
+  ## in which case several bc_agg rows map to the same (chain, cell).  Summing
+  ## sums and counts is the correct collapse; assigning would silently keep
+  ## only the last row.  For the non-accumulated path there is exactly one row
+  ## per (chain, cell), so this is equivalent to the previous behaviour.
   Y <- matrix(0, nrow = n_chains, ncol = R)
   N <- matrix(0, nrow = n_chains, ncol = R)
   for (i in which(valid_m)) {
-    Y[chain_idx_m[i], cell_idx[i]] <- bc_agg[[sumCol]][i]
-    N[chain_idx_m[i], cell_idx[i]] <- bc_agg[[cntCol]][i]
+    Y[chain_idx_m[i], cell_idx[i]] <- Y[chain_idx_m[i], cell_idx[i]] +
+                                        bc_agg[[sumCol]][i]
+    N[chain_idx_m[i], cell_idx[i]] <- N[chain_idx_m[i], cell_idx[i]] +
+                                        bc_agg[[cntCol]][i]
   }
 
   list(Y = Y, N = N, chain_ids = as.integer(chains_all))
@@ -450,201 +716,3 @@ seDeltaRows <- function(J, covTheta) {
 seDelta <- function(g, covTheta) {
   as.numeric(sqrt(t(g) %*% covTheta %*% g))
 }
-
-
-## ── Orchestrator ─────────────────────────────────────────────────────────────
-##
-## Compute delta-method uncertainty for all specs.
-##
-## Per-row Jacobian: for each spec, the conditional FD Jacobian J_cond has
-## one row per output row (R rows when the spec is aggregated to level=
-## "period"/"ego" or has a `condition`). SE is computed per row as
-## sqrt(J_i Σ J_i').
-##
-## REINFORCE channel (deltaFull): currently implemented only for scalar
-## specs (R = 1, i.e. level="none" without condition). For multi-row
-## aggregated specs we issue a one-shot warning and fall back to the
-## conditional SE — this is well-defined and conservative (lower bound on
-## SE for that spec). Per-bucket REINFORCE is a planned extension.
-##
-## @param wide         frozen wide struct (returnWide=TRUE from
-##                     getDynamicChangeContributions); must contain
-##                     `changeStats`, `chain`, `permitted` (can be NULL),
-##                     `changeUtility` / `changeProbability` (will be cleared).
-## @param ssc_sum      [n3 x nParams] per-chain wave-summed score matrix, or NULL.
-##                     Obtained via includeScores=TRUE.  NULL => grad_re = 0.
-## @param thetaHat     named numeric vector, length nParams.
-## @param covTheta     [nParams x nParams] covariance matrix of thetaHat.
-## @param specs        named list of spec entries (same as passed to
-##                     makeEstimatorFun; each needs predictFun, predictArgs,
-##                     outcomeName).
-## @param type         model type string (passed to predictProbability).
-## @param fullMode     logical; if TRUE compute Dolby REINFORCE correction
-##                     where applicable (requires ssc_sum != NULL).
-## @param eps          FD step size.
-##
-## @return Named list (one entry per spec name), each a list with:
-##   J_cond, J_full      — per-row Jacobians [n_out x nParams]
-##   SE_delta            — per-row SE (length n_out); conditional channel only
-##   SE_deltaFull        — per-row SE (length n_out); cond + REINFORCE where
-##                         supported, else equal to SE_delta with attr "fallback"
-##   baseline            — Dolby baseline coefficients (scalar specs only; NULL otherwise)
-##   ssc_colMeans        — colMeans(ssc_sum) diagnostic; NULL if no ssc_sum
-##   Q_hat               — point estimate (scalar for R=1; vector for R>1)
-##
-deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
-                                   specs, type,
-                                   fullMode = FALSE,
-                                   eps = 1e-5,
-                                   precomputed = NULL,
-                                   verbose = FALSE) {
-
-  nParams     <- length(thetaHat)
-  theta_names <- names(thetaHat)
-
-  ## Choose Jacobian method.
-  ##   Analytical: one batch sweep, O(n * K) — fast (~7 s for Glasgow dynamic).
-  ##               Works for all non-accumulated specs; requires cc$contribMat.
-  ##   FD fallback: 2*K batch sweeps, O(n * K * n_sort) — slow (~1200 s).
-  ##               Always correct; used when any spec is accumulated,
-  ##               rate-weighted, or when the analytical path is explicitly
-  ##               disabled.
-  has_accumulated <- any(vapply(specs, function(s) isTRUE(s$accumulated),
-                                logical(1L)))
-  has_rateweight <- any(vapply(specs, function(s) isTRUE(s$rateWeight),
-                               logical(1L)))
-  if (has_rateweight) {
-    if (verbose >= 1) message(
-      "rateWeight detected: forcing finite-difference Jacobian because ",
-      "analytical rateWeight Jacobian correction is not yet implemented."
-    )
-  }
-  use_analytical  <- !(has_accumulated || has_rateweight)
-
-  # If the caller already ran mode="jacobian" (analytical path), reuse the
-  # result directly — avoids a redundant full estimation sweep.
-  if (!is.null(precomputed) && use_analytical) {
-    jac_result     <- precomputed
-    use_analytical <- TRUE
-  } else if (use_analytical) {
-    jac_result <- tryCatch(
-      jacobianCondAnalytical(estimator, thetaHat, specs),
-      error = function(e) {
-        if (verbose >= 1) message("Analytical Jacobian failed (", conditionMessage(e),
-                "); falling back to finite-difference Jacobian.")
-        NULL
-      })
-    if (is.null(jac_result))
-      use_analytical <- FALSE
-  }
-  if (!use_analytical) {
-    jac_result <- jacobianCondDelta(estimator, thetaHat, specs, eps)
-  } else {
-    # evalBatchJacobian returns NULL for specs it cannot handle analytically
-    # (e.g. direction-split effects, interactions, predictSecondDiff).
-    # Fill those in via FD on just the NULL subset.
-    null_specs <- Filter(function(sn) is.null(jac_result$jac[[sn]]),
-                         names(jac_result$jac))
-    if (length(null_specs) > 0L) {
-      if (verbose >= 1) message(
-        "Analytical Jacobian unavailable for ", length(null_specs),
-        " spec(s); using finite-difference fallback for: ",
-        paste(null_specs, collapse = ", ")
-      )
-      fd_result <- jacobianCondDelta(estimator, thetaHat,
-                                     specs[null_specs], eps)
-      for (sn in null_specs)
-        jac_result$jac[[sn]] <- fd_result$jac[[sn]]
-    }
-  }
-
-  jac <- jac_result$jac
-  hat <- jac_result$hat
-
-  ## ssc_sum availability for REINFORCE.
-  have_scores <- !is.null(ssc_sum) && nrow(ssc_sum) > 1L
-  reinforce_requested <- isTRUE(fullMode) && have_scores
-
-  ## One-shot warning state for fallback on multi-row specs.
-  fallback_warned <- FALSE
-
-  results <- setNames(vector("list", length(specs)), names(specs))
-
-  for (specName in names(specs)) {
-    spec        <- specs[[specName]]
-    outcomeName <- spec$outcomeName
-
-    Q_vec <- hat[[specName]][[outcomeName]]
-    n_out <- length(Q_vec)
-    J_cond <- jac[[specName]]                      # [n_out x nParams]
-
-    SE_delta <- seDeltaRows(J_cond, covTheta)
-
-    ## Default: full == conditional (with attribute marking fallback path).
-    J_full       <- J_cond
-    SE_deltaFull <- SE_delta
-    baseline     <- NULL
-    fallback     <- TRUE
-
-    if (reinforce_requested) {
-      ## Unified REINFORCE path for all specs (scalar and multi-row).
-      ## .evalSpecChainBuckets handles the n_out==1 case with key_df = one-row
-      ## placeholder; gradReinforceRowwise handles [1×R] just as well as [C×R].
-      bucket_res <- NULL
-      if (!is.null(wide)) {
-        cond_resolved_b <- if (!is.null(spec$condition))
-          resolveEffectName(spec$condition, wide$changeStats$csNames) else NULL
-        gvars_b  <- getGroupVars(level = spec$level, condition = cond_resolved_b)
-        key_cols <- intersect(gvars_b, names(hat[[specName]]))
-        key_df_b <- if (length(key_cols) > 0L)
-          hat[[specName]][, key_cols, drop = FALSE]
-        else
-          data.frame(.row = seq_len(n_out))
-        bucket_res <- tryCatch(
-          .evalSpecChainBuckets(spec, wide, thetaHat, type, key_df_b),
-          error = function(e) NULL)
-      }
-
-      if (!is.null(bucket_res)) {
-        ssc_aligned  <- ssc_sum[bucket_res$chain_ids, , drop = FALSE]
-        g_score      <- gradReinforceRowwise(bucket_res$Y, bucket_res$N,
-                                             ssc_aligned)
-        J_full       <- J_cond + g_score
-        dimnames(J_full) <- dimnames(J_cond)
-        SE_deltaFull <- seDeltaRows(J_full, covTheta)
-        ## Dolby baseline diagnostic (scalar specs only; NULL for multi-row).
-        if (n_out == 1L) {
-          N_c      <- pmax(bucket_res$N[, 1L], 1)
-          Q_c      <- bucket_res$Y[, 1L] / N_c
-          Qsk_mat  <- outer(Q_c, rep(1, nParams)) * ssc_aligned
-          baseline <- .dolbyRegrCoef(Qsk_mat, ssc_aligned)
-          names(baseline) <- theta_names
-        }
-        fallback <- FALSE
-      } else {
-        if (!fallback_warned) {
-          warning(
-            "uncertaintyMode = 'deltaFull': bucketed REINFORCE not available ",
-            "for this spec (accumulated, egoNormalize, or predictFun ",
-            "incompatibility). Falling back to conditional delta SE. For ",
-            "publication-quality SE use uncertaintyMode = 'batch'.",
-            call. = FALSE)
-          fallback_warned <- TRUE
-        }
-      }
-    }
-
-    results[[specName]] <- list(
-      J_cond       = J_cond,
-      J_full       = J_full,
-      SE_delta     = SE_delta,
-      SE_deltaFull = structure(SE_deltaFull, fallback = fallback),
-      baseline     = baseline,
-      ssc_colMeans = if (have_scores) colMeans(ssc_sum) else NULL,
-      Q_hat        = Q_vec
-    )
-  }
-
-  results
-}
-
