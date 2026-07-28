@@ -209,6 +209,7 @@ dyadBipartiteObjective,xxxxxx,Sum of ties x xxxxxx,X,TRUE,xxxxxx,,eval,FALSE,FAL
 dyadSecondBipartiteObjective,XW=>X closure of xxxxxx,XW=>X closure of xxxxxx,XWX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 dyadSecondBipartiteObjective,XW=>X closure1 of xxxxxx,XW=>X closure1 of xxxxxx,XWX1,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
 dyadSecondBipartiteObjective,XW=>X closure2 of xxxxxx,XW=>X closure2 of xxxxxx,XWX2,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,,FALSE
+dyadThirdBipartiteObjective,WX=>X closure of xxxxxx,WX=>X closure of xxxxxx,WXX,TRUE,xxxxxx,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarBehaviorObjective,xxxxxx: effect from yyyyyy,xxxxxx x yyyyyy,effFrom,TRUE,yyyyyy,,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 covarBehaviorNetObjective,xxxxxx: tot. sim. (zzzzzz) x alter's yyyyyy,xxxxxx tot. sim. (zzzzzz) x alter's yyyyyy,totSimAltX,TRUE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
 covarBehaviorNetObjective,xxxxxx: av. sim. (zzzzzz) x alter's yyyyyy,xxxxxx av. sim. (zzzzzz) x alter's yyyyyy,avSimAltX,TRUE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,OK,FALSE
@@ -818,6 +819,7 @@ covarBNetNetObjective,yyyyyy alter at dist 2 on xxxxxx (#),yyyyyy alter at dist 
 covarBNetNetObjective,yyyyyy tot alt. at dist 2 on xxxxxx (#),yyyyyy tot alt. at dist 2 on xxxxxx (#),totDist2W,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 covarBNetNetObjective,yyyyyy similarity at dist 2 on xxxxxx,yyyyyy similarity at dist 2 on xxxxxx,simDist2W,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE
 dyadANetNetObjective,yyyyyy weighted by zzzzzz to agrmnt,"mixed triplets W->X=>X, W = yyyyyy, weight zzzzzz",toU,TRUE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
+dyadBNetNetObjective,yyyyyy weighted by zzzzzz to agrmnt,"mixed triplets W->X=>X, W = yyyyyy, weight zzzzzz",toU,TRUE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,0,objective,NA,NA,0,0,0,0,dyadic,FALSE
 dyadBNetNetObjective,shared yyyyyy wghtd by zzzzzz (#) to agreement,"mixed 4cycles WWXX, W = xxxxxx, weight zzzzzz",sharedToU,TRUE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 dyadBNetNetObjective,av. two-mode xxxxxx alter (#) weight zzzzzz by tie,"mixed av. 4cycles WWXX, W = xxxxxx, weight zzzzzz",avAltU.2M.tie,TRUE,yyyyyy,zzzzzz,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,,FALSE
 tripleNetworkObjective,from xxxxxx agr. weighted by yyyyyy ind,"m.tr. XWW, W = xxxxxx, weight ind. yyyyyy",from.w.ind,TRUE,xxxxxx,yyyyyy,eval,FALSE,FALSE,FALSE,FALSE,FALSE,",",0,1,objective,NA,NA,0,0,0,0,dyadic,FALSE

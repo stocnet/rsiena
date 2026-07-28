@@ -1026,6 +1026,7 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 
 		for (j in seq(along = xx$dycCovars))
 		{
+            #browser()
 			if (attr(xx$dycCovars[[j]], "type") == "bipartite" &&
 				all(nodeSets == attr(xx$dycCovars[[j]], 'nodeSet')))
 			{
@@ -1047,6 +1048,17 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 						groupName=groupName, group=group,
 						netType=netType))
 			}
+            if (attr(xx$dycCovars[[j]], "type") == "oneMode" &&
+                (nodeSets[1] == attr(xx$dycCovars[[j]], 'nodeSet')[1]) &&
+                (nodeSets[1] == attr(xx$dycCovars[[j]], 'nodeSet')[2]) )
+            {
+                objEffects <- rbind(objEffects,
+                    createEffects("dyadThirdBipartiteObjective",
+                        names(xx$dycCovars)[j],
+                        name=varname,
+                        groupName=groupName, group=group,
+                        netType=netType))
+            }
 		}
 		for (j in seq(along = xx$dyvCovars))
 		{
