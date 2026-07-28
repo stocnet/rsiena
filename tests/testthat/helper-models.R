@@ -60,6 +60,8 @@ if (.in_test_run()) {
     "snap_me_static_transTrip",
     "snap_me_static_secondDiff",
     "snap_me_delta_transTrip",
+    "snap_me_delta_interaction",
+    "snap_me_delta_density",
     "snap_predict_changeProb",
     "snap_predict_tieProb"
   )
@@ -130,6 +132,8 @@ if (.in_test_run()) {
       "snap_me_static_transTrip",
       "snap_me_static_secondDiff",
       "snap_me_delta_transTrip",
+      "snap_me_delta_interaction",
+      "snap_me_delta_density",
       "snap_predict_changeProb",
       "snap_predict_tieProb"
     )
@@ -173,6 +177,38 @@ if (.in_test_run()) {
         uncertaintyMean = FALSE,
         nsim = 1L,   # delta needs nsim >= 1 to enable uncertainty path
         verbose = FALSE
+      )
+
+      # (c2) delta SE — INTERACTION spec.  Tripwire for the planned analytic
+      # Jacobian generalisation (postestimate_api_redesign.md Sec. 2.2):
+      # calculateUtilityDiffJacobian() currently returns NULL for interaction
+      # specs, so delta_se here comes from the finite-difference fallback.
+      # Making it analytic must not change these numbers.
+      snap_me_delta_interaction <- marginalEffects(
+        object    = ans2,
+        data      = mydata2,
+        effectName1 = "transTrip", diff1 = 1,
+        interaction1 = TRUE, intEffectNames1 = "transRecTrip",
+        modEffectNames1 = "recip",
+        type      = "tieProb", depvar = "mynet2",
+        level     = "period", condition = "recip",
+        uncertainty = TRUE, uncertaintyMode = "delta",
+        uncertaintySd = TRUE, uncertaintyCi = FALSE,
+        nsim = 1L, verbose = FALSE
+      )
+
+      # (c3) delta SE — DENSITY spec.  Same tripwire: density also returns NULL
+      # from calculateUtilityDiffJacobian (delta_u = -2 * changeUtil makes A
+      # dense over all K columns), so this too is on the FD fallback today.
+      snap_me_delta_density <- marginalEffects(
+        object    = ans,
+        data      = mydata,
+        effectName1 = "density", contrast1 = c(-1, 1),
+        type      = "tieProb", depvar = "mynet",
+        level     = "period",
+        uncertainty = TRUE, uncertaintyMode = "delta",
+        uncertaintySd = TRUE, uncertaintyCi = FALSE,
+        nsim = 1L, verbose = FALSE
       )
 
       # (d) predict changeProb — period level, no uncertainty
