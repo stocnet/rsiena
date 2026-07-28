@@ -10,7 +10,10 @@
 \alias{write_result.sienaFit}
 \alias{write_result}
 \alias{coef}
+\alias{print.coef_siena}
 \alias{coef.sienaFit}
+\alias{coefficients}
+\alias{coefficients.sienaFit}
 \alias{vcov}
 \alias{vcov.sienaFit}
 \title{Methods for processing sienaFit objects,
@@ -23,9 +26,13 @@
 
 \method{print}{summary.sienaFit}(x, matrices=TRUE, ...)
 
-\method{coef}{sienaFit}(object, dropRates=TRUE, shortenNames=TRUE, ...)
+\method{coef}{sienaFit}(object, dropRates=TRUE, shortenNames=FALSE, ...)
 
-\method{vcov}{sienaFit}(object, dropRates=TRUE, shortenNames=TRUE, ...)
+\method{coefficients}{sienaFit}(object, dropRates=TRUE, shortenNames=FALSE, ...)
+
+\method{print}{coef_siena}(x, digits=4, ...)
+
+\method{vcov}{sienaFit}(object, dropRates=TRUE, shortenNames=FALSE, ...)
 
 \method{write_result}{sienaFit}(x, type="tex",
     fileName=NULL,
@@ -41,7 +48,8 @@ siena_table(x, type="tex",
 \arguments{
   \item{x}{An object of class \code{sienaFit}, or
     \code{summary.sienaFit} as appropriate. For \code{siena_table},
-    objects of class \code{sienaBayes} are also permitted.}
+    objects of class \code{sienaBayes} are also permitted.
+    For \code{print.coef_siena}, an object of class \code{coef_siena}. }
   \item{object}{An object of class \code{\link{sienaFit}}, produced by
     \code{\link{siena}}. For \code{siena_table}, objects of class
     \code{sienaBayes} are also permitted.}
@@ -72,7 +80,8 @@ siena_table(x, type="tex",
   \item{align}{
     See documentation for \code{\link[xtable]{xtable}}.}
   \item{digits}{
-    See documentation for \code{\link[xtable]{xtable}}.}
+    Number of digits to be printed. Also see documentation
+    for \code{\link[xtable]{xtable}}.}
   \item{display}{
     See documentation for \code{\link[xtable]{xtable}}}
   \item{nfirst}{Only relevant for the \code{multiSiena} package.}
@@ -82,16 +91,25 @@ siena_table(x, type="tex",
     \code{type}, \code{file}.}
 }
 \description{
-  \code{print}, \code{summary}, and \code{xtable} methods for
-  \code{sienaFit} objects.
+  \code{print}, \code{summary}, \code{coef},
+  \code{vcov}, and \code{xtable} methods for \code{sienaFit} 
+  and \code{coef_siena} objects.
 }
 \value{
   Function \code{coef.sienaFit} gives the estimated parameters,
   and \code{vcov.sienaFit} their estimated variance-covariance matrix.
+  Function \code{coefficients.sienaFit} is an alias for \code{coef.sienaFit}.
 
   The function \code{print.sienaFit} prints a table containing estimated
   parameter values, standard errors and (optionally)
-  t-statistics for convergence.
+  \code{t}-statistics for convergence.
+
+  Function \code{print.coef_siena} is used to  print estimates from
+  \code{\link{siena}} or \code{\link{estimate_onestep}}.
+
+  Function \code{print.coef_sienaFit} gives the estimated parameters,
+  and \code{vcov.sienaFit} their estimated variance-covariance matrix.
+  Function \code{coefficients.sienaFit} is an alias for \code{coef.sienaFit}.
 
   The function \code{summary.sienaFit} prints a table containing
   estimated parameter values, standard errors and t-statistics for

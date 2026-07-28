@@ -12,6 +12,8 @@
 \alias{dyadicCov}
 \alias{egoAlterCombi}
 \alias{egoAlterCovarComb}
+\alias{AC_Moran}
+\alias{AC_Geary}
 
 \title{Auxiliary functions for goodness of fit assessment by \code{\link{test_gof}}}
 \description{
@@ -52,6 +54,10 @@ egoAlterCombi(i, obsData, sims, period, groupName, varName, trafo=NULL)
 
 egoAlterCovarComb(i, obsData, sims, period, groupName, varName, covar)
 
+AC_Moran(i, obsData, sims, period, groupName, varName, depth=3)
+
+AC_Geary(i, obsData, sims, period, groupName, varName, depth=3) 
+
 sparseMatrixExtraction(i, obsData, sims, period, groupName, varName)
 
 networkExtraction(i, obsData, sims, period, groupName, varName)
@@ -72,7 +78,8 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
     1 to number of waves - 1).}
   \item{groupName}{ Name of group; relevant for multi-group data sets;
     defaults in \code{\link{test_gof}} to "\code{Data1}".}
-  \item{varName}{ Name of dependent variable. }
+  \item{varName}{ String, name of dependent variable. For auxiliary statistics 
+    that are for two dependent variables it should be a vector of  two strings.  }
   \item{levls}{ Levels used as values of the auxiliary statistic.
     For \code{BehaviorDistribution}, this defaults to the observed
     range of values.}
@@ -88,6 +95,8 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
     Default: identity function. }
   \item{covar}{ For \code{egoAlterCovarComb}: arbitrary monadic variable, 
     vector of length \eqn{n},  the number of actors. }
+  \item{depth}{Positive integer, specifying the maximum directed path length
+     used for the network autocorrelation measures}
 }
 \details{
  The statistics should be chosen to represent features of the network
@@ -140,7 +149,7 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
  \code{egoAlterCovarComb} does the same, for arbitrary monadic 
   variables; e.g., transformed or untransformed covariates.\cr
   Here also, the range of \code{covar} should preferably have 5 or fewer values.
-  Missing values are allowed.
+  Missing values are allowed.  
 }
 
 \value{
@@ -169,7 +178,13 @@ behaviorExtraction(i, obsData, sims, period, groupName, varName)
   existence of other ties is not considered.
 
  \code{dyadicCov} returns a named vector, the frequencies of the non-missing
-  non-zero values dc(ego,alter) of the observed or simulated (ego,alter) ties.
+  non-zero values dc(ego,alter) of the observed or simulated (ego,alter) ties.  
+  
+  \code{AC_Moran} returns the Moran network autocorrelation coefficients
+  for directed distances  \code{1, 2, ..., depth}, rounded to 3 decimals.
+    
+  \code{AC_Geary} returns the Geary network autocorrelation coefficients
+  for directed distances  \code{1, 2, ..., depth}, rounded to 3 decimals.
   
  \code{egoAlterCombi} and \code{egoAlterCovarComb} return  a named vector
   with the frequencies of realized ties for ego-alter combinations
@@ -269,6 +284,19 @@ plot(gofi)
 # cumulative is an example of "\dots".
 plot(gofo)
 
+(gofb <- test_gof(ans, BehaviorDistribution, varName = "mybeh",
+    verbose=TRUE, join=TRUE, cumulative=FALSE))
+plot(gofb)
+
+(gof_moran <- test_gof(ans, AC_Moran, verbose=TRUE, join=TRUE,
+    varName=c("mynet1","mybeh")))
+plot(gof_moran)
+
+(gof_geary <- test_gof(ans, AC_Geary, verbose=TRUE, join=TRUE,
+    varName=c("mynet1","mybeh")))
+plot(gof_geary)
+
+
 traf <- function(z){pmax(pmin(z,4),2)}
 (gofea <- test_gof(ans, egoAlterCombi, verbose=TRUE, join=TRUE,
     varName=c("mynet1","mybeh"), trafo=traf))
@@ -283,10 +311,6 @@ plot(gofea)
 (gofdc <- test_gof(ans, dyadicCov, verbose=TRUE, join=TRUE,
     dc=mydycov, varName="mynet1"))
 plot(gofdc)
-
-(gofb <- test_gof(ans, BehaviorDistribution, varName = "mybeh",
-    verbose=TRUE, join=TRUE, cumulative=FALSE))
-plot(gofb)
 
 (goftc <- test_gof(ans, TriadCensus, verbose=TRUE, join=TRUE,
     varName="mynet1"))

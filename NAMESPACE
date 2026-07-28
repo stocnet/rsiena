@@ -18,6 +18,7 @@ export(
    networkExtraction, behaviorExtraction,
 	OutdegreeDistribution, IndegreeDistribution, BehaviorDistribution,
 	TriadCensus, mixedTriadCensus, dyadicCov, egoAlterCombi, egoAlterCovarComb,
+   AC_Moran, AC_Geary,
 	siena_table, xtable, score.Test, Wald.RSiena, Multipar.RSiena, 
    testSame.RSiena, funnelPlot, meta.table,
 	influenceTable, selectionTable,
@@ -66,8 +67,10 @@ S3method(write_report, sienadata)
 S3method(print, sienaGroup)
 S3method(print, sienaDependent)
 S3method(print, sienaFit)
+S3method(print, coef_siena)
 S3method(summary, sienaFit)
 S3method(coef, sienaFit)
+S3method(coefficients, sienaFit)
 S3method(vcov, sienaFit)
 S3method(test_parameter, sienaFit)
 S3method(write_result, sienaFit)
