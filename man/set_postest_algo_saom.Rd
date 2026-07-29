@@ -8,13 +8,16 @@
   object bundling the settings that control \emph{how} postestimation
   quantities (marginal effects, predictions) are computed by
   \code{\link{marginalEffects}} (and, prospectively,
-  \code{\link{predict.sienaFit}}): static vs.\ dynamic simulation, chain
-  storage and batching, parallelisation across a cluster, memory budgeting,
-  and logging.
+  \code{\link{predict.sienaFit}}): chain simulation, storage and batching,
+  parallelisation across a cluster, memory budgeting, and logging.
+
+  \emph{What} is estimated -- including the static/dynamic choice, which
+  selects a different estimand rather than a different route to the same
+  one -- is set on the targets object instead, via
+  \code{\link{make_postest_targets}}.
 }
 \usage{
 set_postest_algo_saom(
-    dynamic                = FALSE,
     algorithm              = NULL,
     n3                     = 200,
     n3PointEst             = NULL,
@@ -44,14 +47,10 @@ set_postest_algo_saom(
 \method{print}{sienaPostestControl}(x, \dots)
 }
 \arguments{
-  \item{dynamic}{Logical: if \code{TRUE}, use dynamic contributions from
-      Markov chains simulated between observations (via
-      \code{\link{siena07}}) rather than static change contributions
-      extracted at the observation moments. Requires \code{algorithm}.}
   \item{algorithm}{A \code{sienaAlgorithm} object (see
-      \code{\link{set_algorithm_saom}}), required when \code{dynamic =
-      TRUE}. Supplying \code{dynamic = TRUE} without \code{algorithm} is
-      an error raised immediately, before any simulation setup cost is
+      \code{\link{set_algorithm_saom}}), required when the targets object
+      was built with \code{dynamic = TRUE}. Omitting it in that case is an
+      error raised immediately, before any simulation setup cost is
       incurred.}
   \item{n3}{Single positive numeric, coerced to integer: number of chains
       / theta draws simulated in phase 3 for dynamic predictions.}
@@ -121,13 +120,13 @@ set_postest_algo_saom(
 }
 \value{
   \code{set_postest_algo_saom} returns a list of class
-  \code{"sienaPostestControl"} with elements \code{dynamic},
+  \code{"sienaPostestControl"} with elements
   \code{algorithm}, \code{n3}, \code{n3PointEst}, \code{n3BatchSize},
   \code{chainStoreMode}, \code{useChangeContributions},
   \code{chainStorePath}, \code{useCluster}, \code{nbrNodes},
   \code{clusterType}, \code{cl}, \code{batchDir}, \code{prefix},
   \code{combineBatch}, \code{batchSize}, \code{keepBatch}, \code{verbose},
-  \code{details}, \code{memoryScale}, \code{batchUnitBudget},
+  \code{memoryScale}, \code{batchUnitBudget},
   \code{dynamicMinistepFactor}, \code{saveDir}, \code{gcEachBatch}, and
   \code{gcEachSim}, and a \code{"version"} attribute giving the RSiena
   package version used to construct it.

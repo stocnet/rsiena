@@ -15,6 +15,7 @@
 \usage{
 \method{make_postest_targets}{sienaFit}(x, data = NULL, effects = NULL,
     depvar = NULL,
+    dynamic = FALSE,
     type = c("changeProb", "tieProb"),
     mainEffect = c("riskDifference", "riskRatio"),
     level = "period",
@@ -23,7 +24,6 @@
     accumulated = FALSE,
     rateWeight = FALSE,
     massContrasts = NULL,
-    combineSameLevel = FALSE,
     dependencies = NULL,
     includeDefaults = TRUE, \dots)
 
@@ -45,6 +45,15 @@
   \item{depvar}{Name of the dependent variable the targets are enumerated
       for. Defaults to the first dependent variable named in
       \code{effects}.}
+  \item{dynamic}{Logical: if \code{TRUE}, the marginal effect is averaged
+      over Markov chains simulated between observations (via
+      \code{\link{siena07}}); if \code{FALSE} (the default) it is
+      evaluated on the change contributions at the observation moments.
+      These are different estimands, not two routes to the same number,
+      which is why the choice is made here rather than among the
+      computation settings in \code{\link{set_postest_algo_saom}} --
+      although \code{dynamic = TRUE} does require an \code{algorithm}
+      to be supplied there. \code{accumulated = TRUE} requires it.}
   \item{type}{Character: \code{"changeProb"} (change probability, the
       default) or \code{"tieProb"} (tie probability). Model-level default
       for every target; see \code{\link{marginalEffects}} for what the two
@@ -74,13 +83,9 @@
       \code{\link{marginalEffects}}. Model-level default for every target;
       may be overridden per target via \code{\link{set_target}} (see
       Details).}
-  \item{combineSameLevel}{Logical: merge included targets that share the
-      same aggregation \code{level} into a single wide result rather than
-      one result per target (default \code{FALSE}). Model-level default,
-      passed through to \code{\link{marginalEffects}}.}
   \item{dependencies}{Optional list of one-sided dependency formulas, of
       the kind added by \code{\link{set_dependency}} (e.g.\
-      \code{list(transRecTrip ~ transTrip * recip)}). Ordinarily left
+      \code{list(transRecTrip ~ transTrip:recip)}). Ordinarily left
       \code{NULL} here and built up afterwards with
       \code{\link{set_dependency}}; see that page for the declaration
       syntax.}
@@ -114,9 +119,12 @@
   \code{\link{set_dependency}} each return a modified \emph{copy} of a
   \code{sienaPostestTargets} object; none of them mutate their input.
 
-  \code{print.sienaPostestTargets} returns \code{x}, invisibly; it is
-  called for its side effect of printing a human-readable summary of the
-  selected targets.
+  \code{print.sienaPostestTargets} returns \code{x}, invisibly. It prints
+  the estimand and reporting settings the targets share, any declared
+  dependencies, and then one line per selected target -- name, effect(s)
+  perturbed, what is done to each change statistic, and whether it is a
+  first or a second difference -- in the order the results are returned
+  in. Settings a target overrides are shown in brackets on its line.
 }
 \details{
   Only non-rate effects are candidate targets: rate effects have no
@@ -127,10 +135,12 @@
 
   \strong{Default perturbation}: when \code{includeDefaults = TRUE},
   every candidate effect gets a default first-difference perturbation.
-  \code{density}'s change statistic only ever takes the values \eqn{-1}
-  and \eqn{+1}, so a unit step is meaningless for it; it therefore
-  defaults to \code{contrast = c(-1, 1)}. Every other effect defaults to
-  \code{diff = 1}, a unit step.
+  Effects whose change statistic is not on a scale a unit step means
+  anything on default to a contrast between its two possible values:
+  \code{density}'s only ever takes \eqn{-1} and \eqn{+1}, so it defaults
+  to \code{contrast = c(-1, 1)}, and \code{recip}'s records whether the
+  reverse tie is present, so it defaults to \code{contrast = c(0, 1)}.
+  Every other effect defaults to \code{diff = 1}, a unit step.
 
   \strong{Per-target overrides}: \code{level}, \code{condition},
   \code{accumulated}, \code{rateWeight}, and \code{massContrasts} are set
@@ -159,7 +169,7 @@
 mytg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
                              type = "tieProb", level = "period")
 mytg <- set_target(mytg, transTrip, diff = 2)
-mytg <- set_second_diff(mytg, c(density, recip))
+mytg <- set_second_diff(mytg, list(density = NULL, recip = list(diff = 1)))
 print(mytg)
 
 me <- marginalEffects(ans, data = mydata, targets = mytg,

@@ -65,7 +65,6 @@ test_that("set_postest_algo_saom defaults match marginalEffects.sienaFit flat de
   co <- set_postest_algo_saom()
 
   checks <- list(
-    list(field = "dynamic",                formal = "dynamic"),
     list(field = "algorithm",               formal = "algorithm"),
     list(field = "n3",                      formal = "n3"),
     list(field = "n3PointEst",              formal = "n3PointEst"),
@@ -83,7 +82,6 @@ test_that("set_postest_algo_saom defaults match marginalEffects.sienaFit flat de
     list(field = "batchSize",               formal = "batchSize"),
     list(field = "keepBatch",               formal = "keepBatch"),
     list(field = "verbose",                 formal = "verbose"),
-    list(field = "details",                 formal = "details"),
     list(field = "memoryScale",             formal = "memoryScale"),
     list(field = "batchUnitBudget",         formal = "batchUnitBudget"),
     list(field = "dynamicMinistepFactor",   formal = "dynamicMinistepFactor"),
@@ -217,26 +215,19 @@ test_that("set_postest_algo_saom: chainStoreMode/clusterType are matched via mat
                regexp = "PSOCK")
 })
 
-test_that("set_postest_algo_saom: dynamic = TRUE without algorithm errors", {
-  expect_error(set_postest_algo_saom(dynamic = TRUE),
-               regexp = "'algorithm' must be provided when dynamic = TRUE")
-})
-
-test_that("set_postest_algo_saom: dynamic = TRUE with a dummy algorithm succeeds", {
-  dummyAlgo <- list(dummy = TRUE)
-  expect_silent(co <- set_postest_algo_saom(dynamic = TRUE, algorithm = dummyAlgo))
-  expect_true(co$dynamic)
-  expect_identical(co$algorithm, dummyAlgo)
-})
+## `dynamic` moved to make_postest_targets(): it selects the estimand (static vs
+## model-implied), not the route to it.  Its consistency rules (accumulated
+## requires dynamic; rateWeight inert under dynamic) are therefore checked at
+## target construction -- see test-postest-targets-dynamic.R.  The
+## `dynamic -> algorithm` requirement is now a call-time check, since the two
+## live in different objects.
 
 test_that("set_postest_algo_saom: logical flags must be single non-NA logical", {
-  expect_error(set_postest_algo_saom(dynamic = NA), regexp = "'dynamic'.*logical")
-  expect_error(set_postest_algo_saom(useChangeContributions = NA),
+    expect_error(set_postest_algo_saom(useChangeContributions = NA),
                regexp = "'useChangeContributions'.*logical")
   expect_error(set_postest_algo_saom(useCluster = NA), regexp = "'useCluster'.*logical")
   expect_error(set_postest_algo_saom(combineBatch = NA), regexp = "'combineBatch'.*logical")
   expect_error(set_postest_algo_saom(keepBatch = NA), regexp = "'keepBatch'.*logical")
-  expect_error(set_postest_algo_saom(details = NA), regexp = "'details'.*logical")
   expect_error(set_postest_algo_saom(gcEachBatch = NA), regexp = "'gcEachBatch'.*logical")
   expect_error(set_postest_algo_saom(gcEachSim = NA), regexp = "'gcEachSim'.*logical")
 })
@@ -363,7 +354,8 @@ test_that("print.sienaPostestUncertainty omits nsim and shows 'no draws' for del
 test_that("print.sienaPostestControl prints key settings and shows single-core by default", {
   co <- set_postest_algo_saom()
   expect_output(print(co), "RSiena postestimation control")
-  expect_output(print(co), "static")
+  ## No longer prints static/dynamic: `dynamic` selects the estimand and lives
+  ## on the targets object, not here.
   expect_output(print(co), "single-core")
   expect_output(print(co), "n3 = 200")
 })
@@ -395,4 +387,388 @@ test_that("print methods return their argument invisibly", {
   ret2 <- withVisible(print(co))
   expect_false(ret2$visible)
   expect_identical(ret2$value, co)
+})
+
+# ── I. Printing a targets object ─────────────────────────────────────────────
+#
+# The printed targets object is the only place a user sees, in one view, what
+# quantity they have asked for.  Three things it has to get right, each of
+# which it previously got wrong:
+#
+#   * the model-level settings are the ones every target inherits, not a
+#     record of what the software would have chosen -- so they have to be
+#     labelled as the estimand and its reporting, not as "defaults"
+#   * "egoX" does not identify a target in a model carrying egoX on several
+#     covariates, so the covariate has to appear
+#   * a second difference showed only its first component's perturbation,
+#     which named neither the statistic being stepped nor the fact that the
+#     partner may be a contrast rather than a step
+
+targets_print <- function(tg) paste(capture.output(print(tg)), collapse = "\n")
+
+test_that("printed targets state the estimand rather than listing 'defaults'", {
+  skip_on_cran()
+  ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
+  skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
+
+  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+                             type = "tieProb", condition = "recip")
+  txt <- targets_print(tg)
+  expect_match(txt, "risk difference in tie probability")
+  expect_match(txt, "static")
+  expect_match(txt, "conditional on recip")
+  ## "defaults" invited the reading "what would have been used anyway".
+  expect_false(grepl("defaults", txt))
+
+  dyn <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+                              dynamic = TRUE, mainEffect = "riskRatio")
+  dtxt <- targets_print(dyn)
+  expect_match(dtxt, "risk ratio in change probability")
+  expect_match(dtxt, "dynamic")
+  expect_false(grepl("static", dtxt))
+})
+
+test_that("printed targets name the covariate an effect refers to", {
+  skip_on_cran()
+  ans_ego <- load_fixture("ans_ego"); mymodel_ego <- load_fixture("mymodel_ego")
+  skip_if(is.null(ans_ego) || is.null(mymodel_ego), "ego fixtures unavailable")
+
+  tg <- make_postest_targets(ans_ego, effects = mymodel_ego)
+  txt <- targets_print(tg)
+  ## The short name stays -- it is what set_target() is called with -- but on
+  ## its own it does not say which covariate.
+  expect_match(txt, "egoX \\(mybeh_ego\\)")
+  ## Effects without a covariate must not grow an empty parenthesis.
+  expect_match(txt, "transTrip \\+1")
+  expect_false(grepl("\\(\\)", txt))
+})
+
+test_that("printed second differences show both perturbations, not just the first", {
+  skip_on_cran()
+  ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
+  skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
+
+  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+                             includeDefaults = FALSE)
+  tg <- suppressMessages(set_second_diff(tg,
+                                         list(transTrip = list(diff = 1),
+                                              recip     = list(contrast = c(0, 1))),
+                                         name = "interaction_sd"))
+  txt <- targets_print(tg)
+  expect_match(txt, "second difference")
+  ## Both components, each attributed to its effect, and the contrast shown
+  ## as two levels rather than as a step.
+  expect_match(txt, "transTrip \\+1")
+  expect_match(txt, "recip 0 -> 1")
+})
+
+test_that("printed first differences distinguish a step from a contrast", {
+  skip_on_cran()
+  ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
+  skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
+
+  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2")
+  txt <- targets_print(tg)
+  ## density defaults to a contrast, everything else to a unit step.
+  expect_match(txt, "density -1 -> 1")
+  expect_match(txt, "transTrip \\+1")
+  expect_match(txt, "first difference")
+})
+
+test_that("printed targets show override VALUES, and only claim overriding when it happens", {
+  skip_on_cran()
+  ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
+  skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
+
+  plain <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2")
+  ## Nothing overrides anything, so the sentence describing overrides would
+  ## be describing a distinction this object does not make.
+  expect_false(grepl("bracketed", targets_print(plain)))
+
+  ov <- suppressMessages(set_target(plain, transTrip, diff = 1,
+                                    level = "actor"))
+  txt <- targets_print(ov)
+  expect_match(txt, "bracketed")
+  ## The field name alone is not actionable; the value is the point.
+  expect_match(txt, "\\[level = actor\\]")
+})
+
+test_that("printed target order is the order results come back in", {
+  skip_on_cran()
+  ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
+  skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
+
+  ## Built up in an order that differs from the model's effect order, which is
+  ## the order the table itself is in.
+  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+                             includeDefaults = FALSE)
+  tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
+  tg <- suppressMessages(set_target(tg, density, contrast = c(-1, 1)))
+
+  printed <- grep("first difference", capture.output(print(tg)), value = TRUE)
+  printed <- sub("^\\s*(\\S+).*$", "\\1", printed)
+  expect_identical(printed, names(RSiena:::.targetsToEffectList(tg)$effectList))
+})
+
+# ── J. The per-effect perturbation list ──────────────────────────────────────
+#
+# A second difference perturbs two effects, and the numbered form
+# (diff1 = 1, contrast2 = c(0, 1)) makes the reader carry the mapping from
+# suffix to position.  The list form states each perturbation next to the
+# effect it applies to, using the same vocabulary set_target() uses:
+#
+#   list(transTrip = list(diff = 1), recip = list(contrast = c(0, 1)))
+#
+# The decisive test is that it lowers to exactly what the numbered form
+# lowers to -- it is a different way of saying the same thing, not a
+# different quantity.
+
+test_that("the perturbation list lowers to exactly what the numbered form does", {
+  skip_on_cran()
+  ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
+  skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
+
+  mk <- function() make_postest_targets(ans2, effects = mymodel2,
+                                        depvar = "mynet2",
+                                        includeDefaults = FALSE)
+  lst <- suppressMessages(set_second_diff(mk(),
+      list(transTrip = list(diff = 1), recip = list(contrast = c(0, 1))),
+      name = "sd"))
+  num <- suppressMessages(set_second_diff(mk(), c(transTrip, recip),
+      diff1 = 1, contrast2 = c(0, 1), name = "sd"))
+  expect_equal(RSiena:::.targetsToEffectList(lst),
+               RSiena:::.targetsToEffectList(num))
+})
+
+test_that("the perturbation list carries the compound-effect settings too", {
+  skip_on_cran()
+  ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
+  skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
+
+  mk <- function() make_postest_targets(ans2, effects = mymodel2,
+                                        depvar = "mynet2",
+                                        includeDefaults = FALSE)
+  lst <- suppressMessages(set_second_diff(mk(), list(
+      recip     = list(contrast = c(0, 1), interaction = TRUE,
+                       intEffectNames = "transRecTrip",
+                       modEffectNames = "transTrip"),
+      transTrip = list(diff = 1, interaction = TRUE,
+                       intEffectNames = "transRecTrip",
+                       modEffectNames = "recip")), name = "sd"))
+  num <- suppressMessages(set_second_diff(mk(), c(recip, transTrip),
+      contrast1 = c(0, 1), interaction1 = TRUE,
+      intEffectNames1 = "transRecTrip", modEffectNames1 = "transTrip",
+      diff2 = 1, interaction2 = TRUE,
+      intEffectNames2 = "transRecTrip", modEffectNames2 = "recip",
+      name = "sd"))
+  expect_equal(RSiena:::.targetsToEffectList(lst),
+               RSiena:::.targetsToEffectList(num))
+})
+
+test_that("a NULL entry gives that effect its default perturbation", {
+  skip_on_cran()
+  ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
+  skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
+
+  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+                             includeDefaults = FALSE)
+  ## density defaults to a contrast, transTrip to a unit step -- the same
+  ## defaults make_postest_targets() would have applied.
+  lst <- suppressMessages(set_second_diff(tg, list(density = NULL,
+                                                   transTrip = list())))
+  sp <- RSiena:::.targetsToEffectList(lst)$effectList[[1L]]
+  expect_equal(sp$contrast1, c(-1, 1))
+  expect_null(sp$diff1)
+  expect_equal(sp$diff2, 1)
+  expect_null(sp$contrast2)
+})
+
+test_that("an effect may be crossed with itself in the list form", {
+  skip_on_cran()
+  ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
+  skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
+
+  ## Repeated names are meaningful: the same base effect can enter through
+  ## two different compound interactions.  Rejecting duplicates would make
+  ## the list form less expressive than the numbered one it replaces.
+  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+                             includeDefaults = FALSE)
+  lst <- suppressMessages(set_second_diff(tg, list(
+      recip = list(contrast = c(0, 1), interaction = TRUE,
+                   intEffectNames = "transRecTrip",
+                   modEffectNames = "transTrip"),
+      recip = list(contrast = c(0, 1), interaction = TRUE,
+                   intEffectNames = "transRecTrip",
+                   modEffectNames = "density"))))
+  sp <- RSiena:::.targetsToEffectList(lst)$effectList[[1L]]
+  expect_equal(sp$effectName1, "recip")
+  expect_equal(sp$effectName2, "recip")
+  expect_equal(sp$modEffectNames1, "transTrip")
+  expect_equal(sp$modEffectNames2, "density")
+})
+
+test_that("malformed perturbation lists are rejected with the effect named", {
+  skip_on_cran()
+  ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
+  skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
+
+  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+                             includeDefaults = FALSE)
+  sd <- function(...) suppressMessages(set_second_diff(tg, ...))
+
+  ## A typo in a setting name must not be silently ignored -- that would
+  ## compute a different quantity than the one written down.
+  expect_error(sd(list(recip = list(diff = 1),
+                       transTrip = list(constrast = c(0, 1)))),
+               "Unknown perturbation setting")
+  expect_error(sd(list(recip = list(diff = 1, contrast = c(0, 1)),
+                       transTrip = NULL)),
+               "either 'diff' or 'contrast' for 'recip'")
+  expect_error(sd(list(recip = 1, transTrip = NULL)),
+               "must be a list")
+  expect_error(sd(list(list(diff = 1), list(diff = 1))),
+               "must be named with an effect short name")
+})
+
+test_that("a second difference crosses exactly two effects", {
+  skip_on_cran()
+  ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
+  skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
+
+  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+                             includeDefaults = FALSE)
+  expect_error(suppressMessages(set_second_diff(tg, list(density = NULL))),
+               "exactly two effects")
+  ## Three entries are the natural way to ask for a third-order difference,
+  ## which the machinery does not do yet; say so rather than silently using
+  ## the first two.
+  expect_error(suppressMessages(set_second_diff(tg,
+                   list(density = NULL, recip = NULL, transTrip = NULL))),
+               "not supported yet")
+})
+
+test_that("the two forms cannot be mixed in one call", {
+  skip_on_cran()
+  ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
+  skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
+
+  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+                             includeDefaults = FALSE)
+  ## Both routes say what is done to the effects; applying both would mean
+  ## one silently winning over the other.
+  expect_error(suppressMessages(set_second_diff(tg,
+                   list(recip = NULL, transTrip = NULL), diff1 = 2)),
+               "Use one or the other")
+})
+
+# ── K. Identifying WHICH target a short name means ───────────────────────────
+#
+# A short name is the natural way to name a target and is what set_effect()
+# takes, but it does not always identify one: a model can carry egoX on
+# several covariates, or two unspInt terms.  Picking the first match would
+# perturb an effect the caller did not ask for and report it under the name
+# of the one they did -- wrong numbers, not an error.  So an ambiguous short
+# name is refused, and is resolved the way set_effect() resolves it: by
+# naming the covariate.
+#
+# Internally the qualified ("long") name is what the engine is given, since
+# that is what its own resolver can pin down; the readable short name stays
+# for naming and printing.
+
+test_that("an ambiguous short name is refused rather than resolved to the first match", {
+  skip_on_cran()
+  ans_2int <- load_fixture("ans_2int"); mymodel_2int <- load_fixture("mymodel_2int")
+  skip_if(is.null(ans_2int) || is.null(mymodel_2int),
+          "2int fixtures unavailable (RSENA_FULL_TESTS not set)")
+
+  tg <- make_postest_targets(ans_2int, effects = mymodel_2int,
+                             depvar = "mynet_2int")
+  ## Two unspInt terms: "unspInt" names both.
+  expect_error(suppressMessages(set_target(tg, unspInt, diff = 2)),
+               "does not identify one")
+  ## and the message has to say what to type instead.
+  err <- tryCatch(suppressMessages(set_target(tg, unspInt, diff = 2)),
+                  error = conditionMessage)
+  expect_match(err, "unspInt1")
+  expect_match(err, "unspInt2")
+
+  ## The qualified name does identify one.
+  expect_no_error(suppressMessages(set_target(tg, unspInt1, diff = 2)))
+  expect_no_error(suppressMessages(set_target(tg, "unspInt2", diff = 2)))
+})
+
+test_that("colliding short names still get distinct target names", {
+  skip_on_cran()
+  ans_2int <- load_fixture("ans_2int"); mymodel_2int <- load_fixture("mymodel_2int")
+  skip_if(is.null(ans_2int) || is.null(mymodel_2int),
+          "2int fixtures unavailable (RSENA_FULL_TESTS not set)")
+
+  tg <- make_postest_targets(ans_2int, effects = mymodel_2int,
+                             depvar = "mynet_2int")
+  ## Two targets called "unspInt_fd" would collide in the result list and in
+  ## set_target's duplicate-name check.
+  expect_false(anyDuplicated(tg$name) > 0L)
+  expect_true(all(c("unspInt1_fd", "unspInt2_fd") %in% tg$name))
+})
+
+test_that("the engine is given the qualified name, the user sees the short one", {
+  skip_on_cran()
+  ans_ego <- load_fixture("ans_ego"); mymodel_ego <- load_fixture("mymodel_ego")
+  skip_if(is.null(ans_ego) || is.null(mymodel_ego),
+          "ego fixtures unavailable (RSENA_FULL_TESTS not set)")
+
+  tg <- make_postest_targets(ans_ego, effects = mymodel_ego)
+  lowered <- RSiena:::.targetsToEffectList(tg)$effectList
+  nm <- vapply(lowered, function(e) e$effectName1, character(1L))
+  ## Internal: the covariate-qualified name, which is what pins down which
+  ## egoX is meant among the effects the model was fitted with.
+  expect_true("egoX_mybeh_ego" %in% nm)
+  ## User-facing: the deliberate short name, in the target name and on screen.
+  expect_true("egoX_fd" %in% tg$name)
+  expect_match(paste(capture.output(print(tg)), collapse = "\n"),
+               "egoX \\(mybeh_ego\\)")
+})
+
+test_that("a covariate identifies which target a short name means", {
+  skip_on_cran()
+  ans_ego <- load_fixture("ans_ego"); mymodel_ego <- load_fixture("mymodel_ego")
+  skip_if(is.null(ans_ego) || is.null(mymodel_ego),
+          "ego fixtures unavailable (RSENA_FULL_TESTS not set)")
+
+  tg <- make_postest_targets(ans_ego, effects = mymodel_ego)
+  ## The set_effect() pattern: short name plus the covariate it is defined on.
+  expect_no_error(suppressMessages(
+      set_target(tg, egoX, covar1 = "mybeh_ego", diff = 2)))
+  ## A covariate that is not there must not fall back to "the egoX I found".
+  expect_error(suppressMessages(set_target(tg, egoX, covar1 = "nosuch", diff = 2)),
+               "No target for effect 'egoX'")
+  ## It identifies ONE target, so it cannot be handed a list of names.
+  expect_error(suppressMessages(
+      set_target(tg, c(egoX, recip), covar1 = "mybeh_ego")),
+      "single short name")
+  ## and it works inside a second difference's perturbation list.
+  expect_no_error(suppressMessages(set_second_diff(tg,
+      list(egoX  = list(covar1 = "mybeh_ego", diff = 1),
+           recip = list(diff = 1)))))
+})
+
+test_that("a second difference records which target each component was", {
+  skip_on_cran()
+  ans_2int <- load_fixture("ans_2int"); mymodel_2int <- load_fixture("mymodel_2int")
+  skip_if(is.null(ans_2int) || is.null(mymodel_2int),
+          "2int fixtures unavailable (RSENA_FULL_TESTS not set)")
+
+  tg <- make_postest_targets(ans_2int, effects = mymodel_2int,
+                             depvar = "mynet_2int", includeDefaults = FALSE)
+  ## An ambiguous component is caught when the target is added, not when it
+  ## is computed several steps later.
+  expect_error(suppressMessages(set_second_diff(tg,
+                   list(unspInt = list(diff = 1), inPop = list(diff = 1)))),
+               "does not identify one")
+
+  sd <- suppressMessages(set_second_diff(tg,
+            list(unspInt2 = list(diff = 1), inPop = list(diff = 1))))
+  sp <- RSiena:::.targetsToEffectList(sd)$effectList[[1L]]
+  expect_equal(sp$effectName1, "unspInt2")
+  expect_equal(sp$effectName2, "inPop")
 })

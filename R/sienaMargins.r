@@ -1,8 +1,6 @@
 ##@marginalEffects Generic
 marginalEffects <- function(object, ...) UseMethod("marginalEffects", object)
 
-
-## COMPUTNIG DENSITY MARGINAL EFFECTS WITH WRONG CONTRAST SILENTLY FAILS!
 ##@marginalEffects.sienaFit Method
 marginalEffects.sienaFit <- function(
     object,
@@ -26,7 +24,7 @@ marginalEffects.sienaFit <- function(
     level = "period",
     condition = NULL,
     type = c("changeProb", "tieProb"),
-    mainEffect = "riskDifference", # allow utility later as well
+    mainEffect = "riskDifference", # allow objective later as well
     perturbType1 = NULL,
     perturbType2 = NULL,
     massContrasts = NULL,
@@ -68,8 +66,8 @@ marginalEffects.sienaFit <- function(
     gcEachBatch = FALSE,
     gcEachSim = FALSE,
     uncertaintyMode = c("bootstrap", "delta", "deltaFull"),
-    combineSameLevel = FALSE,
-    format = c("wide", "long"),
+    combineSameLevel = TRUE,
+    format = c("long", "wide"),
     targets = NULL,
     control_uncertainty = NULL,
     control_algo = NULL,
@@ -135,18 +133,6 @@ marginalEffects.sienaFit <- function(
         uncertaintyMedian <- .u$simMedian
     }
 
-    if (!is.null(control_out)) {
-        if (!inherits(control_out, "sienaPostestOutput"))
-            stop("'control_out' must be a sienaPostestOutput object, as ",
-                 "returned by set_postest_output_saom().", call. = FALSE)
-        .clash <- .given(names(control_out))
-        if (length(.clash))
-            stop("'control_out' was supplied, so these arguments must be set ",
-                 "inside it instead of passed separately: ",
-                 paste(.clash, collapse = ", "), ".", call. = FALSE)
-        for (.nm in names(control_out)) assign(.nm, control_out[[.nm]])
-    }
-
     if (!is.null(control_algo)) {
         if (!inherits(control_algo, "sienaPostestControl"))
             stop("'control_algo' must be a sienaPostestControl object, as ",
@@ -160,12 +146,25 @@ marginalEffects.sienaFit <- function(
         for (.nm in names(control_algo)) assign(.nm, control_algo[[.nm]])
     }
 
+    if (!is.null(control_out)) {
+        if (!inherits(control_out, "sienaPostestOutput"))
+            stop("'control_out' must be a sienaPostestOutput object, as ",
+                 "returned by set_postest_output_saom().", call. = FALSE)
+        .clash <- .given(names(control_out))
+        if (length(.clash))
+            stop("'control_out' was supplied, so these arguments must be set ",
+                 "inside it instead of passed separately: ",
+                 paste(.clash, collapse = ", "), ".", call. = FALSE)
+        for (.nm in names(control_out)) assign(.nm, control_out[[.nm]])
+    }
+
     if (inherits(data, "sienaGroup"))
       stop("marginalEffects does not support multi-group data (sienaGroup).")
     type           <- match.arg(type)
     clusterType    <- match.arg(clusterType)
     uncertaintyMode <- match.arg(uncertaintyMode)
     chainStoreMode <- match.arg(chainStoreMode)
+    format         <- match.arg(format)
     if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
     if (!is.null(condition)) condition <- resolveCondition(condition)
 
@@ -410,9 +409,8 @@ marginalEffects.sienaFit <- function(
             # ---- Resolve chain source into standalone .chains local ----
             # Chains are kept in a standalone local variable (.chains),
             # NEVER attached to `object`.  This ensures that after
-            # rm(.chains), the chains are trivially freed — no env-walker
-            # or frame introspection needed.
-            #
+            # rm(.chains), the chains are trivially freed
+            
             # Sources (in priority order):
             #   1. chainStorePath (caller pre-serialized to disk)
             #   2. object$changeContributions (in-memory from estimation)
@@ -470,8 +468,6 @@ marginalEffects.sienaFit <- function(
             eff_second <- isTRUE(spec$second)
 
             # Per-spec level/condition overrides (fall back to call-level defaults).
-            # Use %in% names() rather than !is.null() so that an explicit
-            # condition = NULL in a spec overrides the call-level condition.
             eff_level     <- if ("level"     %in% names(spec)) spec$level
                              else                               level
             eff_condition <- if ("condition" %in% names(spec)) {
@@ -802,12 +798,12 @@ marginalEffects.sienaFit <- function(
         )
 
     # Assign S3 class on each result; sienaPostestimate returns plain data.frames.
+    # this might actually not be fully correct anymore with the recent changes
     results <- lapply(results, function(r) {
         class(r) <- c("sienaMarginalEffect", class(r))
         r
     })
 
-    # Opt-in: merge specs sharing the same (level, condition) into wider frames.
     if (isTRUE(combineSameLevel) && !.single_effect) {
         results <- combinePostestResults(results, builtSpecList, format = format)
         results <- lapply(results, function(r) {
@@ -817,8 +813,9 @@ marginalEffects.sienaFit <- function(
         })
     }
 
-    # Return: single data frame for scalar call, named list for effectList
-    if (.single_effect) results[["single"]] else results
+    if (.single_effect) return(results[["single"]])
+    if (length(results) == 1L) return(results[[1L]])
+    results
 }
 
 ##@print.sienaMarginalEffect S3 print
@@ -1748,7 +1745,7 @@ computeMassContrasts <- function(firstDiff, density, ego, period, group,
 # by a single wider data.frame keyed on group columns; elements that are alone at
 # their (level, condition) stay as single-element lists (unchanged).
 # --------------------------------------------------------------------------
-combinePostestResults <- function(results, specs, format = c("wide", "long")) {
+combinePostestResults <- function(results, specs, format = c("long", "wide")) {
   format <- match.arg(format)
   if (length(results) == 0L) return(results)
 
@@ -1775,16 +1772,39 @@ combinePostestResults <- function(results, specs, format = c("wide", "long")) {
     combined_nm <- paste(nms, collapse = "+")
 
     if (format == "long") {
-      # rbind with an added effect column — safe, base R, O(N*nrow)
+      # Long format stacks targets as rows, so every frame must carry the same
+      # columns.  Targets differ in what their quantity column is called --
+      # firstDiff, secondDiff, firstRiskRatio, ... -- which would make rbind
+      # fail outright (base rbind requires identical names; it does not union
+      # and NA-fill).
+      #
+      # Rather than pad with NAs, the quantity column is renamed to `est` in
+      # every frame.  Which quantity a row holds is already carried by the
+      # `effect` column, whose default names encode it (`recip_fd`,
+      # `recip_transTrip1_sd`), so the information is not lost and the table
+      # stays one value per row -- which is what makes it readable as a report.
       frames <- lapply(nms, function(nm) {
         df <- results[[nm]]
+        oc <- specs[[nm]]$outcomeName
+        if (!is.null(oc) && oc %in% names(df))
+          names(df)[match(oc, names(df))] <- "est"
         df[["effect"]] <- nm
         df
       })
+      common <- Reduce(intersect, lapply(frames, names))
+      dropped <- setdiff(unique(unlist(lapply(frames, names))), common)
+      if (length(dropped))
+        warning("Combining targets at the same level dropped column(s) not ",
+                "shared by all of them: ", paste(dropped, collapse = ", "),
+                ". Use combineSameLevel = FALSE to keep each target separate.",
+                call. = FALSE)
+      frames <- lapply(frames, function(df) df[, common, drop = FALSE])
       merged <- do.call(rbind, frames)
-      # Reorder: key cols, effect, then outcomes
+      # Reorder for reading: effect first, then the keys it is broken down by
+      # (period, condition, ...), then the quantities.  One row per
+      # effect x condition x period, which is the shape a results table wants.
       other_cols <- setdiff(names(merged), c(key_cols, "effect"))
-      merged <- merged[, c(key_cols, "effect", other_cols), drop = FALSE]
+      merged <- merged[, c("effect", key_cols, other_cols), drop = FALSE]
 
     } else {
       # Wide: cbind non-key columns with effect-name suffix.

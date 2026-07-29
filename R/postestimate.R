@@ -186,8 +186,6 @@ sienaPostestimate <- function(
                            isFullMode, dynamic, dynArgs, preloadedChains,
                            n3, n3BatchSize, useChangeContributions,
                            decisionDetails, saveDir) {
-    # Step 1 — replace contribFun with a memory-backed store (dynamic only).
-    # Static delta: contribFun is already theta-independent; no chain sim needed.
     delta_wide <- NULL
     ssc_sum    <- NULL
     if (dynamic && !is.null(dynArgs)) {
@@ -208,15 +206,10 @@ sienaPostestimate <- function(
         ssc_sum       <- deltaState$ssc_sum
     }
 
-    # Step 2 — point estimates.
     hatEstimatorFun <- makeEstimatorFun(specs, contribFun, nChainBatches,
                                         type, rateParams, rateIdx, verbose,
                                         mc.cores = nbrNodes)
 
-    # Step 3+4 — hat + Jacobian in one sweep, then SE / CI assembly.
-    # For accumulated or rate-weighted specs the analytical path is
-    # unavailable/unsafe; fall back to FD inside deltaMethodUncertainty
-    # (hat will be computed there too).
     has_accumulated <- any(vapply(specs, function(s) isTRUE(s$accumulated),
                                   logical(1L)))
     has_rateweight <- any(vapply(specs, function(s) isTRUE(s$rateWeight),
@@ -302,7 +295,6 @@ sienaPostestimate <- function(
                                uncertaintySd, uncertaintyCi, uncertaintyMean,
                                uncertaintyMedian, ciInterval,
                                decisionDetails, saveDir, gcEachBatch, gcEachSim) {
-    # Step 1 — point estimates from the caller-supplied (hat) contribFun.
     hatEstimatorFun <- makeEstimatorFun(specs, contribFun, nChainBatches,
                                         type, rateParams, rateIdx, verbose,
                                         mc.cores = nbrNodes)
@@ -312,10 +304,6 @@ sienaPostestimate <- function(
     gc(verbose = FALSE)
     memReport("post-hat (chains freed)", verbose = verbose >= 2)
 
-    # Step 2 — build draw estimator.
-    # Dynamic: each bootstrap draw needs its own fresh chains (theta-dependent),
-    #   so build a chainStore_simulate that re-runs siena07 per draw.
-    # Static: contribFun is theta-independent; re-use the same closure as hat.
     if (dynamic && !is.null(dynArgs)) {
         uncertBatchN3 <- if (!is.null(n3BatchSize)) min(n3BatchSize, n3) else n3
         uncertDynArgs <- dynArgs
@@ -337,7 +325,6 @@ sienaPostestimate <- function(
     }
     rm(contribFun)
 
-    # Step 3 — bootstrap draws.
     uncertainty_summary_fun <- makeUncertaintySummarizer(
         return_sd     = uncertaintySd,
         return_ci     = uncertaintyCi,
@@ -364,7 +351,6 @@ sienaPostestimate <- function(
         gcEachSim   = gcEachSim
     )
 
-    # Step 4 — aggregate.
     t_agg_start <- proc.time()
     results <- aggregatePostEstimation(
         expects                 = expects,
@@ -397,14 +383,6 @@ sienaPostestimate <- function(
 #   $getBatch  – function(batchIdx, theta = NULL) → raw chain list (or
 #                for simulate mode, a wide contrib struct)
 #   $cleanup   – function() → frees temp resources
-#
-# The "simulate" backend is special: getBatch returns an already-flattened
-# wide struct (from getDynamicChangeContributions), whereas "memory" and
-# "disk" return raw chain lists that makeContribFun passes through
-# flattenAndEnrichWide.
-#
-# Future backends (Arrow IPC, DuckDB, Rcpp XPtr) implement the same
-# interface — see docs/design/chain_storage_backends.md.
 # --------------------------------------------------------------------------
 
 chainStore_memory <- function(chains, batchSize) {
@@ -687,10 +665,6 @@ chainStore_simulate <- function(dynArgs, batchSize, n3Total) {
 }
 
 # --------------------------------------------------------------------------
-# makeContribFun
-#
-# Wraps a chainStore into a closure compatible with makeEstimatorFun.
-# --------------------------------------------------------------------------
 # .resolveBuiltinJac — map a built-in predictFun to its paired Jacobian fn.
 #
 # Returns the corresponding *Jac function for the two built-in predictFuns,
@@ -752,7 +726,6 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
     n_pred_groups <- next_gid - 1L
   }
 
-  # Bundle spec-derived constants for the top-level helpers defined below.
   evalConfig <- list(
     specs         = specs,
     N             = N,
@@ -768,12 +741,6 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
     mc.cores      = mc.cores
   )
 
-  # ---- one_batch: load cc, build context, call .evalBatch once or more ----
-  #
-  # When perturbations is non-NULL (delta path), .evalBatch is called once per
-  # perturbation theta on the same cc and batchCtx — structural caches are
-  # built once and reused for all (2*nParams + 1) theta values.
-  # mode = "jacobian": also computes the analytical Jacobian in one sweep.
   one_batch <- function(b, theta, useChangeContributions,
                         perturbations = NULL, mode = "outcome") {
     t_ob_start <- if (verbose >= 2) proc.time() else NULL
@@ -813,7 +780,6 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
     cc_pert$changeUtility    <- NULL
     cc_pert$changeProbability <- NULL
 
-    # Use mclapply with FORK when mc.cores > 1 for ~nParams-fold speedup.
     if (mc.cores > 1L && length(perturbations) > 1L) {
       perts <- parallel::mclapply(perturbations,
                                   function(tp) .evalBatch(cc_pert, tp, batchCtx, evalConfig),
@@ -825,7 +791,6 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
     # cc and batchCtx freed on return
   }
 
-  # ---- estimator: batch loop + accumulator reduction ----
   estimator <- function(theta, perturbations = NULL,
                         useChangeContributions = FALSE, mode = "outcome") {
 
@@ -854,7 +819,6 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
       }
     }
 
-    # Reduce hat partials across batches.
     accums_hat <- vector("list", N)
     for (br in all_batch_results) {
       for (j in seq_len(N))
@@ -862,8 +826,6 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
     }
     results_hat <- .finaliseAccums(accums_hat, evalConfig)
 
-    # Jacobian mode: reduce K_eff gradient-column accumulators, zero-pad
-    # to full nParams, return list(hat, jac).
     if (mode == "jacobian") {
       jac_eff_names <- all_batch_results[[1L]]$jac_eff_names
       theta_names_j <- names(theta)
@@ -910,14 +872,6 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
   attr(estimator, "eff_names") <- eff_names
   estimator
 }
-
-# ==========================================================================
-# Top-level helpers for makeEstimatorFun
-#
-# Defined BELOW makeEstimatorFun per "caller before callee" convention.
-# Each takes an `evalConfig` bundle (built inside makeEstimatorFun) instead of
-# closing over the factory's local variables.
-# ==========================================================================
 
 # --------------------------------------------------------------------------
 # .prepBatchContext — θ-independent per-batch setup
@@ -1622,20 +1576,6 @@ aggMultiUncertainty <- function(outcomeNames, data, level = "none",
 # aggMeanSim: canonical sim-aware uncertainty aggregation (always multi-col).
 aggMeanSim <- aggMultiUncertainty
 
-# ---- Batched aggregation helpers ------------------------------------------------
-# These support n3-batched accumulation: processing chains in smaller batches
-# to avoid OOM from materializing all chains at once.
-
-# --------------------------------------------------------------------------
-# buildAggCache / aggWithCache — pre-sort once, aggregate many
-#
-# When multiple specs share the same (level, condition, na.rm, egoNormalize,
-# structural frame), encodeGroupKeys + order() are identical across specs.
-# buildAggCache does that work once; aggWithCache applies it per outcome vector.
-#
-# This turns O(N × n log n) into O(n log n + N × n).
-# --------------------------------------------------------------------------
-
 # Build a reusable aggregation cache for a given structural frame + grouping.
 #
 # structural: named list of integer/numeric vectors (the grouping columns from cc),
@@ -1654,27 +1594,19 @@ buildAggCache <- function(structural, group_vars, ego_id_cols,
   needs_ego <- egoNormalize && length(setdiff(ego_id_cols, group_vars)) > 0L
 
   if (needs_ego) {
-    # Stage 1: ego pre-aggregation (choice-level → ego-level means).
-    # Use scatter-accumulate instead of sort-permutation: precompute a
-    # row→group label vector (ego_scatter_idx) so that aggWithCache
-    # can do a sequential scan of vals rather than a random-access permutation.
-    # Sequential reads are ~100× faster for 24M-row data (L3-miss vs sequential).
     pre_agg_vars <- unique(c(ego_id_cols, group_vars))
     ego_enc  <- encodeGroupKeys(structural, pre_agg_vars)
     ego_ord  <- do.call(order,
                   lapply(seq_len(ncol(ego_enc$G)), function(j) ego_enc$G[, j]))
     ego_G_sorted <- ego_enc$G[ego_ord, , drop = FALSE]
 
-    # Build scatter index: ego_scatter_idx[i] = ego-group label for original row i
     cache$ego_scatter_idx <- build_scatter_idx(ego_G_sorted, ego_ord)
 
-    # Run a dummy aggregation to determine ego-group count and key matrix.
     dummy <- rep(1.0, length(ego_ord))
     ego_res <- grouped_agg_cpp(dummy[ego_ord], ego_G_sorted,
                                na_rm = FALSE, do_mean = TRUE)
     cache$ego_nGroups <- nrow(ego_res$key)
 
-    # Stage 2: scatter index on ego-level data (nEgoGroups rows).
     if (length(group_vars) > 0L) {
       ego_structural <- decodeGroupKeys(ego_res$key, pre_agg_vars, ego_enc$decode)
       main_enc  <- encodeGroupKeys(ego_structural, group_vars)
@@ -1682,10 +1614,8 @@ buildAggCache <- function(structural, group_vars, ego_id_cols,
                     lapply(seq_len(ncol(main_enc$G)), function(j) main_enc$G[, j]))
       main_G_sorted <- main_enc$G[main_ord, , drop = FALSE]
 
-      # level_scatter_idx[g] = level-group label for ego-group g
       cache$level_scatter_idx <- build_scatter_idx(main_G_sorted, main_ord)
 
-      # Precompute decoded group-key data frame for the output (one row per level group).
       dummy_ego <- rep(1.0, nrow(main_enc$G))
       level_res <- grouped_agg_cpp(dummy_ego[main_ord], main_G_sorted,
                                    na_rm = FALSE, do_mean = TRUE)
@@ -1694,7 +1624,6 @@ buildAggCache <- function(structural, group_vars, ego_id_cols,
                                              main_enc$decode)
     }
   } else if (length(group_vars) > 0L) {
-    # No ego normalization — scatter directly on the raw structural frame.
     enc <- encodeGroupKeys(structural, group_vars)
     ord <- do.call(order,
               lapply(seq_len(ncol(enc$G)), function(j) enc$G[, j]))
@@ -1707,7 +1636,6 @@ buildAggCache <- function(structural, group_vars, ego_id_cols,
     cache$main_nGroups <- nrow(main_res$key)
     cache$main_key_df  <- decodeGroupKeys(main_res$key, group_vars, enc$decode)
   }
-  # else: no group_vars and no ego normalization → scalar aggregation
 
   class(cache) <- "aggCache"
   cache
@@ -1721,9 +1649,6 @@ aggWithCache <- function(outcomeName, vals, cache, pre_ego_vals = NULL) {
   cntCol <- paste0(outcomeName, "_n")
 
   if (!is.null(cache$ego_scatter_idx)) {
-    # Stage 1: scatter-accumulate choice-level → ego-level means.
-    # Sequential scan of vals (cache-friendly) + random writes to small
-    # ego-bucket accumulator (fits in L2 cache).
     if (is.null(pre_ego_vals)) {
       s1 <- scatter_agg_1d(vals, cache$ego_scatter_idx,
                            cache$ego_nGroups, na.rm)
@@ -1736,21 +1661,18 @@ aggWithCache <- function(outcomeName, vals, cache, pre_ego_vals = NULL) {
   }
 
   if (!is.null(cache$level_scatter_idx)) {
-    # Stage 2: scatter on ego-level data (tiny; always fast).
     s2  <- scatter_agg_1d(vals, cache$level_scatter_idx,
                           cache$level_nGroups, na.rm)
     out <- cache$level_key_df
     out[[sumCol]] <- s2$sum
     out[[cntCol]] <- as.double(s2$count)
   } else if (!is.null(cache$main_scatter_idx)) {
-    # No ego normalization — scatter directly on raw data.
     s   <- scatter_agg_1d(vals, cache$main_scatter_idx,
                           cache$main_nGroups, na.rm)
     out <- cache$main_key_df
     out[[sumCol]] <- s$sum
     out[[cntCol]] <- as.double(s$count)
   } else {
-    # Scalar aggregation (no grouping, e.g. level = "none").
     if (na.rm) vals <- vals[!is.na(vals)]
     out <- list()
     out[[sumCol]] <- sum(vals)
@@ -1803,68 +1725,6 @@ aggSumCount <- function(outcomeName, data, level = "none", condition = NULL,
   attr(out, "row.names") <- .set_row_names(length(out[[1L]]))
   class(out) <- "data.frame"
   out
-}
-
-# === FIX B: new function — delete to revert (see one_batch comment) =========
-# Vectorized variant of aggSumCount: aggregates multiple outcome columns using
-# a single sort + encodeGroupKeys pass per step (ego-normalize and group-level).
-# outcomeVecs : named list of numeric vectors, all length == nrow(data).
-# data        : shared structural data frame supplying grouping/condition columns.
-# Returns     : named list of data.frames matching the aggSumCount output format.
-batchAggSumCount <- function(outcomeVecs, data, level = "none",
-                              condition = NULL, na.rm = TRUE,
-                              egoNormalize = TRUE) {
-  if (length(outcomeVecs) == 0L) return(list())
-  outcomeNames <- names(outcomeVecs)
-  for (nm in outcomeNames) data[[nm]] <- outcomeVecs[[nm]]
-  if (!is.null(condition))
-    condition <- resolveEffectName(condition, names(data))
-  group_vars <- getGroupVars(level = level, condition = condition)
-
-  if (egoNormalize) {
-    ego_id_cols <- detectEgoUnit(data)
-    extra <- setdiff(ego_id_cols, group_vars)
-    if (length(extra) > 0L)
-      data <- preAggEgoMulti(data, outcomeNames, group_vars, ego_id_cols, na.rm)
-  }
-
-  result_list <- setNames(vector("list", length(outcomeNames)), outcomeNames)
-
-  if (length(group_vars) > 0L) {
-    enc   <- encodeGroupKeys(data, group_vars)
-    ord   <- do.call(order,
-               lapply(seq_len(ncol(enc$G)), function(j) enc$G[, j]))
-    G_ord  <- enc$G[ord, , drop = FALSE]
-    key_df <- NULL
-    for (nm in outcomeNames) {
-      vals    <- data[[nm]][ord]
-      res_sum <- grouped_agg_cpp(vals, G_ord, na_rm = na.rm, do_mean = FALSE)
-      res_cnt <- grouped_agg_cpp(as.double(!is.na(vals)), G_ord,
-                                  na_rm = FALSE, do_mean = FALSE)
-      if (is.null(key_df))
-        key_df <- as.data.frame(
-          decodeGroupKeys(res_sum$key, group_vars, enc$decode),
-          stringsAsFactors = FALSE)
-      out <- key_df
-      out[[paste0(nm, "_sum")]] <- res_sum$value
-      out[[paste0(nm, "_n")]]   <- res_cnt$value
-      attr(out, "row.names") <- .set_row_names(nrow(key_df))
-      class(out) <- "data.frame"
-      result_list[[nm]] <- out
-    }
-  } else {
-    for (nm in outcomeNames) {
-      vals <- data[[nm]]
-      if (na.rm) vals <- vals[!is.na(vals)]
-      out <- list()
-      out[[paste0(nm, "_sum")]] <- sum(vals)
-      out[[paste0(nm, "_n")]]   <- length(vals)
-      attr(out, "row.names") <- .set_row_names(1L)
-      class(out) <- "data.frame"
-      result_list[[nm]] <- out
-    }
-  }
-  result_list
 }
 
 # Like aggAccumulated() but returns sum + count at the final step.
@@ -2030,26 +1890,8 @@ finalizePartialResult <- function(accum, outcomeName, level) {
 # finalizeAccum: canonical name for finalizePartialResult.
 finalizeAccum <- finalizePartialResult
 
-# --------------------------------------------------------------------------
-# makeContribFun
-#
-# Replaces makeChainSource. Returns function(theta, batchIdx, nBatches) → cc.
-# Modes:
-#   "static"     – theta-independent; calls getContribFun(theta) once.
-#   "preloaded"  – stored chains, theta-independent; subsets rawChains per batch.
-#   "per_batch"  – fresh siena07 simulation per (theta, batch).
-# keepContribMat: when TRUE, cc$contribMat is NOT dropped (needed for RI).
-# --------------------------------------------------------------------------
 preAggEgo <- function(data, outcomeName, group_vars, ego_id_cols, na.rm) {
   pre_agg_vars <- unique(c(group_vars, ego_id_cols))
-
-  # data.table path removed — using Rcpp grouped_agg_cpp for speed
-  # if (requireNamespace("data.table", quietly = TRUE) &&
-  #     data.table::is.data.table(data)) {
-  #   return(data[, setNames(list(mean(get(outcomeName), na.rm = na.rm)),
-  #                          outcomeName),
-  #               by = pre_agg_vars])
-  # }
 
   enc <- encodeGroupKeys(data, pre_agg_vars)
   ord <- do.call(order, lapply(seq_len(ncol(enc$G)), function(j) enc$G[, j]))
@@ -2059,30 +1901,6 @@ preAggEgo <- function(data, outcomeName, group_vars, ego_id_cols, na.rm) {
   out[[outcomeName]] <- res$value
   out
 }
-
-# === FIX B: new function — delete to revert (see one_batch comment) =========
-# Like preAggEgo but computes within-ego means for multiple outcome columns in
-# a single sort + encodeGroupKeys pass.  All outcomeNames must already exist in
-# data as numeric columns with the same row ordering.
-preAggEgoMulti <- function(data, outcomeNames, group_vars, ego_id_cols, na.rm) {
-  pre_agg_vars <- unique(c(group_vars, ego_id_cols))
-  enc     <- encodeGroupKeys(data, pre_agg_vars)
-  ord     <- do.call(order, lapply(seq_len(ncol(enc$G)), function(j) enc$G[, j]))
-  G_sorted <- enc$G[ord, , drop = FALSE]
-  key_mat <- NULL
-  avgs    <- setNames(vector("list", length(outcomeNames)), outcomeNames)
-  for (nm in outcomeNames) {
-    res        <- grouped_agg_cpp(data[[nm]][ord], G_sorted,
-                                  na_rm = na.rm, do_mean = TRUE)
-    avgs[[nm]] <- res$value
-    if (is.null(key_mat)) key_mat <- res$key
-  }
-  out <- as.data.frame(decodeGroupKeys(key_mat, pre_agg_vars, enc$decode),
-                       stringsAsFactors = FALSE)
-  for (nm in outcomeNames) out[[nm]] <- avgs[[nm]]
-  out
-}
-
 
 encodeGroupKeys <- function(data, group_vars) {
   n <- if (is.data.frame(data)) nrow(data) else length(data[[1L]])
@@ -2128,46 +1946,6 @@ decodeGroupKeys <- function(key_mat, group_vars, decode) {
     out[[j]] <- if (!is.null(decode[[j]])) decode[[j]][col] else col
   }
   out
-}
-
-# Works but could be nicer - push more to rcpp?
-# Pre-aggregate outcomeName within each ego-unit: within-ego mean.
-# Returns one row per ego-unit with pre_agg_vars + outcomeName columns.
-extractGroupCols <- function(data, group_vars) {
-  cols <- vector("list", length(group_vars))
-  names(cols) <- group_vars
-  decode <- vector("list", length(group_vars))
-  names(decode) <- group_vars
-  needs_decode <- FALSE
-  for (j in seq_along(group_vars)) {
-    col <- data[[group_vars[j]]]
-    if (is.integer(col) || is.double(col)) {
-      cols[[j]] <- col
-      decode[j] <- list(NULL)
-    } else {
-      # Character/factor: integer-encode
-      vals_num <- suppressWarnings(as.numeric(as.character(col)))
-      f <- if (all(!is.na(vals_num))) {
-        factor(col, levels = as.character(sort(unique(vals_num))))
-      } else {
-        factor(col)
-      }
-      cols[[j]] <- as.integer(f)
-      decode[[j]] <- levels(f)
-      needs_decode <- TRUE
-    }
-  }
-  list(cols = cols, decode = decode, needs_decode = needs_decode)
-}
-
-# Restore original values in columns that were factor-encoded by extractGroupCols.
-decodeResultCols <- function(res, decode) {
-  for (nm in names(decode)) {
-    if (!is.null(decode[[nm]])) {
-      res[[nm]] <- decode[[nm]][res[[nm]]]
-    }
-  }
-  res
 }
 
 # Encode group columns as a contiguous integer matrix for grouped_agg_cpp.
@@ -2226,12 +2004,6 @@ getEffectMetaNoRate <- function(effects, depvar) {
   }
 
   list(base_names = base_names, interaction_types = int_types)
-}
-
-# Backward-compatible accessor: keep a single implementation source in
-# getEffectMetaNoRate(), and expose names where legacy callers expect it.
-getEffectNamesNoRate <- function(effects, depvar) {
-  getEffectMetaNoRate(effects, depvar)$base_names
 }
 
 # Effect-name resolver used by post-estimation helpers.
@@ -2349,11 +2121,6 @@ contribToChangeStats <- function(contribMat, effectNames, theta = NULL,
   nRaw <- length(effectNames)
   stopifnot(ncol(contribMat) == nRaw)
 
-  # ---- Parse composite names into (base, type) ----
-  # Composite format: "depvar_shortName[_covar]_type"
-  # Type is always the last underscore-separated segment, but only when it is
-  # one of the known types: eval, endow, creation.  Otherwise the whole name
-  # is the base (for simplified names used in tests or by the user).
   knownTypes <- c("eval", "endow", "creation")
   lastSeg <- sub("^.*_", "", effectNames)           # last segment
   isKnownType <- lastSeg %in% knownTypes

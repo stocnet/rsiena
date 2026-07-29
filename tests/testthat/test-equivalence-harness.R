@@ -236,12 +236,10 @@ test_that("as_object_args actually routes arguments into the objects", {
                dynamic = FALSE, n3 = 33, verbose = FALSE)
   obj <- as_object_args(flat)
 
-  ## the moved arguments must NOT survive as flat arguments...
-  for (nm in c("uncertainty", "uncertaintyMode", "nsim", "dynamic", "n3",
-               "verbose"))
-    if (nm %in% c("uncertaintyMode", "nsim", "dynamic", "n3", "verbose"))
-      expect_false(nm %in% names(obj),
-        info = paste0("'", nm, "' must be folded into a config object"))
+  ## Uncertainty and compute arguments must NOT survive as flat arguments...
+  for (nm in c("uncertaintyMode", "nsim", "n3", "verbose"))
+    expect_false(nm %in% names(obj),
+      info = paste0("'", nm, "' must be folded into a config object"))
 
   ## ...they must be inside the objects, with their values preserved
   expect_s3_class(obj$control_uncertainty, "sienaPostestUncertainty")
@@ -249,9 +247,13 @@ test_that("as_object_args actually routes arguments into the objects", {
   expect_equal(obj$control_uncertainty$mode, "delta")
   expect_equal(obj$control_uncertainty$nsim, 7L)
   expect_equal(obj$control_algo$n3, 33L)
-  expect_false(obj$control_algo$dynamic)
 
-  ## ...and the untouched ones must pass straight through
+  ## `dynamic` is a MODEL-domain setting (it selects the estimand), so it goes
+  ## onto the targets object -- not control_algo.  This fixture has no fit, so
+  ## no targets object can be built and the model domain stays flat; that is
+  ## why dynamic, effectName1 and level are all still present here.
+  expect_false("dynamic" %in% names(obj$control_algo))
+  expect_true("dynamic" %in% names(obj))
   expect_equal(obj$effectName1, "transTrip")
   expect_equal(obj$level, "period")
 })

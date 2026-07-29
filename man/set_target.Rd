@@ -28,6 +28,7 @@ set_target(x, \dots)
 
 \method{set_target}{sienaPostestTargets}(x, shortNames,
     diff = NULL, contrast = NULL,
+    covar1 = NULL, covar2 = NULL,
     perturbType = NULL,
     interaction = NULL,
     intEffectNames = NULL,
@@ -38,9 +39,7 @@ set_target(x, \dots)
 
 set_second_diff(x, \dots)
 
-\method{set_second_diff}{sienaPostestTargets}(x, shortNames,
-    diff1 = NULL, diff2 = NULL,
-    contrast1 = NULL, contrast2 = NULL,
+\method{set_second_diff}{sienaPostestTargets}(x, perturbations,
     name = NULL,
     include = TRUE, verbose = TRUE, \dots)
 
@@ -56,17 +55,52 @@ set_dependency(x, \dots)
   \item{shortNames}{One or more effect short names identifying which
       target(s) to change, given as bare symbols or characters, as in
       \code{\link{set_effect}} (e.g.\ \code{transTrip},
-      \code{"transTrip"}, or \code{c(density, recip)}). For
-      \code{set_target} any number of names may be given, and the same
-      change is applied to every one of them. For \code{set_second_diff}
-      exactly two names must be given: the pair of effects whose second
-      difference is added as a new target.}
+      \code{"transTrip"}, or \code{c(density, recip)}). Any number of
+      names may be given, and the same change is applied to every one of
+      them.}
+  \item{perturbations}{A named list saying what is done to each of the two
+      effects being crossed: names are effect short names, values are lists
+      using the same settings \code{set_target} takes for a single
+      effect -- \code{diff}, \code{contrast}, \code{covar1},
+      \code{covar2}, \code{perturbType}, \code{interaction},
+      \code{intEffectNames}, \code{modEffectNames}. For example
+
+      \preformatted{list(transTrip = list(diff = 1),
+     recip = list(contrast = c(0, 1)))}
+
+      A \code{NULL} value, or an empty list, gives that effect its default
+      perturbation (see \code{\link{make_postest_targets}}). Exactly two
+      entries are required; the same effect may appear twice, which crosses
+      it with itself.
+
+      For compatibility, two bare names with numbered arguments
+      (\code{c(transTrip, recip), diff1 = 1, contrast2 = c(0, 1)}) are
+      still accepted, but the two forms cannot be mixed in one call.}
   \item{diff}{Single numeric step size for the target's first-difference
       perturbation. Mutually exclusive with \code{contrast}.}
   \item{contrast}{Numeric vector of length 2 giving the two change-statistic
-      values to contrast directly (e.g.\ \code{c(-1, 1)} for \code{density},
-      whose change statistic only ever takes those two values), instead of
-      stepping by a fixed amount. Mutually exclusive with \code{diff}.}
+      values to contrast directly, instead of stepping by a fixed amount.
+      This is the default for effects whose change statistic is not on a
+      scale a step means anything on: \code{c(-1, 1)} for \code{density},
+      which only ever takes those two values, and \code{c(0, 1)} for
+      \code{recip}, which records whether the reverse tie is present.
+      Mutually exclusive with \code{diff}.}
+  \item{covar1, covar2}{Optional covariate name(s) identifying \emph{which}
+      target a short name refers to, named and used exactly as in
+      \code{\link{set_effect}}. A short name does not always identify one
+      target: a model may carry \code{egoX} on several covariates, or two
+      \code{unspInt} terms. A short name matching more than one target is
+      an error rather than a silent choice of the first, and
+      \code{covar1}/\code{covar2} (or the qualified short name, e.g.\
+      \code{egoX_gender} or \code{unspInt2}, which is accepted in place of
+      \code{shortNames}) resolve it. Only meaningful when a single short
+      name is given.
+
+      \code{set_effect}'s other identifying arguments do not apply here:
+      \code{depvar} is fixed for a whole targets object, and
+      \code{type} likewise, since \code{eval}/\code{endow}/\code{creation}
+      variants of an effect are deliberately a single target (perturbing
+      them is one perturbation, not three).}
   \item{perturbType}{Optional override of the perturbation mode:
       \code{"alter"} (one-alternative logit update) or \code{"ego"}
       (ego-wide renormalisation). \code{NULL} (the default) leaves the
@@ -226,7 +260,8 @@ mytg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
                              includeDefaults = FALSE)
 mytg <- set_target(mytg, transTrip, diff = 2)
 mytg <- set_target(mytg, c(density, recip))
-mytg <- set_second_diff(mytg, c(density, transTrip))
+mytg <- set_second_diff(mytg, list(density   = list(contrast = c(-1, 1)),
+                                   transTrip = list(diff = 1)))
 mytg <- set_dependency(mytg, transRecTrip ~ transTrip:recip)
 print(mytg)
 

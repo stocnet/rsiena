@@ -68,7 +68,10 @@ test_that("a dependency actually changes the result", {
   ## Guards against a no-op layer: if declaring a dependency left the numbers
   ## untouched, the equivalence test above would still pass for the wrong
   ## reason (both paths doing nothing).
-  a <- mk(base)[[1L]]; b <- mk(withd)[[1L]]
+  ## A single target now comes back as the data.frame itself, not a
+  ## one-element list, so no indexing.
+  a <- mk(base); b <- mk(withd)
+  expect_true(is.data.frame(a)); expect_true(is.data.frame(b))
   expect_false(isTRUE(all.equal(a$firstDiff, b$firstDiff)),
     info = "declaring a dependency must change the first differences")
 })
@@ -86,8 +89,9 @@ test_that("a dependency on the SECOND effect of a second difference applies", {
   tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              type = "tieProb", level = "period",
                              includeDefaults = FALSE)
-  tg <- suppressMessages(set_second_diff(tg, c(density, transTrip),
-                                         contrast1 = c(-1, 1), diff2 = 1,
+  tg <- suppressMessages(set_second_diff(tg,
+                                         list(density   = list(contrast = c(-1, 1)),
+                                              transTrip = list(diff = 1)),
                                          name = "density_x_transTrip"))
   tg <- suppressMessages(set_dependency(tg, transRecTrip ~ transTrip:recip))
 

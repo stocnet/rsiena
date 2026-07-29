@@ -357,11 +357,11 @@ me_corpus_fixtures <- function() {
 )
 
 .ctl_flat_names <- c(
-  "dynamic", "algorithm", "n3", "n3PointEst", "n3BatchSize",
+  "algorithm", "n3", "n3PointEst", "n3BatchSize",
   "chainStoreMode", "useChangeContributions", "chainStorePath",
   "useCluster", "nbrNodes", "clusterType", "cl",
   "batchDir", "prefix", "combineBatch", "batchSize", "keepBatch",
-  "verbose", "details", "memoryScale", "batchUnitBudget",
+  "verbose", "memoryScale", "batchUnitBudget",
   "dynamicMinistepFactor", "saveDir", "gcEachBatch", "gcEachSim"
 )
 
@@ -432,12 +432,14 @@ as_object_args <- function(args) {
 ## --------------------------------------------------------------------------
 ## Model-domain arguments: those that move onto the targets object.
 ## --------------------------------------------------------------------------
-.model_defaults_flat <- c("type", "mainEffect", "level", "condition",
+.model_defaults_flat <- c("dynamic", "type", "mainEffect", "level", "condition",
                           "egoNormalize", "accumulated", "rateWeight",
                           "massContrasts")
 
 ## Shape of the returned R object -> set_postest_output_saom().
-.out_flat_names <- c("format", "details", "combineSameLevel")
+## `details` is not exposed on the object interface -- broken feature, see
+## set_postest_output_saom().
+.out_flat_names <- c("format", "combineSameLevel")
 
 .model_spec_flat <- c("effectName1", "diff1", "contrast1", "interaction1",
                       "intEffectNames1", "modEffectNames1", "second",
@@ -482,19 +484,25 @@ as_targets <- function(args) {
     for (snm in names(specs)) {
         sp <- specs[[snm]]
         if (isTRUE(sp$second)) {
-            tg <- tryCatch(suppressMessages(set_second_diff(tg,
-                     c(sp$effectName1, sp$effectName2),
-                     diff1 = sp$diff1, diff2 = sp$diff2,
-                     contrast1 = sp$contrast1, contrast2 = sp$contrast2,
-                     interaction1 = sp$interaction1,
-                     intEffectNames1 = sp$intEffectNames1,
-                     modEffectNames1 = sp$modEffectNames1,
-                     interaction2 = sp$interaction2,
-                     intEffectNames2 = sp$intEffectNames2,
-                     modEffectNames2 = sp$modEffectNames2,
-                     perturbType1 = sp$perturbType1,
-                     perturbType2 = sp$perturbType2,
-                     name = snm)), error = function(e) NULL)
+            ## Built in the per-effect list form, which is what the corpus
+            ## is here to exercise: the flat spec IS the numbered form, so
+            ## translating it here means every corpus entry checks the list
+            ## form against the flat interface it must reproduce.
+            plist <- list(
+                list(diff = sp$diff1, contrast = sp$contrast1,
+                     perturbType = sp$perturbType1,
+                     interaction = sp$interaction1,
+                     intEffectNames = sp$intEffectNames1,
+                     modEffectNames = sp$modEffectNames1),
+                list(diff = sp$diff2, contrast = sp$contrast2,
+                     perturbType = sp$perturbType2,
+                     interaction = sp$interaction2,
+                     intEffectNames = sp$intEffectNames2,
+                     modEffectNames = sp$modEffectNames2))
+            names(plist) <- c(sp$effectName1, sp$effectName2)
+            tg <- tryCatch(suppressMessages(
+                     set_second_diff(tg, plist, name = snm)),
+                   error = function(e) NULL)
             if (is.null(tg)) return(NULL)
         } else {
             st <- list(x = tg, shortNames = sp$effectName1,

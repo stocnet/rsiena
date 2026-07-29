@@ -33,7 +33,6 @@ test_that("marginalEffects static: firstDiff structure", {
   tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
   out <- marginalEffects(ans, mydata, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true("firstDiff" %in% names(out))
 })
@@ -45,11 +44,11 @@ test_that("marginalEffects static: secondDiff structure", {
                              type = "tieProb", level = "egoChoice",
                              condition = c("recip", "density", "transTrip"),
                              includeDefaults = FALSE)
-  tg <- suppressMessages(set_second_diff(tg, c(transTrip, recip),
-                                         diff1 = 1, contrast2 = c(0, 1)))
+  tg <- suppressMessages(set_second_diff(tg,
+                                         list(transTrip = list(diff = 1),
+                                              recip     = list(contrast = c(0, 1)))))
   out <- marginalEffects(ans, mydata, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true("secondDiff" %in% names(out))
 })
@@ -65,7 +64,6 @@ test_that("marginalEffects static interaction, no uncertainty", {
   out <- marginalEffects(ans2, mydata2, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
       control_algo = set_postest_algo_saom(verbose = FALSE))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true("firstDiff" %in% names(out))
 })
@@ -81,7 +79,6 @@ test_that("marginalEffects static interaction with uncertainty", {
   out <- marginalEffects(ans2, mydata2, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(nsim = 5),
       control_algo = set_postest_algo_saom(verbose = FALSE))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true("SE" %in% names(out))
 })
@@ -90,15 +87,16 @@ test_that("marginalEffects static secondDiff with interactions, riskRatio", {
   tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              type = "tieProb", level = "period",
                              mainEffect = "riskRatio", includeDefaults = FALSE)
-  tg <- suppressMessages(set_second_diff(tg, c(recip, transTrip),
-      contrast1 = c(0, 1), interaction1 = TRUE,
-      intEffectNames1 = "transRecTrip", modEffectNames1 = "transTrip",
-      diff2 = 1, interaction2 = TRUE,
-      intEffectNames2 = "transRecTrip", modEffectNames2 = "recip"))
+  tg <- suppressMessages(set_second_diff(tg, list(
+      recip     = list(contrast = c(0, 1), interaction = TRUE,
+                       intEffectNames = "transRecTrip",
+                       modEffectNames = "transTrip"),
+      transTrip = list(diff = 1, interaction = TRUE,
+                       intEffectNames = "transRecTrip",
+                       modEffectNames = "recip"))))
   out <- marginalEffects(ans2, mydata2, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(nsim = 5),
       control_algo = set_postest_algo_saom(verbose = FALSE))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true("secondRiskRatio" %in% names(out))
 })
@@ -114,7 +112,6 @@ test_that("marginalEffects static with custom interaction", {
   out <- marginalEffects(ans3, mydata3, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(nsim = 5),
       control_algo = set_postest_algo_saom(verbose = FALSE))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true("firstDiff" %in% names(out))
 })
@@ -122,6 +119,7 @@ test_that("marginalEffects static with custom interaction", {
 test_that("marginalEffects dynamic with custom interaction", {
   skip_slow()
   tg <- make_postest_targets(ans3, effects = mymodel3, depvar = "mynet3",
+                             dynamic = TRUE,
                              type = "tieProb", level = "period",
                              condition = "inPop", includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, recip, contrast = c(0, 1),
@@ -130,10 +128,9 @@ test_that("marginalEffects dynamic with custom interaction", {
                                     modEffectNames = "inPop"))
   out <- marginalEffects(ans3, mydata3, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
-      control_algo = set_postest_algo_saom(dynamic = TRUE,
+      control_algo = set_postest_algo_saom(
                                            algorithm = mycontrols3, n3 = 60,
                                            verbose = FALSE))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true("firstDiff" %in% names(out))
 })
@@ -143,14 +140,14 @@ test_that("marginalEffects dynamic with custom interaction", {
 test_that("marginalEffects dynamic: firstDiff structure, uncertainty=FALSE", {
   skip_slow()
   tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+                             dynamic = TRUE,
                              type = "tieProb", condition = "density",
                              includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
   out <- marginalEffects(ans, mydata, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
-      control_algo = set_postest_algo_saom(dynamic = TRUE,
+      control_algo = set_postest_algo_saom(
                                            algorithm = mycontrols, n3 = 60))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true("firstDiff" %in% names(out))
 })
@@ -158,16 +155,16 @@ test_that("marginalEffects dynamic: firstDiff structure, uncertainty=FALSE", {
 test_that("marginalEffects dynamic: CI structure", {
   skip_slow()
   tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+                             dynamic = TRUE,
                              type = "tieProb", condition = "density",
                              includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
   out <- marginalEffects(ans, mydata, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(
           nsim = 20, sd = FALSE, ci = TRUE, simMean = TRUE, simMedian = TRUE),
-      control_algo = set_postest_algo_saom(dynamic = TRUE,
+      control_algo = set_postest_algo_saom(
                                            algorithm = mycontrols, n3 = 60,
                                            verbose = FALSE))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true(all(c("Mean", "q_025", "q_975", "Median") %in% names(out)))
   expect_false("SE" %in% names(out))
@@ -178,6 +175,7 @@ test_that("marginalEffects dynamic: CI structure", {
 test_that("marginalEffects dynamic: interaction", {
   skip_slow()
   tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+                             dynamic = TRUE,
                              type = "tieProb", level = "period",
                              condition = c("density", "recip"),
                              includeDefaults = FALSE)
@@ -187,9 +185,8 @@ test_that("marginalEffects dynamic: interaction", {
                                     modEffectNames = "recip"))
   out <- marginalEffects(ans2, mydata2, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
-      control_algo = set_postest_algo_saom(dynamic = TRUE,
+      control_algo = set_postest_algo_saom(
                                            algorithm = mycontrols2, n3 = 60))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true("firstDiff" %in% names(out))
 })
@@ -206,7 +203,6 @@ test_that("marginalEffects static: egoX auto-detects ego perturbation", {
   tg <- suppressMessages(set_target(tg, egoX, diff = 1))
   out <- marginalEffects(ans_ego, mydata_ego, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true("firstDiff" %in% names(out))
   # Mass contrasts should be present for ego perturbation
@@ -223,7 +219,6 @@ test_that("marginalEffects static: egoX mass contrasts sum to dyad-level diffs",
   tg <- suppressMessages(set_target(tg, egoX, diff = 1))
   out <- marginalEffects(ans_ego, mydata_ego, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
-  out <- out[[1]]
   # For each ego×period, massCreation should equal sum of firstDiff
   # for creation rows (density_eval == 1) in that group.
   densName <- grep("density", names(out), value = TRUE, fixed = TRUE)[1]
@@ -260,14 +255,12 @@ test_that("marginalEffects static: egoX tieProb mass contrasts use changeProbDif
   tg_cp <- suppressMessages(set_target(tg_cp, egoX, diff = 1))
   out_cp <- marginalEffects(ans_ego, mydata_ego, targets = tg_cp,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
-  out_cp <- out_cp[[1]]
   tg_tp <- make_postest_targets(ans_ego, effects = mymodel_ego,
                                 depvar = "mynet_ego", type = "tieProb",
                                 level = "none", includeDefaults = FALSE)
   tg_tp <- suppressMessages(set_target(tg_tp, egoX, diff = 1))
   out_tp <- marginalEffects(ans_ego, mydata_ego, targets = tg_tp,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
-  out_tp <- out_tp[[1]]
   # Mass contrasts should be identical regardless of type, because
   # they are always on the changeProbDiff scale
   expect_equal(out_tp$massCreation, out_cp$massCreation, tolerance = 1e-10)
@@ -285,7 +278,6 @@ test_that("marginalEffects static: alter perturbType does NOT have mass columns"
                                     perturbType = "alter"))
   out <- marginalEffects(ans_ego, mydata_ego, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true("firstDiff" %in% names(out))
   # Mass contrasts should NOT be present for alter perturbation
@@ -307,7 +299,6 @@ test_that("marginalEffects static: egoX interaction firstDiff", {
                                     modEffectNames = "transTrip"))
   out <- marginalEffects(ans_ego, mydata_ego, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true("firstDiff" %in% names(out))
 })
@@ -317,14 +308,13 @@ test_that("marginalEffects dynamic: egoX auto-detects ego perturbation", {
   skip_if(is.null(ans_ego), "ans_ego not fitted (RSENA_FULL_TESTS=1)")
   tg <- make_postest_targets(ans_ego, effects = mymodel_ego,
                              depvar = "mynet_ego", type = "tieProb",
-                             condition = "density", includeDefaults = FALSE)
+                             condition = "density", includeDefaults = FALSE, dynamic = TRUE)
   tg <- suppressMessages(set_target(tg, egoX, diff = 1))
   out <- marginalEffects(ans_ego, mydata_ego, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
-      control_algo = set_postest_algo_saom(dynamic = TRUE,
+      control_algo = set_postest_algo_saom(
                                            algorithm = mycontrols_ego,
                                            n3 = 60))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true("firstDiff" %in% names(out))
 })
@@ -380,7 +370,6 @@ test_that("two unspInt: firstDiff via unspInt1 (main effect = recip)", {
                                     modEffectNames = "inPop"))
   out <- marginalEffects(ans_2int, mydata_2int, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true("firstDiff" %in% names(out))
   expect_true(nrow(out) > 0L)
@@ -399,7 +388,6 @@ test_that("two unspInt: firstDiff via unspInt2 (main effect = recip)", {
                                     modEffectNames = "outPop"))
   out <- marginalEffects(ans_2int, mydata_2int, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true("firstDiff" %in% names(out))
   expect_true(nrow(out) > 0L)
@@ -412,14 +400,15 @@ test_that("two unspInt: secondDiff across unspInt1 and unspInt2", {
                              level = "period",
                              condition = c("inPop", "outPop", "density"),
                              includeDefaults = FALSE)
-  tg <- suppressMessages(set_second_diff(tg, c(recip, recip),
-      contrast1 = c(0, 1), interaction1 = TRUE,
-      intEffectNames1 = "unspInt1", modEffectNames1 = "inPop",
-      contrast2 = c(0, 1), interaction2 = TRUE,
-      intEffectNames2 = "unspInt2", modEffectNames2 = "outPop"))
+  ## Same base effect crossed with itself, entering through two different
+  ## unspInt terms -- so the list form's names repeat, which is allowed.
+  tg <- suppressMessages(set_second_diff(tg, list(
+      recip = list(contrast = c(0, 1), interaction = TRUE,
+                   intEffectNames = "unspInt1", modEffectNames = "inPop"),
+      recip = list(contrast = c(0, 1), interaction = TRUE,
+                   intEffectNames = "unspInt2", modEffectNames = "outPop"))))
   out <- marginalEffects(ans_2int, mydata_2int, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true("secondDiff" %in% names(out))
   expect_true(nrow(out) > 0L)
@@ -439,14 +428,13 @@ test_that("two unspInt: conditional prediction (tieProb) with uncertainty", {
   out <- marginalEffects(ans_2int, mydata_2int, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(nsim = 5),
       control_algo = set_postest_algo_saom(verbose = FALSE))
-  out <- out[[1]]
   expect_true(is.data.frame(out))
   expect_true("SE" %in% names(out))
 })
 
 # ── effectList: multi-effect batch path ──────────────────────────────────────
 
-test_that("effectList returns named list with same structure as scalar calls", {
+test_that("effectList batch: targets sharing (level, condition) merge into one data frame with an effect column", {
   set.seed(1)
   tg_recip <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
                                    type = "tieProb", level = "period",
@@ -457,7 +445,6 @@ test_that("effectList returns named list with same structure as scalar calls", {
   scalar_recip <- marginalEffects(ans, mydata, targets = tg_recip,
       control_uncertainty = set_postest_uncertainty_saom(nsim = 20),
       control_algo = set_postest_algo_saom(verbose = FALSE))
-  scalar_recip <- scalar_recip[[1]]
 
   tg_trans <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
                                    type = "tieProb", level = "period",
@@ -467,7 +454,6 @@ test_that("effectList returns named list with same structure as scalar calls", {
   scalar_trans <- marginalEffects(ans, mydata, targets = tg_trans,
       control_uncertainty = set_postest_uncertainty_saom(nsim = 20),
       control_algo = set_postest_algo_saom(verbose = FALSE))
-  scalar_trans <- scalar_trans[[1]]
 
   set.seed(1)
   tg_batch <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
@@ -483,32 +469,40 @@ test_that("effectList returns named list with same structure as scalar calls", {
       control_uncertainty = set_postest_uncertainty_saom(nsim = 20),
       control_algo = set_postest_algo_saom(verbose = FALSE))
 
-  # Returns a named list
-  expect_true(is.list(batch))
-  expect_setequal(names(batch), c("recip_fd", "trans_fd"))
+  # recip_fd and trans_fd share (level, condition), so combineSameLevel =
+  # TRUE (the default) merges them into a single data frame with an
+  # `effect` column identifying which target each row belongs to, rather
+  # than a two-element named list. Both are firstDiff-type quantities, so
+  # their (differently-named) quantity columns are unified into `est`;
+  # SE/q_025/q_975 are shared column names already and pass through as-is.
+  expect_true(is.data.frame(batch))
+  expect_setequal(unique(batch$effect), c("recip_fd", "trans_fd"))
 
-  # Each element is a data frame with the expected uncertainty columns
-  expect_true(is.data.frame(batch$recip_fd))
-  expect_true(is.data.frame(batch$trans_fd))
-  expect_true("firstDiff" %in% names(batch$recip_fd))
-  expect_true("SE"        %in% names(batch$recip_fd))
-  expect_true("firstDiff" %in% names(batch$trans_fd))
-  expect_true("SE"        %in% names(batch$trans_fd))
+  # Both effects carry the expected uncertainty columns (checked per
+  # effect via the `effect` column, not merely present somewhere in the
+  # frame).
+  expect_true("est" %in% names(batch))
+  expect_true("SE"  %in% names(batch))
+  expect_true(all(is.finite(batch$est[batch$effect == "recip_fd"])))
+  expect_true(all(is.finite(batch$SE[batch$effect == "recip_fd"])))
+  expect_true(all(is.finite(batch$est[batch$effect == "trans_fd"])))
+  expect_true(all(is.finite(batch$SE[batch$effect == "trans_fd"])))
 
   # Row counts match the scalar equivalents
-  expect_equal(nrow(batch$recip_fd), nrow(scalar_recip))
-  expect_equal(nrow(batch$trans_fd), nrow(scalar_trans))
+  expect_equal(nrow(batch[batch$effect == "recip_fd", ]), nrow(scalar_recip))
+  expect_equal(nrow(batch[batch$effect == "trans_fd", ]), nrow(scalar_trans))
 })
 
-# NOTE: left in flat form deliberately -- see migration report. The entire
-# point of this test is that a single-effect flat call (effectName1 = ...)
-# returns an UNWRAPPED data.frame rather than a list. The targets/config
-# path has no equivalent: even a single set_target() always comes back as a
-# named list of length one (see marginalEffects()'s handling of `targets`,
-# which never sets `.single_effect`). Rewriting this to extract out[[1]]
-# would make `is.data.frame(out)` trivially true for any call and stop
-# testing the thing the test is named for, which the task instructions
-# forbid ("do not change what a test is checking").
+# NOTE: left in flat form deliberately. A single set_target() on a `targets`
+# object ALSO collapses to a bare data.frame now (marginalEffects.sienaFit
+# unwraps any single-group `results` list via `if (length(results) == 1L)
+# return(results[[1L]])`, independent of the `.single_effect` flag that only
+# the flat effectName1 path sets). So this test's regression value is no
+# longer about the shape being unique to the flat path -- both paths agree.
+# It stays in flat form because it specifically exercises the
+# `.single_effect` code branch (scalar effectName1/contrast1/... args,
+# never routed through `targets`/`effectList`), which needs its own coverage
+# independent of the targets-object path exercised elsewhere in this file.
 test_that("effectList scalar call (single element) returns data frame, not list", {
   out <- marginalEffects(
     object = ans, data = mydata,
@@ -520,26 +514,43 @@ test_that("effectList scalar call (single element) returns data frame, not list"
   expect_false(is.list(out) && !is.data.frame(out))
 })
 
+# "fd" (firstDiff) and "sd" (secondDiff) share the same (level, condition),
+# so they merge under the default combineSameLevel = TRUE: each target's
+# quantity column (firstDiff / secondDiff) is renamed to a common `est`
+# column before rbind, and which kind of diff a row holds is carried by the
+# `effect` column instead. One merged table, both kinds distinguished by
+# `effect` -- not a two-element named list.
 test_that("effectList: secondDiff mixed with firstDiff in one batch", {
   tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
                              type = "tieProb", level = "period",
                              condition = "density", includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, recip, contrast = c(0, 1),
                                     name = "fd"))
-  tg <- suppressMessages(set_second_diff(tg, c(transTrip, recip),
-      diff1 = 1, contrast2 = c(0, 1), name = "sd"))
+  tg <- suppressMessages(set_second_diff(tg,
+      list(transTrip = list(diff = 1), recip = list(contrast = c(0, 1))),
+      name = "sd"))
   batch <- marginalEffects(ans, mydata, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE,
                                                           nsim = 10),
       control_algo = set_postest_algo_saom(verbose = FALSE))
-  expect_true(is.list(batch))
-  expect_true("firstDiff"  %in% names(batch$fd))
-  expect_true("secondDiff" %in% names(batch$sd))
+  expect_true(is.data.frame(batch))
+  expect_setequal(unique(batch$effect), c("fd", "sd"))
+  expect_true("est" %in% names(batch))
+  expect_true(nrow(batch[batch$effect == "fd", ]) > 0L)
+  expect_true(nrow(batch[batch$effect == "sd", ]) > 0L)
+  expect_true(all(is.finite(batch$est[batch$effect == "fd"])))
+  expect_true(all(is.finite(batch$est[batch$effect == "sd"])))
 })
 
-test_that("effectList dynamic: shared forward sims, returns named list", {
+# recip_fd and trans_fd share (level, condition) here too, so this batch
+# merges into one data frame (effect column: recip_fd / trans_fd) exactly
+# like the static case, rather than a named list -- the dynamic-specific
+# thing being tested (forward sims shared across effects) is orthogonal to
+# the shape and still exercised by running both targets in one call.
+test_that("effectList dynamic: shared forward sims merge into one data frame", {
   skip_slow()
   tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+                             dynamic = TRUE,
                              type = "tieProb", level = "period",
                              condition = "density", includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, recip, contrast = c(0, 1),
@@ -549,11 +560,13 @@ test_that("effectList dynamic: shared forward sims, returns named list", {
   batch <- marginalEffects(ans, mydata, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE,
                                                           nsim = 10),
-      control_algo = set_postest_algo_saom(dynamic = TRUE,
+      control_algo = set_postest_algo_saom(
                                            algorithm = mycontrols, n3 = 50,
                                            verbose = FALSE))
-  expect_true(is.list(batch))
-  expect_true("firstDiff" %in% names(batch$recip_fd))
-  expect_true("firstDiff" %in% names(batch$trans_fd))
+  expect_true(is.data.frame(batch))
+  expect_setequal(unique(batch$effect), c("recip_fd", "trans_fd"))
+  expect_true("est" %in% names(batch))
+  expect_true(all(is.finite(batch$est[batch$effect == "recip_fd"])))
+  expect_true(all(is.finite(batch$est[batch$effect == "trans_fd"])))
 })
 

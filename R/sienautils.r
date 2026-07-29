@@ -969,6 +969,8 @@ buildEffectNameRegistry <- function(effects,
             short_raw = character(0),
             short_numbered = character(0),
             short_with_covar = character(0),
+            covar1 = character(0),
+            covar2 = character(0),
             full_name = character(0),
             base_name = character(0),
             name_type = character(0),
@@ -997,6 +999,12 @@ buildEffectNameRegistry <- function(effects,
         short_raw = eff[["shortName"]],
         short_numbered = shortNumbered,
         short_with_covar = shortWithCovar,
+        ## The covariate names kept separately as well: short_with_covar
+        ## concatenates them for use as an identifier, which is not readable
+        ## when an effect carries two (egoXaltX on "gender" and "age" becomes
+        ## "genderage").  Display code wants them apart.
+        covar1 = i1,
+        covar2 = i2,
         full_name = parsed$fullName,
         base_name = parsed$baseName,
         name_type = parsed$type,

@@ -1005,7 +1005,7 @@ test_that("getCovCenteringMean: returns mean for centered covar", {
   dat <- list(cCovars = list(mybeh = cov), vCovars = list(),
               dycCovars = list(), dyvCovars = list())
 
-  resolved <- resolveEffectName("egoX", getEffectNamesNoRate(eff, "mynet"))
+  resolved <- resolveEffectName("egoX", getEffectMetaNoRate(eff, "mynet")$base_names)
   expect_equal(getCovCenteringMean(resolved, eff, dat, "mynet"), 5.5)
 })
 
@@ -1019,7 +1019,7 @@ test_that("getCovCenteringMean: returns 0 for structural effect", {
   dat <- list(cCovars = list(), vCovars = list(),
               dycCovars = list(), dyvCovars = list())
 
-  resolved <- resolveEffectName("recip", getEffectNamesNoRate(eff, "mynet"))
+  resolved <- resolveEffectName("recip", getEffectMetaNoRate(eff, "mynet")$base_names)
   expect_equal(getCovCenteringMean(resolved, eff, dat, "mynet"), 0)
 })
 
@@ -1036,6 +1036,6 @@ test_that("getCovCenteringMean: returns 0 for uncentered covar", {
   dat <- list(cCovars = list(mybeh = cov), vCovars = list(),
               dycCovars = list(), dyvCovars = list())
 
-  resolved <- resolveEffectName("egoX", getEffectNamesNoRate(eff, "mynet"))
+  resolved <- resolveEffectName("egoX", getEffectMetaNoRate(eff, "mynet")$base_names)
   expect_equal(getCovCenteringMean(resolved, eff, dat, "mynet"), 0)
 })

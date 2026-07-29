@@ -187,8 +187,8 @@ print.sienaPostestUncertainty <- function(x, ...)
 
 ##@set_postest_algo_saom PostestConfig
 set_postest_algo_saom <- function(
-	dynamic                = FALSE,
 	algorithm              = NULL,
+	dynamic                = NULL,
 	n3                     = 200,
 	n3PointEst             = NULL,
 	n3BatchSize            = 100L,
@@ -205,7 +205,6 @@ set_postest_algo_saom <- function(
 	batchSize              = NULL,
 	keepBatch              = FALSE,
 	verbose                = TRUE,
-	details                = FALSE,
 	memoryScale            = NULL,
 	batchUnitBudget        = 2.5e+08,
 	dynamicMinistepFactor  = 10,
@@ -214,6 +213,17 @@ set_postest_algo_saom <- function(
 	gcEachSim              = FALSE
 )
 {
+	## `dynamic` moved to make_postest_targets(): it selects the estimand, not
+	## the route to it.  Kept as an explicit formal purely to intercept it --
+	## without it, `dynamic = TRUE` would PARTIALLY MATCH dynamicMinistepFactor
+	## and silently set the wrong argument.
+	if (!is.null(dynamic))
+		stop("'dynamic' is set on the targets object, not here: ",
+			 "make_postest_targets(..., dynamic = TRUE). It selects which ",
+			 "quantity is estimated (static or model-implied), so it belongs ",
+			 "with the targets; the simulation settings it implies -- ",
+			 "algorithm, n3, chain storage -- stay here.", call. = FALSE)
+
 	chainStoreMode <- match.arg(chainStoreMode)
 	clusterType    <- match.arg(clusterType)
 
@@ -225,12 +235,10 @@ set_postest_algo_saom <- function(
 	# `verbose` is deliberately excluded here: it is used as a level
 	# elsewhere (verbose >= 1, verbose >= 2), so any single non-NA
 	# numeric-or-logical is accepted and stored unchanged.
-	.checkFlag(dynamic, "dynamic")
 	.checkFlag(useChangeContributions, "useChangeContributions")
 	.checkFlag(useCluster, "useCluster")
 	.checkFlag(combineBatch, "combineBatch")
 	.checkFlag(keepBatch, "keepBatch")
-	.checkFlag(details, "details")
 	.checkFlag(gcEachBatch, "gcEachBatch")
 	.checkFlag(gcEachSim, "gcEachSim")
 
@@ -247,11 +255,6 @@ set_postest_algo_saom <- function(
 	{
 		useCluster <- TRUE
 		nbrNodes   <- length(cl)
-	}
-
-	if (dynamic && is.null(algorithm))
-	{
-		stop("'algorithm' must be provided when dynamic = TRUE.")
 	}
 
 	n3          <- .checkSingleNumeric(n3, "n3", positive = TRUE, asInteger = TRUE)
@@ -279,7 +282,6 @@ set_postest_algo_saom <- function(
 	saveDir        <- .checkSingleCharOrNull(saveDir, "saveDir")
 
 	obj <- list(
-		dynamic                = dynamic,
 		algorithm              = algorithm,
 		n3                     = n3,
 		n3PointEst             = n3PointEst,
@@ -297,7 +299,6 @@ set_postest_algo_saom <- function(
 		batchSize              = batchSize,
 		keepBatch              = keepBatch,
 		verbose                = verbose,
-		details                = details,
 		memoryScale            = memoryScale,
 		batchUnitBudget        = batchUnitBudget,
 		dynamicMinistepFactor  = dynamicMinistepFactor,
@@ -314,8 +315,7 @@ set_postest_algo_saom <- function(
 ##@print.sienaPostestControl Methods
 print.sienaPostestControl <- function(x, ...)
 {
-	kind <- if (isTRUE(x$dynamic)) "dynamic" else "static"
-	cat("RSiena postestimation control (", kind, ")\n", sep = "")
+	cat("RSiena postestimation control\n")
 
 	simLine <- paste0("n3 = ", x$n3)
 	if (!is.null(x$n3PointEst))
@@ -348,8 +348,7 @@ print.sienaPostestControl <- function(x, ...)
 	}
 
 	batchSizeStr <- if (is.null(x$batchSize)) "auto" else as.character(x$batchSize)
-	dynBit <- if (isTRUE(x$dynamic))
-		paste0(", ministepFactor = ", x$dynamicMinistepFactor) else ""
+	dynBit <- paste0(", ministepFactor = ", x$dynamicMinistepFactor)
 	cat("  batching   : size = ", batchSizeStr,
 		", budget = ", format(x$batchUnitBudget, scientific = TRUE),
 		" units", dynBit, "\n", sep = "")
@@ -368,7 +367,6 @@ print.sienaPostestControl <- function(x, ...)
 	} else {
 		"quiet"
 	}
-	if (isTRUE(x$details)) loggingBits <- paste0(loggingBits, ", details")
 	cat("  logging    : ", loggingBits, "\n", sep = "")
 
 	gcBits <- character(0)
@@ -398,15 +396,18 @@ print.sienaPostestControl <- function(x, ...)
 ## returnDecisionDetails is deliberately NOT here — it is set per target, so
 ## that details can be requested for one target out of several.
 ## --------------------------------------------------------------------------
-set_postest_output_saom <- function(format           = c("wide", "long"),
-                                    details          = FALSE,
-                                    combineSameLevel = FALSE) {
+## NOTE: `details` is deliberately NOT offered here.  The underlying feature is
+## broken -- details = TRUE errors inside encodeGroupKeys() -- and has been on
+## every interface, not only this one (verified against the pre-refactor
+## source).  It went unnoticed because nothing tests it.  Exposing an argument
+## that cannot be honoured is the defect that `returnComponents` already
+## demonstrated, so it stays out until the feature works.
+set_postest_output_saom <- function(format           = c("long", "wide"),
+                                    combineSameLevel = TRUE) {
     format <- match.arg(format)
-    .checkFlag(details,          "details")
     .checkFlag(combineSameLevel, "combineSameLevel")
 
-    obj <- list(format = format, details = details,
-                combineSameLevel = combineSameLevel)
+    obj <- list(format = format, combineSameLevel = combineSameLevel)
     class(obj) <- "sienaPostestOutput"
     attr(obj, "version") <- utils::packageDescription("RSiena",
                                                       fields = "Version")
@@ -416,16 +417,13 @@ set_postest_output_saom <- function(format           = c("wide", "long"),
 
 ##@print.sienaPostestOutput Postestimation
 print.sienaPostestOutput <- function(x, ...) {
-    cat("RSiena postestimation output
-")
+    cat("RSiena postestimation output\n")
     cat("  format  : ", x$format,
-        if (identical(x$format, "long")) "  (one row per metric)"
-        else "  (one column per metric)", "
-", sep = "")
-    cat("  extras  : ",
-        if (x$details) "detail columns included" else "no detail columns",
-        if (x$combineSameLevel) "; same-level results combined" else "",
-        "
-", sep = "")
+        if (identical(x$format, "long")) "  (one row per effect)"
+        else "  (one column set per effect)", "\n", sep = "")
+    cat("  combine : ",
+        if (isTRUE(x$combineSameLevel))
+            "targets at the same level merged into one table"
+        else "one table per target", "\n", sep = "")
     invisible(x)
 }
