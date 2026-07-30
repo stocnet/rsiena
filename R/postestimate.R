@@ -161,6 +161,9 @@ sienaPostestimate <- function(
 
     results <- lapply(names(specs), function(nm) {
         res <- attachPostestAttrs(expects[[nm]], specs[[nm]]$metadata)
+        # Matches the delta path: the SE column is called "SE" whichever
+        # method produced it, and the method is recorded here.
+        attr(res, "uncertaintyMethod") <- "bootstrap"
         if (!is.null(decisionDetails) && !is.null(decisionDetails[[nm]]))
             attr(res, "decisionDetails") <- decisionDetails[[nm]]
         res
@@ -179,7 +182,8 @@ sienaPostestimate <- function(
 #    store so that hatEstimatorFun (and the FD gradient) share the same chains.
 # 2. Computes point estimates via hatEstimatorFun.
 # 3. Calls deltaMethodUncertainty using the same estimator for the gradient.
-# 4. Assembles per-effect result data.frames with delta_se / delta_q025/975.
+# 4. Assembles per-effect result data.frames with SE / q_025 / q_975, and
+#    records how the SE was derived in the "uncertaintyMethod" attribute.
 # --------------------------------------------------------------------------
 .runDeltaPath <- function(contribFun, nChainBatches, specs, thetaHat, covTheta,
                            type, rateParams, rateIdx, verbose, nbrNodes,
@@ -254,15 +258,26 @@ sienaPostestimate <- function(
         spec  <- specs[[nm]]
         df    <- expects[[nm]]
         du    <- delta_uncert[[nm]]
-        df[["delta_se"]] <- du$SE_delta
-        if (isFullMode) df[["delta_full_se"]] <- as.numeric(du$SE_deltaFull)
-        se_use <- as.numeric(if (isFullMode) du$SE_deltaFull else du$SE_delta)
+        # The standard error column is called "SE" whatever produced it, and
+        # the method is recorded in metadata instead of in the column name.
+        # It used to be "delta_se" here and "SE" on the bootstrap path, so
+        # the default output changed shape when the default mode changed --
+        # and since the modes are mutually exclusive, the name never carried
+        # information the caller could not get from the metadata.
+        df[["SE"]] <- as.numeric(if (isFullMode) du$SE_deltaFull else du$SE_delta)
+        if (isFullMode)
+            # deltaFull is the exception that reports two: the conditional SE
+            # is kept alongside because the DIFFERENCE between them is the
+            # path-distribution term, which is the point of asking for it.
+            df[["SE_conditional"]] <- as.numeric(du$SE_delta)
+        se_use <- df[["SE"]]
         oc     <- spec$outcomeName
         if (!is.null(df[[oc]]) && length(se_use) %in% c(1L, nrow(df))) {
-            df[["delta_q025"]] <- df[[oc]] - qnorm(0.975) * se_use
-            df[["delta_q975"]] <- df[[oc]] + qnorm(0.975) * se_use
+            df[["q_025"]] <- df[[oc]] - qnorm(0.975) * se_use
+            df[["q_975"]] <- df[[oc]] + qnorm(0.975) * se_use
         }
         res <- attachPostestAttrs(df, spec$metadata)
+        attr(res, "uncertaintyMethod") <- if (isFullMode) "deltaFull" else "delta"
         attr(res, "delta_jacobians") <- du[c("J_cond", "J_full",
                                               "baseline", "ssc_colMeans")]
         if (isFullMode && isTRUE(attr(du$SE_deltaFull, "fallback")))

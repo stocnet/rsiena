@@ -49,8 +49,10 @@ test_that("accumulated deltaFull SE tracks the bootstrap reference", {
             control_uncertainty = set_postest_uncertainty_saom(
                 mode = "bootstrap", nsim = 40))))
 
-  se_cond <- del$delta_se
-  se_full <- del$delta_full_se
+  ## deltaFull reports both: SE is the full one, SE_conditional the
+  ## frozen-chain one.  Renamed in step 5d.
+  se_cond <- del$SE_conditional
+  se_full <- del$SE
   se_boot <- boot$SE
 
   expect_true(all(is.finite(se_cond)), info = "conditional SE must be finite")

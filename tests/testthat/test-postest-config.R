@@ -36,7 +36,7 @@ test_that("set_postest_algo_saom returns a sienaPostestControl object with versi
 test_that("set_postest_uncertainty_saom defaults are unchanged", {
   u <- set_postest_uncertainty_saom()
   expect_true(u$enabled)
-  expect_equal(u$mode, "bootstrap")
+  expect_equal(u$mode, "delta")   # changed from "bootstrap" in step 5d
   expect_equal(as.numeric(u$nsim), 1000)
   expect_true(u$sd)
   expect_true(u$ci)

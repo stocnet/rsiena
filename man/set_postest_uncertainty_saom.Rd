@@ -16,7 +16,7 @@
 \usage{
 set_postest_uncertainty_saom(
     enabled    = TRUE,
-    mode       = c("bootstrap", "delta", "deltaFull"),
+    mode       = c("delta", "bootstrap", "deltaFull"),
     nsim       = 1000,
     sd         = TRUE,
     ci         = TRUE,
@@ -30,12 +30,23 @@ set_postest_uncertainty_saom(
 \arguments{
   \item{enabled}{Logical: whether uncertainty is computed at all. If
       \code{FALSE}, only point estimates are returned.}
-  \item{mode}{Character: the uncertainty method. \code{"bootstrap"} draws
-      \code{nsim} values of theta from \eqn{N(\hat\theta, \hat\Sigma_\theta)}
-      and re-evaluates the postestimation quantity for each draw.
-      \code{"delta"} and \code{"deltaFull"} instead propagate
-      \eqn{\hat\Sigma_\theta} analytically via the delta method and produce
-      no simulation draws.}
+  \item{mode}{How standard errors are derived. \code{"delta"} (the default)
+      is analytic and deterministic; \code{"bootstrap"} draws \code{nsim}
+      parameter vectors; \code{"deltaFull"} adds the path-distribution term
+      to the delta SE and requires a dynamic targets object.
+
+      The default was \code{"bootstrap"} before RSiena's postestimation
+      redesign. It changed because the out-of-the-box call was two orders of
+      magnitude more expensive than it needed to be -- around 114 seconds
+      against 0.57 for \code{"delta"} on a 50-node example -- and stochastic
+      as well. Standard errors stay on by default; only the way they are
+      obtained changed.
+
+      For a dynamic model \code{"delta"} gives the conditional
+      (frozen-chain) standard error, which omits the path-distribution term.
+      That term is a covariance and may have either sign, so the conditional
+      SE is not a bound on the full one; use \code{"deltaFull"} when the
+      chain distribution is part of the question.}
   \item{nsim}{Single positive numeric, coerced to integer: the number of
       theta draws used when \code{mode = "bootstrap"}. Ignored (but still
       validated) for the delta modes.}

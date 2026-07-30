@@ -662,9 +662,11 @@ print.sienaPostestTargets <- function(x, ...) {
 ## Override semantics are preserved exactly as the estimation path applies
 ## them (R/sienaMargins.r, "Per-spec level/condition overrides"):
 ##
-##   level, condition   -> present-in-spec wins, INCLUDING an explicit NULL
-##   accumulated, rateWeight -> OR'd with the call-level value
-##   massContrasts      -> non-NULL in spec wins
+##   level, condition, accumulated, rateWeight
+##                      -> present-in-spec wins, INCLUDING an explicit NULL
+##   massContrasts      -> non-NULL in spec wins, because NULL is a MEANINGFUL
+##                         value here: it asks for auto-detection rather than
+##                         saying nothing
 ## --------------------------------------------------------------------------
 .targetsToEffectList <- function(tg) {
     if (!inherits(tg, "sienaPostestTargets"))

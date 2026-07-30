@@ -160,7 +160,12 @@ test_that("marginalEffects dynamic: CI structure", {
                              includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
   out <- marginalEffects(ans, mydata, targets = tg,
+      ## mode = "bootstrap" is now explicit: simMean/simMedian are simulation
+      ## summaries, so only bootstrap can produce them, and this test relied
+      ## on bootstrap being the default mode. Step 5d made "delta" the
+      ## default, and the constructor's own guard caught the assumption.
       control_uncertainty = set_postest_uncertainty_saom(
+          mode = "bootstrap",
           nsim = 20, sd = FALSE, ci = TRUE, simMean = TRUE, simMedian = TRUE),
       control_algo = set_postest_algo_saom(
                                            algorithm = mycontrols, n3 = 60,

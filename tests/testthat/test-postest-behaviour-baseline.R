@@ -28,12 +28,12 @@ me_base <- function(ans, dat, tg)
 #   eff_level       <- if ("level" %in% names(spec)) spec$level else level
 #   eff_accumulated <- isTRUE(spec$accumulated) || accumulated
 #
-# level/condition are override-if-present, so a target can set them freely.
-# accumulated/rateWeight are OR'd with the model-level value, so a target can
-# switch them ON but never OFF. Almost certainly accidental; 5d makes all five
-# override-if-present.
+# CHANGED IN 5d. level/condition were override-if-present; accumulated and
+# rateWeight were OR'd with the model-level value, so a target could switch
+# them ON but never OFF. All four are override-if-present now, and the tests
+# below assert the new behaviour -- this diff IS the record of the change.
 
-test_that("BASELINE: a per-target rateWeight = FALSE is ignored when the model sets TRUE", {
+test_that("a per-target rateWeight = FALSE overrides a model that sets TRUE", {
   skip_on_cran()
   ans <- load_fixture("ans"); mydata <- load_fixture("mydata")
   mymodel <- load_fixture("mymodel")
@@ -56,12 +56,12 @@ test_that("BASELINE: a per-target rateWeight = FALSE is ignored when the model s
   expect_false(isTRUE(all.equal(on_model_only, off_entirely)),
     info = "rateWeight must change the result for this test to mean anything")
 
-  ## AFTER 5d this should be all.equal(with_override, off_entirely): the
-  ## target asked for FALSE and should get it.
-  expect_equal(with_override, on_model_only)
+  ## The target asked for FALSE and gets it (5d).  Before 5d this equalled
+  ## on_model_only instead: the request was silently dropped.
+  expect_equal(with_override, off_entirely)
 })
 
-test_that("BASELINE: a per-target level or condition DOES override the model", {
+test_that("a per-target level or condition overrides the model", {
   skip_on_cran()
   ans <- load_fixture("ans"); mydata <- load_fixture("mydata")
   mymodel <- load_fixture("mymodel")
@@ -138,7 +138,7 @@ test_that("BASELINE: an explicit massContrasts = FALSE suppresses auto-detection
 
 # ── 5d item 4: the uncertainty default ───────────────────────────────────────
 
-test_that("BASELINE: uncertainty is computed unless switched off", {
+test_that("uncertainty is computed by default, analytically", {
   skip_on_cran()
   ans <- load_fixture("ans"); mydata <- load_fixture("mydata")
   mymodel <- load_fixture("mymodel")
@@ -149,13 +149,28 @@ test_that("BASELINE: uncertainty is computed unless switched off", {
                              type = "tieProb", includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
 
-  ## The redesign leans towards enabled = FALSE, on the grounds that the
-  ## expensive thing should be asked for. Pinned so the flip is visible.
+  ## CHANGED IN 5d, but not the way the redesign proposed. It leaned towards
+  ## enabled = FALSE, on the grounds that the expensive thing should be asked
+  ## for. Measurement moved the answer: the expense was the bootstrap DEFAULT
+  ## (~114 s vs 0.57 s for delta on a toy model), not uncertainty itself. So
+  ## uncertainty stays on -- a marginal effect without a standard error is
+  ## not reportable -- and the default mode became the analytic one.
   expect_true(formals(set_postest_uncertainty_saom)$enabled)
+  expect_equal(set_postest_uncertainty_saom()$mode, "delta")
   out <- suppressMessages(marginalEffects(ans, mydata, targets = tg,
              control_algo = set_postest_algo_saom(verbose = FALSE)))
-  expect_true(any(grepl("^se|Se$|SE", names(out))),
-    info = "default should currently produce standard errors")
+  ## The SE column is called "SE" whichever method produced it (step 5d).
+  ## It used to be named for the method, so the default output changed shape
+  ## when the default mode changed. Since the modes are mutually exclusive,
+  ## the name carried nothing the metadata does not.
+  expect_true(any(grepl("(^|_)([Ss][Ee])$", names(out))),
+    info = paste("default must produce standard errors; got:",
+                 paste(names(out), collapse = ", ")))
+  expect_true("SE" %in% names(out))
+  ## ...and how it was derived is recorded, since the column name no longer
+  ## says. Without this the number is not interpretable: the delta modes
+  ## differ in what they hold fixed.
+  expect_equal(attr(out, "uncertaintyMethod"), "delta")
 })
 
 
@@ -185,7 +200,7 @@ test_that("BASELINE: details = TRUE still errors, and is not reachable from cont
   expect_false("details" %in% names(formals(set_postest_output_saom)))
 })
 
-test_that("BASELINE: a per-target accumulated = FALSE is ignored when the model sets TRUE", {
+test_that("a per-target accumulated = FALSE overrides a model that sets TRUE", {
   skip_on_cran()
   skip_if_not(identical(Sys.getenv("RSENA_FULL_TESTS"), "1"),
               "dynamic simulation; RSENA_FULL_TESTS not set")
@@ -194,9 +209,9 @@ test_that("BASELINE: a per-target accumulated = FALSE is ignored when the model 
   skip_if(is.null(ans) || is.null(mydata) || is.null(mymodel) ||
           is.null(mycontrols), "dynamic fixtures unavailable")
 
-  ## accumulated and rateWeight are OR'd on two SEPARATE lines. Testing only
-  ## rateWeight would let a 5d fix correct one and miss the other, so this
-  ## pays for a dynamic run to cover the line users actually set.
+  ## accumulated and rateWeight were OR'd on two SEPARATE lines. Testing only
+  ## rateWeight would have let the 5d fix correct one and miss the other, so
+  ## this pays for a dynamic run to cover the line users actually set.
   mk <- function(...) {
     tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
                                type = "tieProb", dynamic = TRUE,
@@ -216,6 +231,5 @@ test_that("BASELINE: a per-target accumulated = FALSE is ignored when the model 
 
   expect_false(isTRUE(all.equal(on_model_only, off_entirely)),
     info = "accumulated must change the result for this test to mean anything")
-  ## AFTER 5d this should equal off_entirely.
-  expect_equal(with_override, on_model_only)
+  expect_equal(with_override, off_entirely)
 })

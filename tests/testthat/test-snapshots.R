@@ -30,6 +30,11 @@ mymodel2   <- load_fixture("mymodel2")
 # spelled out on each flat call; they are the defaults here for the same
 # reason -- a snapshot that silently differed in either would be pinning a
 # different quantity than its name says.
+# The SE column of a snapshot, whatever vintage the cache is.  Fixtures are
+# gitignored and only rebuilt on demand, so one built before the step-5d
+# rename still carries "delta_se"; a fresh one carries "SE".  Same number.
+snap_se <- function(d) if (!is.null(d[["SE"]])) d[["SE"]] else d[["delta_se"]]
+
 snap_tg <- function(fit, eff, depvar, condition = NULL, ...) {
   tg <- make_postest_targets(fit, effects = eff, depvar = depvar,
                              type = "tieProb", level = "period",
@@ -103,7 +108,7 @@ test_that("snapshot: marginalEffects delta SE golden values", {
   skip_if(!.all_snaps_present,
           "Snapshot cache missing — run with RSENA_REBUILD_MODELS=1")
   snap <- snap_me_delta_transTrip
-  expect_true("delta_se" %in% names(snap))
+  expect_false(is.null(snap_se(snap)))
   out <- marginalEffects(ans, mydata,
     targets = snap_tg(ans, mymodel, "mynet", condition = "density",
                       transTrip = list(diff = 1)),
@@ -113,7 +118,7 @@ test_that("snapshot: marginalEffects delta SE golden values", {
   )
   expect_equal(out$firstDiff, snap$firstDiff, tolerance = 1e-10,
                info = "delta firstDiff must match cached golden values")
-  expect_equal(out$delta_se, snap$delta_se, tolerance = 1e-10,
+  expect_equal(out$SE, snap_se(snap), tolerance = 1e-10,
                info = "delta SE must match cached golden values exactly")
 })
 
@@ -185,13 +190,18 @@ test_that("snapshot: bootstrap SE and delta SE within 5x of each other", {
     control_algo = set_postest_algo_saom(verbose = FALSE)
   )
   snap_delta <- snap_me_delta_transTrip
-  # Match rows by period + density condition columns
-  joined <- merge(out_boot, snap_delta,
-                  by = intersect(names(out_boot), names(snap_delta)),
-                  suffixes = c("_boot", "_delta"))
-  expect_true(nrow(joined) > 0L, info = "merge must produce common rows")
-  boot_se  <- joined$SE_boot
-  delta_se <- joined$SE_delta
+  ## Compared directly rather than through merge() suffixes.  This used to
+  ## read joined$SE_boot / joined$SE_delta -- names merge() only creates for
+  ## columns present in BOTH frames under the same name.  The two frames
+  ## called it "SE" and "delta_se", so both were NULL, the ratio was
+  ## numeric(0), and all(numeric(0) > 0.2) is TRUE: the test asserted nothing
+  ## for as long as it existed.
+  expect_equal(nrow(out_boot), nrow(snap_delta),
+               info = "bootstrap and delta runs must cover the same rows")
+  boot_se  <- out_boot$SE
+  delta_se <- snap_se(snap_delta)
+  expect_false(is.null(boot_se) || is.null(delta_se))
+  expect_gt(length(boot_se), 0L)
   ratio <- boot_se / delta_se
   expect_true(all(ratio > 0.2 & ratio < 5),
               info = paste("Bootstrap / delta SE ratio out of [0.2, 5] range:",
@@ -218,7 +228,7 @@ test_that("snapshot: marginalEffects delta SE, interaction spec", {
   skip_if(is.null(ans2) || is.null(mydata2),
           "ans2/mydata2 fixtures unavailable")
   snap <- snap_me_delta_interaction
-  expect_true("delta_se" %in% names(snap))
+  expect_false(is.null(snap_se(snap)))
   out <- marginalEffects(ans2, mydata2,
     targets = snap_tg(ans2, mymodel2, "mynet2", condition = "recip",
                       transTrip = list(diff = 1, interaction = TRUE,
@@ -230,7 +240,7 @@ test_that("snapshot: marginalEffects delta SE, interaction spec", {
   )
   expect_equal(out$firstDiff, snap$firstDiff, tolerance = 1e-10,
                info = "interaction point estimate must not move")
-  expect_equal(out$delta_se, snap$delta_se, tolerance = 1e-8,
+  expect_equal(out$SE, snap_se(snap), tolerance = 1e-8,
                info = "interaction delta SE must not move (FD -> analytic)")
 })
 
@@ -245,7 +255,7 @@ test_that("snapshot: marginalEffects delta SE, density spec", {
   skip_if(!.all_snaps_present,
           "Snapshot cache missing — run with RSENA_REBUILD_MODELS=1")
   snap <- snap_me_delta_density
-  expect_true("delta_se" %in% names(snap))
+  expect_false(is.null(snap_se(snap)))
   out <- marginalEffects(ans, mydata,
     targets = snap_tg(ans, mymodel, "mynet",
                       density = list(contrast = c(-1, 1))),
@@ -255,6 +265,6 @@ test_that("snapshot: marginalEffects delta SE, density spec", {
   )
   expect_equal(out$firstDiff, snap$firstDiff, tolerance = 1e-10,
                info = "density point estimate must not move")
-  expect_equal(out$delta_se, snap$delta_se, tolerance = 1e-8,
+  expect_equal(out$SE, snap_se(snap), tolerance = 1e-8,
                info = "density delta SE must not move (FD -> analytic)")
 })

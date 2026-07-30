@@ -187,7 +187,7 @@ if (.in_test_run()) {
       # (c2) delta SE — INTERACTION spec.  Tripwire for the planned analytic
       # Jacobian generalisation (postestimate_api_redesign.md Sec. 2.2):
       # calculateUtilityDiffJacobian() currently returns NULL for interaction
-      # specs, so delta_se here comes from the finite-difference fallback.
+      # specs, so the SE here comes from the finite-difference fallback.
       # Making it analytic must not change these numbers.
       snap_me_delta_interaction <- marginalEffects(ans2, mydata2,
         targets = snap_tg(ans2, mymodel2, "mynet2", condition = "recip",

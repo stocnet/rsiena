@@ -79,7 +79,19 @@
 ##@set_postest_uncertainty_saom PostestConfig
 set_postest_uncertainty_saom <- function(
 	enabled    = TRUE,
-	mode       = c("bootstrap", "delta", "deltaFull"),
+	## Default mode is "delta" as of step 5d.  The default used to be
+	## "bootstrap" with nsim = 1000, which cost ~114 s on a 50-node toy model
+	## against 0.57 s for delta and 0.24 s for no uncertainty at all -- so the
+	## out-of-the-box call was two orders of magnitude more expensive than it
+	## needed to be, and stochastic into the bargain.  Delta keeps standard
+	## errors in the default output (a marginal effect without one is not
+	## reportable) at almost the cost of computing none, and is deterministic.
+	##
+	## For DYNAMIC models "delta" is the conditional, frozen-chain SE: it omits
+	## the path-distribution term that "deltaFull" adds.  That term is a
+	## covariance and can go either way, so the conditional SE is not a bound.
+	## Ask for deltaFull when the chain distribution is part of the question.
+	mode       = c("delta", "bootstrap", "deltaFull"),
 	nsim       = 1000,
 	sd         = TRUE,
 	ci         = TRUE,

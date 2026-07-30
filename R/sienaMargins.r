@@ -362,9 +362,18 @@ marginalEffects.sienaFit <- function(
                 condition
             }
 
-            # Per-spec accumulated/rateWeight (OR'd with call-level defaults)
-            eff_accumulated <- isTRUE(spec$accumulated) || accumulated
-            eff_rateWeight  <- isTRUE(spec$rateWeight)  || rateWeight
+            # Per-spec accumulated/rateWeight, override-if-present, exactly
+            # as level/condition above.  These used to be OR'd with the
+            # model-level value, which let a target switch them ON but never
+            # OFF: a target asking for accumulated = FALSE under a model that
+            # set TRUE was silently ignored.  Nothing suggests that asymmetry
+            # was intended -- the two pairs are the same kind of setting --
+            # and it made the model-level value un-overridable in one
+            # direction only.  (Step 5d.)
+            eff_accumulated <- if ("accumulated" %in% names(spec))
+                                   isTRUE(spec$accumulated) else accumulated
+            eff_rateWeight  <- if ("rateWeight" %in% names(spec))
+                                   isTRUE(spec$rateWeight)  else rateWeight
             if (eff_accumulated && !dynamic)
                 stop("Effect '", nm, "': accumulated = TRUE requires ",
                      "dynamic = TRUE.")
@@ -398,6 +407,15 @@ marginalEffects.sienaFit <- function(
                    else
                        "alter"
 
+            # massContrasts is deliberately THREE-STATE (step 5d decided
+            # this rather than changing it): NULL means "decide for me" and
+            # auto-detects from the perturbation mode, TRUE and FALSE are
+            # explicit and both are honoured.  So an explicit FALSE does
+            # suppress auto-detection for an ego perturbation -- that is what
+            # explicit means, and without it there would be no way to turn
+            # the columns off.  This is why the test below is `!is.null` and
+            # not `%in% names(spec)` like the other overrides: for them NULL
+            # is an override, for this one NULL is a value.
             eff_massC <- if (!is.null(spec$massContrasts)) {
                 spec$massContrasts
             } else {
@@ -719,7 +737,18 @@ print.sienaMarginalEffect <- function(x, ...) {
   cat("  Dep. var.: ", if (!is.null(attr(x, "depvar"))) attr(x, "depvar") else "unknown", "\n")
   cat("  Level:     ", if (!is.null(attr(x, "level"))) attr(x, "level") else "unknown", "\n")
   cat("  Dynamic:   ", if (!is.null(attr(x, "dynamic"))) attr(x, "dynamic") else FALSE, "\n")
-  cat("  nsim:      ", if (!is.null(attr(x, "nsim"))) attr(x, "nsim") else NA, "\n")
+  # How the SE was derived.  The column is called "SE" whatever produced it,
+  # so this is where that information lives -- without it the number is not
+  # interpretable, since the delta modes differ in what they hold fixed.
+  um <- attr(x, "uncertaintyMethod")
+  if (!is.null(um)) {
+    cat("  SE method: ", switch(um,
+        delta      = "delta (conditional)",
+        deltaFull  = "deltaFull (conditional + path distribution)",
+        bootstrap  = "bootstrap", um), "\n", sep = "")
+    if (identical(um, "bootstrap"))
+      cat("  nsim:      ", if (!is.null(attr(x, "nsim"))) attr(x, "nsim") else NA, "\n")
+  }
   cat("\n")
 
   massCols <- intersect(c("massCreation", "massDissolution"), names(x))
