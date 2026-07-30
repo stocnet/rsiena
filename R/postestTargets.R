@@ -8,7 +8,7 @@
 ##
 ##   mytg <- make_targets(ans)                       # all non-rate effects
 ##   mytg <- set_target(mytg, transTrip, diff = 2)   # include and tune
-##   mytg <- set_second_diff(mytg, c(density, recip))
+##   mytg <- set_second_diff(mytg, list(density = NULL, recip = list(diff = 1)))
 ##
 ## Overridable settings
 ## --------------------
@@ -360,10 +360,10 @@ missing_arg_named <- function(nm, env) {
 ##
 ## Each element says what is done to ONE effect's change statistic, keyed by
 ## that effect's short name and using the same vocabulary as set_target().
-## The numbered alternative (diff1 =, contrast2 = ...) makes the reader carry
-## the mapping from suffix to position in their head, and does not extend:
-## a third-order difference would need diff3/contrast3/perturbType3 formals,
-## whereas a list simply gains a third element.
+## This replaced a numbered form (diff1 =, contrast2 = ...) that made the
+## reader carry the mapping from suffix to position, and that did not extend:
+## a third-order difference would have needed diff3/contrast3/perturbType3
+## formals, whereas a list simply gains a third element.
 ##
 ## Returns a list of per-effect specs, in the order given, names = effects.
 ## --------------------------------------------------------------------------
@@ -409,76 +409,55 @@ set_second_diff <- function(x, ...) UseMethod("set_second_diff", x)
 
 ##@set_second_diff.sienaPostestTargets Postestimation
 ##
-## `perturbations` takes either the per-effect list form (preferred) or the
-## older pair-of-names form with numbered arguments; see .parsePerturbList.
+## `perturbations` is the per-effect list; see .parsePerturbList.
 set_second_diff.sienaPostestTargets <- function(x, perturbations,
-                                                diff1 = NULL, diff2 = NULL,
-                                                contrast1 = NULL,
-                                                contrast2 = NULL,
-                                                interaction1 = NULL,
-                                                intEffectNames1 = NULL,
-                                                modEffectNames1 = NULL,
-                                                interaction2 = NULL,
-                                                intEffectNames2 = NULL,
-                                                modEffectNames2 = NULL,
-                                                perturbType1 = NULL,
-                                                perturbType2 = NULL,
                                                 returnDecisionDetails = FALSE,
                                                 name = NULL,
                                                 include = TRUE, verbose = TRUE,
                                                 ...) {
+    .example <- paste0(
+        "  set_second_diff(tg, list(transTrip = list(diff = 1),\n",
+        "                           recip = list(contrast = c(0, 1))))")
     if (!hasArg(perturbations))
-        stop("set_second_diff needs two effects to cross, e.g.\n",
-             "  set_second_diff(tg, list(transTrip = list(diff = 1),\n",
-             "                           recip = list(contrast = c(0, 1))))",
+        stop("set_second_diff needs two effects to cross, e.g.\n", .example,
              call. = FALSE)
 
-    ## Which form was used?  A bare c(a, b) of effect names does not evaluate
-    ## (the symbols are effect names, not objects), so failing to evaluate is
-    ## itself the signal for the older form; so is a character vector.
-    .spec <- substitute(perturbations)
-    .val  <- tryCatch(eval(.spec, parent.frame()), error = function(e) NULL)
+    ## Forcing the promise here rather than letting it fail at first use: the
+    ## superseded form passed bare effect symbols, c(transTrip, recip), which
+    ## fail to evaluate with "object 'transTrip' not found" -- true, but no
+    ## help at all in working out what the call should have been.
+    pert <- tryCatch(perturbations, error = function(e) NULL)
+    if (!is.list(pert) || is.data.frame(pert))
+        stop("set_second_diff() takes a named list saying what is done to ",
+             "each of the two effects:\n", .example, "\n",
+             "The numbered form -- two bare effect names plus diff1/contrast2 ",
+             "and friends -- has been removed.", call. = FALSE)
 
-    if (is.list(.val)) {
-        if (any(vapply(list(diff1, diff2, contrast1, contrast2, perturbType1,
-                            perturbType2, interaction1, interaction2,
-                            intEffectNames1, intEffectNames2,
-                            modEffectNames1, modEffectNames2),
-                       Negate(is.null), logical(1L))))
-            stop("The perturbation list already says what is done to each ",
-                 "effect; the numbered arguments (diff1, contrast2, ...) are ",
-                 "the older way of saying the same thing. Use one or the ",
-                 "other.", call. = FALSE)
-        if (length(.val) != 2L)
-            stop("A second difference crosses exactly two effects; the ",
-                 "perturbation list has ", length(.val), ".",
-                 if (length(.val) > 2L)
-                     " Higher-order differences are not supported yet."
-                 else "", call. = FALSE)
-        parsed <- .parsePerturbList(.val)
-        nms    <- names(.val)
-        p1 <- parsed[[1L]]; p2 <- parsed[[2L]]
-        covars1 <- list(p1$covar1, p2$covar1)
-        covars2 <- list(p1$covar2, p2$covar2)
-        diff1 <- p1$diff; contrast1 <- p1$contrast; perturbType1 <- p1$perturbType
-        diff2 <- p2$diff; contrast2 <- p2$contrast; perturbType2 <- p2$perturbType
-        interaction1 <- p1$interaction; interaction2 <- p2$interaction
-        intEffectNames1 <- p1$intEffectNames; intEffectNames2 <- p2$intEffectNames
-        modEffectNames1 <- p1$modEffectNames; modEffectNames2 <- p2$modEffectNames
-    } else {
-        nms <- .targetNames(.spec, parent.frame())
-        if (length(nms) != 2L)
-            stop("set_second_diff needs exactly two effects, got ",
-                 length(nms), ".", call. = FALSE)
-        if (!is.null(diff1) && !is.null(contrast1))
-            stop("Supply either 'diff1' or 'contrast1', not both.",
-                 call. = FALSE)
-        if (!is.null(diff2) && !is.null(contrast2))
-            stop("Supply either 'diff2' or 'contrast2', not both.",
-                 call. = FALSE)
-        covars1 <- list(NULL, NULL)
-        covars2 <- list(NULL, NULL)
-    }
+    ## Numbered arguments now fall into `...`, where they would be ignored in
+    ## silence and the target would be built with default perturbations.
+    stray <- grep("[12]$", names(list(...)), value = TRUE)
+    if (length(stray))
+        stop("Argument(s) ", paste(stray, collapse = ", "), " belong to the ",
+             "removed numbered form. Say it per effect instead:\n", .example,
+             call. = FALSE)
+
+    if (length(pert) != 2L)
+        stop("A second difference crosses exactly two effects; the ",
+             "perturbation list has ", length(pert), ".",
+             if (length(pert) > 2L)
+                 " Higher-order differences are not supported yet."
+             else "", call. = FALSE)
+
+    parsed <- .parsePerturbList(pert)
+    nms    <- names(pert)
+    p1 <- parsed[[1L]]; p2 <- parsed[[2L]]
+    covars1 <- list(p1$covar1, p2$covar1)
+    covars2 <- list(p1$covar2, p2$covar2)
+    diff1 <- p1$diff; contrast1 <- p1$contrast; perturbType1 <- p1$perturbType
+    diff2 <- p2$diff; contrast2 <- p2$contrast; perturbType2 <- p2$perturbType
+    interaction1 <- p1$interaction; interaction2 <- p2$interaction
+    intEffectNames1 <- p1$intEffectNames; intEffectNames2 <- p2$intEffectNames
+    modEffectNames1 <- p1$modEffectNames; modEffectNames2 <- p2$modEffectNames
 
     ## Resolve each component to a row now, so an ambiguous short name is
     ## caught here rather than becoming a silently-wrong perturbation.  The

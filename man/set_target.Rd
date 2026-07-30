@@ -40,6 +40,7 @@ set_target(x, \dots)
 set_second_diff(x, \dots)
 
 \method{set_second_diff}{sienaPostestTargets}(x, perturbations,
+    returnDecisionDetails = FALSE,
     name = NULL,
     include = TRUE, verbose = TRUE, \dots)
 
@@ -73,9 +74,10 @@ set_dependency(x, \dots)
       entries are required; the same effect may appear twice, which crosses
       it with itself.
 
-      For compatibility, two bare names with numbered arguments
-      (\code{c(transTrip, recip), diff1 = 1, contrast2 = c(0, 1)}) are
-      still accepted, but the two forms cannot be mixed in one call.}
+      This replaced a numbered form -- two bare effect names plus
+      \code{diff1}/\code{contrast2} and friends -- which is no longer
+      accepted; a call in that shape is an error naming the list form
+      rather than being quietly ignored.}
   \item{diff}{Single numeric step size for the target's first-difference
       perturbation. Mutually exclusive with \code{contrast}.}
   \item{contrast}{Numeric vector of length 2 giving the two change-statistic
@@ -141,21 +143,12 @@ set_dependency(x, \dots)
       \code{set_second_diff}, whether the newly added target is selected.
       \code{FALSE} records the target without selecting it.}
   \item{verbose}{Logical: print a message describing what changed.}
-  \item{diff1}{Numeric step size for the first component of the second
-      difference. If neither \code{diff1} nor \code{contrast1} is given,
-      the first component defaults the same way a single target would
-      (\code{contrast = c(-1, 1)} for \code{density}, otherwise
-      \code{diff = 1}). Mutually exclusive with \code{contrast1}.}
-  \item{diff2}{As \code{diff1}, for the second component. Mutually
-      exclusive with \code{contrast2}.}
-  \item{contrast1}{Numeric vector of length 2 for the first component of
-      the second difference, as \code{contrast} in \code{set_target}.
-      Mutually exclusive with \code{diff1}.}
-  \item{contrast2}{As \code{contrast1}, for the second component. Mutually
-      exclusive with \code{diff2}.}
   \item{name}{Optional character name for the new target row. Defaults to
-      \code{paste(shortNames, collapse = "_x_")}. An error is raised if a
-      target with this name already exists.}
+      the two effects' names joined with \code{"_"} and suffixed
+      \code{"_sd"}. An error is raised if a target with this name already
+      exists.}
+  \item{returnDecisionDetails}{Logical, default \code{FALSE}: return the
+      per-decision detail columns for this target.}
   \item{\dots}{For \code{set_target} and \code{set_second_diff}, further
       arguments (currently unused, present for S3 consistency). For
       \code{set_dependency}, one or more one-sided dependency formulas of
@@ -213,10 +206,9 @@ set_dependency(x, \dots)
 
   \strong{Second differences} (\code{set_second_diff}): each of the two
   components defaults its own perturbation independently, the same way a
-  single \code{set_target} call would — \code{contrast = c(-1, 1)} for
-  \code{density}, \code{diff = 1} otherwise — unless \code{diff1}/
-  \code{contrast1} or \code{diff2}/\code{contrast2} is given explicitly
-  for that component.
+  single \code{set_target} call would (see
+  \code{\link{make_postest_targets}}), unless that component's list entry
+  says otherwise.
 
   \strong{Dependencies} (\code{set_dependency}): a dependency is a
   one-sided formula \code{target ~ a:b} meaning that \code{target}'s

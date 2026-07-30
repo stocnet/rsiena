@@ -512,32 +512,38 @@ test_that("printed target order is the order results come back in", {
 
 # ── J. The per-effect perturbation list ──────────────────────────────────────
 #
-# A second difference perturbs two effects, and the numbered form
-# (diff1 = 1, contrast2 = c(0, 1)) makes the reader carry the mapping from
-# suffix to position.  The list form states each perturbation next to the
+# A second difference perturbs two effects.  The superseded numbered form
+# (diff1 = 1, contrast2 = c(0, 1)) made the reader carry the mapping from
+# suffix to position; the list form states each perturbation next to the
 # effect it applies to, using the same vocabulary set_target() uses:
 #
 #   list(transTrip = list(diff = 1), recip = list(contrast = c(0, 1)))
 #
-# The decisive test is that it lowers to exactly what the numbered form
-# lowers to -- it is a different way of saying the same thing, not a
-# different quantity.
+# What these check is that each entry's settings reach the component it
+# names -- the mapping that used to be the caller's job -- and that what is
+# left of the numbered form fails loudly rather than being ignored.
 
-test_that("the perturbation list lowers to exactly what the numbered form does", {
+test_that("each list entry lowers onto the component it names", {
   skip_on_cran()
   ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
   skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
 
-  mk <- function() make_postest_targets(ans2, effects = mymodel2,
-                                        depvar = "mynet2",
-                                        includeDefaults = FALSE)
-  lst <- suppressMessages(set_second_diff(mk(),
+  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+                             includeDefaults = FALSE)
+  lst <- suppressMessages(set_second_diff(tg,
       list(transTrip = list(diff = 1), recip = list(contrast = c(0, 1))),
       name = "sd"))
-  num <- suppressMessages(set_second_diff(mk(), c(transTrip, recip),
-      diff1 = 1, contrast2 = c(0, 1), name = "sd"))
-  expect_equal(RSiena:::.targetsToEffectList(lst),
-               RSiena:::.targetsToEffectList(num))
+  sp <- RSiena:::.targetsToEffectList(lst)$effectList[["sd"]]
+
+  ## List order is component order, and each entry's settings land on ITS
+  ## component -- the mapping the numbered form made the reader do by hand.
+  expect_true(isTRUE(sp$second))
+  expect_equal(sp$effectName1, "transTrip")
+  expect_equal(sp$diff1, 1)
+  expect_null(sp$contrast1)
+  expect_equal(sp$effectName2, "recip")
+  expect_equal(sp$contrast2, c(0, 1))
+  expect_null(sp$diff2)
 })
 
 test_that("the perturbation list carries the compound-effect settings too", {
@@ -545,24 +551,24 @@ test_that("the perturbation list carries the compound-effect settings too", {
   ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
   skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
 
-  mk <- function() make_postest_targets(ans2, effects = mymodel2,
-                                        depvar = "mynet2",
-                                        includeDefaults = FALSE)
-  lst <- suppressMessages(set_second_diff(mk(), list(
+  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+                             includeDefaults = FALSE)
+  lst <- suppressMessages(set_second_diff(tg, list(
       recip     = list(contrast = c(0, 1), interaction = TRUE,
                        intEffectNames = "transRecTrip",
                        modEffectNames = "transTrip"),
       transTrip = list(diff = 1, interaction = TRUE,
                        intEffectNames = "transRecTrip",
                        modEffectNames = "recip")), name = "sd"))
-  num <- suppressMessages(set_second_diff(mk(), c(recip, transTrip),
-      contrast1 = c(0, 1), interaction1 = TRUE,
-      intEffectNames1 = "transRecTrip", modEffectNames1 = "transTrip",
-      diff2 = 1, interaction2 = TRUE,
-      intEffectNames2 = "transRecTrip", modEffectNames2 = "recip",
-      name = "sd"))
-  expect_equal(RSiena:::.targetsToEffectList(lst),
-               RSiena:::.targetsToEffectList(num))
+  sp <- RSiena:::.targetsToEffectList(lst)$effectList[["sd"]]
+
+  ## The moderator pairing is the error the numbered form invited: getting
+  ## modEffectNames1/2 the wrong way round was silent and plausible.
+  expect_true(isTRUE(sp$interaction1)); expect_true(isTRUE(sp$interaction2))
+  expect_equal(sp$modEffectNames1, "transTrip")
+  expect_equal(sp$modEffectNames2, "recip")
+  expect_equal(sp$intEffectNames1, "transRecTrip")
+  expect_equal(sp$intEffectNames2, "transRecTrip")
 })
 
 test_that("a NULL entry gives that effect its default perturbation", {
@@ -647,18 +653,30 @@ test_that("a second difference crosses exactly two effects", {
                "not supported yet")
 })
 
-test_that("the two forms cannot be mixed in one call", {
+test_that("the removed numbered form is refused with a pointer, not ignored", {
   skip_on_cran()
   ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
   skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
 
   tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              includeDefaults = FALSE)
-  ## Both routes say what is done to the effects; applying both would mean
-  ## one silently winning over the other.
+  ## Two bare effect names: these are effect names, not objects, so the
+  ## default failure is "object 'transTrip' not found" -- true and useless.
+  err <- tryCatch(suppressMessages(
+             set_second_diff(tg, c(transTrip, recip))),
+           error = conditionMessage)
+  expect_match(err, "named list")
+  expect_match(err, "numbered form")
+
+  ## Numbered arguments now land in `...`, where being ignored in silence
+  ## would build the target with default perturbations instead.
   expect_error(suppressMessages(set_second_diff(tg,
                    list(recip = NULL, transTrip = NULL), diff1 = 2)),
-               "Use one or the other")
+               "removed numbered form")
+  expect_error(suppressMessages(set_second_diff(tg,
+                   list(recip = NULL, transTrip = NULL),
+                   contrast2 = c(0, 1), modEffectNames1 = "x")),
+               "contrast2, modEffectNames1")
 })
 
 # ── K. Identifying WHICH target a short name means ───────────────────────────
