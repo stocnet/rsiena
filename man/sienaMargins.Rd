@@ -43,145 +43,31 @@
   }
 }
 \usage{
-\method{marginalEffects}{sienaFit}(object, data, effects = NULL, depvar = NULL,
-    effectName1, diff1 = NULL, contrast1 = NULL,
-    interaction1 = FALSE, intEffectNames1 = NULL,
-    modEffectNames1 = NULL,
-    second = FALSE, effectName2 = NULL, diff2 = NULL, contrast2 = NULL,
-    interaction2 = FALSE, intEffectNames2 = NULL,
-    modEffectNames2 = NULL,
-    effectList = NULL,
-    level = "period", condition = NULL,
-    type = c("changeProb", "tieProb"),
-    mainEffect = "riskDifference",
-    perturbType1 = NULL, perturbType2 = NULL,
-    massContrasts = NULL,
-    egoNormalize = TRUE, accumulated = FALSE, rateWeight = FALSE,
-    returnDecisionDetails = FALSE,
-    dynamic = FALSE, algorithm = NULL, n3 = 200,
-    n3PointEst = NULL, n3BatchSize = 100L,
-    chainStoreMode = c("auto", "disk", "memory"),
-    useChangeContributions = FALSE, chainStorePath = NULL,
-    uncertainty = TRUE, nsim = 1000,
-    uncertaintyMode = c("bootstrap", "delta", "deltaFull"),
-    uncertaintySd = TRUE, uncertaintyCi = TRUE,
-    uncertaintyMean = FALSE, uncertaintyMedian = FALSE,
-    ciInterval = c(0.025, 0.975),
-    useCluster = FALSE, nbrNodes = 1,
-    clusterType = c("PSOCK", "FORK"), cl = NULL,
-    batchDir = "temp", prefix = "simBatch_b",
-    combineBatch = TRUE, batchSize = NULL,
-    keepBatch = FALSE, verbose = TRUE, details = FALSE,
-    memoryScale = NULL, batchUnitBudget = 2.5e8,
-    dynamicMinistepFactor = 10,
-    saveDir = NULL, gcEachBatch = FALSE, gcEachSim = FALSE,
-    combineSameLevel = FALSE, format = c("wide", "long"), ...)
+\method{marginalEffects}{sienaFit}(object, data, targets,
+    control_uncertainty = set_postest_uncertainty_saom(),
+    control_algo        = set_postest_algo_saom(),
+    control_out         = set_postest_output_saom())
 }
 \arguments{
-  \item{object}{A \code{sienaFit} object resulting from a call to \code{\link{siena}}.}
-  \item{data}{\code{siena} data object.}
-  \item{effects}{Optional \code{sienaEffects} object. If \code{NULL},
-      taken from \code{object$requestedEffects}.}
-  \item{depvar}{Name of dependent variable. Default: first depvar in data.}
-  \item{effectName1}{Name of the effect for which the first difference
-      is calculated.  This should match a short effect name as used
-      internally (e.g.\ \code{"transTrip"}, \code{"recip"}).
-      Partial matching is supported: the function matches against the
-      composite effect names in the contributions
-      (e.g.\ \code{"mynet_transTrip_eval"}).  It is sufficient to
-      supply the short name.}
-  \item{diff1}{Numeric: size of the hypothetical change in the effect
-      variable.  Default \code{NULL} uses unit change (\eqn{\pm 1}).
-      For continuous effects this controls the step size of the
-      discrete difference.}
-  \item{contrast1}{Numeric vector of length 2: contrast values for the
-      first effect.  Used when you want to evaluate the first difference
-      at specific values rather than a unit change.  The marginal effect
-      is computed as \eqn{P(y \mid c_2) - P(y \mid c_1)}.}
-  \item{interaction1}{Logical: whether \code{effectName1} is part of an
-      interaction.}
-  \item{intEffectNames1}{Character: names of interaction partner effects.}
-  \item{modEffectNames1}{Character: names of moderation effects.}
-  \item{effectName2}{For second differences: name of the second effect.}
-  \item{diff2, contrast2, interaction2, intEffectNames2, modEffectNames2}{
-      As above, for the second effect.}
-  \item{effectList}{Optional list of effect specifications for
-      computing several marginal effects in one batch call. When
-      supplied, each element is treated as a separate
-      \code{effectName1}/\code{diff1}/\code{contrast1}/... spec; the
-      return value is a named list (or a single data.frame if
-      \code{effectList} has exactly one element).}
-  \item{perturbType1}{Perturbation mode for the first effect.
-      \code{NULL} (default) auto-detects from the effect's
-      \code{interactionType}: ego-type effects use \code{"ego"}
-      (ego-wide renormalization), all others use \code{"alter"}
-      (one-alternative logit update).  Can be set to \code{"alter"}
-      or \code{"ego"} explicitly to override auto-detection.}
-  \item{perturbType2}{As \code{perturbType1}, for the second effect
-      (used only when \code{second = TRUE}).}
-  \item{type}{Type of probability: \code{"changeProb"} (change probability)
-      or \code{"tieProb"} (tie probability).}
-  \item{second}{Logical: if \code{TRUE}, compute second differences.}
-  \item{level}{Aggregation level for the output: \code{"none"}
-      (unaggregated, one row per ego-choice), \code{"period"}
-      (averaged across egos within period), \code{"ego"}
-      (averaged across choices within ego), \code{"egoChoice"},
-      \code{"chain"}, \code{"ministep"}, or \code{"ministepChoice"}.
-      Default \code{"period"}.}
-  \item{condition}{Optional conditioning variable for aggregation.}
-  \item{egoNormalize}{Logical: normalise contributions per ego
-      (default \code{TRUE}).}
-  \item{accumulated}{Logical: accumulate predictions across ministeps
-      (default \code{FALSE}).}
-  \item{rateWeight}{Logical: weight by the rate function (default
-      \code{FALSE}).}
-  \item{returnDecisionDetails}{Logical: include per-decision detail
-      columns in the output (default \code{FALSE}).}
-  \item{dynamic}{Logical: if \code{TRUE}, use dynamic contributions from
-      simulated chains.}
-  \item{algorithm}{Required when \code{dynamic = TRUE}: a
-      \code{sienaAlgorithm} object.}
-  \item{n3}{Number of chains for dynamic simulation.}
-  \item{n3PointEst}{Optional number of chains used for the point
-      estimate (dynamic predictions); defaults to \code{n3}.}
-  \item{n3BatchSize}{Batch size for chain simulation (dynamic
-      predictions; default 100).}
-  \item{chainStoreMode}{Character: \code{"auto"}, \code{"disk"}, or
-      \code{"memory"} — how simulated chains are cached for dynamic
-      predictions.}
-  \item{useChangeContributions}{Use pre-stored change contributions from
-      \code{ans}.}
-  \item{chainStorePath}{Optional path for on-disk chain storage when
-      \code{chainStoreMode = "disk"}.}
-  \item{uncertainty}{Logical: whether to compute uncertainty via
-      theta-draws (default \code{TRUE}).}
-  \item{nsim}{Number of theta-draws for uncertainty.}
-  \item{uncertaintyMode}{Character: \code{"bootstrap"}, \code{"delta"}, or
-      \code{"deltaFull"} — the method used to quantify uncertainty.}
-  \item{uncertaintySd, uncertaintyCi, uncertaintyMean, uncertaintyMedian,
-      ciInterval}{Control output of uncertainty summaries. \code{ciInterval}
-      gives the CI bounds (default \code{c(0.025, 0.975)}); the median (0.5)
-      is added when \code{uncertaintyMedian = TRUE}.}
-  \item{useCluster, nbrNodes, clusterType, cl}{Parallelisation settings.}
-  \item{batchDir, prefix, combineBatch, batchSize, keepBatch}{Batch mode
-      settings.}
-  \item{verbose}{Logical: print progress messages.}
-  \item{mainEffect}{\code{"riskDifference"} or \code{"riskRatio"}.}
-  \item{details}{Logical: if \code{TRUE}, include detailed intermediate
-      quantities.}
-  \item{massContrasts}{Logical or \code{NULL}: compute mass contrasts
-      (\code{massCreation}, \code{massDissolution}).  Auto-detected from
-      \code{perturbType} when \code{NULL} (the default).}
-  \item{memoryScale, batchUnitBudget, dynamicMinistepFactor}{Memory management.}
-  \item{saveDir}{Optional directory to save intermediate batch results.}
-  \item{gcEachBatch, gcEachSim}{Logical: force garbage collection after
-      each batch / each simulation (memory management for large runs).}
-  \item{combineSameLevel}{Logical: combine results across calls that
-      share the same aggregation \code{level} (used with
-      \code{effectList}).}
-  \item{format}{Character: \code{"wide"} or \code{"long"} — output
-      layout when combining multiple effects/results.}
-  \item{\dots}{Additional arguments passed to internal functions.}
+  \item{object}{A fitted \code{sienaFit} object, as returned by
+      \code{\link{siena07}}.}
+  \item{data}{The \code{siena} data object the model was fitted to.
+      Multi-group data (\code{sienaGroup}) is not supported.}
+  \item{targets}{A \code{sienaPostestTargets} object saying \emph{what} to
+      compute: which effects to perturb, how, and the estimand they are
+      evaluated under. Built with \code{\link{make_postest_targets}} and
+      refined with \code{\link{set_target}},
+      \code{\link{set_second_diff}} and \code{\link{set_dependency}}.
+      Required.}
+  \item{control_uncertainty}{A \code{sienaPostestUncertainty} object from
+      \code{\link{set_postest_uncertainty_saom}}: whether standard errors
+      are computed and by which method.}
+  \item{control_algo}{A \code{sienaPostestControl} object from
+      \code{\link{set_postest_algo_saom}}: \emph{how} the quantities are
+      computed -- chain simulation, batching, parallelism, memory, logging.}
+  \item{control_out}{A \code{sienaPostestOutput} object from
+      \code{\link{set_postest_output_saom}}: what the returned object
+      looks like.}
 }
 \value{
   A data.frame (or data.table if available) with the marginal effect
@@ -212,13 +98,15 @@
   }
 }
 \details{
-  \strong{Effect name resolution}: The \code{effectName1} (and
-  \code{effectName2} for second differences) argument is matched
-  against the composite effect names used internally, which have the
-  form \code{depvar_shortName_type} (e.g.\
-  \code{"mynet_transTrip_eval"}).  It is sufficient to supply just the
-  short name (e.g.\ \code{"transTrip"}) — the function resolves it
-  unambiguously.
+  \strong{Effect name resolution}: targets are named by effect short name,
+  as in \code{\link{set_effect}}. Internally these resolve to the
+  composite names the engine uses, of the form
+  \code{depvar_shortName[_covariate]_type} (e.g.\
+  \code{"mynet_transTrip_eval"}). A short name that matches more than one
+  effect -- \code{egoX} on several covariates, or two \code{unspInt}
+  terms -- is an error rather than a silent choice of the first; see
+  \code{\link{set_target}} for how \code{covar1}/\code{covar2}
+  disambiguate.
 
   \strong{Interaction effects}: When the effect of interest is an
   interaction (e.g.\ specified via \code{set_interaction}), set
@@ -284,33 +172,44 @@ myeff <- make_specification(mydata)
 myeff <- set_effect(myeff, list(density, recip, transTrip))
 ans <- siena(mydata, effects=myeff, control_algo=myalgo, batch=TRUE)
 
-## First difference of transTrip on tie probability, averaged by period
-me <- marginalEffects(ans, data=mydata, effectName1="transTrip",
-        diff1=1, type="tieProb", depvar="mynet1",
-        level="period", uncertainty=FALSE)
+## What to compute: one target, a unit step in transTrip's change statistic,
+## reported as a tie probability averaged by period.
+mytg <- make_postest_targets(ans, effects = myeff, depvar = "mynet1",
+                             type = "tieProb", level = "period",
+                             includeDefaults = FALSE)
+mytg <- set_target(mytg, transTrip, diff = 1)
+
+me <- marginalEffects(ans, data = mydata, targets = mytg,
+        control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
 me
 
-## First difference on change probability, unaggregated
-me_raw <- marginalEffects(ans, data=mydata, effectName1="transTrip",
-            diff1=1, type="changeProb", depvar="mynet1",
-            level="none", uncertainty=FALSE)
+## The same perturbation on the change probability, unaggregated.  Only the
+## estimand and its reporting change, so only the targets object does.
+mytg_raw <- make_postest_targets(ans, effects = myeff, depvar = "mynet1",
+                                 type = "changeProb", level = "none",
+                                 includeDefaults = FALSE)
+mytg_raw <- set_target(mytg_raw, transTrip, diff = 1)
+me_raw <- marginalEffects(ans, data = mydata, targets = mytg_raw,
+            control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
 head(me_raw)
 
 \dontrun{
-## With uncertainty quantification
-me_unc <- marginalEffects(ans, data=mydata, effectName1="transTrip",
-            diff1=1, type="tieProb", depvar="mynet1",
-            level="period", nsim=100, verbose=FALSE)
+## With uncertainty: how precisely is a control_uncertainty question, so the
+## targets object is unchanged.
+me_unc <- marginalEffects(ans, data = mydata, targets = mytg,
+            control_uncertainty = set_postest_uncertainty_saom(nsim = 100),
+            control_algo = set_postest_algo_saom(verbose = FALSE))
 me_unc
 
-## Second difference: how does the marginal effect of transTrip
-## change when recip also changes?
-me2 <- marginalEffects(ans, data=mydata,
-         effectName1="transTrip", diff1=1,
-         effectName2="recip", diff2=1,
-         type="tieProb", depvar="mynet1",
-         second=TRUE, level="period",
-         uncertainty=FALSE)
+## Second difference: how does the marginal effect of transTrip change when
+## recip also changes?  Each effect's perturbation is stated next to it.
+mytg2 <- make_postest_targets(ans, effects = myeff, depvar = "mynet1",
+                              type = "tieProb", level = "period",
+                              includeDefaults = FALSE)
+mytg2 <- set_second_diff(mytg2, list(transTrip = list(diff = 1),
+                                     recip     = list(diff = 1)))
+me2 <- marginalEffects(ans, data = mydata, targets = mytg2,
+         control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
 me2
 }
 }

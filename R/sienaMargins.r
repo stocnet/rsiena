@@ -5,166 +5,79 @@ marginalEffects <- function(object, ...) UseMethod("marginalEffects", object)
 marginalEffects.sienaFit <- function(
     object,
     data,
-    effects = NULL,
-    depvar = NULL,
-    effectName1,
-    diff1 = NULL,
-    contrast1 = NULL,
-    interaction1 = FALSE,
-    intEffectNames1 = NULL,
-    modEffectNames1 = NULL,
-    second = FALSE,
-    effectName2 = NULL,
-    diff2 = NULL,
-    contrast2 = NULL,
-    interaction2 = FALSE,
-    intEffectNames2 = NULL,
-    modEffectNames2 = NULL,
-    effectList = NULL,
-    level = "period",
-    condition = NULL,
-    type = c("changeProb", "tieProb"),
-    mainEffect = "riskDifference", # allow objective later as well
-    perturbType1 = NULL,
-    perturbType2 = NULL,
-    massContrasts = NULL,
-    egoNormalize = TRUE,
-    accumulated = FALSE,
-    rateWeight = FALSE,
-    returnDecisionDetails = FALSE,
-    dynamic = FALSE,
-    algorithm = NULL,
-    n3 = 200,
-    n3PointEst = NULL,
-    n3BatchSize = 100L,
-    chainStoreMode = c("auto", "disk", "memory"),
-    useChangeContributions = FALSE,
-    chainStorePath = NULL,
-    uncertainty = TRUE,
-    nsim = 1000,
-    uncertaintySd = TRUE,
-    uncertaintyCi = TRUE,
-    uncertaintyMean = FALSE,
-    uncertaintyMedian = FALSE,
-    ciInterval = c(0.025, 0.975),
-    # Multicore
-    useCluster = FALSE,
-    nbrNodes = 1,
-    clusterType = c("PSOCK", "FORK"),
-    cl = NULL,
-    batchDir = "temp",
-    prefix = "simBatch_b",
-    combineBatch = TRUE,
-    batchSize = NULL,
-    keepBatch = FALSE,
-    verbose = TRUE,
-    details = FALSE,
-    memoryScale = NULL,
-    batchUnitBudget = 2.5e8,
-    dynamicMinistepFactor = 10,
-    saveDir = NULL,
-    gcEachBatch = FALSE,
-    gcEachSim = FALSE,
-    uncertaintyMode = c("bootstrap", "delta", "deltaFull"),
-    combineSameLevel = TRUE,
-    format = c("long", "wide"),
-    targets = NULL,
-    control_uncertainty = NULL,
-    control_algo = NULL,
-    control_out = NULL,
-    ...
+    targets,
+    control_uncertainty = set_postest_uncertainty_saom(),
+    control_algo        = set_postest_algo_saom(),
+    control_out         = set_postest_output_saom()
 ) {
     # ---- configuration objects ---------------------------------------------
-    # 'uncertainty' accepts a sienaPostestUncertainty object as well as a
-    # logical; 'control' takes a sienaPostestControl.  Both are unpacked into
-    # the individual variables the rest of the function already uses, so no
-    # code below this block needs to know which form the caller used.
+    # Everything the computation needs arrives in one of four objects, each
+    # answering a different question -- mirroring siena()'s own inputs:
     #
-    # Supplying a configuration object AND one of the individual arguments it
-    # covers is an error rather than a silent precedence rule: that
-    # combination only arises from a partially converted call, where quietly
-    # ignoring the stray argument would change results without saying so.
-    .mc    <- match.call()
-    .given <- function(nms) intersect(nms, names(.mc)[-1L])
+    #   targets              WHAT do we want        (built from the effects object)
+    #   control_uncertainty  how precisely
+    #   control_algo         HOW do we get there    (built from the algorithm object)
+    #   control_out          what to do with the results
+    #
+    # Each is unpacked into the individual variables the rest of the function
+    # uses, so nothing below needs to know where a setting came from.
+    #
+    # Unpacking ORDER is load-bearing: control_out goes last, so where two
+    # objects name the same variable the output setting wins.  A field living
+    # in two objects at once is a bug either way -- it was one for `details`
+    # and for `combineSameLevel` -- but the order at least makes the winner
+    # predictable rather than accidental.
+    #
+    # The constructors validate their own arguments (match.arg on type,
+    # mainEffect, mode, chainStoreMode, clusterType, format), so there is no
+    # re-validation here.
+    if (missing(targets))
+        stop("'targets' is required: build it with make_postest_targets().",
+             call. = FALSE)
+    if (!inherits(targets, "sienaPostestTargets"))
+        stop("'targets' must be a sienaPostestTargets object, as returned by ",
+             "make_postest_targets().", call. = FALSE)
 
-    if (!is.null(targets)) {
-        .lowered <- .targetsToEffectList(targets)
-        .clash <- .given(c("effectList", "effectName1", "effects", "depvar",
-                           names(.lowered$defaults)))
-        if (length(.clash))
-            stop("'targets' was supplied, so these arguments must be set on ",
-                 "the targets object instead of passed separately: ",
-                 paste(.clash, collapse = ", "), ".", call. = FALSE)
-        effectList <- .lowered$effectList
-        effects    <- attr(targets, "effects")
-        depvar     <- attr(targets, "depvar")
-        for (.nm in names(.lowered$defaults))
-            assign(.nm, .lowered$defaults[[.nm]])
-    }
+    .lowered   <- .targetsToEffectList(targets)
+    effectList <- .lowered$effectList
+    effects    <- attr(targets, "effects")
+    depvar     <- attr(targets, "depvar")
+    for (.nm in names(.lowered$defaults))
+        assign(.nm, .lowered$defaults[[.nm]])
 
-    if (!is.null(control_uncertainty)) {
-        if (!inherits(control_uncertainty, "sienaPostestUncertainty"))
-            stop("'control_uncertainty' must be a sienaPostestUncertainty ",
-                 "object, as returned by set_postest_uncertainty_saom().",
-                 call. = FALSE)
-        if ("uncertainty" %in% names(.mc)[-1L])
-            stop("Supply either 'control_uncertainty' or 'uncertainty', ",
-                 "not both.", call. = FALSE)
-        uncertainty <- control_uncertainty
-    }
+    if (!inherits(control_uncertainty, "sienaPostestUncertainty"))
+        stop("'control_uncertainty' must be a sienaPostestUncertainty object, ",
+             "as returned by set_postest_uncertainty_saom().", call. = FALSE)
+    .u                <- control_uncertainty
+    uncertainty       <- .u$enabled
+    uncertaintyMode   <- .u$mode
+    nsim              <- .u$nsim
+    uncertaintySd     <- .u$sd
+    uncertaintyCi     <- .u$ci
+    ciInterval        <- .u$ciInterval
+    uncertaintyMean   <- .u$simMean
+    uncertaintyMedian <- .u$simMedian
 
-    if (inherits(uncertainty, "sienaPostestUncertainty")) {
-        .clash <- .given(c("nsim", "uncertaintySd", "uncertaintyCi",
-                           "uncertaintyMean", "uncertaintyMedian",
-                           "ciInterval", "uncertaintyMode"))
-        if (length(.clash))
-            stop("'uncertainty' was given as a sienaPostestUncertainty object, ",
-                 "so these arguments must be set inside it instead of passed ",
-                 "separately: ", paste(.clash, collapse = ", "), ".",
-                 call. = FALSE)
-        .u <- uncertainty
-        uncertainty       <- .u$enabled
-        uncertaintyMode   <- .u$mode
-        nsim              <- .u$nsim
-        uncertaintySd     <- .u$sd
-        uncertaintyCi     <- .u$ci
-        ciInterval        <- .u$ciInterval
-        uncertaintyMean   <- .u$simMean
-        uncertaintyMedian <- .u$simMedian
-    }
+    if (!inherits(control_algo, "sienaPostestControl"))
+        stop("'control_algo' must be a sienaPostestControl object, as ",
+             "returned by set_postest_algo_saom().", call. = FALSE)
+    # Every field of the object is named for the variable it feeds.
+    for (.nm in names(control_algo)) assign(.nm, control_algo[[.nm]])
 
-    if (!is.null(control_algo)) {
-        if (!inherits(control_algo, "sienaPostestControl"))
-            stop("'control_algo' must be a sienaPostestControl object, as ",
-                 "returned by set_postest_algo_saom().", call. = FALSE)
-        .clash <- .given(names(control_algo))
-        if (length(.clash))
-            stop("'control_algo' was supplied, so these arguments must be set ",
-                 "inside it instead of passed separately: ",
-                 paste(.clash, collapse = ", "), ".", call. = FALSE)
-        # Every field of the object is named for the variable it feeds.
-        for (.nm in names(control_algo)) assign(.nm, control_algo[[.nm]])
-    }
+    if (!inherits(control_out, "sienaPostestOutput"))
+        stop("'control_out' must be a sienaPostestOutput object, as ",
+             "returned by set_postest_output_saom().", call. = FALSE)
+    for (.nm in names(control_out)) assign(.nm, control_out[[.nm]])
 
-    if (!is.null(control_out)) {
-        if (!inherits(control_out, "sienaPostestOutput"))
-            stop("'control_out' must be a sienaPostestOutput object, as ",
-                 "returned by set_postest_output_saom().", call. = FALSE)
-        .clash <- .given(names(control_out))
-        if (length(.clash))
-            stop("'control_out' was supplied, so these arguments must be set ",
-                 "inside it instead of passed separately: ",
-                 paste(.clash, collapse = ", "), ".", call. = FALSE)
-        for (.nm in names(control_out)) assign(.nm, control_out[[.nm]])
-    }
+    # `details` is supplied by NO configuration object: it was withdrawn from
+    # both while it is broken (it errors in encodeGroupKeys on every path, a
+    # defect that predates this refactor).  Pinned here so the compute
+    # functions still receive it, rather than the argument going on accepting
+    # a value it cannot honour.  See dev-notes/step5-deliberate-changes.md.
+    details <- FALSE
 
     if (inherits(data, "sienaGroup"))
       stop("marginalEffects does not support multi-group data (sienaGroup).")
-    type           <- match.arg(type)
-    clusterType    <- match.arg(clusterType)
-    uncertaintyMode <- match.arg(uncertaintyMode)
-    chainStoreMode <- match.arg(chainStoreMode)
-    format         <- match.arg(format)
     if (is.null(depvar)) depvar <- names(data[["depvars"]])[1]
     if (!is.null(condition)) condition <- resolveCondition(condition)
 
@@ -194,42 +107,14 @@ marginalEffects.sienaFit <- function(
               "by the simulation (actors selected proportional to lambda). ",
               "'rateWeight' has no additional effect and is ignored.")
 
-    if(dynamic && returnDecisionDetails)
+    # Per-target since the targets object took over the spec, so the guard
+    # asks the specs rather than a call-level argument.
+    if (dynamic && any(vapply(effectList,
+                              function(s) isTRUE(s$returnDecisionDetails),
+                              logical(1L))))
       stop("returnDecisionDetails = TRUE is not supported when dynamic = TRUE.")
     # Two resons: dynamic decision details can explode in memory, and are unsafe
     # and batching mode does not support decision details anyway
-
-    # ================================================================
-    # Unified code path: if scalar effectName1 args are given (single
-    # effect), wrap them into a one-element effectList so everything
-    # flows through the same code.
-    # ================================================================
-    .single_effect <- FALSE
-    if (is.null(effectList) && !missing(effectName1)) {
-        effectList <- list(single = list(
-            effectName1     = effectName1,
-            diff1           = diff1,
-            contrast1       = contrast1,
-            interaction1    = interaction1,
-            intEffectNames1 = intEffectNames1,
-            modEffectNames1 = modEffectNames1,
-            second          = second,
-            effectName2     = effectName2,
-            diff2           = diff2,
-            contrast2       = contrast2,
-            interaction2    = interaction2,
-            intEffectNames2 = intEffectNames2,
-            modEffectNames2 = modEffectNames2,
-            perturbType1    = perturbType1,
-            perturbType2    = perturbType2,
-            massContrasts   = massContrasts,
-            returnDecisionDetails = returnDecisionDetails
-        ))
-        .single_effect <- TRUE
-    }
-
-    if (is.null(effectList))
-        stop("Either 'effectName1' or 'effectList' must be provided.")
 
     # ================================================================
     # Main computation path (handles both single and multi-effect).
@@ -350,7 +235,7 @@ marginalEffects.sienaFit <- function(
               r
             })
 
-            if (isTRUE(combineSameLevel) && !.single_effect) {
+            if (isTRUE(combineSameLevel)) {
               loaded_specs <- lapply(results, function(r)
                 list(level = attr(r, "level"),
                    condition = attr(r, "condition")))
@@ -363,7 +248,7 @@ marginalEffects.sienaFit <- function(
               })
             }
 
-                return(if (.single_effect) results[["single"]] else results)
+                return(if (length(results) == 1L) results[[1L]] else results)
             }
         }
         # currently returns list with 1 element even if all effects are combineSameLevel
@@ -797,14 +682,18 @@ marginalEffects.sienaFit <- function(
             gcEachSim       = gcEachSim
         )
 
-    # Assign S3 class on each result; sienaPostestimate returns plain data.frames.
-    # this might actually not be fully correct anymore with the recent changes
+    # Assign S3 class on each result; sienaPostestimate returns plain
+    # data.frames.  Verified to hold on every exit: single or multiple
+    # targets, combineSameLevel on or off, whether the result comes back as a
+    # data.frame or as a list of them, every returned frame carries
+    # "sienaMarginalEffect" -- combinePostestResults below re-applies it to
+    # anything it rebuilds.
     results <- lapply(results, function(r) {
         class(r) <- c("sienaMarginalEffect", class(r))
         r
     })
 
-    if (isTRUE(combineSameLevel) && !.single_effect) {
+    if (isTRUE(combineSameLevel)) {
         results <- combinePostestResults(results, builtSpecList, format = format)
         results <- lapply(results, function(r) {
             if (!inherits(r, "sienaMarginalEffect"))
@@ -813,7 +702,6 @@ marginalEffects.sienaFit <- function(
         })
     }
 
-    if (.single_effect) return(results[["single"]])
     if (length(results) == 1L) return(results[[1L]])
     results
 }

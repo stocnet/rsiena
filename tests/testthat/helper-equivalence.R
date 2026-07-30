@@ -134,187 +134,235 @@ compare_me_output <- function(a, b, tolerance = 1e-10,
 # Coverage intent: every argument here is one that the refactor relocates.
 # A gap in this corpus is an argument that sails through the refactor untested.
 # --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# me_corpus(fixtures) / me_call(entry, fixtures)
+#
+# A corpus of configurations, expressed as DATA rather than as calls, with
+# me_call() turning an entry into the arguments marginalEffects() takes.
+#
+# It was built for the flat-vs-object equivalence check (Part C), which step 5c
+# retired along with the flat form.  It is kept, converted to the object
+# interface, for two reasons: Part B still checks that every one of these
+# configurations runs, and step 6 needs a set of configurations to compare
+# before and after the analytic Jacobian replaces the finite-difference
+# fallback -- which is also why compare_me_output() is kept.
+#
+# Entry fields:
+#   name, needs, slow  -- identity, required fixtures, whether to skip when fast
+#   fit/data/effects   -- fixture NAMES, resolved against `fixtures`
+#   depvar             -- dependent variable
+#   model              -- extra make_postest_targets() arguments
+#   targets            -- named list: effect short name -> set_target() args
+#   sd                 -- optional list(name=, perturb=) for set_second_diff()
+#   unc / out          -- set_postest_uncertainty_saom() / _output_saom() args
+#
+# Coverage intent: every setting the refactor relocated appears in at least one
+# entry. A gap here is a setting that sails through untested -- and mutation
+# testing has twice shown that entry COUNT is not coverage, so several entries
+# below carry a note saying what makes their setting observable at all.
+# --------------------------------------------------------------------------
+me_corpus_fixtures <- function() {
+  nms <- c("ans", "mydata", "mymodel", "ans2", "mydata2", "mymodel2",
+           "mycontrols", "ans_2int", "mydata_2int", "mymodel_2int")
+  setNames(lapply(nms, load_fixture), nms)
+}
+
+
+me_call <- function(entry, fixtures) {
+  f   <- fixtures
+  fit <- f[[entry$fit]]
+  tg  <- do.call(make_postest_targets,
+                 c(list(x = fit, effects = f[[entry$effects]],
+                        depvar = entry$depvar, includeDefaults = FALSE),
+                   entry$model %||% list()))
+  for (nm in names(entry$targets %||% list()))
+    tg <- suppressMessages(do.call(set_target,
+            c(list(x = tg, shortNames = nm), entry$targets[[nm]])))
+  if (!is.null(entry$sd))
+    tg <- suppressMessages(do.call(set_second_diff,
+            c(list(x = tg, perturbations = entry$sd$perturb),
+              entry$sd[setdiff(names(entry$sd), "perturb")])))
+
+  list(object = fit, data = f[[entry$data]], targets = tg,
+       control_uncertainty = do.call(set_postest_uncertainty_saom,
+                                     entry$unc %||% list()),
+       control_algo = do.call(set_postest_algo_saom,
+                              c(list(verbose = FALSE), entry$algo %||% list())),
+       control_out = do.call(set_postest_output_saom, entry$out %||% list()))
+}
+
+`%||%` <- function(a, b) if (is.null(a)) b else a
+
 me_corpus <- function(fixtures) {
-  f <- fixtures
-  base1 <- list(object = f$ans,  data = f$mydata,  depvar = "mynet")
-  base2 <- list(object = f$ans2, data = f$mydata2, depvar = "mynet2")
+  base1 <- list(fit = "ans",  data = "mydata",  effects = "mymodel",
+                depvar = "mynet",  needs = c("ans", "mydata", "mymodel"))
+  base2 <- list(fit = "ans2", data = "mydata2", effects = "mymodel2",
+                depvar = "mynet2", needs = c("ans2", "mydata2", "mymodel2"))
+  no_unc <- list(enabled = FALSE)
 
   entries <- list(
-    list(name = "static_firstDiff_period",
-         needs = c("ans", "mydata"), slow = FALSE,
-         args = c(base1, list(effectName1 = "transTrip", diff1 = 1,
-                              type = "tieProb", level = "period",
-                              uncertainty = FALSE, verbose = FALSE))),
+    c(base1, list(name = "static_firstDiff_period", slow = FALSE,
+        model = list(type = "tieProb", level = "period"),
+        targets = list(transTrip = list(diff = 1)), unc = no_unc)),
 
-    list(name = "static_firstDiff_egoChoice_conditioned",
-         needs = c("ans", "mydata"), slow = FALSE,
-         args = c(base1, list(effectName1 = "transTrip", diff1 = 1,
-                              type = "tieProb", level = "egoChoice",
-                              condition = c("recip", "density"),
-                              uncertainty = FALSE, verbose = FALSE))),
+    c(base1, list(name = "static_firstDiff_egoChoice_conditioned", slow = FALSE,
+        model = list(type = "tieProb", level = "egoChoice",
+                     condition = c("recip", "density")),
+        targets = list(transTrip = list(diff = 1)), unc = no_unc)),
 
-    list(name = "static_firstDiff_contrast",
-         needs = c("ans", "mydata"), slow = FALSE,
-         args = c(base1, list(effectName1 = "recip", contrast1 = c(0, 1),
-                              type = "tieProb", level = "period",
-                              uncertainty = FALSE, verbose = FALSE))),
+    c(base1, list(name = "static_firstDiff_contrast", slow = FALSE,
+        model = list(type = "tieProb", level = "period"),
+        targets = list(recip = list(contrast = c(0, 1))), unc = no_unc)),
 
-    list(name = "static_density_contrast",
-         needs = c("ans", "mydata"), slow = FALSE,
-         args = c(base1, list(effectName1 = "density", contrast1 = c(-1, 1),
-                              type = "tieProb", level = "period",
-                              uncertainty = FALSE, verbose = FALSE))),
+    c(base1, list(name = "static_density_contrast", slow = FALSE,
+        model = list(type = "tieProb", level = "period"),
+        targets = list(density = list(contrast = c(-1, 1))), unc = no_unc)),
 
-    list(name = "static_changeProb",
-         needs = c("ans", "mydata"), slow = FALSE,
-         args = c(base1, list(effectName1 = "transTrip", diff1 = 1,
-                              type = "changeProb", level = "period",
-                              uncertainty = FALSE, verbose = FALSE))),
+    c(base1, list(name = "static_changeProb", slow = FALSE,
+        model = list(type = "changeProb", level = "period"),
+        targets = list(transTrip = list(diff = 1)), unc = no_unc)),
 
-    list(name = "static_riskRatio",
-         needs = c("ans", "mydata"), slow = FALSE,
-         args = c(base1, list(effectName1 = "transTrip", diff1 = 1,
-                              type = "tieProb", level = "period",
-                              mainEffect = "riskRatio",
-                              uncertainty = FALSE, verbose = FALSE))),
+    c(base1, list(name = "static_riskRatio", slow = FALSE,
+        model = list(type = "tieProb", level = "period",
+                     mainEffect = "riskRatio"),
+        targets = list(transTrip = list(diff = 1)), unc = no_unc)),
 
-    list(name = "static_egoNormalize_FALSE",
-         needs = c("ans", "mydata"), slow = FALSE,
-         args = c(base1, list(effectName1 = "transTrip", diff1 = 1,
-                              type = "tieProb", level = "period",
-                              egoNormalize = FALSE,
-                              uncertainty = FALSE, verbose = FALSE))),
+    c(base1, list(name = "static_egoNormalize_FALSE", slow = FALSE,
+        model = list(type = "tieProb", level = "period",
+                     egoNormalize = FALSE),
+        targets = list(transTrip = list(diff = 1)), unc = no_unc)),
 
-    list(name = "static_secondDiff",
-         needs = c("ans", "mydata"), slow = FALSE,
-         args = c(base1, list(effectName1 = "transTrip", diff1 = 1,
-                              second = TRUE,
-                              effectName2 = "recip", contrast2 = c(0, 1),
-                              type = "tieProb", level = "period",
-                              uncertainty = FALSE, verbose = FALSE))),
+    c(base1, list(name = "static_secondDiff", slow = FALSE,
+        model = list(type = "tieProb", level = "period"),
+        sd = list(perturb = list(transTrip = list(diff = 1),
+                                 recip = list(contrast = c(0, 1)))),
+        unc = no_unc)),
 
-    list(name = "static_interaction",
-         needs = c("ans2", "mydata2"), slow = FALSE,
-         args = c(base2, list(effectName1 = "transTrip", diff1 = 1,
-                              interaction1 = TRUE,
-                              intEffectNames1 = "transRecTrip",
-                              modEffectNames1 = "recip",
-                              type = "tieProb", level = "period",
-                              condition = "recip",
-                              uncertainty = FALSE, verbose = FALSE))),
+    c(base2, list(name = "static_interaction", slow = FALSE,
+        model = list(type = "tieProb", level = "period",
+                     condition = "recip"),
+        targets = list(transTrip = list(diff = 1, interaction = TRUE,
+                                        intEffectNames = "transRecTrip",
+                                        modEffectNames = "recip")),
+        unc = no_unc)),
 
-    ## `format` is consumed ONLY inside combinePostestResults(), which is
-    ## reached only when combineSameLevel = TRUE AND there are several effects
-    ## (`.single_effect` is FALSE).  Miss either condition and the setting is
-    ## inert -- verified by mutation testing, which the earlier single-effect,
-    ## no-uncertainty version of this entry could not detect.
-    list(name = "static_format_long_combined",
-         needs = c("ans", "mydata"), slow = FALSE,
-         args = c(base1, list(
-           effectList = list(
-             tt = list(effectName1 = "transTrip", diff1 = 1),
-             rp = list(effectName1 = "recip", contrast1 = c(0, 1))),
-           type = "tieProb", level = "period",
-           combineSameLevel = TRUE, format = "long",
-           uncertainty = TRUE, uncertaintyMode = "delta",
-           uncertaintySd = TRUE, uncertaintyCi = TRUE,
-           nsim = 1L, verbose = FALSE))),
+    ## `format` is consumed ONLY inside combinePostestResults(), reached only
+    ## when combineSameLevel = TRUE AND there are several targets.  Miss either
+    ## condition and the setting is inert -- verified by mutation testing,
+    ## which the earlier single-target version of this entry could not detect.
+    c(base1, list(name = "static_format_long_combined", slow = FALSE,
+        model = list(type = "tieProb", level = "period"),
+        targets = list(transTrip = list(diff = 1, name = "tt"),
+                       recip = list(contrast = c(0, 1), name = "rp")),
+        out = list(combineSameLevel = TRUE, format = "long"),
+        unc = list(mode = "delta", sd = TRUE, ci = TRUE, nsim = 1L))),
 
-    list(name = "static_multi_effectList",
-         needs = c("ans", "mydata"), slow = FALSE,
-         args = c(base1, list(
-           effectList = list(
-             tt = list(effectName1 = "transTrip", diff1 = 1),
-             rp = list(effectName1 = "recip", contrast1 = c(0, 1))),
-           type = "tieProb", level = "period",
-           uncertainty = FALSE, verbose = FALSE))),
+    c(base1, list(name = "static_multi_targets", slow = FALSE,
+        model = list(type = "tieProb", level = "period"),
+        targets = list(transTrip = list(diff = 1, name = "tt"),
+                       recip = list(contrast = c(0, 1), name = "rp")),
+        unc = no_unc)),
 
-    list(name = "static_delta_uncertainty",
-         needs = c("ans", "mydata"), slow = FALSE,
-         args = c(base1, list(effectName1 = "transTrip", diff1 = 1,
-                              type = "tieProb", level = "period",
-                              uncertainty = TRUE, uncertaintyMode = "delta",
-                              uncertaintySd = TRUE, uncertaintyCi = TRUE,
-                              nsim = 1L, verbose = FALSE))),
+    c(base1, list(name = "static_delta_uncertainty", slow = FALSE,
+        model = list(type = "tieProb", level = "period"),
+        targets = list(transTrip = list(diff = 1)),
+        unc = list(mode = "delta", sd = TRUE, ci = TRUE, nsim = 1L))),
 
-    ## Exercises the TWO-TIER default mechanism: the call sets level="period",
-    ## one target overrides it to "ego".  Without this, dropping the per-target
+    ## The TWO-TIER default mechanism: the model sets level = "period", one
+    ## target overrides it to "ego".  Without this, dropping the per-target
     ## override entirely goes undetected -- verified by mutation testing.
-    list(name = "static_per_target_level_override",
-         needs = c("ans", "mydata"), slow = FALSE,
-         args = c(base1, list(
-           effectList = list(
-             tt = list(effectName1 = "transTrip", diff1 = 1),
-             rp = list(effectName1 = "recip", contrast1 = c(0, 1),
-                       level = "ego")),
-           type = "tieProb", level = "period",
-           uncertainty = FALSE, verbose = FALSE))),
+    c(base1, list(name = "static_per_target_level_override", slow = FALSE,
+        model = list(type = "tieProb", level = "period"),
+        targets = list(transTrip = list(diff = 1, name = "tt"),
+                       recip = list(contrast = c(0, 1), name = "rp",
+                                    level = "ego")),
+        unc = no_unc)),
 
-    ## massContrasts adds massCreation/massDissolution columns; no other entry
-    ## sets it, so dropping it from the defaults was invisible.
-    list(name = "static_massContrasts",
-         needs = c("ans", "mydata"), slow = FALSE,
-         args = c(base1, list(effectName1 = "recip", contrast1 = c(0, 1),
-                              type = "tieProb", level = "period",
-                              massContrasts = TRUE,
-                              uncertainty = FALSE, verbose = FALSE))),
+    ## An explicit NULL must switch conditioning OFF for one target while the
+    ## model sets one -- the distinction .overrides exists to keep.
+    c(base1, list(name = "static_per_target_condition_override", slow = FALSE,
+        model = list(type = "tieProb", level = "period",
+                     condition = "recip"),
+        targets = list(transTrip = list(diff = 1, name = "tt",
+                                        condition = NULL),
+                       recip = list(contrast = c(0, 1), name = "rp",
+                                    condition = "density")),
+        unc = no_unc)),
+
+    ## The override ASYMMETRY: accumulated/rateWeight are OR'd with the model
+    ## value, so a target can switch them on but never off.  Step 5d makes all
+    ## five override-if-present; until then this pins that it does not.
+    c(base1, list(name = "static_per_target_rateWeight_override", slow = FALSE,
+        model = list(type = "tieProb", level = "period", rateWeight = TRUE),
+        targets = list(transTrip = list(diff = 1, name = "tt",
+                                        rateWeight = FALSE),
+                       recip = list(contrast = c(0, 1), name = "rp")),
+        unc = no_unc)),
+
+    ## massContrasts adds massCreation/massDissolution; no other entry sets it,
+    ## so dropping it from the defaults was invisible.
+    c(base1, list(name = "static_massContrasts", slow = FALSE,
+        model = list(type = "tieProb", level = "period",
+                     massContrasts = TRUE),
+        targets = list(recip = list(contrast = c(0, 1))), unc = no_unc)),
+
+    ## Model-level massContrasts must reach a target that does not set it.
+    ## This is where the flat path diverged from the object path before 5c:
+    ## it dropped the call-level value and fell back to auto-detection.  The
+    ## flat path is gone; the correct behaviour is pinned in
+    ## test-postest-behaviour-baseline.R.
+    c(base1, list(name = "static_massContrasts_multi", slow = FALSE,
+        model = list(type = "tieProb", level = "period",
+                     massContrasts = TRUE),
+        targets = list(transTrip = list(diff = 1, name = "tt"),
+                       recip = list(contrast = c(0, 1), name = "rp")),
+        unc = no_unc)),
 
     ## Bootstrap is the ONLY mode where nsim affects output (delta modes are
-    ## analytic and draw nothing).  Without this entry a wiring bug that drops
-    ## nsim passes the harness unnoticed — verified by mutation testing.
-    list(name = "static_bootstrap_uncertainty",
-         needs = c("ans", "mydata"), slow = FALSE,
-         args = c(base1, list(effectName1 = "transTrip", diff1 = 1,
-                              type = "tieProb", level = "period",
-                              uncertainty = TRUE,
-                              uncertaintyMode = "bootstrap",
-                              nsim = 12L, uncertaintySd = TRUE,
-                              uncertaintyCi = TRUE, verbose = FALSE))),
-
-    ## Compound effects on BOTH sides of a second difference, with different
-    ## components -- the most demanding thing the flat effectList could express.
-    list(name = "static_two_unspInt_secondDiff",
-         needs = c("ans_2int", "mydata_2int", "mymodel_2int"), slow = TRUE,
-         args = list(object = f$ans_2int, data = f$mydata_2int,
-                     effects = f$mymodel_2int, depvar = "mynet_2int",
-                     effectList = list(rr = list(
-                       effectName1 = "recip", contrast1 = c(0, 1),
-                       interaction1 = TRUE, intEffectNames1 = "unspInt1",
-                       modEffectNames1 = "inPop",
-                       second = TRUE,
-                       effectName2 = "recip", contrast2 = c(0, 1),
-                       interaction2 = TRUE, intEffectNames2 = "unspInt2",
-                       modEffectNames2 = "outPop")),
-                     type = "tieProb", level = "period",
-                     condition = c("inPop", "outPop", "density"),
-                     uncertainty = FALSE, verbose = FALSE)),
+    ## analytic and draw nothing).  Without this a wiring bug that drops nsim
+    ## passes unnoticed -- verified by mutation testing.
+    c(base1, list(name = "static_bootstrap_uncertainty", slow = FALSE,
+        model = list(type = "tieProb", level = "period"),
+        targets = list(transTrip = list(diff = 1)),
+        unc = list(mode = "bootstrap", nsim = 12L, sd = TRUE, ci = TRUE))),
 
     ## perturbType forces the ego-wide mlogit update instead of the default.
-    list(name = "static_perturbType_ego",
-         needs = c("ans", "mydata"), slow = FALSE,
-         args = c(base1, list(effectName1 = "transTrip", diff1 = 1,
-                              perturbType1 = "ego",
-                              type = "tieProb", level = "period",
-                              uncertainty = FALSE, verbose = FALSE))),
+    c(base1, list(name = "static_perturbType_ego", slow = FALSE,
+        model = list(type = "tieProb", level = "period"),
+        targets = list(transTrip = list(diff = 1, perturbType = "ego")),
+        unc = no_unc)),
 
-    list(name = "dynamic_firstDiff",
-         needs = c("ans", "mydata", "mymodel", "mycontrols"), slow = TRUE,
-         args = c(base1, list(effectName1 = "transTrip", diff1 = 1,
-                              effects = f$mymodel, algorithm = f$mycontrols,
-                              dynamic = TRUE, n3 = 20,
-                              type = "tieProb", level = "period",
-                              uncertainty = FALSE, verbose = FALSE))),
+    ## Compound effects on BOTH sides of a second difference, with different
+    ## components -- the most demanding perturbation the interface can express.
+    list(name = "static_two_unspInt_secondDiff",
+         fit = "ans_2int", data = "mydata_2int", effects = "mymodel_2int",
+         depvar = "mynet_2int",
+         needs = c("ans_2int", "mydata_2int", "mymodel_2int"), slow = TRUE,
+         model = list(type = "tieProb", level = "period",
+                      condition = c("inPop", "outPop", "density")),
+         sd = list(name = "rr", perturb = list(
+             recip = list(contrast = c(0, 1), interaction = TRUE,
+                          intEffectNames = "unspInt1",
+                          modEffectNames = "inPop"),
+             recip = list(contrast = c(0, 1), interaction = TRUE,
+                          intEffectNames = "unspInt2",
+                          modEffectNames = "outPop"))),
+         unc = no_unc),
 
-    list(name = "dynamic_accumulated_deltaFull",
-         needs = c("ans", "mydata", "mymodel", "mycontrols"), slow = TRUE,
-         args = c(base1, list(effectName1 = "transTrip", diff1 = 1,
-                              effects = f$mymodel, algorithm = f$mycontrols,
-                              dynamic = TRUE, n3 = 20,
-                              type = "tieProb", level = "period",
-                              accumulated = TRUE,
-                              uncertainty = TRUE,
-                              uncertaintyMode = "deltaFull",
-                              verbose = FALSE)))
+    c(base1, list(name = "dynamic_firstDiff", slow = TRUE,
+        needs = c("ans", "mydata", "mymodel", "mycontrols"),
+        model = list(type = "tieProb", level = "period", dynamic = TRUE),
+        targets = list(transTrip = list(diff = 1)),
+        algo = list(algorithm = fixtures$mycontrols, n3 = 20),
+        unc = no_unc)),
+
+    c(base1, list(name = "dynamic_accumulated_deltaFull", slow = TRUE,
+        needs = c("ans", "mydata", "mymodel", "mycontrols"),
+        model = list(type = "tieProb", level = "period", dynamic = TRUE,
+                     accumulated = TRUE),
+        targets = list(transTrip = list(diff = 1)),
+        algo = list(algorithm = fixtures$mycontrols, n3 = 20),
+        unc = list(mode = "deltaFull")))
   )
 
   names(entries) <- vapply(entries, `[[`, character(1), "name")
@@ -322,207 +370,14 @@ me_corpus <- function(fixtures) {
 }
 
 
-# Load every fixture the corpus can reference; missing ones stay NULL and the
-# corresponding entries skip rather than error.
-me_corpus_fixtures <- function() {
-  nms <- c("ans", "mydata", "ans2", "mydata2", "mymodel", "mycontrols",
-           "ans_2int", "mydata_2int", "mymodel_2int")
-  setNames(lapply(nms, load_fixture), nms)
-}
-
-
 # --------------------------------------------------------------------------
-# split_flat_args(args)
+# split_flat_args(), as_object_args() and as_targets() were REMOVED in step 5c.
 #
-# Splits a flat marginalEffects() argument list into the three domains the
-# config-object refactor separates:
+# They translated a flat corpus entry into the equivalent config-object call so
+# Part C could compare the two.  With the flat form gone there is nothing to
+# translate from, and they had no other caller.
 #
-#   $uncertainty — arguments that move into set_postest_uncertainty_saom()
-#   $control     — arguments that move into set_postest_algo_saom()
-#   $rest        — everything else (effect spec + output shape), untouched
-#                  by step 3 and still passed flat
-#
-# Used by the equivalence harness to mechanically derive the object-form call
-# from the flat one, so the corpus does not have to spell out both.
+# compare_me_output() above is kept deliberately: steps 6 and 6b need
+# before/after comparison of internals when the analytic Jacobian replaces the
+# finite-difference fallback.
 # --------------------------------------------------------------------------
-.unc_flat_map <- c(
-  enabled    = "uncertainty",
-  mode       = "uncertaintyMode",
-  nsim       = "nsim",
-  sd         = "uncertaintySd",
-  ci         = "uncertaintyCi",
-  ciInterval = "ciInterval",
-  simMean    = "uncertaintyMean",
-  simMedian  = "uncertaintyMedian"
-)
-
-.ctl_flat_names <- c(
-  "algorithm", "n3", "n3PointEst", "n3BatchSize",
-  "chainStoreMode", "useChangeContributions", "chainStorePath",
-  "useCluster", "nbrNodes", "clusterType", "cl",
-  "batchDir", "prefix", "combineBatch", "batchSize", "keepBatch",
-  "verbose", "memoryScale", "batchUnitBudget",
-  "dynamicMinistepFactor", "saveDir", "gcEachBatch", "gcEachSim"
-)
-
-split_flat_args <- function(args) {
-  unc_flat <- intersect(unname(.unc_flat_map), names(args))
-  ctl_flat <- intersect(.ctl_flat_names, names(args))
-  list(
-    uncertainty = args[unc_flat],
-    control     = args[ctl_flat],
-    rest        = args[setdiff(names(args), c(unc_flat, ctl_flat))]
-  )
-}
-
-
-# --------------------------------------------------------------------------
-# as_object_args(args)
-#
-# Rewrites a flat argument list into the step-3 object form: uncertainty and
-# control arguments are folded into their constructors, everything else is
-# passed through unchanged.
-#
-# Only supplies constructor arguments the caller actually set, so unspecified
-# ones fall back to the constructor defaults — which is precisely what the
-# equivalence test needs to verify (constructor defaults must reproduce the
-# flat defaults exactly).
-#
-# Returns NULL when the constructors are not available yet, so the harness
-# skips rather than errors before step 3 lands.
-# --------------------------------------------------------------------------
-as_object_args <- function(args) {
-  if (!exists("set_postest_uncertainty_saom", mode = "function") ||
-      !exists("set_postest_algo_saom",     mode = "function"))
-    return(NULL)
-
-  sp <- split_flat_args(args)
-
-  unc_call <- list()
-  for (obj_nm in names(.unc_flat_map)) {
-    flat_nm <- .unc_flat_map[[obj_nm]]
-    if (flat_nm %in% names(sp$uncertainty))
-      unc_call[[obj_nm]] <- sp$uncertainty[[flat_nm]]
-  }
-
-  out <- sp$rest
-  out$control_uncertainty <- do.call(set_postest_uncertainty_saom, unc_call)
-  if (length(sp$control) > 0L)
-    out$control_algo <- do.call(set_postest_algo_saom, sp$control)
-
-  ## Output domain.
-  out_flat <- intersect(.out_flat_names, names(args))
-  if (length(out_flat) > 0L) {
-    out <- out[setdiff(names(out), out_flat)]
-    out$control_out <- do.call(set_postest_output_saom, args[out_flat])
-  }
-
-  ## Model domain: fold the effect specification onto a targets object and
-  ## drop the flat equivalents.
-  tg <- as_targets(args)
-  if (!is.null(tg)) {
-    out <- out[setdiff(names(out),
-                       c(.model_defaults_flat, .model_spec_flat))]
-    out$targets <- tg
-  }
-  out
-}
-
-
-## --------------------------------------------------------------------------
-## Model-domain arguments: those that move onto the targets object.
-## --------------------------------------------------------------------------
-.model_defaults_flat <- c("dynamic", "type", "mainEffect", "level", "condition",
-                          "egoNormalize", "accumulated", "rateWeight",
-                          "massContrasts")
-
-## Shape of the returned R object -> set_postest_output_saom().
-## `details` is not exposed on the object interface -- broken feature, see
-## set_postest_output_saom().
-.out_flat_names <- c("format", "combineSameLevel")
-
-.model_spec_flat <- c("effectName1", "diff1", "contrast1", "interaction1",
-                      "intEffectNames1", "modEffectNames1", "second",
-                      "effectName2", "diff2", "contrast2", "interaction2",
-                      "intEffectNames2", "modEffectNames2", "perturbType1",
-                      "perturbType2", "effectList", "effects", "depvar")
-
-
-## --------------------------------------------------------------------------
-## as_targets(args)
-##
-## Builds the targets object equivalent to a flat call's effect specification.
-## Returns NULL when the call cannot be expressed yet, so the harness skips
-## rather than silently comparing something else.
-##
-## Naming note: a single-effect flat call (effectName1 = ...) is internally
-## named "single" and unwrapped from the result list.  The equivalent target is
-## therefore named "single" too, so the comparison covers the RESULT WRAPPING
-## as well as the values.  Whether a one-target call should unwrap on its own
-## merits is a step-5 decision; the harness does not prejudge it.
-## --------------------------------------------------------------------------
-as_targets <- function(args) {
-    if (!exists("make_postest_targets", mode = "function")) return(NULL)
-    obj <- args$object
-    eff <- if (!is.null(args$effects)) args$effects else obj$requestedEffects
-    if (is.null(eff)) return(NULL)
-
-    mk <- list(x = obj, effects = eff, includeDefaults = FALSE)
-    if (!is.null(args$depvar)) mk$depvar <- args$depvar
-    for (nm in .model_defaults_flat)
-        if (nm %in% names(args)) mk[[nm]] <- args[[nm]]
-
-    tg <- tryCatch(do.call(make_postest_targets, mk), error = function(e) NULL)
-    if (is.null(tg)) return(NULL)
-
-    ## Normalise both entry forms to one list of spec entries.
-    specs <- if (!is.null(args$effectList)) args$effectList
-             else if (!is.null(args$effectName1))
-                 list(single = args[intersect(.model_spec_flat, names(args))])
-             else return(NULL)
-
-    for (snm in names(specs)) {
-        sp <- specs[[snm]]
-        if (isTRUE(sp$second)) {
-            ## Built in the per-effect list form, which is what the corpus
-            ## is here to exercise: the flat spec IS the numbered form, so
-            ## translating it here means every corpus entry checks the list
-            ## form against the flat interface it must reproduce.
-            plist <- list(
-                list(diff = sp$diff1, contrast = sp$contrast1,
-                     perturbType = sp$perturbType1,
-                     interaction = sp$interaction1,
-                     intEffectNames = sp$intEffectNames1,
-                     modEffectNames = sp$modEffectNames1),
-                list(diff = sp$diff2, contrast = sp$contrast2,
-                     perturbType = sp$perturbType2,
-                     interaction = sp$interaction2,
-                     intEffectNames = sp$intEffectNames2,
-                     modEffectNames = sp$modEffectNames2))
-            names(plist) <- c(sp$effectName1, sp$effectName2)
-            tg <- tryCatch(suppressMessages(
-                     set_second_diff(tg, plist, name = snm)),
-                   error = function(e) NULL)
-            if (is.null(tg)) return(NULL)
-        } else {
-            st <- list(x = tg, shortNames = sp$effectName1,
-                       diff = sp$diff1, contrast = sp$contrast1,
-                       perturbType = sp$perturbType1,
-                       interaction = sp$interaction1,
-                       intEffectNames = sp$intEffectNames1,
-                       modEffectNames = sp$modEffectNames1)
-            ## Per-spec overrides must be forwarded, and forwarded ONLY when
-            ## present: `st[[f]] <- NULL` would drop an explicit NULL, so use
-            ## single-bracket list assignment.
-            for (f in c("level", "condition", "accumulated", "rateWeight",
-                        "massContrasts"))
-                if (f %in% names(sp)) st[f] <- list(sp[[f]])
-            tg <- tryCatch(suppressMessages(do.call(set_target, st)),
-                   error = function(e) NULL)
-            if (is.null(tg)) return(NULL)
-            ## Row identity must match the flat call's spec name.
-            tg$name[tg$effectName1 == sp$effectName1 & !tg$second] <- snm
-        }
-    }
-    tg
-}

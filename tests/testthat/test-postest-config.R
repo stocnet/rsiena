@@ -2,13 +2,14 @@
 # (R/postestConfig.R): set_postest_uncertainty_saom(), set_postest_algo_saom(),
 # and their print methods.
 #
-# These constructors are purely additive: they bundle the flat arguments of
-# marginalEffects.sienaFit into validated, printable objects. They are not
-# (yet) wired into marginalEffects.sienaFit itself, so these tests exercise
-# the constructors and print methods directly and compare their defaults
-# against the flat-argument defaults for exact equivalence.
-
-flatFormals <- formals(RSiena:::marginalEffects.sienaFit)
+# These constructors ARE the interface: since step 5c removed the flat
+# arguments, marginalEffects.sienaFit takes nothing but the objects, and each
+# constructor's defaults are what a call gets when it says nothing.
+#
+# Section B used to assert those defaults matched the flat formals one for
+# one. That referent is gone, so it now pins the values themselves -- the
+# regression it was really guarding against is a default changing silently,
+# and that guard does not need a second implementation to compare with.
 
 # ── A. Class and version attribute ─────────────────────────────────────────
 
@@ -26,92 +27,56 @@ test_that("set_postest_algo_saom returns a sienaPostestControl object with versi
   expect_type(attr(co, "version"), "character")
 })
 
-# ── B. Defaults match the flat API exactly ─────────────────────────────────
+# ── B. Defaults are what we think they are ─────────────────────────────────
+#
+# A default that changes silently changes every call that did not override it.
+# Spelled out as literals rather than derived from anything, so that a change
+# has to be made here as well as in the constructor -- which is the point.
 
-test_that("set_postest_uncertainty_saom defaults match marginalEffects.sienaFit flat defaults", {
+test_that("set_postest_uncertainty_saom defaults are unchanged", {
   u <- set_postest_uncertainty_saom()
-
-  checks <- list(
-    list(field = "enabled",    formal = "uncertainty"),
-    list(field = "mode",       formal = "uncertaintyMode"),
-    list(field = "nsim",       formal = "nsim"),
-    list(field = "sd",         formal = "uncertaintySd"),
-    list(field = "ci",         formal = "uncertaintyCi"),
-    list(field = "ciInterval", formal = "ciInterval"),
-    list(field = "simMean",    formal = "uncertaintyMean"),
-    list(field = "simMedian",  formal = "uncertaintyMedian")
-  )
-
-  for (chk in checks) {
-    formalVal <- eval(flatFormals[[chk$formal]])
-    # match.arg-style defaults are given as a character vector; the flat
-    # function calls match.arg() internally, which picks the first element.
-    if (chk$formal == "uncertaintyMode" && length(formalVal) > 1L) {
-      formalVal <- formalVal[1]
-    }
-    objVal <- u[[chk$field]]
-    if (chk$field == "nsim") {
-      # nsim is coerced to integer by the constructor; compare numerically.
-      expect_equal(as.numeric(objVal), as.numeric(formalVal),
-                   info = sprintf("field '%s' vs formal '%s'", chk$field, chk$formal))
-    } else {
-      expect_equal(objVal, formalVal,
-                   info = sprintf("field '%s' vs formal '%s'", chk$field, chk$formal))
-    }
-  }
+  expect_true(u$enabled)
+  expect_equal(u$mode, "bootstrap")
+  expect_equal(as.numeric(u$nsim), 1000)
+  expect_true(u$sd)
+  expect_true(u$ci)
+  expect_equal(u$ciInterval, c(0.025, 0.975))
+  expect_false(u$simMean)
+  expect_false(u$simMedian)
 })
 
-test_that("set_postest_algo_saom defaults match marginalEffects.sienaFit flat defaults", {
+test_that("set_postest_algo_saom defaults are unchanged", {
   co <- set_postest_algo_saom()
-
-  checks <- list(
-    list(field = "algorithm",               formal = "algorithm"),
-    list(field = "n3",                      formal = "n3"),
-    list(field = "n3PointEst",              formal = "n3PointEst"),
-    list(field = "n3BatchSize",             formal = "n3BatchSize"),
-    list(field = "chainStoreMode",          formal = "chainStoreMode"),
-    list(field = "useChangeContributions",  formal = "useChangeContributions"),
-    list(field = "chainStorePath",          formal = "chainStorePath"),
-    list(field = "useCluster",              formal = "useCluster"),
-    list(field = "nbrNodes",                formal = "nbrNodes"),
-    list(field = "clusterType",             formal = "clusterType"),
-    list(field = "cl",                      formal = "cl"),
-    list(field = "batchDir",                formal = "batchDir"),
-    list(field = "prefix",                  formal = "prefix"),
-    list(field = "combineBatch",            formal = "combineBatch"),
-    list(field = "batchSize",               formal = "batchSize"),
-    list(field = "keepBatch",               formal = "keepBatch"),
-    list(field = "verbose",                 formal = "verbose"),
-    list(field = "memoryScale",             formal = "memoryScale"),
-    list(field = "batchUnitBudget",         formal = "batchUnitBudget"),
-    list(field = "dynamicMinistepFactor",   formal = "dynamicMinistepFactor"),
-    list(field = "saveDir",                 formal = "saveDir"),
-    list(field = "gcEachBatch",             formal = "gcEachBatch"),
-    list(field = "gcEachSim",               formal = "gcEachSim")
-  )
-
-  intFields <- c("n3", "nbrNodes", "n3BatchSize")
-
-  for (chk in checks) {
-    formalVal <- eval(flatFormals[[chk$formal]])
-    if (chk$formal %in% c("chainStoreMode", "clusterType") && length(formalVal) > 1L) {
-      formalVal <- formalVal[1]
-    }
-    objVal <- co[[chk$field]]
-    if (chk$field %in% intFields) {
-      expect_equal(as.numeric(objVal), as.numeric(formalVal),
-                   info = sprintf("field '%s' vs formal '%s'", chk$field, chk$formal))
-    } else {
-      expect_equal(objVal, formalVal,
-                   info = sprintf("field '%s' vs formal '%s'", chk$field, chk$formal))
-    }
-  }
-
-  # batchUnitBudget must not be rounded away from 2.5e8, and n3BatchSize
-  # must remain an integer (100L), exactly as specified.
+  expect_null(co$algorithm)
+  expect_equal(as.numeric(co$n3), 200)
+  expect_null(co$n3PointEst)
+  expect_equal(as.numeric(co$n3BatchSize), 100)
+  expect_equal(co$chainStoreMode, "auto")
+  expect_false(co$useChangeContributions)
+  expect_null(co$chainStorePath)
+  expect_false(co$useCluster)
+  expect_equal(as.numeric(co$nbrNodes), 1)
+  expect_equal(co$clusterType, "PSOCK")
+  expect_null(co$cl)
+  expect_equal(co$batchDir, "temp")
+  expect_equal(co$prefix, "simBatch_b")
+  expect_true(co$combineBatch)
+  expect_null(co$batchSize)
+  expect_false(co$keepBatch)
+  expect_true(co$verbose)
+  expect_null(co$memoryScale)
+  ## Must not be rounded away from 2.5e8 by integer coercion.
   expect_equal(co$batchUnitBudget, 2.5e8)
-  expect_true(is.integer(co$n3BatchSize))
-  expect_equal(co$n3BatchSize, 100L)
+  expect_equal(as.numeric(co$dynamicMinistepFactor), 10)
+  expect_null(co$saveDir)
+  expect_false(co$gcEachBatch)
+  expect_false(co$gcEachSim)
+})
+
+test_that("set_postest_output_saom defaults are unchanged", {
+  o <- set_postest_output_saom()
+  expect_equal(o$format, "long")
+  expect_true(o$combineSameLevel)
 })
 
 # ── C. Validation rules: set_postest_uncertainty_saom ──────────────────────

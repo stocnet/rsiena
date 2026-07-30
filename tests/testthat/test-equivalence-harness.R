@@ -15,7 +15,9 @@
 #       Otherwise a broken entry is indistinguishable from a refactor
 #       regression once the object form is added.  Part B runs them all.
 #
-# When the set_postest_*_saom() constructors land, Part C is added: run each
+# Part C compared the flat and object forms; it was retired with the flat
+# form in step 5c -- see the note where it stood.
+# (historical) When the set_postest_*_saom() constructors landed, Part C ran each
 # corpus entry in both forms and require compare_me_output() to return TRUE.
 
 # ── Part A: the comparator is not vacuous ────────────────────────────────────
@@ -108,11 +110,13 @@ test_that("compare_me_output handles multi-effect list results", {
   expect_false(isTRUE(compare_me_output(a, list(tt = .mk_df()))))
 })
 
-# ── Part B: every corpus entry is a valid call today ─────────────────────────
+# ── Part B: every corpus entry is a valid call ───────────────────────────────
 #
-# Establishes the baseline half of the equivalence pair.  If an entry cannot
-# run now, a failure after the refactor would be ambiguous between "the
-# refactor broke it" and "the corpus entry was always wrong".
+# Originally the baseline half of the equivalence pair.  With Part C gone this
+# stands on its own: a broad smoke check that every configuration the corpus
+# describes still runs and returns something of the right shape.  Cheaper than
+# the migrated suite's assertions and much wider in the combinations it
+# covers, which is what makes it worth keeping.
 
 test_that("every equivalence-corpus entry runs and returns a data.frame", {
   fixtures <- me_corpus_fixtures()
@@ -128,7 +132,7 @@ test_that("every equivalence-corpus entry runs and returns a data.frame", {
     if (any(vapply(fixtures[entry$needs], is.null, logical(1L))))
       next
 
-    out <- tryCatch(do.call(marginalEffects, entry$args),
+    out <- tryCatch(do.call(marginalEffects, me_call(entry, fixtures)),
                     error = function(e) e)
     expect_false(inherits(out, "error"),
       info = paste0("corpus entry '", entry$name, "' failed: ",
@@ -155,105 +159,26 @@ test_that("every equivalence-corpus entry runs and returns a data.frame", {
   }
 })
 
-# ── Part C: flat form and object form must agree ─────────────────────────────
+# ── Part C: REMOVED in step 5c ───────────────────────────────────────────────
 #
-# The point of the whole harness.  For every corpus entry, run the call in its
-# original flat form and in the config-object form derived mechanically by
-# as_object_args(), and require the outputs to be identical.
+# Part C ran every corpus entry through both the flat and the config-object
+# form and required identical output.  Step 5c removed the flat form, so there
+# is no longer a second implementation to compare against and the test cannot
+# be written.
 #
-# Scope at step 3: only the uncertainty and control domains move into objects;
-# the effect specification is still passed flat.  Step 4 extends this to the
-# model object.
+# What replaced it, and why the corpus is still here:
 #
-# TRANSITIONAL.  This test compares old against new and therefore only works
-# while both exist.  Step 5 removes the flat form, at which point Part C is
-# deleted — the migrated test suite covers the object form and the step-1
-# snapshots pin the numbers.  compare_me_output() is kept beyond that, since
-# steps 6 and 6b need before/after comparison of internals.
+#   * tests/testthat/test-snapshots.R pins the NUMBERS -- migrated to the
+#     object interface before the removal and verified to reproduce the cached
+#     golden values, so the numeric reference survived the transition.
+#   * tests/testthat/test-postest-behaviour-baseline.R pins the BEHAVIOURS
+#     step 5d intends to change, so each change stays attributable.
+#   * compare_me_output() is kept: steps 6 and 6b need before/after comparison
+#     of internals when the analytic Jacobian lands.
 #
-# Skips automatically until the constructors exist.
+# The corpus itself (me_corpus) is kept for Parts A and B, which do not need a
+# second implementation.
 
-test_that("flat and config-object forms produce identical output", {
-  skip_if_not(exists("set_postest_uncertainty_saom", mode = "function") &&
-              exists("set_postest_algo_saom", mode = "function"),
-              "config-object constructors not implemented yet (step 3)")
-
-  fixtures <- me_corpus_fixtures()
-  skip_if(is.null(fixtures$ans) || is.null(fixtures$mydata),
-          "base fixtures unavailable")
-
-  corpus  <- me_corpus(fixtures)
-  checked <- 0L
-
-  for (entry in corpus) {
-    if (isTRUE(entry$slow) && !identical(Sys.getenv("RSENA_FULL_TESTS"), "1"))
-      next
-    if (any(vapply(fixtures[entry$needs], is.null, logical(1L))))
-      next
-
-    obj_args <- as_object_args(entry$args)
-    skip_if(is.null(obj_args), "as_object_args() unavailable")
-
-    ## Bootstrap draws are stochastic: seed both runs identically so any
-    ## difference is attributable to the refactor rather than to RNG.
-    set.seed(4242L); flat <- do.call(marginalEffects, entry$args)
-    set.seed(4242L); objf <- do.call(marginalEffects, obj_args)
-
-    ## KNOWN, DELIBERATE DIFFERENCE (decision deferred to step 5):
-    ## marginalEffects unwraps a single-effect result only when the flat
-    ## `effectName1` form was used -- it is driven by an internal
-    ## `.single_effect` flag, not by the entry name, so a one-target `targets`
-    ## call always returns a length-1 named list.
-    ##
-    ## The exemption is deliberately narrow: the object form must still BE a
-    ## length-1 list, and its single element is then compared in full -- every
-    ## column, value, and row order.  Only the outer wrapper is excused.
-    if (is.data.frame(flat) && !is.data.frame(objf) && is.list(objf)) {
-      expect_length(objf, 1L)
-      objf <- objf[[1L]]
-    }
-
-    res <- compare_me_output(flat, objf)
-    expect_true(isTRUE(res),
-      info = paste0("corpus entry '", entry$name, "': ",
-                    paste(if (isTRUE(res)) "" else res, collapse = " | ")))
-    checked <- checked + 1L
-  }
-
-  ## Guard against the harness silently checking nothing — e.g. if every entry
-  ## skipped, or as_object_args() quietly returned inputs unchanged.
-  expect_gt(checked, 0L)
-})
-
-test_that("as_object_args actually routes arguments into the objects", {
-  skip_if_not(exists("set_postest_uncertainty_saom", mode = "function") &&
-              exists("set_postest_algo_saom", mode = "function"),
-              "config-object constructors not implemented yet (step 3)")
-
-  flat <- list(object = NULL, data = NULL, effectName1 = "transTrip",
-               diff1 = 1, level = "period", type = "tieProb",
-               uncertainty = TRUE, uncertaintyMode = "delta", nsim = 7L,
-               dynamic = FALSE, n3 = 33, verbose = FALSE)
-  obj <- as_object_args(flat)
-
-  ## Uncertainty and compute arguments must NOT survive as flat arguments...
-  for (nm in c("uncertaintyMode", "nsim", "n3", "verbose"))
-    expect_false(nm %in% names(obj),
-      info = paste0("'", nm, "' must be folded into a config object"))
-
-  ## ...they must be inside the objects, with their values preserved
-  expect_s3_class(obj$control_uncertainty, "sienaPostestUncertainty")
-  expect_s3_class(obj$control_algo, "sienaPostestControl")
-  expect_equal(obj$control_uncertainty$mode, "delta")
-  expect_equal(obj$control_uncertainty$nsim, 7L)
-  expect_equal(obj$control_algo$n3, 33L)
-
-  ## `dynamic` is a MODEL-domain setting (it selects the estimand), so it goes
-  ## onto the targets object -- not control_algo.  This fixture has no fit, so
-  ## no targets object can be built and the model domain stays flat; that is
-  ## why dynamic, effectName1 and level are all still present here.
-  expect_false("dynamic" %in% names(obj$control_algo))
-  expect_true("dynamic" %in% names(obj))
-  expect_equal(obj$effectName1, "transTrip")
-  expect_equal(obj$level, "period")
-})
+# The test that stood here checked as_object_args() routed each argument into
+# the right config object. It went with the translator in step 5c: there is no
+# routing left to test, because there is only one way to pass these settings.

@@ -34,12 +34,18 @@ test_that("a declared dependency reproduces hand-written interaction args", {
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
       control_algo = set_postest_algo_saom(verbose = FALSE))
 
-  manual <- marginalEffects(object = ans2, data = mydata2,
-      effectList = list(transTrip = list(
-          effectName1 = "transTrip", diff1 = 1, interaction1 = TRUE,
-          intEffectNames1 = "transRecTrip", modEffectNames1 = "recip")),
-      type = "tieProb", depvar = "mynet2", level = "period",
-      condition = "recip", uncertainty = FALSE, verbose = FALSE)
+  ## The same thing said the long way: the interaction arguments written out
+  ## by hand, which is exactly what declaring the dependency should produce.
+  mtg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+                              type = "tieProb", level = "period",
+                              condition = "recip", includeDefaults = FALSE)
+  mtg <- suppressMessages(set_target(mtg, transTrip, diff = 1,
+                                     name = "transTrip", interaction = TRUE,
+                                     intEffectNames = "transRecTrip",
+                                     modEffectNames = "recip"))
+  manual <- marginalEffects(ans2, mydata2, targets = mtg,
+      control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
+      control_algo = set_postest_algo_saom(verbose = FALSE))
 
   res <- compare_me_output(manual, declared,
                            label_a = "manual", label_b = "declared")
@@ -99,14 +105,18 @@ test_that("a dependency on the SECOND effect of a second difference applies", {
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
       control_algo = set_postest_algo_saom(verbose = FALSE))
 
-  manual <- marginalEffects(object = ans2, data = mydata2,
-      effectList = list(density_x_transTrip = list(
-          effectName1 = "density", contrast1 = c(-1, 1), second = TRUE,
-          effectName2 = "transTrip", diff2 = 1,
-          interaction2 = TRUE, intEffectNames2 = "transRecTrip",
-          modEffectNames2 = "recip")),
-      type = "tieProb", depvar = "mynet2", level = "period",
-      uncertainty = FALSE, verbose = FALSE)
+  mtg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+                              type = "tieProb", level = "period",
+                              includeDefaults = FALSE)
+  mtg <- suppressMessages(set_second_diff(mtg, list(
+      density   = list(contrast = c(-1, 1)),
+      transTrip = list(diff = 1, interaction = TRUE,
+                       intEffectNames = "transRecTrip",
+                       modEffectNames = "recip")),
+      name = "density_x_transTrip"))
+  manual <- marginalEffects(ans2, mydata2, targets = mtg,
+      control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
+      control_algo = set_postest_algo_saom(verbose = FALSE))
 
   res <- compare_me_output(manual, declared,
                            label_a = "manual", label_b = "declared")

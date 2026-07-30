@@ -343,15 +343,15 @@ test_that("marginalEffects: behavior DV stops with informative error", {
   mynet_b <- sienaDependent(array(c(s501, s502, s503), dim = c(50, 50, 3)))
   mybeh_b <- sienaDependent(s50a, type = "behavior")
   mydata_b <- sienaDataCreate(mynet_b, mybeh_b)
+  ## depvar names a behaviour variable, which the targets object cannot be
+  ## built for either -- so the guard is checked wherever it now fires.
   expect_error(
-    marginalEffects(
-      object = ans_ego, data = mydata_b,
-      effectName1 = "egoX", diff1 = 1,
-      type = "tieProb", depvar = "mybeh_b",
-      level = "period", condition = "density",
-      uncertainty = FALSE
-    ),
-    "[Bb]ehavio(u)?r"
+    suppressMessages(marginalEffects(ans_ego, mydata_b,
+      targets = make_postest_targets(ans_ego, effects = mymodel_ego,
+                                     depvar = "mybeh_b", type = "tieProb",
+                                     level = "period", condition = "density"),
+      control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))),
+    "[Bb]ehavio(u)?r|mybeh_b"
   )
 })
 
@@ -496,20 +496,17 @@ test_that("effectList batch: targets sharing (level, condition) merge into one d
 # NOTE: left in flat form deliberately. A single set_target() on a `targets`
 # object ALSO collapses to a bare data.frame now (marginalEffects.sienaFit
 # unwraps any single-group `results` list via `if (length(results) == 1L)
-# return(results[[1L]])`, independent of the `.single_effect` flag that only
-# the flat effectName1 path sets). So this test's regression value is no
-# longer about the shape being unique to the flat path -- both paths agree.
-# It stays in flat form because it specifically exercises the
-# `.single_effect` code branch (scalar effectName1/contrast1/... args,
-# never routed through `targets`/`effectList`), which needs its own coverage
-# independent of the targets-object path exercised elsewhere in this file.
-test_that("effectList scalar call (single element) returns data frame, not list", {
-  out <- marginalEffects(
-    object = ans, data = mydata,
-    effectName1 = "recip", contrast1 = c(0, 1),
-    type = "tieProb", level = "period", condition = "density",
-    nsim = 10, uncertainty = FALSE, verbose = FALSE
-  )
+# return(results[[1L]])`.  The `.single_effect` flag that used to drive this
+# belonged to the flat effectName1 path and went with it in step 5c, so the
+# unwrapping is now a property of the one remaining path.
+test_that("a single target returns a data frame, not a one-element list", {
+  tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+                             type = "tieProb", level = "period",
+                             condition = "density", includeDefaults = FALSE)
+  tg <- suppressMessages(set_target(tg, recip, contrast = c(0, 1)))
+  out <- marginalEffects(ans, mydata, targets = tg,
+    control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
+    control_algo = set_postest_algo_saom(verbose = FALSE))
   expect_true(is.data.frame(out))
   expect_false(is.list(out) && !is.data.frame(out))
 })

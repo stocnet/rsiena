@@ -24,26 +24,30 @@ test_that("accumulated deltaFull SE tracks the bootstrap reference", {
   skip_if(is.null(ans) || is.null(mydata) || is.null(mymodel) ||
           is.null(mycontrols), "base fixtures unavailable")
 
+  tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+                             type = "tieProb", level = "period",
+                             dynamic = TRUE, accumulated = TRUE,
+                             includeDefaults = FALSE)
+  tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
   common <- list(
-    object = ans, data = mydata,
-    effectName1 = "transTrip", diff1 = 1,
-    effects = mymodel, algorithm = mycontrols,
-    dynamic = TRUE, n3 = 20,
-    type = "tieProb", accumulated = TRUE, level = "period",
-    uncertainty = TRUE, verbose = FALSE
+    object = ans, data = mydata, targets = tg,
+    control_algo = set_postest_algo_saom(algorithm = mycontrols, n3 = 20,
+                                         verbose = FALSE)
   )
 
   ## deltaFull must NOT warn: a warning here means the bucketed REINFORCE path
   ## was unavailable and we silently got the conditional SE instead.
   set.seed(11L)
   expect_no_warning(
-    del <- do.call(marginalEffects,
-                   c(common, list(uncertaintyMode = "deltaFull")))
+    del <- do.call(marginalEffects, c(common, list(
+             control_uncertainty = set_postest_uncertainty_saom(
+                 mode = "deltaFull"))))
   )
 
   set.seed(11L)
-  boot <- do.call(marginalEffects,
-                  c(common, list(uncertaintyMode = "bootstrap", nsim = 40)))
+  boot <- do.call(marginalEffects, c(common, list(
+            control_uncertainty = set_postest_uncertainty_saom(
+                mode = "bootstrap", nsim = 40))))
 
   se_cond <- del$delta_se
   se_full <- del$delta_full_se

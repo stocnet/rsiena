@@ -142,74 +142,71 @@ if (.in_test_run()) {
     if (rebuild || !all(file.exists(snap_paths))) {
       message("Building numerical snapshot fixtures…")
 
+      # The builders below and test-snapshots.R must ask for exactly the same
+      # quantity, or the snapshot pins nothing.  Both go through a helper of
+      # this shape; keep them in step.
+      snap_tg <- function(fit, eff, depvar, condition = NULL, ...) {
+        tg <- make_postest_targets(fit, effects = eff, depvar = depvar,
+                                   type = "tieProb", level = "period",
+                                   condition = condition,
+                                   includeDefaults = FALSE)
+        perturb <- list(...)
+        for (nm in names(perturb))
+          tg <- suppressMessages(do.call(set_target,
+                  c(list(x = tg, shortNames = nm), perturb[[nm]])))
+        tg
+      }
+      no_unc  <- set_postest_uncertainty_saom(enabled = FALSE)
+      quiet   <- set_postest_algo_saom(verbose = FALSE)
+
       # (a) firstDiff static — transTrip, period level, no uncertainty
-      snap_me_static_transTrip <- marginalEffects(
-        object    = ans,
-        data      = mydata,
-        effectName1 = "transTrip", diff1 = 1,
-        type      = "tieProb", depvar = "mynet",
-        level     = "period", condition = "density",
-        uncertainty = FALSE, verbose = FALSE
-      )
+      snap_me_static_transTrip <- marginalEffects(ans, mydata,
+        targets = snap_tg(ans, mymodel, "mynet", condition = "density",
+                          transTrip = list(diff = 1)),
+        control_uncertainty = no_unc, control_algo = quiet)
 
       # (b) secondDiff static — transTrip × recip, period level, no uncertainty
-      snap_me_static_secondDiff <- marginalEffects(
-        object    = ans,
-        data      = mydata,
-        effectName1 = "transTrip", diff1 = 1,
-        second    = TRUE,
-        effectName2 = "recip", contrast2 = c(0, 1),
-        type      = "tieProb", depvar = "mynet",
-        level     = "period", condition = "density",
-        uncertainty = FALSE, verbose = FALSE
-      )
+      snap_me_static_secondDiff <- marginalEffects(ans, mydata,
+        targets = suppressMessages(set_second_diff(
+          snap_tg(ans, mymodel, "mynet", condition = "density"),
+          list(transTrip = list(diff = 1),
+               recip     = list(contrast = c(0, 1))))),
+        control_uncertainty = no_unc, control_algo = quiet)
 
       # (c) delta SE — transTrip, period level, uncertaintyMode="delta"
       # Deterministic: no MCMC draws, pure finite-difference Jacobian.
-      snap_me_delta_transTrip <- marginalEffects(
-        object    = ans,
-        data      = mydata,
-        effectName1 = "transTrip", diff1 = 1,
-        type      = "tieProb", depvar = "mynet",
-        level     = "period", condition = "density",
-        uncertainty = TRUE, uncertaintyMode = "delta",
-        uncertaintySd = TRUE, uncertaintyCi = FALSE,
-        uncertaintyMean = FALSE,
-        nsim = 1L,   # delta needs nsim >= 1 to enable uncertainty path
-        verbose = FALSE
-      )
+      snap_me_delta_transTrip <- marginalEffects(ans, mydata,
+        targets = snap_tg(ans, mymodel, "mynet", condition = "density",
+                          transTrip = list(diff = 1)),
+        ## delta needs nsim >= 1 to enable the uncertainty path
+        control_uncertainty = set_postest_uncertainty_saom(
+            mode = "delta", sd = TRUE, ci = FALSE, simMean = FALSE,
+            nsim = 1L),
+        control_algo = quiet)
 
       # (c2) delta SE — INTERACTION spec.  Tripwire for the planned analytic
       # Jacobian generalisation (postestimate_api_redesign.md Sec. 2.2):
       # calculateUtilityDiffJacobian() currently returns NULL for interaction
       # specs, so delta_se here comes from the finite-difference fallback.
       # Making it analytic must not change these numbers.
-      snap_me_delta_interaction <- marginalEffects(
-        object    = ans2,
-        data      = mydata2,
-        effectName1 = "transTrip", diff1 = 1,
-        interaction1 = TRUE, intEffectNames1 = "transRecTrip",
-        modEffectNames1 = "recip",
-        type      = "tieProb", depvar = "mynet2",
-        level     = "period", condition = "recip",
-        uncertainty = TRUE, uncertaintyMode = "delta",
-        uncertaintySd = TRUE, uncertaintyCi = FALSE,
-        nsim = 1L, verbose = FALSE
-      )
+      snap_me_delta_interaction <- marginalEffects(ans2, mydata2,
+        targets = snap_tg(ans2, mymodel2, "mynet2", condition = "recip",
+                          transTrip = list(diff = 1, interaction = TRUE,
+                                           intEffectNames = "transRecTrip",
+                                           modEffectNames = "recip")),
+        control_uncertainty = set_postest_uncertainty_saom(
+            mode = "delta", sd = TRUE, ci = FALSE, nsim = 1L),
+        control_algo = quiet)
 
       # (c3) delta SE — DENSITY spec.  Same tripwire: density also returns NULL
       # from calculateUtilityDiffJacobian (delta_u = -2 * changeUtil makes A
       # dense over all K columns), so this too is on the FD fallback today.
-      snap_me_delta_density <- marginalEffects(
-        object    = ans,
-        data      = mydata,
-        effectName1 = "density", contrast1 = c(-1, 1),
-        type      = "tieProb", depvar = "mynet",
-        level     = "period",
-        uncertainty = TRUE, uncertaintyMode = "delta",
-        uncertaintySd = TRUE, uncertaintyCi = FALSE,
-        nsim = 1L, verbose = FALSE
-      )
+      snap_me_delta_density <- marginalEffects(ans, mydata,
+        targets = snap_tg(ans, mymodel, "mynet",
+                          density = list(contrast = c(-1, 1))),
+        control_uncertainty = set_postest_uncertainty_saom(
+            mode = "delta", sd = TRUE, ci = FALSE, nsim = 1L),
+        control_algo = quiet)
 
       # (d) predict changeProb — period level, no uncertainty
       snap_predict_changeProb <- predict(
