@@ -87,31 +87,15 @@ test_that("calculateUtilityDiff: simple additive case", {
   effectNames <- c("density", "recip", "transTrip")
   theta       <- c(density = -2, recip = 1.5, transTrip = 0.5)
   densityValue <- c(1L, -1L, 0L)
+  csMat <- matrix(0, nrow = 3, ncol = 3,
+                  dimnames = list(NULL, effectNames))
+  csMap <- list(bases = effectNames, types = rep("eval", 3))
   result <- calculateUtilityDiff(
-    effectName = "recip", diff = 1,
-    theta = theta, densityValue = densityValue,
-    effectNames = effectNames
+    effectName = "recip", diff = 1, densityValue = densityValue,
+    thetaRaw = theta, csMat = csMat, changeStatsMap = csMap
   )
   # util_diff = densityValue * diff * theta["recip"]
   expect_equal(result, densityValue * 1 * 1.5)
-})
-
-test_that("calculateUtilityDiff: interaction adds moderator term", {
-  effectNames  <- c("density", "recip", "transTrip", "unspInt")
-  theta        <- c(density = -2, recip = 1.0, transTrip = 0.5, unspInt = 0.3)
-  densityValue <- c(1L, 1L, 1L)
-  modContrib   <- c(0L, 2L, 1L)
-  result <- calculateUtilityDiff(
-    effectName = "recip", diff = 1,
-    theta = theta, densityValue = densityValue,
-    interaction = TRUE,
-    intEffectNames = "unspInt", modEffectNames = "transTrip",
-    modContribution = modContrib,
-    effectNames = effectNames
-  )
-  # CS-space formula: d * diff * (theta[recip] + modContrib * theta[unspInt])
-  expected <- densityValue * (1 * theta["recip"] + modContrib * theta["unspInt"])
-  expect_equal(result, unname(expected))
 })
 
 # ── calculateFirstDiff ────────────────────────────────────────────────────────
@@ -129,7 +113,11 @@ test_that("calculateFirstDiff: returns named list, density==0 → NA", {
     densityValue = densityValue, changeProb = changeProb,
     changeUtil = changeUtil, effectName = "recip",
     effectContribution = effectContrib, diff = 1,
-    effectNames = effectNames, theta = theta, type = "changeProb",
+    thetaRaw = theta,
+    csMat = matrix(0, length(densityValue), length(effectNames),
+                   dimnames = list(NULL, effectNames)),
+    changeStatsMap = list(bases = effectNames,
+                          types = rep("eval", length(effectNames))), type = "changeProb",
     details = FALSE
   )
   expect_type(result, "list")
@@ -150,7 +138,11 @@ test_that("calculateFirstDiff: positive density → positive diff, symmetry", {
     densityValue = densityValue, changeProb = changeProb,
     changeUtil = changeUtil, effectName = "recip",
     effectContribution = effectContrib, diff = 1,
-    effectNames = c("density", "recip"), theta = theta,
+    thetaRaw = theta,
+    csMat = matrix(0, length(densityValue), 2L,
+                   dimnames = list(NULL, c("density", "recip"))),
+    changeStatsMap = list(bases = c("density", "recip"),
+                          types = c("eval", "eval")),
     type = "changeProb", details = FALSE
   )
   fd <- result$firstDiff
@@ -170,7 +162,11 @@ test_that("calculateFirstDiff: details=TRUE returns data.frame with named column
     densityValue = densityValue, changeProb = changeProb,
     changeUtil = changeUtil, effectName = "recip",
     effectContribution = effectContrib, diff = 1,
-    effectNames = c("density", "recip"), theta = theta,
+    thetaRaw = theta,
+    csMat = matrix(0, length(densityValue), 2L,
+                   dimnames = list(NULL, c("density", "recip"))),
+    changeStatsMap = list(bases = c("density", "recip"),
+                          types = c("eval", "eval")),
     type = "changeProb", details = TRUE
   )
   expect_true(is.data.frame(result))
@@ -190,7 +186,11 @@ test_that("calculateFirstDiff: tieProb type returns correct tieProb columns with
     densityValue = densityValue, changeProb = changeProb,
     changeUtil = changeUtil, effectName = "recip",
     effectContribution = effectContrib, diff = 1,
-    effectNames = c("density", "recip"), theta = theta,
+    thetaRaw = theta,
+    csMat = matrix(0, length(densityValue), 2L,
+                   dimnames = list(NULL, c("density", "recip"))),
+    changeStatsMap = list(bases = c("density", "recip"),
+                          types = c("eval", "eval")),
     type = "tieProb", tieProb = tieProb_in, details = TRUE
   )
   expect_true(all(c("newTieProb", "oldTieProb") %in% names(result)))
@@ -207,7 +207,11 @@ test_that("calculateFirstDiff: riskRatio path returns firstRiskRatio", {
     densityValue = densityValue, changeProb = changeProb,
     changeUtil = changeUtil, effectName = "recip",
     effectContribution = effectContrib, diff = 1,
-    effectNames = c("density", "recip"), theta = theta,
+    thetaRaw = theta,
+    csMat = matrix(0, length(densityValue), 2L,
+                   dimnames = list(NULL, c("density", "recip"))),
+    changeStatsMap = list(bases = c("density", "recip"),
+                          types = c("eval", "eval")),
     type = "changeProb", details = FALSE, mainEffect = "riskRatio"
   )
   expect_named(result, "firstRiskRatio")
@@ -229,7 +233,11 @@ test_that("calculateSecondDiff: returns named list, density==0 → NA", {
     changeUtil = changeUtil,
     effectName1 = "recip",   effectContribution1 = rep(1L, n), diff1 = 1,
     effectName2 = "transTrip", effectContribution2 = rep(2L, n), diff2 = 1,
-    effectNames = effectNames, theta = theta,
+    thetaRaw = theta,
+    csMat = matrix(0, length(densityValue), length(effectNames),
+                   dimnames = list(NULL, effectNames)),
+    changeStatsMap = list(bases = effectNames,
+                          types = rep("eval", length(effectNames))),
     type = "changeProb", details = FALSE
   )
   expect_type(result, "list")
@@ -250,7 +258,11 @@ test_that("calculateSecondDiff: details=TRUE returns broad data.frame", {
     changeUtil = changeUtil,
     effectName1 = "recip",     effectContribution1 = rep(1L, 3), diff1 = 1,
     effectName2 = "transTrip", effectContribution2 = rep(1L, 3), diff2 = 1,
-    effectNames = effectNames, theta = theta,
+    thetaRaw = theta,
+    csMat = matrix(0, length(densityValue), length(effectNames),
+                   dimnames = list(NULL, effectNames)),
+    changeStatsMap = list(bases = effectNames,
+                          types = rep("eval", length(effectNames))),
     type = "changeProb", details = TRUE
   )
   expect_true(is.data.frame(result))
@@ -384,7 +396,6 @@ test_that("predictFirstDiff: density==0 rows excluded; contrib cols present", {
   result <- predictFirstDiff(
     changeContributions = cc, theta = theta_use, type = "changeProb",
     effectName = "recip", diff = 1, contrast = NULL,
-    interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
   )
   expect_equal(nrow(result), n_valid)
@@ -401,7 +412,6 @@ test_that("predictFirstDiff: details=TRUE attaches utilDiff, changeProb", {
   result <- predictFirstDiff(
     changeContributions = cc, theta = theta_use, type = "changeProb",
     effectName = "recip", diff = 1, contrast = NULL,
-    interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     details = TRUE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
   )
   expect_true(all(c("changeUtil", "changeProb") %in% names(result)))
@@ -415,7 +425,6 @@ test_that("predictFirstDiff: tieProb type attaches tieProb col when details=TRUE
   result <- predictFirstDiff(
     changeContributions = cc, theta = theta_use, type = "tieProb",
     effectName = "recip", diff = 1, contrast = NULL,
-    interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     details = TRUE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
   )
   expect_true("tieProb" %in% names(result))
@@ -431,7 +440,6 @@ test_that("predictFirstDiff: output is always data.frame", {
   result <- predictFirstDiff(
     changeContributions = cc, theta = theta_use, type = "changeProb",
     effectName = "recip", diff = 1, contrast = NULL,
-    interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
     details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
   )
   expect_true(is.data.frame(result))
@@ -446,8 +454,7 @@ test_that("predictFirstDiff: base R output is plain data.frame", {
       result <- predictFirstDiff(
         changeContributions = cc, theta = theta_use, type = "changeProb",
         effectName = "recip", diff = 1, contrast = NULL,
-        interaction = FALSE, intEffectNames = NULL, modEffectNames = NULL,
-        details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
+            details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
       )
       expect_true(is.data.frame(result))
       expect_false("data.table" %in% class(result))
@@ -463,9 +470,7 @@ test_that("predictSecondDiff: density==0 rows excluded; secondDiff col present",
   result <- predictSecondDiff(
     changeContributions = cc, theta = theta_use, type = "changeProb",
     effectName1 = "recip",     diff1 = 1, contrast1 = NULL,
-    interaction1 = FALSE, intEffectNames1 = NULL, modEffectNames1 = NULL,
     effectName2 = "transTrip", diff2 = 1, contrast2 = NULL,
-    interaction2 = FALSE, intEffectNames2 = NULL, modEffectNames2 = NULL,
     details = FALSE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
   )
   expect_equal(nrow(result), n_valid)
@@ -480,9 +485,7 @@ test_that("predictSecondDiff: details=TRUE attaches utility and prob columns", {
   result <- predictSecondDiff(
     changeContributions = cc, theta = theta_use, type = "changeProb",
     effectName1 = "recip",     diff1 = 1, contrast1 = NULL,
-    interaction1 = FALSE, intEffectNames1 = NULL, modEffectNames1 = NULL,
     effectName2 = "transTrip", diff2 = 1, contrast2 = NULL,
-    interaction2 = FALSE, intEffectNames2 = NULL, modEffectNames2 = NULL,
     details = TRUE, calcRiskRatio = FALSE, mainEffect = "riskDifference"
   )
   expect_true(all(c("changeUtil", "changeProb") %in% names(result)))

@@ -57,10 +57,8 @@ test_that("marginalEffects static interaction, no uncertainty", {
   tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              type = "tieProb", level = "period",
                              condition = "recip", includeDefaults = FALSE)
-  tg <- suppressMessages(set_target(tg, transTrip, diff = 1,
-                                    interaction = TRUE,
-                                    intEffectNames = "transRecTrip",
-                                    modEffectNames = "recip"))
+  tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
+  tg <- suppressMessages(set_dependency(tg, transRecTrip ~ transTrip:recip))
   out <- marginalEffects(ans2, mydata2, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
       control_algo = set_postest_algo_saom(verbose = FALSE))
@@ -72,10 +70,8 @@ test_that("marginalEffects static interaction with uncertainty", {
   tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              type = "tieProb", level = "period",
                              condition = "recip", includeDefaults = FALSE)
-  tg <- suppressMessages(set_target(tg, transTrip, diff = 1,
-                                    interaction = TRUE,
-                                    intEffectNames = "transRecTrip",
-                                    modEffectNames = "recip"))
+  tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
+  tg <- suppressMessages(set_dependency(tg, transRecTrip ~ transTrip:recip))
   out <- marginalEffects(ans2, mydata2, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(nsim = 5),
       control_algo = set_postest_algo_saom(verbose = FALSE))
@@ -88,12 +84,9 @@ test_that("marginalEffects static secondDiff with interactions, riskRatio", {
                              type = "tieProb", level = "period",
                              mainEffect = "riskRatio", includeDefaults = FALSE)
   tg <- suppressMessages(set_second_diff(tg, list(
-      recip     = list(contrast = c(0, 1), interaction = TRUE,
-                       intEffectNames = "transRecTrip",
-                       modEffectNames = "transTrip"),
-      transTrip = list(diff = 1, interaction = TRUE,
-                       intEffectNames = "transRecTrip",
-                       modEffectNames = "recip"))))
+      recip     = list(contrast = c(0, 1)),
+      transTrip = list(diff = 1))))
+  tg <- suppressMessages(set_dependency(tg, transRecTrip ~ transTrip:recip))
   out <- marginalEffects(ans2, mydata2, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(nsim = 5),
       control_algo = set_postest_algo_saom(verbose = FALSE))
@@ -105,10 +98,8 @@ test_that("marginalEffects static with custom interaction", {
   tg <- make_postest_targets(ans3, effects = mymodel3, depvar = "mynet3",
                              type = "tieProb", level = "period",
                              condition = "inPop", includeDefaults = FALSE)
-  tg <- suppressMessages(set_target(tg, recip, contrast = c(0, 1),
-                                    interaction = TRUE,
-                                    intEffectNames = "unspInt",
-                                    modEffectNames = "inPop"))
+  tg <- suppressMessages(set_target(tg, recip, contrast = c(0, 1)))
+  tg <- suppressMessages(set_dependency(tg, unspInt ~ recip:inPop))
   out <- marginalEffects(ans3, mydata3, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(nsim = 5),
       control_algo = set_postest_algo_saom(verbose = FALSE))
@@ -122,10 +113,8 @@ test_that("marginalEffects dynamic with custom interaction", {
                              dynamic = TRUE,
                              type = "tieProb", level = "period",
                              condition = "inPop", includeDefaults = FALSE)
-  tg <- suppressMessages(set_target(tg, recip, contrast = c(0, 1),
-                                    interaction = TRUE,
-                                    intEffectNames = "unspInt",
-                                    modEffectNames = "inPop"))
+  tg <- suppressMessages(set_target(tg, recip, contrast = c(0, 1)))
+  tg <- suppressMessages(set_dependency(tg, unspInt ~ recip:inPop))
   out <- marginalEffects(ans3, mydata3, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
       control_algo = set_postest_algo_saom(
@@ -184,10 +173,8 @@ test_that("marginalEffects dynamic: interaction", {
                              type = "tieProb", level = "period",
                              condition = c("density", "recip"),
                              includeDefaults = FALSE)
-  tg <- suppressMessages(set_target(tg, transTrip, diff = 1,
-                                    interaction = TRUE,
-                                    intEffectNames = "transRecTrip",
-                                    modEffectNames = "recip"))
+  tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
+  tg <- suppressMessages(set_dependency(tg, transRecTrip ~ transTrip:recip))
   out <- marginalEffects(ans2, mydata2, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
       control_algo = set_postest_algo_saom(
@@ -298,10 +285,8 @@ test_that("marginalEffects static: egoX interaction firstDiff", {
                              level = "period",
                              condition = c("density", "transTrip"),
                              includeDefaults = FALSE)
-  tg <- suppressMessages(set_target(tg, egoX, diff = 1,
-                                    interaction = TRUE,
-                                    intEffectNames = "unspInt",
-                                    modEffectNames = "transTrip"))
+  tg <- suppressMessages(set_target(tg, egoX, diff = 1))
+  tg <- suppressMessages(set_dependency(tg, unspInt ~ egoX:transTrip))
   out <- marginalEffects(ans_ego, mydata_ego, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
   expect_true(is.data.frame(out))
@@ -369,10 +354,8 @@ test_that("two unspInt: firstDiff via unspInt1 (main effect = recip)", {
                              level = "period",
                              condition = c("inPop", "density"),
                              includeDefaults = FALSE)
-  tg <- suppressMessages(set_target(tg, recip, contrast = c(0, 1),
-                                    interaction = TRUE,
-                                    intEffectNames = "unspInt1",
-                                    modEffectNames = "inPop"))
+  tg <- suppressMessages(set_target(tg, recip, contrast = c(0, 1)))
+  tg <- suppressMessages(set_dependency(tg, unspInt1 ~ recip:inPop))
   out <- marginalEffects(ans_2int, mydata_2int, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
   expect_true(is.data.frame(out))
@@ -387,10 +370,8 @@ test_that("two unspInt: firstDiff via unspInt2 (main effect = recip)", {
                              level = "period",
                              condition = c("outPop", "density"),
                              includeDefaults = FALSE)
-  tg <- suppressMessages(set_target(tg, recip, contrast = c(0, 1),
-                                    interaction = TRUE,
-                                    intEffectNames = "unspInt2",
-                                    modEffectNames = "outPop"))
+  tg <- suppressMessages(set_target(tg, recip, contrast = c(0, 1)))
+  tg <- suppressMessages(set_dependency(tg, unspInt2 ~ recip:outPop))
   out <- marginalEffects(ans_2int, mydata_2int, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
   expect_true(is.data.frame(out))
@@ -408,10 +389,10 @@ test_that("two unspInt: secondDiff across unspInt1 and unspInt2", {
   ## Same base effect crossed with itself, entering through two different
   ## unspInt terms -- so the list form's names repeat, which is allowed.
   tg <- suppressMessages(set_second_diff(tg, list(
-      recip = list(contrast = c(0, 1), interaction = TRUE,
-                   intEffectNames = "unspInt1", modEffectNames = "inPop"),
-      recip = list(contrast = c(0, 1), interaction = TRUE,
-                   intEffectNames = "unspInt2", modEffectNames = "outPop"))))
+      recip = list(contrast = c(0, 1)),
+      recip = list(contrast = c(0, 1)))))
+  tg <- suppressMessages(set_dependency(tg, unspInt1 ~ recip:inPop,
+                                            unspInt2 ~ recip:outPop))
   out <- marginalEffects(ans_2int, mydata_2int, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
   expect_true(is.data.frame(out))
@@ -426,10 +407,8 @@ test_that("two unspInt: conditional prediction (tieProb) with uncertainty", {
                              level = "period",
                              condition = c("inPop", "density"),
                              includeDefaults = FALSE)
-  tg <- suppressMessages(set_target(tg, recip, contrast = c(0, 1),
-                                    interaction = TRUE,
-                                    intEffectNames = "unspInt1",
-                                    modEffectNames = "inPop"))
+  tg <- suppressMessages(set_target(tg, recip, contrast = c(0, 1)))
+  tg <- suppressMessages(set_dependency(tg, unspInt1 ~ recip:inPop))
   out <- marginalEffects(ans_2int, mydata_2int, targets = tg,
       control_uncertainty = set_postest_uncertainty_saom(nsim = 5),
       control_algo = set_postest_algo_saom(verbose = FALSE))

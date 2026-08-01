@@ -156,14 +156,8 @@ make_postest_targets.sienaFit <- function(x, data = NULL, effects = NULL,
         contrast1       = cont1,
         diff2           = vector("list", n),
         contrast2       = vector("list", n),
-        interaction1    = rep(FALSE, n),
-        intEffectNames1 = vector("list", n),
-        modEffectNames1 = vector("list", n),
         perturbType1    = vector("list", n),
         perturbType2    = vector("list", n),
-        interaction2    = rep(FALSE, n),
-        intEffectNames2 = vector("list", n),
-        modEffectNames2 = vector("list", n),
         returnDecisionDetails = rep(FALSE, n),
         .seq            = as.numeric(seq_len(n)),
         .overrides      = replicate(n, list(), simplify = FALSE)
@@ -266,9 +260,6 @@ set_target.sienaPostestTargets <- function(x, shortNames,
                                            diff = NULL, contrast = NULL,
                                            covar1 = NULL, covar2 = NULL,
                                            perturbType = NULL,
-                                           interaction = NULL,
-                                           intEffectNames = NULL,
-                                           modEffectNames = NULL,
                                            returnDecisionDetails = NULL,
                                            name = NULL,
                                            level, condition, accumulated,
@@ -322,9 +313,6 @@ set_target.sienaPostestTargets <- function(x, shortNames,
         ## Compound-effect perturbation.  This is the pre-dependency-layer
         ## mechanism: the moderating effects are named explicitly rather than
         ## derived from a declared relationship.
-        if (!is.null(interaction))    x$interaction1[i]       <- interaction
-        if (!is.null(intEffectNames)) x$intEffectNames1[[i]]  <- intEffectNames
-        if (!is.null(modEffectNames)) x$modEffectNames1[[i]]  <- modEffectNames
         if (!is.null(returnDecisionDetails))
             x$returnDecisionDetails[i] <- returnDecisionDetails
         if (!is.null(name)) {
@@ -367,8 +355,7 @@ missing_arg_named <- function(nm, env) {
 ##
 ## Returns a list of per-effect specs, in the order given, names = effects.
 ## --------------------------------------------------------------------------
-.perturbKeys <- c("diff", "contrast", "covar1", "covar2", "perturbType",
-                  "interaction", "intEffectNames", "modEffectNames")
+.perturbKeys <- c("diff", "contrast", "covar1", "covar2", "perturbType")
 
 .parsePerturbList <- function(spec) {
     nms <- names(spec)
@@ -455,9 +442,6 @@ set_second_diff.sienaPostestTargets <- function(x, perturbations,
     covars2 <- list(p1$covar2, p2$covar2)
     diff1 <- p1$diff; contrast1 <- p1$contrast; perturbType1 <- p1$perturbType
     diff2 <- p2$diff; contrast2 <- p2$contrast; perturbType2 <- p2$perturbType
-    interaction1 <- p1$interaction; interaction2 <- p2$interaction
-    intEffectNames1 <- p1$intEffectNames; intEffectNames2 <- p2$intEffectNames
-    modEffectNames1 <- p1$modEffectNames; modEffectNames2 <- p2$modEffectNames
 
     ## Resolve each component to a row now, so an ambiguous short name is
     ## caught here rather than becoming a silently-wrong perturbation.  The
@@ -495,16 +479,12 @@ set_second_diff.sienaPostestTargets <- function(x, perturbations,
         .covar1 = "", .covar2 = "",
         .qual1 = quals[1L], .qual2 = quals[2L],
         include = include, second = TRUE, effectName2 = nms[2L],
-        interaction1 = isTRUE(interaction1),
-        interaction2 = isTRUE(interaction2),
         returnDecisionDetails = isTRUE(returnDecisionDetails),
         .seq = max(c(x$.seq, 0), na.rm = TRUE) + 1
     )
     list_new <- list(
         diff1 = diff1, contrast1 = contrast1,
         diff2 = diff2, contrast2 = contrast2,
-        intEffectNames1 = intEffectNames1, modEffectNames1 = modEffectNames1,
-        intEffectNames2 = intEffectNames2, modEffectNames2 = modEffectNames2,
         perturbType1 = perturbType1, perturbType2 = perturbType2,
         .overrides = list()
     )
@@ -686,9 +666,6 @@ print.sienaPostestTargets <- function(x, ...) {
                               else tg$effectName1[i],
             diff1           = tg$diff1[[i]],
             contrast1       = tg$contrast1[[i]],
-            interaction1    = isTRUE(tg$interaction1[i]),
-            intEffectNames1 = tg$intEffectNames1[[i]],
-            modEffectNames1 = tg$modEffectNames1[[i]],
             second          = isTRUE(tg$second[i]),
             perturbType1    = tg$perturbType1[[i]],
             perturbType2    = tg$perturbType2[[i]],
@@ -699,9 +676,6 @@ print.sienaPostestTargets <- function(x, ...) {
                                  else tg$effectName2[i]
             e$diff2           <- tg$diff2[[i]]
             e$contrast2       <- tg$contrast2[[i]]
-            e$interaction2    <- isTRUE(tg$interaction2[i])
-            e$intEffectNames2 <- tg$intEffectNames2[[i]]
-            e$modEffectNames2 <- tg$modEffectNames2[[i]]
         }
         ov <- tg$.overrides[[i]]
         for (f in names(ov)) e[f] <- list(ov[[f]])
@@ -803,88 +777,40 @@ set_dependency.sienaPostestTargets <- function(x, ..., verbose = TRUE) {
                  deparse(f), call. = FALSE)
         v
     }, character(1L))
+    ## A grammar restriction, so it belongs here with the rest of them: an
+    ## effect squaring itself is a different kind of relation than a product
+    ## of two effects, and nothing downstream is written for it.
+    if (anyDuplicated(terms))
+        stop("Dependency '", deparse(f), "' uses '",
+             terms[anyDuplicated(terms)], "' on both sides; a self-product ",
+             "is not supported.", call. = FALSE)
     list(target = lhs, op = "*", terms = terms)
 }
 
 
 ## --------------------------------------------------------------------------
-## .applyDependencies — turn declarations into the compound-effect arguments
+## .applyDependencies — carry the declared relations onto the lowered spec
 ##
-## Given a target perturbing effect X and a dependency `A ~ X * C`, perturbing
-## X also moves A's change statistic by delta * s_C.  That is exactly what the
-## existing compound-effect path computes:
+## The relations travel as they were written.  They used to ALSO be lowered
+## into intEffectNames/modEffectNames, on the theory that `own * moderator`
+## was the same arithmetic by another route.  It was not, in two ways:
 ##
-##     Delta u = d * delta * (theta_X + sum_k s_{mod_k} * theta_{int_k})
+##   - The lowering matched formula terms (short names) against the target's
+##     resolved name, so it silently did nothing for every covariate-qualified
+##     effect -- `egoX` never matched `friendship_egoX_sex_m`.
+##   - `own * moderator` names exactly one perturbed effect, so it cannot
+##     express the joint state a second difference reaches, and a relation
+##     like `sameX ~ egoX == altX` or `gw(transTrip)` has no product form at
+##     all.
 ##
-## so the declaration is resolved INTO intEffectNames / modEffectNames rather
-## than given a separate numeric path.  Same arithmetic, same tested code --
-## the dependency layer only removes the need to work the arguments out by hand.
-##
-## The relation is symmetric in its two right-hand terms: whichever one is
-## being perturbed, the other is the moderator.
+## The compute path evaluates the relation at each counterfactual state
+## instead, which handles both.
 ## --------------------------------------------------------------------------
 .applyDependencies <- function(e, deps) {
     if (length(deps) == 0L) return(e)
-
-    ## Resolve for ONE side of the target.  A second difference perturbs two
-    ## effects, and a dependency can cover either -- resolving only the first
-    ## would silently drop the declaration for the second half.
-    resolve1 <- function(x) {
-        ints <- character(0); mods <- character(0)
-        for (d in deps) {
-            p <- .parseDependency(d)
-            hit <- which(p$terms == x)
-            if (length(hit) == 0L) next
-            if (length(hit) == 2L)
-                stop("Dependency '", deparse(d), "' uses '", x,
-                     "' on both sides; a self-product is not supported.",
-                     call. = FALSE)
-            ints <- c(ints, p$target)
-            mods <- c(mods, p$terms[-hit])
-        }
-        if (length(ints) == 0L) NULL else list(ints = ints, mods = mods)
-    }
-
-    ## Carry the RELATIONS themselves alongside the resolved arguments.
-    ##
-    ## `intEffectNames`/`modEffectNames` can express exactly one thing: that
-    ## the dependent effect moves by `own * moderator`.  A relation like
-    ## `sameX ~ egoX == altX` or `gw(transTrip)` is not a product and cannot
-    ## survive that round trip -- which is why .parseDependency() rejects
-    ## everything but `:`.  The limit is the plumbing, not the grammar.
-    ##
-    ## Passing the parsed relation through lets the compute path evaluate it
-    ## at each counterfactual state instead of rebuilding a product.  Both
-    ## forms travel for now so the two derivations can be compared; the
-    ## resolved arguments go once they are shown identical.
     e$dependencies <- lapply(deps, function(d) {
         pd <- .parseDependency(d)
         list(target = pd$target, terms = pd$terms)
     })
-
-    r1 <- resolve1(e$effectName1)
-    if (!is.null(r1)) {
-        if (isTRUE(e$interaction1))
-            stop("Target '", e$effectName1, "' sets interaction arguments ",
-                 "explicitly and is also covered by a declared dependency. ",
-                 "Use one or the other.", call. = FALSE)
-        e$interaction1    <- TRUE
-        e$intEffectNames1 <- r1$ints
-        e$modEffectNames1 <- r1$mods
-    }
-
-    if (isTRUE(e$second) && !is.null(e$effectName2)) {
-        r2 <- resolve1(e$effectName2)
-        if (!is.null(r2)) {
-            if (isTRUE(e$interaction2))
-                stop("The second effect of target pair '", e$effectName1,
-                     " x ", e$effectName2, "' sets interaction arguments ",
-                     "explicitly and is also covered by a declared ",
-                     "dependency. Use one or the other.", call. = FALSE)
-            e$interaction2    <- TRUE
-            e$intEffectNames2 <- r2$ints
-            e$modEffectNames2 <- r2$mods
-        }
-    }
     e
 }

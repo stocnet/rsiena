@@ -35,7 +35,8 @@ mymodel2   <- load_fixture("mymodel2")
 # rename still carries "delta_se"; a fresh one carries "SE".  Same number.
 snap_se <- function(d) if (!is.null(d[["SE"]])) d[["SE"]] else d[["delta_se"]]
 
-snap_tg <- function(fit, eff, depvar, condition = NULL, ...) {
+snap_tg <- function(fit, eff, depvar, condition = NULL,
+                    dependency = NULL, ...) {
   tg <- make_postest_targets(fit, effects = eff, depvar = depvar,
                              type = "tieProb", level = "period",
                              condition = condition, includeDefaults = FALSE)
@@ -43,6 +44,8 @@ snap_tg <- function(fit, eff, depvar, condition = NULL, ...) {
   for (nm in names(perturb))
     tg <- suppressMessages(do.call(set_target,
             c(list(x = tg, shortNames = nm), perturb[[nm]])))
+  if (!is.null(dependency))
+    tg <- suppressMessages(set_dependency(tg, dependency))
   tg
 }
 
@@ -231,9 +234,8 @@ test_that("snapshot: marginalEffects delta SE, interaction spec", {
   expect_false(is.null(snap_se(snap)))
   out <- marginalEffects(ans2, mydata2,
     targets = snap_tg(ans2, mymodel2, "mynet2", condition = "recip",
-                      transTrip = list(diff = 1, interaction = TRUE,
-                                       intEffectNames = "transRecTrip",
-                                       modEffectNames = "recip")),
+                      dependency = transRecTrip ~ transTrip:recip,
+                      transTrip = list(diff = 1)),
     control_uncertainty = set_postest_uncertainty_saom(
         mode = "delta", sd = TRUE, ci = FALSE, nsim = 1L),
     control_algo = set_postest_algo_saom(verbose = FALSE)

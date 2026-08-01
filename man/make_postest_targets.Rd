@@ -107,8 +107,7 @@
   effect (rate effects are excluded outright, see Details). Columns
   include \code{name}, \code{effectName1}, \code{effectType},
   \code{include}, \code{second}, \code{effectName2}, \code{diff1},
-  \code{contrast1}, \code{diff2}, \code{contrast2}, \code{interaction1},
-  \code{intEffectNames1}, \code{modEffectNames1}, \code{perturbType1},
+  \code{contrast1}, \code{diff2}, \code{contrast2}, \code{perturbType1},
   \code{perturbType2}, and \code{.overrides} (a list-column of per-target
   overrides set via \code{\link{set_target}}). The model-level defaults,
   the dependent variable name, and the \code{effects} object used to build

@@ -145,7 +145,8 @@ if (.in_test_run()) {
       # The builders below and test-snapshots.R must ask for exactly the same
       # quantity, or the snapshot pins nothing.  Both go through a helper of
       # this shape; keep them in step.
-      snap_tg <- function(fit, eff, depvar, condition = NULL, ...) {
+      snap_tg <- function(fit, eff, depvar, condition = NULL,
+                          dependency = NULL, ...) {
         tg <- make_postest_targets(fit, effects = eff, depvar = depvar,
                                    type = "tieProb", level = "period",
                                    condition = condition,
@@ -154,6 +155,8 @@ if (.in_test_run()) {
         for (nm in names(perturb))
           tg <- suppressMessages(do.call(set_target,
                   c(list(x = tg, shortNames = nm), perturb[[nm]])))
+        if (!is.null(dependency))
+          tg <- suppressMessages(set_dependency(tg, dependency))
         tg
       }
       no_unc  <- set_postest_uncertainty_saom(enabled = FALSE)
@@ -186,14 +189,13 @@ if (.in_test_run()) {
 
       # (c2) delta SE — INTERACTION spec.  Tripwire for the planned analytic
       # Jacobian generalisation (postestimate_api_redesign.md Sec. 2.2):
-      # calculateUtilityDiffJacobian() currently returns NULL for interaction
-      # specs, so the SE here comes from the finite-difference fallback.
-      # Making it analytic must not change these numbers.
+      # Recorded while a declared relation still lowered to the old
+      # interaction arguments, so this snapshot also pins the two encodings
+      # together: the numbers must not move now that only the relation runs.
       snap_me_delta_interaction <- marginalEffects(ans2, mydata2,
         targets = snap_tg(ans2, mymodel2, "mynet2", condition = "recip",
-                          transTrip = list(diff = 1, interaction = TRUE,
-                                           intEffectNames = "transRecTrip",
-                                           modEffectNames = "recip")),
+                          dependency = transRecTrip ~ transTrip:recip,
+                          transTrip = list(diff = 1)),
         control_uncertainty = set_postest_uncertainty_saom(
             mode = "delta", sd = TRUE, ci = FALSE, nsim = 1L),
         control_algo = quiet)

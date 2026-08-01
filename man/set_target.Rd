@@ -30,9 +30,6 @@ set_target(x, \dots)
     diff = NULL, contrast = NULL,
     covar1 = NULL, covar2 = NULL,
     perturbType = NULL,
-    interaction = NULL,
-    intEffectNames = NULL,
-    modEffectNames = NULL,
     level, condition, accumulated,
     rateWeight, massContrasts,
     include = TRUE, verbose = TRUE, \dots)
@@ -63,8 +60,7 @@ set_dependency(x, \dots)
       effects being crossed: names are effect short names, values are lists
       using the same settings \code{set_target} takes for a single
       effect -- \code{diff}, \code{contrast}, \code{covar1},
-      \code{covar2}, \code{perturbType}, \code{interaction},
-      \code{intEffectNames}, \code{modEffectNames}. For example
+      \code{covar2}, \code{perturbType}. For example
 
       \preformatted{list(transTrip = list(diff = 1),
      recip = list(contrast = c(0, 1)))}
@@ -108,19 +104,6 @@ set_dependency(x, \dots)
       (ego-wide renormalisation). \code{NULL} (the default) leaves the
       auto-detection used by \code{\link{marginalEffects}} in place; see
       that page for details.}
-  \item{interaction}{Logical: whether \code{shortNames} is a compound
-      effect perturbed together with moderating effects named in
-      \code{intEffectNames}/\code{modEffectNames}. This is the hand-written
-      alternative to declaring the relationship once with
-      \code{\link{set_dependency}}; giving both a dependency and explicit
-      interaction arguments for the same target is an error (raised when
-      the targets object is used, e.g.\ by \code{\link{marginalEffects}}).}
-  \item{intEffectNames}{Character: names of the interacting effects whose
-      change statistics also move when \code{shortNames} is perturbed.
-      Used only when \code{interaction = TRUE}.}
-  \item{modEffectNames}{Character: names of the moderating effects paired
-      with \code{intEffectNames}. Used only when \code{interaction =
-      TRUE}.}
   \item{level}{Optional per-target override of the \code{level} set in
       \code{\link{make_postest_targets}}, for this target only. If not
       supplied, the target inherits the model-level value (see Details).}
@@ -161,10 +144,8 @@ set_dependency(x, \dots)
   \code{c("sienaPostestTargets", "data.frame")}.
 
   \code{set_target} changes the \code{include}, \code{diff1}/
-  \code{contrast1}, \code{perturbType1}, \code{interaction1}/
-  \code{intEffectNames1}/\code{modEffectNames1}, and \code{.overrides}
-  columns of the rows named in \code{shortNames}; it never adds or
-  removes rows.
+  \code{contrast1}, \code{perturbType1} and \code{.overrides} columns of
+  the rows named in \code{shortNames}; it never adds or removes rows.
 
   \code{set_second_diff} returns a copy of \code{x} with one row appended
   for the new cross-partial target.
@@ -229,13 +210,9 @@ set_dependency(x, \dots)
   \code{transRecTrip} out of thin air.
 
   A dependency is model-level: once declared, it applies regardless of
-  which target ends up perturbing \code{a} or \code{b}. Declaring a
-  dependency for a target that also has hand-written
-  \code{interaction}/\code{intEffectNames}/\code{modEffectNames} set via
-  \code{set_target} is an error — the two are alternative ways of
-  describing the same thing, and applying both would double-count the
-  effect. Dependencies accumulate across repeated \code{set_dependency}
-  calls.
+  which target ends up perturbing \code{a} or \code{b}, and it applies to
+  both steps of a second difference. Dependencies accumulate across
+  repeated \code{set_dependency} calls.
 }
 \seealso{
   \code{\link{make_postest_targets}} for building the targets object,

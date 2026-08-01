@@ -3,17 +3,11 @@
 # The perturbation representation (R/perturbation.R): Ds in change-statistic
 # space, A in parameter space, Du = A . theta.
 #
-# Two kinds of check, because there are two kinds of case:
-#
-#   * where the existing analytic path works, A must reproduce it EXACTLY.
-#     That is a parity test against calculateUtilityDiffJacobian(), and it is
-#     what licenses replacing it.
-#
-#   * where the existing path declines (creation/endow), there is nothing to
-#     compare against, so correctness is checked directly: the Du implied by A
-#     must equal the utility difference obtained by actually shifting the
-#     change statistic and recomputing utility. That is independent of both
-#     implementations and is the only check that would catch a wrong mask.
+# Correctness is checked DIRECTLY rather than against another implementation:
+# the Du implied by A must equal the utility difference obtained by actually
+# shifting the change statistic and recomputing utility.  That check shares no
+# code with the representation, so agreement is evidence rather than tautology,
+# and it is the only kind of check that would catch a wrong mask.
 
 cs_fixture <- function(fitName, dataName, effName, depvar) {
   ans <- load_fixture(fitName); dat <- load_fixture(dataName)
@@ -31,37 +25,6 @@ cs_fixture <- function(fitName, dataName, effName, depvar) {
          value = TRUE)[1L]
   list(fit = ans, wide = w, cs = cs, theta = coef(ans), resolve = resolve)
 }
-
-
-test_that("A reproduces the existing analytic Jacobian exactly, where that exists", {
-  skip_on_cran()
-  fx <- cs_fixture("ans", "mydata", "mymodel", "mynet")
-  skip_if(is.null(fx), "base fixtures unavailable")
-
-  csMap <- fx$cs$changeStatsMap
-  d     <- fx$cs$density
-
-  for (short in c("transTrip", "recip")) {
-    eff <- fx$resolve(short)
-    for (shift in list(1, 2, 0.5)) {
-      old <- RSiena:::calculateUtilityDiffJacobian(
-               effectName = eff, diff_j = shift, densityValue = d,
-               theta_use = fx$theta, interaction = FALSE, csMap = csMap)
-      skip_if(is.null(old), paste("no analytic path for", eff))
-
-      A <- RSiena:::perturbationJacobian(setNames(list(shift), eff), d, csMap)
-      ## The old path is a single column; so must the new one be here, or
-      ## they are not describing the same perturbation.
-      expect_length(A, 1L)
-      expect_equal(A[[1]]$col, as.integer(old$eff_col))
-      expect_equal(A[[1]]$val, old$A_col)
-
-      ## and the utility shift each implies must agree
-      du_new <- RSiena:::utilityShift(A, fx$theta, length(d))
-      expect_equal(du_new, old$delta_u)
-    }
-  }
-})
 
 
 test_that("A is zero on no-change rows", {
@@ -106,12 +69,6 @@ test_that("creation and endowment parameters are reached, on their own rows only
   end <- A_tt[[which(types_tt == "endow")]]
   expect_true(all(end$val[d != -1L] == 0))
   expect_true(any(end$val[d == -1L] != 0))
-
-  ## The existing analytic path declines this case entirely, which is the
-  ## gap this representation closes.
-  expect_null(RSiena:::calculateUtilityDiffJacobian(
-      effectName = fx$resolve("recip"), diff_j = 1, densityValue = d,
-      theta_use = fx$theta, interaction = FALSE, csMap = csMap))
 })
 
 
@@ -708,63 +665,25 @@ test_that("point estimate and Jacobian imply the SAME utility shift", {
                                           cs$changeStatsMap)
   du_new <- RSiena:::utilityShift(Amat, th, nrow(cs$csMat))
 
-  ## Route 2 -- the point estimate's own arithmetic, via the interaction
-  ## arguments the dependency resolves to. Shares no code with route 1.
-  du_old <- RSiena:::calculateUtilityDiff(
-      effectName = B, diff = delta, theta = thEff,
-      densityValue = cs$density, interaction = TRUE,
-      intEffectNames = A, modEffectNames = C,
-      modContribution = cs$csMat[, C], effectNames = colnames(cs$csMat))
+  ## Route 2 -- shift the change statistics by hand and let the utility
+  ## function say what happened.  Shares no code with route 1, which is what
+  ## makes agreement evidence rather than tautology.
+  ##
+  ## A relation states how its target MOVES, not what its level is: A here is
+  ## a real effect with its own change statistic, and the declaration says
+  ## that statistic responds as a product would.  So A shifts by
+  ## (B+delta)*C - B*C = delta*C, on top of whatever A already was.
+  shifted <- cs$csMat
+  shifted[, B] <- cs$csMat[, B] + delta
+  shifted[, A] <- cs$csMat[, A] + delta * cs$csMat[, C]
+  du_direct <-
+    RSiena:::calculateUtility(shifted,   thEff, NULL, cs$densityIdx) -
+    RSiena:::calculateUtility(cs$csMat, thEff, NULL, cs$densityIdx)
 
-  expect_equal(du_new, du_old, tolerance = 1e-12,
+  expect_equal(du_new, du_direct, tolerance = 1e-12,
     info = paste("the Jacobian and the point estimate must describe the same",
                  "counterfactual; if they diverge the SE belongs to a",
                  "different quantity than the estimate"))
-})
-
-
-test_that("a declared relation and hand-written interaction args agree, estimate AND SE", {
-  skip_on_cran()
-  ans2 <- load_fixture("ans2"); mydata2 <- load_fixture("mydata2")
-  mymodel2 <- load_fixture("mymodel2")
-  skip_if(is.null(ans2) || is.null(mydata2) || is.null(mymodel2),
-          "ans2 fixtures unavailable")
-
-  ## A relation covers BOTH sides of a second difference -- transTrip
-  ## moderated by recip, and recip moderated by transTrip -- so the
-  ## hand-written equivalent has to state both. Getting that wrong makes the
-  ## comparison meaningless rather than failing.
-  mk <- function(declared) {
-    tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
-                               type = "tieProb", level = "period",
-                               includeDefaults = FALSE)
-    if (declared) {
-      tg <- suppressMessages(set_second_diff(tg,
-              list(transTrip = list(diff = 1),
-                   recip     = list(contrast = c(0, 1))), name = "sd"))
-      suppressMessages(set_dependency(tg, transRecTrip ~ transTrip:recip))
-    } else {
-      suppressMessages(set_second_diff(tg, list(
-        transTrip = list(diff = 1, interaction = TRUE,
-                         intEffectNames = "transRecTrip",
-                         modEffectNames = "recip"),
-        recip     = list(contrast = c(0, 1), interaction = TRUE,
-                         intEffectNames = "transRecTrip",
-                         modEffectNames = "transTrip")), name = "sd"))
-    }
-  }
-  run <- function(declared) suppressMessages(marginalEffects(ans2, mydata2,
-      targets = mk(declared),
-      control_uncertainty = set_postest_uncertainty_saom(mode = "delta",
-                                                         nsim = 1L),
-      control_algo = set_postest_algo_saom(verbose = FALSE)))
-
-  a <- run(TRUE); b <- run(FALSE)
-  expect_equal(a$secondDiff, b$secondDiff, tolerance = 1e-12)
-  ## The SE matters as much as the estimate: a rewrite that double-counted
-  ## effect2's shift in the AB cell left the estimate correct and the SE 4x
-  ## too large. Checking only the point estimate would have passed it.
-  expect_equal(a$SE, b$SE, tolerance = 1e-12)
 })
 
 

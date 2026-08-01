@@ -108,10 +108,12 @@
   \code{\link{set_target}} for how \code{covar1}/\code{covar2}
   disambiguate.
 
-  \strong{Interaction effects}: When the effect of interest is an
-  interaction (e.g.\ specified via \code{set_interaction}), set
-  \code{interaction1 = TRUE} and supply the names of the interacting
-  effects in \code{intEffectNames1}.
+  \strong{Interaction effects}: When perturbing an effect also moves
+  another effect's change statistic -- an interaction term, say -- declare
+  the relationship with \code{\link{set_dependency}}, e.g.
+  \code{set_dependency(tg, egoXaltX ~ egoX:altX)}. The relation is
+  evaluated at each counterfactual state, so it applies to both steps of a
+  second difference and is not restricted to products of two effects.
 
   \strong{Perturbation mode (ego vs.\ alter)}: For most effects the
   change statistic varies across alters and the standard

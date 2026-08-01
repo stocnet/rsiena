@@ -154,6 +154,7 @@ compare_me_output <- function(a, b, tolerance = 1e-10,
 #   model              -- extra make_postest_targets() arguments
 #   targets            -- named list: effect short name -> set_target() args
 #   sd                 -- optional list(name=, perturb=) for set_second_diff()
+#   deps               -- optional list of dependency formulas
 #   unc / out          -- set_postest_uncertainty_saom() / _output_saom() args
 #
 # Coverage intent: every setting the refactor relocated appears in at least one
@@ -183,6 +184,8 @@ me_call <- function(entry, fixtures) {
     tg <- suppressMessages(do.call(set_second_diff,
             c(list(x = tg, perturbations = entry$sd$perturb),
               entry$sd[setdiff(names(entry$sd), "perturb")])))
+  if (!is.null(entry$deps))
+    tg <- suppressMessages(do.call(set_dependency, c(list(x = tg), entry$deps)))
 
   list(object = fit, data = f[[entry$data]], targets = tg,
        control_uncertainty = do.call(set_postest_uncertainty_saom,
@@ -242,9 +245,8 @@ me_corpus <- function(fixtures) {
     c(base2, list(name = "static_interaction", slow = FALSE,
         model = list(type = "tieProb", level = "period",
                      condition = "recip"),
-        targets = list(transTrip = list(diff = 1, interaction = TRUE,
-                                        intEffectNames = "transRecTrip",
-                                        modEffectNames = "recip")),
+        targets = list(transTrip = list(diff = 1)),
+        deps = list(transRecTrip ~ transTrip:recip),
         unc = no_unc)),
 
     ## `format` is consumed ONLY inside combinePostestResults(), reached only
@@ -342,12 +344,9 @@ me_corpus <- function(fixtures) {
          model = list(type = "tieProb", level = "period",
                       condition = c("inPop", "outPop", "density")),
          sd = list(name = "rr", perturb = list(
-             recip = list(contrast = c(0, 1), interaction = TRUE,
-                          intEffectNames = "unspInt1",
-                          modEffectNames = "inPop"),
-             recip = list(contrast = c(0, 1), interaction = TRUE,
-                          intEffectNames = "unspInt2",
-                          modEffectNames = "outPop"))),
+             recip = list(contrast = c(0, 1)),
+             recip = list(contrast = c(0, 1)))),
+         deps = list(unspInt1 ~ recip:inPop, unspInt2 ~ recip:outPop),
          unc = no_unc),
 
     ## Creation / endowment.  A target collapses eval+creation (or eval+endow)

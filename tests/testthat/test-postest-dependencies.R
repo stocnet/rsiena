@@ -14,45 +14,6 @@
 # would mean the layer is computing something different from the machinery it
 # is meant to be a front end for.
 
-test_that("a declared dependency reproduces hand-written interaction args", {
-  skip_on_cran()
-  ans2 <- load_fixture("ans2"); mydata2 <- load_fixture("mydata2")
-  mymodel2 <- load_fixture("mymodel2")
-  skip_if(is.null(ans2) || is.null(mydata2) || is.null(mymodel2),
-          "ans2 fixtures unavailable")
-
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
-                             type = "tieProb", level = "period",
-                             condition = "recip", includeDefaults = FALSE)
-  ## name = pins the output label so the comparison is about the numbers, not
-  ## the default naming convention.
-  tg <- suppressMessages(set_target(tg, transTrip, diff = 1,
-                                    name = "transTrip"))
-  tg <- suppressMessages(set_dependency(tg, transRecTrip ~ transTrip:recip))
-
-  declared <- marginalEffects(ans2, mydata2, targets = tg,
-      control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
-      control_algo = set_postest_algo_saom(verbose = FALSE))
-
-  ## The same thing said the long way: the interaction arguments written out
-  ## by hand, which is exactly what declaring the dependency should produce.
-  mtg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
-                              type = "tieProb", level = "period",
-                              condition = "recip", includeDefaults = FALSE)
-  mtg <- suppressMessages(set_target(mtg, transTrip, diff = 1,
-                                     name = "transTrip", interaction = TRUE,
-                                     intEffectNames = "transRecTrip",
-                                     modEffectNames = "recip"))
-  manual <- marginalEffects(ans2, mydata2, targets = mtg,
-      control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
-      control_algo = set_postest_algo_saom(verbose = FALSE))
-
-  res <- compare_me_output(manual, declared,
-                           label_a = "manual", label_b = "declared")
-  expect_true(isTRUE(res),
-    info = paste(if (isTRUE(res)) "" else res, collapse = " | "))
-})
-
 test_that("a dependency actually changes the result", {
   skip_on_cran()
   ans2 <- load_fixture("ans2"); mydata2 <- load_fixture("mydata2")
@@ -82,46 +43,35 @@ test_that("a dependency actually changes the result", {
     info = "declaring a dependency must change the first differences")
 })
 
-test_that("a dependency on the SECOND effect of a second difference applies", {
+test_that("a dependency reaches BOTH steps of a second difference", {
   skip_on_cran()
   ans2 <- load_fixture("ans2"); mydata2 <- load_fixture("mydata2")
   mymodel2 <- load_fixture("mymodel2")
   skip_if(is.null(ans2) || is.null(mydata2) || is.null(mymodel2),
           "ans2 fixtures unavailable")
 
-  ## A second difference perturbs two effects and a declaration can cover
-  ## either.  Resolving only the first silently drops it for the second half --
-  ## which is what the first implementation did.
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
-                             type = "tieProb", level = "period",
-                             includeDefaults = FALSE)
-  tg <- suppressMessages(set_second_diff(tg,
-                                         list(density   = list(contrast = c(-1, 1)),
-                                              transTrip = list(diff = 1)),
-                                         name = "density_x_transTrip"))
-  tg <- suppressMessages(set_dependency(tg, transRecTrip ~ transTrip:recip))
+  ## A second difference COMPOSES two steps: effect2 moves from the base, then
+  ## effect1 moves from there.  The relation has to be read on both, and the
+  ## test for that needs no reference implementation -- P(AB) - P(A) - P(B) +
+  ## P(base) is symmetric in the two effects, so swapping which one is
+  ## "second" must not change the answer.  It did: while only one step read
+  ## the relation, whichever effect sat in position 2 failed to move the
+  ## dependent effect, and the two orders disagreed by the cross term.
+  sd <- function(first, second) {
+    tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+                               type = "tieProb", level = "period",
+                               includeDefaults = FALSE)
+    tg <- suppressMessages(set_second_diff(tg,
+            setNames(list(list(diff = 1), list(diff = 1)), c(first, second)),
+            name = "sd"))
+    tg <- suppressMessages(set_dependency(tg, transRecTrip ~ transTrip:recip))
+    marginalEffects(ans2, mydata2, targets = tg,
+        control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
+        control_algo = set_postest_algo_saom(verbose = FALSE))$secondDiff
+  }
 
-  declared <- marginalEffects(ans2, mydata2, targets = tg,
-      control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
-      control_algo = set_postest_algo_saom(verbose = FALSE))
-
-  mtg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
-                              type = "tieProb", level = "period",
-                              includeDefaults = FALSE)
-  mtg <- suppressMessages(set_second_diff(mtg, list(
-      density   = list(contrast = c(-1, 1)),
-      transTrip = list(diff = 1, interaction = TRUE,
-                       intEffectNames = "transRecTrip",
-                       modEffectNames = "recip")),
-      name = "density_x_transTrip"))
-  manual <- marginalEffects(ans2, mydata2, targets = mtg,
-      control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
-      control_algo = set_postest_algo_saom(verbose = FALSE))
-
-  res <- compare_me_output(manual, declared,
-                           label_a = "manual", label_b = "declared")
-  expect_true(isTRUE(res),
-    info = paste(if (isTRUE(res)) "" else res, collapse = " | "))
+  expect_equal(sd("transTrip", "recip"), sd("recip", "transTrip"),
+               tolerance = 1e-10)
 })
 
 test_that("dependencies covering no target leave the result untouched", {
@@ -170,22 +120,6 @@ test_that("unsupported dependency forms are rejected, not approximated", {
   ## A formula without a left-hand side names no dependent effect.
   expect_error(suppressMessages(set_dependency(tg, ~ transTrip * recip)),
                "left-hand side")
-})
-
-test_that("declared and hand-written interaction arguments cannot be mixed", {
-  skip_on_cran()
-  ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
-  skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
-
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
-                             includeDefaults = FALSE)
-  tg <- suppressMessages(set_target(tg, transTrip, diff = 1,
-          interaction = TRUE, intEffectNames = "transRecTrip",
-          modEffectNames = "recip"))
-  tg <- suppressMessages(set_dependency(tg, transRecTrip ~ transTrip:recip))
-
-  ## Both routes describe the same thing; applying both would double-count.
-  expect_error(RSiena:::.targetsToEffectList(tg), "one or the other")
 })
 
 test_that("a derived effect is excluded by default but only warned about later", {
