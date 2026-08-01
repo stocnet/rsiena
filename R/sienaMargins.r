@@ -328,6 +328,14 @@ marginalEffects.sienaFit <- function(
                 resolveEffectName(spec$modEffectNames2,
                         knownEffectNames) else NULL
 
+            ## Declared relations name effects by SHORT name; everything
+            ## downstream works with resolved names.  Resolved HERE, with the
+            ## same resolver the interaction arguments above use, so there is
+            ## one notion of what an effect name means rather than two.
+            eff_dependencies <- lapply(spec$dependencies, function(d) list(
+                target = resolveEffectName(d$target, knownEffectNames),
+                terms  = resolveEffectName(d$terms,  knownEffectNames)))
+
             pt1 <- resolvePerturbType(effectName1, eiTypes,
                                       spec$perturbType1)
             pt2 <- if (eff_second)
@@ -394,6 +402,7 @@ marginalEffects.sienaFit <- function(
                     interaction    = isTRUE(spec$interaction1),
                   intEffectNames = intEffectNames1,
                   modEffectNames = modEffectNames1,
+                    dependencies   = eff_dependencies,
                     details        = isTRUE(details),
                     calcRiskRatio  = FALSE,
                     mainEffect     = mainEffect,
@@ -415,6 +424,7 @@ marginalEffects.sienaFit <- function(
                     interaction2    = isTRUE(spec$interaction2),
                   intEffectNames2 = intEffectNames2,
                   modEffectNames2 = modEffectNames2,
+                    dependencies    = eff_dependencies,
                     details         = isTRUE(details),
                     calcRiskRatio   = FALSE,
                     mainEffect      = mainEffect,
@@ -436,7 +446,7 @@ marginalEffects.sienaFit <- function(
                 massContrasts         = eff_massC,
                 returnDecisionDetails = eff_retDet,
                 jacobianFun           = if (!eff_second) predictFirstDiffJac
-                                        else NULL,
+                                        else predictSecondDiffJac,
                 metadata = list(
                     method      = "marginalEffects",
                     type        = type,
@@ -734,6 +744,7 @@ summary.sienaMarginalEffect <- function(object, ...) {
 # `theta`               — named numeric vector (full parameter vector; subsetted internally)
 predictFirstDiff <- function(changeContributions, theta, type,
     effectName, diff, contrast, interaction, intEffectNames,
+    dependencies = NULL,
     modEffectNames, details, calcRiskRatio, mainEffect,
     perturbType = "alter", massContrasts = FALSE, attachContribs = TRUE,
     baseline = NULL, outcomesOnly = FALSE)
@@ -781,6 +792,12 @@ predictFirstDiff <- function(changeContributions, theta, type,
     intEffectNames     = intEffectNames,
     modEffectNames     = modEffectNames,
     modContribution    = if (!is.null(modEffectNames)) csMat[, modEffectNames] else NULL,
+    ## The raw theta and the declared relations, so the shift-set chain can
+    ## build Ddelta -- the same object the Jacobian uses.
+    thetaRaw           = theta_use,
+    dependencies       = dependencies,
+    csMat              = csMat,
+    changeStatsMap     = cs$changeStatsMap,
     effectNames        = csNames,
     theta              = thetaEff,
     type               = type,
@@ -892,45 +909,180 @@ predictFirstDiffJac <- function(cc, theta, changeProb, density,
   theta_use   <- theta[cc$effectNames]
   Jp          <- softmax_jac_rcpp(changeProb, cc$contribMat, cc$group_id)
 
-  # ── resolve diff_j and sign_j (mirrors calculateFirstDiff) ───────────────
-  if (!is.null(contrast)) {
-    col_idx <- match(eff_cs_name, colnames(cs$csMat))
-    if (is.na(col_idx)) return(NULL)
-    effectContrib <- cs$csMat[, col_idx]
+  ps <- .perturbationShift(eff_cs_name, pa$diff, contrast, cs$csMat,
+                           length(density))
+  if (is.null(ps)) return(NULL)
+  diff_j <- ps$shift; sign_j <- ps$sign
 
-    new_cs <- rep(NA_real_, length(effectContrib))
-    new_cs[effectContrib == contrast[1L]] <- contrast[2L]
-    new_cs[effectContrib == contrast[2L]] <- contrast[1L]
-    diff_j <- new_cs - effectContrib       # NA outside contrast range
-    sign_j <- ifelse(!is.na(new_cs) & new_cs == contrast[1L], -1L, 1L)
-    sign_j[is.na(diff_j)] <- NA_integer_
-  } else {
-    diff_pa <- pa$diff
-    diff_j  <- if (!is.null(diff_pa)) diff_pa else rep(1, length(density))
-    sign_j  <- rep(1L, length(density))
-  }
+  # ── the perturbation, as A = d(Du)/d(theta) ───────────────────────────────
+  #
+  # perturbationJacobian() returns one entry per parameter the perturbation
+  # reaches, so a single perturbation may move several: eval always, creation
+  # only on rows that create a tie, endowment only on rows that drop one.
+  # calculateUtilityDiffJacobian() returned a single column and therefore
+  # declined those models; it is kept below as the reference the new path is
+  # checked against, and is still what runs for cases not yet ported.
+  #
+  # Still deferred to finite differences:
+  #
+  #   density        perturbing it changes the ministep's DIRECTION rather than
+  #                  a change statistic, so it is not a shift in this
+  #                  representation at all and needs its own route.
+  #
+  #   perturbType    firstDiffJacobian() below implements the derivative of
+  #     "ego"        the ONE-ALTERNATIVE update.  An ego-wide perturbation uses
+  #                  a different update -- it renormalises over the ego's whole
+  #                  choice set -- and so has a different derivative, which is
+  #                  not implemented.  Using the one-alternative form there
+  #                  produced an SE about twice the truth (bootstrap/delta
+  #                  ratio 0.48 against 0.97 for the dyadic case), silently,
+  #                  because the point estimate DID use the ego update while
+  #                  the Jacobian did not.  Pre-existing; verified against
+  #                  HEAD, which has no perturbType handling here either.
+  #                  Finite differences are correct for this case, so decline
+  #                  rather than approximate until the ego-form derivative
+  #                  exists.
+  if (grepl("density", eff_cs_name, fixed = TRUE)) return(NULL)
 
-  # ── utility-diff Jacobian (returns NULL for unsupported cases) ────────────
-  ud_jac <- calculateUtilityDiffJacobian(
-    effectName   = eff_cs_name,
-    diff_j       = diff_j,
-    densityValue = density,
-    theta_use    = theta_use,
-    interaction  = isTRUE(pa$interaction),
-    csMap        = cs$changeStatsMap
-  )
-  if (is.null(ud_jac)) return(NULL)
+  # The shift set: the perturbed effect, plus whatever a declared dependency
+  # moves with it.  Built by EVALUATING THE RELATION at the perturbed state
+  # rather than rebuilding a product from intEffectNames/modEffectNames --
+  # which is what will let a non-multiplicative relation work here without
+  # this code changing at all.
+  shifts <- .shiftSetFor(setNames(list(diff_j), eff_cs_name),
+                         pa$dependencies, cs$csMat,
+                         legacy = if (isTRUE(pa$interaction))
+                             list(int = pa$intEffectNames,
+                                  mod = pa$modEffectNames) else NULL)
+  if (is.null(shifts)) return(NULL)
+
+  A <- perturbationJacobian(shifts    = shifts,
+                            direction = density,
+                            csMap     = cs$changeStatsMap)
+  if (length(A) == 0L) return(NULL)
+  delta_u <- utilityShift(A, theta_use, length(density))
 
   # ── mlogit update Jacobian ────────────────────────────────────────────────
   d_scale <- if (pa$type == "tieProb") density else 1
-  J_diff  <- mlogitUpdateJacobian(Jp, changeProb,
-                                   ud_jac$delta_u, ud_jac$A_col,
-                                   ud_jac$eff_col)
+  ## Same core A, different harness: the ego-wide update renormalises over the
+  ## ego's choice set, so its derivative carries a group sum.
+  J_diff  <- if (identical(pa$perturbType, "ego"))
+      firstDiffJacobianEgo(Jp, changeProb, delta_u, A, cc$group_id)
+  else
+      firstDiffJacobian(Jp, changeProb, delta_u, A)
   (sign_j * d_scale) * J_diff   # NA sign_j propagates
 }
 
 
+## --------------------------------------------------------------------------
+## predictSecondDiffJac — analytical Jacobian paired with predictSecondDiff
+##
+## A second difference is a weighted sum over four counterfactual cells,
+##
+##   SD = p_base - p_A - p_B + p_AB          (weights +1, -1, -1, +1)
+##
+## so its derivative is the same weighted sum of the cells' derivatives.  Two
+## facts make that cheap.  First, each cell's probability comes from ONE update
+## of the baseline with that cell's accumulated utility shift -- the mlogit
+## update composes, so applying effect2 then effect1 equals applying their sum.
+## Second, the weights sum to zero, so the baseline term dp_base/dtheta cancels
+## and only the SHIFT part of each cell's derivative survives.  That is exactly
+## what firstDiffJacobian() returns, so no new derivative is needed:
+##
+##   J_SD = -J_A - J_B + J_AB,   J_c = firstDiffJacobian(Jp, p, Du_c, A_c)
+##
+## and the base cell contributes nothing, since a zero shift gives a zero
+## Jacobian.
+##
+## Declines the same cases predictFirstDiffJac does, for the same reasons, on
+## either side.  The pairing between an update form and its derivative is NOT
+## enforced anywhere -- .resolveBuiltinJac matches a Jacobian to a predictFun by
+## identity, not by update form -- and an unnoticed mismatch there is what made
+## the ego SE twice the truth.  So this is verified against bootstrap rather
+## than assumed correct.
+## --------------------------------------------------------------------------
+predictSecondDiffJac <- function(cc, theta, changeProb, density, pa, cs, ...) {
+  if (grepl("density", pa$effectName1, fixed = TRUE) ||
+      grepl("density", pa$effectName2, fixed = TRUE)) return(NULL)
+
+  n         <- length(density)
+  theta_use <- theta[cc$effectNames]
+  Jp        <- softmax_jac_rcpp(changeProb, cc$contribMat, cc$group_id)
+
+  ## Both sides resolved by the SAME helper the first-difference Jacobian
+  ## uses, so a contrast means one thing in one place.
+  s1 <- .perturbationShift(pa$effectName1, pa$diff1, pa$contrast1, cs$csMat, n)
+  s2 <- .perturbationShift(pa$effectName2, pa$diff2, pa$contrast2, cs$csMat, n)
+  if (is.null(s1) || is.null(s2)) return(NULL)
+
+  ## Each cell's shift set, built by the SAME helper the point estimate uses.
+  ## The AB cell perturbs both effects at once, so a relation evaluated there
+  ## produces the dB*dC cross term from the multiplication -- no separate
+  ## rule, and no moderator to keep in step.
+  cellShifts <- function(perturbations, legacy = NULL)
+    .shiftSetFor(perturbations, pa$dependencies, cs$csMat, legacy = legacy)
+
+  leg <- function(which) {
+    on <- if (which == 1L) isTRUE(pa$interaction1) else isTRUE(pa$interaction2)
+    if (!on) return(NULL)
+    if (which == 1L) list(int = pa$intEffectNames1, mod = pa$modEffectNames1)
+    else             list(int = pa$intEffectNames2, mod = pa$modEffectNames2)
+  }
+
+  A_side <- cellShifts(setNames(list(s1$shift), pa$effectName1), leg(1L))
+  B_side <- cellShifts(setNames(list(s2$shift), pa$effectName2), leg(2L))
+  if (is.null(A_side) || is.null(B_side)) return(NULL)
+
+  AB <- if (length(pa$dependencies)) {
+    ## The relation is evaluated with BOTH effects perturbed, so the product
+    ## yields every term including dB*dC.  Nothing to assemble by hand.
+    cellShifts(setNames(list(s1$shift, s2$shift),
+                        c(pa$effectName1, pa$effectName2)))
+  } else {
+    ## The legacy encoding cannot express a joint state -- `own * mod` knows
+    ## only one perturbed effect -- so the AB cell is assembled from the two
+    ## sides, plus the cross term by hand.  Note the sides must NOT both be
+    ## passed to cellShifts() and then added: effect2's own shift would be
+    ## counted twice, which leaves the point estimate right and the SE wrong.
+    ab <- A_side
+    for (nm in names(B_side))
+      ab[[nm]] <- (if (is.null(ab[[nm]])) 0 else ab[[nm]]) + B_side[[nm]]
+    if (isTRUE(pa$interaction1) && !is.null(pa$modEffectNames1)) {
+      for (k in which(pa$modEffectNames1 == pa$effectName2)) {
+        int_k <- pa$intEffectNames1[k]
+        ab[[int_k]] <- ab[[int_k]] +
+          s1$shift * ifelse(is.na(s2$shift), 0, s2$shift)
+      }
+    }
+    ab
+  }
+  if (is.null(AB)) return(NULL)
+
+  ## SD = p_base - p_A - p_B + p_AB.  firstDiffJacobian() already subtracts
+  ## the baseline, and the weights sum to zero, so the base cell contributes
+  ## nothing and only the shift parts survive.
+  cells   <- list(A = A_side, B = B_side, AB = AB)
+  weights <- c(A = -1, B = -1, AB = 1)
+  egoWide <- identical(pa$perturbType1, "ego") ||
+             identical(pa$perturbType2, "ego")
+
+  J <- NULL
+  for (nm in names(cells)) {
+    A  <- perturbationJacobian(cells[[nm]], density, cs$changeStatsMap)
+    if (length(A) == 0L) return(NULL)
+    du <- utilityShift(A, theta_use, n)
+    Jc <- if (egoWide) firstDiffJacobianEgo(Jp, changeProb, du, A, cc$group_id)
+          else         firstDiffJacobian(Jp, changeProb, du, A)
+    J  <- if (is.null(J)) weights[[nm]] * Jc else J + weights[[nm]] * Jc
+  }
+
+  d_scale <- if (pa$type == "tieProb") density else 1
+  (s1$sign * s2$sign * d_scale) * J
+}
+
+
 predictSecondDiff <- function(changeContributions, theta, type,
+    dependencies = NULL,
     effectName1, diff1, contrast1, interaction1,
     intEffectNames1, modEffectNames1,
     effectName2, diff2, contrast2, interaction2,
@@ -983,6 +1135,10 @@ predictSecondDiff <- function(changeContributions, theta, type,
     intEffectNames1     = intEffectNames1,
     modEffectNames1     = modEffectNames1,
     modContribution1    = if (!is.null(modEffectNames1)) csMat[, modEffectNames1] else NULL,
+    thetaRaw            = theta_use,
+    dependencies        = dependencies,
+    csMat               = csMat,
+    changeStatsMap      = cs$changeStatsMap,
     effectName2         = effectName2,
     effectContribution2 = if (!is.null(effectName2)) csMat[, effectName2] else NULL,
     diff2               = diff2,
@@ -1080,6 +1236,18 @@ calculateFirstDiff <- function(densityValue,
                                intEffectNames = NULL,
                                modEffectNames = NULL,
                                modContribution = NULL,
+                               ## The chain Ddelta -> Du needs the RAW theta
+                               ## (one entry per estimated parameter) and the
+                               ## declared relations.  `theta` below is
+                               ## thetaEff, folded per direction by base
+                               ## effect, which is a different indexing.
+                               ## Supplied => the shift-set route; absent =>
+                               ## the legacy arithmetic, kept while both are
+                               ## being compared.
+                               thetaRaw = NULL,
+                               dependencies = NULL,
+                               csMat = NULL,
+                               changeStatsMap = NULL,
                                effectNames,
                                theta, 
                                type = "changeProb",
@@ -1089,7 +1257,6 @@ calculateFirstDiff <- function(densityValue,
                                mainEffect = "firstDiff",
                                perturbType = "alter",
                                group_id = NULL){
-
   if (effectName == "density") {
     if((!is.null(diff))) stop("firstDiff for density must be contrast c(-1,1)")
     if (is.null(contrast))
@@ -1120,6 +1287,25 @@ calculateFirstDiff <- function(densityValue,
                 call. = FALSE)
       diff <- newChangeStatistic - oldChangeStatistic # this is a vector
     }
+    ## Ddelta -> Du, the two building blocks made explicit:
+    ##   .shiftSetFor()          which change statistics move, and by how much
+    ##   perturbationJacobian()  that shift as A, in parameter space
+    ##   utilityShift()          Du = A . theta
+    ## The SAME A is what the Jacobian consumes, which is the invariant: point
+    ## estimate and derivative must describe one counterfactual.
+    utilDiff <- if (!is.null(thetaRaw) && !is.null(csMat) &&
+                    !is.null(changeStatsMap)) {
+      shifts <- .shiftSetFor(setNames(list(diff), effectName),
+                             dependencies, csMat,
+                             legacy = if (isTRUE(interaction))
+                                 list(int = intEffectNames,
+                                      mod = modEffectNames) else NULL)
+      if (is.null(shifts)) NULL else
+        utilityShift(perturbationJacobian(shifts, densityValue,
+                                          changeStatsMap),
+                     thetaRaw, length(densityValue))
+    } else NULL
+    if (is.null(utilDiff))
     utilDiff <- calculateUtilityDiff(effectName = effectName, diff = diff, 
                                       theta = theta, densityValue = densityValue,
                                       interaction = interaction,
@@ -1209,7 +1395,18 @@ calculateSecondDiff <- function(densityValue,
                                 calcRiskRatio = FALSE,
                                 perturbType1 = "alter",
                                 perturbType2 = "alter",
+                                ## Inputs for the Ddelta -> Du chain.  Both
+                                ## calculateFirstDiff() calls get them, but with
+                                ## DIFFERENT states: the first works from the
+                                ## base, the second from the state after
+                                ## effect2 has moved.
+                                thetaRaw = NULL,
+                                dependencies = NULL,
+                                csMat = NULL,
+                                changeStatsMap = NULL,
                                 group_id = NULL){
+  ## fd1: effect1's difference at the BASE state, so the relation is evaluated
+  ## against the unshifted change statistics.
   firstDiff <- calculateFirstDiff(
     densityValue = densityValue,
     changeProb = changeProb,
@@ -1217,11 +1414,13 @@ calculateSecondDiff <- function(densityValue,
     effectName = effectName1,
     effectContribution = effectContribution1,
     diff = diff1,
-    contrast = contrast1, 
+    contrast = contrast1,
     interaction = interaction1,
     intEffectNames = intEffectNames1,
     modEffectNames = modEffectNames1,
     modContribution = modContribution1,
+    thetaRaw = thetaRaw, dependencies = dependencies,
+    csMat = csMat, changeStatsMap = changeStatsMap,
     effectNames = effectNames,
     theta = theta, 
     type = type,
@@ -1281,8 +1480,30 @@ calculateSecondDiff <- function(densityValue,
   # must reflect the post-shift state; otherwise the interaction contribution
   # to firstDiff2 uses stale values and the utility-level SD is missed.
   # Both diff2 and modContribution1 are in CS space — just add directly.
-  if (interaction1 && !is.null(modEffectNames1)) {
-    mod_shift <- if (is.null(diff2)) 1 else diff2
+  ## The state after effect2 has moved.  fd2 below evaluates the relation
+  ## HERE, so the dB*dC cross term comes out of the arithmetic rather than
+  ## being patched onto a moderator -- which is why the patch below is skipped
+  ## whenever a relation is available to do the job.
+  csMatShifted <- csMat
+  if (!is.null(csMat) && !is.null(effectName2) &&
+      effectName2 %in% colnames(csMat)) {
+    .d2 <- ifelse(is.na(diff2), 0, diff2)
+    csMatShifted[, effectName2] <- csMat[, effectName2] + .d2
+  }
+
+  ## Skipped when a relation travels: fd2 gets the shifted state above, so
+  ## patching the moderator as well would count the cross term twice.  Still
+  ## required for the legacy encoding, which has no state to re-evaluate.
+  if (interaction1 && !is.null(modEffectNames1) && !length(dependencies)) {
+    ## diff2 is always populated here.  A contrast2 is converted into a
+    ## per-row diff2 about forty lines above, and set_second_diff() ensures
+    ## one of diff2/contrast2 is set, so the former `if (is.null(diff2)) 1`
+    ## fallback was unreachable -- and actively misleading, because a
+    ## hardcoded 1 is the WRONG shift for every contrast except c(0, 1) on a
+    ## 0/1 statistic: a contrast is a swap, so the true shift is signed per
+    ## row (-1 as well as +1) and is +/-2 for c(-1, 1).
+    mod_shift <- diff2
+    ## NA marks rows outside the contrast's range, i.e. not perturbed.
     mod_shift[is.na(mod_shift)] <- 0
     match_idx <- which(modEffectNames1 == effectName2)
     if (length(match_idx) > 0L) {
@@ -1302,21 +1523,26 @@ calculateSecondDiff <- function(densityValue,
   if (length(densityValue) > 1e7) invisible(gc())
 
   # Calculate first difference of changing effect1 if effect2 was already changed
+  ## fd2: effect1's difference from the state where effect2 has ALREADY moved.
+  ## Hence csMatShifted -- the relation must be evaluated at that state, not at
+  ## the base, or effect1's dependency uses a stale moderator.
   firstDiff2 <- calculateFirstDiff(
     densityValue = densityValue, # careful if one was density!
     changeProb = changeProb_cf21,
     changeUtil = changeUtil21,
-    effectName = effectName1, 
+    effectName = effectName1,
     diff = diff1,
     contrast = contrast1,
     effectContribution = effectContribution1,
-    theta = theta, 
+    theta = theta,
     type = type,
     tieProb = tieProb_cf21,
     interaction = interaction1,
     intEffectNames = intEffectNames1,
     modEffectNames = modEffectNames1,
     modContribution = modContribution1,
+    thetaRaw = thetaRaw, dependencies = dependencies,
+    csMat = csMatShifted, changeStatsMap = changeStatsMap,
     effectNames = effectNames,
     mainEffect = mainEffect,
     details = details,
@@ -1459,15 +1685,154 @@ mlogit_update_r <- function(p, delta_u, group_id, perturbType) {
                             perturbTypeToInt(perturbType)))
 }
 
-# Jacobian for first-difference mlogit update with respect to theta columns.
-mlogitUpdateJacobian <- function(Jp, cp, delta_u, A_col, eff_col) {
+# --------------------------------------------------------------------------
+# .perturbationShift — a perturbation spec, as a per-row shift and a sign
+#
+# `diff` shifts every row by the same amount.  A `contrast` is a SWAP: rows at
+# contrast[1] move to contrast[2] and vice versa, rows at neither are NA and
+# drop out.  Because a swap moves different rows in opposite directions, the
+# reported quantity is put back on one direction by negating the rows that
+# moved the other way -- that is the `sign`.
+#
+# One definition, used by the point estimate's Jacobians for both first and
+# second differences.  It previously existed four times over
+# (calculateFirstDiff, calculateSecondDiff, and once inside each Jacobian),
+# with a comment in one of them reading "mirrors calculateFirstDiff" -- which
+# is duplication describing itself.
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# .shiftSetFor — which change statistics a perturbation moves, and by how much
+#
+# Returns a named list: effect -> per-row shift.  The perturbed effects move by
+# their own amount; a declared dependency moves its target by whatever the
+# RELATION implies at that state.
+#
+# Evaluating the relation is the point.  intEffectNames/modEffectNames can only
+# say "target moves by own * moderator", so a relation that is not a product --
+# sameX ~ egoX == altX, gw(transTrip) -- cannot survive that encoding.  Reading
+# the relation removes that ceiling without callers changing.
+#
+# `legacy` accepts the old encoding, for targets that set the interaction
+# arguments by hand instead of declaring a dependency.  Transitional: it goes
+# when those arguments do.
+# --------------------------------------------------------------------------
+.shiftSetFor <- function(perturbations, dependencies, csMat, legacy = NULL) {
+  shifts <- perturbations
+
+  if (length(dependencies)) {
+    base <- setNames(lapply(colnames(csMat), function(k) csMat[, k]),
+                     colnames(csMat))
+    ## Names arrive already RESOLVED: the spec builder runs relation terms
+    ## through resolveEffectName(), the same resolver the interaction
+    ## arguments use, so there is one notion of what an effect name means.
+    ## (They previously arrived as short names and every lookup here missed,
+    ## returning NULL and falling back silently.)
+    for (dep in dependencies) {
+      if (!all(c(dep$terms, dep$target) %in% names(base))) return(NULL)
+      d <- .dependencyShift(dep$terms, base, shifts)
+      if (all(d == 0 | is.na(d))) next
+      shifts[[dep$target]] <-
+        (if (is.null(shifts[[dep$target]])) 0 else shifts[[dep$target]]) + d
+    }
+    return(shifts)
+  }
+
+  if (!is.null(legacy)) {
+    if (is.null(legacy$int) || is.null(legacy$mod)) return(NULL)
+    if (!all(legacy$mod %in% colnames(csMat))) return(NULL)
+    own <- perturbations[[1L]]
+    for (k in seq_along(legacy$int)) {
+      int_k <- legacy$int[k]
+      shifts[[int_k]] <-
+        (if (is.null(shifts[[int_k]])) 0 else shifts[[int_k]]) +
+        own * csMat[, legacy$mod[k]]
+    }
+  }
+  shifts
+}
+
+
+.perturbationShift <- function(effectName, diff, contrast, csMat, n) {
+  if (is.null(contrast))
+    return(list(shift = if (!is.null(diff)) diff else rep(1, n),
+                sign  = rep(1L, n)))
+
+  col <- match(effectName, colnames(csMat))
+  if (is.na(col)) return(NULL)
+  old <- csMat[, col]
+  new <- rep(NA_real_, length(old))
+  new[old == contrast[1L]] <- contrast[2L]
+  new[old == contrast[2L]] <- contrast[1L]
+  sg <- ifelse(!is.na(new) & new == contrast[1L], -1L, 1L)
+  sg[is.na(new)] <- NA_integer_
+  list(shift = new - old, sign = sg)
+}
+
+
+# Jacobian of the EGO-WIDE update, with respect to theta columns.
+#
+# The split is between a CORE and a HARNESS.  The core is A = d(Du)/d(theta):
+# which parameters a perturbation reaches and on which rows.  That is
+# effect-dependent and has nothing to do with ego vs alter.  The harness is
+# how A is chained through the update's derivative -- and only THAT differs
+# between the two forms.
+#
+# For the ego-wide update p'_j = w_j / S_i, with w = p exp(Du) and S the ego's
+# total,
+#
+#   dp'_j/dtheta = [ e_j (Jp_j + p_j A_j)
+#                    - p'_j sum_h e_h (Jp_h + p_h A_h) ] / S_i
+#
+# i.e. the same numerator terms as the one-alternative form, summed over the
+# ego's alternatives because every one of them sits in the denominator.  The
+# first difference subtracts the baseline Jacobian.
+firstDiffJacobianEgo <- function(Jp, p, delta_u, A, group_id) {
+  e <- exp(ifelse(is.na(delta_u), 0, delta_u))
+  w <- p * e
+  S <- .contigGroupSum(w, group_id)
+  pnew <- w / S
+
+  M <- e * Jp
+  for (a in A) {
+    v <- ifelse(is.na(a$val), 0, a$val)
+    M[, a$col] <- M[, a$col] + e * p * v
+  }
+  GM <- apply(M, 2L, .contigGroupSum, group_id = group_id)
+  if (is.null(dim(GM))) GM <- matrix(GM, nrow = length(p))
+
+  (M - pnew * GM) / S - Jp
+}
+
+# Per-row group total for CONTIGUOUS groups, as the C++ kernels assume.
+.contigGroupSum <- function(x, group_id) {
+  if (is.null(group_id)) return(rep_len(sum(x), length(x)))
+  g <- as.integer(group_id)
+  ends <- c(which(diff(g) != 0L), length(x))
+  rep(diff(c(0, cumsum(x)[ends])), times = diff(c(0L, ends)))
+}
+
+# Jacobian of the FIRST DIFFERENCE (p' - p) under the one-alternative update.
+#
+# Named for what it RETURNS, not for the update it goes through: the trailing
+# -1 in `w` subtracts the baseline Jacobian, so this is d(p' - p)/dtheta and
+# not dp'/dtheta.  Called mlogitUpdateJacobian() until that ambiguity caused a
+# real error while deriving the second-difference version.
+#
+# `A` is the perturbation in parameter space: a list of list(col, val), one
+# entry per parameter the perturbation reaches.  It used to be a single
+# (A_col, eff_col) pair, which could not express a perturbation that moves
+# more than one parameter -- eval plus creation, say -- nor one whose reach
+# varies by row.  Accepting a list is also what lets a declared dependency
+# contribute its own columns without this function needing to know that
+# dependencies exist.
+firstDiffJacobian <- function(Jp, cp, delta_u, A) {
   e_j <- exp(delta_u)
   D_j <- 1 - cp + cp * e_j
   w   <- e_j / D_j^2 - 1
   v   <- cp * e_j * (1 - cp) / D_j^2
 
   J <- w * Jp
-  J[, eff_col] <- J[, eff_col] + v * A_col
+  for (a in A) J[, a$col] <- J[, a$col] + v * a$val
   J
 }
 

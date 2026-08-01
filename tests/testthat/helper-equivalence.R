@@ -163,7 +163,8 @@ compare_me_output <- function(a, b, tolerance = 1e-10,
 # --------------------------------------------------------------------------
 me_corpus_fixtures <- function() {
   nms <- c("ans", "mydata", "mymodel", "ans2", "mydata2", "mymodel2",
-           "mycontrols", "ans_2int", "mydata_2int", "mymodel_2int")
+           "mycontrols", "ans_2int", "mydata_2int", "mymodel_2int",
+           "ans_cm", "mydata_cm", "mymodel_cm")
   setNames(lapply(nms, load_fixture), nms)
 }
 
@@ -347,6 +348,42 @@ me_corpus <- function(fixtures) {
              recip = list(contrast = c(0, 1), interaction = TRUE,
                           intEffectNames = "unspInt2",
                           modEffectNames = "outPop"))),
+         unc = no_unc),
+
+    ## Creation / endowment.  A target collapses eval+creation (or eval+endow)
+    ## into ONE row, but the perturbation has to reach BOTH columns -- and the
+    ## creation column is active only on ministeps that create a tie, the
+    ## endowment column only on ones that drop it.  So the perturbation is
+    ## row-dependent and spans several columns, which is why the analytic
+    ## Jacobian declines these and finite differences carry them.
+    ##
+    ## The corpus had no creation/endow entry at all, so this case was not
+    ## merely uncovered -- it was invisible to any measurement taken from it.
+    list(name = "static_creation_firstDiff",
+         fit = "ans_cm", data = "mydata_cm", effects = "mymodel_cm",
+         depvar = "mynet_cm",
+         needs = c("ans_cm", "mydata_cm", "mymodel_cm"), slow = FALSE,
+         model = list(type = "tieProb", level = "period"),
+         targets = list(recip = list(contrast = c(0, 1))),
+         unc = no_unc),
+
+    list(name = "static_endow_firstDiff",
+         fit = "ans_cm", data = "mydata_cm", effects = "mymodel_cm",
+         depvar = "mynet_cm",
+         needs = c("ans_cm", "mydata_cm", "mymodel_cm"), slow = FALSE,
+         model = list(type = "tieProb", level = "period"),
+         targets = list(transTrip = list(diff = 1)),
+         unc = no_unc),
+
+    ## Both at once, and crossed: the second difference has to keep each
+    ## component's eval/creation and eval/endow pairing straight.
+    list(name = "static_creation_endow_secondDiff",
+         fit = "ans_cm", data = "mydata_cm", effects = "mymodel_cm",
+         depvar = "mynet_cm",
+         needs = c("ans_cm", "mydata_cm", "mymodel_cm"), slow = FALSE,
+         model = list(type = "tieProb", level = "period"),
+         sd = list(perturb = list(recip     = list(contrast = c(0, 1)),
+                                  transTrip = list(diff = 1))),
          unc = no_unc),
 
     c(base1, list(name = "dynamic_firstDiff", slow = TRUE,

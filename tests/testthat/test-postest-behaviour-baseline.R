@@ -174,9 +174,33 @@ test_that("uncertainty is computed by default, analytically", {
 })
 
 
-# ── The `details` argument: accepted, cannot be honoured ──────────────────────
+# ── The `details` capability: parked, not abandoned ───────────────────────────
+#
+# WHAT IT IS. `details = TRUE` returns the intermediate quantities behind a
+# marginal effect rather than just the effect: `utilDiff` (the utility shift
+# the perturbation produces), `oldChangeProb` / `newChangeProb` (the choice
+# probability before and after it), and `newTieProb` for tieProb targets.
+# That is the arithmetic of the difference laid open -- what you want when a
+# number looks wrong and you need to see which step produced it, and what a
+# teaching or diagnostic use would ask for.
+#
+# This is NOT the same as `returnDecisionDetails`, which is per-target, works,
+# and is covered elsewhere. Decision-level information is not at risk here.
+#
+# WHY IT IS PARKED. It errors inside `encodeGroupKeys()` -- a defect that
+# predates the interface refactor and was never covered by a test, which is
+# how it survived. Step 5c removed the flat argument list, so `details` is now
+# unreachable from every entry point: the constructors do not offer it and the
+# call errors with "unused argument". The internal plumbing is still in place
+# and pinned FALSE.
+#
+# WHEN IT GETS DECIDED. At step 6b (aggregation unification, staged cache),
+# which rewrites `encodeGroupKeys` and the aggregation path the bug lives in.
+# Deciding earlier means either fixing code about to be rewritten or deleting
+# a capability whose replacement is being designed. Fix it or remove it there,
+# deliberately -- do not let it drift on as plumbing nobody can reach.
 
-test_that("BASELINE: details = TRUE still errors, and is not reachable from control_out", {
+test_that("BASELINE: details = TRUE is unreachable (parked, see note above)", {
   skip_on_cran()
   ans <- load_fixture("ans"); mydata <- load_fixture("mydata")
   mymodel <- load_fixture("mymodel")

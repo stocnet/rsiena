@@ -414,6 +414,15 @@ print.sienaPostestControl <- function(x, ...)
 ## source).  It went unnoticed because nothing tests it.  Exposing an argument
 ## that cannot be honoured is the defect that `returnComponents` already
 ## demonstrated, so it stays out until the feature works.
+##
+## What it WAS for, so the capability is not lost by forgetting: the
+## intermediate quantities behind a marginal effect -- utilDiff, the utility
+## shift; oldChangeProb/newChangeProb, the choice probability either side of
+## it; newTieProb for tieProb targets.  The arithmetic of the difference laid
+## open, for diagnosing a number that looks wrong.
+##
+## Decide at step 6b, which rewrites encodeGroupKeys and the aggregation path
+## the bug lives in.  See tests/testthat/test-postest-behaviour-baseline.R.
 set_postest_output_saom <- function(format           = c("long", "wide"),
                                     combineSameLevel = TRUE) {
     format <- match.arg(format)

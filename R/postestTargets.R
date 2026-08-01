@@ -845,6 +845,23 @@ set_dependency.sienaPostestTargets <- function(x, ..., verbose = TRUE) {
         if (length(ints) == 0L) NULL else list(ints = ints, mods = mods)
     }
 
+    ## Carry the RELATIONS themselves alongside the resolved arguments.
+    ##
+    ## `intEffectNames`/`modEffectNames` can express exactly one thing: that
+    ## the dependent effect moves by `own * moderator`.  A relation like
+    ## `sameX ~ egoX == altX` or `gw(transTrip)` is not a product and cannot
+    ## survive that round trip -- which is why .parseDependency() rejects
+    ## everything but `:`.  The limit is the plumbing, not the grammar.
+    ##
+    ## Passing the parsed relation through lets the compute path evaluate it
+    ## at each counterfactual state instead of rebuilding a product.  Both
+    ## forms travel for now so the two derivations can be compared; the
+    ## resolved arguments go once they are shown identical.
+    e$dependencies <- lapply(deps, function(d) {
+        pd <- .parseDependency(d)
+        list(target = pd$target, terms = pd$terms)
+    })
+
     r1 <- resolve1(e$effectName1)
     if (!is.null(r1)) {
         if (isTRUE(e$interaction1))

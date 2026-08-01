@@ -1754,8 +1754,25 @@ aggAccumulatedSumCount <- function(outcomeName, data, level = "period",
                                    extraGroup = character(0)) {
   if (!"chain" %in% names(data))
     stop("Accumulated aggregation requires dynamic (chain-level) data.")
-  if (!is.null(condition))
-    warning("'condition' is ignored for accumulated aggregation.")
+
+  ## Conditioning columns, carried through all three steps.
+  ##
+  ## They used to be dropped with a warning, on the reasoning that accumulation
+  ## sums over ministeps while a condition varies between them.  But that is
+  ## exactly what stratifying means: accumulate within each stratum instead of
+  ## across all of them, which is the same thing the non-accumulated path does
+  ## via getGroupVars().  The columns simply have to survive the ego
+  ## normalisation in step 1, or the strata are averaged away before there is
+  ## anything to group by.
+  condCols <- character(0)
+  if (!is.null(condition)) {
+    condCols <- tryCatch(resolveEffectName(condition, names(data)),
+                         error = function(e) character(0))
+    condCols <- intersect(condCols, names(data))
+    if (length(condCols) == 0L)
+      warning("'condition' names no available column; it is ignored for ",
+              "accumulated aggregation.", call. = FALSE)
+  }
 
   sumCol <- paste0(outcomeName, "_sum")
   cntCol <- paste0(outcomeName, "_n")
@@ -1763,12 +1780,15 @@ aggAccumulatedSumCount <- function(outcomeName, data, level = "period",
   # Step 1: Ego-normalize (mean over alters within each ministep).
   ego_id_cols <- detectEgoUnit(data)
   step1 <- preAggEgo(data, outcomeName,
-                     group_vars = character(0),
+                     group_vars = condCols,
                      ego_id_cols = ego_id_cols,
                      na.rm = na.rm)
 
-  # Step 2: Sum across ministeps within (period, chain, ego).
-  acc_group <- intersect(c("group", "period", "chain", "ego"), names(step1))
+  # Step 2: Sum across ministeps within (period, chain, ego) -- and within
+  # each conditioning stratum, so accumulation happens inside a stratum
+  # rather than across strata.
+  acc_group <- intersect(c("group", "period", "chain", "ego", condCols),
+                         names(step1))
   enc  <- encodeGroupKeys(step1, acc_group)
   ord  <- do.call(order,
              lapply(seq_len(ncol(enc$G)), function(j) enc$G[, j]))
@@ -1779,11 +1799,13 @@ aggAccumulatedSumCount <- function(outcomeName, data, level = "period",
   step2[[outcomeName]] <- res$value
 
   # Step 3: Return sum + count per final-level group (not mean).
+  # Conditioning columns join the final grouping, so each stratum is reported
+  # separately -- matching what the non-accumulated path produces.
   final_group <- switch(level,
-    "ego"    = intersect(c("group", "period", "ego"), names(step2)),
-    "period" = intersect(c("group", "period"), names(step2)),
-    "none"   = character(0),
-    intersect(c("group", "period"), names(step2))
+    "ego"    = intersect(c("group", "period", "ego", condCols), names(step2)),
+    "period" = intersect(c("group", "period", condCols), names(step2)),
+    "none"   = intersect(condCols, names(step2)),
+    intersect(c("group", "period", condCols), names(step2))
   )
   # extraGroup (e.g. "chain") refines the final cells without changing which
   # units are summed in step 2.
