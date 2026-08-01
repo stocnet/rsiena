@@ -720,9 +720,22 @@ set_dependency.sienaPostestTargets <- function(x, ..., verbose = TRUE) {
             stop("A dependency needs a left-hand side naming the dependent ",
                  "effect: egoXaltX ~ egoX:altX.", call. = FALSE)
 
+    ## Parsed HERE rather than swallowed: a malformed relation -- `a + b`,
+    ## `a * b`, a self-product -- used to be accepted silently and only
+    ## rejected when the targets object was lowered, several steps later.
+    ##
+    ## Only the GRAMMAR is checked at this point. Whether the names exist is
+    ## settled against the fit's change statistics, which distinguish things
+    ## this object cannot: a model with two unspecified interactions has two
+    ## effects whose short name is `unspInt`, told apart as unspInt1 and
+    ## unspInt2 only once the change contributions are in hand. Rejecting
+    ## those here would refuse a legitimate declaration; lowering names the
+    ## available effects if one is genuinely wrong.
+    for (d in deps) .parseDependency(d)
+
     for (d in deps) {
-        lhs <- tryCatch(.parseDependency(d)$target, error = function(e) NULL)
-        if (!is.null(lhs) && lhs %in% x$effectName1[x$include])
+        lhs <- .parseDependency(d)$target
+        if (lhs %in% x$effectName1[x$include])
             warning("'", lhs, "' is a selected target and is now declared as ",
                     "derived from other effects. Perturbing it directly holds ",
                     "its components fixed, which the declaration says is not ",
