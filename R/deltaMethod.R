@@ -221,8 +221,10 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
       ". Reported SE for these is the conditional (frozen-chain) delta SE, ",
       "which omits the path-distribution channel. Common causes: a custom ",
       "predictFun without outcomesOnly support, or a 'condition' that cannot ",
-      "be resolved against the chain data (conditioning is not supported for ",
-      "accumulated specs). For an SE covering all channels use ",
+      "be resolved against the chain data -- note that a conditioned ",
+      "ACCUMULATED spec does stratify its point estimate, but the REINFORCE ",
+      "term cannot yet be bucketed per stratum, so only its SE falls back ",
+      "here. For an SE covering all channels use ",
       "uncertaintyMode = 'bootstrap'.",
       call. = FALSE)
 

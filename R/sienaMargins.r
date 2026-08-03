@@ -1004,8 +1004,27 @@ predictSecondDiffJac <- function(cc, theta, changeProb, density, pa, cs, ...) {
   ## nothing and only the shift parts survive.
   cells   <- list(A = A_side, B = B_side, AB = AB)
   weights <- c(A = -1, B = -1, AB = 1)
-  egoWide <- identical(pa$perturbType1, "ego") ||
-             identical(pa$perturbType2, "ego")
+  ## MIXED perturbation types are declined, not approximated.
+  ##
+  ## A second difference composes two updates: effect2 moves, then effect1
+  ## moves from there.  When both are the same kind the composition is again
+  ## that kind -- two ego-wide renormalisations over one choice set compose
+  ## into one, two one-alternative shifts likewise -- so a single harness is
+  ## the right derivative for every cell.
+  ##
+  ## When they differ it is not.  The B cell moves only the alter-type effect
+  ## and needs the one-alternative derivative; the AB cell needs the chain
+  ## rule through an alter update FOLLOWED BY an ego renormalisation, which is
+  ## neither harness on its own.  Applying the ego harness throughout gave an
+  ## SE that did not describe the estimate: against 400 bootstrap draws on the
+  ## Glasgow egoX x altX second difference it came out at 0.31-0.70 of the
+  ## bootstrap SE, where the finite-difference Jacobian sits at 0.78-1.03.
+  ##
+  ## Finite differences are correct here, so decline until the composed
+  ## derivative exists -- the same choice predictFirstDiffJac() makes for
+  ## density.
+  if (!identical(pa$perturbType1, pa$perturbType2)) return(NULL)
+  egoWide <- identical(pa$perturbType1, "ego")
 
   J <- NULL
   for (nm in names(cells)) {
