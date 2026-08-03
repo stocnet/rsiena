@@ -105,17 +105,20 @@ test_that("unsupported dependency forms are rejected, not approximated", {
                              includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
 
-  bad <- function(f) {
-    t2 <- suppressMessages(set_dependency(tg, f))
-    tryCatch({RSiena:::.targetsToEffectList(t2); "NO ERROR"},
+  ## Rejected at DECLARATION, not several steps later at lowering: the whole
+  ## point is that the mistake is reported where it was made.
+  bad <- function(f)
+    tryCatch({suppressMessages(set_dependency(tg, f)); "NO ERROR"},
              error = function(e) conditionMessage(e))
-  }
+
   ## Only `a:b` is supported so far; everything else must error rather than
   ## be silently treated as a product.
   expect_match(bad(transRecTrip ~ transTrip == recip), "[Oo]nly pure-interaction")
   expect_match(bad(transRecTrip ~ gw(transTrip)),      "[Oo]nly pure-interaction")
   expect_match(bad(transRecTrip ~ transTrip + recip),  "[Oo]nly pure-interaction")
   expect_match(bad(transRecTrip ~ transTrip:transTrip), "both sides")
+  ## `*` is the likely slip and gets its own message.
+  expect_match(bad(transRecTrip ~ transTrip * recip),  "Use ':' rather than")
 
   ## A formula without a left-hand side names no dependent effect.
   expect_error(suppressMessages(set_dependency(tg, ~ transTrip * recip)),

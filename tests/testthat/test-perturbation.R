@@ -578,6 +578,37 @@ test_that("delta SE agrees with bootstrap for BOTH perturbation types", {
       info = paste0("perturbType = ", pt, ": bootstrap/delta ratio ",
                     paste(round(ratio, 3), collapse = ", ")))
   }
+
+  ## The same check for a second difference whose two sides are of DIFFERENT
+  ## perturbation types.  A second difference composes two updates, and while
+  ## the Jacobian applied one harness to every cell -- the ego one, whenever
+  ## either side was ego -- the SE described a different counterfactual than
+  ## the estimate.  On the Glasgow egoX x altX difference that landed at
+  ## 0.31-0.70 of the bootstrap SE while finite differences sat at 0.78-1.03,
+  ## and nothing in the suite noticed, because every second difference tested
+  ## here had matching types on both sides.
+  mk2 <- function() {
+    tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+                               type = "tieProb", level = "period",
+                               includeDefaults = FALSE)
+    suppressMessages(set_second_diff(tg, list(
+        transTrip = list(diff = 1, perturbType = "ego"),
+        recip     = list(contrast = c(0, 1), perturbType = "alter")),
+        name = "mixed_sd"))
+  }
+  set.seed(202)
+  bo2 <- suppressMessages(marginalEffects(ans, mydata, targets = mk2(),
+          control_uncertainty = set_postest_uncertainty_saom(
+              mode = "bootstrap", nsim = 400),
+          control_algo = set_postest_algo_saom(verbose = FALSE)))
+  de2 <- suppressMessages(marginalEffects(ans, mydata, targets = mk2(),
+          control_uncertainty = set_postest_uncertainty_saom(
+              mode = "delta", nsim = 1L),
+          control_algo = set_postest_algo_saom(verbose = FALSE)))
+  ratio2 <- bo2$SE / de2$SE
+  expect_true(all(ratio2 > 0.85 & ratio2 < 1.15),
+    info = paste0("mixed-type second difference: bootstrap/delta ratio ",
+                  paste(round(ratio2, 3), collapse = ", ")))
 })
 
 test_that("an ego perturbation uses the analytic path, with the ego harness", {
