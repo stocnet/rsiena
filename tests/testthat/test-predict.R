@@ -20,14 +20,11 @@ mydata_cm      <- load_fixture("mydata_cm")
 mymodel_cm     <- load_fixture("mymodel_cm")
 
 test_that("predict.sienaFit static: no uncertainty, egoChoice level", {
-  pred_df <- predict(
-    object = ans,
-    newdata = mydata,
-    type = "tieProb",
-    nsim = 10,
-    condition = "transTrip_eval",
-    level = "egoChoice"
-  )
+  tg <- make_predict_targets(ans, effects = mymodel, depvar = "mynet",
+                             type = "tieProb", level = "egoChoice",
+                             condition = "transTrip_eval")
+  pred_df <- predict(ans, mydata, targets = tg,
+    control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
   expect_true(is.data.frame(pred_df))
 })
 
@@ -55,15 +52,11 @@ test_that("predict.sienaFit static: SE columns, no CI", {
 })
 
 test_that("predict.sienaFit static: sienaPrediction class", {
-  pred_dt <- predict.sienaFit(
-    object = ans,
-    newdata = mydata,
-    type = "tieProb",
-    nsim = 10,
-    condition = "transTrip_eval",
-    level = "period",
-    uncertainty = TRUE
-  )
+  tg <- make_predict_targets(ans, effects = mymodel, depvar = "mynet",
+                             type = "tieProb", level = "period",
+                             condition = "transTrip_eval")
+  pred_dt <- predict(ans, mydata, targets = tg,
+    control_uncertainty = set_postest_uncertainty_saom(mode = "delta"))
   expect_true(is.data.frame(pred_dt))
   expect_s3_class(pred_dt, "sienaPrediction")
 })

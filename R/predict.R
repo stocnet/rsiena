@@ -35,6 +35,11 @@ predict.sienaFit <- function(
         stop("'control_out' must come from set_postest_output_saom().",
              call. = FALSE)
 
+    if (nrow(targets) == 0L)
+        stop("The targets object requests no predictions. Add one with ",
+             "set_condition(), or build it with includeDefaults = TRUE.",
+             call. = FALSE)
+
     ## One prediction per requested row; a single row returns the bare frame,
     ## matching what marginalEffects() does with one target.
     rows <- order(targets$.seq)

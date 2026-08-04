@@ -131,12 +131,12 @@ test_that("snapshot: predict.sienaFit changeProb golden values", {
   skip_if(!.all_snaps_present,
           "Snapshot cache missing — run with RSENA_REBUILD_MODELS=1")
   snap <- snap_predict_changeProb
-  out <- predict(
-    object  = ans, newdata = mydata,
-    type    = "changeProb",
-    level   = "period", condition = "density",
-    uncertainty = FALSE, verbose = FALSE
-  )
+  out <- predict(ans, mydata,
+    targets = make_predict_targets(ans, effects = mymodel, depvar = "mynet",
+                                   type = "changeProb", level = "period",
+                                   condition = "density"),
+    control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
+    control_algo = set_postest_algo_saom(verbose = FALSE))
   expect_equal(out$changeProb, snap$changeProb, tolerance = 1e-10,
                info = "changeProb must match cached golden values exactly")
 })
@@ -147,12 +147,12 @@ test_that("snapshot: predict.sienaFit tieProb golden values", {
   skip_if(!.all_snaps_present,
           "Snapshot cache missing — run with RSENA_REBUILD_MODELS=1")
   snap <- snap_predict_tieProb
-  out <- predict(
-    object  = ans, newdata = mydata,
-    type    = "tieProb",
-    level   = "period", condition = "density",
-    uncertainty = FALSE, verbose = FALSE
-  )
+  out <- predict(ans, mydata,
+    targets = make_predict_targets(ans, effects = mymodel, depvar = "mynet",
+                                   type = "tieProb", level = "period",
+                                   condition = "density"),
+    control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
+    control_algo = set_postest_algo_saom(verbose = FALSE))
   expect_equal(out$tieProb, snap$tieProb, tolerance = 1e-10,
                info = "tieProb must match cached golden values exactly")
 })

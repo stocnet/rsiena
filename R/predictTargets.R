@@ -33,8 +33,12 @@ make_predict_targets.sienaFit <- function(x, data = NULL, effects = NULL,
                                           egoNormalize = TRUE,
                                           accumulated = FALSE,
                                           rateWeight = FALSE,
-                                          na.rm = TRUE, ...) {
+                                          na.rm = TRUE,
+                                          includeDefaults = TRUE, ...) {
     type <- match.arg(type)
+    if (!is.logical(includeDefaults) || length(includeDefaults) != 1L ||
+        is.na(includeDefaults))
+        stop("'includeDefaults' must be a single non-NA logical.", call. = FALSE)
     .checkEstimandCombo(dynamic, accumulated, rateWeight, "prediction")
     .checkLevel(level)
 
@@ -45,12 +49,16 @@ make_predict_targets.sienaFit <- function(x, data = NULL, effects = NULL,
         stop("'effects' must be a sienaEffects object.", call. = FALSE)
     if (is.null(depvar)) depvar <- unique(effects[["name"]])[1L]
 
-    ## One row, carrying the model-level request.  set_condition() appends.
-    tg <- list(name       = "prediction",
-               condition  = I(list(condition)),
-               .seq       = 1,
-               .overrides = I(list(list())))
-    attr(tg, "row.names") <- .set_row_names(1L)
+    ## By default one row carrying the model-level request, and
+    ## set_condition() appends to it.  includeDefaults = FALSE starts empty,
+    ## for when every prediction wanted is an explicit one -- otherwise the
+    ## unconditional row rides along and has to be ignored downstream.
+    n <- if (includeDefaults) 1L else 0L
+    tg <- list(name       = if (n) "prediction" else character(0),
+               condition  = I(if (n) list(condition) else list()),
+               .seq       = if (n) 1 else numeric(0),
+               .overrides = I(if (n) list(list()) else list()))
+    attr(tg, "row.names") <- .set_row_names(n)
     attr(tg, "depvar")    <- depvar
     attr(tg, "effects")   <- effects
     attr(tg, "defaults")  <- list(
@@ -142,6 +150,10 @@ print.sienaPredictTargets <- function(x, ...) {
         if (isTRUE(d$accumulated)) ", accumulated over ministeps" else "",
         "\n\n", sep = "")
 
+    if (nrow(x) == 0L) {
+        cat("  (none yet -- add one with set_condition())\n")
+        return(invisible(x))
+    }
     for (i in order(x$.seq)) {
         ov   <- x$.overrides[[i]]
         cond <- x$condition[[i]]
