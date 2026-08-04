@@ -32,11 +32,11 @@ marginalEffects.sienaFit <- function(
     # mainEffect, mode, chainStoreMode, clusterType, format), so there is no
     # re-validation here.
     if (missing(targets))
-        stop("'targets' is required: build it with make_postest_targets().",
+        stop("'targets' is required: build it with make_marginal_targets().",
              call. = FALSE)
     if (!inherits(targets, "sienaPostestTargets"))
         stop("'targets' must be a sienaPostestTargets object, as returned by ",
-             "make_postest_targets().", call. = FALSE)
+             "make_marginal_targets().", call. = FALSE)
 
     .lowered   <- .targetsToEffectList(targets)
     effectList <- .lowered$effectList

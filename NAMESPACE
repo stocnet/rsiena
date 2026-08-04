@@ -2,6 +2,8 @@ useDynLib(RSiena, .registration = TRUE)
 #exportPattern("ˆ[[:alpha:]]+")
 
 export(
+	make_predict_targets,
+	set_condition,
 	coCovar, coDyadCovar, varCovar, varDyadCovar, as_covariate_rsiena,
 	sienaNet, sienaDependent, as_dependent_rsiena,
 	getEffects, print01Report, write_report, siena07, siena,
@@ -33,7 +35,7 @@ export(
    utilitySpec,
    set_postest_uncertainty_saom, set_postest_algo_saom,
    set_postest_output_saom,
-   make_postest_targets, set_target, set_second_diff, set_dependency
+   make_marginal_targets, set_target, set_second_diff, set_dependency
 )
 
 # data.table removed — using pure base R + Rcpp
@@ -154,7 +156,10 @@ S3method(print, sienaPostestUncertainty)
 S3method(print, sienaPostestControl)
 S3method(print, sienaPostestOutput)
 S3method(print, sienaPostestTargets)
-S3method(make_postest_targets, sienaFit)
+S3method(make_marginal_targets, sienaFit)
+S3method(make_predict_targets, sienaFit)
+S3method(set_condition, sienaPredictTargets)
+S3method(print, sienaPredictTargets)
 S3method(set_target, sienaPostestTargets)
 S3method(set_second_diff, sienaPostestTargets)
 S3method(set_dependency, sienaPostestTargets)

@@ -25,7 +25,7 @@ test_that("a dependency actually changes the result", {
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
       control_algo = set_postest_algo_saom(verbose = FALSE))
 
-  base <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  base <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                                type = "tieProb", level = "period",
                                includeDefaults = FALSE)
   base <- suppressMessages(set_target(base, transTrip, diff = 1))
@@ -58,7 +58,7 @@ test_that("a dependency reaches BOTH steps of a second difference", {
   ## the relation, whichever effect sat in position 2 failed to move the
   ## dependent effect, and the two orders disagreed by the cross term.
   sd <- function(first, second) {
-    tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+    tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                                type = "tieProb", level = "period",
                                includeDefaults = FALSE)
     tg <- suppressMessages(set_second_diff(tg,
@@ -85,7 +85,7 @@ test_that("dependencies covering no target leave the result untouched", {
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE),
       control_algo = set_postest_algo_saom(verbose = FALSE))
 
-  base <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  base <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                                type = "tieProb", level = "period",
                                includeDefaults = FALSE)
   base <- suppressMessages(set_target(base, density, contrast = c(-1, 1)))
@@ -101,7 +101,7 @@ test_that("unsupported dependency forms are rejected, not approximated", {
   ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
   skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
 
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
 
@@ -133,7 +133,7 @@ test_that("a derived effect is excluded by default but only warned about later",
   ## Declared at construction: the derived effect is not offered as a default
   ## target, because perturbing it holds its components fixed -- which the
   ## declaration says cannot happen.
-  tg1 <- make_postest_targets(ans3, effects = mymodel3, depvar = "mynet3",
+  tg1 <- make_marginal_targets(ans3, effects = mymodel3, depvar = "mynet3",
                               dependencies = list(unspInt ~ recip:inPop))
   expect_false("unspInt" %in% tg1$effectName1[tg1$include])
   expect_true(all(c("density", "recip", "inPop") %in%
@@ -142,7 +142,7 @@ test_that("a derived effect is excluded by default but only warned about later",
   ## Declared afterwards: warn, do NOT deselect.  Once the object exists a
   ## selection may be deliberate, and silently dropping it would override an
   ## explicit choice.
-  tg2 <- make_postest_targets(ans3, effects = mymodel3, depvar = "mynet3")
+  tg2 <- make_marginal_targets(ans3, effects = mymodel3, depvar = "mynet3")
   expect_true("unspInt" %in% tg2$effectName1[tg2$include])
   expect_warning(tg3 <- suppressMessages(
       set_dependency(tg2, unspInt ~ recip:inPop)), "selected target")

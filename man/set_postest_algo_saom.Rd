@@ -14,7 +14,7 @@
   \emph{What} is estimated -- including the static/dynamic choice, which
   selects a different estimand rather than a different route to the same
   one -- is set on the targets object instead, via
-  \code{\link{make_postest_targets}}.
+  \code{\link{make_marginal_targets}}.
 }
 \usage{
 set_postest_algo_saom(

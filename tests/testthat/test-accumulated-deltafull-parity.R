@@ -24,7 +24,7 @@ test_that("accumulated deltaFull SE tracks the bootstrap reference", {
   skip_if(is.null(ans) || is.null(mydata) || is.null(mymodel) ||
           is.null(mycontrols), "base fixtures unavailable")
 
-  tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+  tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                              type = "tieProb", level = "period",
                              dynamic = TRUE, accumulated = TRUE,
                              includeDefaults = FALSE)

@@ -55,7 +55,7 @@
       Multi-group data (\code{sienaGroup}) is not supported.}
   \item{targets}{A \code{sienaPostestTargets} object saying \emph{what} to
       compute: which effects to perturb, how, and the estimand they are
-      evaluated under. Built with \code{\link{make_postest_targets}} and
+      evaluated under. Built with \code{\link{make_marginal_targets}} and
       refined with \code{\link{set_target}},
       \code{\link{set_second_diff}} and \code{\link{set_dependency}}.
       Required.}
@@ -176,7 +176,7 @@ ans <- siena(mydata, effects=myeff, control_algo=myalgo, batch=TRUE)
 
 ## What to compute: one target, a unit step in transTrip's change statistic,
 ## reported as a tie probability averaged by period.
-mytg <- make_postest_targets(ans, effects = myeff, depvar = "mynet1",
+mytg <- make_marginal_targets(ans, effects = myeff, depvar = "mynet1",
                              type = "tieProb", level = "period",
                              includeDefaults = FALSE)
 mytg <- set_target(mytg, transTrip, diff = 1)
@@ -187,7 +187,7 @@ me
 
 ## The same perturbation on the change probability, unaggregated.  Only the
 ## estimand and its reporting change, so only the targets object does.
-mytg_raw <- make_postest_targets(ans, effects = myeff, depvar = "mynet1",
+mytg_raw <- make_marginal_targets(ans, effects = myeff, depvar = "mynet1",
                                  type = "changeProb", level = "none",
                                  includeDefaults = FALSE)
 mytg_raw <- set_target(mytg_raw, transTrip, diff = 1)
@@ -205,7 +205,7 @@ me_unc
 
 ## Second difference: how does the marginal effect of transTrip change when
 ## recip also changes?  Each effect's perturbation is stated next to it.
-mytg2 <- make_postest_targets(ans, effects = myeff, depvar = "mynet1",
+mytg2 <- make_marginal_targets(ans, effects = myeff, depvar = "mynet1",
                               type = "tieProb", level = "period",
                               includeDefaults = FALSE)
 mytg2 <- set_second_diff(mytg2, list(transTrip = list(diff = 1),

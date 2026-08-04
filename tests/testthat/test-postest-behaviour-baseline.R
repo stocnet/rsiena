@@ -41,7 +41,7 @@ test_that("a per-target rateWeight = FALSE overrides a model that sets TRUE", {
           "base fixtures unavailable")
 
   mk <- function(...) {
-    tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+    tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                                type = "tieProb", includeDefaults = FALSE, ...)
     suppressMessages(set_target(tg, transTrip, diff = 1))
   }
@@ -69,7 +69,7 @@ test_that("a per-target level or condition overrides the model", {
           "base fixtures unavailable")
 
   mk <- function(...) {
-    tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+    tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                                type = "tieProb", includeDefaults = FALSE, ...)
     suppressMessages(set_target(tg, transTrip, diff = 1))
   }
@@ -105,7 +105,7 @@ test_that("BASELINE: model-level massContrasts reaches every target", {
   skip_if(is.null(ans) || is.null(mydata) || is.null(mymodel),
           "base fixtures unavailable")
 
-  tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+  tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                              type = "tieProb", massContrasts = TRUE,
                              includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
@@ -123,7 +123,7 @@ test_that("BASELINE: an explicit massContrasts = FALSE suppresses auto-detection
           "base fixtures unavailable")
 
   mk <- function(mc) {
-    tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+    tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                                type = "tieProb", includeDefaults = FALSE)
     suppressMessages(set_target(tg, transTrip, diff = 1,
                                 perturbType = "ego", massContrasts = mc))
@@ -145,7 +145,7 @@ test_that("uncertainty is computed by default, analytically", {
   skip_if(is.null(ans) || is.null(mydata) || is.null(mymodel),
           "base fixtures unavailable")
 
-  tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+  tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                              type = "tieProb", includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
 
@@ -211,7 +211,7 @@ test_that("BASELINE: details = TRUE is unreachable (parked, see note above)", {
   ## not a regression. It went unnoticed because no test covered it.
   ## Pinned so that "fix it" and "remove it" are both deliberate acts, and so
   ## the argument cannot quietly go on accepting a value it cannot honour.
-  tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+  tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                              type = "tieProb", includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
   expect_error(suppressMessages(marginalEffects(ans, mydata, targets = tg,
@@ -237,7 +237,7 @@ test_that("a per-target accumulated = FALSE overrides a model that sets TRUE", {
   ## rateWeight would have let the 5d fix correct one and miss the other, so
   ## this pays for a dynamic run to cover the line users actually set.
   mk <- function(...) {
-    tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+    tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                                type = "tieProb", dynamic = TRUE,
                                includeDefaults = FALSE, ...)
     suppressMessages(set_target(tg, transTrip, diff = 1))

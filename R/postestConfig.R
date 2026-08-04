@@ -225,13 +225,13 @@ set_postest_algo_saom <- function(
 	gcEachSim              = FALSE
 )
 {
-	## `dynamic` moved to make_postest_targets(): it selects the estimand, not
+	## `dynamic` moved to make_marginal_targets(): it selects the estimand, not
 	## the route to it.  Kept as an explicit formal purely to intercept it --
 	## without it, `dynamic = TRUE` would PARTIALLY MATCH dynamicMinistepFactor
 	## and silently set the wrong argument.
 	if (!is.null(dynamic))
 		stop("'dynamic' is set on the targets object, not here: ",
-			 "make_postest_targets(..., dynamic = TRUE). It selects which ",
+			 "make_marginal_targets(..., dynamic = TRUE). It selects which ",
 			 "quantity is estimated (static or model-implied), so it belongs ",
 			 "with the targets; the simulation settings it implies -- ",
 			 "algorithm, n3, chain storage -- stay here.", call. = FALSE)
@@ -424,11 +424,17 @@ print.sienaPostestControl <- function(x, ...)
 ## Decide at step 6b, which rewrites encodeGroupKeys and the aggregation path
 ## the bug lives in.  See tests/testthat/test-postest-behaviour-baseline.R.
 set_postest_output_saom <- function(format           = c("long", "wide"),
-                                    combineSameLevel = TRUE) {
+                                    combineSameLevel = TRUE,
+                                    returnDecisionDetails = FALSE,
+                                    returnComponents      = FALSE) {
     format <- match.arg(format)
     .checkFlag(combineSameLevel, "combineSameLevel")
+    .checkFlag(returnDecisionDetails, "returnDecisionDetails")
+    .checkFlag(returnComponents, "returnComponents")
 
-    obj <- list(format = format, combineSameLevel = combineSameLevel)
+    obj <- list(format = format, combineSameLevel = combineSameLevel,
+                returnDecisionDetails = returnDecisionDetails,
+                returnComponents = returnComponents)
     class(obj) <- "sienaPostestOutput"
     attr(obj, "version") <- utils::packageDescription("RSiena",
                                                       fields = "Version")

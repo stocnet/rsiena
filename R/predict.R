@@ -1,53 +1,103 @@
-##@predict.sienaFit
+##@predict.sienaFit S3 predict
+##
+## Six arguments, the same shape as marginalEffects():
+##
+##   object, data          the fit and the data it was fitted to
+##   targets               WHAT to predict   -- make_predict_targets() +
+##                         set_condition()
+##   control_uncertainty   HOW SURE          -- set_postest_uncertainty_saom()
+##   control_algo          HOW to simulate   -- set_postest_algo_saom()
+##   control_out           HOW to report     -- set_postest_output_saom()
+##
+## The estimand (type, dynamic, level, condition, egoNormalize, accumulated,
+## rateWeight) lives on the targets object; only the simulation settings are a
+## question of how hard to work.  This replaced 44 flat formals, of which the
+## controls already existed for marginalEffects() and are reused unchanged.
 predict.sienaFit <- function(
     object,
-    newdata,
-    type = c("changeProb", "tieProb"),
+    data,
+    targets,
+    control_uncertainty = set_postest_uncertainty_saom(),
+    control_algo        = set_postest_algo_saom(),
+    control_out         = set_postest_output_saom(),
     newParams = NULL,
-    effects = NULL,
-    depvar = NULL,
-    dynamic = FALSE,
-    algorithm = NULL,
-    n3 = 1000,
-    n3PointEst = NULL,
-    n3BatchSize = NULL,
-    useChangeContributions = FALSE,
-    level = "period",
-    condition = NULL,
-    sum_fun = mean,
-    na.rm = TRUE,
-    uncertainty = TRUE,
-    useCluster = FALSE,
-    nbrNodes = 1,
-    nsim = 1000,
-    uncertaintySd = TRUE,
-    uncertaintyCi = TRUE,
-    uncertaintyMean = FALSE,
-    uncertaintyMedian = FALSE,
-    ciInterval = c(0.025, 0.975),
-    clusterType = c("PSOCK", "FORK"),
-    cl = NULL,
-    batchDir = "temp",
-    prefix = "simBatch_b",
-    combineBatch = TRUE,
-    batch = TRUE,
-    silent = NULL,
-    batchSize = NULL,
-    keepBatch = FALSE,
-    verbose = TRUE,
-    memoryScale = NULL,
-    batchUnitBudget = 2.5e8,
-    dynamicMinistepFactor = 10,
-    egoNormalize = TRUE,
-    accumulated = FALSE,
-    rateWeight = FALSE,
-    returnDecisionDetails = FALSE,
-    returnComponents = FALSE,
-    ...
-) {
+    ...)
+{
+    if (!inherits(targets, "sienaPredictTargets"))
+        stop("'targets' must come from make_predict_targets().", call. = FALSE)
+    if (!inherits(control_uncertainty, "sienaPostestUncertainty"))
+        stop("'control_uncertainty' must come from ",
+             "set_postest_uncertainty_saom().", call. = FALSE)
+    if (!inherits(control_algo, "sienaPostestControl"))
+        stop("'control_algo' must come from set_postest_algo_saom().",
+             call. = FALSE)
+    if (!inherits(control_out, "sienaPostestOutput"))
+        stop("'control_out' must come from set_postest_output_saom().",
+             call. = FALSE)
+
+    ## One prediction per requested row; a single row returns the bare frame,
+    ## matching what marginalEffects() does with one target.
+    rows <- order(targets$.seq)
+    out  <- lapply(rows, function(i)
+        .predictOne(object, data, targets, i,
+                    control_uncertainty, control_algo, control_out, newParams))
+    names(out) <- targets$name[rows]
+    if (length(out) == 1L) out[[1L]] else out
+}
+
+## The former flat entry point, now internal: one row of the targets object,
+## with every setting already resolved.
+.predictOne <- function(object, newdata, targets, i,
+                        unc, algo, outctl, newParams)
+{
+    st     <- .predictRowSettings(targets, i)
+    effects <- attr(targets, "effects")
+    depvar  <- attr(targets, "depvar")
+
+    type         <- st$type
+    dynamic      <- st$dynamic
+    level        <- st$level
+    condition    <- st$condition
+    egoNormalize <- st$egoNormalize
+    accumulated  <- st$accumulated
+    rateWeight   <- st$rateWeight
+    na.rm        <- st$na.rm
+
+    uncertainty       <- isTRUE(unc$enabled)
+    uncertaintyMode   <- unc$mode
+    nsim              <- unc$nsim
+    uncertaintySd     <- unc$sd
+    uncertaintyCi     <- unc$ci
+    uncertaintyMean   <- unc$simMean
+    uncertaintyMedian <- unc$simMedian
+    ciInterval        <- unc$ciInterval
+
+    algorithm              <- algo$algorithm
+    n3                     <- algo$n3
+    n3PointEst             <- algo$n3PointEst
+    n3BatchSize            <- algo$n3BatchSize
+    useChangeContributions <- algo$useChangeContributions
+    useCluster             <- algo$useCluster
+    nbrNodes               <- algo$nbrNodes
+    clusterType            <- algo$clusterType
+    cl                     <- algo$cl
+    batchDir               <- algo$batchDir
+    prefix                 <- algo$prefix
+    combineBatch           <- algo$combineBatch
+    batchSize              <- algo$batchSize
+    keepBatch              <- algo$keepBatch
+    verbose                <- algo$verbose
+    memoryScale            <- algo$memoryScale
+    batchUnitBudget        <- algo$batchUnitBudget
+    dynamicMinistepFactor  <- algo$dynamicMinistepFactor
+    batch                  <- TRUE
+    silent                 <- NULL
+
+    returnDecisionDetails <- isTRUE(outctl$returnDecisionDetails)
+    returnComponents      <- isTRUE(outctl$returnComponents)
+
   if (inherits(newdata, "sienaGroup"))
     stop("predict.sienaFit does not support multi-group data (sienaGroup).")
-  type             <- match.arg(type)
 
   if (is.null(depvar)) depvar <- names(newdata[["depvars"]])[1]
   if (dynamic && is.null(algorithm)) stop("'algorithm' must be provided when dynamic = TRUE")
@@ -220,6 +270,12 @@ predict.sienaFit <- function(
     n3BatchSize   = n3BatchSize,
     useChangeContributions = if (dynamic) useChangeContributions else FALSE,
     uncertainty  = uncertainty,
+    ## The analytic Jacobian below was wired in but unreachable: this call
+    ## never passed a mode, so sienaPostestimate() took its "bootstrap"
+    ## default and predictProbabilityJac() was supplied on every call and
+    ## never consumed.  Exposing the mode is what makes the delta path
+    ## reachable at all.
+    uncertaintyMode = uncertaintyMode,
     nsim         = nsim,
     batchSize    = batchSize,
     useCluster   = useCluster,

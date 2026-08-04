@@ -147,7 +147,7 @@ if (.in_test_run()) {
       # this shape; keep them in step.
       snap_tg <- function(fit, eff, depvar, condition = NULL,
                           dependency = NULL, ...) {
-        tg <- make_postest_targets(fit, effects = eff, depvar = depvar,
+        tg <- make_marginal_targets(fit, effects = eff, depvar = depvar,
                                    type = "tieProb", level = "period",
                                    condition = condition,
                                    includeDefaults = FALSE)

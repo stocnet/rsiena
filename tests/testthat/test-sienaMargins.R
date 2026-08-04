@@ -26,7 +26,7 @@ mycontrols_2int <- load_fixture("mycontrols_2int")
 # ── Static tests ──────────────────────────────────────────────────────────────
 
 test_that("marginalEffects static: firstDiff structure", {
-  tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+  tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                              type = "tieProb", level = "egoChoice",
                              condition = c("recip", "density", "transTrip"),
                              includeDefaults = FALSE)
@@ -40,7 +40,7 @@ test_that("marginalEffects static: firstDiff structure", {
 
 
 test_that("marginalEffects static: secondDiff structure", {
-  tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+  tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                              type = "tieProb", level = "egoChoice",
                              condition = c("recip", "density", "transTrip"),
                              includeDefaults = FALSE)
@@ -54,7 +54,7 @@ test_that("marginalEffects static: secondDiff structure", {
 })
 
 test_that("marginalEffects static interaction, no uncertainty", {
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              type = "tieProb", level = "period",
                              condition = "recip", includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
@@ -67,7 +67,7 @@ test_that("marginalEffects static interaction, no uncertainty", {
 })
 
 test_that("marginalEffects static interaction with uncertainty", {
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              type = "tieProb", level = "period",
                              condition = "recip", includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
@@ -80,7 +80,7 @@ test_that("marginalEffects static interaction with uncertainty", {
 })
 
 test_that("marginalEffects static secondDiff with interactions, riskRatio", {
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              type = "tieProb", level = "period",
                              mainEffect = "riskRatio", includeDefaults = FALSE)
   tg <- suppressMessages(set_second_diff(tg, list(
@@ -95,7 +95,7 @@ test_that("marginalEffects static secondDiff with interactions, riskRatio", {
 })
 
 test_that("marginalEffects static with custom interaction", {
-  tg <- make_postest_targets(ans3, effects = mymodel3, depvar = "mynet3",
+  tg <- make_marginal_targets(ans3, effects = mymodel3, depvar = "mynet3",
                              type = "tieProb", level = "period",
                              condition = "inPop", includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, recip, contrast = c(0, 1)))
@@ -109,7 +109,7 @@ test_that("marginalEffects static with custom interaction", {
 
 test_that("marginalEffects dynamic with custom interaction", {
   skip_slow()
-  tg <- make_postest_targets(ans3, effects = mymodel3, depvar = "mynet3",
+  tg <- make_marginal_targets(ans3, effects = mymodel3, depvar = "mynet3",
                              dynamic = TRUE,
                              type = "tieProb", level = "period",
                              condition = "inPop", includeDefaults = FALSE)
@@ -128,7 +128,7 @@ test_that("marginalEffects dynamic with custom interaction", {
 
 test_that("marginalEffects dynamic: firstDiff structure, uncertainty=FALSE", {
   skip_slow()
-  tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+  tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                              dynamic = TRUE,
                              type = "tieProb", condition = "density",
                              includeDefaults = FALSE)
@@ -143,7 +143,7 @@ test_that("marginalEffects dynamic: firstDiff structure, uncertainty=FALSE", {
 
 test_that("marginalEffects dynamic: CI structure", {
   skip_slow()
-  tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+  tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                              dynamic = TRUE,
                              type = "tieProb", condition = "density",
                              includeDefaults = FALSE)
@@ -168,7 +168,7 @@ test_that("marginalEffects dynamic: CI structure", {
 
 test_that("marginalEffects dynamic: interaction", {
   skip_slow()
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              dynamic = TRUE,
                              type = "tieProb", level = "period",
                              condition = c("density", "recip"),
@@ -188,7 +188,7 @@ test_that("marginalEffects dynamic: interaction", {
 test_that("marginalEffects static: egoX auto-detects ego perturbation", {
   skip_slow()
   skip_if(is.null(ans_ego), "ans_ego not fitted (RSENA_FULL_TESTS=1)")
-  tg <- make_postest_targets(ans_ego, effects = mymodel_ego,
+  tg <- make_marginal_targets(ans_ego, effects = mymodel_ego,
                              depvar = "mynet_ego", type = "tieProb",
                              level = "period", condition = "density",
                              includeDefaults = FALSE)
@@ -205,7 +205,7 @@ test_that("marginalEffects static: egoX auto-detects ego perturbation", {
 test_that("marginalEffects static: egoX mass contrasts sum to dyad-level diffs", {
   skip_slow()
   skip_if(is.null(ans_ego), "ans_ego not fitted (RSENA_FULL_TESTS=1)")
-  tg <- make_postest_targets(ans_ego, effects = mymodel_ego,
+  tg <- make_marginal_targets(ans_ego, effects = mymodel_ego,
                              depvar = "mynet_ego", type = "changeProb",
                              level = "none", includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, egoX, diff = 1))
@@ -241,13 +241,13 @@ test_that("marginalEffects static: egoX tieProb mass contrasts use changeProbDif
   skip_slow()
   skip_if(is.null(ans_ego), "ans_ego not fitted (RSENA_FULL_TESTS=1)")
   # Compute both changeProb and tieProb versions
-  tg_cp <- make_postest_targets(ans_ego, effects = mymodel_ego,
+  tg_cp <- make_marginal_targets(ans_ego, effects = mymodel_ego,
                                 depvar = "mynet_ego", type = "changeProb",
                                 level = "none", includeDefaults = FALSE)
   tg_cp <- suppressMessages(set_target(tg_cp, egoX, diff = 1))
   out_cp <- marginalEffects(ans_ego, mydata_ego, targets = tg_cp,
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))
-  tg_tp <- make_postest_targets(ans_ego, effects = mymodel_ego,
+  tg_tp <- make_marginal_targets(ans_ego, effects = mymodel_ego,
                                 depvar = "mynet_ego", type = "tieProb",
                                 level = "none", includeDefaults = FALSE)
   tg_tp <- suppressMessages(set_target(tg_tp, egoX, diff = 1))
@@ -262,7 +262,7 @@ test_that("marginalEffects static: egoX tieProb mass contrasts use changeProbDif
 test_that("marginalEffects static: alter perturbType does NOT have mass columns", {
   skip_slow()
   skip_if(is.null(ans_ego), "ans_ego not fitted (RSENA_FULL_TESTS=1)")
-  tg <- make_postest_targets(ans_ego, effects = mymodel_ego,
+  tg <- make_marginal_targets(ans_ego, effects = mymodel_ego,
                              depvar = "mynet_ego", type = "tieProb",
                              level = "period", condition = "density",
                              includeDefaults = FALSE)
@@ -280,7 +280,7 @@ test_that("marginalEffects static: alter perturbType does NOT have mass columns"
 test_that("marginalEffects static: egoX interaction firstDiff", {
   skip_slow()
   skip_if(is.null(ans_ego), "ans_ego not fitted (RSENA_FULL_TESTS=1)")
-  tg <- make_postest_targets(ans_ego, effects = mymodel_ego,
+  tg <- make_marginal_targets(ans_ego, effects = mymodel_ego,
                              depvar = "mynet_ego", type = "tieProb",
                              level = "period",
                              condition = c("density", "transTrip"),
@@ -296,7 +296,7 @@ test_that("marginalEffects static: egoX interaction firstDiff", {
 test_that("marginalEffects dynamic: egoX auto-detects ego perturbation", {
   skip_slow()
   skip_if(is.null(ans_ego), "ans_ego not fitted (RSENA_FULL_TESTS=1)")
-  tg <- make_postest_targets(ans_ego, effects = mymodel_ego,
+  tg <- make_marginal_targets(ans_ego, effects = mymodel_ego,
                              depvar = "mynet_ego", type = "tieProb",
                              condition = "density", includeDefaults = FALSE, dynamic = TRUE)
   tg <- suppressMessages(set_target(tg, egoX, diff = 1))
@@ -315,7 +315,7 @@ test_that("marginalEffects dynamic: egoX auto-detects ego perturbation", {
 # `depvar` disagreeing with what `effects` (mymodel_ego, built for
 # "mynet_ego") has registered -- data here carries "mybeh_b", a behavior
 # variable that does not exist in mymodel_ego at all. The object form cannot
-# express this: make_postest_targets() requires depvar's effects to be
+# express this: make_marginal_targets() requires depvar's effects to be
 # present in `effects` and errors immediately ("No included effects for
 # dependent variable 'mybeh_b'"), never reaching the behavior-DV guard the
 # test is checking. Attempting to route around it by giving the targets
@@ -337,7 +337,7 @@ test_that("marginalEffects: behavior DV stops with informative error", {
   ## built for either -- so the guard is checked wherever it now fires.
   expect_error(
     suppressMessages(marginalEffects(ans_ego, mydata_b,
-      targets = make_postest_targets(ans_ego, effects = mymodel_ego,
+      targets = make_marginal_targets(ans_ego, effects = mymodel_ego,
                                      depvar = "mybeh_b", type = "tieProb",
                                      level = "period", condition = "density"),
       control_uncertainty = set_postest_uncertainty_saom(enabled = FALSE))),
@@ -349,7 +349,7 @@ test_that("marginalEffects: behavior DV stops with informative error", {
 
 test_that("two unspInt: firstDiff via unspInt1 (main effect = recip)", {
   skip_if(is.null(ans_2int), "ans_2int not fitted (RSENA_FULL_TESTS not set)")
-  tg <- make_postest_targets(ans_2int, effects = mymodel_2int,
+  tg <- make_marginal_targets(ans_2int, effects = mymodel_2int,
                              depvar = "mynet_2int", type = "tieProb",
                              level = "period",
                              condition = c("inPop", "density"),
@@ -365,7 +365,7 @@ test_that("two unspInt: firstDiff via unspInt1 (main effect = recip)", {
 
 test_that("two unspInt: firstDiff via unspInt2 (main effect = recip)", {
   skip_if(is.null(ans_2int), "ans_2int not fitted (RSENA_FULL_TESTS not set)")
-  tg <- make_postest_targets(ans_2int, effects = mymodel_2int,
+  tg <- make_marginal_targets(ans_2int, effects = mymodel_2int,
                              depvar = "mynet_2int", type = "tieProb",
                              level = "period",
                              condition = c("outPop", "density"),
@@ -381,7 +381,7 @@ test_that("two unspInt: firstDiff via unspInt2 (main effect = recip)", {
 
 test_that("two unspInt: secondDiff across unspInt1 and unspInt2", {
   skip_if(is.null(ans_2int), "ans_2int not fitted (RSENA_FULL_TESTS not set)")
-  tg <- make_postest_targets(ans_2int, effects = mymodel_2int,
+  tg <- make_marginal_targets(ans_2int, effects = mymodel_2int,
                              depvar = "mynet_2int", type = "tieProb",
                              level = "period",
                              condition = c("inPop", "outPop", "density"),
@@ -402,7 +402,7 @@ test_that("two unspInt: secondDiff across unspInt1 and unspInt2", {
 
 test_that("two unspInt: conditional prediction (tieProb) with uncertainty", {
   skip_if(is.null(ans_2int), "ans_2int not fitted (RSENA_FULL_TESTS not set)")
-  tg <- make_postest_targets(ans_2int, effects = mymodel_2int,
+  tg <- make_marginal_targets(ans_2int, effects = mymodel_2int,
                              depvar = "mynet_2int", type = "tieProb",
                              level = "period",
                              condition = c("inPop", "density"),
@@ -420,7 +420,7 @@ test_that("two unspInt: conditional prediction (tieProb) with uncertainty", {
 
 test_that("effectList batch: targets sharing (level, condition) merge into one data frame with an effect column", {
   set.seed(1)
-  tg_recip <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+  tg_recip <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                                    type = "tieProb", level = "period",
                                    condition = "density",
                                    includeDefaults = FALSE)
@@ -430,7 +430,7 @@ test_that("effectList batch: targets sharing (level, condition) merge into one d
       control_uncertainty = set_postest_uncertainty_saom(nsim = 20),
       control_algo = set_postest_algo_saom(verbose = FALSE))
 
-  tg_trans <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+  tg_trans <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                                    type = "tieProb", level = "period",
                                    condition = "density",
                                    includeDefaults = FALSE)
@@ -440,7 +440,7 @@ test_that("effectList batch: targets sharing (level, condition) merge into one d
       control_algo = set_postest_algo_saom(verbose = FALSE))
 
   set.seed(1)
-  tg_batch <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+  tg_batch <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                                    type = "tieProb", level = "period",
                                    condition = "density",
                                    includeDefaults = FALSE)
@@ -484,7 +484,7 @@ test_that("effectList batch: targets sharing (level, condition) merge into one d
 # belonged to the flat effectName1 path and went with it in step 5c, so the
 # unwrapping is now a property of the one remaining path.
 test_that("a single target returns a data frame, not a one-element list", {
-  tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+  tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                              type = "tieProb", level = "period",
                              condition = "density", includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, recip, contrast = c(0, 1)))
@@ -502,7 +502,7 @@ test_that("a single target returns a data frame, not a one-element list", {
 # `effect` column instead. One merged table, both kinds distinguished by
 # `effect` -- not a two-element named list.
 test_that("effectList: secondDiff mixed with firstDiff in one batch", {
-  tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+  tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                              type = "tieProb", level = "period",
                              condition = "density", includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, recip, contrast = c(0, 1),
@@ -530,7 +530,7 @@ test_that("effectList: secondDiff mixed with firstDiff in one batch", {
 # the shape and still exercised by running both targets in one call.
 test_that("effectList dynamic: shared forward sims merge into one data frame", {
   skip_slow()
-  tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+  tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                              dynamic = TRUE,
                              type = "tieProb", level = "period",
                              condition = "density", includeDefaults = FALSE)

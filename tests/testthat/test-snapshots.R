@@ -17,7 +17,7 @@ mydata     <- load_fixture("mydata")
 ans2       <- load_fixture("ans2")
 mydata2    <- load_fixture("mydata2")
 # The effects objects the targets are enumerated from.  Needed since these
-# tests moved to the object interface: make_postest_targets() takes the
+# tests moved to the object interface: make_marginal_targets() takes the
 # effects object rather than deriving it from the fit.
 mymodel    <- load_fixture("mymodel")
 mymodel2   <- load_fixture("mymodel2")
@@ -37,7 +37,7 @@ snap_se <- function(d) if (!is.null(d[["SE"]])) d[["SE"]] else d[["delta_se"]]
 
 snap_tg <- function(fit, eff, depvar, condition = NULL,
                     dependency = NULL, ...) {
-  tg <- make_postest_targets(fit, effects = eff, depvar = depvar,
+  tg <- make_marginal_targets(fit, effects = eff, depvar = depvar,
                              type = "tieProb", level = "period",
                              condition = condition, includeDefaults = FALSE)
   perturb <- list(...)

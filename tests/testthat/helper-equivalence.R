@@ -151,7 +151,7 @@ compare_me_output <- function(a, b, tolerance = 1e-10,
 #   name, needs, slow  -- identity, required fixtures, whether to skip when fast
 #   fit/data/effects   -- fixture NAMES, resolved against `fixtures`
 #   depvar             -- dependent variable
-#   model              -- extra make_postest_targets() arguments
+#   model              -- extra make_marginal_targets() arguments
 #   targets            -- named list: effect short name -> set_target() args
 #   sd                 -- optional list(name=, perturb=) for set_second_diff()
 #   deps               -- optional list of dependency formulas
@@ -173,7 +173,7 @@ me_corpus_fixtures <- function() {
 me_call <- function(entry, fixtures) {
   f   <- fixtures
   fit <- f[[entry$fit]]
-  tg  <- do.call(make_postest_targets,
+  tg  <- do.call(make_marginal_targets,
                  c(list(x = fit, effects = f[[entry$effects]],
                         depvar = entry$depvar, includeDefaults = FALSE),
                    entry$model %||% list()))

@@ -1,11 +1,11 @@
-\name{make_postest_targets}
-\alias{make_postest_targets}
-\alias{make_postest_targets.sienaFit}
+\name{make_marginal_targets}
+\alias{make_marginal_targets}
+\alias{make_marginal_targets.sienaFit}
 \alias{print.sienaPostestTargets}
 \alias{sienaPostestTargets}
 \title{Build a postestimation targets specification}
 \description{
-  \code{make_postest_targets} builds a \code{sienaPostestTargets} object: a
+  \code{make_marginal_targets} builds a \code{sienaPostestTargets} object: a
   table listing which marginal effects to compute, and how each one is
   perturbed. It is built and then modified the same way an effects
   specification is, via \code{\link{set_target}}, \code{\link{set_second_diff}},
@@ -13,7 +13,7 @@
   \code{\link{marginalEffects}} as its \code{targets} argument.
 }
 \usage{
-\method{make_postest_targets}{sienaFit}(x, data = NULL, effects = NULL,
+\method{make_marginal_targets}{sienaFit}(x, data = NULL, effects = NULL,
     depvar = NULL,
     dynamic = FALSE,
     type = c("changeProb", "tieProb"),
@@ -30,10 +30,10 @@
 \method{print}{sienaPostestTargets}(x, \dots)
 }
 \arguments{
-  \item{x}{For \code{make_postest_targets}, a fitted \code{sienaFit} object
+  \item{x}{For \code{make_marginal_targets}, a fitted \code{sienaFit} object
       (as returned by \code{\link{siena07}}) to build targets for. For
       \code{print.sienaPostestTargets}, the \code{sienaPostestTargets}
-      object to print, as returned by \code{make_postest_targets} or by a
+      object to print, as returned by \code{make_marginal_targets} or by a
       later \code{\link{set_target}}/\code{\link{set_second_diff}}/
       \code{\link{set_dependency}} call.}
   \item{data}{Currently unused (reserved).}
@@ -102,7 +102,7 @@
       \code{\link{print}}).}
 }
 \value{
-  \code{make_postest_targets} returns an object of class
+  \code{make_marginal_targets} returns an object of class
   \code{c("sienaPostestTargets", "data.frame")} with one row per candidate
   effect (rate effects are excluded outright, see Details). Columns
   include \code{name}, \code{effectName1}, \code{effectType},
@@ -165,7 +165,7 @@
 \dontrun{
 ## ans is a fitted sienaFit; mymodel is the sienaEffects object it was
 ## fitted with; mydata is the corresponding siena data object.
-mytg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+mytg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                              type = "tieProb", level = "period")
 mytg <- set_target(mytg, transTrip, diff = 2)
 mytg <- set_second_diff(mytg, list(density = NULL, recip = list(diff = 1)))
@@ -176,7 +176,7 @@ me <- marginalEffects(ans, data = mydata, targets = mytg,
                       control_algo = set_postest_algo_saom())
 
 ## Start from nothing and build the target set up explicitly
-mytg2 <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+mytg2 <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                               includeDefaults = FALSE)
 mytg2 <- set_target(mytg2, c(density, transTrip))
 }

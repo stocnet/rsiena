@@ -180,7 +180,7 @@ test_that("set_postest_algo_saom: chainStoreMode/clusterType are matched via mat
                regexp = "PSOCK")
 })
 
-## `dynamic` moved to make_postest_targets(): it selects the estimand (static vs
+## `dynamic` moved to make_marginal_targets(): it selects the estimand (static vs
 ## model-implied), not the route to it.  Its consistency rules (accumulated
 ## requires dynamic; rateWeight inert under dynamic) are therefore checked at
 ## target construction -- see test-postest-targets-dynamic.R.  The
@@ -376,7 +376,7 @@ test_that("printed targets state the estimand rather than listing 'defaults'", {
   ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
   skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
 
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              type = "tieProb", condition = "recip")
   txt <- targets_print(tg)
   expect_match(txt, "risk difference in tie probability")
@@ -385,7 +385,7 @@ test_that("printed targets state the estimand rather than listing 'defaults'", {
   ## "defaults" invited the reading "what would have been used anyway".
   expect_false(grepl("defaults", txt))
 
-  dyn <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  dyn <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                               dynamic = TRUE, mainEffect = "riskRatio")
   dtxt <- targets_print(dyn)
   expect_match(dtxt, "risk ratio in change probability")
@@ -398,7 +398,7 @@ test_that("printed targets name the covariate an effect refers to", {
   ans_ego <- load_fixture("ans_ego"); mymodel_ego <- load_fixture("mymodel_ego")
   skip_if(is.null(ans_ego) || is.null(mymodel_ego), "ego fixtures unavailable")
 
-  tg <- make_postest_targets(ans_ego, effects = mymodel_ego)
+  tg <- make_marginal_targets(ans_ego, effects = mymodel_ego)
   txt <- targets_print(tg)
   ## The short name stays -- it is what set_target() is called with -- but on
   ## its own it does not say which covariate.
@@ -413,7 +413,7 @@ test_that("printed second differences show both perturbations, not just the firs
   ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
   skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
 
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              includeDefaults = FALSE)
   tg <- suppressMessages(set_second_diff(tg,
                                          list(transTrip = list(diff = 1),
@@ -432,7 +432,7 @@ test_that("printed first differences distinguish a step from a contrast", {
   ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
   skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
 
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2")
+  tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2")
   txt <- targets_print(tg)
   ## density defaults to a contrast, everything else to a unit step.
   expect_match(txt, "density -1 -> 1")
@@ -445,7 +445,7 @@ test_that("printed targets show override VALUES, and only claim overriding when 
   ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
   skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
 
-  plain <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2")
+  plain <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2")
   ## Nothing overrides anything, so the sentence describing overrides would
   ## be describing a distinction this object does not make.
   expect_false(grepl("bracketed", targets_print(plain)))
@@ -465,7 +465,7 @@ test_that("printed target order is the order results come back in", {
 
   ## Built up in an order that differs from the model's effect order, which is
   ## the order the table itself is in.
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              includeDefaults = FALSE)
   tg <- suppressMessages(set_target(tg, transTrip, diff = 1))
   tg <- suppressMessages(set_target(tg, density, contrast = c(-1, 1)))
@@ -493,7 +493,7 @@ test_that("each list entry lowers onto the component it names", {
   ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
   skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
 
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              includeDefaults = FALSE)
   lst <- suppressMessages(set_second_diff(tg,
       list(transTrip = list(diff = 1), recip = list(contrast = c(0, 1))),
@@ -516,7 +516,7 @@ test_that("a declared relation survives lowering onto both sides", {
   ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
   skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
 
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              includeDefaults = FALSE)
   lst <- suppressMessages(set_second_diff(tg,
       list(recip = list(contrast = c(0, 1)), transTrip = list(diff = 1)),
@@ -538,10 +538,10 @@ test_that("a NULL entry gives that effect its default perturbation", {
   ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
   skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
 
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              includeDefaults = FALSE)
   ## density defaults to a contrast, transTrip to a unit step -- the same
-  ## defaults make_postest_targets() would have applied.
+  ## defaults make_marginal_targets() would have applied.
   lst <- suppressMessages(set_second_diff(tg, list(density = NULL,
                                                    transTrip = list())))
   sp <- RSiena:::.targetsToEffectList(lst)$effectList[[1L]]
@@ -559,7 +559,7 @@ test_that("an effect may be crossed with itself in the list form", {
   ## Repeated names are meaningful: crossing an effect with itself is a real
   ## quantity.  Rejecting duplicates would make the list form less expressive
   ## than the numbered one it replaces.
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              includeDefaults = FALSE)
   lst <- suppressMessages(set_second_diff(tg, list(
       recip = list(contrast = c(0, 1)),
@@ -576,7 +576,7 @@ test_that("malformed perturbation lists are rejected with the effect named", {
   ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
   skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
 
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              includeDefaults = FALSE)
   sd <- function(...) suppressMessages(set_second_diff(tg, ...))
 
@@ -599,7 +599,7 @@ test_that("a second difference crosses exactly two effects", {
   ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
   skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
 
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              includeDefaults = FALSE)
   expect_error(suppressMessages(set_second_diff(tg, list(density = NULL))),
                "exactly two effects")
@@ -616,7 +616,7 @@ test_that("the removed numbered form is refused with a pointer, not ignored", {
   ans2 <- load_fixture("ans2"); mymodel2 <- load_fixture("mymodel2")
   skip_if(is.null(ans2) || is.null(mymodel2), "ans2 fixtures unavailable")
 
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              includeDefaults = FALSE)
   ## Two bare effect names: these are effect names, not objects, so the
   ## default failure is "object 'transTrip' not found" -- true and useless.
@@ -657,7 +657,7 @@ test_that("an ambiguous short name is refused rather than resolved to the first 
   skip_if(is.null(ans_2int) || is.null(mymodel_2int),
           "2int fixtures unavailable (RSENA_FULL_TESTS not set)")
 
-  tg <- make_postest_targets(ans_2int, effects = mymodel_2int,
+  tg <- make_marginal_targets(ans_2int, effects = mymodel_2int,
                              depvar = "mynet_2int")
   ## Two unspInt terms: "unspInt" names both.
   expect_error(suppressMessages(set_target(tg, unspInt, diff = 2)),
@@ -679,7 +679,7 @@ test_that("colliding short names still get distinct target names", {
   skip_if(is.null(ans_2int) || is.null(mymodel_2int),
           "2int fixtures unavailable (RSENA_FULL_TESTS not set)")
 
-  tg <- make_postest_targets(ans_2int, effects = mymodel_2int,
+  tg <- make_marginal_targets(ans_2int, effects = mymodel_2int,
                              depvar = "mynet_2int")
   ## Two targets called "unspInt_fd" would collide in the result list and in
   ## set_target's duplicate-name check.
@@ -693,7 +693,7 @@ test_that("the engine is given the qualified name, the user sees the short one",
   skip_if(is.null(ans_ego) || is.null(mymodel_ego),
           "ego fixtures unavailable (RSENA_FULL_TESTS not set)")
 
-  tg <- make_postest_targets(ans_ego, effects = mymodel_ego)
+  tg <- make_marginal_targets(ans_ego, effects = mymodel_ego)
   lowered <- RSiena:::.targetsToEffectList(tg)$effectList
   nm <- vapply(lowered, function(e) e$effectName1, character(1L))
   ## Internal: the covariate-qualified name, which is what pins down which
@@ -711,7 +711,7 @@ test_that("a covariate identifies which target a short name means", {
   skip_if(is.null(ans_ego) || is.null(mymodel_ego),
           "ego fixtures unavailable (RSENA_FULL_TESTS not set)")
 
-  tg <- make_postest_targets(ans_ego, effects = mymodel_ego)
+  tg <- make_marginal_targets(ans_ego, effects = mymodel_ego)
   ## The set_effect() pattern: short name plus the covariate it is defined on.
   expect_no_error(suppressMessages(
       set_target(tg, egoX, covar1 = "mybeh_ego", diff = 2)))
@@ -734,7 +734,7 @@ test_that("a second difference records which target each component was", {
   skip_if(is.null(ans_2int) || is.null(mymodel_2int),
           "2int fixtures unavailable (RSENA_FULL_TESTS not set)")
 
-  tg <- make_postest_targets(ans_2int, effects = mymodel_2int,
+  tg <- make_marginal_targets(ans_2int, effects = mymodel_2int,
                              depvar = "mynet_2int", includeDefaults = FALSE)
   ## An ambiguous component is caught when the target is added, not when it
   ## is computed several steps later.

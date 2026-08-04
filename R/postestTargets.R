@@ -31,10 +31,47 @@
 .targetDefaultContrast <- list(density = c(-1, 1),
                                recip   = c(0, 1))
 
-##@make_postest_targets Postestimation
-make_postest_targets <- function(x, ...) UseMethod("make_postest_targets", x)
+## --------------------------------------------------------------------------
+## .checkEstimandCombo — the estimand settings that constrain one another
+##
+## Shared by make_marginal_targets() and make_predict_targets(): the rules are
+## about what the estimand MEANS, not about which quantity is being computed,
+## so both objects have to enforce them identically or the two entry points
+## drift apart.
+## --------------------------------------------------------------------------
+.checkEstimandCombo <- function(dynamic, accumulated, rateWeight, what) {
+    if (!is.logical(dynamic) || length(dynamic) != 1L || is.na(dynamic))
+        stop("'dynamic' must be a single non-NA logical.", call. = FALSE)
+    if (isTRUE(accumulated) && !dynamic)
+        stop("accumulated = TRUE requires dynamic = TRUE: an accumulated ",
+             what, " sums over the ministeps of a simulated chain, which a ",
+             "static evaluation does not have.", call. = FALSE)
+    if (isTRUE(rateWeight) && dynamic)
+        message("Note: rate-weighting is absorbed by the simulation when ",
+                "dynamic = TRUE (actors are drawn proportional to lambda), ",
+                "so 'rateWeight' has no additional effect here.")
+    invisible(TRUE)
+}
 
-##@make_postest_targets.sienaFit Postestimation
+## Levels the aggregation understands, coarsest first.  egoChoice (static) and
+## ministepChoice (dynamic) are the finest: one row per alternative, i.e. the
+## ego's whole tie profile rather than a summary of it.
+.postestLevels <- c("none", "period", "ego", "egoChoice",
+                    "chain", "chainEgo", "ministep", "ministepChoice")
+
+.checkLevel <- function(level) {
+    if (!is.character(level) || length(level) != 1L || is.na(level))
+        stop("'level' must be a single non-NA string.", call. = FALSE)
+    if (!level %in% .postestLevels)
+        stop("Unknown level '", level, "'. Available: ",
+             paste(.postestLevels, collapse = ", "), ".", call. = FALSE)
+    invisible(level)
+}
+
+##@make_marginal_targets Postestimation
+make_marginal_targets <- function(x, ...) UseMethod("make_marginal_targets", x)
+
+##@make_marginal_targets.sienaFit Postestimation
 ##
 ## Holds three things: the target rows, the model-level defaults those rows
 ## inherit, and the effects/depvar the targets were enumerated from.  Inputs
@@ -45,7 +82,7 @@ make_postest_targets <- function(x, ...) UseMethod("make_postest_targets", x)
 ## `effects` is required rather than defaulted from the fit: the fit does carry
 ## it, but edge cases (conditional estimation, stripped effect objects) make
 ## the implicit route unreliable, so the caller states it.
-make_postest_targets.sienaFit <- function(x, data = NULL, effects = NULL,
+make_marginal_targets.sienaFit <- function(x, data = NULL, effects = NULL,
                                   depvar = NULL,
                                   dynamic = FALSE,
                                   type = c("changeProb", "tieProb"),
@@ -66,14 +103,7 @@ make_postest_targets.sienaFit <- function(x, data = NULL, effects = NULL,
     if (!is.logical(dynamic) || length(dynamic) != 1L || is.na(dynamic))
         stop("'dynamic' must be a single non-NA logical.", call. = FALSE)
 
-    if (isTRUE(accumulated) && !dynamic)
-        stop("accumulated = TRUE requires dynamic = TRUE: an accumulated ",
-             "marginal effect sums over the ministeps of a simulated chain, ",
-             "which a static evaluation does not have.", call. = FALSE)
-    if (isTRUE(rateWeight) && dynamic)
-        message("Note: rate-weighting is absorbed by the simulation when ",
-                "dynamic = TRUE (actors are drawn proportional to lambda), ",
-                "so 'rateWeight' has no additional effect here.")
+    .checkEstimandCombo(dynamic, accumulated, rateWeight, "marginal effect")
 
     if (is.null(effects))
         stop("'effects' must be supplied -- the effects object the model was ",
@@ -651,7 +681,7 @@ print.sienaPostestTargets <- function(x, ...) {
 .targetsToEffectList <- function(tg) {
     if (!inherits(tg, "sienaPostestTargets"))
         stop("'targets' must be a sienaPostestTargets object, as returned by ",
-             "make_postest_targets().", call. = FALSE)
+             "make_marginal_targets().", call. = FALSE)
     keep <- which(tg$include)
     keep <- keep[order(tg$.seq[keep])]
     if (length(keep) == 0L)

@@ -8,12 +8,12 @@
 \title{Select, tune, and relate postestimation targets}
 \description{
   Three functions modify a \code{sienaPostestTargets} object, as built by
-  \code{\link{make_postest_targets}}. Each returns a modified \emph{copy}
+  \code{\link{make_marginal_targets}}. Each returns a modified \emph{copy}
   of its input; none of them mutate the object in place.
 
   \code{set_target} selects or deselects one or more existing targets and
   tunes how each one is perturbed, optionally overriding the model-level
-  settings from \code{\link{make_postest_targets}} for just that target.
+  settings from \code{\link{make_marginal_targets}} for just that target.
 
   \code{set_second_diff} adds a new target crossing two effects: the first
   difference of one effect after also perturbing a second, i.e.\ a second
@@ -47,7 +47,7 @@ set_dependency(x, \dots)
 }
 \arguments{
   \item{x}{A \code{sienaPostestTargets} object, as returned by
-      \code{\link{make_postest_targets}} or by an earlier
+      \code{\link{make_marginal_targets}} or by an earlier
       \code{set_target}, \code{set_second_diff}, or \code{set_dependency}
       call.}
   \item{shortNames}{One or more effect short names identifying which
@@ -66,7 +66,7 @@ set_dependency(x, \dots)
      recip = list(contrast = c(0, 1)))}
 
       A \code{NULL} value, or an empty list, gives that effect its default
-      perturbation (see \code{\link{make_postest_targets}}). Exactly two
+      perturbation (see \code{\link{make_marginal_targets}}). Exactly two
       entries are required; the same effect may appear twice, which crosses
       it with itself.
 
@@ -105,21 +105,21 @@ set_dependency(x, \dots)
       auto-detection used by \code{\link{marginalEffects}} in place; see
       that page for details.}
   \item{level}{Optional per-target override of the \code{level} set in
-      \code{\link{make_postest_targets}}, for this target only. If not
+      \code{\link{make_marginal_targets}}, for this target only. If not
       supplied, the target inherits the model-level value (see Details).}
   \item{condition}{Optional per-target override of the \code{condition}
-      set in \code{\link{make_postest_targets}}, for this target only. An
+      set in \code{\link{make_marginal_targets}}, for this target only. An
       explicit \code{condition = NULL} is different from not supplying
       \code{condition} at all: it switches conditioning off for this
       target even when the model sets one (see Details).}
   \item{accumulated}{Optional per-target override of the \code{accumulated}
-      set in \code{\link{make_postest_targets}}, for this target only (see
+      set in \code{\link{make_marginal_targets}}, for this target only (see
       Details for how it combines with the model-level value).}
   \item{rateWeight}{Optional per-target override of the \code{rateWeight}
-      set in \code{\link{make_postest_targets}}, for this target only (see
+      set in \code{\link{make_marginal_targets}}, for this target only (see
       Details for how it combines with the model-level value).}
   \item{massContrasts}{Optional per-target override of the
-      \code{massContrasts} set in \code{\link{make_postest_targets}}, for
+      \code{massContrasts} set in \code{\link{make_marginal_targets}}, for
       this target only (see Details).}
   \item{include}{Logical, default \code{TRUE}: for \code{set_target},
       whether the named target(s) are selected for computation; for
@@ -174,7 +174,7 @@ set_dependency(x, \dots)
   model-level value, which is different from explicitly passing
   \code{NULL}. This distinction matters most for \code{condition}: an
   explicit \code{condition = NULL} on a target switches conditioning off
-  for that target even when \code{\link{make_postest_targets}} set one,
+  for that target even when \code{\link{make_marginal_targets}} set one,
   whereas simply not supplying \code{condition} inherits the model-level
   setting. When the targets object is used, \code{level} and
   \code{condition} overrides replace the model-level value outright
@@ -188,7 +188,7 @@ set_dependency(x, \dots)
   \strong{Second differences} (\code{set_second_diff}): each of the two
   components defaults its own perturbation independently, the same way a
   single \code{set_target} call would (see
-  \code{\link{make_postest_targets}}), unless that component's list entry
+  \code{\link{make_marginal_targets}}), unless that component's list entry
   says otherwise.
 
   \strong{Dependencies} (\code{set_dependency}): a dependency is a
@@ -215,7 +215,7 @@ set_dependency(x, \dots)
   repeated \code{set_dependency} calls.
 }
 \seealso{
-  \code{\link{make_postest_targets}} for building the targets object,
+  \code{\link{make_marginal_targets}} for building the targets object,
   \code{\link{marginalEffects}} for the function \code{targets} is passed
   to, and \code{\link{set_postest_uncertainty_saom}} /
   \code{\link{set_postest_algo_saom}} for the accompanying uncertainty and
@@ -225,7 +225,7 @@ set_dependency(x, \dots)
 \dontrun{
 ## ans is a fitted sienaFit; mymodel is the sienaEffects object it was
 ## fitted with; mydata is the corresponding siena data object.
-mytg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+mytg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                              includeDefaults = FALSE)
 mytg <- set_target(mytg, transTrip, diff = 2)
 mytg <- set_target(mytg, c(density, recip))
@@ -242,7 +242,7 @@ me <- marginalEffects(ans, data = mydata, targets = mytg,
 ## on a different variable, in a single call. For a dynamic model the
 ## simulated chains are shared across both targets, instead of being
 ## simulated once per call for two separate calls.
-mytg2 <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+mytg2 <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                               includeDefaults = FALSE)
 mytg2 <- set_target(mytg2, transTrip, diff = 1, condition = "recip")
 mytg2 <- set_target(mytg2, density, contrast = c(-1, 1), condition = NULL)

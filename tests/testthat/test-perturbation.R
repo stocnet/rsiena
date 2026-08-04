@@ -306,7 +306,7 @@ test_that("cells reproduce marginalEffects' second difference exactly", {
   skip_if(is.null(ans2) || is.null(mydata2) || is.null(mymodel2),
           "ans2 fixtures unavailable")
 
-  tg <- make_postest_targets(ans2, effects = mymodel2, depvar = "mynet2",
+  tg <- make_marginal_targets(ans2, effects = mymodel2, depvar = "mynet2",
                              ## egoChoice is the row-level aggregation: one
                              ## row per (period, ego, choice). "none" would
                              ## collapse to a single number.
@@ -557,7 +557,7 @@ test_that("delta SE agrees with bootstrap for BOTH perturbation types", {
 
   for (pt in c("alter", "ego")) {
     mk <- function() {
-      tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+      tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                                  type = "tieProb", level = "period",
                                  includeDefaults = FALSE)
       suppressMessages(set_target(tg, transTrip, diff = 1, perturbType = pt))
@@ -588,7 +588,7 @@ test_that("delta SE agrees with bootstrap for BOTH perturbation types", {
   ## and nothing in the suite noticed, because every second difference tested
   ## here had matching types on both sides.
   mk2 <- function() {
-    tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+    tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                                type = "tieProb", level = "period",
                                includeDefaults = FALSE)
     suppressMessages(set_second_diff(tg, list(
@@ -633,7 +633,7 @@ test_that("an ego perturbation uses the analytic path, with the ego harness", {
     function(...) { seen$ego <- seen$ego + 1L; orig(...) }, ns = "RSiena")
 
   mk <- function(pt) {
-    tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+    tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
                                type = "tieProb", level = "period",
                                includeDefaults = FALSE)
     suppressMessages(set_target(tg, transTrip, diff = 1, perturbType = pt))
@@ -734,7 +734,7 @@ test_that("accumulated aggregation honours `condition` instead of dropping it", 
   ## grouping -- the same thing getGroupVars() does on the non-accumulated
   ## path.
   run <- function(acc) {
-    tg <- make_postest_targets(ans, effects = mymodel, depvar = "mynet",
+    tg <- make_marginal_targets(ans, effects = mymodel, depvar = "mynet",
             type = "tieProb", level = "period", dynamic = TRUE,
             accumulated = acc, condition = "density",
             includeDefaults = FALSE)
