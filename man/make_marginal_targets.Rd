@@ -3,7 +3,7 @@
 \alias{make_marginal_targets.sienaFit}
 \alias{print.sienaPostestTargets}
 \alias{sienaPostestTargets}
-\title{Build a postestimation targets specification}
+\title{Build a marginal-effect targets specification}
 \description{
   \code{make_marginal_targets} builds a \code{sienaPostestTargets} object: a
   table listing which marginal effects to compute, and how each one is
@@ -153,6 +153,8 @@
   two separate targets objects and two separate calls.
 }
 \seealso{
+  \code{\link{make_predict_targets}} for the prediction counterpart.
+
   \code{\link{set_target}} and \code{\link{set_second_diff}} for
   selecting, tuning, and adding targets, \code{\link{set_dependency}} for
   declaring how effects relate, \code{\link{marginalEffects}} for the

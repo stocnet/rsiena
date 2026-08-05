@@ -5,7 +5,7 @@
 \alias{set_second_diff.sienaPostestTargets}
 \alias{set_dependency}
 \alias{set_dependency.sienaPostestTargets}
-\title{Select, tune, and relate postestimation targets}
+\title{Select, tune, and relate marginal-effect targets}
 \description{
   Three functions modify a \code{sienaPostestTargets} object, as built by
   \code{\link{make_marginal_targets}}. Each returns a modified \emph{copy}

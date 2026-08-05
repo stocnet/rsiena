@@ -160,6 +160,36 @@
   Gotthardt, D. and Steglich, C.E.G.. (2026).
   Marginal effects for the stochastic actor-oriented model.
 }
+\section{Choosing an uncertainty mode}{
+  Measured on the \code{s50} example; treat the numbers as indicative, not as
+  general constants.
+
+  \strong{Standard errors.}  \code{"delta"} and \code{"bootstrap"} agree
+  closely: within 2\% on predicted probabilities and first differences, and
+  within 9\% on a second difference, against a 4000-draw bootstrap.  If a
+  standard error is what you report, the analytic modes are enough.
+
+  \strong{Intervals are a different matter.}  \code{"delta"} reports
+  \code{est} \eqn{\pm} 1.96 SE, which is symmetric by construction, whereas
+  the bootstrap reports empirical quantiles.  For a SECOND DIFFERENCE the
+  sampling distribution is noticeably skewed -- upper and lower half-widths in
+  a ratio of about 0.53 to 0.71 on this example -- and the symmetric interval
+  placed the upper bound 25--39\% too high even though the standard errors
+  agreed.  Use \code{"bootstrap"} when an interval on a second difference is
+  the reported quantity.
+
+  \strong{Dynamic quantities.}  \code{"delta"} gives the conditional
+  (frozen-chain) standard error, which omits the path-distribution channel;
+  \code{"deltaFull"} adds it and is the one comparable with a bootstrap.  Two
+  chain settings do different jobs and are easy to confuse:
+  \code{n3PointEst} sizes the POINT ESTIMATE simulation and has no effect on
+  the standard error; \code{n3} sizes the UNCERTAINTY simulation and governs
+  its stability -- about 7\% relative variation across chain realisations at
+  \code{n3 = 200}, 5\% at 1000, 3\% at 2000, with cost linear in
+  \code{n3}.  For publishable dynamic results use \code{"deltaFull"} with
+  \code{n3} of at least 500, and \code{n3PointEst} of 1000 or more for a
+  stable point estimate.
+}
 \author{Daniel Gotthardt}
 \seealso{
   \code{\link{predict.sienaFit}}, \code{\link{interpret_size}},

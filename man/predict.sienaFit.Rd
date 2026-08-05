@@ -34,89 +34,51 @@
   standard errors and confidence intervals.
 }
 \usage{
-\method{predict}{sienaFit}(object, newdata, type = c("changeProb", "tieProb"),
-    newParams = NULL, effects = NULL, depvar = NULL,
-    dynamic = FALSE, algorithm = NULL, n3 = 1000,
-    n3PointEst = NULL, n3BatchSize = NULL,
-    useChangeContributions = FALSE,
-    level = "period", condition = NULL, sum_fun = mean, na.rm = TRUE,
-    uncertainty = TRUE,
-    useCluster = FALSE, nbrNodes = 1,
-    nsim = 1000, uncertaintySd = TRUE, uncertaintyCi = TRUE,
-    uncertaintyMean = FALSE, uncertaintyMedian = FALSE,
-    ciInterval = c(0.025, 0.975),
-    clusterType = c("PSOCK", "FORK"), cl = NULL,
-    batchDir = "temp", prefix = "simBatch_b",
-    combineBatch = TRUE, batch = TRUE, silent = NULL,
-    batchSize = NULL, keepBatch = FALSE, verbose = TRUE,
-    memoryScale = NULL, batchUnitBudget = 2.5e8,
-    dynamicMinistepFactor = 10,
-    egoNormalize = TRUE, accumulated = FALSE, rateWeight = FALSE,
-    returnDecisionDetails = FALSE, returnComponents = FALSE, \dots)
+\method{predict}{sienaFit}(object, data, targets,
+    control_uncertainty = set_postest_uncertainty_saom(),
+    control_algo        = set_postest_algo_saom(),
+    control_out         = set_postest_output_saom(),
+    newParams = NULL, \dots)
 }
 \arguments{
   \item{object}{A \code{sienaFit} object.}
-  \item{newdata}{A \code{siena} data object (typically the same data
-      used for estimation).}
-  \item{type}{\code{"changeProb"} (default) or \code{"tieProb"}.}
-  \item{newParams}{Optional named numeric vector of parameter values.
-      If \code{NULL}, the estimates from \code{object} are used.}
-  \item{effects}{Optional \code{sienaEffects} object.  Defaults to
-      \code{object$requestedEffects}.}
-  \item{depvar}{Name of the dependent variable.  Defaults to the first
-      dependent variable in \code{newdata}.}
-  \item{dynamic}{Logical.  If \code{TRUE}, probabilities are computed
-      along simulated Markov chains between observations.}
-  \item{algorithm}{A \code{sienaAlgorithm} object.  Required when
-      \code{dynamic = TRUE}.}
-  \item{n3}{Number of simulated chains for dynamic predictions
-      (default 1000).}
-  \item{n3PointEst}{Optional number of chains used for the point
-      estimate (dynamic predictions); defaults to \code{n3}.}
-  \item{n3BatchSize}{Optional batch size for chain simulation
-      (dynamic predictions).}
-  \item{useChangeContributions}{Logical.  If \code{TRUE}, reuse
-      change contributions stored in \code{object} (from the
-      estimation run) instead of re-extracting them.}
-  \item{level}{Aggregation level: \code{"none"}, \code{"period"},
-      \code{"ego"}, \code{"egoChoice"}, \code{"chain"},
-      \code{"ministep"}, or \code{"ministepChoice"}.
-      Default \code{"period"}.}
-  \item{condition}{Optional conditioning variable for grouped
-      aggregation.}
-  \item{sum_fun}{Aggregation function (default \code{mean}).}
-  \item{na.rm}{Logical: remove NAs before aggregation.}
-  \item{uncertainty}{Logical (default \code{TRUE}).  If \code{TRUE},
-      compute uncertainty via Monte Carlo theta draws.}
-  \item{useCluster}{Logical: parallelize theta draws across a cluster.}
-  \item{nbrNodes}{Number of cluster nodes.}
-  \item{nsim}{Number of theta draws (default 1000).}
-  \item{uncertaintySd, uncertaintyCi, uncertaintyMean, uncertaintyMedian,
-      ciInterval}{Control output columns for SE, confidence intervals, mean,
-      median, and quantiles. \code{ciInterval} gives the CI bounds (default
-      \code{c(0.025, 0.975)}); the median (0.5) is added when
-      \code{uncertaintyMedian = TRUE}.}
-  \item{clusterType}{\code{"PSOCK"} or \code{"FORK"}.}
-  \item{cl}{An existing cluster object (optional).}
-  \item{batchDir, prefix, combineBatch, batchSize, keepBatch}{Batch
-      mode settings for large-scale computations.}
-  \item{batch}{Logical: run \code{siena07} in batch mode (default
-      \code{TRUE}).  Applies only when \code{dynamic = TRUE}.}
-  \item{silent}{Logical: suppress \code{siena07} output.  Defaults to
-      the value of \code{batch}.}
-  \item{verbose}{Logical: print progress messages.}
-  \item{memoryScale, batchUnitBudget, dynamicMinistepFactor}{Memory
-      management parameters for batch sizing.}
-  \item{egoNormalize}{Logical: normalise contributions per ego
-      (default \code{TRUE}).}
-  \item{accumulated}{Logical: accumulate predictions across ministeps
-      (default \code{FALSE}).}
-  \item{rateWeight}{Logical: weight by the rate function (default
-      \code{FALSE}).}
-  \item{returnDecisionDetails}{Logical: include per-decision detail
-      columns in the output (default \code{FALSE}).}
-  \item{returnComponents}{Logical: include utility component
-      breakdowns in the output (default \code{FALSE}).}
+  \item{data}{A \code{siena} data object (typically the same data used
+      for estimation).}
+  \item{targets}{A prediction-targets object from
+      \code{\link{make_predict_targets}}, optionally extended with
+      \code{\link{set_condition}}.  It states WHAT to predict: the
+      quantity (\code{type}), whether to evaluate at the observed waves or
+      along simulated chains (\code{dynamic}), how far to aggregate
+      (\code{level}), and what to stratify by (\code{condition}).  One
+      prediction is returned per row.}
+  \item{control_uncertainty}{From
+      \code{\link{set_postest_uncertainty_saom}}.
+
+      For a STATIC prediction the decision contexts are fixed, so
+      \code{mode = "delta"} is the whole of the uncertainty and agrees with
+      \code{"bootstrap"} to within a few percent at roughly one hundredth of
+      the cost.
+
+      For a DYNAMIC prediction the contexts are simulated and therefore
+      themselves depend on the parameters.  \code{"delta"} then reports the
+      CONDITIONAL (frozen-chain) standard error, which omits that channel and
+      is correspondingly smaller -- three to four times smaller on the s50
+      example.  \code{"deltaFull"} adds the path-distribution term and is the
+      one comparable with \code{"bootstrap"}: on the same example the two
+      agree to within Monte-Carlo error (ratios 1.15 and 0.86 at 300 draws),
+      at 7 seconds against 31 minutes.  A \code{deltaFull} run reports both,
+      as \code{SE} and \code{SE_conditional}.
+
+      Both analytic modes are estimated from the simulated chains, so
+      \code{n3PointEst} governs their accuracy: at very small chain counts
+      the frozen-chain Jacobian is unreliable.}
+  \item{control_algo}{From \code{\link{set_postest_algo_saom}}.  Only
+      consulted when the targets object sets \code{dynamic = TRUE}, which
+      requires an \code{algorithm}.}
+  \item{control_out}{From \code{\link{set_postest_output_saom}}.  Also
+      carries \code{returnDecisionDetails} and \code{returnComponents}.}
+  \item{newParams}{Optional named numeric vector of parameter values.  If
+      \code{NULL}, the estimates from \code{object} are used.}
   \item{\dots}{Additional arguments (currently unused).}
 }
 \details{
@@ -130,38 +92,71 @@
   Each theta draw triggers a fresh set of chain simulations, so
   dynamic predictions with uncertainty are substantially slower.
 
-  \strong{Aggregation}: The \code{level} parameter controls how the
-  raw per-ego-per-choice predictions are aggregated.  For example,
-  \code{level = "period"} averages across egos within each period.
-  The \code{condition} parameter allows further grouping
-  (e.g.\ by a density (creation vs. dissolution) or reciprocity effect).
+  \strong{Level and condition are separate axes.}  \code{level} sets the
+  grain: \code{"period"} averages within a period, \code{"ego"} gives one
+  row per actor, and \code{"egoChoice"} (static) or
+  \code{"ministepChoice"} (dynamic) keep one row per alternative -- the
+  ego's whole tie profile rather than a summary of it.  \code{condition}
+  stratifies within whatever grain is chosen, by the value of a change
+  statistic; conditioning on density separates tie creation from tie
+  maintenance.  A profile is a grain, not a stratification, and the two can
+  be combined or used alone.
 
   Multi-group data (\code{sienaGroup}) is not yet supported.
 }
 \value{
-  A data.frame (or data.table if available) with columns depending on
-  \code{level} and \code{type}.
+  With one row in \code{targets}, a data.frame; with several, a named list
+  of them, named by the targets' \code{name} column.  Each carries class
+  \code{"sienaPrediction"}.
 
-  When \code{uncertainty = FALSE}, the \code{level = "none"} output
-  contains one row per ego-choice-period (static) or
-  ego-choice-chain-ministep (dynamic), with columns including:
-  \describe{
-    \item{\code{period}, \code{ego}, \code{choice}}{Coordinates.}
-    \item{\code{changeUtil}}{The multinomial logit utility for this
-          choice.}
-    \item{\code{changeProb}}{The multinomial choice probability.}
-    \item{\code{tieProb}}{The tie probability (if
-          \code{type = "tieProb"}).}
-    \item{Effect contribution columns}{One column per effect with
-          the change statistic value.}
-  }
+  Columns depend on \code{level} and \code{condition}: the grouping
+  variables for the requested level (\code{period}, \code{ego},
+  \code{choice}, \code{chain}, \code{ministep} as applicable), one column
+  per conditioning statistic, and the predicted quantity named after
+  \code{type} (\code{changeProb} or \code{tieProb}).
 
-  When \code{uncertainty = TRUE}, the output is at the requested
-  \code{level} of aggregation with columns \code{Mean}, \code{SE},
-  quantiles, etc.
+  When uncertainty is enabled the output additionally carries \code{SE} and
+  the requested interval columns.  The standard error is always called
+  \code{SE} whatever produced it; \code{attr(x, "uncertaintyMethod")}
+  records the method, since two standard errors that hold different things
+  fixed should not share a name.
+
+  \code{returnDecisionDetails = TRUE} attaches the per-decision detail as an
+  attribute rather than adding columns.
+}
+\section{Choosing an uncertainty mode}{
+  Measured on the \code{s50} example; treat the numbers as indicative, not as
+  general constants.
+
+  \strong{Standard errors.}  \code{"delta"} and \code{"bootstrap"} agree
+  closely: within 2\% on predicted probabilities and first differences, and
+  within 9\% on a second difference, against a 4000-draw bootstrap.  If a
+  standard error is what you report, the analytic modes are enough.
+
+  \strong{Intervals are a different matter.}  \code{"delta"} reports
+  \code{est} \eqn{\pm} 1.96 SE, which is symmetric by construction, whereas
+  the bootstrap reports empirical quantiles.  For a SECOND DIFFERENCE the
+  sampling distribution is noticeably skewed -- upper and lower half-widths in
+  a ratio of about 0.53 to 0.71 on this example -- and the symmetric interval
+  placed the upper bound 25--39\% too high even though the standard errors
+  agreed.  Use \code{"bootstrap"} when an interval on a second difference is
+  the reported quantity.
+
+  \strong{Dynamic quantities.}  \code{"delta"} gives the conditional
+  (frozen-chain) standard error, which omits the path-distribution channel;
+  \code{"deltaFull"} adds it and is the one comparable with a bootstrap.  Two
+  chain settings do different jobs and are easy to confuse:
+  \code{n3PointEst} sizes the POINT ESTIMATE simulation and has no effect on
+  the standard error; \code{n3} sizes the UNCERTAINTY simulation and governs
+  its stability -- about 7\% relative variation across chain realisations at
+  \code{n3 = 200}, 5\% at 1000, 3\% at 2000, with cost linear in
+  \code{n3}.  For publishable dynamic results use \code{"deltaFull"} with
+  \code{n3} of at least 500, and \code{n3PointEst} of 1000 or more for a
+  stable point estimate.
 }
 \author{Daniel Gotthardt}
 \seealso{
+  \code{\link{make_predict_targets}}, \code{\link{set_condition}},
   \code{\link{marginalEffects}}, \code{\link{interpret_size}},
   \code{\link{relativeImportance}}, \code{\link{sienaEntropy}},
   \code{\link{getChangeStatistics}}
@@ -174,14 +169,23 @@ myeff <- make_specification(mydata)
 myeff <- set_effect(myeff, list(density, recip, transTrip))
 ans <- siena(mydata, effects=myeff, control_algo=myalgo, batch=TRUE)
 
-## Static changeProb, no uncertainty, unaggregated
-p_raw <- predict(ans, newdata=mydata, type="changeProb",
-                 uncertainty=FALSE, level="none")
-head(p_raw)
+## One prediction, aggregated by period, no uncertainty.
+ptg <- make_predict_targets(ans, effects=myeff, type="tieProb",
+                            level="period")
+predict(ans, mydata, targets=ptg,
+        control_uncertainty=set_postest_uncertainty_saom(enabled=FALSE))
 
-## Static tieProb, aggregated by period (with uncertainty)
-p_tie <- predict(ans, newdata=mydata, type="tieProb",
-                 level="period", nsim=100, verbose=FALSE)
-head(p_tie)
+## Several predictions in one call: the ego tie profile, and the same
+## quantity split into tie creation versus tie maintenance.
+ptg <- make_predict_targets(ans, effects=myeff, type="tieProb",
+                            level="period", includeDefaults=FALSE)
+ptg <- set_condition(ptg, level="egoChoice", name="profile")
+ptg <- set_condition(ptg, density, name="by_context")
+ptg
+
+out <- predict(ans, mydata, targets=ptg,
+               control_uncertainty=set_postest_uncertainty_saom(enabled=FALSE))
+head(out$profile)
+out$by_context
 }
 \keyword{models}
