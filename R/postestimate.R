@@ -30,6 +30,7 @@ sienaPostestimate <- function(
     dynamic  = FALSE,
     dynArgs  = NULL,
     n3       = NULL,
+    n3PointEst = NULL,
     n3BatchSize = NULL,
     useChangeContributions = FALSE,
     uncertainty = TRUE,
@@ -44,6 +45,8 @@ sienaPostestimate <- function(
     prefix      = "simBatch_b",
     keepBatch   = FALSE,
     verbose     = TRUE,
+    drawSeed    = NULL,
+    chainSeed   = NULL,
     na.rm        = TRUE,
     egoNormalize = TRUE,
     uncertaintySd         = TRUE,
@@ -100,6 +103,7 @@ sienaPostestimate <- function(
             preloadedChains = preloadedChains,
             n3              = n3,
             n3BatchSize     = n3BatchSize,
+            n3PointEst      = n3PointEst,
             useChangeContributions = useChangeContributions,
             decisionDetails = decisionDetails,
             saveDir         = saveDir
@@ -129,6 +133,8 @@ sienaPostestimate <- function(
         batchDir               = batchDir,
         prefix                 = prefix,
         keepBatch              = keepBatch,
+        drawSeed               = drawSeed,
+        chainSeed              = chainSeed,
         na.rm                  = na.rm,
         egoNormalize           = egoNormalize,
         uncertaintySd          = uncertaintySd,
@@ -189,7 +195,7 @@ sienaPostestimate <- function(
                            type, rateParams, rateIdx, verbose, nbrNodes,
                            isFullMode, dynamic, dynArgs, preloadedChains,
                            n3, n3BatchSize, useChangeContributions,
-                           decisionDetails, saveDir) {
+                           decisionDetails, saveDir, n3PointEst = NULL) {
     delta_wide <- NULL
     ssc_sum    <- NULL
     if (dynamic && !is.null(dynArgs)) {
@@ -202,7 +208,8 @@ sienaPostestimate <- function(
             nChainBatches   = nChainBatches,
             thetaHat        = thetaHat,
             n3              = n3,
-            n3BatchSize     = n3BatchSize
+            n3BatchSize     = n3BatchSize,
+            n3PointEst      = n3PointEst
         )
         contribFun    <- deltaState$contribFun
         nChainBatches <- deltaState$nChainBatches
@@ -306,7 +313,7 @@ sienaPostestimate <- function(
                                nbrNodes, dynamic, dynArgs, n3, n3BatchSize,
                                useChangeContributions, nsim, batchSize,
                                useCluster, clusterType, cl, batchDir, prefix,
-                               keepBatch, na.rm, egoNormalize,
+                               keepBatch, drawSeed, chainSeed, na.rm, egoNormalize,
                                uncertaintySd, uncertaintyCi, uncertaintyMean,
                                uncertaintyMedian, ciInterval,
                                decisionDetails, saveDir, gcEachBatch, gcEachSim) {
@@ -323,7 +330,8 @@ sienaPostestimate <- function(
         uncertBatchN3 <- if (!is.null(n3BatchSize)) min(n3BatchSize, n3) else n3
         uncertDynArgs <- dynArgs
         uncertDynArgs$n3 <- uncertBatchN3
-        uncertStore <- chainStore_simulate(uncertDynArgs, uncertBatchN3, n3)
+        uncertStore <- chainStore_simulate(uncertDynArgs, uncertBatchN3, n3,
+                                           seedBase = chainSeed)
         uncertContribFun <- makeContribFun(store   = uncertStore,
                                            effects = dynArgs$effects,
                                            depvar  = dynArgs$depvar,
@@ -361,6 +369,7 @@ sienaPostestimate <- function(
         batchDir    = batchDir,
         prefix      = prefix,
         keepBatch   = keepBatch_internal,
+        drawSeed    = drawSeed,
         verbose     = verbose,
         gcEachBatch = gcEachBatch,
         gcEachSim   = gcEachSim
@@ -459,9 +468,12 @@ chainStore_disk <- function(chains, batchSize, dir = tempdir(),
     ), class = "chainStore")
 }
 
-chainStore_simulate <- function(dynArgs, batchSize, n3Total) {
+chainStore_simulate <- function(dynArgs, batchSize, n3Total, seedBase = NULL) {
     nBatches <- ceiling(n3Total / batchSize)
     batchDynArgs <- dynArgs
+    batchSeeds <- if (is.null(seedBase)) NULL
+                  else .withSeed(seedBase,
+                                 sample.int(.Machine$integer.max, nBatches))
     structure(list(
         mode     = "simulate",
         nBatches = nBatches,
@@ -473,6 +485,11 @@ chainStore_simulate <- function(dynArgs, batchSize, n3Total) {
             this_args <- batchDynArgs
             this_args$n3 <- actual_n3
             this_args$useChangeContributions <- FALSE
+            # Per batch, so n3 above batchSize adds chains instead of
+            # repeating batch 1; per batch only, so draws share streams
+            # (common random numbers) and paths still respond to theta.
+            if (!is.null(batchSeeds))
+                this_args$algorithm$randomSeed <- batchSeeds[[batchIdx]]
             do.call(getDynamicChangeContributions,
                     c(list(theta = theta), this_args))
         },
@@ -2408,14 +2425,33 @@ attachPostestAttrs <- function(result, metadata = NULL) {
 }
 
 ##@print.sienaPrediction S3 print
+## Summarise the bootstrap draws for one output row.
+##
+## Dropping NA draws silently is the dangerous part: a standard error computed
+## from 1500 surviving draws out of 2000 looks exactly like one computed from
+## all 2000, and if EVERY draw fails the result is a row of NAs with no
+## indication that anything went wrong.  Both are now reported.
 summarizeValue <- function(x, na.rm = TRUE){
+  n_all <- length(x)
   if(na.rm){
     x <- x[! is.na(x)]
   }
+  n <- length(x)
+  if (n == 0L) {
+    warning("All ", n_all, " bootstrap draws failed to evaluate for one ",
+            "output row; its estimate and interval are NA. This usually means ",
+            "the drawn parameter vectors could not be evaluated -- check the ",
+            "covariance matrix and the model specification.", call. = FALSE)
+    return(as.list(c("Mean" = NA_real_, "SE" = NA_real_, "Median" = NA_real_,
+                     "q_025" = NA_real_, "q_975" = NA_real_)))
+  }
+  if (n < n_all)
+    warning(n_all - n, " of ", n_all, " bootstrap draws failed to evaluate ",
+            "and were dropped; the standard error and interval below rest on ",
+            n, " draws.", call. = FALSE)
   qu <- unname(quantile(x, probs = c(.025,0.5,.975)))
   mn <- mean(x)
   se <- sd(x)
-  n <- length(x)
   as.list(c("Mean" = mn, "SE" = se, "Median" = qu[2], "q_025" = qu[1], "q_975" = qu[3]))
 }
 

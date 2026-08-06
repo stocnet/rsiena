@@ -78,6 +78,7 @@ predict.sienaFit <- function(
     ciInterval        <- unc$ciInterval
 
     algorithm              <- algo$algorithm
+    seed                   <- algo$seed
     n3                     <- algo$n3
     n3PointEst             <- algo$n3PointEst
     n3BatchSize            <- algo$n3BatchSize
@@ -97,6 +98,12 @@ predict.sienaFit <- function(
     dynamicMinistepFactor  <- algo$dynamicMinistepFactor
     batch                  <- TRUE
     silent                 <- NULL
+
+    # Per row, so every prediction shares the same chains and stays comparable.
+    .seeds    <- .postestSeeds(algorithm, seed)
+    algorithm <- .seeds$algorithm
+    drawSeed  <- .seeds$drawSeed
+    chainSeed <- .seeds$chainSeed
 
     returnDecisionDetails <- isTRUE(outctl$returnDecisionDetails)
     returnComponents      <- isTRUE(outctl$returnComponents)
@@ -132,44 +139,21 @@ predict.sienaFit <- function(
       )
   }
 
-  # ---- Theta / covariance with rate handling for rateWeight ----
-  anyRateWeight <- rateWeight
-  if (anyRateWeight && !dynamic) {
-    if (isTRUE(object$cconditional)) {
-      thetaHat <- coef(object)
-      covTheta <- vcov(object)
-    } else {
-      eff_df  <- as.data.frame(object$requestedEffects)
-      eff_inc <- eff_df[eff_df$include, ]
-      hasNonConstantRates <- any(!eff_inc$basicRate & eff_inc$type == "rate")
-      if (hasNonConstantRates)
-        stop("rateWeight = TRUE is not supported when the model includes ",
-             "non-constant rate effects (structural or covariate-dependent).")
-      thetaHat <- coef(object, dropRates = FALSE)
-      covTheta <- vcov(object, dropRates = FALSE)
-    }
-  } else {
-    thetaHat <- coef(object)
-    covTheta <- vcov(object)
-  }
-
-  # ---- Rate parameters for rateWeight (static path) ----
-  rateParams <- NULL
-  rateIdx    <- NULL
-  if (anyRateWeight && !dynamic) {
-    if (isTRUE(object$cconditional)) {
-      rateParams <- object$rate
-    } else {
-      eff_df   <- as.data.frame(object$requestedEffects)
-      eff_inc  <- eff_df[eff_df$include, ]
-      rate_idx <- which(eff_inc$basicRate)
-      theta_full <- coef(object, dropRates = FALSE)
-      rateParams <- theta_full[rate_idx]
-      rateIdx    <- rate_idx
-    }
-    if (length(rateParams) == 0L)
-      stop("rateWeight = TRUE but no basic rate parameters found.")
-  }
+  # ---- Theta / covariance, and rate bookkeeping ----------------------------
+  #
+  # Shared with marginalEffects().  The width matters: the frozen-path
+  # Jacobian does not depend on the rate parameters (they govern WHEN an actor
+  # decides, not WHICH alternative it picks), but the path-distribution term of
+  # deltaFull does -- the score is taken of the complete-data density, which
+  # the rates enter.  So a dynamic run needs theta and Sigma over the FULL
+  # parameter vector, or the REINFORCE term cannot be added to it.
+  if (is.null(effects)) effects <- object$requestedEffects
+  .th        <- .postestTheta(object, effects, dynamic, rateWeight)
+  thetaHat   <- .th$thetaHat
+  covTheta   <- .th$covTheta
+  effects    <- .th$effects
+  rateParams <- .th$rateParams
+  rateIdx    <- .th$rateIdx
 
   # ---- Resolve condition ----
   if (!is.null(condition)) condition <- resolveCondition(condition)
@@ -177,7 +161,6 @@ predict.sienaFit <- function(
 
   # ---- Build contribFun ----
   if (dynamic) {
-    if (is.null(effects)) effects <- object$requestedEffects
     n3Hat <- if (!is.null(n3PointEst)) n3PointEst else n3
     dynArgs <- list(
         ans                    = object,
@@ -272,16 +255,14 @@ predict.sienaFit <- function(
     dynamic       = dynamic,
     dynArgs       = if (dynamic) dynArgs else NULL,
     n3            = n3,
+    n3PointEst    = n3PointEst,
     n3BatchSize   = n3BatchSize,
     useChangeContributions = if (dynamic) useChangeContributions else FALSE,
     uncertainty  = uncertainty,
-    ## The analytic Jacobian below was wired in but unreachable: this call
-    ## never passed a mode, so sienaPostestimate() took its "bootstrap"
-    ## default and predictProbabilityJac() was supplied on every call and
-    ## never consumed.  Exposing the mode is what makes the delta path
-    ## reachable at all.
     uncertaintyMode = uncertaintyMode,
     nsim         = nsim,
+    drawSeed     = drawSeed,
+    chainSeed    = chainSeed,
     batchSize    = batchSize,
     useCluster   = useCluster,
     nbrNodes     = nbrNodes,

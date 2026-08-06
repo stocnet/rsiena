@@ -244,7 +244,7 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
 # --------------------------------------------------------------------------
 .initDeltaMode <- function(isFullMode, dynamic, dynArgs,
                            preloadedChains, contribFun, nChainBatches,
-                           thetaHat, n3, n3BatchSize) {
+                           thetaHat, n3, n3BatchSize, n3PointEst = NULL) {
     if (!dynamic || is.null(dynArgs))
         return(list(contribFun    = contribFun,
                     nChainBatches = nChainBatches,
@@ -258,9 +258,17 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
     raw_chains <- dynArgs$preloadedChains
     ssc_sum    <- NULL
     if (is.null(raw_chains)) {
+        ## ONE simulation serves the point estimate, the frozen-chain
+        ## Jacobian and (under deltaFull) the scores -- they have to describe
+        ## the same realised path, which is why the chains are not sized
+        ## separately.  But it must then be at least as large as EITHER role
+        ## asks for: taking n3 alone silently gave the point estimate fewer
+        ## chains than n3PointEst requested, so switching uncertainty on
+        ## changed the estimate while bootstrap and uncertainty = FALSE both
+        ## honoured n3PointEst.
         sim_args                        <- dynArgs
         sim_args$theta                  <- thetaHat
-        sim_args$n3                     <- n3
+        sim_args$n3                     <- max(n3, n3PointEst, 0L)
         sim_args$useChangeContributions <- FALSE
         sim_args$returnWide             <- FALSE  # default; explicit for clarity
         sim_args$includeScores          <- isFullMode

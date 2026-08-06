@@ -144,15 +144,33 @@
 
   \strong{Dynamic quantities.}  \code{"delta"} gives the conditional
   (frozen-chain) standard error, which omits the path-distribution channel;
-  \code{"deltaFull"} adds it and is the one comparable with a bootstrap.  Two
-  chain settings do different jobs and are easy to confuse:
-  \code{n3PointEst} sizes the POINT ESTIMATE simulation and has no effect on
-  the standard error; \code{n3} sizes the UNCERTAINTY simulation and governs
-  its stability -- about 7\% relative variation across chain realisations at
-  \code{n3 = 200}, 5\% at 1000, 3\% at 2000, with cost linear in
-  \code{n3}.  For publishable dynamic results use \code{"deltaFull"} with
-  \code{n3} of at least 500, and \code{n3PointEst} of 1000 or more for a
-  stable point estimate.
+  \code{"deltaFull"} adds it.
+
+  \code{n3} and \code{n3PointEst} do different jobs, and which one binds
+  depends on the mode -- this is the easiest thing here to get wrong.
+
+  Under \code{"delta"} and \code{"deltaFull"} a SINGLE simulation of
+  \code{max(n3, n3PointEst)} chains serves the point estimate, the
+  frozen-chain Jacobian and (under \code{"deltaFull"}) the scores.  They have
+  to describe the same realised path, so they are not sized separately: the
+  LARGER of the two governs, and raising either steadies both the estimate and
+  the standard error.
+
+  Under \code{"bootstrap"} the two come apart.  The point estimate is
+  simulated once with \code{n3PointEst} chains, while each of the \code{nsim}
+  draws re-simulates \code{n3} chains of its own.  Raising \code{n3} mainly
+  reduces Monte Carlo noise WITHIN a draw; the spread ACROSS draws is
+  dominated by parameter uncertainty, so it moves the standard error much less
+  than one expects.  \code{nsim} is what governs how precisely the standard
+  error itself is pinned down.
+
+  \strong{What to use.}  Prefer \code{"deltaFull"} for dynamic quantities: on
+  the \code{s50} example it agreed with a 400-draw bootstrap to within 2\%
+  (0.00143 against 0.00146) at roughly a hundredth of the cost -- 7 seconds
+  against 851.  Reach for \code{"bootstrap"} when the reported quantity is an
+  INTERVAL on a second difference, where the symmetric analytic interval
+  misplaces the bound, and raise \code{nsim} rather than \code{n3} when the
+  standard error itself looks unstable.
 }
 \author{Daniel Gotthardt}
 \seealso{

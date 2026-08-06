@@ -565,7 +565,9 @@ getDynamicChangeContributions <- function(
     }
     if(!is.null(seed)) {
       if(is.numeric(seed)) {
-        algorithm$seed <- as.integer(seed)
+        # siena07 reads randomSeed; an algorithm$seed field is read by nobody,
+        # so setting it silently made this argument a no-op.
+        algorithm$randomSeed <- as.integer(seed)
       } else {
         warning("'seed' has to be of type 'numeric' \n used default settings")
       }

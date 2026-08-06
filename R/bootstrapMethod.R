@@ -20,6 +20,7 @@ drawSimBatch <- function(
     batchDir     = "temp",
     prefix       = "simBatchB_b",
     keepBatch    = FALSE,
+    drawSeed     = NULL,
     verbose      = TRUE,
     gcEachBatch  = FALSE,
     gcEachSim    = FALSE
@@ -48,6 +49,16 @@ drawSimBatch <- function(
         cl <- cli_psock$cl
         on.exit(closeCluster(cli_psock, verbose = verbose), add = TRUE)
     }
+
+    # Drawn before the first estimator() call: a dynamic estimator reaches
+    # siena07, which calls set.seed() and would reset the stream between draws.
+    drawThetas <- function()
+        MASS::mvrnorm(nsim, mu = thetaHat, Sigma = covTheta)
+    thetaDraws <- if (is.null(drawSeed)) drawThetas()
+                  else .withSeed(drawSeed, drawThetas())
+    if (nsim == 1L)
+        thetaDraws <- matrix(thetaDraws, nrow = 1L,
+                             dimnames = list(NULL, names(thetaHat)))
 
     nbatches <- ceiling(nsim / batchSize)
     # When there is only one batch and we are not asked to keep it, skip
@@ -107,7 +118,7 @@ drawSimBatch <- function(
         # Run one parametric-bootstrap draw: sample theta, call estimator.
         run_one_draw <- function(k) {
             i <- batch_idx[k]
-            theta_sim <- MASS::mvrnorm(1L, mu = thetaHat, Sigma = covTheta)
+            theta_sim <- thetaDraws[i, ]
             results_named <- estimator(theta_sim)
             per_effect <- vector("list", n_effects)
             for (j in seq_len(n_effects)) {
@@ -120,7 +131,7 @@ drawSimBatch <- function(
 
         if (usePSOCK) {
             # Export needed objects to workers each batch
-            export_names <- c("estimator", "thetaHat", "covTheta",
+            export_names <- c("estimator", "thetaDraws",
                               "n_effects", "bsz", "batch_idx", "eff_names")
             parallel::clusterExport(
                 cl, export_names, envir = environment()
@@ -257,11 +268,37 @@ drawSimBatch <- function(
             pattern    = batch_pattern,
             full.names = TRUE
         ))
+        # The resume feature keys on filename alone, so a stale batch from an
+        # interrupted run -- or from a concurrent run sharing batchDir and
+        # prefix -- looks indistinguishable from one of ours.  Assigning it
+        # positionally used to recycle silently (a warning at most) and
+        # quietly corrupt the draws.  Fail loudly instead.
+        if (length(batch_files) != nbatches)
+            stop(sprintf(paste0(
+                "Found %d batch file(s) in '%s' but this run has %d batch(es). ",
+                "Stale or foreign batches from another run would corrupt the ",
+                "draws. Clear the directory, or give this run its own ",
+                "batchDir/prefix."),
+                length(batch_files), batchDir, nbatches), call. = FALSE)
         for (b in seq_along(batch_files)) {
             bp    <- readRDS(batch_files[[b]])
             first <- 1L + (b - 1L) * batchSize
             last  <- min(b * batchSize, nsim)
+            expected <- last - first + 1L
+            if (length(bp) != n_effects)
+                stop(sprintf(paste0(
+                    "Batch file '%s' holds %d effect(s); this run expects %d. ",
+                    "It belongs to a different run -- clear '%s'."),
+                    basename(batch_files[[b]]), length(bp), n_effects,
+                    batchDir), call. = FALSE)
             for (j in seq_len(n_effects)) {
+                if (length(bp[[j]]) != expected)
+                    stop(sprintf(paste0(
+                        "Batch file '%s' holds %d draw(s) for effect %d; ",
+                        "this run expects %d. It belongs to a different run ",
+                        "-- clear '%s'."),
+                        basename(batch_files[[b]]), length(bp[[j]]), j,
+                        expected, batchDir), call. = FALSE)
                 per_effect_raw[[j]][first:last] <- bp[[j]]
             }
             if (!keepBatch) file.remove(batch_files[[b]])

@@ -201,6 +201,7 @@ print.sienaPostestUncertainty <- function(x, ...)
 set_postest_algo_saom <- function(
 	algorithm              = NULL,
 	dynamic                = NULL,
+	seed                   = NULL,
 	n3                     = 200,
 	n3PointEst             = NULL,
 	n3BatchSize            = 100L,
@@ -288,6 +289,11 @@ set_postest_algo_saom <- function(
 	memoryScale <- .checkSingleNumericOrNull(memoryScale, "memoryScale",
 											  positive = TRUE, asInteger = FALSE)
 
+	## Overrides algorithm$randomSeed on a copy, so a fitted algorithm can be
+	## reused unmutated.
+	seed <- .checkSingleNumericOrNull(seed, "seed",
+									   positive = FALSE, asInteger = TRUE)
+
 	.checkSingleChar(batchDir, "batchDir")
 	.checkSingleChar(prefix, "prefix")
 	chainStorePath <- .checkSingleCharOrNull(chainStorePath, "chainStorePath")
@@ -295,6 +301,7 @@ set_postest_algo_saom <- function(
 
 	obj <- list(
 		algorithm              = algorithm,
+		seed                   = seed,
 		n3                     = n3,
 		n3PointEst             = n3PointEst,
 		n3BatchSize            = n3BatchSize,

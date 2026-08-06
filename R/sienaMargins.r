@@ -64,6 +64,14 @@ marginalEffects.sienaFit <- function(
     # Every field of the object is named for the variable it feeds.
     for (.nm in names(control_algo)) assign(.nm, control_algo[[.nm]])
 
+    # One seed governs the whole call: the simulations (via the algorithm) and
+    # the bootstrap draws.  Falls back to the caller's RNG stream, so a plain
+    # set.seed() before this call reproduces everything.
+    .seeds    <- .postestSeeds(algorithm, seed)
+    algorithm <- .seeds$algorithm
+    drawSeed  <- .seeds$drawSeed
+    chainSeed <- .seeds$chainSeed
+
     if (!inherits(control_out, "sienaPostestOutput"))
         stop("'control_out' must be a sienaPostestOutput object, as ",
              "returned by set_postest_output_saom().", call. = FALSE)
@@ -136,8 +144,10 @@ marginalEffects.sienaFit <- function(
         if (is.null(effects)) effects <- object$requestedEffects
 
         # ---- Theta / covariance with proper rate handling ----
-        .th        <- .postestTheta(object, effects, effectList, dynamic,
-                                    rateWeight)
+        .anyRW     <- rateWeight ||
+            any(vapply(effectList, function(s) isTRUE(s$rateWeight),
+                       logical(1L)))
+        .th        <- .postestTheta(object, effects, dynamic, .anyRW)
         thetaHat   <- .th$thetaHat
         covTheta   <- .th$covTheta
         effects    <- .th$effects
@@ -593,12 +603,15 @@ marginalEffects.sienaFit <- function(
             dynamic       = dynamic,
             dynArgs       = if (dynamic) dynArgs else NULL,
             n3            = if (dynamic) n3 else NULL,
+            n3PointEst    = n3PointEst,
             n3BatchSize   = if (dynamic) n3BatchSize else NULL,
             useChangeContributions = if (dynamic)
                 useChangeContributions else FALSE,
             uncertainty      = uncertainty,
             uncertaintyMode  = uncertaintyMode,
             nsim             = nsim,
+            drawSeed         = drawSeed,
+            chainSeed        = chainSeed,
             batchSize     = batchSize,
             useCluster    = useCluster,
             nbrNodes      = nbrNodes,

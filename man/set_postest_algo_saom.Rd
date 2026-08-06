@@ -19,6 +19,7 @@
 \usage{
 set_postest_algo_saom(
     algorithm              = NULL,
+    seed                   = NULL,
     n3                     = 200,
     n3PointEst             = NULL,
     n3BatchSize            = 100L,
@@ -52,6 +53,16 @@ set_postest_algo_saom(
       was built with \code{dynamic = TRUE}. Omitting it in that case is an
       error raised immediately, before any simulation setup cost is
       incurred.}
+  \item{seed}{Single number, or \code{NULL}. The ONE seed for this call.
+      It overrides whatever \code{algorithm} carries in \code{randomSeed} --
+      on an internal copy, so a fitted algorithm object can be reused across
+      calls without being rewritten -- and it pins BOTH the simulations and
+      the parametric-bootstrap parameter draws. \code{NULL} falls back to
+      \code{algorithm$randomSeed}, and if that is absent too the run is not
+      reproducible, exactly as for \code{\link{siena07}}. Note that a
+      \code{set.seed()} in the calling script does NOT make either
+      reproducible: \code{siena07} discards it and reseeds from the system
+      clock. This argument is the only thing that does.}
   \item{n3}{Single positive numeric, coerced to integer: number of chains
       / theta draws simulated in phase 3 for dynamic predictions.}
   \item{n3PointEst}{Optional single positive numeric (coerced to integer):

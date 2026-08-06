@@ -115,16 +115,18 @@ makeContribFun <- function(mode = NULL, store = NULL, effects = NULL,
 ## Returns the five things the rest of marginalEffects() needs; `effects` is
 ## among them because the conditional dynamic case adds rows to it.
 ## --------------------------------------------------------------------------
-.postestTheta <- function(object, effects, effectList, dynamic, rateWeight) {
+## `anyRateWeight` is resolved by the CALLER, because the two entry points
+## carry it differently: marginalEffects() has a per-target flag and has to
+## reduce over its specs, predict() has one scalar.  Everything downstream of
+## that reduction is identical, and it is the part worth having in one place --
+## the width of theta/covTheta, the condEffects splice, the rate bookkeeping
+## and the non-constant-rate guard.
+.postestTheta <- function(object, effects, dynamic, anyRateWeight) {
     # ---- Theta / covariance with proper rate handling ----
     # Dynamic path: getDynamicChangeContributions re-runs siena07, which
     # needs rate parameters in effects$initialValue.  Unconditional models
     # store rates inside theta; conditional models store them separately
     # in object$rate with effects rows in attr(object$f, "condEffects").
-
-    # ---- Detect rateWeight before theta block (needed for static branch) ----
-    anyRateWeight <- rateWeight ||
-        any(vapply(effectList, function(s) isTRUE(s$rateWeight), logical(1L)))
 
     if (dynamic && isTRUE(object$cconditional)) {
         # Conditional estimation: rates are fixed (not estimated jointly).
@@ -198,4 +200,61 @@ makeContribFun <- function(mode = NULL, store = NULL, effects = NULL,
 
     list(thetaHat = thetaHat, covTheta = covTheta, effects = effects,
          rateParams = rateParams, rateIdx = rateIdx)
+}
+
+# --------------------------------------------------------------------------
+# .postestSeeds — resolve the randomness for one postestimation call
+#
+# One seed, taken from control_algo$seed, else algorithm$randomSeed, else none
+# (unreproducible, as in siena07 — set.seed() does not govern either).  It
+# feeds the simulations via algorithm$randomSeed, and the theta draws and
+# per-batch chains via seeds derived from it.
+# --------------------------------------------------------------------------
+
+# Evaluate expr with the RNG seeded, then put the caller's stream back exactly
+# as it was found -- including the case where there was no stream at all.
+.withSeed <- function(seed, expr) {
+    have <- exists(".Random.seed", envir = globalenv())
+    old  <- if (have) get(".Random.seed", envir = globalenv()) else NULL
+    on.exit({
+        if (!is.null(old))
+            assign(".Random.seed", old, envir = globalenv())
+        else if (exists(".Random.seed", envir = globalenv()))
+            rm(".Random.seed", envir = globalenv())
+    }, add = TRUE)
+    set.seed(seed)
+    expr
+}
+
+.postestSeeds <- function(algorithm, algoSeed = NULL) {
+    simSeed <- if (!is.null(algoSeed)) {
+        as.integer(algoSeed)
+    } else if (!is.null(algorithm) && !is.null(algorithm$randomSeed)) {
+        rs <- algorithm$randomSeed
+        if (is.numeric(rs)) {
+            as.integer(rs)
+        } else {
+            warning("algorithm$randomSeed is not numeric (class '",
+                    paste(class(rs), collapse = "/"),
+                    "') and cannot be used. This run is not reproducible; ",
+                    "pass a number via set_postest_algo_saom(seed = ).",
+                    call. = FALSE)
+            NULL
+        }
+    } else {
+        NULL
+    }
+
+    if (!is.null(simSeed) && !is.null(algorithm))
+        algorithm$randomSeed <- simSeed
+
+    # Derived by drawing, not by offsetting: adjacent seeds carry no
+    # independence guarantee, and simSeed + 1 collided with a batch seed.
+    derived <- if (is.null(simSeed)) NULL
+               else .withSeed(simSeed, sample.int(.Machine$integer.max, 2L))
+
+    list(algorithm = algorithm,
+         simSeed   = simSeed,
+         drawSeed  = if (is.null(derived)) NULL else derived[[1L]],
+         chainSeed = if (is.null(derived)) NULL else derived[[2L]])
 }
