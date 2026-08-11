@@ -217,7 +217,7 @@ predict.sienaFit <- function(
 
   # ---- Build specs (N=1) ----
   metadata <- list(method = "predict", type = type,
-                   depvar = depvar, dynamic = dynamic)
+                   depvar = depvar, dynamic = dynamic, level = level)
   specs <- setNames(list(makeSpec(
     predictFun   = predictProbability,
     predictArgs  = list(type = type, attachContribs = attachContribs),
