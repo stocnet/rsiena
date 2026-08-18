@@ -35,6 +35,8 @@ sienaPostestimate <- function(
     useChangeContributions = FALSE,
     uncertainty = TRUE,
     uncertaintyMode = c("bootstrap", "delta", "deltaFull"),
+    modeExplicit = FALSE,
+    reportConditional = FALSE,
     nsim        = 1000L,
     batchSize   = 100L,
     useCluster  = FALSE,
@@ -62,6 +64,14 @@ sienaPostestimate <- function(
 ) {
     clusterType     <- match.arg(clusterType)
     uncertaintyMode <- match.arg(uncertaintyMode)
+
+    # For a dynamic estimand "delta" is the conditional, frozen-chain SE; an
+    # unstated mode resolves to "deltaFull" so the default does not mean two
+    # different things.  Documented at set_postest_uncertainty_saom().  Lives
+    # here rather than in the callers so every entry point shares it.
+    if (isTRUE(dynamic) && identical(uncertaintyMode, "delta") &&
+        !isTRUE(modeExplicit))
+        uncertaintyMode <- "deltaFull"
 
     isDeltaMode <- uncertaintyMode %in% c("delta", "deltaFull")
     isFullMode  <- uncertaintyMode == "deltaFull"
@@ -106,7 +116,8 @@ sienaPostestimate <- function(
             n3PointEst      = n3PointEst,
             useChangeContributions = useChangeContributions,
             decisionDetails = decisionDetails,
-            saveDir         = saveDir
+            saveDir         = saveDir,
+            reportConditional = reportConditional
         ))
 
     .runBootstrapPath(
@@ -195,7 +206,8 @@ sienaPostestimate <- function(
                            type, rateParams, rateIdx, verbose, nbrNodes,
                            isFullMode, dynamic, dynArgs, preloadedChains,
                            n3, n3BatchSize, useChangeContributions,
-                           decisionDetails, saveDir, n3PointEst = NULL) {
+                           decisionDetails, saveDir, n3PointEst = NULL,
+                           reportConditional = FALSE) {
     delta_wide <- NULL
     ssc_sum    <- NULL
     if (dynamic && !is.null(dynArgs)) {
@@ -272,16 +284,31 @@ sienaPostestimate <- function(
         # and since the modes are mutually exclusive, the name never carried
         # information the caller could not get from the metadata.
         df[["SE"]] <- as.numeric(if (isFullMode) du$SE_deltaFull else du$SE_delta)
-        if (isFullMode)
-            # deltaFull is the exception that reports two: the conditional SE
-            # is kept alongside because the DIFFERENCE between them is the
-            # path-distribution term, which is the point of asking for it.
+        # Under deltaFull the conditional SE is also available, but printing
+        # both by default leaves it ambiguous which one q_025/q_975 came from.
+        # It is the reported interval that matters, so `SE` stands alone
+        # unless the caller asks for the comparison.
+        if (isFullMode && isTRUE(reportConditional))
             df[["SE_conditional"]] <- as.numeric(du$SE_delta)
         se_use <- df[["SE"]]
         oc     <- spec$outcomeName
         if (!is.null(df[[oc]]) && length(se_use) %in% c(1L, nrow(df))) {
             df[["q_025"]] <- df[[oc]] - qnorm(0.975) * se_use
             df[["q_975"]] <- df[[oc]] + qnorm(0.975) * se_use
+        }
+        # Mass contrasts get their own SE and interval, named after the
+        # quantity, matching what the bootstrap path emits.  Without these
+        # the mass columns sat next to an `SE` belonging to the first
+        # difference alone, which invites reading it as their interval.
+        if (!is.null(du$SE_mass)) {
+            for (mc in names(du$SE_mass)) {
+                if (is.null(df[[mc]])) next
+                se_mc <- as.numeric(du$SE_mass[[mc]])
+                if (!length(se_mc) %in% c(1L, nrow(df))) next
+                df[[paste0(mc, "_SE")]]    <- se_mc
+                df[[paste0(mc, "_q_025")]] <- df[[mc]] - qnorm(0.975) * se_mc
+                df[[paste0(mc, "_q_975")]] <- df[[mc]] + qnorm(0.975) * se_mc
+            }
         }
         res <- attachPostestAttrs(df, spec$metadata)
         attr(res, "uncertaintyMethod") <- if (isFullMode) "deltaFull" else "delta"
@@ -1192,8 +1219,33 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
           if (!is.null(Jp_row)) {
             Jp_kept    <- if (all_kept) Jp_row else Jp_row[keep, , drop = FALSE]
             jac_k_list <- vector("list", K_eff)
-            for (k in seq_len(K_eff))
-              jac_k_list[[k]] <- list(main = aggWithCache(oc, Jp_kept[, k], cache_j))
+            ## Mass contrasts are a LINEAR map of the per-row first difference
+            ## (un-flip the dissolution sign, then a grouped sum split by
+            ## density), so the same map applied to a gradient column gives
+            ## that column's mass gradient.  Reusing computeMassContrasts
+            ## keeps the two in step by construction: if the point-estimate
+            ## aggregation changes, the gradient follows.
+            mc_grad_cache <- if (length(massCols) > 0L)
+              sort_caches[[mass_cache_key[j]]] else NULL
+            mc_group <- if (!is.null(cc$group)) cc$group
+                        else rep(1L, length(density))
+            for (k in seq_len(K_eff)) {
+              jl <- list(main = aggWithCache(oc, Jp_kept[, k], cache_j))
+              if (length(massCols) > 0L) {
+                mg <- computeMassContrasts(
+                  firstDiff = Jp_row[, k], density = density,
+                  ego = cc$ego, period = cc$period, group = mc_group,
+                  type = spec$predictArgs$type)
+                partial_mass_jac <- list()
+                for (mc_col in massCols) {
+                  mg_vec <- if (all_kept) mg[[mc_col]] else mg[[mc_col]][keep]
+                  partial_mass_jac[[mc_col]] <-
+                    aggWithCache(mc_col, mg_vec, mc_grad_cache)
+                }
+                jl$mass <- partial_mass_jac
+              }
+              jac_k_list[[k]] <- jl
+            }
             batch_jac[[j]] <- jac_k_list
           }
         }
@@ -1260,10 +1312,26 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
     J     <- matrix(0, nrow = n_out, ncol = nParams,
                     dimnames = list(NULL, theta_names))
     J[, eff_idx[1L]] <- col1[[oc]]
+
+    ## Mass gradients ride along as an attribute rather than changing the
+    ## return shape: callers that only want the first-difference Jacobian
+    ## are unaffected, and the delta path picks these up when present.
+    massCols <- intersect(c("massCreation", "massDissolution"), names(col1))
+    J_mass <- if (length(massCols) > 0L)
+      setNames(lapply(massCols, function(mc) {
+        Jm <- matrix(0, nrow = n_out, ncol = nParams,
+                     dimnames = list(NULL, theta_names))
+        Jm[, eff_idx[1L]] <- col1[[mc]]
+        Jm
+      }), massCols) else NULL
+
     for (k in seq(2L, K_eff)) {
       col_k        <- finalizeAccum(accums_jac[[j]][[k]], oc, spec$level)
       J[, eff_idx[k]] <- col_k[[oc]]
+      if (!is.null(J_mass))
+        for (mc in massCols) J_mass[[mc]][, eff_idx[k]] <- col_k[[mc]]
     }
+    if (!is.null(J_mass)) attr(J, "mass_jac") <- J_mass
     results_jac[[j]] <- J
   }
   results_jac

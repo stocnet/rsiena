@@ -198,11 +198,22 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
       }
     }
 
+    ## Mass contrasts: their Jacobians travel on J_cond as an attribute (see
+    ## .finaliseJac).  Same quadratic form, one SE per mass column.  The
+    ## REINFORCE channel is not applied to them -- the bucketed path is built
+    ## for the spec's own outcome -- so these are conditional SEs even under
+    ## deltaFull, which is what `mass_conditional` records.
+    J_mass  <- attr(J_cond, "mass_jac")
+    SE_mass <- if (!is.null(J_mass))
+      lapply(J_mass, function(Jm) seDeltaRows(Jm, covTheta)) else NULL
+
     results[[specName]] <- list(
       J_cond       = J_cond,
       J_full       = J_full,
       SE_delta     = SE_delta,
       SE_deltaFull = structure(SE_deltaFull, fallback = fallback),
+      SE_mass      = if (!is.null(SE_mass))
+                       structure(SE_mass, mass_conditional = TRUE) else NULL,
       baseline     = baseline,
       ssc_colMeans = if (have_scores) colMeans(ssc_sum) else NULL,
       Q_hat        = Q_vec

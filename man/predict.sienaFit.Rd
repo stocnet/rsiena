@@ -66,8 +66,14 @@
       example.  \code{"deltaFull"} adds the path-distribution term and is the
       one comparable with \code{"bootstrap"}: on the same example the two
       agree to within Monte-Carlo error (ratios 1.15 and 0.86 at 300 draws),
-      at 7 seconds against 31 minutes.  A \code{deltaFull} run reports both,
-      as \code{SE} and \code{SE_conditional}.
+      at 7 seconds against 31 minutes.
+
+      With a dynamic targets object an \emph{unstated} \code{mode} resolves
+      to \code{"deltaFull"}; a mode named explicitly is used as given, so
+      \code{mode = "delta"} still returns the conditional SE.  A
+      \code{deltaFull} run reports \code{SE}; set
+      \code{reportConditional = TRUE} to have \code{SE_conditional}
+      returned alongside it.
 
       Both analytic modes are estimated from the simulated chains, so
       \code{n3PointEst} governs their accuracy: at very small chain counts

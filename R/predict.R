@@ -260,6 +260,8 @@ predict.sienaFit <- function(
     useChangeContributions = if (dynamic) useChangeContributions else FALSE,
     uncertainty  = uncertainty,
     uncertaintyMode = uncertaintyMode,
+    modeExplicit    = isTRUE(unc$mode_explicit),
+    reportConditional = isTRUE(unc$reportConditional),
     nsim         = nsim,
     drawSeed     = drawSeed,
     chainSeed    = chainSeed,

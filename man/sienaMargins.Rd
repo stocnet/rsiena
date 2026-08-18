@@ -90,11 +90,24 @@
   When \code{uncertainty = TRUE}, the output is aggregated at the
   requested \code{level} with additional columns:
   \describe{
-    \item{\code{Mean}}{Point estimate (mean across theta draws).}
-    \item{\code{SE}}{Monte Carlo standard error of the mean.}
+    \item{\code{SE}}{Standard error, obtained as the \code{mode} of
+      \code{\link{set_postest_uncertainty_saom}} specifies: analytic under
+      \code{"delta"} and \code{"deltaFull"}, Monte Carlo across parameter
+      draws under \code{"bootstrap"}. The method used is recorded in the
+      \code{"uncertaintyMethod"} attribute of the result.}
     \item{Quantile columns}{Named by the requested \code{ciInterval}
-      bounds (e.g.\ \code{q_025}, \code{q_975}), plus \code{Median} when
-      \code{uncertaintyMedian = TRUE}.}
+      bounds (e.g.\ \code{q_025}, \code{q_975}). Under \code{"bootstrap"}
+      these are draw quantiles; under the analytic modes they are
+      \code{SE}-based and therefore symmetric.}
+    \item{\code{Mean}, \code{Median}}{Summaries of the draw distribution,
+      under \code{"bootstrap"} only and when requested via
+      \code{simMean} / \code{simMedian}.}
+    \item{\code{SE_conditional}}{Only under \code{"deltaFull"} with
+      \code{reportConditional = TRUE}: the frozen-chain standard error, whose
+      difference from \code{SE} is the path-distribution term.}
+    \item{Mass-contrast columns}{When mass contrasts are present
+      (\code{massCreation}, \code{massDissolution}), each carries its own
+      \code{_SE} and quantile columns, named after the quantity.}
   }
 }
 \details{

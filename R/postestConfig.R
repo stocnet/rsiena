@@ -92,6 +92,11 @@ set_postest_uncertainty_saom <- function(
 	## covariance and can go either way, so the conditional SE is not a bound.
 	## Ask for deltaFull when the chain distribution is part of the question.
 	mode       = c("delta", "bootstrap", "deltaFull"),
+	## deltaFull can also report the conditional (frozen-chain) SE alongside
+	## the full one, their difference being the path-distribution term.  Off
+	## by default: two SE columns leave it ambiguous which one the reported
+	## interval used, and the interval is the thing being read.
+	reportConditional = FALSE,
 	nsim       = 1000,
 	sd         = TRUE,
 	ci         = TRUE,
@@ -100,9 +105,17 @@ set_postest_uncertainty_saom <- function(
 	simMedian  = FALSE
 )
 {
+	## Whether the caller named a mode, so marginalEffects() can tell an
+	## explicit "delta" from an unstated one.  A dynamic target upgrades the
+	## unstated default to "deltaFull": the conditional SE is complete for a
+	## static target and partial for a dynamic one, and the same default
+	## should not silently mean two different things.  Naming delta still
+	## gets delta.
+	mode_explicit <- !missing(mode)
 	mode <- match.arg(mode)
 
 	.checkFlag(enabled, "enabled")
+	.checkFlag(reportConditional, "reportConditional")
 	.checkFlag(sd, "sd")
 	.checkFlag(ci, "ci")
 	.checkFlag(simMean, "simMean")
@@ -138,8 +151,10 @@ set_postest_uncertainty_saom <- function(
 	}
 
 	obj <- list(
-		enabled    = enabled,
-		mode       = mode,
+		enabled       = enabled,
+		mode          = mode,
+		mode_explicit = mode_explicit,
+		reportConditional = reportConditional,
 		nsim       = nsim,
 		sd         = sd,
 		ci         = ci,

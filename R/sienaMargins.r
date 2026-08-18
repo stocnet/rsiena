@@ -609,6 +609,8 @@ marginalEffects.sienaFit <- function(
                 useChangeContributions else FALSE,
             uncertainty      = uncertainty,
             uncertaintyMode  = uncertaintyMode,
+            modeExplicit     = isTRUE(.u$mode_explicit),
+            reportConditional = isTRUE(.u$reportConditional),
             nsim             = nsim,
             drawSeed         = drawSeed,
             chainSeed        = chainSeed,
@@ -914,19 +916,13 @@ predictFirstDiffJac <- function(cc, theta, changeProb, density,
   #                  a change statistic, so it is not a shift in this
   #                  representation at all and needs its own route.
   #
-  #   perturbType    firstDiffJacobian() below implements the derivative of
-  #     "ego"        the ONE-ALTERNATIVE update.  An ego-wide perturbation uses
-  #                  a different update -- it renormalises over the ego's whole
-  #                  choice set -- and so has a different derivative, which is
-  #                  not implemented.  Using the one-alternative form there
-  #                  produced an SE about twice the truth (bootstrap/delta
-  #                  ratio 0.48 against 0.97 for the dyadic case), silently,
-  #                  because the point estimate DID use the ego update while
-  #                  the Jacobian did not.  Pre-existing; verified against
-  #                  HEAD, which has no perturbType handling here either.
-  #                  Finite differences are correct for this case, so decline
-  #                  rather than approximate until the ego-form derivative
-  #                  exists.
+  # perturbType = "ego" is NOT deferred: firstDiffJacobianEgo() below carries
+  # the group sum the ego-wide renormalisation needs.  It is separate from
+  # firstDiffJacobian() because using the one-alternative form for an ego
+  # perturbation was silently wrong -- the point estimate used the ego update
+  # while the Jacobian did not, giving an SE about twice the truth
+  # (bootstrap/delta ratio 0.48, against 0.97 for the dyadic case).  That is
+  # the regression test to re-run if either form changes.
   if (grepl("density", eff_cs_name, fixed = TRUE)) return(NULL)
 
   # The shift set: the perturbed effect, plus whatever a declared dependency

@@ -17,6 +17,7 @@
 set_postest_uncertainty_saom(
     enabled    = TRUE,
     mode       = c("delta", "bootstrap", "deltaFull"),
+    reportConditional = FALSE,
     nsim       = 1000,
     sd         = TRUE,
     ci         = TRUE,
@@ -42,11 +43,21 @@ set_postest_uncertainty_saom(
       as well. Standard errors stay on by default; only the way they are
       obtained changed.
 
-      For a dynamic model \code{"delta"} gives the conditional
-      (frozen-chain) standard error, which omits the path-distribution term.
-      That term is a covariance and may have either sign, so the conditional
-      SE is not a bound on the full one; use \code{"deltaFull"} when the
-      chain distribution is part of the question.}
+      For a dynamic model \code{"delta"} is the conditional (frozen-chain)
+      standard error, which omits the path-distribution term. That term is a
+      covariance and may have either sign, so the conditional SE is not a
+      bound on the full one.
+
+      With a dynamic targets object, an \emph{unstated} \code{mode} resolves
+      to \code{"deltaFull"}. A mode named explicitly is used as given, so
+      \code{mode = "delta"} still returns the conditional SE.}
+
+  \item{reportConditional}{Logical, default \code{FALSE}. Under
+      \code{"deltaFull"}, whether to return the conditional (frozen-chain)
+      standard error alongside the full one, in a \code{SE_conditional}
+      column; the difference between the two is the path-distribution term.
+      The reported \code{q_025}/\code{q_975} interval is built from
+      \code{SE} either way. Ignored for the other modes.}
   \item{nsim}{Single positive numeric, coerced to integer: the number of
       theta draws used when \code{mode = "bootstrap"}. Ignored (but still
       validated) for the delta modes.}
