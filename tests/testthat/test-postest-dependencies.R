@@ -154,3 +154,50 @@ test_that("a derived effect is excluded by default but only warned about later",
   expect_no_warning(suppressMessages(
       set_dependency(tg4, unspInt ~ recip:inPop)))
 })
+
+test_that("two unspecified interactions are separately addressable", {
+  skip_on_cran()
+  ans3 <- load_fixture("ans3"); mydata3 <- load_fixture("mydata3")
+  mymodel3 <- load_fixture("mymodel3")
+  skip_if(is.null(ans3) || is.null(mydata3) || is.null(mymodel3),
+          "ans3 fixtures unavailable")
+
+  ## Both interactions carry the short name `unspInt`, so that name alone no
+  ## longer identifies an effect.  They are told apart as unspInt1/unspInt2 --
+  ## the spelling the targets table already uses for its row names, and the
+  ## one lowering expects.  Resolving a declaration on the raw short name
+  ## instead made every endogenous dependency, and so every reciprocity or
+  ## transitivity marginal effect, unreachable in a two-interaction model.
+  ## outPop, like inPop, is dyadic, so recip:outPop is a legal second
+  ## unspecified interaction on a network-only model.
+  eff <- includeEffects(mymodel3, outPop, name = "mynet3")
+  eff <- includeInteraction(eff, recip, outPop, name = "mynet3")
+
+  tg <- make_marginal_targets(ans3, effects = eff, depvar = "mynet3",
+                             dependencies = list(unspInt1 ~ recip:inPop))
+  ident <- sub("_fd$", "", tg$name)
+  expect_true(all(c("unspInt1", "unspInt2") %in% ident))
+  expect_false("unspInt1" %in% ident[tg$include])
+  expect_true("unspInt2" %in% ident[tg$include])
+
+  ## The bare short name matches both, so it names no single effect: that is
+  ## an ambiguity to report, not a missing effect.
+  expect_error(
+    make_marginal_targets(ans3, effects = eff, depvar = "mynet3",
+                          dependencies = list(unspInt ~ recip:inPop)),
+    "do not identify one effect")
+
+  ## A genuinely absent effect still fails, and the report offers the names
+  ## that would have worked.
+  expect_error(
+    make_marginal_targets(ans3, effects = eff, depvar = "mynet3",
+                          dependencies = list(nosuch ~ recip:inPop)),
+    "unspInt1")
+
+  ## Declared after construction, the numbered name has to reach the warning
+  ## too -- matching on the raw short name would either miss it or, worse,
+  ## warn about the other interaction.
+  tg2 <- make_marginal_targets(ans3, effects = eff, depvar = "mynet3")
+  expect_warning(suppressMessages(
+      set_dependency(tg2, unspInt1 ~ recip:inPop)), "selected target")
+})

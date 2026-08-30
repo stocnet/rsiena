@@ -218,19 +218,34 @@ make_marginal_targets.sienaFit <- function(x, data = NULL, effects = NULL,
     ##
     ## Parsing here also validates the declaration against the model at
     ## construction time, rather than several steps later at lowering.
-    derived <- character(0)
+    ##
+    ## Resolution goes through .regRows() rather than matching short_raw
+    ## directly: short_raw does not identify an effect when a model has two
+    ## user-specified interactions, both of which are called `unspInt`.  Those
+    ## are addressable as unspInt1/unspInt2 -- the spelling the targets table
+    ## and print() already use, and the one lowering expects -- so a
+    ## declaration naming them has to be accepted here too.
+    derivedRows <- integer(0)
     if (length(dependencies) > 0L) {
         for (d in dependencies) {
-            pd  <- .parseDependency(d)
-            unk <- setdiff(c(pd$target, pd$terms), reg$short_raw)
+            pd   <- .parseDependency(d)
+            rows <- lapply(c(pd$target, pd$terms), .regRows, reg = reg)
+            unk  <- c(pd$target, pd$terms)[lengths(rows) == 0L]
             if (length(unk))
                 stop("Dependency ", deparse(d), " names effect(s) not in the ",
                      "model: ", paste(unk, collapse = ", "), ".\n",
-                     "Available: ", paste(reg$short_raw, collapse = ", "), ".",
-                     call. = FALSE)
-            derived <- c(derived, pd$target)
+                     "Available: ", paste(.regIdents(reg), collapse = ", "),
+                     ".", call. = FALSE)
+            amb <- c(pd$target, pd$terms)[lengths(rows) > 1L]
+            if (length(amb))
+                stop("Dependency ", deparse(d), " names effect(s) that do not ",
+                     "identify one effect: ", paste(amb, collapse = ", "),
+                     ".\nUse the numbered or qualified form, e.g. ",
+                     paste(.regIdents(reg)[rows[[which(lengths(rows) > 1L)[1L]]]],
+                           collapse = " or "), ".", call. = FALSE)
+            derivedRows <- c(derivedRows, rows[[1L]])
         }
-        derived <- unique(derived)
+        derivedRows <- unique(derivedRows)
     }
 
     diff1 <- vector("list", n)
@@ -252,7 +267,7 @@ make_marginal_targets.sienaFit <- function(x, data = NULL, effects = NULL,
         .qual1          = reg$short_with_covar,
         .qual2          = rep(NA_character_, n),
         include         = includeDefaults & !isRate &
-                          !(reg$short_raw %in% derived),
+                          !(seq_len(n) %in% derivedRows),
         second          = rep(FALSE, n),
         effectName2     = rep(NA_character_, n),
         diff1           = diff1,
@@ -306,6 +321,19 @@ make_marginal_targets.sienaFit <- function(x, data = NULL, effects = NULL,
 .identNames <- function(short, qual) {
     dup <- short %in% short[duplicated(short)]
     ifelse(dup, qual, short)
+}
+
+## The identifying name of every registry row -- the same rule .rowIdent()
+## applies to the built targets table, needed before that table exists.
+.regIdents <- function(reg) .identNames(reg$short_raw, reg$short_with_covar)
+
+## Registry rows an effect name refers to.  All three spellings are accepted,
+## for the same reason .targetRow() accepts both of its own: the raw short
+## name where it is unique (`egoX` for egoX_mybeh), the numbered one where it
+## is not (`unspInt1`), and the fully qualified one whatever print() showed.
+.regRows <- function(nm, reg) {
+    which(reg$short_raw == nm | reg$short_numbered == nm |
+          reg$short_with_covar == nm)
 }
 
 ## The identifying name of every row, second-difference rows included (those
@@ -904,7 +932,11 @@ set_dependency.sienaPostestTargets <- function(x, ..., verbose = TRUE) {
 
     for (d in deps) {
         lhs <- .parseDependency(d)$target
-        if (lhs %in% x$effectName1[x$include])
+        ## Matched on the row idents, not on effectName1: the latter is
+        ## `unspInt` for both interactions of a two-interaction model, so a
+        ## declaration about unspInt1 would neither warn nor, worse, warn
+        ## about the wrong one.
+        if (lhs %in% c(.rowIdent(x)[x$include], x$.qual1[x$include]))
             warning("'", lhs, "' is a selected target and is now declared as ",
                     "derived from other effects. Perturbing it directly holds ",
                     "its components fixed, which the declaration says is not ",
