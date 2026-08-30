@@ -453,8 +453,22 @@ chainStore_memory <- function(chains, batchSize) {
     ), class = "chainStore")
 }
 
-chainStore_disk <- function(chains, batchSize, dir = tempdir(),
+## Batches are written to a PID-tagged subdirectory of tempdir().  R removes a
+## session's tempdir on a normal exit but NOT when the process is killed, so
+## interrupted runs can leave batches behind; tagging them with the owning
+## process at least makes a leftover attributable to a run rather than
+## anonymous.  Callers that care (long unattended jobs) should check free space
+## themselves -- refusing to start is a policy decision, not something a
+## library should make on the caller's behalf.
+.chainDir <- function(parent = tempdir()) {
+    d <- file.path(parent, sprintf("RSiena_chains_pid%d", Sys.getpid()))
+    dir.create(d, recursive = TRUE, showWarnings = FALSE)
+    d
+}
+
+chainStore_disk <- function(chains, batchSize, dir = NULL,
                             compress = FALSE, depvar = NULL, verbose = FALSE) {
+    if (is.null(dir)) dir <- .chainDir()
     nTotal   <- length(chains)
     nBatches <- ceiling(nTotal / batchSize)
     files    <- character(nBatches)
@@ -764,7 +778,14 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
   eff_names <- names(specs)
   sep       <- "\x1f"
 
-  non_acc <- which(!vapply(specs, function(s) isTRUE(s$accumulated),
+  ## Specs excluded here get no structural cache built for them in
+  ## .prepBatchContext().  Those caches are keyed on the flattened chain frame,
+  ## i.e. on ministepChoice rows, so they only apply to specs that emit at that
+  ## level.  Accumulated specs do emit there but aggregate over ministeps
+  ## themselves, so they do not use the cache either.
+  non_acc <- which(!vapply(specs, function(s)
+                           isTRUE(s$accumulated) ||
+                           !identical(.specEmitLevel(s), "ministepChoice"),
                            logical(1L)))
   pred_group_id <- integer(N)
   {
@@ -955,8 +976,11 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
   # Structural frame: group-column vectors from cc (CoW references).
   structural <- groupColsList(cc)
 
-  # Add condition columns from csMat.
+  # Add condition columns from csMat.  Only meaningful for specs whose rows ARE
+  # the csMat rows; a spec emitting at a coarser level conditions on columns of
+  # its own output, which aggAccum() resolves against that frame instead.
   for (j in seq_len(N)) {
+    if (!identical(.specEmitLevel(specs[[j]]), "ministepChoice")) next
     cond <- specs[[j]]$condition
     if (!is.null(cond)) {
       resolved <- resolveEffectName(cond, cs$csNames)
@@ -2085,6 +2109,9 @@ getGroupVars <- function(level = "none", condition = NULL) {
     egoChoice = c("period", "ego", "choice"),
     chain = c("period", "chain"),
     chainEgo = c("period", "chain", "ego"),
+    # One row per alternative per chain-period: the finest level a quantity
+    # defined over a whole period can have, since it has no ministep of its own.
+    chainEgoChoice = c("period", "chain", "ego", "choice"),
     ministep = c("period", "chain", "ego","ministep"),
     ministepChoice = c("period", "chain", "ego","ministep", "choice")
   )

@@ -10,6 +10,7 @@ makeSpec <- function(predictFun,
                      level                 = "period",
                      condition             = NULL,
                      accumulated           = FALSE,
+                     emitLevel             = "ministepChoice",
                      na.rm                 = TRUE,
                      egoNormalize          = FALSE,
                      rateWeight            = FALSE,
@@ -30,6 +31,17 @@ makeSpec <- function(predictFun,
     level                 = level,
     condition             = condition,
     accumulated           = accumulated,
+    ## emitLevel: the level this spec's predictFun EMITS rows at, named with the
+    ## same vocabulary as `level`.  Every row-wise prediction emits at
+    ## "ministepChoice" (one row per alternative per ministep), which is why it
+    ## has never needed saying; the period-level quantities emit at
+    ## "chainEgoChoice".  It governs two things: whether .prepBatchContext()'s
+    ## ministep-keyed caches and change-statistic condition resolution apply,
+    ## and which `level` values can be aggregated to (.canAggregateTo).
+    ##
+    ## This is NOT the same axis as `accumulated`, which still emits ministep
+    ## rows and only asks for a different aggregation over them.
+    emitLevel             = emitLevel,
     na.rm                 = na.rm,
     egoNormalize          = egoNormalize,
     rateWeight            = rateWeight,
@@ -257,4 +269,11 @@ makeContribFun <- function(mode = NULL, store = NULL, effects = NULL,
          simSeed   = simSeed,
          drawSeed  = if (is.null(derived)) NULL else derived[[1L]],
          chainSeed = if (is.null(derived)) NULL else derived[[2L]])
+}
+
+## The level a spec emits rows at, defaulting for specs built before emitLevel
+## existed (or by hand) -- everything row-wise emits at ministepChoice.
+.specEmitLevel <- function(spec) {
+    e <- spec[["emitLevel"]]
+    if (is.null(e)) "ministepChoice" else e
 }

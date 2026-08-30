@@ -53,11 +53,79 @@
     invisible(TRUE)
 }
 
-## Levels the aggregation understands, coarsest first.  egoChoice (static) and
-## ministepChoice (dynamic) are the finest: one row per alternative, i.e. the
-## ego's whole tie profile rather than a summary of it.
+## Levels the aggregation understands.  Each is a set of grouping columns
+## (getGroupVars), so they form a partial order by inclusion, not a line:
+## chainEgoChoice and ministep are both finer than chainEgo but neither refines
+## the other.  Use .canAggregateTo() rather than position in this vector.
+##
+## The chain/ministep levels are meaningful only for dynamic estimation; a
+## static run has no chains to group by.
 .postestLevels <- c("none", "period", "ego", "egoChoice",
-                    "chain", "chainEgo", "ministep", "ministepChoice")
+                    "chain", "chainEgo", "chainEgoChoice",
+                    "ministep", "ministepChoice")
+
+## Can output emitted at `emitLevel` be aggregated to `level`?  Only if every
+## grouping column `level` needs is present in the emitted rows.  This is what
+## makes "level = ministep on a period-level quantity" an ordinary error rather
+## than a hand-written special case: a period-level row has no ministep.
+.canAggregateTo <- function(level, emitLevel) {
+    all(getGroupVars(level) %in% getGroupVars(emitLevel))
+}
+
+## SCOPE and TYPE are independent choices, and conflating them was a mistake
+## worth not repeating:
+##
+##   type   changeProb | tieProb   WHAT is reported
+##   scope  ministep   | period    over WHAT HORIZON
+##
+## Both combinations of the two are meaningful.  A third axis, `dynamic`, says
+## WHICH ministeps: simulated chain ministeps, or -- for a static run -- all
+## potential first ministeps from the observed wave.  Static is still
+## ministep-scope; it just enumerates the ministeps differently.
+##
+## Period scope needs a chain to propagate along, so it requires dynamic; and
+## its rows are emitted at chainEgoChoice, so any level needing a ministep
+## column is unreachable -- that check is .canAggregateTo(), not a special case.
+.postestScopes <- c("ministep", "period")
+
+.checkScope <- function(scope) {
+    if (!is.character(scope) || length(scope) != 1L || is.na(scope))
+        stop("'scope' must be a single non-NA string.", call. = FALSE)
+    if (!scope %in% .postestScopes)
+        stop("Unknown scope '", scope, "'. Available: ",
+             paste(.postestScopes, collapse = ", "), ".", call. = FALSE)
+    invisible(scope)
+}
+
+.checkPeriodLevelCombo <- function(scope, dynamic, accumulated, level,
+                                   mainEffect = NULL) {
+    .checkScope(scope)
+    if (!identical(scope, "period")) return(invisible(TRUE))
+    if (!dynamic)
+        stop("scope = \"period\" requires dynamic = TRUE: a period-level ",
+             "quantity propagates along a simulated ministep chain, which a ",
+             "static evaluation does not have.", call. = FALSE)
+    if (isTRUE(accumulated))
+        stop("scope = \"period\" is already a period-level quantity; ",
+             "'accumulated' does not apply to it. The two are alternatives, ",
+             "and they differ substantially -- see ",
+             "docs/design/period_level_tie_probability.md section 10.",
+             call. = FALSE)
+    if (!.canAggregateTo(level, "chainEgoChoice"))
+        stop("level = \"", level, "\" is not available for ",
+             "scope = \"period\": it needs ",
+             paste(setdiff(getGroupVars(level), getGroupVars("chainEgoChoice")),
+                   collapse = ", "),
+             ", which a quantity defined over a whole period does not have. ",
+             "Available: ",
+             paste(Filter(function(l) .canAggregateTo(l, "chainEgoChoice"),
+                          .postestLevels), collapse = ", "), ".",
+             call. = FALSE)
+    if (identical(mainEffect, "riskRatio"))
+        stop("scope = \"period\" reports a risk difference; ratio-scale ",
+             "period-level quantities are not implemented.", call. = FALSE)
+    invisible(TRUE)
+}
 
 .checkLevel <- function(level) {
     if (!is.character(level) || length(level) != 1L || is.na(level))
@@ -86,6 +154,7 @@ make_marginal_targets.sienaFit <- function(x, data = NULL, effects = NULL,
                                   depvar = NULL,
                                   dynamic = FALSE,
                                   type = c("changeProb", "tieProb"),
+                                  scope = c("ministep", "period"),
                                   mainEffect = c("riskDifference", "riskRatio"),
                                   level = "period",
                                   condition = NULL,
@@ -99,11 +168,15 @@ make_marginal_targets.sienaFit <- function(x, data = NULL, effects = NULL,
         is.na(includeDefaults))
         stop("'includeDefaults' must be a single non-NA logical.", call. = FALSE)
     type       <- match.arg(type)
+    scope      <- match.arg(scope)
     mainEffect <- match.arg(mainEffect)
     if (!is.logical(dynamic) || length(dynamic) != 1L || is.na(dynamic))
         stop("'dynamic' must be a single non-NA logical.", call. = FALSE)
 
     .checkEstimandCombo(dynamic, accumulated, rateWeight, "marginal effect")
+
+    .checkLevel(level)
+    .checkPeriodLevelCombo(scope, dynamic, accumulated, level, mainEffect)
 
     if (is.null(effects))
         stop("'effects' must be supplied -- the effects object the model was ",
@@ -190,6 +263,11 @@ make_marginal_targets.sienaFit <- function(x, data = NULL, effects = NULL,
         perturbType2    = vector("list", n),
         returnDecisionDetails = rep(FALSE, n),
         .seq            = as.numeric(seq_len(n)),
+        ## FALSE for the rows enumerated from the effects object, TRUE for
+        ## extra requests appended by set_target() under a new name.  Exactly one enumerated row
+        ## exists per effect, which is what keeps addressing by effect name
+        ## unambiguous however many extra requests are added.
+        .added          = rep(FALSE, n),
         .overrides      = replicate(n, list(), simplify = FALSE)
     )
     attr(tg, "row.names") <- .set_row_names(n)
@@ -200,7 +278,7 @@ make_marginal_targets.sienaFit <- function(x, data = NULL, effects = NULL,
     ## Model-level defaults; per-target entries in .overrides win over these.
     attr(tg, "defaults") <- list(
         dynamic = dynamic,
-        type = type, mainEffect = mainEffect, level = level,
+        type = type, scope = scope, mainEffect = mainEffect, level = level,
         condition = condition, egoNormalize = egoNormalize,
         accumulated = accumulated, rateWeight = rateWeight,
         massContrasts = massContrasts
@@ -239,8 +317,21 @@ make_marginal_targets.sienaFit <- function(x, data = NULL, effects = NULL,
     ident
 }
 
-.targetRow <- function(x, nm, covar1 = NULL, covar2 = NULL) {
+.targetRow <- function(x, nm, covar1 = NULL, covar2 = NULL, name = NULL) {
+    ## Addressing by name comes first: once an effect can carry SEVERAL
+    ## requests, the effect name alone no longer identifies one,
+    ## and the row's own name is what distinguishes them.
+    if (!is.null(name)) {
+        hitN <- which(x$name == name)
+        if (length(hitN) == 1L) return(hitN)
+        if (length(hitN) > 1L)
+            stop("Several targets are named '", name, "'.", call. = FALSE)
+    }
+    ## Resolve an effect name against the enumerated rows only.  Extra
+    ## requests (set_target with a new name) are addressed by that name, so they
+    ## never make the effect name ambiguous.
     b   <- .baseRows(x)
+    if (!is.null(x$.added)) b <- b[!x$.added[b]]
     hit <- b[x$effectName1[b] == nm]
     ## Also accept the qualified form, so that whatever print() showed can be
     ## typed straight back in.
@@ -261,7 +352,18 @@ make_marginal_targets.sienaFit <- function(x, data = NULL, effects = NULL,
              ". Available for '", nm, "': ",
              .describeCandidates(x, b[x$effectName1[b] == nm]), ".",
              call. = FALSE)
-    if (length(hit) > 1L)
+    if (length(hit) > 1L) {
+        ## Two ways an effect can match several targets, and they need
+        ## different disambiguators: the same short name on different
+        ## covariates (covar1/covar2), or several REQUESTS about one effect
+        ## added under their own name (name).
+        sameCovar <- length(unique(paste(x$.covar1[hit], x$.covar2[hit]))) == 1L
+        if (sameCovar)
+            stop("Effect '", nm, "' has ", length(hit), " targets, so it does ",
+                 "not identify one: ",
+                 paste(sQuote(x$name[hit]), collapse = ", "), ".\n",
+                 "Address one with name = , e.g. name = \"", x$name[hit[1L]],
+                 "\".", call. = FALSE)
         stop("Effect '", nm, "' matches ", length(hit), " targets, so it does ",
              "not identify one: ", .describeCandidates(x, hit), ".\n",
              "Name the covariate, as set_effect() does -- e.g. ",
@@ -269,6 +371,7 @@ make_marginal_targets.sienaFit <- function(x, data = NULL, effects = NULL,
                  paste0("covar1 = \"", x$.covar1[hit[1L]], "\"")
              else paste0("use the qualified name '", x$.qual1[hit[1L]], "'"),
              ".", call. = FALSE)
+    }
     hit
 }
 
@@ -293,7 +396,8 @@ set_target.sienaPostestTargets <- function(x, shortNames,
                                            returnDecisionDetails = NULL,
                                            name = NULL,
                                            level, condition, accumulated,
-                                           rateWeight, massContrasts,
+                                           rateWeight, massContrasts, type,
+                                           scope,
                                            include = TRUE, verbose = TRUE,
                                            ...) {
     if (!hasArg(shortNames))
@@ -323,13 +427,39 @@ set_target.sienaPostestTargets <- function(x, shortNames,
     ## `condition = NULL` indistinguishable from not setting it at all --
     ## exactly the distinction this mechanism exists to preserve.
     ## `ov[f] <- list(value)` stores NULL as a present entry.
+    ## `type` is overridable per row so that quantities which must be read off
+    ## the SAME simulated chains -- the per-ministep effect, its accumulated
+    ## sum, and the period-level endpoint -- can be requested in one call.
+    ## They then stream over a single flattened batch instead of one call each
+    ## re-flattening the same chains.
     ov <- list()
     for (f in c("level", "condition", "accumulated", "rateWeight",
-                "massContrasts"))
+                "massContrasts", "type", "scope"))
         if (!missing_arg_named(f, environment())) ov[f] <- list(get(f))
 
     for (nm in nms) {
-        i <- .targetRow(x, nm, covar1, covar2)
+        ## NAME PINS THE REQUEST.  A name that already exists addresses that
+        ## request; a NEW name creates one, cloned from the effect's enumerated
+        ## row so the perturbation carries over and only the named settings
+        ## differ.  Without a name the effect's own row is addressed, as before.
+        ##
+        ## This is the grammar set_second_diff() already uses, and it is what
+        ## lets one effect be asked for at several settings -- two conditionings,
+        ## or the per-ministep / accumulated / period-level scales -- in ONE
+        ## targets object instead of one object per setting.
+        appending <- !is.null(name) && !(name %in% x$name)
+        i <- .targetRow(x, nm, covar1, covar2,
+                        name = if (!is.null(name) && !appending) name else NULL)
+        if (appending) {
+            out <- unclass(x)
+            for (cn in names(out)) out[[cn]] <- c(out[[cn]], out[[cn]][i])
+            attr(out, "row.names") <- .set_row_names(length(out$name))
+            class(out) <- c("sienaPostestTargets", "data.frame")
+            x <- out
+            i <- length(x$name)
+            x$.added[i] <- TRUE
+            x$.seq[i]   <- max(c(x$.seq, 0), na.rm = TRUE) + 1
+        }
         ## Re-tuning an already-selected target must not reorder it; only a
         ## newly selected one moves to the end.
         if (include && !isTRUE(x$include[i]))
@@ -345,20 +475,18 @@ set_target.sienaPostestTargets <- function(x, shortNames,
         ## derived from a declared relationship.
         if (!is.null(returnDecisionDetails))
             x$returnDecisionDetails[i] <- returnDecisionDetails
-        if (!is.null(name)) {
-            if (name %in% x$name[-i])
-                stop("A target named '", name, "' already exists.",
-                     call. = FALSE)
-            x$name[i] <- name
-        }
+        if (!is.null(name)) x$name[i] <- name
         if (length(ov))
             x$.overrides[[i]][names(ov)] <- ov
         if (verbose)
-            message("set_target: ", if (include) "included" else "excluded",
+            message("set_target: ",
+                    if (appending) paste0("added '", name, "' for")
+                    else if (include) "included" else "excluded",
                     " '", nm, "'",
                     if (length(ov))
                         paste0(" (", paste(names(ov), collapse = ", "),
-                               " overridden)") else "")
+                               if (appending) " set)" else " overridden)")
+                    else "")
     }
     x
 }
@@ -429,7 +557,7 @@ set_second_diff <- function(x, ...) UseMethod("set_second_diff", x)
 ## `perturbations` is the per-effect list; see .parsePerturbList.
 set_second_diff.sienaPostestTargets <- function(x, perturbations,
                                                 returnDecisionDetails = FALSE,
-                                                name = NULL,
+                                                name = NULL, type,
                                                 include = TRUE, verbose = TRUE,
                                                 ...) {
     .example <- paste0(
@@ -508,7 +636,7 @@ set_second_diff.sienaPostestTargets <- function(x, perturbations,
         ## of its own, and its components' are read off their own rows.
         .covar1 = "", .covar2 = "",
         .qual1 = quals[1L], .qual2 = quals[2L],
-        include = include, second = TRUE, effectName2 = nms[2L],
+        include = include, second = TRUE, .added = FALSE, effectName2 = nms[2L],
         returnDecisionDetails = isTRUE(returnDecisionDetails),
         .seq = max(c(x$.seq, 0), na.rm = TRUE) + 1
     )
@@ -516,7 +644,8 @@ set_second_diff.sienaPostestTargets <- function(x, perturbations,
         diff1 = diff1, contrast1 = contrast1,
         diff2 = diff2, contrast2 = contrast2,
         perturbType1 = perturbType1, perturbType2 = perturbType2,
-        .overrides = list()
+        .overrides = if (missing_arg_named("type", environment())) list()
+                     else list(type = type)
     )
 
     out <- unclass(x)
@@ -714,6 +843,15 @@ print.sienaPostestTargets <- function(x, ...) {
             !is.null(d0 <- attr(tg, "defaults")$massContrasts))
             e$massContrasts <- d0
 
+        ## Estimand validation belongs here rather than in set_target(): a row
+        ## can override `type` and `level` independently, possibly in separate
+        ## calls, so the combination is only knowable once the row is lowered.
+        dd <- attr(tg, "defaults")
+        pick <- function(f) if (f %in% names(ov)) ov[[f]] else dd[[f]]
+        .checkPeriodLevelCombo(pick("scope"), isTRUE(dd$dynamic),
+                               isTRUE(pick("accumulated")), pick("level"),
+                               dd$mainEffect)
+
         e <- .applyDependencies(e, attr(tg, "dependencies"))
         out[[k]] <- e
     }
@@ -722,6 +860,7 @@ print.sienaPostestTargets <- function(x, ...) {
     defs$massContrasts <- NULL
     list(effectList = out, defaults = defs)
 }
+
 
 
 ##@set_dependency Postestimation

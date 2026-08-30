@@ -44,6 +44,9 @@ marginalEffects.sienaFit <- function(
     depvar     <- attr(targets, "depvar")
     for (.nm in names(.lowered$defaults))
         assign(.nm, .lowered$defaults[[.nm]])
+    ## Targets objects built before `scope` existed carry no default for it,
+    ## and ministep is what they meant.
+    if (!exists("scope", inherits = FALSE)) scope <- "ministep"
 
     if (!inherits(control_uncertainty, "sienaPostestUncertainty"))
         stop("'control_uncertainty' must be a sienaPostestUncertainty object, ",
@@ -107,9 +110,8 @@ marginalEffects.sienaFit <- function(
     if (accumulated && !dynamic)
       stop("'accumulated = TRUE' requires 'dynamic = TRUE' ",
            "(accumulated ME sums over simulated ministep chains).")
-    if (accumulated && type != "tieProb")
-      message("Note: canonical accumulated ME uses type='tieProb' ",
-              "(joined tie-presence ME). You have type='", type, "'.")
+    ## The accumulated/type note is issued per target instead, since either can
+    ## now be overridden per row.
     if (rateWeight && dynamic)
       message("Note: for dynamic estimation, rate-weighting is absorbed ",
               "by the simulation (actors selected proportional to lambda). ",
@@ -313,6 +315,15 @@ marginalEffects.sienaFit <- function(
                                    isTRUE(spec$accumulated) else accumulated
             eff_rateWeight  <- if ("rateWeight" %in% names(spec))
                                    isTRUE(spec$rateWeight)  else rateWeight
+            ## Same override rule for `type`, which is what lets one call ask
+            ## for the per-ministep effect, its accumulated sum and the
+            ## period-level endpoint off ONE pass over the chains.
+            eff_type        <- if ("type" %in% names(spec)) spec$type else type
+            eff_scope       <- if ("scope" %in% names(spec)) spec$scope else scope
+            if (eff_accumulated && eff_type != "tieProb")
+                message("Note: canonical accumulated ME uses type='tieProb' ",
+                        "(joined tie-presence ME). Target '", nm,
+                        "' has type='", eff_type, "'.")
             if (eff_accumulated && !dynamic)
                 stop("Effect '", nm, "': accumulated = TRUE requires ",
                      "dynamic = TRUE.")
@@ -392,10 +403,38 @@ marginalEffects.sienaFit <- function(
                 attachVal <- FALSE
             }
 
-            if (!eff_second) {
+            ## The period-level contrast is a different estimand, not a
+            ## different aggregation of the same one: both levels are
+            ## stipulated and held for the whole period, and the endpoints of
+            ## two recursions are differenced.  It therefore takes neither the
+            ## diff/contrast swap nor the Jacobian; standard errors are out of
+            ## scope until the point estimate is settled.
+            eff_periodLevel <- identical(eff_scope, "period")
+            if (eff_periodLevel) {
+                ## One effect or two: .periodCells() turns the contrasts into
+                ## cells and weights, so the second difference is the same
+                ## code with four cells instead of two.
+                diffFun  <- predictPeriodDiff
+                diffArgs <- list(
+                    effectNames = if (eff_second)
+                                      c(effectName1, effectName2)
+                                  else effectName1,
+                    contrasts   = if (eff_second)
+                                      list(eff_contrast1, eff_contrast2)
+                                  else list(eff_contrast1),
+                    diffs       = if (eff_second)
+                                      list(spec$diff1, spec$diff2)
+                                  else list(spec$diff1),
+                    quantity     = eff_type,
+                    dependencies = eff_dependencies,
+                    x0           = periodStartNetworks(data, depvar)
+                )
+                eff_diffName <- if (eff_second) "periodSecondDiff"
+                                else "periodFirstDiff"
+            } else if (!eff_second) {
                 diffFun  <- predictFirstDiff
                 diffArgs <- list(
-                    type           = type,
+                    type           = eff_type,
                   effectName     = effectName1,
                     diff           = spec$diff1,
                     contrast       = eff_contrast1,
@@ -408,7 +447,7 @@ marginalEffects.sienaFit <- function(
             } else {
                 diffFun  <- predictSecondDiff
                 diffArgs <- list(
-                    type            = type,
+                    type            = eff_type,
                   effectName1     = effectName1,
                     diff1           = spec$diff1,
                     contrast1       = eff_contrast1,
@@ -431,16 +470,19 @@ marginalEffects.sienaFit <- function(
                 level                 = eff_level,
                 condition             = eff_condition,
                 accumulated           = eff_accumulated,
+                emitLevel             = if (eff_periodLevel) "chainEgoChoice"
+                                        else "ministepChoice",
                 egoNormalize          = egoNormalize,
                 rateWeight            = eff_rateWeight,
                 dynamic               = dynamic,
-                massContrasts         = eff_massC,
+                massContrasts         = eff_massC && !eff_periodLevel,
                 returnDecisionDetails = eff_retDet,
-                jacobianFun           = if (!eff_second) predictFirstDiffJac
+                jacobianFun           = if (eff_periodLevel) NULL
+                                        else if (!eff_second) predictFirstDiffJac
                                         else predictSecondDiffJac,
                 metadata = list(
                     method      = "marginalEffects",
-                    type        = type,
+                    type        = eff_type,
                   effectName1 = effectName1,
                     contrast1   = eff_contrast1,
                   effectName2 = if (eff_second) effectName2
@@ -460,6 +502,24 @@ marginalEffects.sienaFit <- function(
                 )
             )
         }
+
+        ## ---- The type the shared per-batch baseline is computed at --------
+        ## .evalBatch() computes ONE predictProbability() baseline per batch and
+        ## hands it to every spec.  Only the row-wise specs read it; the
+        ## period-level ones walk the chain themselves and ignore it.  So the
+        ## batch type is whatever the row-wise specs need, and two row-wise
+        ## specs disagreeing is a genuine conflict rather than something to
+        ## resolve silently.
+        specTypes <- vapply(builtSpecList,
+                            function(s) as.character(s$metadata$type), character(1L))
+        rowWise   <- specTypes[specTypes != "periodTieProb"]
+        if (length(unique(rowWise)) > 1L)
+            stop("One call cannot mix type = ", paste(sQuote(unique(rowWise)),
+                 collapse = " and "), ": the per-batch baseline is computed ",
+                 "once and shared. Split them into separate calls, or keep ",
+                 "one row-wise type alongside any number of \"periodTieProb\" ",
+                 "targets.", call. = FALSE)
+        batchType <- if (length(rowWise)) unname(rowWise[1L]) else type
 
         # ---- Default batchSize (batch path uses nbrNodes=1) ----
         if (is.null(batchSize)) {
@@ -594,7 +654,7 @@ marginalEffects.sienaFit <- function(
         results <- sienaPostestimate(
             contribFun    = contribFun,
             nChainBatches = nChainBatches,
-            type          = type,
+            type          = batchType,
             rateParams    = rateParams,
             rateIdx       = rateIdx,
             specs         = builtSpecList,

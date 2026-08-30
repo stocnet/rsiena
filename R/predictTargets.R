@@ -27,6 +27,7 @@ make_predict_targets <- function(x, ...) UseMethod("make_predict_targets", x)
 make_predict_targets.sienaFit <- function(x, data = NULL, effects = NULL,
                                           depvar = NULL,
                                           type = c("changeProb", "tieProb"),
+                                          scope = c("ministep", "period"),
                                           dynamic = FALSE,
                                           level = "period",
                                           condition = NULL,
@@ -35,12 +36,14 @@ make_predict_targets.sienaFit <- function(x, data = NULL, effects = NULL,
                                           rateWeight = FALSE,
                                           na.rm = TRUE,
                                           includeDefaults = TRUE, ...) {
-    type <- match.arg(type)
+    type  <- match.arg(type)
+    scope <- match.arg(scope)
     if (!is.logical(includeDefaults) || length(includeDefaults) != 1L ||
         is.na(includeDefaults))
         stop("'includeDefaults' must be a single non-NA logical.", call. = FALSE)
     .checkEstimandCombo(dynamic, accumulated, rateWeight, "prediction")
     .checkLevel(level)
+    .checkPeriodLevelCombo(scope, dynamic, accumulated, level)
 
     if (is.null(effects))
         stop("'effects' must be supplied -- the effects object the model was ",
@@ -62,7 +65,7 @@ make_predict_targets.sienaFit <- function(x, data = NULL, effects = NULL,
     attr(tg, "depvar")    <- depvar
     attr(tg, "effects")   <- effects
     attr(tg, "defaults")  <- list(
-        type = type, dynamic = dynamic, level = level,
+        type = type, scope = scope, dynamic = dynamic, level = level,
         condition = condition, egoNormalize = egoNormalize,
         accumulated = accumulated, rateWeight = rateWeight, na.rm = na.rm)
     attr(tg, "version") <- utils::packageDescription("RSiena", fields = "Version")
@@ -84,7 +87,7 @@ set_condition <- function(x, ...) UseMethod("set_condition", x)
 ## explicit NULL asks for the unconditional prediction.
 set_condition.sienaPredictTargets <- function(x, condition, level,
                                               egoNormalize, accumulated,
-                                              rateWeight,
+                                              rateWeight, scope,
                                               name = NULL, verbose = TRUE,
                                               ...) {
     cond <- if (missing(condition)) NULL
@@ -95,7 +98,7 @@ set_condition.sienaPredictTargets <- function(x, condition, level,
     if (identical(cond, "NULL")) cond <- NULL
 
     ov <- list()
-    for (f in c("level", "egoNormalize", "accumulated", "rateWeight"))
+    for (f in c("level", "egoNormalize", "accumulated", "rateWeight", "scope"))
         if (!missing_arg_named(f, environment())) ov[f] <- list(get(f))
     if (!is.null(ov$level)) .checkLevel(ov$level)
 
@@ -141,7 +144,11 @@ print.sienaPredictTargets <- function(x, ...) {
     cat("RSiena prediction targets  (", nrow(x), " requested; depvar '",
         attr(x, "depvar"), "')\n", sep = "")
     cat("  quantity : ",
-        if (identical(d$type, "tieProb"))
+        if (identical(d$scope, "period")) {
+            if (identical(d$type, "tieProb"))
+                "probability the tie EXISTS at the end of the period"
+            else "probability the tie's state CHANGED over the period"
+        } else if (identical(d$type, "tieProb"))
             "probability the tie EXISTS after the ministep"
         else "probability ego CHANGES the tie",
         if (isTRUE(d$dynamic)) ", dynamic (simulated chains)"

@@ -60,6 +60,7 @@ predict.sienaFit <- function(
     depvar  <- attr(targets, "depvar")
 
     type         <- st$type
+    scope        <- if (is.null(st$scope)) "ministep" else st$scope
     dynamic      <- st$dynamic
     level        <- st$level
     condition    <- st$condition
@@ -156,8 +157,11 @@ predict.sienaFit <- function(
   rateIdx    <- .th$rateIdx
 
   # ---- Resolve condition ----
-  if (!is.null(condition)) condition <- resolveCondition(condition)
-  attachContribs <- !is.null(condition)
+  isPeriod <- identical(scope, "period")
+  # Period rows condition on columns of their own dyad-level output, not on
+  # change statistics, so the _eval/_endow stripping does not apply to them.
+  if (!is.null(condition) && !isPeriod) condition <- resolveCondition(condition)
+  attachContribs <- !is.null(condition) && !isPeriod
 
   # ---- Build contribFun ----
   if (dynamic) {
@@ -196,6 +200,10 @@ predict.sienaFit <- function(
                                       chainStoreMode = "auto")
         contribFun    <- built$contribFun
         nChainBatches <- built$nChainBatches
+        # Remove disk-backed chain batches on exit, error included.  Without
+        # this predict() leaks them, as marginalEffects() already avoids doing.
+        if (!is.null(built$store) && identical(built$store$mode, "disk"))
+            on.exit(built$store$cleanup(), add = TRUE)
         rm(.chains); gc(verbose = FALSE)
     } else {
         contribFun    <- makeContribFun("per_batch", dynArgs = dynArgs)
@@ -216,12 +224,30 @@ predict.sienaFit <- function(
   }
 
   # ---- Build specs (N=1) ----
-  metadata <- list(method = "predict", type = type,
+  metadata <- list(method = "predict", type = type, scope = scope,
                    depvar = depvar, dynamic = dynamic, level = level)
+  # Only four things differ between the row-wise probabilities and the
+  # period-level one: which function computes it, what that function needs,
+  # whether it has an analytical Jacobian, and the level it emits rows at.
+  # The period-level walk carries x0 in predictArgs because the chain frame
+  # holds no network state, and has no Jacobian because standard errors for it
+  # come from the bootstrap path.
+  ## The reported name says both things: what is measured (tie vs change) and
+  ## over what horizon.  They are independent choices, so the name is built
+  ## from both rather than being a single fused token.
+  outName <- if (isPeriod)
+                 if (identical(type, "tieProb")) "periodTieProb"
+                 else "periodChangeProb"
+             else type
   specs <- setNames(list(makeSpec(
-    predictFun   = predictProbability,
-    predictArgs  = list(type = type, attachContribs = attachContribs),
-    outcomeName  = type,
+    predictFun   = if (isPeriod) predictPeriodTieProb else predictProbability,
+    predictArgs  = if (isPeriod)
+                       list(x0 = periodStartNetworks(newdata, depvar),
+                            quantity = type)
+                   else list(type = type, attachContribs = attachContribs),
+    jacobianFun  = if (isPeriod || accumulated) NULL else predictProbabilityJac,
+    emitLevel    = if (isPeriod) "chainEgoChoice" else "ministepChoice",
+    outcomeName  = outName,
     level        = level,
     condition    = condition,
     na.rm        = na.rm,
@@ -229,12 +255,18 @@ predict.sienaFit <- function(
     dynamic      = dynamic,
     accumulated  = accumulated,
     rateWeight   = rateWeight,
-    jacobianFun  = if (!accumulated) predictProbabilityJac else NULL,
     metadata     = metadata
-  )), type)
+  )), outName)
 
-  # returnDecisionDetails: point-estimate call with attachContribs=TRUE
+  # returnDecisionDetails: point-estimate call with attachContribs=TRUE.
+  # Decision details are per-ministep by definition, so they are not available
+  # for a quantity whose unit is the dyad-period.
   decisionDetails <- NULL
+  if (returnDecisionDetails && isPeriod) {
+    warning("returnDecisionDetails is a per-ministep report and does not ",
+            "apply to scope = \"period\"; ignoring it.", call. = FALSE)
+    returnDecisionDetails <- FALSE
+  }
   if (returnDecisionDetails) {
     cc_hat <- contribFun(thetaHat, 1L, 1L)
     decisionDetails <- predictProbability(cc_hat, thetaHat, type,
@@ -291,7 +323,7 @@ predict.sienaFit <- function(
     r
   })
 
-  result <- results[[type]]
+  result <- results[[outName]]
   if (!is.null(decisionDetails))
     attr(result, "decisionDetails") <- decisionDetails
   result
@@ -491,12 +523,33 @@ calculateUtility <- function(mat, theta, permitted = NULL, densityIdx = NULL) {
     # changeStats path: u = d × (θ_density + Δs_rest %*% θ_rest)
     # Density column carries ±1 direction; non-density columns are pure Δs.
     thetaEff <- theta
-    d <- as.integer(mat[, densityIdx])
+    d <- as.numeric(mat[, densityIdx])
+
+    # When creation and dissolution theta are equal -- an evaluation-only
+    # specification -- the split below is unnecessary and one product over the
+    # whole matrix serves every row.  The density column IS d, so
+    #
+    #   mat %*% th = d*θ_den + Σ_rest    hence    u = d*(mat %*% th) + θ_den*(d - d²)
+    #
+    # with d - d² vanishing at d = +1 and d = 0, and equal to -2 at d = -1.
+    # The general path below has to subset the matrix by row, which copies most
+    # of it, twice.
+    if (isTRUE(all.equal(unname(thetaEff[, "creation"]),
+                         unname(thetaEff[, "dissolution"])))) {
+      util <- d * as.numeric(mat %*% thetaEff[, "creation"]) +
+              thetaEff[densityIdx, "creation"] * (d - d * d)
+      if (!is.null(permitted)) {
+        stopifnot(length(permitted) == length(util))
+        util[!permitted] <- -Inf
+      }
+      return(util)
+    }
+
     rest <- seq_len(ncol(mat))[-densityIdx]  # non-density columns
     n <- nrow(mat)
     util <- numeric(n)
-    cre <- d ==  1L
-    dis <- d == -1L
+    cre <- d ==  1
+    dis <- d == -1
     # d=0 rows stay at 0 (no-change → no utility contribution)
     if (any(cre)) {
       util[cre] <- d[cre] * (thetaEff[densityIdx, "creation"] +
