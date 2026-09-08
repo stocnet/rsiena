@@ -1,3 +1,19 @@
+2026-07-28
+
+# RSiena 1.6.12
+
+## Changes in RSiena:
+### Effects
+  * Effects `toU` and `WXX` now also available for two-mode networks.
+  * New effect group `dyadThirdBipartiteObjective`.
+### Bug correction
+  * Adherence to positivity constraints during parameter updates in 
+    Phase 2 corrected for the `doubleAveraging=TRUE` option.
+### Documentation
+  * Explanation of effect groups `dyadBipartiteObjective`, 
+    `dyadSecondBipartiteObjective`, and `dyadThirdBipartiteObjective`, 
+    involving a dyadic covariate and a dependent two-mode network, added.
+
 2026-07-16
 
 # RSiena 1.6.11
