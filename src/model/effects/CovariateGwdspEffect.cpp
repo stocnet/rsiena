@@ -113,7 +113,7 @@ double CovariateGwdspEffect::calculateContribution(int alter) const
 				increment = this->lcumulativeWeight[twoc + 1] -
 						this->lcumulativeWeight[twoc];
 			}
-			contribution = this->resolvedValue(iter.actor(), this->lnc) * increment;
+			contribution += this->resolvedValue(iter.actor(), this->lnc) * increment;
 		}
 	}
 	return contribution;

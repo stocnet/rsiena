@@ -4863,7 +4863,7 @@ instars <- function(mat){
 			a_row <- mat[i, c(-i, -j)]
 			b_row <- mat[j, c(-i, -j)]
 			matrix_vals[i, j] <- sum(a_row * b_row)
-		}ƒ
+		}
 	}
 	diag(matrix_vals) <- 0
 	matrix_vals
@@ -4905,12 +4905,12 @@ mycovar_centered <- mycovar - mean(mycovar)
 instarmat <- instars(mynet2)
 gwinstarmat <- gwWeight(instarmat, alpha = alpha)
 egostat <- sweep(gwinstarmat, 2, mycovar_centered, "*")
-sum(egostat) # 48.20488 ok
+sum(egostat) # 48.29488 ok
 
 # check egoX x gwdspFBX
 
 egostat <- mycovar_centered * sweep(gwinstarmat, 2, mycovar_centered, "*")
-sum(egostat) # NOT corect
+sum(egostat) # 165.76387
 
 # check gwdspFFX
 
