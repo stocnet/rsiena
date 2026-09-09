@@ -4963,6 +4963,49 @@ sum(egostat) #  779.2663  ok
 egostat <- mycovar * sweep(gwfftwopaths, 2, mycovar, "*")
 sum(egostat) #  2746.218  ok
 
+## Check Contributions
+## calculateContribution for a potential tie i -> j is
+##   sum_{h in inTies(j), h != i} z_h * ( w(S_ih +/- 1) - w(S_ih) ),
+## evaluated at wave 1, and signed by the direction of the ministep: negative
+## when the tie is present and would be withdrawn (as the delta * in the
+## totGwdspFBAlt check above).
+## ans$targets above only exercises egoStatistic, so a change statistic that fails
+## to accumulate over h would still pass every check made so far.
+
+## User-defined interactions enter as unspInt, which getChangeContributions does
+## not yet handle, so check on a model holding the effect alone. The change
+## contribution of gwdspFBX_nc does not depend on the rest of the specification.
+checkmodel <- getEffects(mydata)
+checkmodel <- set_effect(checkmodel, gwdspFBX_nc, parameter = par,
+                         depvar = "mynet", covar1 = "mycovar")
+
+staticChangeContributions <- RSiena:::getChangeContributions(data = mydata,
+                                                             effects = checkmodel)
+incl <- checkmodel[checkmodel$include & checkmodel$type != "rate", ]
+k <- which(incl$shortName == "gwdspFBX_nc")
+conts <- do.call(rbind, staticChangeContributions[[1]][[1]][[k]])
+
+adj <- mynet[, , 1]
+S <- instars(adj)
+n <- nrow(adj)
+manual_contribs <- matrix(0, n, n)
+for (ego in 1:n) {
+  for (alter in 1:n) {
+    if (ego == alter) next
+    h <- setdiff(which(adj[, alter] == 1), ego)
+    if (length(h) == 0) next
+    s <- S[ego, h]
+    if (adj[ego, alter] == 1) {
+      inc_h <- gwWeight(s, alpha) - gwWeight(s - 1, alpha)
+    } else {
+      inc_h <- gwWeight(s + 1, alpha) - gwWeight(s, alpha)
+    }
+    manual_contribs[ego, alter] <- (1 - 2 * adj[ego, alter]) * sum(mycovar[h] * inc_h)
+  }
+}
+all.equal(manual_contribs, conts) # TRUE
+
+
 ################################################################################
 ### check totGwdspFB and totGwdspFB_nc (structural GWDSP behavior effect)
 ###
