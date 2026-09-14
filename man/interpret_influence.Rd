@@ -11,7 +11,12 @@
  which may be helpful for the interpretation of results
  for network and behavior dynamics,
  for an estimation result represented by a
- \code{sienaFit} object created by \code{\link{siena}}.
+ \code{sienaFit} object created by \code{\link{siena}}.\cr
+  The functions \code{interpret_influence} and
+  \code{influenceTable} are identical.\cr
+  The first of these names is preferred,
+  the other is kept for backward compatibility.
+
 }
 
 \usage{

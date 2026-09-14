@@ -757,7 +757,7 @@ zcoDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
 					   warn=TRUE, sparse=inherits(val,"TsparseMatrix"),
 					   type=c("oneMode", "bipartite"))
 {
-	text0 <- paste("as_covariate_rsienas(", deparse1(substitute(val)), sep="")
+	text0 <- paste("as_covariate_rsiena(", deparse1(substitute(val)), sep="")
 	text0 <- paste(text0, "type='oneMode'", sep=", ")
 	if (!centered)
 	{

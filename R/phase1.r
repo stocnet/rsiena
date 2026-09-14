@@ -479,12 +479,26 @@ CalculateDerivative <- function(z, x)
 	someFixed <- FALSE
 	if (any(diag(dfra) <= 0 & !z$fixed))
 	{
-		fromBayes <- 'fromBayes' %in% names(x)
+		fromBayes <- ('fromBayes' %in% names(x)) 
 		if (fromBayes)
 		{
 			# Use the values for diag(dfra) from startupGlobal computed in sienaBayes
 			neg <- which((diag(dfra) <= 0 & !z$fixed)[!z$effects$basicRate])
+			if (length(neg) > 0)
+			{
+				dfra[neg,] <- 0
+				dfra[,neg] <- 0
 			diag(dfra)[which(!z$effects$basicRate)[neg]] <- x$ddfra[neg]
+			}
+			negrate <- which((diag(dfra) <= 0 & !z$fixed)[z$effects$basicRate])
+			if (length(negrate) > 0)
+			{
+				dfra[negrate,] <- 0
+				dfra[,negrate] <- 0
+				diag(dfra)[negrate] <- 1 # arbitrary
+			}
+			Report('Modified diagonal values of derivative matrix :\n', cf)
+			Report(format(diag(dfra), digits = 4, nsmall = 4, width = 8), cf, fill=80)	
 		}
 		else
 		{

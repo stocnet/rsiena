@@ -150,7 +150,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 				print(userlist[bad])
 				cat("invalid effect requested: see above; \n")
 				cat("there seems to be a mismatch between data set and effects object.\n")
-				cat("This may have been caused by the use of different versions of RSiena")
+				cat("This may have been caused by the use of different versions of RSiena\n")
 				cat("for creating the effects object and now running siena07.\n")
 				stop("Try creating the effects object with the current version of RSiena.")
 			}
@@ -170,7 +170,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 			if (any(effects$shortName[effectsr] != defaultEffects$shortName[defEffectsr]))
 			{
 				cat("There seems to be a mismatch between data set and effects object.\n")
-				cat("This may have been caused by the use of different versions of RSiena")
+				cat("This may have been caused by the use of different versions of RSiena\n")
 				cat("for creating the effects object and now running siena07.\n")
 				cat("Try creating the effects object with the current version of RSiena.")
 				stop("Cannot use standard initialisation with a ",
@@ -549,7 +549,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 				splitDepvars <- "splitDepvars" %in% names(x)
 				if (splitDepvars)
 				{
-					splitDepvars <- x$splitDepvars
+					splitDepvars <- (x$splitDepvars > 0)
 				}
 				if (any(!z$gmm)) 
 				{
@@ -594,6 +594,7 @@ initializeFRAN <- function(z, x, data, effects, prevAns=NULL, initC,
 		}
 		z$effects <- effects
 		z$requestedEffects <- requestedEffects
+		z$initial_theta <- z$theta
 	}
 	else ## initC, i.e just send already set up data into new processes
 	{

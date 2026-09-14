@@ -53,7 +53,7 @@ Bug reports can be submitted at
     Package: \tab RSiena\cr
     Type: \tab Package\cr
     Version: \tab 1.6.12\cr
-    Date: \tab 2026-07-28\cr
+    Date: \tab 2026-09-14\cr
     Depends: \tab R (>= 4.5.0)\cr
     Imports: \tab Matrix, lattice, parallel, MASS, methods, xtable\cr
     Suggests: \tab network, tools, codetools, tcltk\cr
@@ -66,10 +66,11 @@ Bug reports can be submitted at
 }
 \author{
   Ruth Ripley, Krists Boitmanis, Tom Snijders, Felix Schoenenberger,
-  Nynke Niezink, Christian Steglich, Viviana Amati.
+  Nynke Niezink, Christian Steglich, Viviana Amati, 
+  Michael Schweinberger.
   Contributions by Josh Lospinoso, Charlotte Greenan,
   Johan Koskinen, Mark Ortmann, Natalie Indlekofer, Mark Huisman,
-  Christoph Stadtfeld, Per Block, Marion Hoffman, Michael Schweinberger,
+  Christoph Stadtfeld, Per Block, Marion Hoffman, 
   Robert Hellpap, Alvaro Uzaheta, Robert Krause, James Hollway, 
   Daniel Gotthardt, and Steffen Triebel.
 

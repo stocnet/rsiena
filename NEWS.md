@@ -1,18 +1,51 @@
-2026-07-28
+2026-09-14
 
 # RSiena 1.6.12
 
 ## Changes in RSiena:
 ### Effects
+  * Effect `toU` corrected.
+  * New effect group `dyadFirstBipartiteObjective`.
   * Effects `toU` and `WXX` now also available for two-mode networks.
-  * New effect group `dyadThirdBipartiteObjective`.
-### Bug correction
+    Effect group `dyadANetNetObjective` is empty now.
+    (Retained for possible later use.)
+  * Change to `make_specification` to allow empty effect groups.
+### Bug corrections
+  * Effect `toU` corrected.
   * Adherence to positivity constraints during parameter updates in 
     Phase 2 corrected for the `doubleAveraging=TRUE` option.
+  * Correction of use of `splitDepVars` in `initializeFRAN`. 
+  * Changes in `CalculateDerivative` in `phase1.r` 
+    (in a part used only by `multi_siena` to handle estimation
+    difficulties).
+  * In `transformScript`, deleted the last `s` in `as_covariate_rsienas`.
+  * Error message in `as_covariate_rsiena` 
+    for square dyadic covariates corrected.
+### Functionality
+  * Changes in `interpret_size` making the result a list of objects,
+    starting with one object for each dependent variable;
+    and dropping `interpret_size.sienaEffects`, i.e. the possibility 
+    to run `interpret_size` without a `sienaFit` object.
+  * In `interpret_size`, `toggleProbabilities` that were `NA` 
+    get the value 0 (which they should have). 
+  * `toggleProbabilities` are returned by `interpret_size` only if
+    `getChangeStatistics` is `TRUE`.
+  * Changed the class name of the object created by `interpret_size`  
+    from `sienaRI` to `siena_sizes`. 
+  * New method `print.siena_sizes` giving the significances/p-values
+    of the separate estimated parameters, the semi-standardized parameters,
+    and the degree of certainty.
+  * New method `print.summary.siena_sizes` giving the standard 
+    deviations of the change statistics and the expected relative importance 
+    of the effects.
+  * Better error messages for `make_data_rsiena` in the case of
+    incorrect node sets for bipartite networks. 
+  * Component `initial_theta` added to `sienaFit` objects.
 ### Documentation
   * Explanation of effect groups `dyadBipartiteObjective`, 
-    `dyadSecondBipartiteObjective`, and `dyadThirdBipartiteObjective`, 
-    involving a dyadic covariate and a dependent two-mode network, added.
+    `dyadFirstBipartiteObjective`, and `dyadSecondBipartiteObjective`, 
+    involving a dyadic covariate and a dependent two-mode network, added
+    to manual.
 
 2026-07-16
 

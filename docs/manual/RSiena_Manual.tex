@@ -1376,10 +1376,15 @@ corresponding to the algorithm object used by this call of
 \sfn{siena07} or \sfn{sienaBayes}.
 These algorithm objects constructed always have the names, respectively,
 \texttt{alg\_model}, \texttt{alg\_alg}, and \texttt{alg\_out}.
-\bigskip
+\medskip
 
-The function \sfn{transformScript} also produces a log file;
-its use is discussed below.
+Function \sfn{transformScript} also produces a log file.
+If it leads to an error, it may be helpful to use\\
+\texttt{traceback()}\\
+immediately after the error occurs; and to look at
+the log file, which will have line numbers until the last
+line that was treated.
+\bigskip
 
 If you want to transform to the new names
 all files in the working directory with extension name \texttt{.R},
@@ -1431,10 +1436,10 @@ It passes three times through the old script:
      without being a function call (i.e., without being
      followed by "(")), they are replaced with the new names.
 \end{enumerate}
-These three passes are documented in the log file.m
+These three passes are documented in the log file.
 
 
-If in the algorithm used for  \sfn{siena07} or \sfn{sienaBayes}
+If in the algorithm used for  \sfn{siena} or \sfn{multi\_siena}
 (or its call) a variable occurs,
 then this variable may be unknown to \sfn{transformScript}
 which will lead to an error.
@@ -10787,7 +10792,7 @@ Various different ways can be modeled in which
  \item
 \begin{minipage}[t]{.7\textwidth}
  {\em $WW=>X$ closure of covariate} \texttt{(WWX)},\\
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{ih}\, w_{hj}\,$;\\
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, w_{ih}\, w_{hj}\,$;\\
  this refers to the closure of $W-W$ two-paths;
  each $W-W$ two-path
  $i \stackrel{W}{\rightarrow} h \stackrel{W}{\rightarrow} j$
@@ -10829,7 +10834,7 @@ Various different ways can be modeled in which
 \item
 \begin{minipage}[t]{.7\textwidth}
  {\em mixed cyclic $WW=>X$ closure}, ($X$: cyclic closure of $W$) \texttt{(cyWWX)}  \\
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{jh}\, w_{hi}\,$;\\
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, w_{jh}\, w_{hi}\,$;\\
  this refers to the cyclic closure of $W-W$ two-paths (weighted if the
  dyadic covariate $W$ does not only have 0 and 1 values);
  the contribution of the tie $i \stackrel{X}{\rightarrow} j$
@@ -10865,7 +10870,7 @@ Various different ways can be modeled in which
 \item
 \begin{minipage}[t]{.7\textwidth}
  {\em incoming shared $WWX$}, ($X$: incoming shared $W$) \texttt{(InWWX)}  \\
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{hi}\, w_{hj}\,$;\\
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, w_{hi}\, w_{hj}\,$;\\
  this refers to shared incoming $W$ ties contributing
  to the tie $i \stackrel{X}{\rightarrow} j$;
       \end{minipage}
@@ -10897,7 +10902,7 @@ Various different ways can be modeled in which
 \item
 \begin{minipage}[t]{.7\textwidth}
  {\em incoming shared $WWX$}, ($X$: incoming shared $W$) \texttt{(OutWWX)}  \\
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{ih}\, w_{jh}\,$;\\
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, w_{ih}\, w_{jh}\,$;\\
  this refers to shared outgoing $W$ ties contributing
  to the tie $i \stackrel{X}{\rightarrow} j$;
       \end{minipage}
@@ -10928,7 +10933,7 @@ Various different ways can be modeled in which
 
 \begin{minipage}[t]{.7\textwidth}
  \item {\em $WX=>X$ closure of covariate} \texttt{(WXX)},\\
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{ih}\, x_{hj}\,$;\\
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, w_{ih}\, x_{hj}\,$;\\
  this refers to the closure of mixed $W-X$ two-paths;
  each $W-X$ two-path $i \stackrel{W}{\rightarrow} h \rightarrow j$
  is weighted by $w_{ih} $
@@ -10967,7 +10972,7 @@ Various different ways can be modeled in which
 
 \begin{minipage}[t]{.7\textwidth}
  \item {\em $XW=>X$ closure of covariate} \texttt{(XWX)},\\
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, x_{ih}\, w_{hj}\,$;\\
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, x_{ih}\, w_{hj}\,$;\\
  this refers to the closure of mixed $X-W$ two-paths;
  each $X-W$ two-path $i \rightarrow h \stackrel{W}{\rightarrow} j$
  is weighted by $w_{hj} $
@@ -11063,7 +11068,7 @@ by Maximum Likelihood and Bayesian estimation.
 
 \begin{minipage}[t]{.7\textwidth}
  \item {\em covariate-weighted twopaths } \texttt{(XXW)},\\
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, x_{jh}\, w_{ih}\,$;\\
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, x_{jh}\, w_{ih}\,$;\\
  this refers to two-paths weighted by the covariate:
  each $X-X$ two-path $i \stackrel{X}{\rightarrow} j \stackrel{X}{\rightarrow} h$
  is weighted by the value $w_{ih} $
@@ -11540,7 +11545,7 @@ $s^{\rm net}_{i\vit}(x ) = \sum_j  x^{\rm{simm}}_{ij}\,v_j $ .
 \begin{minipage}[t]{.7\textwidth}
  {\em transitive triplets jumping to different V}
   \texttt{(jumpXTransTrip)}, \\
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\,
             x_{ih}\, x_{hj}\,I\{v_i = v_h \neq v_j\}$;\\
  this refers to transitive closure, restricted to `jump outside
  of $V$-groups' in the sense that the focal actor and the mediating
@@ -12406,7 +12411,7 @@ Further there are a number of mixed triadic effects.
 \item
 \begin{minipage}[t]{.7\textwidth}
  {\em agreement along W leading to X}, ($X$: from $W$ agreement)  \texttt{(from)} \\[0.2em] % \texttt{(fromWAgree)}\\
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{ih}\, w_{jh}\,$;\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, w_{ih}\, w_{jh}\,$;\\[0.2em]
  this refers to agreement of actors with respect to their $W$-choices
  (structural equivalence with respect to outgoing $W$-choices);
  the contribution of the tie $i \stackrel{X}{\rightarrow} j$
@@ -12445,7 +12450,7 @@ Further there are a number of mixed triadic effects.
 \begin{minipage}[t]{.7\textwidth}
  {\em agreement along mutual W-ties leading to X}, ($X$: from $W$ mutual agreement) \texttt{(fromMutual)}
            \\[0.2em] % \texttt{(fromWMutualAgree)}\\
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{ih}\,  w_{hi}\, w_{jh}\, w_{hj}\,$;\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, w_{ih}\,  w_{hi}\, w_{jh}\, w_{hj}\,$;\\[0.2em]
  this refers to agreement of actors with respect to their mutual $W$-choices
  (structural equivalence with respect to mutual $W$-choices);
  the contribution  of the tie $i \stackrel{X}{\rightarrow} j$
@@ -12485,7 +12490,7 @@ Further there are a number of mixed triadic effects.
 \smallskip
 \item
  {\em any agreement along W leading to X}, ($X$: from $W$ any agreement)  \texttt{(fromAny)} \\[0.2em] % \texttt{(fromWAgree)}\\
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, I\{ w_{ih}\, w_{jh} > 0\}\,$;\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, I\{ w_{ih}\, w_{jh} > 0\}\,$;\\[0.2em]
  this refers to agreement of actors with respect to their $W$-choices
  (structural equivalence with respect to outgoing $W$-choices),
  truncated to~1;
@@ -12496,7 +12501,7 @@ Further there are a number of mixed triadic effects.
  \item
 \begin{minipage}[t]{.7\textwidth}
  {\em  W leading to agreement along X}, ($X$: $W$ to agreement) \texttt{(to)} \\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{ih}\, x_{hj}\,$;\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, w_{ih}\, x_{hj}\,$;\\[0.2em]
  this refers to the closure of mixed $W-X$ two-paths;
  the contribution of the tie $i \stackrel{X}{\rightarrow} j$
  is proportional to
@@ -12554,7 +12559,7 @@ Further there are a number of mixed triadic effects.
 \begin{minipage}[t]{.7\textwidth}
 {\em  W (backwards) leading to agreement along X}, ($X$: $W$ (backwards) to agreement) \texttt{(toBack)}
  (earlier called \texttt{(MixedInWX)}) \\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{hi}\, x_{hj}\,$;\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, w_{hi}\, x_{hj}\,$;\\[0.2em]
  this refers to the closure of mixed incoming $W$ and $X$ ties;
  the contribution of the tie $i \stackrel{X}{\rightarrow} j$
  is proportional to
@@ -12598,7 +12603,7 @@ Further there are a number of mixed triadic effects.
  \item
 \begin{minipage}[t]{.7\textwidth}
  {\em mutual W leading to agreement along X}, ($X$: mutual $W$ to agreement) \texttt{(toRecip)} \\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{hi}\, w_{ih}\, x_{hj}\,$;\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, w_{hi}\, w_{ih}\, x_{hj}\,$;\\[0.2em]
  this refers to the closure of mixed mutual $W$ and $X$ ties;
  the contribution of the tie $i \stackrel{X}{\rightarrow} j$
  is proportional to
@@ -12645,7 +12650,7 @@ Further there are a number of mixed triadic effects.
  \item
 \begin{minipage}[t]{.7\textwidth}
  {\em  XWX closure of $W$}, \texttt{(cl.XWX)} \\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, x_{ih}\, w_{hj}\,$;\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, x_{ih}\, w_{hj}\,$;\\[0.2em]
  this refers to the closure of mixed $X-W$ two-paths;
  the contribution of the tie $i \stackrel{X}{\rightarrow} j$
  is proportional to
@@ -12746,7 +12751,7 @@ by Maximum Likelihood and Bayesian estimation.
  \item
 \begin{minipage}[t]{.7\textwidth}
  {\em  shared mixed incoming X and W }, ($X$: mixed incoming with $W$) \texttt{(mixedInXW)} \\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, x_{hi}\, w_{hj}\,$;\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, x_{hi}\, w_{hj}\,$;\\[0.2em]
  this refers to the closure of mixed incoming $X$ and $W$ ties;
  the contribution of the tie $i \stackrel{X}{\rightarrow} j$
  is proportional to
@@ -12785,7 +12790,7 @@ by Maximum Likelihood and Bayesian estimation.
  \item
 \begin{minipage}[t]{.7\textwidth}
  {\em mixed $WW=>X$ closure}, ($X$: closure of $W$) \texttt{(closure)}  \\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{ih}\, w_{hj}\,$;\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, w_{ih}\, w_{hj}\,$;\\[0.2em]
  this refers to the closure of $W-W$ two-paths;
  the contribution of the tie $i \stackrel{X}{\rightarrow} j$
  is proportional to
@@ -12823,7 +12828,7 @@ by Maximum Likelihood and Bayesian estimation.
 \item
 \begin{minipage}[t]{.7\textwidth}
  {\em mixed cyclic $WW=>X$ closure}, ($X$: cyclic closure of $W$) \texttt{(cyClosure)}  \\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{jh}\, w_{hi}\,$;\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, w_{jh}\, w_{hi}\,$;\\[0.2em]
  this refers to the cyclic closure of $W-W$ two-paths;
  the contribution of the tie $i \stackrel{X}{\rightarrow} j$
  is proportional to
@@ -12863,7 +12868,7 @@ by Maximum Likelihood and Bayesian estimation.
 \begin{minipage}[t]{.7\textwidth}
  {\em closure of shared incoming $WW=>X$}, \\
  ($X$: shared incoming $W$) \texttt{(sharedIn)}  \\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{hi}\, w_{hj}\,$;\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, w_{hi}\, w_{hj}\,$;\\[0.2em]
  this refers to shared incoming $W$ ties contributing
  to the tie $i \stackrel{X}{\rightarrow} j$.
       \end{minipage}
@@ -13319,7 +13324,7 @@ and the dyadic covariate $U$ as \texttt{covar2}.
 \begin{minipage}[t]{.7\textwidth}
  {\em  W, weighted by $U$, leading to agreement along X}, \\
  ($X$: $W$ weighted by $U$ to agreement) \texttt{(toU)} \\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, w_{ih}\, u_{ih}\, x_{hj}\,$;\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, w_{ih}\, u_{ih}\, x_{hj}\,$;\\[0.2em]
  this refers to the closure of mixed $W-X$ two-paths,
  weighted by the dyadic covariate $U$;
  the contribution of the tie $i \stackrel{X}{\rightarrow} j$
@@ -13336,6 +13341,8 @@ and the dyadic covariate $U$ as \texttt{covar2}.
  Here $W$ is \texttt{covar1} and $U$ is \texttt{covar2}.\\
  This will be suitable mainly for non-centered covariates $U$,
  for which the term `weight' is appropriate.
+ 
+ \textcolor{red}{This effect was incorrect until and including version 1.6.11.}
       \end{minipage}
 \hfill
 \begin{minipage}[t]{.15\textwidth}
@@ -13469,7 +13476,7 @@ the other network, having the role of explanatory variable.
 \begin{minipage}[t]{.7\textwidth}
  {\em  W weighted by U leading to agreement along X},
  ($X$: $W$ weighted $U$ to agreement) \texttt{(toU)} \\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\, u_{ih} \, w_{ih}\, x_{hj}\,$;\\[0.2em]
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\, u_{ih} \, w_{ih}\, x_{hj}\,$;\\[0.2em]
  this refers to the closure of mixed $W-X$ two-paths,
  where the $W$ relation is weighted by $U$;
  the contribution of the tie $i \stackrel{X}{\rightarrow} j$
@@ -13666,7 +13673,7 @@ covariate $V$.
 \begin{minipage}[t]{.7\textwidth}
  {\em agreement along W leading to X, for same V}, \\
 ($X$: from $W$ agr.\ $\times$ same $V$)  \texttt{(covNetNet)},\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h}
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h}
                      x_{ij}\, w_{ih}\, w_{jh}\,I\{v_i = v_j\}$;\\[0.2em]
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
  this refers to agreement of actors with respect to their $W$-choices
@@ -13709,7 +13716,7 @@ covariate $V$.
 \begin{minipage}[t]{.7\textwidth}
  {\em agreement along W leading to X, for homogeneous V}, \\
 ($X$: from $W$ agr.\ $\times$ hom.\ $V$)  \texttt{(homCovNetNet)},\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h}
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h}
                      x_{ij}\, w_{ih}\, w_{jh}\,I\{v_i = v_j = v_h\}$;\\[0.2em]
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
  this refers to agreement of actors with respect to their $W$-choices
@@ -13754,7 +13761,7 @@ covariate $V$.
 ($X$: mixed $WW$ closure same $V$),
   \texttt{(sameWWClosure)}   \\
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\,
             w_{ih}\, w_{hj}\,I\{v_i = v_h \}$;\\[0.2em]
  this refers to the closure by $X$ of $W-W$ two-paths, restricted to
  two-paths  $i \stackrel{W}{\rightarrow} h \stackrel{W}{\rightarrow} j $
@@ -13793,7 +13800,7 @@ covariate $V$.
 ($X$: mixed $WW$ closure diff.\ $V$),
   \texttt{(diffWWClosure)}   \\
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\,
             w_{ih}\, w_{hj}\,I\{v_i \neq v_h \}$;\\[0.2em]
  this refers to the closure by $X$ of $W-W$ two-paths, restricted to
  two-paths  $i \stackrel{W}{\rightarrow} h \stackrel{W}{\rightarrow} j $
@@ -13832,7 +13839,7 @@ covariate $V$.
  {\em mixed WW $\Rightarrow$ X closure, same-V path jumping to different V}
 ($X$: $W$ closure jumping $V$),   \texttt{(jumpWWClosure)}\\
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\,
             w_{ih}\, w_{hj}\,I\{v_i = v_h \neq v_j\}$;\\[0.2em]
  this refers to the closure of $W-W$ paths, restricted to `jump outside
  of $V$-groups' in the sense that the focal actor and the mediating
@@ -13870,7 +13877,7 @@ covariate $V$.
  {\em agreement along W, same-V, leading to X for different V}
 ($X$: from $W$ agreement jumping $V$),   \texttt{(jumpFrom)}\\
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\,
             w_{ih}\, w_{jh}\,I\{v_i = v_h \neq v_j\}$;\\[0.2em]
  this refers to agreement about $W$ ties, restricted to `jump outside
  of $V$-groups' in the sense that the focal actor and the agreed
@@ -13908,7 +13915,7 @@ covariate $V$.
  {\em agreement along W, same-V about contrasting V, leading to X}
 ($X$: from $W$ agreement contrasting $V$),   \texttt{(contrastCovNetNet)}\\
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\,
             w_{ih}\, w_{jh}\,I\{v_i = v_j \neq v_h\}$;\\[0.2em]
  this refers to agreement `outside of $V$-groups' about $W$ ties,
  in the sense that the focal actor and the target
@@ -13945,7 +13952,7 @@ covariate $V$.
  {\em agreement along W, all different V, leading to X}
 ($X$: from $W$ agreement all diff. $V$),   \texttt{(allDifCovNetNet)}\\
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\,
             w_{ih}\, w_{jh}\,I\{v_i, v_j, v_h \text{ all different} \}$;\\[0.2em]
  this refers to agreement  about $W$ ties between actors who have
  all three a different value for $V$;
@@ -13982,7 +13989,7 @@ covariate $V$.
 ($X$: mixed $WX$ closure same $V$),
   \texttt{(sameWXClosure)}   \\
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\,
             w_{ih}\, x_{hj}\,I\{v_i = v_h \}$;\\[0.2em]
  this refers to the closure of $W-X$ two-paths, restricted to
  two-paths  $i \stackrel{W}{\rightarrow} h \stackrel{X}{\rightarrow} j $
@@ -14024,7 +14031,7 @@ covariate $V$.
 ($X$: mixed $WX$ closure diff.\ $V$),
   \texttt{(diffWXClosure)}   \\
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\,
             w_{ih}\, x_{hj}\,I\{v_i \neq v_h \}$;\\[0.2em]
  this refers to the closure of $W-X$ two-paths, restricted to
  two-paths  $i \stackrel{W}{\rightarrow} h \stackrel{X}{\rightarrow} j $
@@ -14062,7 +14069,7 @@ covariate $V$.
 ($X$: mixed $WX$ closure jumping $V$),
   \texttt{(jumpWXClosure)}   \\
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\,
             w_{ih}\, x_{hj}\,I\{v_i = v_h \neq v_j\}$;\\[0.2em]
  this refers to the closure of $W-X$ paths, restricted to `jump outside
  of $V$-groups' in the sense that the focal actor and the mediating
@@ -14102,7 +14109,7 @@ covariate $V$.
 ($X$: mixed $XW$ closure same $V$),
   \texttt{(sameXWClosure)}   \\
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\,
             x_{ih}\, w_{hj}\,I\{v_i = v_h \}$;\\[0.2em]
  this refers to the closure of $X-W$ two-paths, restricted to
  two-paths  $i \stackrel{X}{\rightarrow} h \stackrel{W}{\rightarrow} j $
@@ -14141,7 +14148,7 @@ covariate $V$.
 ($X$: mixed $XW$ closure diff.\ $V$),
   \texttt{(diffXWClosure)}   \\
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\,
             x_{ih}\, w_{hj}\,I\{v_i \neq v_h \}$;\\[0.2em]
  this refers to the closure of $X-W$ two-paths, restricted to
  two-paths  $i \stackrel{X}{\rightarrow} h \stackrel{W}{\rightarrow} j $
@@ -14179,7 +14186,7 @@ covariate $V$.
  {\em closure of shared incoming $WW=>X$ same-V, leading to X for different V}, \\
  ($X$: shared incoming $W$ jumping $V$) \texttt{(jumpSharedIn)}  \\[0.2em]
  $s^{\rm net}_{i\vit}(x) =
-    \sum_{j \neq h} x_{ij}\, w_{hi}\, w_{hj}\,I\{v_i = v_h \neq v_j\}\,$;\\[0.2em]
+    \sum_{j, h} x_{ij}\, w_{hi}\, w_{hj}\,I\{v_i = v_h \neq v_j\}\,$;\\[0.2em]
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
  this refers to shared incoming $W$ ties contributing
  to the tie $i \stackrel{X}{\rightarrow} j$, restricted to `jump outside
@@ -14216,7 +14223,7 @@ covariate $V$.
 \begin{minipage}[t]{.7\textwidth}
  {\em shared incoming W leading to X, for same V}, \\
 ($X$: shared incoming $W$ same $V$)  \texttt{(covNetNetIn)},\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h}
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h}
                      x_{ij}\, w_{hi}\, w_{hj}\,I\{v_i = v_j\}$;\\[0.2em]
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
  this refers to shared incoming $W$-choices
@@ -14258,7 +14265,7 @@ covariate $V$.
 \begin{minipage}[t]{.7\textwidth}
  {\em shared incoming W leading to X, for homogeneous V}, \\
 ($X$: shared incoming $W$ hom.\ $V$)  \texttt{(homCovNetNetIn)},\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h}
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h}
                      x_{ij}\, w_{hi}\, w_{hj}\,I\{v_i = v_j = v_h\}$;\\[0.2em]
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
  this refers to shared incoming $W$-choices
@@ -14302,7 +14309,7 @@ covariate $V$.
  {\em shared incoming W, same-V about contrasting V, leading to X}\\
 ($X$: shared incoming $W$ contrasting $V$),   \texttt{(contrastCovNetNetIn)}\\
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\,
             w_{hi}\, w_{hj}\,I\{v_i = v_j \neq v_h\}$;\\[0.2em]
  this refers to shared incoming $W$-choices
  (structural equivalence with respect to incoming $W$-choices),
@@ -14341,7 +14348,7 @@ covariate $V$.
  {\em shared incoming W, all different V, leading to X}\\
 ($X$: shared incoming $W$ all different $V$),   \texttt{(allDifCovNetNetIn)}\\
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\,
             w_{hi}\, w_{hj}\,I\{v_i, v_j, v_h \text{ all different} \}$;\\[0.2em]
  this refers to shared incoming $W$-choices
  (structural equivalence with respect to incoming $W$-choices),
@@ -14382,7 +14389,7 @@ covariate $V$.
 ($X$: mixed $W$ closure homog. $V$),
   \texttt{(homWXClosure)}   \\
   (specified with \texttt{covar1} = $W$, \texttt{covar2} = $V$)\\[0.2em]
- $s^{\rm net}_{i\vit}(x) = \sum_{j \neq h} x_{ij}\,
+ $s^{\rm net}_{i\vit}(x) = \sum_{j, h} x_{ij}\,
             w_{ih}\, x_{hj}\,I\{v_i = v_j = v_h\}$;\\[0.2em]
  this refers to the closure of $W-X$ paths, restricted to
  triples that are homogeneous with respect to $V$.
@@ -18324,12 +18331,12 @@ the following effectGroup is defined:
 For effects defined for one dependent two-mode network $X$ and one dyadic
 covariate, the following three effectGroups are defined:
 \begin{itemize}
-\item \sfn{dyadBipartiteObjective} is for effects where the dyadic covariate is 
+\item \sfn{dyadBipartiteObjective} is for effects where the dyadic covariate is
     also two-mode and matching the node sets of $X$;
-\item \sfn{dyadBipartiteSecondObjective} is for effects where the dyadic
-    covariate is one-mode and defined for the second mode of $X$;
-\item \sfn{dyadBipartiteThirdObjective} is for effects where the dyadic
-    covariate is one-mode and defined for the first mode of $X$.
+\item \sfn{dyadFirstBipartiteObjective} is for effects where the dyadic
+    covariate is one-mode and defined for the first mode of $X$;
+\item \sfn{dyadSecondBipartiteObjective} is for effects where the dyadic
+    covariate is one-mode and defined for the second mode of $X$.
 \end{itemize}
 \medskip
 
@@ -18400,6 +18407,9 @@ the following effectGroups are defined:
     should have the same first and second node sets
     as the explanatory network.
 \end{itemize}
+The data structures for which effects in \sfn{dyadANetNetObjective}
+is suitable is a subset of those for which \sfn{dyadBNetNetObjective}
+is suitable.
 
 
 \noindent
@@ -18475,35 +18485,72 @@ Changes in RSiena:
 \end{itemize}
 \fi
 
-\item 2026-07-28 GitHub, package version 1.6.12.
+\item 2026-09-14 GitHub, package version 1.6.12.
 
 Changes in RSiena:
 \begin{itemize}
-  \item New effects:
-    \begin{itemize}
-  \item Effects \texttt{toU} and \texttt{WXX} now also available for two-mode networks.
-  \item New effectGroup \texttt{dyadThirdBipartiteObjective}.
+  \item  Effects:
+  \begin{itemize}
+  \item Effect \texttt{toU} corrected.
+  \item Effects \texttt{toU} and \texttt{WXX} now also available for two-mode networks.\\
+    Effect group \texttt{dyadANetNetObjective} is empty now.
+    (Retained for possible later use.)
+  \item  New effectGroup \texttt{dyadFirstBipartiteObjective}.
+  \item Change to \texttt{make\_specification} to allow empty effect groups.
     \end{itemize}
-  \item Bug corrections:
+  \item  Bug corrections:
     \begin{itemize}
-\item Adherence to positivity constraints during parameter updates in Phase 2 
+  \item Effect \texttt{toU} corrected. (Also mentioned above.)
+\item  Adherence to positivity constraints during parameter updates in Phase 2
    corrected for the \texttt{doubleAveraging=TRUE} option.
+  \item Correction of use of \texttt{splitDepVars} in \texttt{initializeFRAN}.
+  \item Changes in \texttt{CalculateDerivative} in \texttt{phase1.r}
+    (in a part used only by \sfn{multi\_siena} to handle estimation
+    difficulties).
+  \item In \sfn{transformScript}, deleted the last \texttt{s} in \texttt{as\_covariate\_rsienas}.
+  \item Error message in \sfn{as\_covariate\_rsiena}
+    for square dyadic covariates corrected.
     \end{itemize}
+    \end{itemize}
+\begin{itemize}
+   \item Functionality:
+   \begin{itemize}
+  \item Changes in \sfn{interpret\_size} making the result a list of objects,
+    starting with one object for each dependent variable;
+    and dropping \sfn{interpret\_size.sienaEffects}, i.e., the possibility
+    to run \sfn{interpret\_size} without a \sfn{sienaFit} object.
+  \item In \sfn{interpret\_size}, \texttt{toggleProbabilities} that were \texttt{NA}
+    get the value 0 (which they should have).
+  \item \texttt{toggleProbabilities} are returned by \sfn{interpret\_size} only if
+    \texttt{getChangeStatistics} is \texttt{TRUE}.
+  \item Changed the class name of the object created by \sfn{interpret\_size}
+    from \sfn{sienaRI} to \sfn{siena\_sizes}.
+  \item New method \sfn{print.siena\_sizes} giving the significances/p-values
+    of the separate estimated parameters, the semi-standardized parameters,
+    and the degree of certainty.
+  \item New method \sfn{print.summary.siena\_sizes} giving the standard
+    deviations of the change statistics and the expected relative importance
+    of the effects.
+  \item Better error messages for \sfn{make\_data\_rsiena} in the case of
+    incorrect node sets for bipartite networks.
+  \item Component \texttt{initial\_theta} added to \sfn{sienaFit} objects.
+\end{itemize}
 \item Documentation:
     \begin{itemize}
   \item Explanation of effectGroups \texttt{dyadBipartiteObjective}, \\
-    \texttt{dyadSecondBipartiteObjective}, and \texttt{dyadThirdBipartiteObjective}, 
-    involving a dyadic covariate and a dependent two-mode network, added to 
-    Section~\ref{S_notestwomode}.
+    \texttt{dyadSecondBipartiteObjective}, and \texttt{dyadFirstBipartiteObjective},
+    involving a dyadic covariate and a dependent two-mode network, added to
+    Section~\ref{S_notestwomode} of this manual.
     \end{itemize}
 \end{itemize}
+
 
 
 \item 2026-07-16 GitHub, package version 1.6.11.
 
 Changes in RSiena:
 \begin{itemize}
-  \item Functionality
+  \item Functionality:
      \begin{itemize}
   \item New auxiliary functions \sfn{AC\_Moran} and \sfn{AC\_Geary}.
   \item In \sfn{transformScript}, the replacement for \texttt{sienaCompositionChangeFromFile}
