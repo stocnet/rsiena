@@ -76,7 +76,7 @@ effectsDocumentation <- function(effects= NULL, type="html",
 				"covarBNetNetObjective",
 				"covarBXNetNetObjective",
 				"tripleNetworkObjective",
-				"dyadANetNetObjective",
+#				"dyadANetNetObjective", # currently empty
 				"dyadBNetNetObjective",
 				"settingsObjective",
 
@@ -85,8 +85,8 @@ effectsDocumentation <- function(effects= NULL, type="html",
 
 				"bipartiteObjective",
 				"dyadBipartiteObjective",
+                "dyadFirstBipartiteObjective",
 				"dyadSecondBipartiteObjective",
-                "dyadThirdBipartiteObjective",
 				"covarBipartiteObjective",
 				"doubleCovarNetObjective", 
 				"bipartiteNonSymmetricObjective",
