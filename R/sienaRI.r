@@ -5,7 +5,7 @@
 # *
 # * File: sienaRI.r
 # *
-# * Description: Used to determine, print, and plots relative importances of effects
+# * Description: Used to determine, print, and plots various effect sizes
 # * for potential decisions of actors at observation moments.
 # *****************************************************************************/
 
@@ -22,8 +22,6 @@ sienaRI <- function(data, ans=NULL, theta=NULL, effects=NULL,
 	{
 #		stop("interpret_size works only for dependent variables of type 'oneMode' or 'behavior'")
 	}
-	if(!is.null(ans))
-	{
 		if (!inherits(ans, "sienaFit"))
 		{
 			stop(paste("ans is not a legitimate Siena fit object", sep=""))
@@ -48,53 +46,12 @@ sienaRI <- function(data, ans=NULL, theta=NULL, effects=NULL,
 		RI <- expectedRelativeImportance(conts = contributions,
 			effects = ans$effects, theta =ans$theta, thedata=data,
 			getChangeStatistics=getChangeStats)
-	}
-	else
-	{
-		if (!inherits(effects, "sienaEffects"))
-		{
-			stop(paste("effects is not a legitimate Siena effects object", sep=""))
-		}
-		if(sum(effects$include==TRUE &
-				(effects$type =="endow"|effects$type =="creation")) > 0)
-		{
-stop("interpret_size does not yet work for models containing endowment or creation effects")
-		}
-		if (any(effects$include==TRUE &
-				(effects$shortName %in% c("unspInt", "behUnspInt", "contUnspInt"))))
-		{
-			stop("interpret_size does not work for models containing interaction effects")
-		}
-		effs <- effects
-		if (!is.numeric(theta))
-		{
-			stop("theta is not a legitimate parameter vector")
-		}
-		if(length(theta) != sum(effs$include==TRUE & effs$type!="rate"))
-		{
-			if(length(theta) != sum(effs$include==TRUE))
-			{
-				stop("theta is not a legitimate parameter vector \n number of
-					parameters has to match number of effects")
-			}
-			warning(paste("length of theta does not match the number",
-					" of objective function effects\n", 
-					"theta is treated as if containing rate parameters"))
-			paras <- theta
-			## all necessary information available
-			contributions <- getChangeContributions(data = data, effects = effs)
-			RI <- expectedRelativeImportance(conts = contributions,
-				effects = effs, theta = paras, thedata=data,
-				getChangeStatistics=getChangeStats)
-		}else{
-			paras <- theta
-			## all necessary information available
-			contributions <- getChangeContributions(data = data, effects = effs)
-			RI <- expectedRelativeImportance(conts = contributions,
-				effects = effs, theta = paras, thedata=data,
-				getChangeStatistics=getChangeStats)
-		}
-	}
+	RI$theta <- ans$theta[!ans$requestedEffects$basicRate]
+	RI$se <- ans$se[!ans$requestedEffects$basicRate]
+	RI$effectNames <- ans$requestedEffects$effectName[!ans$requestedEffects$basicRate]
+	RI$depName <- ans$requestedEffects$name[!ans$requestedEffects$basicRate]
+	class(RI) <- "siena_sizes"
+	attr(RI, "version") <- packageDescription(pkgname, fields = "Version")
 	RI
 }
 
@@ -155,6 +112,7 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 	effectIds <- paste(effectNa,effectTypes,networkInteraction, sep = ".")
 	currentDepName <- ""
 	depNumber <- 0
+	RI <- list()
 	for(eff in 1:length(effectIds))
 	{
 		if(networkNames[eff] != currentDepName)
@@ -175,11 +133,6 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 			}
 			else if (networkTypes[eff] == "bipartite")
 			{
-				if (dim(depNetwork)[2] >= actors)
-				{
-					stop("interpret_size does not work for bipartite networks with
-						second mode >= first mode")
-				}
 				choices <- dim(depNetwork)[2] + 1
 			}
 			else
@@ -298,11 +251,17 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 				# period, giving the probability of ego in a ministep at the
 				# start of the period to make this choice.
 				# For oneMode networks choices are alters;
-				# for  bipartite choices are second mode nodes,and the last is "no change";
+				# for  bipartite choices are second mode nodes,
+				# and the last is "no change";
 				# for behavior choices are to add -1, 0, +1.
+				# The function "entropy" uses the property that non-choices
+				# have probability NA; 
+				# this is changed below to 0 for toggleProbabilities,
+				# so this function should be applied to "distributions"
+				# but not to "toggleProbabilities":
 				entropy_vector <- unlist(lapply(distributions,
 						function(x){entropy(x[1,])}))
-				## If one wishes another measure than the
+				## If one wishes in the following another measure than the
 				## L^1-difference between distributions, here is
 				## the right place to call some new function instead of "L1D".
 				RIs_list <- lapply(distributions,function(x){L1D(x[1,],
@@ -347,29 +306,13 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 			}
 			if (getChangeStatistics){
 				RItmp$changeStatistics <- changeStats
+				toggleProbabilities[is.na(toggleProbabilities)] <- 0
+				RItmp$toggleProbabilities <- toggleProbabilities
 			}
-			RItmp$toggleProbabilities <- toggleProbabilities
-			class(RItmp) <- "sienaRI"
-			attr(RItmp, "version") <- packageDescription(pkgname, fields = "Version")
-			if(depNumber == 1){
-				RI <- RItmp
-			}else if(depNumber == 2){
-				RItmp1 <- RI
-				RI <- list()
-				RI[[1]]<-RItmp1
-				RI[[2]]<-RItmp
-			}else{
 				RI[[depNumber]]<-RItmp
 			}
 		}
-	}
-	if(depNumber>1)
-	{
-		message(paste("more than one dependent variable\n",
-				"return value is therefore not of class 'sienaRI'\n",
-				"but a list of objects of class 'sienaRI'."))
-	}
-	attr(RI, "version") <- packageDescription(pkgname, fields = "Version")
+	names(RI) <- sapply(RI, function(rr){rr$dependentVariable})
 	RI
 }
 
@@ -456,106 +399,181 @@ L1D <- function(referenz = NULL, distributions = NULL)
 	l1d
 }
 
-##@print.sienaRI Methods
-print.sienaRI <- function(x, printSigma = FALSE, ...){
-	if (!inherits(x, "sienaRI"))
+
+##@print.siena_sizes Methods
+print.siena_sizes <- function(x, ...){
+	makenice <- function(r)
 	{
-		if (inherits(x[[1]], "sienaRI"))
-		{
-			cat("This object is a list, the components of which\n")
-			cat("are Siena relative importance of effects objects.\n")
-			cat("Apply the print function to the separate components.\n")
-		}
-		stop("not a legitimate Siena relative importance of effects object")
+		paste(format(round(r, 4), width=8, nsmall=4), "   ", sep="")
 	}
-	cat(paste("\n  Expected relative importance of effects for dependent variable '",
-			x$dependentVariable,"' at observation moments:\n\n\n", sep=""))
-	periods <- length(x$expectedRI)
-	effs <- length(x$effectNames)
+	makenice <- Vectorize(makenice)
+	divi <- function(a,b){ifelse(b==0, NA, a/b)}
+	present.p <- function(p){
+		if (is.na(p))
+		{
+			pval <- "  NA"
+		}
+		else
+	{
+			if (p < 0.001)
+			{
+				pval <- "<0.001"
+			}
+			else if (p < 0.10)
+			{
+				pval <- format(round(p, 3), width=5, nsmall=3)
+		}
+			else
+			{
+				pval <- paste(format(round(p, 2), width=4, nsmall=2), " ", sep="")
+			}
+		}
+		pval
+	}
+	present.p <- Vectorize(present.p)
+	pris0 <- function(xx)
+	{
+# This internal function handles results for each dependent variable
+		cat("\n****    Dependent variable ", format(xx$dependentVariable, width=wid+2), "**** \n")
+		effs <- dim(xx$sigmas)[1]
+		periods <- dim(xx$sigmas)[2]
 	colNames = paste("period ", 1:periods, sep="")
-	line1 <- format("", width =63)
+		line1 <- format("", width = wid+7)
 	line2 <- paste(format(1:effs,width=3), '. ',
-		format(x$effectNames, width = 56),sep="")
+			format(xx$effectNames, width = wid),sep="")
 	line3 <- line2
-	line4 <- format(" R_H ('degree of certainty')", width = 61)
+		line4 <- format("R_H ('degree of certainty')", width = wid+5)
 	line5 <- line2
-	for (w in 1:length(colNames))
+		line6 <- line2
+		xth <- x$theta[x$depName == xx$dependentVariable]
+		seth <- x$theta[x$depName == xx$dependentVariable]
+		fixed <- is.na(seth)
+		
+		xth[fixed] <- NA
+		RH_overall <- mean(vapply(xx$RHActors, mean, FUN.VALUE=1))
+		sigma_overall  <- xx$meansigmas
+		semisth <- sigma_overall * xth
+		line3 <- paste(line3, makenice(cbind(xth, seth)), sep="")
+		for (w in 1:periods)
 	{
 		line1 <- paste(line1, format(colNames[w], width=8),"  ", sep = "")
-		line2 <- paste(line2, format(round(x$expectedRI[[w]], 4),
-				width=8, nsmall=4),"  ",sep="")
-		line3 <- paste(line3, format(round(x$expectedI[[w]], 4),
-				width=8, nsmall=4),"  ",sep="")
-		line4 <- paste(line4,
-			format(round(mean(x$RHActors[[w]], na.rm=TRUE), 4),
-				width=8, nsmall=4),"  ",sep="")
-		if (printSigma)
-		{
-			line5 <- paste(line5,
-				format(round(x$sigmas[,w], 4), width=8, nsmall=4),"  ",sep="")
+			line5 <- paste(line5, makenice(xx$sigmas[,w]), sep="")
+			line6 <- paste(line6, makenice(xth * xx$sigmas[,w]), sep="")
+			line4 <- paste(line4, makenice(mean(xx$RHActors[[w]], na.rm=TRUE)), sep="")
 		}
-	}
-	line2 <- paste(line2, rep('\n',effs), sep="")
-	line3 <- paste(line3, rep('\n',effs), sep="")
-	cat(as.matrix(line1),'\n \n', sep='')
-	cat(as.matrix(line2),'\n', sep='')
-	cat("\n  Expected importance of effects for this dependent variable:\n\n")
-	cat(as.matrix(line3),'\n\n', sep='')
-	cat(as.matrix(line4),'\n', sep='')
-	if (printSigma)
-	{
-		cat("\n sigma (average within-ego standard deviation of change statistics):\n\n")
-		line5 <- paste(line5, rep('\n',effs), sep="")
+		line1 <- paste(line1, "overall")
+		line5 <- paste(line5, makenice(sigma_overall), rep('\n',effs), sep="")
+		line6 <- paste(line6, makenice(semisth), rep('\n',effs), sep="")
+		line4 <- paste(line4, makenice(RH_overall), sep="")		
+		cat(paste("\n Observation moments:\n", sep=""))
+		cat(as.matrix(line1),'\n', sep='')
+		cat("\nSemi-standardized parameter estimates:\n")
+		cat('\n',as.matrix(line6),'\n', sep='')
+		cat("sigma (average within-ego standard deviation of change statistics):\n")
 		cat('\n',as.matrix(line5),'\n', sep='')
+		cat(as.matrix(line4),'\n', sep='')
+		}
+
+	if (!inherits(x, "siena_sizes"))
+	{
+		stop("not a legitimate siena_sizes object")
 	}
+	neff <- length(x$theta)
+	wid  <- max(nchar(x$effectNames) + 4)	
+	pvalue <- 1-pchisq((divi(x$theta, x$se))^2,1)
+	xdf <- data.frame(format(x$effectNames, width = wid), 
+				makenice(x$theta),  
+				signiftext(divi(x$theta, x$se)), 
+				makenice(x$se), 
+				rep("   ", neff),
+				present.p(pvalue))
+	colnames(xdf) <- c("effect", "   par.", " ", "   s.e.", " ", "  p ")	
+	print(xdf, right=FALSE)				
+	cat("\nSignif. codes:  '.'  p < 0.1; '*' p < 0.05; '**' p < 0.01; '***' p < 0.001. \n")
+	lapply(1:length(unique(x$depName)), function(k){pris0(x[[k]])})
 	invisible(x)
 }
 
-##@summary.sienaRI Methods
-summary.sienaRI <- function(object, ...)
+
+##@summary.siena_sizes Methods
+summary.siena_sizes <- function(object, ...)
 {
-	if (!inherits(object, "sienaRI"))
+	if (!inherits(object, "siena_sizes"))
 	{
 		stop("not a legitimate Siena relative importance of effects object")
 	}
-	class(object) <- c("summary.sienaRI", class(object))
+	class(object) <- c("summary.siena_sizes", class(object))
 	object
 }
-##@print.summary.sienaRI Methods
-print.summary.sienaRI <- function(x, ...)
+
+##@print.summary.siena_sizes Methods
+print.summary.siena_sizes <- function(x, ...)
 {
-	if (!inherits(x, "summary.sienaRI"))
+	if (!inherits(x, "summary.siena_sizes"))
 	{
 		stop("not a legitimate summary of a Siena relative importance of effects object")
 	}
-	print.sienaRI(x)
+prsri0 <- function(xx){
+# This internal function handles results for each dependent variable
+		cat(paste("\n  Expected relative importance of effects for dependent variable '",
+				xx$dependentVariable,"' at observation moments:\n\n\n", sep=""))
+		periods <- length(xx$expectedRI)
+		effs <- length(xx$effectNames)
+		colNames = paste("period ", 1:periods, sep="")
+		line1 <- format("", width =63)
+		line2 <- paste(format(1:effs,width=3), '. ',
+				format(xx$effectNames, width = 56),sep="")
+		line3 <- line2
+		line5 <- line2
+		for (w in 1:length(colNames))
+		{
+			line1 <- paste(line1, format(colNames[w], width=8),"  ", sep = "")
+			line2 <- paste(line2, format(round(xx$expectedRI[[w]], 4),
+				width=8, nsmall=4),"  ",sep="")
+			line3 <- paste(line3, format(round(xx$expectedI[[w]], 4),
+				width=8, nsmall=4),"  ",sep="")
+		}
+		line2 <- paste(line2, rep('\n',effs), sep="")
+		line3 <- paste(line3, rep('\n',effs), sep="")
+		cat(as.matrix(line1),'\n \n', sep='')
+		cat(as.matrix(line2),'\n', sep='')
+		cat("\n  Expected importance of effects for this dependent variable:\n\n")
+		cat(as.matrix(line3),'\n\n', sep='')
+	}
+	print.siena_sizes(x)
+	lapply(1:length(unique(x$depName)), function(k){prsri0(x[[k]])})
 	invisible(x)
 }
 
 
-##@plot.sienaRI Methods
-plot.sienaRI <- function(x, actors = NULL, col = NULL, addPieChart = FALSE,
+##@plot.siena_sizes Methods
+plot.siena_sizes <- function(x, depvar = NULL, actors = NULL, col = NULL, addPieChart = FALSE,
 	radius = 1, width = NULL, height = NULL, legend = TRUE,
 	legendColumns = NULL, legendHeight = NULL, cex.legend = NULL,
 	cex.names = NULL, ...)
 {
-	if (!inherits(x, "sienaRI"))
+	if (!inherits(x, "siena_sizes"))
 	{
 		stop("not a legitimate Siena relative importance of effects object")
 	}
-	periods <- length(x$expectedRI)
+	if (is.null(depvar))
+	{
+		depvar <- x$depName[1]
+	}
+	xx <- x[[depvar]]
+	periods <- length(xx$expectedRI)
 	if (is.null(actors))
 	{
-		nactors <- dim(x$RIActors[[1]])[2]
+		nactors <- dim(xx$RIActors[[1]])[2]
 		actors <- (1:nactors)
 	}
 	else
 	{
 		if ((!inherits(actors,"integer")) ||
-			(min(actors) < 1) || (max(actors) > dim(x$RIActors[[1]])[2]))
+			(min(actors) < 1) || (max(actors) > dim(xx$RIActors[[1]])[2]))
 		{
 			stop(paste("parameter <actors> must be a set of integers from 1 to",
-					dim(x$RIActors[[1]])[2]))
+					dim(xx$RIActors[[1]])[2]))
 		}
 		nactors <- length(actors)
 	}
@@ -588,7 +606,7 @@ warning("legendHeight has to be of type 'numeric' \n used default settings")
 		if(is.null(legendHeight))
 		{
 			legendHeight <-
-				max(0.8,ceiling(length(x$effectNames)/legendColumns)*0.2)
+				max(0.8,ceiling(length(xx$effectNames)/legendColumns)*0.2)
 		}
 	}
 	if(!is.null(height))
@@ -687,7 +705,7 @@ warning("cex.names has to be of type 'numeric' \n used default settings")
 		pink <- rgb(240,2,127,alph, maxColorValue = 255)
 		brown <- rgb(191,91,23,alph, maxColorValue = 255)
 		cl <- c(green,lila,orange,yellow,blue,lightgray,darkgray,gray,pink,brown)
-		while(length(cl)<length(x$effectNames)){
+		while(length(cl)<length(xx$effectNames)){
 			alph <- (alph+75)%%255
 			green <- rgb(127, 201, 127,alph, maxColorValue = 255)
 			lila <-rgb(190, 174, 212,alph, maxColorValue = 255)
@@ -735,7 +753,7 @@ warning("cex.names has to be of type 'numeric' \n used default settings")
 	par(mar = c(3,3,1,1))
 	for(w in 1:periods)
 	{
-		barplot(cbind(x$RIActors[[w]][,actors], x$expectedRI[[w]]),
+		barplot(cbind(xx$RIActors[[w]][,actors], xx$expectedRI[[w]]),
 			space=c(rep(0.1,nactors),1.5),width=c(rep(1,nactors),1),
 			beside =FALSE, yaxt = "n", xlab="Actor", cex.names = cex.names,
 			ylab=paste("period ", w, sep=""),border=bordergrey,
@@ -744,7 +762,7 @@ warning("cex.names has to be of type 'numeric' \n used default settings")
 		axis(4, at=c(0,0.25,0.5,0.75,1),labels=c("0","","0.5","","1"))
 		if(addPieChart)
 		{
-			pie(x$expectedRI[[w]], col = cl, labels=NA, border = bordergrey,
+			pie(xx$expectedRI[[w]], col = cl, labels=NA, border = bordergrey,
 				radius = rad)
 			mtext("exp. rel. imp.",side = 1, line = 1, cex=cex.names*0.75)
 		}
@@ -752,7 +770,7 @@ warning("cex.names has to be of type 'numeric' \n used default settings")
 	if(legend)
 	{
 		plot(c(0,1), c(0,1), col=rgb(0,0,0,0), axes=FALSE, ylab = "", xlab = "")
-		legend(0, 1, x$effectNames, fill=cl, ncol = legendColumns,
+		legend(0, 1, xx$effectNames, fill=cl, ncol = legendColumns,
 			bty = "n", cex=cex.legend)
 	}
 	invisible(cl)

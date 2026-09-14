@@ -64,6 +64,54 @@ write_result.sienaFit <- function(x, type='tex',
 }
 
 
+##@ signiftext converts t values into daggers and asterisks
+signiftext <- function(a, type="text")
+{	
+	if (is.na(a))
+	{
+		if (type=="text")
+		{
+			s <- "  "
+		}
+		else
+		{
+			s <- format("",width=17)
+		}
+	}
+	else
+	{
+		a <- abs(a)
+		signif1 <- qnorm(1-0.5*c(0.001,0.01,0.05,0.1))
+		if (type=="html")
+		{
+			signif2 <- c("&#134","*","**","***")
+		}
+		else if (type=="text")
+		{
+			signif2 <- c(".  ","*  ","** ","***")			
+		}
+		else
+		{
+			signif2 <- c(format("$^\\dagger$",width=18),
+				format("$^\\ast$",width=18),
+				format("$^{\\ast\\ast}$",width=19),
+				"$^{\\ast\\ast\\ast}$")
+		}
+		s2 <- signif2[sum(a>signif1)]
+		if (length(signif2[sum(a>signif1)])>0)
+		{
+			s <- s2
+		}
+		else
+		{
+			s <- "   "
+		}
+	}
+	s
+} 	
+
+signiftext <- Vectorize(signiftext)
+	
 ##@siena_table siena07 Saves latex or html table of estimates
 ## for a sienaFit or sienaBayesFit object
 # Also see fromObjectToText in siena07.r,which does this more drastically
@@ -241,37 +289,6 @@ siena_table <- function(x, type='tex',
 	max.theta.width <- max.width(theta)
 	max.tstat.width <- ifelse(fromBayes, max.width(sd.between), max.width(theta/ses))
 
-	## signif converts t values into daggers and asterisks
-
-	signif <- function(a)
-	{
-		s <- format("",width=17)
-
-		if (!is.na(a))
-		{
-			a <- abs(a)
-			signif1 <- qnorm(1-0.5*c(0.001,0.01,0.05,0.1))
-
-			if (type=="html")
-			{
-				signif2 <- c("&#134","*","**","***")
-			}
-			else
-			{
-				signif2 <- c(format("$^\\dagger$",width=18),
-					format("$^\\ast$",width=18),
-					format("$^{\\ast\\ast}$",width=19),
-					"$^{\\ast\\ast\\ast}$")
-			}
-			s2 <- signif2[sum(a>signif1)]
-
-			if (length(signif2[sum(a>signif1)])>0)
-			{
-				s <- s2
-			}
-		}
-		s
-	}
 
 	## mystr rounds a number and splits into its integer and fractional parts
 
@@ -715,7 +732,8 @@ siena_table <- function(x, type='tex',
 
 		if (sig)
 		{
-			mainTable$signif[-mid][-remove] <- sapply(theta[rows]/ses[rows],signif)[-remove]
+			mainTable$signif[-mid][-remove] <- vapply(theta[rows]/ses[rows],signiftext, 
+												FUN.VALUE=" ", type=type)[-remove]
 		}
 
 		if (condvarno == sections)
