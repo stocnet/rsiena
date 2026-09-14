@@ -1681,11 +1681,11 @@ Effect * EffectFactory::createEffect(const EffectInfo * pEffectInfo) const
 	else if (effectName == "toU")
 	{
 		pEffect = new GenericNetworkEffect(pEffectInfo,
-			new WeightedMixedTwoPathFunction(pEffectInfo->interactionName1(),
-					pEffectInfo->variableName(),
+			new WeightedMixedTwoPathFunction(pEffectInfo->variableName(),
+					pEffectInfo->interactionName1(),
 					pEffectInfo->interactionName2(), false),
-			new WeightedMixedTwoPathFunction(pEffectInfo->interactionName1(),
-					pEffectInfo->variableName(),
+			new WeightedMixedTwoPathFunction(pEffectInfo->variableName(),
+					pEffectInfo->interactionName1(),
 					pEffectInfo->interactionName2(), true));
 	}
 	else if (effectName == "covNetNet")

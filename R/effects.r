@@ -32,23 +32,27 @@ createEffects <- function(effectGroup, xName=NULL, yName=NULL, zName = NULL,
 	effects <- RSiena::allEffects[RSiena::allEffects$effectGroup == effectGroup, ]
 	if (nrow(effects) == 0)
 	{
-		stop("empty effect group", effectGroup)
+#		stop("empty effect group ", effectGroup)
+		effects <- NULL
 	}
-	if (any(is.na(effects$effectName)))
+	else
 	{
-		stop("missing effect name")
-	}
-	effects <- substituteNames(effects, xName, yName, zName)
-	effects$effectGroup <- NULL
-	nn <- nrow(effects)
-	# ignore the endowment field of 'gmm' type effects
-	effects$endowment[which(effects$type == 'gmm')] <- FALSE
-	# If we have some with a valid endowment field in the selection.
-	if (!all(is.na(effects$endowment))) {
-		# create a new vector with the right dimension
-		neweffects <- effects[rep(1:nn, times=(1 + 2 * as.numeric(effects$endowment))), ]
-		# fill with eval, endow and creation effects
-		neweffects$type <- unlist(by(effects, 1:nn,
+		if (any(is.na(effects$effectName)))
+		{
+			stop("missing effect name in group ", effectGroup)
+		}
+		effects <- substituteNames(effects, xName, yName, zName)
+		effects$effectGroup <- NULL
+		nn <- nrow(effects)
+		# ignore the endowment field of 'gmm' type effects
+		effects$endowment[which(effects$type == 'gmm')] <- FALSE
+		# If we have some with a valid endowment field in the selection.
+		if (!all(is.na(effects$endowment))) {
+			# create a new vector with the right dimension
+			neweffects <- effects[rep(1:nn, 
+                            times=(1 + 2 * as.numeric(effects$endowment))), ]
+			# fill with eval, endow and creation effects
+			neweffects$type <- unlist(by(effects, 1:nn,
 				function(e) {
 					if (e$endowment) {
 						c('eval', 'endow', 'creation')
@@ -56,19 +60,20 @@ createEffects <- function(effectGroup, xName=NULL, yName=NULL, zName = NULL,
 						e$type
 					}
 				}))
-		effects <- neweffects
-		nn <- nrow(effects)
+			effects <- neweffects
+			nn <- nrow(effects)
+		}
+		effects$endowment <-  NULL
+		effectFn <- vector('list', nn)
+		statisticFn <- vector('list', nn)
+		effects$effectFn <- effectFn
+		effects$statisticFn <- statisticFn
+		effects$netType <- netType
+		effects$groupName <- groupName
+		effects$group <- group
+		effectsname <- rep(name, nn)
+		effects <- data.frame(name=effectsname, effects, stringsAsFactors=FALSE)
 	}
-	effects$endowment <-  NULL
-	effectFn <- vector('list', nn)
-	statisticFn <- vector('list', nn)
-	effects$effectFn <- effectFn
-	effects$statisticFn <- statisticFn
-	effects$netType <- netType
-	effects$groupName <- groupName
-	effects$group <- group
-	effectsname <- rep(name, nn)
-	effects <- data.frame(name=effectsname, effects, stringsAsFactors=FALSE)
 	effects
 }
 
@@ -1053,7 +1058,7 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
                 (nodeSets[1] == attr(xx$dycCovars[[j]], 'nodeSet')[2]) )
             {
                 objEffects <- rbind(objEffects,
-                    createEffects("dyadThirdBipartiteObjective",
+                    createEffects("dyadFirstBipartiteObjective",
                         names(xx$dycCovars)[j],
                         name=varname,
                         groupName=groupName, group=group,
