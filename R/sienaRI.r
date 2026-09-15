@@ -133,6 +133,11 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 			}
 			else if (networkTypes[eff] == "bipartite")
 			{
+				if (dim(depNetwork)[2] >= actors)
+				{
+					stop("interpret_size does not work for bipartite networks with
+						second mode >= first mode")
+				}
 				choices <- dim(depNetwork)[2] + 1
 			}
 			else
@@ -155,10 +160,10 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 			for (m in 2:dim(depNetwork)[3]){depNetwork[,,m][is.na(depNetwork[,,m])] <-
 				depNetwork[,,m-1][is.na(depNetwork[,,m])]}
 				# Make sure the diagonals are not treated as structurals
-				if (networkTypes[eff] == "oneMode")
-				{
-					for (m in 1:(dim(depNetwork)[3])){diag(depNetwork[,,m]) <- 0}
-				}
+			if (networkTypes[eff] == "oneMode")
+			{
+				for (m in 1:(dim(depNetwork)[3])){diag(depNetwork[,,m]) <- 0}
+			}
 			structurals <- (depNetwork >= 10)
 			if (networkTypes[eff] == "oneMode"){
 				if (attr(depNetwork, 'symmetric')){
@@ -218,9 +223,8 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 				}
 				# replace structural 0s and 1s by NA,
 				# so they are omitted from calculation of RI, R_H, sigma
-				if (networkTypes[eff] == "oneMode")
+				if (networkTypes[eff] %in% c("oneMode", "bipartite"))
 				{
-					#	structuralsw <- structurals[,,w]
 					for (ff in 1:(dim(cdec)[1])){cdec[ff,,][t(structurals[,,w])] <- NA}
 				}
 				distributions <- apply(cdec, 3,
@@ -251,14 +255,11 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 				# period, giving the probability of ego in a ministep at the
 				# start of the period to make this choice.
 				# For oneMode networks choices are alters;
-				# for  bipartite choices are second mode nodes,
-				# and the last is "no change";
+				# for  bipartite choices are second mode nodes,and the last is "no change";
 				# for behavior choices are to add -1, 0, +1.
 				# The function "entropy" uses the property that non-choices
 				# have probability NA; 
-				# this is changed below to 0 for toggleProbabilities,
-				# so this function should be applied to "distributions"
-				# but not to "toggleProbabilities":
+				# this leads to NA values also for "toggleProbabilities".
 				entropy_vector <- unlist(lapply(distributions,
 						function(x){entropy(x[1,])}))
 				## If one wishes in the following another measure than the
@@ -306,7 +307,8 @@ expectedRelativeImportance <- function(conts, effects, theta, thedata=NULL,
 			}
 			if (getChangeStatistics){
 				RItmp$changeStatistics <- changeStats
-				toggleProbabilities[is.na(toggleProbabilities)] <- 0
+#				toggleProbabilities[is.na(toggleProbabilities)] <- 0
+# NA values refer to 0 probabilities but also to impossible choices and absent actors. 
 				RItmp$toggleProbabilities <- toggleProbabilities
 			}
 				RI[[depNumber]]<-RItmp
@@ -383,7 +385,14 @@ L1D <- function(referenz = NULL, distributions = NULL)
 {
 	if (sum(!is.na((referenz))) <= 1) # only constant choice
 	{
-		l1d <- rep(NA, dim(distributions)[1])
+		if (is.null(dim(distributions)))
+		{
+			l1d <- NA
+		}
+		else
+		{
+			l1d <- rep(NA, dim(distributions)[1])
+		}
 	}
 	else
 	{

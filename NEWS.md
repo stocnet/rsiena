@@ -1,4 +1,4 @@
-2026-09-14
+2026-09-15
 
 # RSiena 1.6.12
 
@@ -26,8 +26,6 @@
     starting with one object for each dependent variable;
     and dropping `interpret_size.sienaEffects`, i.e. the possibility 
     to run `interpret_size` without a `sienaFit` object.
-  * In `interpret_size`, `toggleProbabilities` that were `NA` 
-    get the value 0 (which they should have). 
   * `toggleProbabilities` are returned by `interpret_size` only if
     `getChangeStatistics` is `TRUE`.
   * Changed the class name of the object created by `interpret_size`  

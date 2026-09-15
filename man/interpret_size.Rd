@@ -74,6 +74,15 @@
       It does not yet work for endowment or creation effects
       (i.e., included effects have to be of type \code{eval} or \code{rate})
     and also not for models with interaction effects.
+    For two-mode (bipartite) networks as dependent variables,
+    it works only if the number of second-mode nodes is less than the
+    number of actors.
+
+    If there are any missing tie values in the network data set, they are imputed by
+    initial zeros and Last Observation Carried Forward. Structural zeros and ones
+    are replaced by \code{NA} and treated as impossible choices in the probability
+    vectors and ignored in the standard deviations; but the change statistics
+    for these dyads still are given in \code{changeStatistics} (if requested).
 
     The averages reported in the components \code{sigmas} (average across actors)
     and \code{meansigmas} (average across waves) are obtained by averaging at the
@@ -186,7 +195,7 @@ RI
 # average within-ego standard deviations of change statistics by wave:
 RI[["mynet1"]]$sigmas
 # sigma averaged over waves:
-RI$meansigmas
+RI[["mynet1"]]$meansigmas
 # to get the change statistics:
 RI.cs <- interpret_size(ans, mydata, getChangeStats=TRUE)
 # For the network at the first wave, the dimensions of the change statistics:
@@ -196,8 +205,8 @@ RI.cs[["mynet1"]]$changeStatistics[[1]][,1,]
 # semi-standardized parameters by wave:
 ans$theta * RI[["mynet1"]]$meansigmas
 \dontrun{
-plot(RI[["mynet1"]], addPieChart=TRUE)
-plot(RI[["mynet1"]], actors=1:20, addPieChart=TRUE, radius=1.08)
+plot(RI, addPieChart=TRUE)
+plot(RI, actors=1:20, addPieChart=TRUE, radius=1.08)
 }
 # For two dependent variables:
 myalgo <- set_algorithm_saom(nsub=1, n3=50, seed=1293)
@@ -213,8 +222,8 @@ ans2 <- siena(mydata2, effects=myeff2, control_algo=myalgo, batch=TRUE)
 RI <- interpret_size(ans2, data=mydata2)
 RI
 \dontrun{
-plot(RI[["mybeh"]], col = c("red", "green"), legend=FALSE)
-plot(RI[["mynet2"]], addPieChart = TRUE, legendColumns=2)
+plot(RI, col = c("red", "green"), legend=FALSE)
+plot(RI, addPieChart = TRUE, legendColumns=2)
 }
 }
 \keyword{models}
