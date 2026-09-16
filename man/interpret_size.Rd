@@ -1,70 +1,55 @@
 \name{interpret_size}
 \alias{interpret_size}
 \alias{sienaRI}
-\alias{interpret_size}
+\alias{siena_sizes}
 \alias{interpret_size.sienaFit}
 \alias{interpret_size.sienaEffects}
 \alias{entropy}
-\alias{plot.interpret_size}
-\alias{print.interpret_size}
+\alias{plot.siena_sizes}
+\alias{print.siena_sizes}
+\alias{summary.siena_sizes}
 \alias{plot.sienaRI}
 \alias{print.sienaRI}
-\alias{interpret_size.methods}
-\title{Functions to assess the relative importance of effects at observation
-       moments}
+\alias{siena_sizes.methods}
+\title{Function to assess  effect sizes for \code{siena} results}
 \description{
  The function \code{interpret_size} computes various effect sizes for
  Stochastic Actor-oriented Models.
- As its value it returns the relative importance of effects
- of a SAOM according to the measure of relative importance described in
- Section 3.1 of Indlekofer and Brandes (2013).
- This is based on the influence of effects on potential tie change or
- behavior change decisions of individual actors at the given observation
- moments (waves).  \cr
- Other measures useful for effect sizes are entropy-based
- effect sizes as in Snijders (2004) and the within-ego
- standard deviations of change statistics.
- If \code{getChangeStats=TRUE}, the arrays of change statistics are
- stored in the \code{sienaRI} object that is created.
-
- It takes the data as well as the complete model specification into account.
- Therefore, necessary arguments are the analysed data given as a
- \code{\link{sienadata}} data object as well as the complete model
- specification represented either by an estimated \code{sienaFit}
- object or by the combination of a
- suitable parameter vector \code{theta} and the corresponding
- \code{\link{sienaEffects}} object.
+ It computes estimates of the semi-standardized parameters
+ treated in Section 6.5.1 of Snijders and Steglich (2026), 
+ based on the within-ego standard deviations of change statistics;
+ the entropy-based degrees of certainty of  Snijders (2004),
+ treated in Section 6.5.3 of Snijders and Steglich (2026); 
+ and the relative importance of effects according to the measure 
+ proposed in Section 3.1 of Indlekofer and Brandes (2013).\cr
+ The return object is of class \code{siena_sizes}.
 }
 \usage{
 \method{interpret_size}{sienaFit}(x, data, getChangeStats=FALSE, ...)
-\method{interpret_size}{sienaEffects}(x, data, theta, getChangeStats=FALSE, ...)
-\method{print}{sienaRI}(x, printSigma=FALSE,\dots)
-\method{plot}{sienaRI}(x, actors = NULL, col = NULL, addPieChart = FALSE,
-              radius = 1, width = NULL, height = NULL, legend = TRUE,
-              legendColumns = NULL, legendHeight = NULL,
+\method{print}{siena_sizes}(x, \dots)
+\method{summary}{siena_sizes}(object, \dots)
+\method{plot}{siena_sizes}(x, depvar=NULL, actors=NULL, col=NULL, 
+              addPieChart=FALSE, radius=1, width=NULL, height=NULL, 
+              legend=TRUE, legendColumns=NULL, legendHeight=NULL,
               cex.legend = NULL, cex.names = NULL,\dots)
 }
 \arguments{
   \item{x}{for \code{interpret_size.sienaFit}: a \code{sienaFit} object,
            resulting from a call of \code{\link{siena}};\cr
-           for \code{interpret_size.sienaEffects}: a \code{sienaEffects} object
-           that was used for calling \code{\link{siena}};\cr
-           for \code{print.sienaRI} and \code{plot.sienaRI}:
-           a \code{sienaRI} object resulting
+           for \code{print.siena_sizes} and \code{plot.siena_sizes}:
+           a \code{siena_sizes} object resulting
+           from a call to \code{interpret_size}.}
+  \item{object}{a \code{siena_sizes} object resulting
            from a call to \code{interpret_size}.}
   \item{data}{\code{siena} data object representing the analyzed data and
               resulting from a call to \code{\link{make_data_rsiena}}.}
-  \item{theta}{Vector of parameter values of evaluation effects
-               included in the model.
-               Length of \code{theta} has to be equal to the number of
-               included evaluation effects in the effects object \code{x}.}
-  \item{getChangeStats}{Boolean: If \code{TRUE}, an array of change statistics
-               is added to the \code{interpret_size} object.}
-  \item{printSigma}{Boolean: If \code{TRUE},
-       average within-actor standard deviations of change statistics
-       ('\code{sigma}') are included in the print.}
+  \item{getChangeStats}{Boolean: If \code{TRUE}, an arrays of change statistics
+               and a list of toggle probabilities
+               are added to the \code{interpret_size} object.}
   \item{actors}{vector of integers: set of actors to be included in the plot;
        if \code{NULL}, all actors.}
+  \item{depvar}{string: name of the dependent variable;
+       if \code{NULL}, the first dependent variabe in the data set.}
   \item{col}{Colors used in the plot. If \code{col=NULL} a default color
        scheme is used.}
   \item{addPieChart}{Boolean: If \code{TRUE}, pie charts of aggregated relative
@@ -87,7 +72,7 @@
       ('forcing' model for non-directed networks).
       For dependent behavior variables, \code{behModelType=1} ('standard') is assumed.
       It does not yet work for endowment or creation effects
-      (i.e., included effects have to be of type \code{eval}) or \code{rate},
+      (i.e., included effects have to be of type \code{eval} or \code{rate})
     and also not for models with interaction effects.
     For two-mode (bipartite) networks as dependent variables,
     it works only if the number of second-mode nodes is less than the
@@ -102,18 +87,24 @@
     The averages reported in the components \code{sigmas} (average across actors)
     and \code{meansigmas} (average across waves) are obtained by averaging at the
     variance level and then taking square roots.
+    
+    If \code{getChangeStats=TRUE}, the arrays of change statistics 
+    and toggle probabilities are stored in the created object.
+    
+    The \code{print} method prints a table of estimates with their 
+    \emph{p}-values, the semi-standardized parameter estimates,
+    and the degrees of certainty.\cr
+    The \code{summary} method prints also the standard deviations 
+    of the change statistics and the expected relative importances.\cr
+    The \code{plot} method plots the expected relative importances.
 }
 \value{
- If the model contains only one dependent variable, \code{interpret_size} returns
- an object of class \code{sienaRI}. Otherwise, it returns a list of objects
- of class \code{sienaRI}, each corresponding to one dependent variable.
+ \code{interpret_size} returns an object of class \code{siena_sizes}.
+ This is a list of which the first elements are each for one dependent variable. 
 
- A returned \code{sienaRI} object stores the expected relative importances of
- effects of one dependent variable at observation moments as defined in
- Section 3.1 of Indlekofer and Brandes (2013).
-
-A \code{sienaRI} object is a list with the following components.
-For the components referred to as lists themselves, these are lists
+  Each component that is a list for one dependent variable 
+  is itself a list with the following components.
+For the components referred to below as lists, these are lists
 corresponding to the observation moments.
     \describe{
     \item{- \code{dependentVariable}}{the name of the corresponding
@@ -145,15 +136,17 @@ corresponding to the observation moments.
     \item{- \code{RHActors}}{a list that contains the degree of certainty,
           also called degree of determination, in
           the potential ministep taken by an actor at the observation moments;
-          this is R_H(i,x) of formula (6) in Snijders (2004).
+          this is R_H(i,beta,x) of formula (6.14) in Snijders and Steglich (2026)
+          and R_H(i,x) of formula (6) in Snijders (2004).
           The mean over actors of these degrees of certainty, given by
-          formula (7) in Snijders (2004), is printed by the
+          formula (6.15) in Snijders and Steglich (2026), is printed by the
           \code{print} method for \code{interpret_size} objects.}
     \item{- \code{sigma}}{a list of effects by ego matrices of the values of
-          the within-ego standard deviations of the change statistics.}
+          the within-ego standard deviations of the change statistics.
+          These are the square roots of formula (6.8) 
+          in Snijders and Steglich (2026).  }     
     \item{- \code{sigmas}}{effects by wave matrices of averages
-         (see above for how this is done; across actors) of \code{sigma}.
-          These are printed if \code{printSigma=TRUE}.}
+         (see above for how this is done; across actors) of \code{sigma}.}
     \item{- \code{meansigmas}}{average (see above for how this is done)
           over waves of \code{sigmas}.}
     \item{- \code{changeStatistics}}{a list of arrays
@@ -170,7 +163,8 @@ corresponding to the observation moments.
     \item{- \code{toggleProbabilities}}{an array
          (egos by choices by waves), where "choices" are as directly above,
          giving the choice probabilities of ego in a ministep,
-         when the data are as in this wave.}
+         when the data are as in this wave;
+         this output is produced only if \code{getChangeStats=TRUE}.}
     }
 }
 
@@ -182,8 +176,12 @@ corresponding to the observation moments.
  Snijders, T.A.B. (2004),
   Explained Variation in Dynamic Network Models.
   \emph{Mathematics and Social Sciences}, \bold{168}, 31--41.
+  
+  Snijders, Tom A.B., and Steglich, Christian (2026),
+  Stochastic Actor-Oriented Models for Longitudinal Networks,
+  \emph{Cambridge University Press}.
 }
-\author{Natalie Indlekofer, Tom Snijders, Daniel Gotthardt}
+\author{Tom Snijders, Daniel Gotthardt, Natalie Indlekofer}
 \examples{
 myalgo <- set_algorithm_saom(nsub=1, n3=50, seed=1293)
 mynet1 <- as_dependent_rsiena(array(c(tmp3, tmp4), dim=c(32, 32, 2)))
@@ -194,19 +192,18 @@ myeff <- set_effect(myeff, list(density, recip, outAct, inPop))
 ans <- siena(mydata, effects=myeff, control_algo=myalgo, batch=TRUE)
 RI <- interpret_size(ans, mydata)
 RI
-print(RI, printSigma=TRUE)
 # average within-ego standard deviations of change statistics by wave:
-RI$sigmas
+RI[["mynet1"]]$sigmas
 # sigma averaged over waves:
-RI$meansigmas
+RI[["mynet1"]]$meansigmas
 # to get the change statistics:
 RI.cs <- interpret_size(ans, mydata, getChangeStats=TRUE)
-# For the network at the first wave:
-dim(RI.cs$changeStatistics[[1]])
+# For the network at the first wave, the dimensions of the change statistics:
+dim(RI.cs[["mynet1"]]$changeStatistics[[1]])
 # E.g., the change statistics for the first actor (note the 0 first column):
-RI.cs$changeStatistics[[1]][,1,]
+RI.cs[["mynet1"]]$changeStatistics[[1]][,1,]
 # semi-standardized parameters by wave:
-ans$theta * RI$meansigmas
+ans$theta * RI[["mynet1"]]$meansigmas
 \dontrun{
 plot(RI, addPieChart=TRUE)
 plot(RI, actors=1:20, addPieChart=TRUE, radius=1.08)
@@ -222,14 +219,11 @@ myeff2 <- set_effect(myeff2, avAlt, depvar="mybeh", covar1="mynet2")
 ans2 <- siena(mydata2, effects=myeff2, control_algo=myalgo, batch=TRUE)
 # Use only the parameters for the evaluation function:
 (theta.eval <- coef(ans2, dropRates=TRUE))
-RI <- interpret_size(myeff2, data=mydata2, theta=theta.eval)
-RI[[1]]
-RI[[2]]
-RI[[1]]$sigmas
-RI[[2]]$sigmas
+RI <- interpret_size(ans2, data=mydata2)
+RI
 \dontrun{
-plot(RI[[2]], col = c("red", "green"), legend=FALSE)
-plot(RI[[1]], addPieChart = TRUE, legendColumns=2)
+plot(RI, col = c("red", "green"), legend=FALSE)
+plot(RI, addPieChart = TRUE, legendColumns=2)
 }
 }
 \keyword{models}

@@ -240,6 +240,9 @@ phase3.2 <- function(z, x, ...)
  			else
  			{
  				z$tconv.max <- sqrt(t(mean.dev) %*% thisproduct)
+# same as sqrt(sum(mean.dev % thisproduct))
+# This way of computing was chosen because (S^{-1} %*% dev) might be computable
+# even if S^{-1} is not computable.
  			}
  		}
  		if (!z$gmm)

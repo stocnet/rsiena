@@ -384,10 +384,18 @@ sienaDataCreate<- function(..., nodeSets=NULL, getDocumentation=FALSE)
 	depvars <- depvars[1:v1]
 	if (is.null(nodeSets))
 	{
+		if (any(sapply(depvars, function(x){attr(x,"type")})=="bipartite"))
+		{
+			stop("For a data set with bipartite networks, specify the nodeSets.")
+		}
 		nodeSets <- list(sienaNodeSet(attr(depvars[[1]], "netdims")[1]))
 	}
 	else
 	{
+		if (inherits(nodeSets[[1]], "character"))
+		{
+			stop("nodeSets should be given as sienaNodeSet objects, not their names")
+		}
 		if (!(inherits(nodeSets, "sienaNodeSet") || inherits(nodeSets[[1]], "sienaNodeSet")))
 		{
 			stop("nodeSets should be a sienaNodeSet object or a list of such objects")

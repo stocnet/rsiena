@@ -11,7 +11,11 @@
  which may be helpful for the interpretation of results
  for network dynamics,
  for an estimation result represented by a
- \code{sienaFit} object created by \code{\link{siena}}.
+ \code{sienaFit} object created by \code{\link{siena}}.\cr
+  The functions \code{interpret_selection} and
+  \code{selectionTable} are identical.\cr
+  The first of these names is preferred,
+  the other is kept for backward compatibility.
 }
 
 \usage{

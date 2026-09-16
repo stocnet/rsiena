@@ -87,7 +87,7 @@ alg_alg <- set_algorithm_saom(cond=TRUE, condvarno=1, seed=5, n3=50, nsub=1)
 ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
          control_algo=alg_alg)
 alg_alg2 <- set_algorithm_saom(cond=TRUE, condvarno=1, seed=5, n3=50, nsub=1,
-			splitDepvars=1)
+            splitDepvars=1)
 ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
          control_algo=alg_alg2)
 ##, verbose=TRUE)
@@ -232,6 +232,7 @@ alg_alg <- set_algorithm_saom(gmm=TRUE, seed=1293, n3=50, nsub=2)
          prevAns=ans1, control_algo=alg_alg))
 
 ##test21
+print('test21')
 # Run simple test model ----
 mynet <- as_dependent_rsiena(array(c(s501, s502, s503), dim = c(50, 50, 3)))
 mydata <- make_data_rsiena(mynet)
@@ -240,7 +241,6 @@ mymodel <- make_specification(mydata)
 mymodel <- set_effect(mymodel, transTrip, depvar="mynet")
 # Test returnChangeContributions when running siena directly ----
 
-print('test21')
 alg_out <- set_output_saom(returnChangeContributions=TRUE)
 alg_alg <- set_algorithm_saom(cond=FALSE, seed=42, n3=60, nsub=1)
 ans  <- siena(data=mydata, effects=mymodel, batch=TRUE, silent=TRUE,
@@ -279,7 +279,8 @@ ans2  <- siena(data=mydata2, effects=mymodel2, batch=TRUE, silent=TRUE,
 RIDynamics2 <-  interpret_size_dynamics(mydata2, ans=ans2)
 RIDynamics2
 ### Don't use ans but previously estimated coefficients ----
-RIDynamics3 <- interpret_size_dynamics(data=mydata2, theta=c(ans2$rate,ans2$theta),
+RIDynamics3 <- interpret_size_dynamics(data=mydata2, 
+             theta=c(ans2$rate,ans2$theta),
              algorithm=mycontrols2, effects=mymodel2, intervalsPerPeriod=10)
 RIDynamics3
 ## Conditional Estimation ----
@@ -308,12 +309,14 @@ any(beh_steps) # TRUE as expected
 ministeps <- ans4$changeContributions[[1]][[1]][[1]]
 getDepvarName <- function(ministep) attr(ministep, "networkName")
 beh_steps <- Filter(function(ministep) getDepvarName(ministep)  == "mybeh", 
-     ans4$changeContributions[[1]][[1]][[1]]) # 1st period, 1st group, 1st chain, behavior steps
+     ans4$changeContributions[[1]][[1]][[1]]) 
+# 1st period, 1st group, 1st chain, behavior steps
 RIDynamics5 <- interpret_size_dynamics(mydata3, ans=ans4, depvar="mybeh",
                                useChangeContributions=TRUE)
 RIDynamics5
 net_steps <- Filter(function(ministep) getDepvarName(ministep)  == "mynet3", 
-     ans4$changeContributions[[1]][[1]][[1]]) # 1st period, 1st group, 1st chain, network steps
+     ans4$changeContributions[[1]][[1]][[1]]) 
+# 1st period, 1st group, 1st chain, network steps
 RIDynamics6 <- interpret_size_dynamics(mydata3, ans=ans4, depvar="mynet3")
 RIDynamics6
 ##test24
@@ -328,11 +331,23 @@ thv[,3] <- rep(2, 10)
 thv[,4] <- 0.02 * (1:10)
 thv[,5] <- 0.02 * (10:1) 
 myalg <- set_algorithm_saom(nsub=2, n3=50, cond=FALSE, seed=5, simOnly=TRUE,
-				thetaValue=thv)
+                thetaValues=thv)
 print('test24')
-(ans <- siena(mymodel, data=mydata, effects=myeff, control_algo=myalg, batch=TRUE, silent=TRUE))
+(ans <- siena(mymodel, data=mydata, effects=myeff, 
+              control_algo=myalg, batch=TRUE, silent=TRUE))
 print('test25')
 effectsDocumentation()
+##test26
+print('test26')
+# Run simple test model ----
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim = c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, list(outAct, inPop), depvar="mynet")
+alg_alg <- set_algorithm_saom(cond=FALSE, seed=288, n3=50, nsub=1)
+ans  <- siena(data=mydata, effects=mymodel, batch=TRUE, silent=TRUE,
+         control_algo=alg_alg)
+(RI <- interpret_size(ans, data=mydata))
 ## delete output files
 if (file.exists('mydata_out.txt')){unlink('mydata_out.txt')}
 if (file.exists('effects.html')){unlink('effects.html')}

@@ -4,9 +4,9 @@
 ################################################################################
 ################################################################################
 
+
 ################################################################################
 ### Procedure used for checking:
-### use an internally available data set (two waves) without missings.
 ### use an internally available data set (two waves) without missings.
 ### See if estimation with default algorithm will converge,
 ### and check the target statistic.
@@ -20,16 +20,16 @@
 ### check from.w.ind
 ################################################################################
 
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mynet3 <- sienaDependent(array(c(s503, s501), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet1, mynet2, mynet3)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
-mymodel <- getEffects(mydata)
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mynet3 <- as_dependent_rsiena(array(c(s503, s501), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet1, mynet2, mynet3)
+mymodel <- make_specification(mydata)
 
-mymodel <- includeEffects(mymodel,from.w.ind, name='mynet2',
-                interaction1='mynet1', interaction2='mynet1')
-ans2 <- siena07(mycontrols, data=mydata, effects=mymodel)
+mymodel <- set_effect(mymodel, from.w.ind, depvar="mynet2", covar1="mynet1",
+             covar2="mynet1")
+alg_alg <- set_algorithm_saom(seed=1234)
+ans2  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg)
 ans2
 ans2$targets
 
@@ -44,9 +44,10 @@ diag(tpw2) <- 0
 sum(tpw*s503)
 sum(tpw2*s503) # OK
 
-(mymodel <- setEffect(mymodel,from.w.ind, name='mynet2',
-                interaction1='mynet1', interaction2='mynet1', parameter=2))
-ans2 <- siena07(mycontrols, data=mydata, effects=mymodel)
+(mymodel <- set_effect(mymodel, from.w.ind, depvar="mynet2", covar1="mynet1",
+             covar2="mynet1", parameter=2))
+alg_alg <- set_algorithm_saom(seed=1234)
+ans2  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg)
 ans2
 ans2$targets
 ind3 <- diag(sqrt(colSums(s501)))
@@ -54,30 +55,33 @@ tpw3 <- s501 %*% ind3 %*% t(s501)
 diag(tpw3) <- 0
 sum(tpw3*s503) # OK
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,from.w.ind, name='mynet2',
-                interaction1='mynet1', interaction2='mynet1', parameter=-1))
-(ans2 <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, from.w.ind, depvar="mynet2", covar1="mynet1",
+             covar2="mynet1", parameter=-1))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans2  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans2$targets
 ind3 <- diag(1/(colSums(s501) + 1))
 tpw3 <- s501 %*% ind3 %*% t(s501)
 diag(tpw3) <- 0
 sum(tpw3*s503) # OK
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,from.w.ind, name='mynet2',
-                interaction1='mynet1', interaction2='mynet3', parameter=-1))
-(ans3 <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, from.w.ind, depvar="mynet2", covar1="mynet1",
+             covar2="mynet3", parameter=-1))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans3  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans3$targets
 ind3 <- diag(1/(colSums(s503) + 1))
 tpw3 <- s501 %*% ind3 %*% t(s501)
 diag(tpw3) <- 0
 sum(tpw3*s503) # OK
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,from.w.ind, name='mynet2',
-                interaction1='mynet1', interaction2='mynet3', parameter=+1))
-(ans3 <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, from.w.ind, depvar="mynet2", covar1="mynet1",
+             covar2="mynet3", parameter=1))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans3  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans3$targets
 ind3 <- diag(colSums(s503))
 tpw3 <- s501 %*% ind3 %*% t(s501)
@@ -88,19 +92,19 @@ sum(tpw3*s503) # OK
 ### check transtripX
 ################################################################################
 
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
 
 # construct actor covariate
 (five <- rep(1:5,10))
-five <- coCovar(five, centered=FALSE)
+five <- as_covariate_rsiena(five, centered=FALSE)
 
-mydata <- sienaDataCreate(mynet, five)
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,transTrip)
-mymodel <- includeEffects(mymodel,transTripX,interaction1='five')
+mydata <- make_data_rsiena(mynet, five)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, transTrip)
+mymodel <- set_effect(mymodel, transTripX, covar1="five")
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(s502)
 sum(s502*t(s502))
@@ -115,19 +119,19 @@ sum(twopc*s502) # OK
 ### check homXTransTrip, homXTransRecTrip
 ################################################################################
 
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
 
 # construct actor covariate
 (two <- rep(1:2,25))
-two <- coCovar(two, centered=FALSE)
+two <- as_covariate_rsiena(two, centered=FALSE)
 
-mydata <- sienaDataCreate(mynet, two)
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,transTrip)
-mymodel <- includeEffects(mymodel,homXTransTrip,interaction1='two')
+mydata <- make_data_rsiena(mynet, two)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, transTrip)
+mymodel <- set_effect(mymodel, homXTransTrip, covar1="two")
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(s502)
 sum(s502*t(s502))
@@ -140,12 +144,12 @@ twop.eq <- (s502*eq) %*% s502
 tt.eq <- s502 * eq * twop.eq
 sum(tt.eq) # OK
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,transRecTrip)
-mymodel <- includeEffects(mymodel,homXTransRecTrip,interaction1='two')
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, transRecTrip)
+mymodel <- set_effect(mymodel, homXTransRecTrip, covar1="two")
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(s502)
 sum(s502*t(s502))
@@ -162,18 +166,18 @@ sum(tt.eq.r) # OK
 ### check to, toU
 ################################################################################
 
-advice <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-trust <- sienaDependent(array(c(s503, s501), dim=c(50, 50, 2)))
+advice <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+trust <- as_dependent_rsiena(array(c(s503, s501), dim=c(50, 50, 2)))
 # dyadic covariate
 suppressWarnings(mat <- matrix(c(0,1,0,0,4,0,2,0,0), 50,50))
-dcov <- coDyadCovar(mat, centered=FALSE)
-mydata <- sienaDataCreate(advice,trust,dcov)
+dcov <- as_covariate_rsiena(mat, type='oneMode', centered=FALSE)
+mydata <- make_data_rsiena(advice,trust,dcov)
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,to,name="trust",interaction1="advice")
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, to, depvar="trust", covar1="advice")
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname = NULL, seed=123)
-(myans <- siena07(mycontrols, data = mydata, effects = mymodel))
+alg_alg <- set_algorithm_saom(seed=123)
+(myans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 myans$targets
 
 # for to effect:
@@ -184,11 +188,11 @@ WXX <- WX * s501
 sum(diag(WXX)) # 0 OK
 sum(WXX) # 86 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,to,name="trust",interaction1="advice", parameter=2)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, to, depvar="trust", covar1="advice", parameter=2)
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname = NULL, seed=123)
-(myans <- siena07(mycontrols, data = mydata, effects = mymodel))
+alg_alg <- set_algorithm_saom(seed=123)
+(myans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 myans$targets
 
 # for to effect, parameter=2:
@@ -199,11 +203,11 @@ SWXX <- sqrt(WX) * s501
 sum(diag(SWXX)) # 0 OK
 sum(SWXX) # 78.38478 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,to,name="trust",interaction1="advice", parameter=3)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, to, depvar="trust", covar1="advice", parameter=3)
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname = NULL, seed=123)
-(myans <- siena07(mycontrols, data = mydata, effects = mymodel))
+alg_alg <- set_algorithm_saom(seed=123)
+(myans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 myans$targets
 
 # for to effect, parameter=3:
@@ -214,10 +218,16 @@ tWXX <- 1*(WX >= 1) * s501
 sum(diag(tWXX)) # 0 OK
 sum(tWXX) # 73 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,toU,name="trust",interaction1="advice", interaction2="dcov")
-(myans <- siena07(mycontrols, data = mydata, effects = mymodel))
-myans$targets
+# toU effect
+
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, toU, depvar="trust", covar1="advice",
+             covar2="dcov")
+alg_alg <- set_algorithm_saom(seed=123)
+(myans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
+myans$targets # 115 116  70 133 113  78  90
+
+
 # for toU effect:
 # W=advice, X=trust, U=dcov
 WUX <- (dcov*s501) %*% s501
@@ -226,19 +236,62 @@ WUXX <- WUX * s501
 sum(diag(WUXX)) # 0 OK
 sum(WUXX) # 90 OK
 
+# now for two-mode
+
+
+senders <- as_nodeset_rsiena(50, nodeSetName="senders")
+recipients <- as_nodeset_rsiena(30, nodeSetName="recipients")
+
+advice <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)), nodeSet="senders")
+trust <- as_dependent_rsiena(array(c(s503[,1:30], s501[,1:30]), dim=c(50, 30, 2)),
+                         type="bipartite", nodeSet=c("senders","recipients"), 
+						 allowOnly=FALSE)
+# dyadic covariate
+suppressWarnings(mat2 <- matrix(c(0,1,0,0,4,3,2,0,0), 50,50))
+dcov2 <- as_covariate_rsiena(mat2, type='oneMode', centered=FALSE, nodeSet="senders")
+(mydata2 <- make_data_rsiena(advice,trust,dcov2, nodeSets=list(senders,recipients)))
+
+
+mymodel1 <- make_specification(mydata2)
+mymodel1 <- set_effect(mymodel1, to, depvar="trust", covar1="advice")
+(myans1  <- siena(data=mydata2, effects=mymodel1, control_algo=alg_alg))
+myans1$targets # 115 116  70  89  68  48
+
+# for to effect:
+# W=advice , X=trust
+WX <- s501 %*% s501[,1:30]
+XWX <- s501[,1:30] * WX
+sum(XWX)  # 48 OK
+
+mymodel2 <- make_specification(mydata2)
+mymodel2 <- set_effect(mymodel2, toU, depvar="trust", covar1="advice",
+             covar2="dcov2")
+(myans2  <- siena(data=mydata2, effects=mymodel2, control_algo=alg_alg))
+myans2$targets # 115 116  70  89  68  80
+
+
+# for toU effect:
+# W=advice, X=trust, U=dcov2
+
+WUX <- (s501 * (dcov2)) %*% s501[,1:30]
+XWUX <- s501[,1:30] * WUX
+sum(XWUX)  # 80 OK
+
+rm(WX, XWX, WUX, XWUX)
 ################################################################################
 ### check toBack, MixedInXW
 ################################################################################
 
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s503, s502), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet1, mynet2)
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s503, s502), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet1, mynet2)
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,mixedInXW, toBack, name='mynet2',
-                interaction1='mynet1')
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, list(mixedInXW, toBack), depvar="mynet2",
+             covar1="mynet1")
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 # mixedInXW
@@ -249,11 +302,12 @@ inst <- (s502) %*% t(s502)
 sum(inst * s501) # 60 OK
 
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,mixedInXW, parameter=2, name='mynet2',
-                interaction1='mynet1')
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, mixedInXW, depvar="mynet2", covar1="mynet1",
+             parameter=2)
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # mixedInXW, parameter 2
 mixos <- t(s502) %*% s501
@@ -263,13 +317,13 @@ sum(s502 * sqrt(mixos)) #  58.45997 OK
 ### check cl.XWX, cl.XWX1, cl.XWX2
 ################################################################################
 
-advice <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-trust <- sienaDependent(array(c(s503, s501), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(advice,trust)
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, cl.XWX, name="trust", interaction1="advice")
-mycontrols <- sienaAlgorithmCreate(projname = NULL, seed=123)
-myans <- siena07(mycontrols, data = mydata, effects = mymodel)
+advice <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+trust <- as_dependent_rsiena(array(c(s503, s501), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(advice,trust)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, cl.XWX, depvar="trust", covar1="advice")
+alg_alg <- set_algorithm_saom(seed=123)
+myans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg)
 myans
 myans$targets
 
@@ -281,32 +335,35 @@ diag(XWX)
 2*sum(XWX) # 172 OK
 
 # for cl.XWX1 effect:
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, cl.XWX1, name="trust", interaction1="advice")
-(myans <- siena07(mycontrols, data = mydata, effects = mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, cl.XWX1, depvar="trust", covar1="advice")
+alg_alg <- set_algorithm_saom(seed=123)
+(myans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 myans$targets
 sum(XWX) # 86 OK
 
 # for cl.XWX2 effect:
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, cl.XWX2, name="trust", interaction1="advice")
-(myans <- siena07(mycontrols, data = mydata, effects = mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, cl.XWX2, depvar="trust", covar1="advice")
+alg_alg <- set_algorithm_saom(seed=123)
+(myans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 myans$targets
 sum(XWX) # 86 OK
 
+rm(XW, XWX)
 
 ################################################################################
 ### check avSim, totSim, avInSim, totInSim, avInSimPopAlt, totInSimPopAlt
 ################################################################################
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,avSim,name='mybeh',interaction1='mynet')
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avSim, depvar="mybeh", covar1="mynet")
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=54321)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=54321)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # linear shape and quadratic shape
 (mbh <- mean(mybeh))
@@ -330,55 +387,64 @@ sum(s502 * simi2*outdegs) # OK avSim
 sum(diag(divi(1,outdeg)) %*% s502 * simi2 ) # OK avSim
 
 # totSim effect:
-mymodel <- getEffects(mydata)
+mymodel <- make_specification(mydata)
 # It turns out that for this data set, to get an estimate for totSim
 # you first have to include the outdeg effect.
-mymodel <- includeEffects(mymodel,outdeg,name='mybeh',interaction1='mynet')
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
-mymodel <- includeEffects(mymodel,totSim,name='mybeh',interaction1='mynet')
+mymodel <- set_effect(mymodel, outdeg, depvar="mybeh", covar1="mynet")
+alg_alg <- set_algorithm_saom(seed=54321)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
+mymodel <- set_effect(mymodel, totSim, depvar="mybeh", covar1="mynet")
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel, prevAns=ans))
+alg_alg <- set_algorithm_saom(seed=54321)
+(ans  <- siena(data=mydata, effects=mymodel, prevAns=ans, control_algo=alg_alg))
 ans$targets
 sum(s502 * simi2 ) # OK totSim
 # Now try to get a model including totSim but without outdeg
-mymodel <- includeEffects(mymodel,outdeg,name='mybeh',interaction1='mynet', include=FALSE)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel, prevAns=ans))
-mymodel <- updateTheta(mymodel, ans)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- set_effect(mymodel, outdeg, depvar="mybeh", covar1="mynet",
+             include=FALSE)
+alg_alg <- set_algorithm_saom(seed=54321)
+(ans  <- siena(data=mydata, effects=mymodel, prevAns=ans, control_algo=alg_alg))
+mymodel <- update_theta(mymodel, ans)
+alg_alg <- set_algorithm_saom(seed=54321)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 
 # for avSimPopAlt effect:
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,avSimPopAlt,name='mybeh',interaction1='mynet')
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avSimPopAlt, depvar="mybeh", covar1="mynet")
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=54321)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 indeg <- colSums(s502)
 sum(diag(divi(1,outdeg)) %*% (s502 * simi2) %*% diag(indeg)) # avSimPopAlt OK
 
 # for avSimPopEgo effect:
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,avSimPopEgo,name='mybeh',interaction1='mynet')
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avSimPopEgo, depvar="mybeh", covar1="mynet")
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=54321)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 indeg <- colSums(s502)
 sum(diag(divi(indeg,outdeg)) %*% s502 * simi2 ) #  OK avSimPopEgo
 
 # for totSimPopAlt effect:
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,totSimPopAlt,name='mybeh',interaction1='mynet')
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totSimPopAlt, depvar="mybeh", covar1="mynet")
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=54321)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 indeg <- colSums(s502)
 sum((s502 * simi2) %*% diag(indeg)) # avSimPopAlt OK
 
 # for avInSim effect:
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,avInSim,name='mybeh',interaction1='mynet')
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avInSim, depvar="mybeh", covar1="mynet")
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=54321)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 indeg <- colSums(s502)
@@ -389,26 +455,29 @@ sum(t(s502) * simi2*indegs) # OK avInSim
 sum(diag(divi(1,indeg)) %*% t(s502) * simi2 ) # OK avInSim
 
 # for avInSimPopAlt effect:
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,avInSimPopAlt,name='mybeh',interaction1='mynet')
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avInSimPopAlt, depvar="mybeh", covar1="mynet")
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=54321)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(diag(divi(1,indeg)) %*% t(s502) * simi2  %*% diag(indeg)) # OK avInSimPopAlt
 
 # for totInSim effect:
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,totInSim,name='mybeh',interaction1='mynet')
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totInSim, depvar="mybeh", covar1="mynet")
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=54321)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(t(s502) * simi2 ) # OK totInSim
 
 # for totInSimPopAlt effect:
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,totInSimPopAlt,name='mybeh',interaction1='mynet')
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totInSimPopAlt, depvar="mybeh", covar1="mynet")
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=54321)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum( t(s502) * simi2  %*% diag(indeg)) # OK totInSimPopAlt
 
@@ -417,16 +486,16 @@ sum( t(s502) * simi2  %*% diag(indeg)) # OK totInSimPopAlt
 ### check avAttHigher, avAttLower, totAttHigher, totAttLower
 ################################################################################
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
 # for avAttHigher effect:
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,avAttHigher,name='mybeh',interaction1='mynet')
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avAttHigher, depvar="mybeh", covar1="mynet")
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 # behavior at wave 2:
@@ -440,26 +509,29 @@ outdeg <- rowSums(s502)
 sum(diag(divi(1,outdeg)) %*% s502 * t(simim) ) # OK avAttHigher
 
 # for avAttLower effect:
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,avAttLower,name='mybeh',interaction1='mynet')
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avAttLower, depvar="mybeh", covar1="mynet")
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(diag(divi(1,outdeg)) %*% s502 * (simim) ) # OK avAttLower
 
 # for totAttHigher effect:
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,totAttHigher,name='mybeh',interaction1='mynet')
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totAttHigher, depvar="mybeh", covar1="mynet")
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(s502 * t(simim) ) # OK totAttHigher
 
 # for totAttLower effect:
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,totAttLower,name='mybeh',interaction1='mynet')
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totAttLower, depvar="mybeh", covar1="mynet")
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(s502 * (simim) ) # OK totAttLower
 
@@ -468,27 +540,28 @@ sum(s502 * (simim) ) # OK totAttLower
 ### check crprodInActIntn
 ################################################################################
 
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s503, s502), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet1, mynet2)
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s503, s502), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet1, mynet2)
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, crprodInActIntn, name='mynet2',
-                        interaction1='mynet1')
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, crprodInActIntn, depvar="mynet2",
+             covar1="mynet1")
 mymodel
 
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
 # for crprodInActIntn effect (parameter = 2):
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 ctr <- mean(c(colSums(s501), colSums(s502)))
 sum(rowSums(s502 * s501) * (sqrt(colSums(s501)) - sqrt(ctr))) # -4.937096 OK
 
 # for crprodInActIntn effect (parameter = 1):
-mymodel <- setEffect(mymodel, crprodInActIntn, name='mynet2',
-                   interaction1='mynet1', parameter=1)
+mymodel <- set_effect(mymodel, crprodInActIntn, depvar="mynet2",
+             covar1="mynet1", parameter=1)
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(rowSums(s502 * s501) * (colSums(s501) - ctr)) # -3.53 OK
 
@@ -498,24 +571,25 @@ sum(rowSums(s502 * s501) * (colSums(s501) - ctr)) # -3.53 OK
 ################################################################################
 
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mycov <- coCovar(s50s[,2])
-mydata <- sienaDataCreate(mynet, mybeh, mycov)
-mymodel <- getEffects(mydata)
-(mymodel <- includeEffects(mymodel,RateX,type='rate',
-                            name='mybeh',interaction1='mycov'))
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mycov <- as_covariate_rsiena(s50s[,2])
+mydata <- make_data_rsiena(mynet, mybeh, mycov)
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, RateX, type="rate", depvar="mybeh",
+             covar1="mycov"))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(abs(mybeh[,,1]-mybeh[,,2])) # OK rate
 mco <- mean(mycov)
 sum((mycov-mco)*abs(mybeh[,,1]-mybeh[,,2])) # OK RateX
 
-mymodel <- getEffects(mydata)
-(mymodel <- includeEffects(mymodel,RateX,type='rate',
-                            name='mybeh',interaction1='mybeh'))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, RateX, type="rate", depvar="mybeh",
+             covar1="mybeh"))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(abs(mybeh[,,1]-mybeh[,,2])) # OK rate
 mbh <- mean(mybeh)
@@ -526,7 +600,7 @@ sum((mybeh[,,1])*abs(mybeh[,,1]-mybeh[,,2])) # OK RateX non-centered
 ################################################################################
 
 
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
 sm1 <- 1*(s50s[,2] >= 2)
 sm2 <- 1*(s50s[,3] >= 2)
 sm2 <- pmax(sm1,sm2)
@@ -536,28 +610,28 @@ table(sminfl1*((sm2-sm1))) # no values larger than 2.
 sm1r <- sm1
 sm1r[11] <- 0
 table(sminfl1*((sm2-sm1r))) # one value larger than 2.
-mybeh <- sienaDependent(cbind(sm1,sm2), type="behavior")
-mybeh.r <- sienaDependent(cbind(sm1r,sm2), type="behavior")
-mycov <- coCovar(s50a[,1])
-(mydata <- sienaDataCreate(mynet, mybeh, mycov))
-(mydata.r <- sienaDataCreate(mynet, mybeh.r, mycov))
+mybeh <- as_dependent_rsiena(cbind(sm1,sm2), type="behavior")
+mybeh.r <- as_dependent_rsiena(cbind(sm1r,sm2), type="behavior")
+mycov <- as_covariate_rsiena(s50a[,1])
+(mydata <- make_data_rsiena(mynet, mybeh, mycov))
+(mydata.r <- make_data_rsiena(mynet, mybeh.r, mycov))
 # mydata.r for testing negative parameters
 
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234, firstg=0.01)
-mycontrols2 <- sienaModelCreate(projname=NULL, seed=1234, firstg=0.1)
-mycontrols4 <- sienaModelCreate(projname=NULL, seed=1234, firstg=0.001)
 
-mymodel <- getEffects(mydata)
-(ans <- siena07(mycontrols2, data=mydata, effects=mymodel))
-mymodel0 <- updateTheta(mymodel, ans)
+mymodel <- make_specification(mydata)
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.1)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
+mymodel0 <- update_theta(mymodel, ans)
 
-mymodel.r <- getEffects(mydata.r)
-(ans.r <- siena07(mycontrols2, data=mydata.r, effects=mymodel.r))
-mymodel0.r <- updateTheta(mymodel.r, ans.r)
+mymodel.r <- make_specification(mydata.r)
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.1)
+(ans.r  <- siena(data=mydata.r, effects=mymodel.r, control_algo=alg_alg))
+mymodel0.r <- update_theta(mymodel.r, ans.r)
 
-mymodel <- includeEffects(mymodel0,avExposure,type='rate',
-                            name='mybeh',interaction1='mynet')
-(ans1 <- siena07(mycontrols4, data=mydata, effects=mymodel))
+mymodel <- set_effect(mymodel0, avExposure, type="rate", depvar="mybeh",
+             covar1="mynet")
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.001)
+(ans1  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans1$targets
 sum(sm2-sm1) # OK rate
 
@@ -568,9 +642,11 @@ eff00 <- apply(s501,1,function(x){amean(x,sm1)})
 sum((sm2-sm1)*eff) #  this is not the target statistic for avExposure
 sum((sm2-sm1)*eff00) # OK  avExposure
 
-(mymodel5 <- setEffect(mymodel0,avExposure,type='rate', parameter=2,
-                            name='mybeh',interaction1='mynet'))
-(ans5 <- siena07(mycontrols4, data=mydata, effects=mymodel5, prevAns=ans1))
+(mymodel5 <- set_effect(mymodel0, avExposure, type="rate", depvar="mybeh",
+             covar1="mynet", parameter=2))
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.001)
+(ans5  <- siena(data=mydata, effects=mymodel5, prevAns=ans1,
+             control_algo=alg_alg))
 ans5$targets
 eff3 <- apply(s501,1,function(x){sum(x*sm1)})
 eff35 <- eff3
@@ -578,9 +654,11 @@ eff35[eff35==1] <- 0
 outd <- rowSums(s501)
 sum((sm2-sm1)*divi(eff35, outd)) #  OK avExposure p=2
 
-(mymodel6.r <- setEffect(mymodel.r, avExposure,type='rate', parameter=-2,
-                            name='mybeh.r',interaction1='mynet'))
-(ans6.r <- siena07(mycontrols4, data=mydata.r, effects=mymodel6.r, prevAns=ans5))
+(mymodel6.r <- set_effect(mymodel.r, avExposure, type="rate", depvar="mybeh.r",
+             covar1="mynet", parameter=-2))
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.001)
+(ans6.r  <- siena(data=mydata.r, effects=mymodel6.r, prevAns=ans5,
+             control_algo=alg_alg))
 ans6.r$targets
 eff3.r <- apply(s501,1,function(x){sum(x*sm1r)})
 eff56 <- eff3.r
@@ -588,26 +666,31 @@ eff56[eff56==1] <- 0
 eff56[eff56>2] <- 2
 sum((sm2-sm1r)*divi(eff56, outd)) #   OK avExposure p=-2
 
-(mymodel2 <- setEffect(mymodel0,totExposure,type='rate',
-                            name='mybeh',interaction1='mynet'))
-(ans2 <- siena07(mycontrols4, data=mydata, effects=mymodel2))
+(mymodel2 <- set_effect(mymodel0, totExposure, type="rate", depvar="mybeh",
+             covar1="mynet"))
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.001)
+(ans2  <- siena(data=mydata, effects=mymodel2, control_algo=alg_alg))
 ans2$targets
 sum(sm2-sm1) # OK rate
 eff3 <- apply(s501,1,function(x){sum(x*sm1)})
 sum((sm2-sm1)*eff3) # OK totExposure
 
-(mymodel3 <- setEffect(mymodel0,totExposure,type='rate', parameter=2,
-                            name='mybeh',interaction1='mynet'))
-(ans3 <- siena07(mycontrols4, data=mydata, effects=mymodel3, prevAns=ans2))
+(mymodel3 <- set_effect(mymodel0, totExposure, type="rate", depvar="mybeh",
+             covar1="mynet", parameter=2))
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.001)
+(ans3  <- siena(data=mydata, effects=mymodel3, prevAns=ans2,
+             control_algo=alg_alg))
 ans3$targets
 eff3 <- apply(s501,1,function(x){sum(x*sm1)})
 eff32 <- eff3
 eff32[eff32==1] <- 0
 sum((sm2-sm1)*eff32) # OK totExposure p=2
 
-(mymodel4.r <- setEffect(mymodel0.r,totExposure,type='rate', parameter=-2,
-                            name='mybeh.r',interaction1='mynet'))
-(ans4.r <- siena07(mycontrols4, data=mydata.r, effects=mymodel4.r, prevAns=ans3))
+(mymodel4.r <- set_effect(mymodel0.r, totExposure, type="rate",
+             depvar="mybeh.r", covar1="mynet", parameter=-2))
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.001)
+(ans4.r  <- siena(data=mydata.r, effects=mymodel4.r, prevAns=ans3,
+             control_algo=alg_alg))
 ans4.r$targets
 eff3.r <- apply(s501,1,function(x){sum(x*sm1r)})
 eff34.r <- eff3.r
@@ -615,26 +698,30 @@ eff34.r[eff34.r==1] <- 0
 eff34.r[eff34.r>2] <- 2
 sum((sm2-sm1r)*eff34.r) # OK totExposure p=-2
 
-(mymodel6 <- setEffect(mymodel,infectIn,type='rate',
-                            name='mybeh',interaction1='mynet'))
-(ans6 <- siena07(mycontrols4, data=mydata, effects=mymodel6))
+(mymodel6 <- set_effect(mymodel, infectIn, type="rate", depvar="mybeh",
+             covar1="mynet"))
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.001)
+(ans6  <- siena(data=mydata, effects=mymodel6, control_algo=alg_alg))
 ans6$targets
 ind <- colSums(s501)
 eff3 <- apply(s501,1,function(x){sum(x*sm1)})
 eff7 <- vapply(1:50, function(i){sum(s501[i,]*ind*sm1)}, FUN.VALUE=1)
 sum((sm2-sm1)*eff7) #  OK infectIn
 
-(mymodel7 <- setEffect(mymodel,infectIn,type='rate', parameter=2,
-                            name='mybeh',interaction1='mynet'))
-(ans7 <- siena07(mycontrols4, data=mydata, effects=mymodel7, prevAns=ans6))
+(mymodel7 <- set_effect(mymodel, infectIn, type="rate", depvar="mybeh",
+             covar1="mynet", parameter=2))
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.001)
+(ans7  <- siena(data=mydata, effects=mymodel7, prevAns=ans6,
+             control_algo=alg_alg))
 ans7$targets
 eff72 <- eff7
 eff72[eff3<2] <- 0
 sum((sm2-sm1)*eff72) #  OK infectIn p=2
 
-(mymodel8 <- setEffect(mymodel0,infectOut,type='rate', parameter=2,
-                            name='mybeh', interaction1='mynet'))
-(ans8 <- siena07(mycontrols4, data=mydata, effects=mymodel8))
+(mymodel8 <- set_effect(mymodel0, infectOut, type="rate", depvar="mybeh",
+             covar1="mynet", parameter=2))
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.001)
+(ans8  <- siena(data=mydata, effects=mymodel8, control_algo=alg_alg))
 ans8$targets
 outd <- rowSums(s501)
 eff3 <- apply(s501,1,function(x){sum(x*sm1)})
@@ -643,19 +730,20 @@ eff82 <- eff8
 eff82[eff3<2] <- 0
 sum((sm2-sm1)*eff82) #  OK infectOut p=2
 
-(mymodel9 <- setEffect(mymodel0,infectCovar,type='rate',
-                            name='mybeh', interaction1='mynet',
-                            interaction2='mycov'))
-(ans9 <- siena07(mycontrols4, data=mydata, effects=mymodel9))
+(mymodel9 <- set_effect(mymodel0, infectCovar, type="rate", depvar="mybeh",
+             covar1="mynet", covar2="mycov"))
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.001)
+(ans9  <- siena(data=mydata, effects=mymodel9, control_algo=alg_alg))
 ans9$targets
 (mcm <- mean(mycov))
 eff9 <- vapply(1:50, function(i){sum(s501[i,]*(mycov-mcm)*sm1)}, FUN.VALUE=1)
 sum((sm2-sm1)*eff9) #   infectCovar OK
 
-(mymodelA <- setEffect(mymodel.r,infectCovar,type='rate', parameter=2,
-                            name='mybeh.r', interaction1='mynet',
-                            interaction2='mycov'))
-(ansA <- siena07(mycontrols4, data=mydata.r, effects=mymodelA, prevAns=ans9))
+(mymodelA <- set_effect(mymodel.r, infectCovar, type="rate", depvar="mybeh.r",
+             covar1="mynet", covar2="mycov", parameter=2))
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.001)
+(ansA  <- siena(data=mydata.r, effects=mymodelA, prevAns=ans9,
+             control_algo=alg_alg))
 ansA$targets #
 eff3 <- apply(s501,1,function(x){sum(x*sm1r)})
 (mcm <- mean(mycov))
@@ -664,34 +752,39 @@ effA2 <- effA
 effA2[eff3==1] <- 0
 sum((sm2-sm1r)*effA2) # OK infectCovar p=2
 
-(mymodelB <- setEffect(mymodel0.r,susceptAvIn,type='rate',
-                            name='mybeh.r',interaction1='mynet'))
-(ansB <- siena07(mycontrols4, data=mydata.r, effects=mymodelB))
+(mymodelB <- set_effect(mymodel0.r, susceptAvIn, type="rate", depvar="mybeh.r",
+             covar1="mynet"))
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.001)
+(ansB  <- siena(data=mydata.r, effects=mymodelB, control_algo=alg_alg))
 ansB$targets
 eff3 <- apply(s501,1,function(x){sum(x*sm1r)})
 outd <- rowSums(s501)
 sum((sm2-sm1r)*colSums(s501)*divi(eff3, outd)) #  OK susceptAvIn
 
-(mymodelC <- setEffect(mymodel0.r, susceptAvIn,type='rate', parameter=2,
-                            name='mybeh.r',interaction1='mynet'))
-(ansC <- siena07(mycontrols4, data=mydata.r, effects=mymodelC, prevAns=ansB))
+(mymodelC <- set_effect(mymodel0.r, susceptAvIn, type="rate", depvar="mybeh.r",
+             covar1="mynet", parameter=2))
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.001)
+(ansC  <- siena(data=mydata.r, effects=mymodelC, prevAns=ansB,
+             control_algo=alg_alg))
 ansC$targets
 eff35 <- eff3
 eff35[eff3==1] <- 0
 sum((sm2-sm1r)*colSums(s501)*divi(eff35, outd)) #  OK susceptAvIn p=2
 
-(mymodelD <- setEffect(mymodel0.r,susceptAvIn,type='rate', parameter=-2,
-                            name='mybeh.r',interaction1='mynet'))
-(ansD <- siena07(mycontrols4, data=mydata.r, effects=mymodelD, prevAns=ansC))
+(mymodelD <- set_effect(mymodel0.r, susceptAvIn, type="rate", depvar="mybeh.r",
+             covar1="mynet", parameter=-2))
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.001)
+(ansD  <- siena(data=mydata.r, effects=mymodelD, prevAns=ansC,
+             control_algo=alg_alg))
 ansD$targets
 eff35[eff3>2] <- 2
 outd <- rowSums(s501)
 sum((sm2-sm1r)*colSums(s501)*divi(eff35, outd)) #  OK susceptAvIn p=-2
 
-(mymodelE <- setEffect(mymodel0.r,susceptAvCovar,type='rate', parameter=0,
-                            name='mybeh.r',interaction1='mynet',
-                            interaction2='mycov'))
-(ansE <- siena07(mycontrols4, data=mydata.r, effects=mymodelE))
+(mymodelE <- set_effect(mymodel0.r, susceptAvCovar, type="rate",
+             depvar="mybeh.r", covar1="mynet", covar2="mycov", parameter=0))
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.001)
+(ansE  <- siena(data=mydata.r, effects=mymodelE, control_algo=alg_alg))
 ansE$targets
 eff3 <- apply(s501,1,function(x){sum(x*sm1r)})
 eff35 <- eff3
@@ -699,18 +792,20 @@ eff35 <- eff3
 outd <- rowSums(s501)
 sum((sm2-sm1r)*(mycov-mcm)*divi(eff35, outd)) # susceptAvCovar OK
 
-(mymodelE1 <- setEffect(mymodel0.r,susceptAvCovar,type='rate', parameter=2,
-                            name='mybeh.r',interaction1='mynet',
-                            interaction2='mycov'))
-(ansE1 <- siena07(mycontrols4, data=mydata.r, effects=mymodelE1, prevAns=ansE))
+(mymodelE1 <- set_effect(mymodel0.r, susceptAvCovar, type="rate",
+             depvar="mybeh.r", covar1="mynet", covar2="mycov", parameter=2))
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.001)
+(ansE1  <- siena(data=mydata.r, effects=mymodelE1, prevAns=ansE,
+             control_algo=alg_alg))
 ansE1$targets
 eff35[eff3==1] <- 0
 sum((sm2-sm1r)*(mycov-mcm)*divi(eff35, outd)) # susceptAvCovar p=2 OK.
 
-(mymodelF <- setEffect(mymodel0.r,susceptAvCovar,type='rate', parameter=-2,
-                            name='mybeh.r',interaction1='mynet',
-                            interaction2='mycov'))
-(ansF <- siena07(mycontrols4, data=mydata.r, effects=mymodelF, prevAns=ansE1))
+(mymodelF <- set_effect(mymodel0.r, susceptAvCovar, type="rate",
+             depvar="mybeh.r", covar1="mynet", covar2="mycov", parameter=-2))
+alg_alg <- set_algorithm_saom(seed=1234, firstg=0.001)
+(ansF  <- siena(data=mydata.r, effects=mymodelF, prevAns=ansE1,
+             control_algo=alg_alg))
 ansF$targets
 eff35[eff3>2] <- 2
 sum((sm2-sm1r)*(mycov-mcm)*divi(eff35, outd)) # susceptAvCovar p=-2 OK
@@ -720,36 +815,43 @@ sum((sm2-sm1r)*(mycov-mcm)*divi(eff35, outd)) # susceptAvCovar p=-2 OK
 ### check outOutActIntn and outOutAvIntn
 ################################################################################
 
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet1, mynet2)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet1, mynet2)
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, outOutActIntn, name="mynet1", interaction1="mynet2", parameter=1)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, outOutActIntn, depvar="mynet1", covar1="mynet2",
+             parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(rowSums(s502)) # ok outdegree
 sum(rowSums(s502 * t(s502))) # OK recip
 (avdeg <- mean(rowSums(s502) + rowSums(s501))/2)
 sum(rowSums(s502)* (s502 %*% (rowSums(s502) - avdeg))) # OK outOutActIntn
 
-mymodel2 <- getEffects(mydata)
-mymodel2 <- setEffect(mymodel2, outOutActIntn, name="mynet1", interaction1="mynet2", parameter=2)
-(ans2 <- siena07(mycontrols, data=mydata, effects=mymodel2))
+mymodel2 <- make_specification(mydata)
+mymodel2 <- set_effect(mymodel2, outOutActIntn, depvar="mynet1",
+             covar1="mynet2", parameter=2)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans2  <- siena(data=mydata, effects=mymodel2, control_algo=alg_alg))
 ans2$targets
 sum(rowSums(s502)* (s502 %*% (sqrt(rowSums(s502)) - sqrt(avdeg)))) # OK outOutActIntn p=2
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, outOutAvIntn, name="mynet1", interaction1="mynet2", parameter=1)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, outOutAvIntn, depvar="mynet1", covar1="mynet2",
+             parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 (avdeg <- mean(rowSums(s502) + rowSums(s501))/2)
 sum((s502 %*% (rowSums(s502) - avdeg)) ) # OK outOutAvIntn, note that rowSums(s502) cancel
 
-mymodel2 <- getEffects(mydata)
-mymodel2 <- setEffect(mymodel2, outOutAvIntn, name="mynet1", interaction1="mynet2", parameter=2)
-(ans2 <- siena07(mycontrols, data=mydata, effects=mymodel2))
+mymodel2 <- make_specification(mydata)
+mymodel2 <- set_effect(mymodel2, outOutAvIntn, depvar="mynet1", covar1="mynet2",
+             parameter=2)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans2  <- siena(data=mydata, effects=mymodel2, control_algo=alg_alg))
 ans2$targets
 sum( (s502 %*% (sqrt(rowSums(s502)) - sqrt(avdeg)))) # OK outOutAvIntn p=2
 
@@ -759,32 +861,34 @@ sum( (s502 %*% (sqrt(rowSums(s502)) - sqrt(avdeg)))) # OK outOutAvIntn p=2
 ################################################################################
 
 
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=534, cond=FALSE, firstg=0.01)
-mycontrols2 <- sienaModelCreate(projname=NULL, seed=534, cond=FALSE, firstg=0.02)
-mymodel <- getEffects(mydata)
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet)
+mymodel <- make_specification(mydata)
 effectsDocumentation(mymodel)
-mymodel <- includeEffects(mymodel, inRate, type='rate')
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
-(ans1 <- siena07(mycontrols2, data=mydata, effects=mymodel, prevAns=ans))
+mymodel <- set_effect(mymodel, inRate, type="rate")
+alg_alg <- set_algorithm_saom(cond=FALSE, seed=534, firstg=0.01)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
+alg_alg <- set_algorithm_saom(cond=FALSE, seed=534, firstg=0.02)
+(ans1  <- siena(data=mydata, effects=mymodel, prevAns=ans,
+             control_algo=alg_alg))
 ans$targets
 sum(abs(s501-s502)) ## OK Rate
 sum(colSums(s501)* rowSums(abs(s501-s502))) # OK inRate
 sum(s502) ## OK density
 sum(s502*t(s502)) ## OK recip
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, inRateInv, type='rate')
-mycontrols0 <- sienaModelCreate(projname=NULL, seed=534, cond=FALSE)
-(ans <- siena07(mycontrols0, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, inRateInv, type="rate")
+alg_alg <- set_algorithm_saom(cond=FALSE, seed=534)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(abs(s501-s502)) ## OK Rate
 sum((1/(colSums(s501)+1))* rowSums(abs(s501-s502))) # OK inRateInv
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, inRateLog, type='rate')
-(ans <- siena07(mycontrols0, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, inRateLog, type="rate")
+alg_alg <- set_algorithm_saom(cond=FALSE, seed=534)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(abs(s501-s502)) ## OK Rate
 sum((log(colSums(s501)+1))* rowSums(abs(s501-s502))) # OK inRateLog
@@ -794,23 +898,26 @@ sum((log(colSums(s501)+1))* rowSums(abs(s501-s502))) # OK inRateLog
 ### check absOutDiffIntn
 ################################################################################
 
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet1, mynet2)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet1, mynet2)
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, absOutDiffIntn, name="mynet2", interaction1="mynet1", parameter=1)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, absOutDiffIntn, depvar="mynet2", covar1="mynet1",
+             parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(rowSums(s503)) # OK outdegree
 sum(rowSums(s503 * t(s503))) # OK recip
 ad <- abs(outer(rowSums(s501),rowSums(s501),"-"))
 sum(s503*ad) # OK absOutDiffIntn
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, absOutDiffIntn, name="mynet2", interaction1="mynet1", parameter=2)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, absOutDiffIntn, depvar="mynet2", covar1="mynet1",
+             parameter=2)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 ad2 <- abs(outer(sqrt(rowSums(s501)),sqrt(rowSums(s501)),"-"))
 sum(s503*ad2) # OK absOutDiffIntn
@@ -819,33 +926,36 @@ sum(s503*ad2) # OK absOutDiffIntn
 ### check recipRateInv and recipRateLog
 ################################################################################
 
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=534, cond=FALSE, firstg=0.01)
-mycontrols2 <- sienaModelCreate(projname=NULL, seed=534, cond=FALSE, firstg=0.02)
-mymodel <- getEffects(mydata)
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet)
+mymodel <- make_specification(mydata)
 effectsDocumentation(mymodel)
-mymodel <- includeEffects(mymodel, recipRate, type='rate')
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
-(ans1 <- siena07(mycontrols2, data=mydata, effects=mymodel, prevAns=ans))
+mymodel <- set_effect(mymodel, recipRate, type="rate")
+alg_alg <- set_algorithm_saom(cond=FALSE, seed=534, firstg=0.01)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
+alg_alg <- set_algorithm_saom(cond=FALSE, seed=534, firstg=0.02)
+(ans1  <- siena(data=mydata, effects=mymodel, prevAns=ans,
+             control_algo=alg_alg))
 ans$targets
 sum(abs(s501-s502)) ## OK Rate
 sum(colSums(s501*t(s501))* rowSums(abs(s501-s502))) # OK recipRate
 sum(s502) ## OK density
 sum(s502*t(s502)) ## OK recip
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, recipRateInv, type='rate')
-mycontrols0 <- sienaModelCreate(projname=NULL, seed=534, cond=FALSE)
-(ans <- siena07(mycontrols0, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, recipRateInv, type="rate")
+alg_alg <- set_algorithm_saom(cond=FALSE, seed=534)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(abs(s501-s502)) ## OK Rate
 sum((1/(colSums(s501*t(s501))+1))* rowSums(abs(s501-s502))) # OK recipRateInv
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, recipRateLog, type='rate')
-(ans <- siena07(mycontrols0, data=mydata, effects=mymodel))
-(ans <- siena07(mycontrols0, data=mydata, effects=mymodel, prevAns=ans))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, recipRateLog, type="rate")
+alg_alg <- set_algorithm_saom(cond=FALSE, seed=534)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
+alg_alg <- set_algorithm_saom(cond=FALSE, seed=534)
+(ans  <- siena(data=mydata, effects=mymodel, prevAns=ans, control_algo=alg_alg))
 ans$targets
 sum(abs(s501-s502)) ## OK Rate
 sum((log(colSums(s501*t(s501))+1))* rowSums(abs(s501-s502))) # OK recipRateLog
@@ -854,7 +964,7 @@ sum((log(colSums(s501*t(s501))+1))* rowSums(abs(s501-s502))) # OK recipRateLog
 ### check  SimAllNear,SimAllFar
 ##########################################################################
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
 z1 <- 1+.29*(1:50)
 set.seed(143)
 z2 <- z1 + rnorm(50) +0.2
@@ -864,15 +974,15 @@ table(z2-z1)
 trunc(cbind(z1,z2))
 z2 <- pmax(1,pmin(z2,15))
 table(z2,z1)
-mybeh <- sienaDependent(cbind(z1,z2), type="behavior") # range 1:15
-(mydata <- sienaDataCreate(mynet, mybeh))
-mymodel <- getEffects(mydata)
+mybeh <- as_dependent_rsiena(cbind(z1,z2), type="behavior") # range 1:15
+(mydata <- make_data_rsiena(mynet, mybeh))
+mymodel <- make_specification(mydata)
 effectsDocumentation(mymodel)
 # for SimAllNear effect:
-(mymodel <- setEffect(mymodel,simAllNear,name='mybeh', parameter=2))
+(mymodel <- set_effect(mymodel, simAllNear, depvar="mybeh", parameter=2))
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=514)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=514)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 (mbh <- mean(mybeh))
@@ -880,53 +990,53 @@ sum(abs(z2-z1)) # OK rate
 sum((z2-mbh)) # OK linear
 sum((z2-mbh)^2) # OK quad
 
-p <- 2
 aot <- abs(outer(z2,z2,"-"))
-NN <- 1*(aot <= p)
+NN <- 1*(aot <= 2)
 diag(NN) <- 0
-sum(NN*(p-aot)) # OK simAllNear
+sum(NN*(2-aot)) # OK simAllNear
 
 # for SimAllFar effect:
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,simAllFar,name='mybeh', parameter=4))
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=514, firstg=0.05, diagonalize=0.5)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, simAllFar, depvar="mybeh", parameter=4))
+alg_alg <- set_algorithm_saom(seed=514, firstg=0.05, diagonalize=0.5)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
-p <- 4
+# p <- 4
 aot <- abs(outer(z2,z2,"-"))
-FF <- 1*(aot >= p)
+FF <- 1*(aot >= 4)
 diag(FF) <- 0
-sum(FF*(p-aot)) # OK simAllFar
+sum(FF*(4-aot)) # OK simAllFar
 
 ################################################################################
 ### check avDegIntn
 ################################################################################
 
-mynet1 <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
-mynet2 <- sienaDependent(array(c(s503, s502, s501), dim=c(50, 50, 3)))
-(mydata <- sienaDataCreate(mynet1, mynet2))
+mynet1 <- as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+mynet2 <- as_dependent_rsiena(array(c(s503, s502, s501), dim=c(50, 50, 3)))
+(mydata <- make_data_rsiena(mynet1, mynet2))
 
-mymodel <- getEffects(mydata)
-(mymodel <- includeEffects(mymodel, avDegIntn, name='mynet2',
-                interaction1='mynet1'))
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=514)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel, prevAns=ans))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, avDegIntn, depvar="mynet2", covar1="mynet1"))
+alg_alg <- set_algorithm_saom(seed=514)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
+alg_alg <- set_algorithm_saom(seed=514)
+(ans  <- siena(data=mydata, effects=mymodel, prevAns=ans, control_algo=alg_alg))
 # convergence is very slow, which is natural for this effect with only 3 waves
 ans$targets
 ################################################################################
 ### check avDeg
 ################################################################################
 
-mynet <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
-(mydata <- sienaDataCreate(mynet))
+mynet <- as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+(mydata <- make_data_rsiena(mynet))
 
-mymodel <- getEffects(mydata)
-(mymodel <- includeEffects(mymodel, avDeg))
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=514, diagonalize=0.6)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel, prevAns=ans))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, avDeg))
+alg_alg <- set_algorithm_saom(seed=514, diagonalize=0.6)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
+alg_alg <- set_algorithm_saom(seed=514, diagonalize=0.6)
+(ans  <- siena(data=mydata, effects=mymodel, prevAns=ans, control_algo=alg_alg))
 # convergence is very slow, which is natural for this effect with only 3 waves
 ans$targets
 
@@ -946,15 +1056,17 @@ sum((ad1-p)*s502 + (ad2-p)*s501) # OK avDegIntn
 ### check avDeg
 ################################################################################
 
-mynet <- sienaDependent(array(c(s501, s502, s503, s502, s501), dim=c(50, 50, 5)))
-(mydata <- sienaDataCreate(mynet))
+mynet <- as_dependent_rsiena(array(c(s501, s502, s503, s502, s501), dim=c(50, 50, 5)))
+(mydata <- make_data_rsiena(mynet))
 
-mymodel <- getEffects(mydata)
-(mymodel <- includeEffects(mymodel, avDeg))
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=514, diagonalize=0.6, nsub=5)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel, prevAns=ans))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel, prevAns=ans))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, avDeg))
+alg_alg <- set_algorithm_saom(seed=514, nsub=5, diagonalize=0.6)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
+alg_alg <- set_algorithm_saom(seed=514, nsub=5, diagonalize=0.6)
+(ans  <- siena(data=mydata, effects=mymodel, prevAns=ans, control_algo=alg_alg))
+alg_alg <- set_algorithm_saom(seed=514, nsub=5, diagonalize=0.6)
+(ans  <- siena(data=mydata, effects=mymodel, prevAns=ans, control_algo=alg_alg))
 # convergence is very slow, which is natural for this effect with only 5 waves
 ans$targets
 
@@ -964,25 +1076,33 @@ ans$targets
 p <- 2
 sum(2*(ad2-p)*s502 + (ad3-p)*s503 + (ad1-p)*s501) # OK avDeg
 
-mymodel <- setEffect(mymodel, density, initialValue=ans$theta[1], fix=TRUE, test=TRUE)
-mymodel <- setEffect(mymodel, recip, initialValue=ans$theta[2], fix=TRUE, test=TRUE)
-(ans1 <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- set_effect(mymodel, density, initialValue=ans$theta[1], fix=TRUE,
+             test=TRUE)
+mymodel <- set_effect(mymodel, recip, initialValue=ans$theta[2], fix=TRUE,
+             test=TRUE)
+alg_alg <- set_algorithm_saom(seed=514, nsub=5, diagonalize=0.6)
+(ans1  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 mymodel$fix <- FALSE
 mymodel$test <- FALSE
-(ans2 <- siena07(mycontrols, data=mydata, effects=mymodel, prevAns=ans1))
-(ans3 <- siena07(mycontrols, data=mydata, effects=mymodel, prevAns=ans2))
+alg_alg <- set_algorithm_saom(seed=514, nsub=5, diagonalize=0.6)
+(ans2  <- siena(data=mydata, effects=mymodel, prevAns=ans1,
+             control_algo=alg_alg))
+alg_alg <- set_algorithm_saom(seed=514, nsub=5, diagonalize=0.6)
+(ans3  <- siena(data=mydata, effects=mymodel, prevAns=ans2,
+             control_algo=alg_alg))
 
 ################################################################################
 ### check sharedTo
 ################################################################################
 
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet1, mynet2)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, sharedTo, name="mynet2", interaction1="mynet1", parameter=1)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet1, mynet2)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sharedTo, depvar="mynet2", covar1="mynet1",
+             parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115 116  70 106 122  90 154
 intwostars1 <- (s501) %*% t(s501)
@@ -992,17 +1112,21 @@ diag(intwostars3) <- 0
 sum(intwostars1 * intwostars3) # 154 OK
 
 ###
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, sharedTo, name="mynet2", interaction1="mynet1", parameter=2)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sharedTo, depvar="mynet2", covar1="mynet1",
+             parameter=2)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115 116  70 106 122  90 139.7484
 sum(sqrt(intwostars1) * intwostars3) # 139.7484 OK
 
 ###
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, sharedTo, name="mynet2", interaction1="mynet1", parameter=3)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sharedTo, depvar="mynet2", covar1="mynet1",
+             parameter=3)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115 116  70 106 122  90 122.3959
 n <- 50
@@ -1012,9 +1136,11 @@ diag(intwostars2) <- 0
 sum((intwostars1-cc) * intwostars3) # 122.3959  OK
 
 ###
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, sharedTo, name="mynet2", interaction1="mynet1", parameter=4)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sharedTo, depvar="mynet2", covar1="mynet1",
+             parameter=4)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115 116  70 106 122  90 44.01341
 sum((sqrt(intwostars1)-sqrt(cc)) * intwostars3) # 44.01341 OK
@@ -1030,18 +1156,17 @@ s3 <- dcova
 diag(s3) <- NA
 dcov_c <- dcova - mean(s3,na.rm = TRUE)
 
-mynet <- sienaDependent(array(c(s501, s502), dim = c(50, 50, 2)))
-beh <- sienaDependent(s50a[,1:2],type = 'behavior')
-dcov <- coDyadCovar(dcova)
-mydata <- sienaDataCreate(mynet,dcov,beh)
-mycontrols <- sienaAlgorithmCreate(projname = NULL, seed = 1234)
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim = c(50, 50, 2)))
+beh <- as_dependent_rsiena(s50a[,1:2],type = 'behavior')
+dcov <- as_covariate_rsiena(dcova, type='oneMode')
+mydata <- make_data_rsiena(mynet,dcov,beh)
 
 # avInAltW p1
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,avInAltW, name = 'beh',
-                   interaction1 = 'mynet', interaction2 = 'dcov',
-                   parameter = 1)
-(ans1 <- siena07(mycontrols, data = mydata, effects = mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avInAltW, depvar="beh", covar1="mynet",
+             covar2="dcov", parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans1  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans1$targets
 
 (mbh <- mean(beh))
@@ -1051,38 +1176,41 @@ avinwalt <-  divi( ((dcova - mdc)*t(s501)) %*% (beh[,,2] - mbh), colSums(s501))
 sum( (beh[,,2] - mbh) * avinwalt ) # avInAltW OK
 
 # avInAltW p2
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,avInAltW, name = 'beh',
-                   interaction1 = 'mynet', interaction2 = 'dcov',
-                   parameter = 2)
-(ans1 <- siena07(mycontrols, data = mydata, effects = mymodel,
-					thetaBound=100))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avInAltW, depvar="beh", covar1="mynet",
+             covar2="dcov", parameter=2)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans1  <- siena(data=mydata, effects=mymodel, thetaBound=100,
+             control_algo=alg_alg))
 ans1$targets
 avinwalt <-  divi( ((dcova - mdc)*t(s501)) %*% (beh[,,2] - mbh),
                     rowSums(t(s501)*(dcova-mdc)))
 sum( (beh[,,2] - mbh) * avinwalt ) # avInAltW OK
 
 # avWInAlt
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,avWInAlt, name = 'beh',
-                        interaction1 = 'mynet', interaction2 = 'dcov')
-(ans1 <- siena07(mycontrols, data = mydata, effects = mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avWInAlt, depvar="beh", covar1="mynet",
+             covar2="dcov")
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans1  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans1$targets
 sum(divi(rowSums(t(s501) * dcov_c), colSums(s501)) * beh2) # avWInAlt OK
 
 # totInAltW
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,totInAltW, name = 'beh',
-                        interaction1 = 'mynet', interaction2 = 'dcov')
-(ans1 <- siena07(mycontrols, data = mydata, effects = mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totInAltW, depvar="beh", covar1="mynet",
+             covar2="dcov")
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans1  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans1$targets
 sum(rowSums(t(s501) * dcov_c %*% diag(beh2)) * beh2) # totInAltW OK
 
 # totWInAlt
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,totWInAlt, name = 'beh',
-                        interaction1 = 'mynet', interaction2 = 'dcov')
-(ans1 <- siena07(mycontrols, data = mydata, effects = mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totWInAlt, depvar="beh", covar1="mynet",
+             covar2="dcov")
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans1  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans1$targets
 sum(rowSums(t(s501) * dcov_c) * beh2) # totWInAlt OK
 
@@ -1091,18 +1219,18 @@ sum(rowSums(t(s501) * dcov_c) * beh2) # totWInAlt OK
 ### check toAny
 ################################################################################
 
-advice <- sienaDependent(array(c(s502, s501), dim=c(50, 50, 2)))
-trust <- sienaDependent(array(c(s503, s501), dim=c(50, 50, 2)))
+advice <- as_dependent_rsiena(array(c(s502, s501), dim=c(50, 50, 2)))
+trust <- as_dependent_rsiena(array(c(s503, s501), dim=c(50, 50, 2)))
 # dyadic covariate
 suppressWarnings(mat <- matrix(c(0,1,0,0,4,0,2,0,0), 50,50))
-dcov <- coDyadCovar(mat, centered=FALSE)
-mydata <- sienaDataCreate(advice,trust,dcov)
+dcov <- as_covariate_rsiena(mat, type='oneMode', centered=FALSE)
+mydata <- make_data_rsiena(advice,trust,dcov)
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,toAny,name="trust",interaction1="advice")
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, toAny, depvar="trust", covar1="advice")
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname = NULL, seed=123)
-(myans <- siena07(mycontrols, data = mydata, effects = mymodel))
+alg_alg <- set_algorithm_saom(seed=123)
+(myans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 myans$targets
 
 # for toAny effect:
@@ -1117,48 +1245,54 @@ sum(tXX * s502) # 56 OK
 ### check outAct_ego, reciAct_ego, inPop_dya
 ################################################################################
 
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=534)
-mymodel <- getEffects(mydata)
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet)
+mymodel <- make_specification(mydata)
 effectsDocumentation(mymodel)
-mymodel <- includeEffects(mymodel, outAct)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- set_effect(mymodel, outAct)
+alg_alg <- set_algorithm_saom(seed=534)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(rowSums(s502)^2) # OK
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, outAct_ego)
-(ans1 <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, outAct_ego)
+alg_alg <- set_algorithm_saom(seed=534)
+(ans1  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans1$targets
 (xbar <- (mean(rowSums(s501)) + mean(rowSums(s502)))/2)
 sum(rowSums(s502)*(rowSums(s502)-xbar)) # OK
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, outAct_ego, parameter=2)
-(ans2 <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, outAct_ego, parameter=2)
+alg_alg <- set_algorithm_saom(seed=534)
+(ans2  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans2$targets
 sum(rowSums(s502)*(sqrt(rowSums(s502))-sqrt(xbar))) # OK
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, reciAct_ego)
-(ans1 <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, reciAct_ego)
+alg_alg <- set_algorithm_saom(seed=534)
+(ans1  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans1$targets
 (xbar <- (mean(rowSums(s501*t(s501))) + mean(rowSums(s502*t(s502))))/2)
 sum(rowSums(s502)*(rowSums(s502*t(s502))-xbar)) # OK
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, reciAct_ego, parameter=2)
-(ans2 <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, reciAct_ego, parameter=2)
+alg_alg <- set_algorithm_saom(seed=534)
+(ans2  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans2$targets
 sum(rowSums(s502)*(sqrt(rowSums(s502*t(s502)))-sqrt(xbar))) # OK
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, inPop_dya)
-(ans1 <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, inPop_dya)
+alg_alg <- set_algorithm_saom(seed=534)
+(ans1  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans1$targets
 (xbar <- (mean(colSums(s501)) + mean(colSums(s502)))/2)
 sum(colSums(s502)*(colSums(s502)-xbar)) # OK
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, inPop_dya, parameter=2)
-(ans2 <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, inPop_dya, parameter=2)
+alg_alg <- set_algorithm_saom(seed=534)
+(ans2  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans2$targets
 sum(colSums(s502)*(sqrt(colSums(s502))-sqrt(xbar))) # OK
 
@@ -1168,19 +1302,19 @@ sum(colSums(s502)*(sqrt(colSums(s502))-sqrt(xbar))) # OK
 ### check sameXInPop, diffXInPop
 ################################################################################
 
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
 
 # construct actor covariate
 (five <- rep(1:5,10))
-five <- coCovar(five, centered=FALSE)
+five <- as_covariate_rsiena(five, centered=FALSE)
 
-mydata <- sienaDataCreate(mynet, five)
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,inPop)
-mymodel <- includeEffects(mymodel,sameXInPop,interaction1='five')
+mydata <- make_data_rsiena(mynet, five)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, inPop)
+mymodel <- set_effect(mymodel, sameXInPop, covar1="five")
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # check target statistics: indegree popularity
 sum((colSums(s502))^2) # 386 OK
@@ -1189,26 +1323,29 @@ samef <- 1*outer(five,five,FUN="==")
 sum(diag(t(s502) %*% samef %*% s502))
 sum(s502 * (samef %*% s502)) # OK
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,sameXInPop,interaction1='five', parameter=2)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sameXInPop, covar1="five", parameter=2)
 mymodel
-(ans1 <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans1  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans1$targets
 sum(s502 * sqrt(samef %*% s502)) # OK
 
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,diffXInPop,interaction1='five')
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, diffXInPop, covar1="five")
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 difff <- 1*outer(five,five,FUN="!=")
 sum(s502 * (difff %*% s502)) # OK
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,diffXInPop,interaction1='five', parameter=2)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, diffXInPop, covar1="five", parameter=2)
 mymodel
-(ans1 <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans1  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans1$targets
 sum(s502 * sqrt(difff %*% s502)) # OK
 
@@ -1217,8 +1354,8 @@ sum(s502 * sqrt(difff %*% s502)) # OK
 ### check altInDist2, totInDist2
 ################################################################################
 
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s503, s502), dim=c(50, 50, 2)))
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s503, s502), dim=c(50, 50, 2)))
 # construct actor covariate
 in1 <- colSums(s501)
 out1 <- rowSums(s501)
@@ -1227,15 +1364,14 @@ table(center)
 center <- round(center/5)
 table(center)
 
-central <- coCovar(center)
-mydata <- sienaDataCreate(mynet1, mynet2, central)
+central <- as_covariate_rsiena(center)
+mydata <- make_data_rsiena(mynet1, mynet2, central)
 
-mymodel <- getEffects(mydata)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234, nsub=2, n3=200)
-mymodel <- includeEffects(mymodel,altInDist2,name='mynet2',
-                 interaction1='central')
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, altInDist2, depvar="mynet2", covar1="central")
 
-ans <- siena07(mycontrols, data=mydata, effects=mymodel)
+alg_alg <- set_algorithm_saom(seed=1234, n3=200, nsub=2)
+ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg)
 ans$targets
 # 115.00 116.00  70.00 106.00 116.00  70.00  11.64
 
@@ -1256,10 +1392,10 @@ for (i in seq_along(central)) {
 sum(mynet2[,,2]*vv) # OK
 
 # for totInDist2
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,totInDist2,name='mynet2',
-                 interaction1='central')
-ans <- siena07(mycontrols, data=mydata, effects=mymodel)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totInDist2, depvar="mynet2", covar1="central")
+alg_alg <- set_algorithm_saom(seed=1234, n3=200, nsub=2)
+ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg)
 ans$targets
 # [1] 115.0 116.0  70.0 106.0 116.0  70.0  35.6
 for (i in seq_along(central)) {
@@ -1290,27 +1426,28 @@ covalt <- sample(0:8, 10, replace=T)
 covego3 <- c(1,1,1,1,2,2,2,2,3,3,3,3)
 
 # Identify nodesets
-senders <- sienaNodeSet(12, nodeSetName="senders")
-recipients <- sienaNodeSet(10, nodeSetName="recipients")
+senders <- as_nodeset_rsiena(12, nodeSetName="senders")
+recipients <- as_nodeset_rsiena(10, nodeSetName="recipients")
 
 # Make dependent networks and behaviour
-network <- sienaDependent(array(c(wave1, wave2), dim=c(12,10,2)),
+network <- as_dependent_rsiena(array(c(wave1, wave2), dim=c(12,10,2)),
                           type="bipartite", nodeSet=c("senders","recipients"),
                           allowOnly=FALSE)
 
 # Make covariates
-covaralt <- coCovar(covalt, nodeSet="recipients")
-covarego <- coCovar(covego1, nodeSet="senders")
-covarego3 <- coCovar(covego3, nodeSet="senders")
+covaralt <- as_covariate_rsiena(covalt, nodeSet="recipients")
+covarego <- as_covariate_rsiena(covego1, nodeSet="senders")
+covarego3 <- as_covariate_rsiena(covego3, nodeSet="senders")
 
 # Put it all together
-nbdata <- sienaDataCreate(network, covaralt, covarego,
+nbdata <- make_data_rsiena(network, covaralt, covarego,
                 nodeSets=list(senders,recipients))
 nbdata
 
-nbEffects <- getEffects(nbdata)
-nbEffects <- setEffect(nbEffects , altInDist2, interaction1="covarego")
-(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects))
+nbEffects <- make_specification(nbdata)
+nbEffects <- set_effect(nbEffects, altInDist2, covar1="covarego")
+alg_alg <- set_algorithm_saom(seed=1234, n3=200, nsub=2)
+(ans  <- siena(data=nbdata, effects=nbEffects, control_algo=alg_alg))
 ans$targets
 length(covarego)
 ind <- colSums(wave2)
@@ -1327,17 +1464,16 @@ sum(wave2*vv) # OK
 ### check altDist2, totDist2
 ################################################################################
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-myvar <- coCovar(s50a[,2])
-mydata <- sienaDataCreate(mynet, myvar)
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+myvar <- as_covariate_rsiena(s50a[,2])
+mydata <- make_data_rsiena(mynet, myvar)
 
-myalgorithm <- sienaAlgorithmCreate(projname=NULL, nsub=2, n3=100, seed=12345)
-myalgorithm <- sienaAlgorithmCreate(projname=NULL, seed=12345)
 
 # outdist
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, altDist2, interaction1="myvar", parameter=1)
-(ans <- siena07(myalgorithm, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, altDist2, covar1="myvar", parameter=1)
+alg_alg <- set_algorithm_saom(seed=12345)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 # calculation of target for altDist2:
@@ -1357,8 +1493,8 @@ sum(ef) # 12.35 OK
 ###       sameWWClosure, diffWWClosure
 ################################################################################
 
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s503, s502), dim=c(50, 50, 2)))
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s503, s502), dim=c(50, 50, 2)))
 # construct actor covariate
 in1 <- colSums(s501)
 out1 <- rowSums(s501)
@@ -1371,22 +1507,22 @@ diag(eq) <- 0
 table(eq)
 sum(center) # 46
 
-central <- coCovar(center)
-mydata <- sienaDataCreate(mynet1, mynet2, central)
-myalgorithm <- sienaAlgorithmCreate(projname=NULL, nsub=2, n3=100, seed=12345)
-myalgorithm <- sienaAlgorithmCreate(projname=NULL, seed=12345)
+central <- as_covariate_rsiena(center)
+mydata <- make_data_rsiena(mynet1, mynet2, central)
 
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,unequalX,name='mynet1', interaction1='central')
-(ans <- siena07(myalgorithm, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, unequalX, depvar="mynet1", covar1="central")
+alg_alg <- set_algorithm_saom(seed=12345)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum((1-eq)*s502) # 49 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,sameWXClosure,name='mynet2',
-                interaction1='mynet1', interaction2='central')
-(ans <- siena07(myalgorithm, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sameWXClosure, depvar="mynet2", covar1="mynet1",
+             covar2="central")
+alg_alg <- set_algorithm_saom(seed=12345)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # sameWXClosure
 mtwop <- (s501*eq) %*% s502
@@ -1394,10 +1530,11 @@ diag(mtwop) <- 0
 sum(mtwop * s502)
 # 36 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,diffWXClosure,name='mynet2',
-                interaction1='mynet1', interaction2='central')
-(ans <- siena07(myalgorithm, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, diffWXClosure, depvar="mynet2", covar1="mynet1",
+             covar2="central")
+alg_alg <- set_algorithm_saom(seed=12345)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # diffWXClosure
 mtwop <- (s501*(1-eq)) %*% s502
@@ -1405,10 +1542,11 @@ diag(mtwop) <- 0
 sum(mtwop * s502)
 # 24 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,sameXWClosure,name='mynet1',
-                interaction1='mynet2', interaction2='central')
-(ans <- siena07(myalgorithm, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sameXWClosure, depvar="mynet1", covar1="mynet2",
+             covar2="central")
+alg_alg <- set_algorithm_saom(seed=12345)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # sameXWClosure
 mtwop <- (s502*eq) %*% s503
@@ -1416,10 +1554,11 @@ diag(mtwop) <- 0
 sum(mtwop * s502)
 # 54 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,diffXWClosure,name='mynet1',
-                interaction1='mynet2', interaction2='central')
-(ans <- siena07(myalgorithm, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, diffXWClosure, depvar="mynet1", covar1="mynet2",
+             covar2="central")
+alg_alg <- set_algorithm_saom(seed=12345)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # diffXWClosure
 mtwop <- (s502*(1-eq)) %*% s503
@@ -1427,10 +1566,11 @@ diag(mtwop) <- 0
 sum(mtwop * s502)
 # 38 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,sameWWClosure,name='mynet2',
-                interaction1='mynet1', interaction2='central')
-(ans <- siena07(myalgorithm, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sameWWClosure, depvar="mynet2", covar1="mynet1",
+             covar2="central")
+alg_alg <- set_algorithm_saom(seed=12345)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # sameWWClosure
 mtwop <- (s501*eq) %*% s501
@@ -1438,10 +1578,11 @@ diag(mtwop) <- 0
 sum(mtwop * s502)
 # 36 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,diffWWClosure,name='mynet2',
-                interaction1='mynet1', interaction2='central')
-(ans <- siena07(myalgorithm, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, diffWWClosure, depvar="mynet2", covar1="mynet1",
+             covar2="central")
+alg_alg <- set_algorithm_saom(seed=12345)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # diffWWClosure
 mtwop <- (s501*(1-eq)) %*% s501
@@ -1466,25 +1607,25 @@ for (i in 1:300){
 }
 
 # Identify nodesets
-senders <- sienaNodeSet(30, nodeSetName="senders")
-recipients <- sienaNodeSet(10, nodeSetName="recipients")
+senders <- as_nodeset_rsiena(30, nodeSetName="senders")
+recipients <- as_nodeset_rsiena(10, nodeSetName="recipients")
 
 # Make dependent network
-network <- sienaDependent(array(c(wave1, wave2), dim=c(30,10,2)),
+network <- as_dependent_rsiena(array(c(wave1, wave2), dim=c(30,10,2)),
                           type="bipartite", nodeSet=c("senders","recipients"),
                           allowOnly=FALSE)
 # Make behavior
 w1 <- 1:30
 w12 <- 1:30 + runif(30, 0, 0.5) - 0.25
-beh <- sienaDependent(cbind(w1,w12), type="continuous", nodeSet="senders")
+beh <- as_dependent_rsiena(cbind(w1,w12), type="continuous", nodeSet="senders")
 
 # Make data set
-(nbdata <- sienaDataCreate(network, beh, nodeSets=list(senders,recipients)))
+(nbdata <- make_data_rsiena(network, beh, nodeSets=list(senders,recipients)))
 
-myalgorithm <- sienaAlgorithmCreate(projname=NULL, seed=12345)
-nbEffects <- getEffects(nbdata, onePeriodSde=TRUE)
-nbEffects <- includeEffects(nbEffects, outdeg, name="beh", interaction1="network")
-(ans <- siena07(myalgorithm, data=nbdata, effects=nbEffects))
+nbEffects <- make_specification(nbdata, onePeriodSde=TRUE)
+nbEffects <- set_effect(nbEffects, outdeg, depvar="beh", covar1="network")
+alg_alg <- set_algorithm_saom(seed=12345)
+(ans  <- siena(data=nbdata, effects=nbEffects, control_algo=alg_alg))
 ans$targets
 sum((beh[,1,2] - mean(beh)) * rowSums(wave1))  # This would be it for non-continuous behavior
 sum((beh[,1,2] ) * rowSums(wave1)) # 1625.097, OK
@@ -1497,17 +1638,17 @@ sum((beh[,1,2] ) * rowSums(wave1)) # 1625.097, OK
 ################################################################################
 
 
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
 sets <- c(rep(1,10), rep(2,15), rep(3,12), rep(4,13))
-covsets <- coCovar(sets, center=FALSE)
-(mydata <- sienaDataCreate(mynet, covsets))
-mycontrols <- sienaAlgorithmCreate(projname="this", seed=844)
+covsets <- as_covariate_rsiena(sets, center=FALSE)
+(mydata <- make_data_rsiena(mynet, covsets))
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, sameXInPop, interaction1="covsets")
-mymodel <- includeEffects(mymodel, inPop)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sameXInPop, covar1="covsets")
+mymodel <- set_effect(mymodel, inPop)
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=844)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets #  116  70 386 218
 
 # check target statistics: indegree popularity
@@ -1519,9 +1660,10 @@ sum(diag((mat1))) # 218 OK
 sum(s502 * (mat %*% s502)) # 218 OK
 
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel, sameXInPop, interaction1="covsets", parameter=2))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, sameXInPop, covar1="covsets", parameter=2))
+alg_alg <- set_algorithm_saom(seed=844)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets #  1116.0000  70.0000 154.4111
 
 # check target statistics: sameXInPop parameter=2
@@ -1529,25 +1671,28 @@ mat <- 1*outer(1:50,1:50,function(i,j){sets[i]==sets[j]})
 mat1 <- sqrt(mat %*% s502)
 sum(s502*mat1) # 154.4111 OK
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel, sameXInPop, interaction1="covsets", parameter=3))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))  #
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, sameXInPop, covar1="covsets", parameter=3))
+alg_alg <- set_algorithm_saom(seed=844)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets #   116.00000  70.00000   16.94103
 
 matr <- solve(diag(rowSums(mat))) %*% mat
 sum(s502 * (matr %*% s502)) #  16.94103 OK
 
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel, sameXInPop, interaction1="covsets", parameter=4))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, sameXInPop, covar1="covsets", parameter=4))
+alg_alg <- set_algorithm_saom(seed=844)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets #  116.0000  70.0000   43.08516
 
 sum(s502 * sqrt(matr %*% s502)) #   43.08516 OK
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel, diffXInPop, interaction1="covsets", parameter=2))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, diffXInPop, covar1="covsets", parameter=2))
+alg_alg <- set_algorithm_saom(seed=844)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # check target statistics: diffXInPop parameter=2
 mat <- outer(1:50,1:50,function(i,j){sets[i]!=sets[j]})
@@ -1555,9 +1700,10 @@ mat1 <- sqrt(mat %*% s502)
 sum(s502*mat1) #  116.1538  OK
 
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel, diffXInPop, interaction1="covsets", parameter=3))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, diffXInPop, covar1="covsets", parameter=3))
+alg_alg <- set_algorithm_saom(seed=844)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets #  116.000000  70.000000   4.559724
 # check target statistics: diffXInPop parameter=3
 mat <- outer(1:50,1:50,function(i,j){sets[i]!=sets[j]})
@@ -1565,9 +1711,10 @@ matr <- solve(diag(rowSums(mat))) %*% mat
 sum(s502 * (matr %*% s502)) #   4.559724 OK
 
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel, diffXInPop, interaction1="covsets", parameter=4))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, diffXInPop, covar1="covsets", parameter=4))
+alg_alg <- set_algorithm_saom(seed=844)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets #  116.000000  70.000000   19.13484
 
 # check target statistics: diffXInPop parameter=4
@@ -1575,10 +1722,11 @@ sum(s502 * sqrt(matr %*% s502)) #    19.13484 OK
 
 
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, sameXOutAct, interaction1="covsets")
-(mymodel <- includeEffects(mymodel, outAct))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sameXOutAct, covar1="covsets")
+(mymodel <- set_effect(mymodel, outAct))
+alg_alg <- set_algorithm_saom(seed=844)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets #  116  70 350 118
 # check target statistics: outdegree activity
 sum(rowSums(s502)) # 116 OK
@@ -1589,27 +1737,30 @@ diag(mat) <- 0
 sum((rowSums(s502 * mat))^2) # 118 OK
 
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel, sameXOutAct, interaction1="covsets", parameter=2))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, sameXOutAct, covar1="covsets", parameter=2))
+alg_alg <- set_algorithm_saom(seed=844)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets # # 116.0000  70.0000  80.0443
 # check target statistics: sameXOutAct parameter=2
 mat <- outer(1:50,1:50,function(i,j){sets[i]==sets[j]})
 diag(mat) <- 0
 sum((rowSums(s502 * mat))*sqrt(rowSums(s502 * mat))) # 80.0443  OK
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, diffXOutAct, interaction1="covsets", parameter=1)
-(mymodel <- includeEffects(mymodel, outAct))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, diffXOutAct, covar1="covsets", parameter=1)
+(mymodel <- set_effect(mymodel, outAct))
+alg_alg <- set_algorithm_saom(seed=844)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets # 116  70 350 138
 # check target statistics: diffXOutAct
 dmat <- outer(1:50,1:50,function(i,j){sets[i]!=sets[j]})
 sum((rowSums(s502 * dmat))^2) # 138 OK
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel, diffXOutAct, interaction1="covsets", parameter=2))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, diffXOutAct, covar1="covsets", parameter=2))
+alg_alg <- set_algorithm_saom(seed=844)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets  # 116.00000  70.00000  87.56436
 # check target statistics: diffXOutAct parameter=2
 sum((rowSums(s502 * dmat))*sqrt(rowSums(s502 * dmat))) # 87.56436 OK
@@ -1619,15 +1770,15 @@ sum((rowSums(s502 * dmat))*sqrt(rowSums(s502 * dmat))) # 87.56436 OK
 ################################################################################
 
 
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,1:2], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,1:2], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
 
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=842)
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,simEgoInDist2, interaction1='mybeh'))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, simEgoInDist2, covar1="mybeh"))
+alg_alg <- set_algorithm_saom(seed=842)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # [1] 115.00000 116.00000  70.00000  11.58412  27.00000   5.50000  71.10500
 
@@ -1655,8 +1806,9 @@ sum(mynet[,,2]*simi) #  OK simEgoInDist2
 # Note: if ind[j] - mynet[i,j,2] = 0, vv[j,i] will be 0,
 # and since cova is centered, this is the mean, as stated in the definition of the effect.
 
-(mymodel <- setEffect(mymodel,avInSimDist2, name='mybeh', interaction1='mynet'))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+(mymodel <- set_effect(mymodel, avInSimDist2, depvar="mybeh", covar1="mynet"))
+alg_alg <- set_algorithm_saom(seed=842)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115.000000 116.000000  70.000000  11.584116  27.000000   5.500000  71.105000   3.675713
 
@@ -1680,9 +1832,10 @@ sum(divi(rowSums(mynet[,,1]*simi0), outd)) # OK avInSimDist2
 # for simEgoInDist2 vv[j,i] is the mean, i.e., in this case, 0;
 # for avInSimDist2 simi0[i,j] is 0, i.e., the mean similarity.
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,totInSimDist2, name='mybeh', interaction1='mynet'))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, totInSimDist2, depvar="mybeh", covar1="mynet"))
+alg_alg <- set_algorithm_saom(seed=842)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # [1] 115.000000 116.000000  70.000000  27.000000   5.500000  71.105000   9.769558
 
@@ -1708,40 +1861,46 @@ sum(mynet[,,1]*simi0) # OK totInSimDist2
 ### also divInEgoIntn, divOutAltIntn, divInAltIntn.
 ################################################################################
 
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-alc <- coCovar(s50a[,2])
-mydata <- sienaDataCreate(mynet1, mynet2, alc)
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+alc <- as_covariate_rsiena(s50a[,2])
+mydata <- make_data_rsiena(mynet1, mynet2, alc)
 
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=842)
 
 divi <- function(x,y){ifelse(y==0, 0, x/y)}
 
 # divOutEgoIntn:
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,divOutEgoIntn, name='mynet2', interaction1='mynet1', parameter=1))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, divOutEgoIntn, depvar="mynet2", covar1="mynet1",
+             parameter=1))
+alg_alg <- set_algorithm_saom(seed=842)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115.00000 116.00000  70.00000 106.00000 122.00000  90.00000  54.53333
 sum(divi(rowSums(s503), rowSums(s501))) # divOutEgoIntn OK
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,divOutEgoIntn, name='mynet2', interaction1='mynet1', parameter=2))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, divOutEgoIntn, depvar="mynet2", covar1="mynet1",
+             parameter=2))
+alg_alg <- set_algorithm_saom(seed=842)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115.00000 116.00000  70.00000 106.00000 122.00000  90.00000  78.98977
 sum(divi(rowSums(s503), sqrt(rowSums(s501)))) # divOutEgoIntn OK
 
 # and now the interaction:
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,outActIntnX, name='mynet2', interaction1='mynet1',
-                    interaction2='alc', parameter=1, include=FALSE)
-mymodel <- setEffect(mymodel,divOutEgoIntn, name='mynet2', interaction1='mynet1', parameter=1, include=FALSE)
-(mymodel <- includeInteraction(mymodel,outActIntnX,divOutEgoIntn, name='mynet2',
-                    interaction1=c('mynet1', 'mynet1'), interaction2=c('alc', '')))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, outActIntnX, depvar="mynet2", covar1="mynet1",
+             covar2="alc", parameter=1, include=FALSE)
+mymodel <- set_effect(mymodel, divOutEgoIntn, depvar="mynet2", covar1="mynet1",
+             parameter=1, include=FALSE)
+(mymodel <- set_interaction(mymodel, list(outActIntnX, divOutEgoIntn),
+             depvar="mynet2", covar1=c("mynet1", "mynet1"), covar2=c("alc",
+             "")))
+alg_alg <- set_algorithm_saom(seed=842)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #  115.0 116.0  70.0 106.0 122.0  90.0  30.5
 
@@ -1749,16 +1908,19 @@ alc.c <- as.vector(alc) - mean(alc)
 sumalc.c <- apply(s501, 1, function(x){sum(x*alc.c)})
 sum(rowSums(s503) * divi(sumalc.c, rowSums(s501))) # outActIntnX * divOutEgoIntn parameter 1 OK
 
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-alc <- coCovar(s50a[,2]-1, centered=FALSE)
-mydata <- sienaDataCreate(mynet1, mynet2, alc)
-mymodel <- setEffect(mymodel,outActIntnX, name='mynet2', interaction1='mynet1',
-                    interaction2='alc', parameter=2, include=FALSE)
-mymodel <- setEffect(mymodel,divOutEgoIntn, name='mynet2', interaction1='mynet1', parameter=2, include=FALSE)
-(mymodel <- includeInteraction(mymodel,outActIntnX,divOutEgoIntn, name='mynet2',
-                    interaction1=c('mynet1', 'mynet1'), interaction2=c('alc', '')))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+alc <- as_covariate_rsiena(s50a[,2]-1, centered=FALSE)
+mydata <- make_data_rsiena(mynet1, mynet2, alc)
+mymodel <- set_effect(mymodel, outActIntnX, depvar="mynet2", covar1="mynet1",
+             covar2="alc", parameter=2, include=FALSE)
+mymodel <- set_effect(mymodel, divOutEgoIntn, depvar="mynet2", covar1="mynet1",
+             parameter=2, include=FALSE)
+(mymodel <- set_interaction(mymodel, list(outActIntnX, divOutEgoIntn),
+             depvar="mynet2", covar1=c("mynet1", "mynet1"), covar2=c("alc",
+             "")))
+alg_alg <- set_algorithm_saom(seed=842)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targetss
 #  115.0000 116.0000  70.0000 106.0000 122.0000  90.0000 179.2528
 
@@ -1768,48 +1930,60 @@ sum(rowSums(s503) * sqrt(divi(sumalc.v, rowSums(s501)))) # outActIntnX * divOutE
 
 # divInEgoIntn:
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,divInEgoIntn, name='mynet2', interaction1='mynet1', parameter=1))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, divInEgoIntn, depvar="mynet2", covar1="mynet1",
+             parameter=1))
+alg_alg <- set_algorithm_saom(seed=842)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115.00000 116.00000  70.00000 106.00000 122.00000  90.00000  59.625
 sum(divi(rowSums(s503), colSums(s501))) # divInEgoIntn OK
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,divInEgoIntn, name='mynet2', interaction1='mynet1', parameter=2))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, divInEgoIntn, depvar="mynet2", covar1="mynet1",
+             parameter=2))
+alg_alg <- set_algorithm_saom(seed=842)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115.00000 116.00000  70.00000 106.00000 122.00000  81.40552
 sum(divi(rowSums(s503), sqrt(colSums(s501)))) # divInEgoIntn OK
 
 # divOutAltIntn:
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,divOutAltIntn, name='mynet2', interaction1='mynet1', parameter=1))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, divOutAltIntn, depvar="mynet2", covar1="mynet1",
+             parameter=1))
+alg_alg <- set_algorithm_saom(seed=842)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115.00000 116.00000  70.00000 106.00000 122.00000  90.00000  52.76667
 sum(divi(colSums(s503), rowSums(s501))) # divOutAltIntn OK
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,divOutAltIntn, name='mynet2', interaction1='mynet1', parameter=2))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, divOutAltIntn, depvar="mynet2", covar1="mynet1",
+             parameter=2))
+alg_alg <- set_algorithm_saom(seed=842)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115.00000 116.00000  70.00000 106.00000  76.49343
 sum(divi(colSums(s503), sqrt(rowSums(s501)))) # divOutAltIntn OK
 
 # divInAltIntn:
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,divInAltIntn, name='mynet2', interaction1='mynet1', parameter=1))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, divInAltIntn, depvar="mynet2", covar1="mynet1",
+             parameter=1))
+alg_alg <- set_algorithm_saom(seed=842)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115.00000 116.00000  70.00000 106.00000 122.00000  90.00000  59.13333
 sum(divi(colSums(s503), colSums(s501))) # divInAltIntn OK
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,divInAltIntn, name='mynet2', interaction1='mynet1', parameter=2))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, divInAltIntn, depvar="mynet2", covar1="mynet1",
+             parameter=2))
+alg_alg <- set_algorithm_saom(seed=842)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115.00000 116.00000  70.00000 106.00000  80.37862
 sum(divi(colSums(s503), sqrt(colSums(s501)))) # divInAltIntn OK
@@ -1820,15 +1994,15 @@ sum(divi(colSums(s503), sqrt(colSums(s501)))) # divInAltIntn OK
 ################################################################################
 
 
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mycova <- coCovar(s50a[,1])
-mydata <- sienaDataCreate(mynet, mycova)
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mycova <- as_covariate_rsiena(s50a[,1])
+mydata <- make_data_rsiena(mynet, mycova)
 
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=842)
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,sameEgoInDist2, interaction1='mycova'))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, sameEgoInDist2, covar1="mycova"))
+alg_alg <- set_algorithm_saom(seed=842)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 116.0  70.0  36.6
 
@@ -1842,9 +2016,10 @@ a <- divi((eqalc %*% s502 - s502), (matrix(colSums(s502), 50, 50, byrow=TRUE) - 
 sum(a * s502) # OK sameEgoInDist2
 
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,sameEgoInDist2, interaction1='mycova', parameter=0))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, sameEgoInDist2, covar1="mycova", parameter=0))
+alg_alg <- set_algorithm_saom(seed=842)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #  116  70  64
 
@@ -1857,18 +2032,18 @@ sum(s502*pmin(a,1)) # OK
 ### check threshold, threshold2, threshold3, threshold4
 ################################################################################
 
-(mydata <- sienaDataCreate(
-    mybeh = sienaDependent(s50a[,1:2], type="behavior")))
+(mydata <- make_data_rsiena(
+    mybeh = as_dependent_rsiena(s50a[,1:2], type="behavior")))
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, linear, quad, include=FALSE)
-mymodel <- setEffect(mymodel, threshold, parameter=2)
-mymodel <- setEffect(mymodel, threshold2, parameter=3)
-mymodel <- setEffect(mymodel, threshold3, parameter=4)
-(mymodel <- setEffect(mymodel, threshold4, parameter=5))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, list(linear, quad), include=FALSE)
+mymodel <- set_effect(mymodel, threshold, parameter=2)
+mymodel <- set_effect(mymodel, threshold2, parameter=3)
+mymodel <- set_effect(mymodel, threshold3, parameter=4)
+(mymodel <- set_effect(mymodel, threshold4, parameter=5))
 
-mycontrols <- sienaModelCreate(projname=NULL, seed=842)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=842)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 47 31 19 8
 
@@ -1879,16 +2054,16 @@ vapply(2:5, function(t){return(table(s50a[, 2] >= t))}, 1:2)[2, ]
 ### check WWX, OutWWX
 ################################################################################
 
-mynet <- sienaNet(array(c(s502, s503), dim=c(50, 50, 2)))
-firstnet <- coDyadCovar(s501) # + t(s501)) # to get not just a 0-1 covariate
-mydata <- sienaDataCreate(mynet, firstnet)
-myeff <- getEffects(mydata)
-myeff <- includeEffects(myeff,WWX,interaction1='firstnet')
-myeff <- includeEffects(myeff,OutWWX,interaction1='firstnet')
-myeff <- includeEffects(myeff,X,interaction1='firstnet')
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+firstnet <- as_covariate_rsiena(s501, type='oneMode')
+mydata <- make_data_rsiena(mynet, firstnet)
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, WWX, covar1="firstnet")
+myeff <- set_effect(myeff, OutWWX, covar1="firstnet")
+myeff <- set_effect(myeff, X, covar1="firstnet")
 myeff
-mymodel <- sienaModelCreate(projname=NULL, seed=842)
-ans <- siena07(mymodel, data=mydata, effects=myeff)
+alg_alg <- set_algorithm_saom(seed=842)
+ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg)
 ans
 ans$targets
 
@@ -1907,13 +2082,14 @@ sum(tp*s503) # OutWWX OK
 
 # Now with a dyadic covariate that has values outside {0,1}
 
-firstnet <- coDyadCovar(s501 + t(s501))
-mydata <- sienaDataCreate(mynet, firstnet)
-myeff <- getEffects(mydata)
-myeff <- includeEffects(myeff,WWX,interaction1='firstnet')
-myeff <- includeEffects(myeff,X,interaction1='firstnet')
+firstnet <- as_covariate_rsiena(s501 + t(s501), type='oneMode')
+mydata <- make_data_rsiena(mynet, firstnet)
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, WWX, covar1="firstnet")
+myeff <- set_effect(myeff, X, covar1="firstnet")
 myeff
-ans <- siena07(mymodel, data=mydata, effects=myeff)
+alg_alg <- set_algorithm_saom(seed=842)
+ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg)
 ans
 ans$targets
 
@@ -1928,15 +2104,15 @@ sum(tp*s503) # WWX OK
 ### check outXMore
 ################################################################################
 
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mycova <- coCovar(s50a[,1])
-mydata <- sienaDataCreate(mynet, mycova)
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mycova <- as_covariate_rsiena(s50a[,1])
+mydata <- make_data_rsiena(mynet, mycova)
 poscov <- (mydata$cCovars$mycova > 0)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=138)
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,outXMore, interaction1='mycova', parameter=2))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, outXMore, covar1="mycova", parameter=2))
+alg_alg <- set_algorithm_saom(seed=138)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 poscovdeg <- apply(s502, 1, function(x){sum(x[poscov]) })
@@ -1947,14 +2123,14 @@ sum(pmax(poscovdeg-2,0)) # 15 OK
 ### check outMore
 ################################################################################
 
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet)
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet)
 poscov <- (mydata$cCovars$mycova > 0)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=138)
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,outMore, parameter=3))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, outMore, parameter=3))
+alg_alg <- set_algorithm_saom(seed=138)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(pmax(rowSums(s502)-3,0)) # 11 OK
 
@@ -1962,14 +2138,15 @@ sum(pmax(rowSums(s502)-3,0)) # 11 OK
 ### check outOutDist2ActIntn and avAlt.2M.tot
 ################################################################################
 
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet1, mynet2)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet1, mynet2)
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, outOutDist2ActIntn, name="mynet1", interaction1="mynet2", parameter=1)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, outOutDist2ActIntn, depvar="mynet1",
+             covar1="mynet2", parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets #  115.00 116.00  70.00 639.01 106.00 122.00  90.00
 sum(rowSums(s502)) # ok outdegree
 sum(rowSums(s502 * t(s502))) # OK recip
@@ -1979,16 +2156,20 @@ cross <- rowSums(s502) %*% t((rowSums(s502) - avdeg))
 diag(cross) <- 0
 sum(cross*twop) # 639.01 OK
 
-mymodel2 <- getEffects(mydata)
-mymodel2 <- setEffect(mymodel2, outOutDist2ActIntn, name="mynet1", interaction1="mynet2", parameter=2)
-(ans2 <- siena07(mycontrols, data=mydata, effects=mymodel2))
+mymodel2 <- make_specification(mydata)
+mymodel2 <- set_effect(mymodel2, outOutDist2ActIntn, depvar="mynet1",
+             covar1="mynet2", parameter=2)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans2  <- siena(data=mydata, effects=mymodel2, control_algo=alg_alg))
 ans2$targets # 115.0000 116.0000  70.0000 555.4117 106.0000 122.0000  90.0000
 sum(cross*sqrt(twop)) # 555.4117  OK
 
 divi <- function(x,y){ifelse(y==0, 0, x/y)}
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, avAlt.2M.tot, name="mynet1", interaction1="mynet2", parameter=1)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avAlt.2M.tot, depvar="mynet1", covar1="mynet2",
+             parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets # 115.00000 116.00000  70.00000  88.83614 106.00000 122.00000  90.00000
 (avdeg <- mean(rowSums(s502) + rowSums(s501))/2)
 diag(twop) <- 0
@@ -1997,9 +2178,11 @@ sum(divi(rowSums(s502), ntwopaths)* (twop %*% (rowSums(s502) - avdeg))) # 88.836
 sum(rowSums(s502) * divi(rowSums(twop %*% diag(rowSums(s502) - avdeg)), rowSums(twop) )) # 88.83614
 
 
-mymodel2 <- getEffects(mydata)
-mymodel2 <- setEffect(mymodel2, avAlt.2M.tot, name="mynet1", interaction1="mynet2", parameter=2)
-(ans2 <- siena07(mycontrols, data=mydata, effects=mymodel2))
+mymodel2 <- make_specification(mydata)
+mymodel2 <- set_effect(mymodel2, avAlt.2M.tot, depvar="mynet1", covar1="mynet2",
+             parameter=2)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans2  <- siena(data=mydata, effects=mymodel2, control_algo=alg_alg))
 ans2$targets # 115.00000 116.00000  70.00000  86.89495 106.00000 122.00000  90.00000
 sum(rowSums(s502) * divi(rowSums(sqrt(twop) %*% diag(rowSums(s502) - avdeg)),
 									rowSums(sqrt(twop)) )) # 86.89495 OK avAlt.2M.tot p = 2
@@ -2021,41 +2204,42 @@ for (i in 1:120){
 }
 
 # Identify nodesets
-senders <- sienaNodeSet(12, nodeSetName="senders")
-recipients <- sienaNodeSet(10, nodeSetName="recipients")
+senders <- as_nodeset_rsiena(12, nodeSetName="senders")
+recipients <- as_nodeset_rsiena(10, nodeSetName="recipients")
 
 # Make dependent networks
-network <- sienaDependent(array(c(wave1, wave2), dim=c(12,10,2)),
+network <- as_dependent_rsiena(array(c(wave1, wave2), dim=c(12,10,2)),
                           type="bipartite", nodeSet=c("senders","recipients"),
                           allowOnly=FALSE)
 
 # Make covariates
-covarego <- coCovar(c(rep(1,6), rep(2,6)), nodeSet="senders", centered=FALSE)
-covaralt <- coCovar(c(rep(1,5), rep(2,5)), nodeSet="recipients", centered=FALSE)
+covarego <- as_covariate_rsiena(c(rep(1,6), rep(2,6)), nodeSet="senders", centered=FALSE)
+covaralt <- as_covariate_rsiena(c(rep(1,5), rep(2,5)), nodeSet="recipients", centered=FALSE)
 
 # Put it all together
-(nbdata <- sienaDataCreate(network, covaralt, covarego,
+(nbdata <- make_data_rsiena(network, covaralt, covarego,
                 nodeSets=list(senders,recipients)))
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
 
 # Do the analysis
-nbEffects <- getEffects(nbdata)
-nbEffects <- setEffect(nbEffects, sameXV, interaction1="covarego", interaction2="covaralt")
-(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects))
+nbEffects <- make_specification(nbdata)
+nbEffects <- set_effect(nbEffects, sameXV, covar1="covarego", covar2="covaralt")
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=nbdata, effects=nbEffects, control_algo=alg_alg))
 ans$targets  # 56 23
 sum(wave2 * outer(covarego, covaralt, "==")) # 23 OK
 
 # Now check for if there are 0 values
 # Make covariates
-covarego <- coCovar(c(rep(1,6), 0, rep(2,5)), nodeSet="senders", centered=FALSE)
-covaralt <- coCovar(c(rep(1,4), 0, 0, rep(2,4)), nodeSet="recipients", centered=FALSE)
+covarego <- as_covariate_rsiena(c(rep(1,6), 0, rep(2,5)), nodeSet="senders", centered=FALSE)
+covaralt <- as_covariate_rsiena(c(rep(1,4), 0, 0, rep(2,4)), nodeSet="recipients", centered=FALSE)
 # Put it all together
-(nbdata <- sienaDataCreate(network, covaralt, covarego,
+(nbdata <- make_data_rsiena(network, covaralt, covarego,
                 nodeSets=list(senders,recipients)))
 # Do the analysis
-nbEffects <- getEffects(nbdata)
-nbEffects <- setEffect(nbEffects, sameXV, interaction1="covarego", interaction2="covaralt")
-(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects))
+nbEffects <- make_specification(nbdata)
+nbEffects <- set_effect(nbEffects, sameXV, covar1="covarego", covar2="covaralt")
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=nbdata, effects=nbEffects, control_algo=alg_alg))
 ans$targets # 56 17
 cove <- covarego
 cova <- covaralt
@@ -2069,13 +2253,14 @@ sum(wave2 * otea) # 17 OK
 ### check inPopOutW
 ################################################################################
 
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet1, mynet2)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel, inPopOutW, name="mynet2", interaction1="mynet1", parameter=1))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet1, mynet2)
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, inPopOutW, depvar="mynet2", covar1="mynet1",
+             parameter=1))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115 116  70 106 122  90 756
 sum(s503*t(s503)) # recip 90 OK
@@ -2084,9 +2269,11 @@ diag(intwostarsX) <- 0
 outdW <- rowSums(s501)
 sum(intwostarsX %*% outdW) # 756  OK inPopOutW
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel, inPopOutW, name="mynet2", interaction1="mynet1", parameter=2))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, inPopOutW, depvar="mynet2", covar1="mynet1",
+             parameter=2))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115 116  70 106 122  90 455.8157
 sum(s503*t(s503)) # recip 90 OK
@@ -2095,9 +2282,11 @@ diag(intwostarsX) <- 0
 outdW <- rowSums(s501)
 sum(intwostarsX %*% sqrt(outdW)) # 455.8157  OK inPopOutW
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel, inPopOutW, name="mynet2", interaction1="mynet1", parameter=3))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, inPopOutW, depvar="mynet2", covar1="mynet1",
+             parameter=3))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115 116  70 106 122  90 91.9
 sum(s503*t(s503)) # recip 90 OK
@@ -2107,9 +2296,11 @@ outdW <- rowSums(s501)
 mW <- mean(rowSums(s501) + rowSums(s502))/2
 sum(intwostarsX %*% (outdW - mW)) # 91.9  OK inPopOutW
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel, inPopOutW, name="mynet2", interaction1="mynet1", parameter=3))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, inPopOutW, depvar="mynet2", covar1="mynet1",
+             parameter=3))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115 116  70 106 122  90 91.9
 sum(s503*t(s503)) # recip 90 OK
@@ -2121,17 +2312,18 @@ sum(intwostarsX %*% (outdW - mW)) # 91.9  OK inPopOutW
 
 # Now check inPopOutW for bipartite
 # Identify nodesets
-senders <- sienaNodeSet(50, nodeSetName="senders")
-recipients <- sienaNodeSet(30, nodeSetName="recipients")
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)), nodeSet="senders")
-mynet2 <- sienaDependent(array(c(s502[,1:30], s503[,1:30]), dim=c(50, 30, 2)),
+senders <- as_nodeset_rsiena(50, nodeSetName="senders")
+recipients <- as_nodeset_rsiena(30, nodeSetName="recipients")
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)), nodeSet="senders")
+mynet2 <- as_dependent_rsiena(array(c(s502[,1:30], s503[,1:30]), dim=c(50, 30, 2)),
                         nodeSet=c("senders","recipients"), allowOnly=FALSE)
-mydata <- sienaDataCreate(mynet1, mynet2,
+mydata <- make_data_rsiena(mynet1, mynet2,
                          nodeSets=list(senders,recipients))
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, inPopOutW, name="mynet2", interaction1="mynet1", parameter=1)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, inPopOutW, depvar="mynet2", covar1="mynet1",
+             parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115 116  70  60  67 384
 intwostarsX <- (s503[,1:30]) %*% t(s503[,1:30])
@@ -2155,61 +2347,69 @@ for (i in 1:120){
 }
 
 # Identify nodesets
-senders <- sienaNodeSet(12, nodeSetName="senders")
-recipients <- sienaNodeSet(10, nodeSetName="recipients")
+senders <- as_nodeset_rsiena(12, nodeSetName="senders")
+recipients <- as_nodeset_rsiena(10, nodeSetName="recipients")
 
 # Make dependent networks
-network <- sienaDependent(array(c(wave1, wave2), dim=c(12,10,2)),
+network <- as_dependent_rsiena(array(c(wave1, wave2), dim=c(12,10,2)),
                           type="bipartite", nodeSet=c("senders","recipients"),
                           allowOnly=FALSE)
 # Make covariates
-covarego <- coCovar(c(1,3,3,4,2,1,1,4,2,3,3,3), nodeSet="senders", centered=FALSE)
-covaralt <- coCovar(c(1,3,3,4,1,1,4,3,3,3), nodeSet="recipients", centered=FALSE)
+covarego <- as_covariate_rsiena(c(1,3,3,4,2,1,1,4,2,3,3,3), nodeSet="senders", centered=FALSE)
+covaralt <- as_covariate_rsiena(c(1,3,3,4,1,1,4,3,3,3), nodeSet="recipients", centered=FALSE)
 
 # Put it all together
-(nbdata <- sienaDataCreate(network, covaralt, covarego,
+(nbdata <- make_data_rsiena(network, covaralt, covarego,
                 nodeSets=list(senders,recipients)))
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
 
 # Do the analysis
-nbEffects <- getEffects(nbdata)
-nbEffects <- setEffect(nbEffects, sameXVInPop, interaction1="covarego", interaction2="covaralt",
-                    parameter=1)
-(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects))
+nbEffects <- make_specification(nbdata)
+nbEffects <- set_effect(nbEffects, sameXVInPop, covar1="covarego",
+             covar2="covaralt", parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=nbdata, effects=nbEffects, control_algo=alg_alg))
 ans$targets # 56 320
 sum((t(wave2) %*%  outer(covarego, covarego, "==") %*% wave2) * outer(covaralt, covaralt, "==")) # 320 OK
 sum(wave2 * (outer(covarego, covarego, "==") %*% wave2 %*% outer(covaralt, covaralt, "=="))) # 320 OK
 
-nbEffects <- setEffect(nbEffects, sameXVInPop, interaction1="covarego", interaction2="covaralt",
-                    parameter=2)
-(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects))
+nbEffects <- set_effect(nbEffects, sameXVInPop, covar1="covarego",
+             covar2="covaralt", parameter=2)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=nbdata, effects=nbEffects, control_algo=alg_alg))
 ans$targets #  56.0000 131.0048
 sum(wave2 * sqrt((outer(covarego, covarego, "==") %*%
                         wave2 %*% outer(covaralt, covaralt, "==")))) #  131.0048 OK
 
-nbEffects <- getEffects(nbdata)
-nbEffects <- setEffect(nbEffects, sameXVInPop, interaction1="covarego", interaction2="covaralt",
-                    parameter=3)
-(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects))
+nbEffects <- make_specification(nbdata)
+nbEffects <- set_effect(nbEffects, sameXVInPop, covar1="covarego",
+             covar2="covaralt", parameter=3)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=nbdata, effects=nbEffects, control_algo=alg_alg))
 ans$targets # 56.00000 27.53778
 sum(wave2 * ((outer(covarego, covarego, "==") %*% wave2 %*% outer(covaralt, covaralt, "=="))/
             (rowSums(outer(covarego, covarego, "==")) %*% t(colSums(outer(covaralt, covaralt, "==")))))) # 27.53778 OK
 
-nbEffects <- getEffects(nbdata)
-nbEffects <- setEffect(nbEffects, sameXVInPop2, interaction1="covarego", interaction2="covaralt",
-                    parameter=4)
-(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects))
-(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects, prevAns=ans))
-(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects, prevAns=ans))
+nbEffects <- make_specification(nbdata)
+nbEffects <- set_effect(nbEffects, sameXVInPop2, covar1="covarego",
+             covar2="covaralt", parameter=4)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=nbdata, effects=nbEffects, control_algo=alg_alg))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=nbdata, effects=nbEffects, prevAns=ans,
+             control_algo=alg_alg))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=nbdata, effects=nbEffects, prevAns=ans,
+             control_algo=alg_alg))
 ans$targets #  56.00000 39.04023
 sum(wave2 * sqrt(((outer(covarego, covarego, "==") %*% wave2 %*% outer(covaralt, covaralt, "=="))/
             (rowSums(outer(covarego, covarego, "==")) %*% t(colSums(outer(covaralt, covaralt, "=="))))))) # 39.04023 OK
 
 
-nbEffects <- getEffects(nbdata)
-nbEffects <- setEffect(nbEffects, sameXVInPop2, interaction1="covarego", interaction2="covaralt",
-                    parameter=1)
-(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects))
+nbEffects <- make_specification(nbdata)
+nbEffects <- set_effect(nbEffects, sameXVInPop2, covar1="covarego",
+             covar2="covaralt", parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=nbdata, effects=nbEffects, control_algo=alg_alg))
 ans$targets # 56 320
 
 sum((t(wave2) %*%  outer(covarego, covarego, "==") %*% wave2) * outer(covaralt, covaralt, "==")) # 320 OK
@@ -2218,17 +2418,18 @@ sum(wave2 * (outer(covarego, covarego, "==") %*% wave2 %*% outer(covaralt, covar
 # Now check for the case that there are 0 values
 
 # Make covariates
-covarego <- coCovar(c(1,3,3,4,0,1,1,4,2,0,3,3), nodeSet="senders", centered=FALSE)
-covaralt <- coCovar(c(1,3,3,4,1,1,0,3,3,0), nodeSet="recipients", centered=FALSE)
+covarego <- as_covariate_rsiena(c(1,3,3,4,0,1,1,4,2,0,3,3), nodeSet="senders", centered=FALSE)
+covaralt <- as_covariate_rsiena(c(1,3,3,4,1,1,0,3,3,0), nodeSet="recipients", centered=FALSE)
 
 # Put it all together
-(nbdata <- sienaDataCreate(network, covaralt, covarego,
+(nbdata <- make_data_rsiena(network, covaralt, covarego,
                 nodeSets=list(senders,recipients)))
 # Do the analysis
-nbEffects <- getEffects(nbdata)
-nbEffects <- setEffect(nbEffects, sameXVInPop2, interaction1="covarego", interaction2="covaralt",
-                    parameter=1)
-(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects))
+nbEffects <- make_specification(nbdata)
+nbEffects <- set_effect(nbEffects, sameXVInPop2, covar1="covarego",
+             covar2="covaralt", parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=nbdata, effects=nbEffects, control_algo=alg_alg))
 ans$targets #  56 180
 
 cove <- covarego
@@ -2242,17 +2443,19 @@ otaa[is.na(otaa)] <- FALSE
 sum((t(wave2) %*%  otee %*% wave2) * otaa) # 180 OK
 sum(wave2 * (otee %*% wave2 %*% otaa)) # 180 OK
 
-nbEffects <- getEffects(nbdata)
-nbEffects <- setEffect(nbEffects, sameXVInPop2, interaction1="covarego", interaction2="covaralt",
-                    parameter=2)
-(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects))
+nbEffects <- make_specification(nbdata)
+nbEffects <- set_effect(nbEffects, sameXVInPop2, covar1="covarego",
+             covar2="covaralt", parameter=2)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=nbdata, effects=nbEffects, control_algo=alg_alg))
 ans$targets # 56.00000  78.00068
 sum(wave2 * sqrt((otee %*% wave2 %*% otaa))) # 78.00068 OK
 
-nbEffects <- getEffects(nbdata)
-nbEffects <- setEffect(nbEffects, sameXVInPop2, interaction1="covarego", interaction2="covaralt",
-                    parameter=3)
-(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects))
+nbEffects <- make_specification(nbdata)
+nbEffects <- set_effect(nbEffects, sameXVInPop2, covar1="covarego",
+             covar2="covaralt", parameter=3)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=nbdata, effects=nbEffects, control_algo=alg_alg))
 ans$targets # 56.00000 18.36111
 
 divi <- function(a,b){ifelse(b==0, 0, a/b)}
@@ -2260,9 +2463,10 @@ divi <- function(a,b){ifelse(b==0, 0, a/b)}
 sum(divi(wave2 * (otee %*% wave2 %*% otaa),
             (rowSums(otee, na.rm=TRUE) %*% t(colSums(otaa, na.rm=TRUE))))) # 18.36111 OK
 
-nbEffects <- setEffect(nbEffects, sameXVInPop2, interaction1="covarego", interaction2="covaralt",
-                    parameter=4)
-(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects))
+nbEffects <- set_effect(nbEffects, sameXVInPop2, covar1="covarego",
+             covar2="covaralt", parameter=4)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=nbdata, effects=nbEffects, control_algo=alg_alg))
 ans$targets # 56.00000   25.47785
 sum(divi(wave2 * sqrt(otee %*% wave2 %*% otaa),
             sqrt(rowSums(otee, na.rm=TRUE) %*% t(colSums(otaa, na.rm=TRUE))))) # 25.47785 OK
@@ -2290,22 +2494,22 @@ diag(wave1s) <- 0
 diag(wave2s) <- 0
 
 # Make dependent networks
-network <- sienaDependent(array(c(wave1s, wave2s), dim=c(12,12,2)),
+network <- as_dependent_rsiena(array(c(wave1s, wave2s), dim=c(12,12,2)),
                           allowOnly=FALSE)
 # Make covariates
-covarego <- coCovar(c(1,3,3,4,2,1,1,4,2,3,3,3),centered=FALSE)
-covaralt <- coCovar(c(1,3,3,4,1,1,4,3,3,3,1,2), centered=FALSE)
+covarego <- as_covariate_rsiena(c(1,3,3,4,2,1,1,4,2,3,3,3),centered=FALSE)
+covaralt <- as_covariate_rsiena(c(1,3,3,4,1,1,4,3,3,3,1,2), centered=FALSE)
 
 # Put it all together
-(nbdata <- sienaDataCreate(network, covaralt, covarego))
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
-print01Report(nbdata)
+(nbdata <- make_data_rsiena(network, covaralt, covarego))
+write_report(nbdata)
 
 # Do the analysis
-nbEffects <- getEffects(nbdata)
-nbEffects <- setEffect(nbEffects, sameXVInPop, interaction1="covarego", interaction2="covaralt",
-                    parameter=1)
-(ans <- siena07(mycontrols, data=nbdata, effects=nbEffects))
+nbEffects <- make_specification(nbdata)
+nbEffects <- set_effect(nbEffects, sameXVInPop, covar1="covarego",
+             covar2="covaralt", parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=nbdata, effects=nbEffects, control_algo=alg_alg))
 ans$targets # 44 698
 sum((t(wave2s) %*%  outer(covarego, covarego, "==") %*% wave2s) * outer(covaralt, covaralt, "==")) # 698 OK
 sum(wave2s * (outer(covarego, covarego, "==") %*% wave2s %*% outer(covaralt, covaralt, "=="))) # 698 OK
@@ -2314,16 +2518,16 @@ sum(wave2s * (outer(covarego, covarego, "==") %*% wave2s %*% outer(covaralt, cov
 ### check crossXOutAct
 ################################################################################
 
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
 sets <- 1*((1:50) < 22)
-binary <- coCovar(sets)
-(mydata <- sienaDataCreate(mynet, binary))
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=844)
+binary <- as_covariate_rsiena(sets)
+(mydata <- make_data_rsiena(mynet, binary))
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, crossXOutAct, interaction1="binary", parameter=1)
-(mymodel <- includeEffects(mymodel, outAct))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, crossXOutAct, covar1="binary", parameter=1)
+(mymodel <- set_effect(mymodel, outAct))
+alg_alg <- set_algorithm_saom(seed=844)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # check target statistics: outdegree activity
 sum(rowSums(s502)) # 116 OK
@@ -2335,19 +2539,21 @@ matt <- 1-mat
 diag(matt) <- 0
 sum((rowSums(s502 * mat))*(rowSums(s502 * matt))) # 46 OK
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel, crossXOutAct, interaction1="binary", parameter=2))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, crossXOutAct, covar1="binary", parameter=2))
+alg_alg <- set_algorithm_saom(seed=844)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets #  116.00000  70.00000  38.68143
 # check target statistics: crossXOutAct parameter=2
 mat <- outer(1:50,1:50,function(i,j){sets[i]==sets[j]})
 diag(mat) <- 0
 sum((rowSums(s502 * mat))*sqrt(rowSums(s502 * matt))) #  38.68143 OK
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel, crossXOutAct, interaction1="binary", parameter=3))
-(mymodel <- includeEffects(mymodel, outAct))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, crossXOutAct, covar1="binary", parameter=3))
+(mymodel <- set_effect(mymodel, outAct))
+alg_alg <- set_algorithm_saom(seed=844)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets #  116.00000  70.00000 350.00000  33.65613
 sum((rowSums(s502 * matt))*sqrt(rowSums(s502 * mat))) # 33.65613 OK
 
@@ -2357,18 +2563,20 @@ sum((rowSums(s502 * matt))*sqrt(rowSums(s502 * mat))) # 33.65613 OK
 
 # First two-mode
 # Identify nodesets
-senders <- sienaNodeSet(50, nodeSetName="senders")
-recipients <- sienaNodeSet(30, nodeSetName="recipients")
-mynet1 <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)), nodeSet="senders")
-mynet2 <- sienaDependent(array(c(s501[,1:30], s502[,1:30]), dim=c(50, 30, 2)),
+senders <- as_nodeset_rsiena(50, nodeSetName="senders")
+recipients <- as_nodeset_rsiena(30, nodeSetName="recipients")
+mynet1 <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)), nodeSet="senders")
+mynet2 <- as_dependent_rsiena(array(c(s501[,1:30], s502[,1:30]), dim=c(50, 30, 2)),
                         nodeSet=c("senders","recipients"), allowOnly=FALSE)
-mydata <- sienaDataCreate(mynet1, mynet2,
+mydata <- make_data_rsiena(mynet1, mynet2,
                          nodeSets=list(senders,recipients))
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel, nDist2ActIntn, name="mynet1", interaction1="mynet2", parameter=1))
-(mymodel <- setEffect(mymodel, outActIntn, name="mynet1", interaction1="mynet2", parameter=1))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, nDist2ActIntn, depvar="mynet1", covar1="mynet2",
+             parameter=1))
+(mymodel <- set_effect(mymodel, outActIntn, depvar="mynet1", covar1="mynet2",
+             parameter=1))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #  106.00 122.00  90.00  24.74 486.00  81.00  65.00
 W <- s501[,1:30]
@@ -2376,21 +2584,26 @@ dist2 <- pmin(W %*% t(W), 1)
 diag(dist2) <- 0
 sum(rowSums(s503) * rowSums(dist2)) # 486 nDist2ActIntn OK
 
-(mymodel <- setEffect(mymodel, nDist2ActIntn, name="mynet1", interaction1="mynet2", parameter=2))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+(mymodel <- set_effect(mymodel, nDist2ActIntn, depvar="mynet1", covar1="mynet2",
+             parameter=2))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #  106.0000 122.0000  90.0000  24.7400 191.6948  81.0000  65.0000
 sum(rowSums(s503) * sqrt(rowSums(dist2))) # 191.6948  OK
 
 # now for one-mode
 
-mynet1 <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet1, mynet2)
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel, nDist2ActIntn, name="mynet1", interaction1="mynet2", parameter=1))
-(mymodel <- setEffect(mymodel, outActIntn, name="mynet1", interaction1="mynet2", parameter=1))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mynet1 <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet1, mynet2)
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, nDist2ActIntn, depvar="mynet1", covar1="mynet2",
+             parameter=1))
+(mymodel <- set_effect(mymodel, outActIntn, depvar="mynet1", covar1="mynet2",
+             parameter=1))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #  106.00 122.00  90.00  32.62 660.00 115.00 116.00  70.00
 W <- s501
@@ -2398,8 +2611,10 @@ dist2 <- pmin(W %*% t(W), 1)
 diag(dist2) <- 0
 sum(rowSums(s503) * rowSums(dist2)) # 660 nDist2ActIntn OK
 
-(mymodel <- setEffect(mymodel, nDist2ActIntn, name="mynet1", interaction1="mynet2", parameter=2))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+(mymodel <- set_effect(mymodel, nDist2ActIntn, depvar="mynet1", covar1="mynet2",
+             parameter=2))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #  106.0000 122.0000  90.0000  32.6200 266.3299 115.0000 116.0000  70.0000
 sum(rowSums(s503) * sqrt(rowSums(dist2))) # 266.3299  OK
@@ -2408,16 +2623,17 @@ sum(rowSums(s503) * sqrt(rowSums(dist2))) # 266.3299  OK
 ### check sharedToU
 ################################################################################
 
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
 # dyadic covariate
 suppressWarnings(mat <- matrix(c(0,1,0,0,4,0,2,0,0), 50,50))
-dcov <- coDyadCovar(mat, centered=FALSE)
-mydata <- sienaDataCreate(mynet1, mynet2, dcov)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, sharedToU, name="mynet2", interaction1="mynet1", interaction2="dcov", parameter=1)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+dcov <- as_covariate_rsiena(mat, type='oneMode', centered=FALSE)
+mydata <- make_data_rsiena(mynet1, mynet2, dcov)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sharedToU, depvar="mynet2", covar1="mynet1",
+             covar2="dcov", parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115 116  70 106 122  90 125
 intwostars1 <- (dcov*s501) %*% t(s501)
@@ -2427,9 +2643,11 @@ diag(intwostars3) <- 0
 sum(intwostars1 * intwostars3) # 125 OK
 
 ##
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, sharedToU, name="mynet2", interaction1="mynet1", interaction2="dcov", parameter=2)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sharedToU, depvar="mynet2", covar1="mynet1",
+             covar2="dcov", parameter=2)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115 116  70 106 122  90 125
 intwostars1 <- (s501) %*% t(dcov*s501)
@@ -2439,9 +2657,11 @@ diag(intwostars3) <- 0
 sum(intwostars1 * intwostars3) # 125 OK
 
 ##
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, sharedToU, name="mynet2", interaction1="mynet1", interaction2="dcov", parameter=3)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sharedToU, depvar="mynet2", covar1="mynet1",
+             covar2="dcov", parameter=3)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115 116  70 106 122  90 64
 intwostars1 <- (dcov*s501) %*% t(dcov*s501)
@@ -2451,9 +2671,11 @@ diag(intwostars3) <- 0
 sum(intwostars1 * intwostars3) # 64 OK
 
 ##
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, sharedToU, name="mynet2", interaction1="mynet1", interaction2="dcov", parameter=6)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sharedToU, depvar="mynet2", covar1="mynet1",
+             covar2="dcov", parameter=6)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115 116  70 106 122  90 30.14214
 intwostars1 <- (dcov*s501) %*% t(dcov*s501)
@@ -2467,17 +2689,18 @@ s1 <- pmin(s501, t(s501))
 s2 <- pmin(s502, t(s502))
 s3 <- pmin(s503, t(s503))
 
-mynet1 <- sienaDependent(array(c(s1, s2), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s2, s3), dim=c(50, 50, 2)))
+mynet1 <- as_dependent_rsiena(array(c(s1, s2), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s2, s3), dim=c(50, 50, 2)))
 # dyadic covariate
 suppressWarnings(mat <- matrix(c(0,1,0,0,4,0,2,0,0), 50,50))
 mat <- pmax(mat, t(mat))
-dcov <- coDyadCovar(mat, centered=FALSE)
-(mydata <- sienaDataCreate(mynet1, mynet2, dcov))
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, sharedToU, name="mynet2", interaction1="mynet1", interaction2="dcov", parameter=1)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+dcov <- as_covariate_rsiena(mat, type='oneMode', centered=FALSE)
+(mydata <- make_data_rsiena(mynet1, mynet2, dcov))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sharedToU, depvar="mynet2", covar1="mynet1",
+             covar2="dcov", parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #  76 35 80 45 60
 intwostars1 <- (dcov*s1) %*% t(s1)
@@ -2488,19 +2711,21 @@ sum(intwostars1 * intwostars3) # 60 OK
 
 # Now check sharedToU for bipartite
 # Identify nodesets
-senders <- sienaNodeSet(50, nodeSetName="senders")
-recipients <- sienaNodeSet(30, nodeSetName="recipients")
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)), nodeSet="senders")
-mynet2 <- sienaDependent(array(c(s502[,1:30], s503[,1:30]), dim=c(50, 30, 2)),
+senders <- as_nodeset_rsiena(50, nodeSetName="senders")
+recipients <- as_nodeset_rsiena(30, nodeSetName="recipients")
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)), nodeSet="senders")
+mynet2 <- as_dependent_rsiena(array(c(s502[,1:30], s503[,1:30]), dim=c(50, 30, 2)),
                         nodeSet=c("senders","recipients"), allowOnly=FALSE)
 
 suppressWarnings(mat <- matrix(c(0,1,0,1,0,0,0,1,0,0,1), 50,50))
-dcov <- coDyadCovar(mat, centered=FALSE, nodeSets=c("senders","senders"))
-mydata <- sienaDataCreate(mynet1, mynet2, dcov, nodeSets=list(senders,recipients))
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, sharedToU, name="mynet2", interaction1="mynet1", interaction2="dcov", parameter=1)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+dcov <- as_covariate_rsiena(mat, type='oneMode', centered=FALSE,
+             nodeSet=c("senders", "senders"))
+mydata <- make_data_rsiena(mynet1, mynet2, dcov, nodeSets=list(senders,recipients))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sharedToU, depvar="mynet2", covar1="mynet1",
+             covar2="dcov", parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #  115 116  70  60  67  24
 intwostars1 <- (dcov*s501) %*% t(s501)
@@ -2511,9 +2736,11 @@ sum(intwostars1 * intwostars3) # 24 OK
 inBraces <- intwostars1 %*% s503[,1:30]
 sum(s503[,1:30] * inBraces) # 24 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, sharedToU, name="mynet2", interaction1="mynet1", interaction2="dcov", parameter=2)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sharedToU, depvar="mynet2", covar1="mynet1",
+             covar2="dcov", parameter=2)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #  115 116  70  60  67  24
 intwostars1 <- (s501) %*% t(dcov*s501)
@@ -2522,9 +2749,11 @@ diag(intwostars1) <- 0
 diag(intwostars3) <- 0
 sum(intwostars1 * intwostars3) # 24 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, sharedToU, name="mynet2", interaction1="mynet1", interaction2="dcov", parameter=3)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sharedToU, depvar="mynet2", covar1="mynet1",
+             covar2="dcov", parameter=3)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #  115 116  70  60  67  10
 intwostars1 <- (dcov*s501) %*% t(dcov*s501)
@@ -2533,9 +2762,11 @@ diag(intwostars1) <- 0
 diag(intwostars3) <- 0
 sum(intwostars1 * intwostars3) # 10 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, sharedToU, name="mynet2", interaction1="mynet1", interaction2="dcov", parameter=4)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sharedToU, depvar="mynet2", covar1="mynet1",
+             covar2="dcov", parameter=4)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #  115 116  70  60  67  22.82843
 intwostars1 <- (dcov*s501) %*% t(s501)
@@ -2545,9 +2776,11 @@ diag(intwostars1) <- 0
 diag(intwostars3) <- 0
 sum(sqrt(intwostars1) * intwostars3) # 22.82843 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, sharedToU, name="mynet2", interaction1="mynet1", interaction2="dcov", parameter=5)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sharedToU, depvar="mynet2", covar1="mynet1",
+             covar2="dcov", parameter=5)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #  115 116  70  60  67   22.82843
 intwostars1 <- (s501) %*% t(dcov*s501)
@@ -2557,9 +2790,11 @@ diag(intwostars1) <- 0
 diag(intwostars3) <- 0
 sum(sqrt(intwostars1) * intwostars3) # 22.82843 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, sharedToU, name="mynet2", interaction1="mynet1", interaction2="dcov", parameter=6)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, sharedToU, depvar="mynet2", covar1="mynet1",
+             covar2="dcov", parameter=6)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #  115 116  70  60  67  10
 intwostars1 <- (dcov*s501) %*% t(dcov*s501)
@@ -2572,14 +2807,15 @@ sum(sqrt(intwostars1) * intwostars3) # 10 OK
 ### check dist2OutInActIntn
 ################################################################################
 
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet1, mynet2)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet1, mynet2)
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, dist2OutInActIntn, name="mynet1", interaction1="mynet2", parameter=1)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, dist2OutInActIntn, depvar="mynet1",
+             covar1="mynet2", parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(rowSums(s502)) # OK outdegree
 sum(rowSums(s502 * t(s502))) # OK recip
@@ -2588,9 +2824,11 @@ sum(rowSums(s502 * t(s502))) # OK recip
 sum(rowSums(s502)* ( rowSums(s502 %*% t(s502)) - avdeg*rowSums(s502))) # 348 OK dist2OutInActIntn
 sum(rowSums(s502) * ( rowSums( s502 %*% diag(colSums(s502))) - avdeg*rowSums(s502))) # 348 OK dist2OutInActIntn
 
-mymodel2 <- getEffects(mydata)
-mymodel2 <- setEffect(mymodel2, dist2OutInActIntn, name="mynet1", interaction1="mynet2", parameter=2)
-(ans2 <- siena07(mycontrols, data=mydata, effects=mymodel2))
+mymodel2 <- make_specification(mydata)
+mymodel2 <- set_effect(mymodel2, dist2OutInActIntn, depvar="mynet1",
+             covar1="mynet2", parameter=2)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans2  <- siena(data=mydata, effects=mymodel2, control_algo=alg_alg))
 ans2$targets #  115.00000 116.00000  70.00000  89.43136 106.00000 122.00000  90.00000
 sum(rowSums(s502) * ( rowSums( s502 %*% diag(sqrt(colSums(s502))- sqrt(avdeg))))) #  89.43136 OK  dist2OutInActIntn
 
@@ -2599,13 +2837,14 @@ sum(rowSums(s502) * ( rowSums( s502 %*% diag(sqrt(colSums(s502))- sqrt(avdeg))))
 ### check avAlt.2M.tie
 ################################################################################
 
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet1, mynet2)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, avAlt.2M.tie, name="mynet2", interaction1="mynet1", parameter=1)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet1, mynet2)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avAlt.2M.tie, depvar="mynet2", covar1="mynet1",
+             parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115 116  70 106 122  90  24.32994
 intwostars1 <- (s501) %*% t(s501)
@@ -2621,9 +2860,11 @@ for (i in 1:n){
 sum(a) # 24.32994 OK
 
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, avAlt.2M.tie, name="mynet2", interaction1="mynet1", parameter=2)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avAlt.2M.tie, depvar="mynet2", covar1="mynet1",
+             parameter=2)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 # 115 116  70 106 122  90   24.27536
 intwostars1 <- (s501) %*% t(s501)
@@ -2643,16 +2884,17 @@ sum(a) # 24.27536  OK
 ### check avAltU.2M.tie
 ################################################################################
 
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
 # dyadic covariate
 suppressWarnings(mat <- matrix(c(0,1,0,0,4,0,2,0,0), 50,50))
-dcov <- coDyadCovar(mat, centered=FALSE)
-mydata <- sienaDataCreate(mynet1, mynet2, dcov)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, avAltU.2M.tie, name="mynet2", interaction1="mynet1", interaction2="dcov", parameter=1)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+dcov <- as_covariate_rsiena(mat, type='oneMode', centered=FALSE)
+mydata <- make_data_rsiena(mynet1, mynet2, dcov)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avAltU.2M.tie, depvar="mynet2", covar1="mynet1",
+             covar2="dcov", parameter=1)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #  115.00000 116.00000  70.00000 106.00000 122.00000  90.00000  17.94167
 intwostars1 <- (dcov*s501) %*% t(s501)
@@ -2668,9 +2910,11 @@ for (i in 1:n){
 sum(a) #  OK 17.94167
 
 ##
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, avAltU.2M.tie, name="mynet2", interaction1="mynet1", interaction2="dcov", parameter=2)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avAltU.2M.tie, depvar="mynet2", covar1="mynet1",
+             covar2="dcov", parameter=2)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #115.00000 116.00000  70.00000 106.00000 122.00000  90.00000  20.83571
 intwostars1 <- (s501) %*% t(dcov*s501)
@@ -2685,9 +2929,11 @@ for (i in 1:n){
 sum(a) #  OK 20.83571
 
 ##
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, avAltU.2M.tie, name="mynet2", interaction1="mynet1", interaction2="dcov", parameter=3)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avAltU.2M.tie, depvar="mynet2", covar1="mynet1",
+             covar2="dcov", parameter=3)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #115.00000 116.00000  70.00000 106.00000 122.00000  90.00000  8.6
 intwostars1 <- (dcov*s501) %*% t(dcov*s501)
@@ -2702,9 +2948,11 @@ for (i in 1:n){
 sum(a) #  OK 8.6
 
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, avAltU.2M.tie, name="mynet2", interaction1="mynet1", interaction2="dcov", parameter=4)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avAltU.2M.tie, depvar="mynet2", covar1="mynet1",
+             covar2="dcov", parameter=4)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #  115.00000 116.00000  70.00000 106.00000 122.00000  90.00000  17.68412
 
@@ -2721,9 +2969,11 @@ for (i in 1:n){
 sum(a) #  OK  17.68412
 
 ##
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, avAltU.2M.tie, name="mynet2", interaction1="mynet1", interaction2="dcov", parameter=5)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avAltU.2M.tie, depvar="mynet2", covar1="mynet1",
+             covar2="dcov", parameter=5)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #115.00000 116.00000  70.00000 106.00000 122.00000  90.00000   20.89239
 intwostars1 <- (s501) %*% t(dcov*s501)
@@ -2738,9 +2988,11 @@ for (i in 1:n){
 sum(a) #  OK  20.89239
 
 ##
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, avAltU.2M.tie, name="mynet2", interaction1="mynet1", interaction2="dcov", parameter=6)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avAltU.2M.tie, depvar="mynet2", covar1="mynet1",
+             covar2="dcov", parameter=6)
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 #115.00000 116.00000  70.00000 106.00000 122.00000  90.00000  8.303456
 intwostars1 <- (dcov*s501) %*% t(dcov*s501)
@@ -2759,17 +3011,17 @@ sum(a) #  OK 8.303456
 ### check homXOutAct and homXOutAct2
 ################################################################################
 
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
 # construct actor covariate
 sets1 <- 1*((1:50) < 22) + 1
 table(sets1)
-binary <- coCovar(sets1, centered=FALSE)
-mydata <- sienaDataCreate(mynet, binary)
-myalg <- sienaAlgorithmCreate(projname=NULL, seed=1234)
-myeff <- getEffects(mydata)
-myeff <- includeEffects(myeff, homXOutAct, interaction1="binary")
-(myeff <- includeEffects(myeff, outAct))
-(ans <- siena07(myalg, data=mydata, effects=myeff))
+binary <- as_covariate_rsiena(sets1, centered=FALSE)
+mydata <- make_data_rsiena(mynet, binary)
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, homXOutAct, covar1="binary")
+(myeff <- set_effect(myeff, outAct))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets
 # 116  70 350 258
 # check target statistics: outdegree activity
@@ -2780,26 +3032,29 @@ mat <- outer(1:50,1:50,function(i,j){sets1[i]==sets1[j]})
 # not diag(mat) <- 0
 sum(diag(s502 %*% mat %*% t(s502)))  # OK
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff, homXOutAct2, interaction1="binary", parameter=1)
-(myeff <- includeEffects(myeff, outAct))
-(ans <- siena07(myalg, data=mydata, effects=myeff))
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, homXOutAct2, covar1="binary", parameter=1)
+(myeff <- set_effect(myeff, outAct))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets
 #  116  70 350  258
 # Estimates not identical, but very close; targets are identical.
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff, homXOutAct2, interaction1="binary", parameter=2)
-(myeff <- includeEffects(myeff, outAct))
-(ans <- siena07(myalg, data=mydata, effects=myeff))
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, homXOutAct2, covar1="binary", parameter=2)
+(myeff <- set_effect(myeff, outAct))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets
 #  116  70 350 168.7262
 sum(diag(s502 %*% sqrt(mat %*% t(s502)))) # 168.7262 OK
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff, homXOutAct2, interaction1="binary", parameter=3)
-(myeff <- includeEffects(myeff, outAct))
-(ans <- siena07(myalg, data=mydata, effects=myeff))
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, homXOutAct2, covar1="binary", parameter=3)
+(myeff <- set_effect(myeff, outAct))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets
 #   116.000000  70.000000 350.000000   9.816092
 
@@ -2810,10 +3065,11 @@ sb <- rowSums(otaa)
 matr <- mat %*% solve(diag(sb))
 sum(diag(s502 %*% matr %*% t(s502)))  # 9.816092 OK
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff, homXOutAct2, interaction1="binary", parameter=4)
-(myeff <- includeEffects(myeff, outAct))
-(ans <- siena07(myalg, data=mydata, effects=myeff))
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, homXOutAct2, covar1="binary", parameter=4)
+(myeff <- set_effect(myeff, outAct))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets
 # 116.0000  70.0000 350.0000  33.0085
 
@@ -2824,7 +3080,6 @@ sum(diag(s502 %*% sqrt(matr %*% t(s502))))  #  33.0085 OK
 ### check crprod_gmm
 ################################################################################
 
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
 
 set.seed(1234)
 (perm <- c(sample(1:25), 26:50))
@@ -2832,16 +3087,17 @@ set.seed(1234)
 s502r <- s502[perm,perm]
 s503r <- s503[perm,perm]
 
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s502r, s503r), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet1, mynet2)
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s502r, s503r), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet1, mynet2)
 
-myeff <- getEffects(mydata)
+myeff <- make_specification(mydata)
 # for crprod:
-myeff <- setEffect(myeff, crprod, name='mynet2', interaction1='mynet1')
-myeff <- setEffect(myeff, crprod, name='mynet1', interaction1='mynet2')
+myeff <- set_effect(myeff, crprod, depvar="mynet2", covar1="mynet1")
+myeff <- set_effect(myeff, crprod, depvar="mynet1", covar1="mynet2")
 myeff
-(ans <- siena07(mycontrols, data=mydata, effects=myeff))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 
 ans$targets
 sum(s502 * s502r)  # 49 OK
@@ -2852,31 +3108,41 @@ sum(s503r * s502) # 36, different which is good
 myeff2 <- includeGMoMStatistics(myeff, crprod_gmm, depvar='mynet2', covar1='mynet1')
 myeff2
 
-algorithm2 <- sienaAlgorithmCreate(nsub=2, n3=1000, gmm=TRUE, seed=4321)
-(ans2 <- siena07(algorithm2, data=mydata, effects=myeff2))
-algorithm3 <- sienaAlgorithmCreate(nsub=4, n3=10000, gmm=TRUE, seed=597)
-ans3 <- siena07(algorithm3, data=mydata, effects=myeff2, prevAns=ans2)
-algorithm4 <- sienaAlgorithmCreate(nsub=5, n3=10000, gmm=TRUE, seed=597)
-ans4 <- siena07(algorithm4, data=mydata, effects=myeff2, prevAns=ans3)
+alg_alg <- set_algorithm_saom(gmm=TRUE, seed=4321, nsub=2)
+(ans2  <- siena(data=mydata, effects=myeff2, control_algo=alg_alg))
+alg_alg <- set_algorithm_saom(gmm=TRUE, seed=597, n3=10000)
+ans3  <- siena(data=mydata, effects=myeff2, prevAns=ans2, control_algo=alg_alg)
+alg_alg <- set_algorithm_saom(gmm=TRUE, seed=597, n3=10000, nsub=5)
+ans4  <- siena(data=mydata, effects=myeff2, prevAns=ans3, control_algo=alg_alg)
 ans4
-(ans5 <- siena07(algorithm3, data=mydata, effects=myeff2, prevAns=ans4))
+alg_alg <- set_algorithm_saom(gmm=TRUE, seed=597, n3=10000)
+(ans5  <- siena(data=mydata, effects=myeff2, prevAns=ans4,
+             control_algo=alg_alg))
 ans5$targets # OK
 
-myeff6 <- setEffect(myeff, from, name='mynet2', interaction1='mynet1')
-(ans6 <- siena07(mycontrols, data=mydata, effects=myeff6))
+myeff6 <- set_effect(myeff, from, depvar="mynet2", covar1="mynet1")
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans6  <- siena(data=mydata, effects=myeff6, control_algo=alg_alg))
 myeff7 <- includeGMoMStatistics(myeff6, from_gmm, depvar='mynet2', covar1='mynet1')
-(ans7 <- siena07(algorithm2, data=mydata, effects=myeff7))
-(ans7 <- siena07(algorithm4, data=mydata, effects=myeff7, prevAns=ans7))
+alg_alg <- set_algorithm_saom(gmm=TRUE, seed=4321, nsub=2)
+(ans7  <- siena(data=mydata, effects=myeff7, control_algo=alg_alg))
+alg_alg <- set_algorithm_saom(gmm=TRUE, seed=597, n3=10000, nsub=5)
+(ans7  <- siena(data=mydata, effects=myeff7, prevAns=ans7,
+             control_algo=alg_alg))
 ans7$targets
 sum(s503r * (s501 %*% t(s501)))  # 50 OK
 # contemp:
 sum(s503r * (s502 %*% t(s502)))  # 51 OK
 
-myeff8 <- setEffect(myeff, to, name='mynet2', interaction1='mynet1')
-(ans8 <- siena07(mycontrols, data=mydata, effects=myeff8))
+myeff8 <- set_effect(myeff, to, depvar="mynet2", covar1="mynet1")
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans8  <- siena(data=mydata, effects=myeff8, control_algo=alg_alg))
 myeff9 <- includeGMoMStatistics(myeff8, to_gmm, depvar='mynet2', covar1='mynet1')
-(ans9 <- siena07(algorithm2, data=mydata, effects=myeff9))
-(ans9 <- siena07(algorithm4, data=mydata, effects=myeff9, prevAns=ans9))
+alg_alg <- set_algorithm_saom(gmm=TRUE, seed=4321, nsub=2)
+(ans9  <- siena(data=mydata, effects=myeff9, control_algo=alg_alg))
+alg_alg <- set_algorithm_saom(gmm=TRUE, seed=597, n3=10000, nsub=5)
+(ans9  <- siena(data=mydata, effects=myeff9, prevAns=ans9,
+             control_algo=alg_alg))
 ans9$targets
 sum(s503r * (s501 %*% s503r))  # 44 OK
 # contemp:
@@ -2888,52 +3154,63 @@ sum(s503r * (s502 %*% s503r))  # 52 OK
 ################################################################################
 
 
-(mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234, modelType=c(mynet1=11, mynet2=11)))
 set.seed(1234)
 (perm <- c(sample(1:25), 26:50))
 s502r <- s502[perm,perm]
 s503r <- s503[perm,perm]
-mynet1 <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaDependent(array(c(s502r, s503r), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet1, mynet2)
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(s502r, s503r), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet1, mynet2)
 
-myeff <- getEffects(mydata)
+myeff <- make_specification(mydata)
 # for crprod:
-myeff <- setEffect(myeff, crprod, name='mynet2', interaction1='mynet1')
+myeff <- set_effect(myeff, crprod, depvar="mynet2", covar1="mynet1")
 myeff
-(ans <- siena07(mycontrols, data=mydata, effects=myeff))
+alg_model <- set_model_saom(modelType=c(mynet1=11,mynet2=11))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff, control_model=alg_model,
+             control_algo=alg_alg))
 ans$targets
 # contemp:
 sum(s503r * s502) # 36, OK
 
-myeff2 <- setEffect(myeff, crprod, name='mynet1', interaction1='mynet2')
-(ans <- siena07(mycontrols, data=mydata, effects=myeff2))
+myeff2 <- set_effect(myeff, crprod, depvar="mynet1", covar1="mynet2")
+alg_model <- set_model_saom(modelType=c(mynet1=11,mynet2=11))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff2, control_model=alg_model,
+             control_algo=alg_alg))
 ans$targets
 # Warning: Noninvertible estimated covariance matrix. This should indeed happen.
 
-(mycontrols2 <- sienaAlgorithmCreate(projname=NULL, seed=1234, modelType=c(mynet1=1, mynet2=11)))
-(ans2 <- siena07(mycontrols2, data=mydata, effects=myeff))
+alg_model <- set_model_saom(modelType=c(mynet1=1,mynet2=11))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans2  <- siena(data=mydata, effects=myeff, control_model=alg_model,
+             control_algo=alg_alg))
 ans2$targets # OK
-(ans32 <- siena07(mycontrols2, data=mydata, effects=myeff2))
+alg_model <- set_model_saom(modelType=c(mynet1=1,mynet2=11))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans32  <- siena(data=mydata, effects=myeff2, control_model=alg_model,
+             control_algo=alg_alg))
 ans32$targets # OK
 
 ################################################################################
 ### check outThreshold
 ################################################################################
 
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(mynet)
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(mynet)
 poscov <- (mydata$cCovars$mycova > 0)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=138)
 
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,outThreshold, parameter=2))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, outThreshold, parameter=2))
+alg_alg <- set_algorithm_saom(seed=138)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(rowSums(s502)> 2) # 23 OK
 sum(rowSums(s502)>= 3) # 23 OK
-(mymodel <- setEffect(mymodel,outThreshold2, parameter=4))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+(mymodel <- set_effect(mymodel, outThreshold2, parameter=4))
+alg_alg <- set_algorithm_saom(seed=138)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(rowSums(s502)> 4) # 3 OK
 
@@ -2942,13 +3219,13 @@ sum(rowSums(s502)> 4) # 3 OK
 ### check varAlt
 ################################################################################
 
-mynet <- sienaDependent(array(c(s501, s502, s503), dim = c(50,50,3)))
-alcohol <- sienaDependent(s50a, type = "behavior")
-mydata <- sienaDataCreate(mynet, alcohol)
-myeff <- getEffects(mydata)
-myeff <- includeEffects(myeff, varAlt, name="alcohol", interaction1="mynet")
-myalg <- sienaAlgorithmCreate(projname=NULL, seed=138)
-(ans <- siena07(myalg, data=mydata, effects=myeff))
+mynet <- as_dependent_rsiena(array(c(s501, s502, s503), dim = c(50,50,3)))
+alcohol <- as_dependent_rsiena(s50a, type = "behavior")
+mydata <- make_data_rsiena(mynet, alcohol)
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, varAlt, depvar="alcohol", covar1="mynet")
+alg_alg <- set_algorithm_saom(seed=138)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets2[9,]
 
 # check target statistic
@@ -2978,13 +3255,13 @@ sum(temp * (alco[,3] - mean(alco))) # -11.39942 OK
 ### check altHigherEgoX
 ################################################################################
 
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
-myvar <- coCovar(s50a[,2])
-mydata <- sienaDataCreate(mynet, myvar)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=138)
-mymodel <- getEffects(mydata)
-(mymodel <- setEffect(mymodel,altHigherEgoX, interaction1="myvar"))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+myvar <- as_covariate_rsiena(s50a[,2])
+mydata <- make_data_rsiena(mynet, myvar)
+mymodel <- make_specification(mydata)
+(mymodel <- set_effect(mymodel, altHigherEgoX, covar1="myvar"))
+alg_alg <- set_algorithm_saom(seed=138)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(s502*outer(myvar,myvar,function(x,y){sign(y-x)})) # OK
 
@@ -3012,31 +3289,31 @@ oneA <- rep(1,12)
 oneB <- rep(1,10)
 
 # Identify nodesets
-senders <- sienaNodeSet(12, nodeSetName="senders")
-recipients <- sienaNodeSet(10, nodeSetName="recipients")
+senders <- as_nodeset_rsiena(12, nodeSetName="senders")
+recipients <- as_nodeset_rsiena(10, nodeSetName="recipients")
 
 # Make dependent network
-network <- sienaDependent(array(c(wave1, wave2), dim=c(12,10,2)),
+network <- as_dependent_rsiena(array(c(wave1, wave2), dim=c(12,10,2)),
                           type="bipartite", nodeSet=c("senders","recipients"),
 						  allowOnly=FALSE)
 
 # Make covariates
-covaralt <- coCovar(covalt, nodeSet="recipients")
-covarego <- coCovar(covego1, nodeSet="senders")
-covoneA  <- coCovar(oneA, nodeSet="senders", warn=FALSE)
-covoneB  <- coCovar(oneB, nodeSet="recipients", warn=FALSE)
+covaralt <- as_covariate_rsiena(covalt, nodeSet="recipients")
+covarego <- as_covariate_rsiena(covego1, nodeSet="senders")
+covoneA  <- as_covariate_rsiena(oneA, nodeSet="senders", warn=FALSE)
+covoneB  <- as_covariate_rsiena(oneB, nodeSet="recipients", warn=FALSE)
 
 # Put it all together
-bdata <- sienaDataCreate(network, covaralt, covarego, covoneA, covoneB,
+bdata <- make_data_rsiena(network, covaralt, covarego, covoneA, covoneB,
                 nodeSets=list(senders,recipients))
 
-algon <- sienaAlgorithmCreate(projname = "biptry", nsub=3, n3=200, seed=1234)
 
-effs <- getEffects(bdata)
-effs <- setEffect(effs, cycle4,   parameter=1)
+effs <- make_specification(bdata)
+effs <- set_effect(effs, cycle4, parameter=1)
 effs
 
-(ans0 <- siena07(algon, data=bdata, effects=effs))
+alg_alg <- set_algorithm_saom(seed=1234, n3=200, nsub=3)
+(ans0  <- siena(data=bdata, effects=effs, control_algo=alg_alg))
 ans0$targets #  49 98
 inTwoStars <- wave2 %*% t(wave2)
 diag(inTwoStars) <- 0
@@ -3046,22 +3323,24 @@ outTwoStars <- t(wave2) %*% (wave2)
 diag(outTwoStars) <- 0
 sum(outTwoStars*outTwoStars - outTwoStars)/4 # cycle4 OK
 
-effs <- getEffects(bdata)
-effs <- setEffect(effs, sameXCycle4,  interaction1="covarego", parameter=1)
+effs <- make_specification(bdata)
+effs <- set_effect(effs, sameXCycle4, covar1="covarego", parameter=1)
 effs
 
-(ans <- siena07(algon, data=bdata, effects=effs))
+alg_alg <- set_algorithm_saom(seed=1234, n3=200, nsub=3)
+(ans  <- siena(data=bdata, effects=effs, control_algo=alg_alg))
 ans$targets
 inTwoStars <- wave2 %*% t(wave2)
 diag(inTwoStars) <- 0
 eq <- outer(covego1, covego1, FUN="==")  # matrix I{covego1[i] = covego1[j]})
 sum(eq*(inTwoStars*inTwoStars - inTwoStars))/4 # sameXCycle4 OK
 
-effs <- getEffects(bdata)
-effs <- setEffect(effs, sameInXCycle4,  interaction1="covoneB", parameter=1)
+effs <- make_specification(bdata)
+effs <- set_effect(effs, sameInXCycle4, covar1="covoneB", parameter=1)
 effs
 
-(ans <- siena07(algon, data=bdata, effects=effs))
+alg_alg <- set_algorithm_saom(seed=1234, n3=200, nsub=3)
+(ans  <- siena(data=bdata, effects=effs, control_algo=alg_alg))
 ans$targets #  49 98
 outTwoStars <- t(wave2) %*% (wave2)
 diag(outTwoStars) <- 0
@@ -3069,11 +3348,12 @@ eq <- outer(oneB, oneB, FUN="==")  # matrix I{oneB[i] = oneB[j]})
 sum(eq*(outTwoStars*outTwoStars - outTwoStars))/4 # sameInXCycle4  OK
 sum((outTwoStars*outTwoStars - outTwoStars))/4 # sameInXCycle4  OK
 
-effs <- getEffects(bdata)
-effs <- setEffect(effs, sameInXCycle4,  interaction1="covaralt", parameter=1)
+effs <- make_specification(bdata)
+effs <- set_effect(effs, sameInXCycle4, covar1="covaralt", parameter=1)
 effs
 
-(ans <- siena07(algon, data=bdata, effects=effs))
+alg_alg <- set_algorithm_saom(seed=1234, n3=200, nsub=3)
+(ans  <- siena(data=bdata, effects=effs, control_algo=alg_alg))
 ans$targets
 outTwoStars <- t(wave2) %*% (wave2)
 diag(outTwoStars) <- 0
@@ -3088,8 +3368,8 @@ sum(eq*(outTwoStars*outTwoStars - outTwoStars))/4 # sameInXCycle4 OK
 #
 
 
-mynet1 <- sienaNet(array(c(s501, s502), dim=c(50, 50, 2)))
-mynet2 <- sienaNet(array(c(t(s503), t(s501)), dim=c(50, 50, 2)))
+mynet1 <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet2 <- as_dependent_rsiena(array(c(t(s503), t(s501)), dim=c(50, 50, 2)))
 # construct actor covariate
 in1 <- colSums(s501)
 out1 <- rowSums(s501)
@@ -3098,17 +3378,16 @@ table(center)
 center <- round(center/3)
 table(center)
 
-central <- coCovar(center, center=FALSE)
-mydata <- sienaDataCreate(mynet1, mynet2, central)
+central <- as_covariate_rsiena(center, center=FALSE)
+mydata <- make_data_rsiena(mynet1, mynet2, central)
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff,sameXInPopIntn,name='mynet1', parameter=1,
-                interaction1='mynet2', interaction2='central')
-myeff <- includeEffects(myeff,crprod,name='mynet1',
-                interaction1='mynet2')
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, sameXInPopIntn, depvar="mynet1", covar1="mynet2",
+             covar2="central", parameter=1)
+myeff <- set_effect(myeff, crprod, depvar="mynet1", covar1="mynet2")
 myeff
-mymodel <- sienaModelCreate(projname=NULL, seed=1234)
-(ans <- siena07(mymodel, data=mydata, effects=myeff)) #
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets #  115 116  70  62 158 133 113  78
 # check target statistics: rec
 sum(s502*t(s502)) # 70 OK
@@ -3120,96 +3399,96 @@ mat1 <- (s502) * (( mat %*% t(s503)  ))
 sum(diag((mat1))) # 0 OK
 sum((mat1)) # 158 OK
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff,sameXInPopIntn,name='mynet1', parameter=2,
-                interaction1='mynet2', interaction2='central')
-myeff <- includeEffects(myeff,crprod,name='mynet1',
-                interaction1='mynet2')
-(ans <- siena07(mymodel, data=mydata, effects=myeff)) #
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, sameXInPopIntn, depvar="mynet1", covar1="mynet2",
+             covar2="central", parameter=2)
+myeff <- set_effect(myeff, crprod, depvar="mynet1", covar1="mynet2")
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets #  115.0000 116.0000  70.0000  62.0000 116.3354 133.0000 113.0000  78.0000
 sum((s502) * sqrt(( mat %*% t(s503)  ))) # 116.3354 OK
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff,sameXInPopIntn,name='mynet1', parameter=3,
-                interaction1='mynet2', interaction2='central')
-myeff <- includeEffects(myeff,crprod,name='mynet1',
-                interaction1='mynet2')
-(ans <- siena07(mymodel, data=mydata, effects=myeff)) #
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, sameXInPopIntn, depvar="mynet1", covar1="mynet2",
+             covar2="central", parameter=3)
+myeff <- set_effect(myeff, crprod, depvar="mynet1", covar1="mynet2")
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets #  115.00000 116.00000  70.00000  62.00000  11.17582 133.00000 113.00000  78.00000
 matr <- solve(diag(rowSums(mat))) %*% mat
 sum(s502 * (matr %*% t(s503))) #  11.17582 OK
 
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff,sameXInPopIntn,name='mynet1', parameter=4,
-                interaction1='mynet2', interaction2='central')
-myeff <- includeEffects(myeff,crprod,name='mynet1',
-                interaction1='mynet2')
-(ans <- siena07(mymodel, data=mydata, effects=myeff)) #
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, sameXInPopIntn, depvar="mynet1", covar1="mynet2",
+             covar2="central", parameter=4)
+myeff <- set_effect(myeff, crprod, depvar="mynet1", covar1="mynet2")
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets # 115.00000 116.00000  70.00000  62.00000  29.18176 133.00000 113.00000  78.00000
 sum(s502 * sqrt(matr %*% t(s503))) #   29.18176  OK
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff,sameXInActIntn,name='mynet1', parameter=1,
-                interaction1='mynet2', interaction2='central')
-myeff <- includeEffects(myeff,crprod,name='mynet1',
-                interaction1='mynet2')
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, sameXInActIntn, depvar="mynet1", covar1="mynet2",
+             covar2="central", parameter=1)
+myeff <- set_effect(myeff, crprod, depvar="mynet1", covar1="mynet2")
 myeff
-(ans <- siena07(mymodel, data=mydata, effects=myeff))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets # 115 116  70  62 111 133 113  78
 sum(rowSums(s502) * colSums(t(s503) * mat)) # 111 OK
 
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff,sameXInActIntn,name='mynet1', parameter=2,
-                interaction1='mynet2', interaction2='central')
-myeff <- includeEffects(myeff,crprod,name='mynet1',
-                interaction1='mynet2')
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, sameXInActIntn, depvar="mynet1", covar1="mynet2",
+             covar2="central", parameter=2)
+myeff <- set_effect(myeff, crprod, depvar="mynet1", covar1="mynet2")
 myeff
-(ans <- siena07(mymodel, data=mydata, effects=myeff))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets #  115.00000 116.00000  70.00000  62.00000  87.28694 133.00000 113.00000  78.00000
 sum(rowSums(s502) * sqrt(colSums(t(s503) * mat))) # 87.28694 OK
 
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff,sameXInActIntn,name='mynet1', parameter=3,
-                interaction1='mynet2', interaction2='central')
-myeff <- includeEffects(myeff,crprod,name='mynet1',
-                interaction1='mynet2')
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, sameXInActIntn, depvar="mynet1", covar1="mynet2",
+             covar2="central", parameter=3)
+myeff <- set_effect(myeff, crprod, depvar="mynet1", covar1="mynet2")
 myeff
-(ans <- siena07(mymodel, data=mydata, effects=myeff))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets #  115.000000 116.000000  70.000000  62.000000   6.247253 133.000000 113.000000  78.000000
 sum(rowSums(s502) * (colSums(t(s503) * mat)/colSums(mat))) #  6.247253 OK
 
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff,sameXInActIntn,name='mynet1', parameter=4,
-                interaction1='mynet2', interaction2='central')
-myeff <- includeEffects(myeff,crprod,name='mynet1',
-                interaction1='mynet2')
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, sameXInActIntn, depvar="mynet1", covar1="mynet2",
+             covar2="central", parameter=4)
+myeff <- set_effect(myeff, crprod, depvar="mynet1", covar1="mynet2")
 myeff
-(ans <- siena07(mymodel, data=mydata, effects=myeff))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets #  115.00000 116.00000  70.00000  62.00000  20.20013 133.00000 113.00000  78.00000
 sum(rowSums(s502) * sqrt(colSums(t(s503) * mat)/colSums(mat))) # 20.20013 OK
 
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff,sameXOutPopIntn,name='mynet1', parameter=1,
-                interaction1='mynet2', interaction2='central')
-myeff <- includeEffects(myeff,crprod,name='mynet1',
-                interaction1='mynet2')
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, sameXOutPopIntn, depvar="mynet1", covar1="mynet2",
+             covar2="central", parameter=1)
+myeff <- set_effect(myeff, crprod, depvar="mynet1", covar1="mynet2")
 myeff
-(ans <- siena07(mymodel, data=mydata, effects=myeff))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets # 115 116  70  62 171 133 113  78
 sum((s502) * ( mat %*% (s503) )) # 171 OK
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff,sameXOutActIntn,name='mynet1', parameter=1,
-                interaction1='mynet2', interaction2='central')
-myeff <- includeEffects(myeff,crprod,name='mynet1',
-                interaction1='mynet2')
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, sameXOutActIntn, depvar="mynet1", covar1="mynet2",
+             covar2="central", parameter=1)
+myeff <- set_effect(myeff, crprod, depvar="mynet1", covar1="mynet2")
 myeff
-(ans <- siena07(mymodel, data=mydata, effects=myeff))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets #   115 116  70  62 111 133 113  78
 sum(rowSums(s502) * rowSums(s503 * mat)) # 111 OK
 
@@ -3217,15 +3496,15 @@ sum(rowSums(s502) * rowSums(s503 * mat)) # 111 OK
 ### check from, fromAny
 ################################################################################
 
-advice <- sienaDependent(array(c(s502, s501), dim=c(50, 50, 2)))
-trust <- sienaDependent(array(c(s503, s501), dim=c(50, 50, 2)))
-mydata <- sienaDataCreate(advice,trust)
+advice <- as_dependent_rsiena(array(c(s502, s501), dim=c(50, 50, 2)))
+trust <- as_dependent_rsiena(array(c(s503, s501), dim=c(50, 50, 2)))
+mydata <- make_data_rsiena(advice,trust)
 
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel,from,name="trust",interaction1="advice")
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, from, depvar="trust", covar1="advice")
 mymodel
-myalg <- sienaAlgorithmCreate(projname = NULL, seed=123)
-(myans <- siena07(myalg, data = mydata, effects = mymodel))
+alg_alg <- set_algorithm_saom(seed=123)
+(myans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 myans$targets # 115 113  78 133 113  78  60
 # for from effect:
 # W=advice , X=trust
@@ -3233,17 +3512,20 @@ WW <- s502 %*% t(s502)
 diag(WW) <- 0
 sum(WW * s501) # 60 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,from,name="trust",interaction1="advice", parameter=2)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, from, depvar="trust", covar1="advice",
+             parameter=2)
 mymodel
-(myans <- siena07(myalg, data = mydata, effects = mymodel))
+alg_alg <- set_algorithm_saom(seed=123)
+(myans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 myans$targets #115.00000 113.00000  78.00000 133.00000 113.00000  78.00000  52.97056
 sum(sqrt(WW) * s501) # 52.97056 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,fromAny,name="trust",interaction1="advice")
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, fromAny, depvar="trust", covar1="advice")
 mymodel
-(myans <- siena07(myalg, data = mydata, effects = mymodel))
+alg_alg <- set_algorithm_saom(seed=123)
+(myans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 myans$targets # 115 113  78 133 113  78  48
 sum((1.0*(WW > 0)) * s501) # 48 OK
 
@@ -3254,63 +3536,68 @@ sum((1.0*(WW > 0)) * s501) # 48 OK
 ################################################################################
 
 
-mynet <- sienaDependent(array(c(s501, s502), dim=c(50, 50, 2)))
+mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
 
-mydata <- sienaDataCreate(mynet)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, outAct)
-mymodel <- setEffect(mymodel, outActMore_ego, parameter=3)
+mydata <- make_data_rsiena(mynet)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, outAct)
+mymodel <- set_effect(mymodel, outActMore_ego, parameter=3)
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=51234)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=51234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(rowSums(s502)^2) #  OK
 sum((rowSums(s502))*(pmax(rowSums(s502) -3, 0))) # 50 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, outActSqrt)
-mymodel <- setEffect(mymodel, outActSqrtMore_ego, parameter=3)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, outActSqrt)
+mymodel <- set_effect(mymodel, outActSqrtMore_ego, parameter=3)
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=51234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(rowSums(s502)* sqrt(rowSums(s502))) # 197.4244 OK
 sum(rowSums(s502)*(pmax(sqrt(rowSums(s502)) - sqrt(3), 0))) # 12.91924 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, outAct)
-mymodel <- setEffect(mymodel, outMore_ego, parameter=3)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, outAct)
+mymodel <- set_effect(mymodel, outMore_ego, parameter=3)
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel, thetaBound=1000))
+alg_alg <- set_algorithm_saom(seed=51234)
+(ans  <- siena(data=mydata, effects=mymodel, thetaBound=1000,
+             control_algo=alg_alg))
 ans$targets
 sum(rowSums(s502)* (rowSums(s502))) #  350 OK
 sum(rowSums(s502)*(rowSums(s502)> 3)) # 35 OK
 
 
-mydata <- sienaDataCreate(mynet)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, outPop)
-mymodel <- setEffect(mymodel, outPopMore, parameter=3)
+mydata <- make_data_rsiena(mynet)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, outPop)
+mymodel <- set_effect(mymodel, outPopMore, parameter=3)
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=1234)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(rowSums(s502)*colSums(s502)) # 306 OK
 sum((colSums(s502))*(pmax(rowSums(s502) -3, 0))) # 28 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, outPopSqrt)
-mymodel <- setEffect(mymodel, outPopSqrtMore, parameter=3)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, outPopSqrt)
+mymodel <- set_effect(mymodel, outPopSqrtMore, parameter=3)
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(colSums(s502)* sqrt(rowSums(s502))) #  182.625 OK
 sum(colSums(s502)*(pmax(sqrt(rowSums(s502)) - sqrt(3), 0))) # 7.247528 OK
 
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel, outPop)
-mymodel <- setEffect(mymodel, outPopThreshold, parameter=3)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, outPop)
+mymodel <- set_effect(mymodel, outPopThreshold, parameter=3)
 mymodel
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=1234)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 sum(colSums(s502)* (rowSums(s502))) #  360 OK
 sum(colSums(s502)*(rowSums(s502)> 3)) # 20 OK
@@ -3320,9 +3607,9 @@ sum(colSums(s502)*(rowSums(s502)> 3)) # 20 OK
 ################################################################################
 
 # make example analysis w/ s50 data:
-thedata <- sienaDataCreate(
-	net = sienaDependent(array(c(s501, s502), dim=c(50, 50, 2))),
-	beh = sienaDependent(s50a[,1:2], type='behavior')
+thedata <- make_data_rsiena(
+	net = as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2))),
+	beh = as_dependent_rsiena(s50a[,1:2], type='behavior')
 )
 
 gm <- mean(s50a[,1:2])
@@ -3335,23 +3622,21 @@ avAlt <- function(n, b){
 }
 
 # specify w/ contemporaneously centered effects alongside grand-mean centered ones:
-model <- getEffects(thedata)
-model <- includeEffects(model, quad_cc, name='beh')
-model <- includeEffects(model, avAlt, avAlt_cc, name='beh', interaction1='net')
+model <- make_specification(thedata)
+model <- set_effect(model, quad_cc, depvar="beh")
+model <- set_effect(model, list(avAlt, avAlt_cc), depvar="beh", covar1="net")
 model
 sum((s50a[,2]-gm) * (avAlt(s501, s50a[,2])-gm), na.rm=TRUE) # is okay
-model <- includeEffects(model, egoX, egoX_cc, altX, altX_cc, name='net', interaction1='beh')
+model <- set_effect(model, list(egoX, egoX_cc, altX, altX_cc), depvar="net",
+             covar1="beh")
 # fix grand-mean centered old veriants to avoid collinearity in estimation:
-model <- setEffect(model, avAlt, fix=TRUE, test=TRUE,
-	type='eval', name='beh', interaction1='net'
-)
-model <- setEffect(model, quad, fix=TRUE, test=TRUE,
-	type='eval', name='beh'
-)
+model <- set_effect(model, avAlt, type="eval", depvar="beh", covar1="net",
+             fix=TRUE, test=TRUE)
+model <- set_effect(model, quad, type="eval", depvar="beh", fix=TRUE, test=TRUE)
 
 # estimate and get target statistics of all effects:
-thecontrols <- sienaAlgorithmCreate(seed=1234)
-(results <- siena07(thecontrols, data=thedata, effects=model))
+alg_alg <- set_algorithm_saom(seed=1234)
+(results  <- siena(data=thedata, effects=model, control_algo=alg_alg))
 (daf <- data.frame(
 	shortNames = results$effects$shortName,
 	targets = results$targets
@@ -3374,15 +3659,15 @@ sum((s50a[,2]-cc)^2) # 70.5 ok
 ### check avGroup
 ################################################################################
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
 p <- 1
-mymodel <- setEffect(mymodel,avGroup, name='mybeh', parameter=p)
+mymodel <- set_effect(mymodel, avGroup, depvar="mybeh", parameter=1)
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 (mbh <- mean(mybeh))
@@ -3393,22 +3678,23 @@ sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
 ## The target statistic equals the sum of over s_i^beh =
 #, substracting c_p from  the mean for p > 0.5
 
-c_p <- ifelse(p <= 0.5, 0, p - mbh)
+p <- 1
+c_p <- ifelse(1 <= 0.5, 0, 1 - mbh)
 sum((mybeh[,,2]-mbh)*(mean((mybeh[,,2]-mbh))-c_p)) # 15.34 OK
 
 ################################################################################
 ### check totGroup
 ################################################################################
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
 p <- 1
-mymodel <- setEffect(mymodel,totGroup, name='mybeh', parameter=p)
+mymodel <- set_effect(mymodel, totGroup, depvar="mybeh", parameter=1)
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 (mbh <- mean(mybeh))
@@ -3419,7 +3705,7 @@ sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
 ## The target statistic equals the sum of over s_i^beh =
 #, substracting c_p from  the mean for p > 0.5
 
-c_p <- ifelse(p <= 0.5, 0, p - mbh)
+c_p <- ifelse(1 <= 0.5, 0, 1 - mbh)
 sum((mybeh[,,2]-mbh)*(sum((mybeh[,,2]-mbh))-c_p)) # 56.745 OK
 
 ################################################################################
@@ -3427,13 +3713,13 @@ sum((mybeh[,,2]-mbh)*(sum((mybeh[,,2]-mbh))-c_p)) # 56.745 OK
 ################################################################################
 
 # Model test for totGroupEgoX
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, totGroupEgoX,
-                      name='mynet', interaction1='mybeh')
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totGroupEgoX, depvar="mynet", covar1="mybeh")
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets # does not converge well
 
 (mbh <- mean(mybeh))
@@ -3446,12 +3732,13 @@ total_ties <- sum(adj)
 total_ties * group_total
 
 # Model test for avGroupEgoX
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, avGroupEgoX, name='mynet', interaction1='mybeh')
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel)) # does not converge well
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avGroupEgoX, depvar="mynet", covar1="mybeh")
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 adj <- mynet[, , 2] # adjacency matrix for the period
@@ -3467,16 +3754,17 @@ sum(outdeg * group_mean) # avGroupEgoX ok
 ################################################################################
 
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
 p <- 1
-mymodel <- setEffect(mymodel,indegAvGroup,
-                      name='mybeh', interaction1='mynet', parameter=p)
+mymodel <- set_effect(mymodel, indegAvGroup, depvar="mybeh", covar1="mynet",
+             parameter=1)
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE,
+             control_algo=alg_alg))
 ans$targets
 (mbh <- mean(mybeh))
 sum(mybeh[,,2] - mbh) # OK linear shape
@@ -3486,29 +3774,33 @@ sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
 ## The target statistic equals the sum over s_i^beh, weighted by
 ##substracting c_p from the mean for p > 0.5
 
-c_p <- ifelse(p <= 0.5, 0, p - mbh)
+p <- 1
+c_p <- ifelse(1 <= 0.5, 0, 1 - mbh)
 sum( (mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) /
   sum(colSums(mynet[,,1])) ) - c_p )) # 15.74569 OK
 
 ## Test for three networks without shape effects
 
-mynet <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
-mybeh <- sienaDependent(s50a[,1:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
+mynet <- as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+mybeh <- as_dependent_rsiena(s50a[,1:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
 p <- 1
-mymodel <- includeEffects (mymodel, linear, quad,  name='mybeh', include=FALSE)
+mymodel <- set_effect(mymodel, list(linear, quad), depvar="mybeh",
+             include=FALSE)
 
-mymodel <- setEffect(mymodel,indegAvGroup,
-                     name='mybeh', interaction1='mynet', parameter=p)
+mymodel <- set_effect(mymodel, indegAvGroup, depvar="mybeh", covar1="mynet",
+             parameter=1)
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE,
-                prevAns = ans, returnDeps=TRUE))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE,
+             control_algo=alg_alg))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, returnDeps=TRUE, batch=TRUE,
+             verbose=TRUE, prevAns=ans, control_algo=alg_alg))
 ans$targets
 (mbh <- mean(mybeh))
-c_p <- ifelse(p <= 0.5, 0, p - mbh)
+c_p <- ifelse(1 <= 0.5, 0, 1 - mbh)
 sum((mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) / sum(colSums(mynet[,,1])) ) - c_p )) +
   sum((mybeh[,,3]-mbh) * (( sum((mybeh[,,3]-mbh) * colSums(mynet[,,2])) / sum(colSums(mynet[,,2])) ) - c_p )) # 28.37791 ok
 
@@ -3517,16 +3809,17 @@ sum((mybeh[,,2]-mbh) * (( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) / sum(colS
 ### check indegTotGroup
 ################################################################################
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
 p <- 1
-mymodel <- setEffect(mymodel,indegTotGroup,
-                      name='mybeh', interaction1='mynet', parameter=p)
+mymodel <- set_effect(mymodel, indegTotGroup, depvar="mybeh", covar1="mynet",
+             parameter=1)
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE,
+             control_algo=alg_alg))
 ans$targets
 (mbh <- mean(mybeh))
 sum(mybeh[,,2] - mbh) # OK linear shape
@@ -3536,30 +3829,33 @@ sum((mybeh[,,2] - mbh)^2) # OK quadratic shape
 ## The target statistic equals the sum over s_i^beh, weighted by
 ##substracting c_p from the mean for p > 0.5
 
-c_p <- ifelse(p <= 0.5, 0, p - mbh)
+c_p <- ifelse(1 <= 0.5, 0, 1 - mbh)
 sum( (mybeh[,,2]-mbh) * (sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) - c_p )) # 159.575 ok
 
 
 ## Test for three networks without shape effects
 
-mynet <- sienaDependent(array(c(s501, s502, s503), dim=c(50, 50, 3)))
-mybeh <- sienaDependent(s50a[,1:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
+mynet <- as_dependent_rsiena(array(c(s501, s502, s503), dim=c(50, 50, 3)))
+mybeh <- as_dependent_rsiena(s50a[,1:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
 p <- 1
-mymodel <- includeEffects (mymodel, linear, quad,  name='mybeh', include=FALSE)
+mymodel <- set_effect(mymodel, list(linear, quad), depvar="mybeh",
+             include=FALSE)
 
-mymodel <- setEffect(mymodel,indegTotGroup,
-                     name='mybeh', interaction1='mynet', parameter=p)
+mymodel <- set_effect(mymodel, indegTotGroup, depvar="mybeh", covar1="mynet",
+             parameter=1)
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE))
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE,
-                prevAns = ans, returnDeps=TRUE))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, batch=TRUE, verbose=TRUE,
+             control_algo=alg_alg))
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, returnDeps=TRUE, batch=TRUE,
+             verbose=TRUE, prevAns=ans, control_algo=alg_alg))
 ans$targets
 
 (mbh <- mean(mybeh))
-c_p <- ifelse(p <= 0.5, 0, p - mbh)
+c_p <- ifelse(1 <= 0.5, 0, 1 - mbh)
 sum( (mybeh[,,2]-mbh) * ( sum((mybeh[,,2]-mbh) * colSums(mynet[,,1])) - c_p )) +
 sum( (mybeh[,,3]-mbh) * ( sum((mybeh[,,3]-mbh) * colSums(mynet[,,2])) - c_p )) # 456.7178 ok
 
@@ -3586,14 +3882,14 @@ divi <- function(x, y) {
   ifelse(y == 0, 0, x / y)
 }
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,totInAltDist2, name='mybeh', interaction1 = "mynet")
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totInAltDist2, depvar="mybeh", covar1="mynet")
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=42)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 (mbh <- mean(mybeh))
@@ -3609,13 +3905,14 @@ instarmat <- instars(mynet[,,1])
 weighted <- (mybeh[,,2]-mbh) %*% instarmat
 sum((mybeh[,,2] - mbh)*weighted) # totInAltDist2 114.183 ok
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,totInAltDist2_nc, name='mybeh', interaction1 = "mynet")
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totInAltDist2_nc, depvar="mybeh", covar1="mynet")
 mymodel
-(ans2 <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=42)
+(ans2  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans2$targets # different from totInAltDist2
 
 (mbh <- mean(mybeh))
@@ -3633,14 +3930,14 @@ sum((mybeh[,,2])*weighted) # totInAltDist2_nc 3402 ok
 ### check totAInAltDist2 and totAInAltDist2_nc
 ################################################################################
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,totAInAltDist2, name='mybeh', interaction1 = "mynet")
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totAInAltDist2, depvar="mybeh", covar1="mynet")
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=42)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 (mbh <- mean(mybeh))
@@ -3671,13 +3968,15 @@ for (i in 1:n) {
 }
 sum(beh * stat) # totAInAltDist2 42.3332 ok
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,totAInAltDist2_nc, name='mybeh', interaction1 = "mynet")
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totAInAltDist2_nc, depvar="mybeh",
+             covar1="mynet")
 mymodel
-(ans2 <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=42)
+(ans2  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans2$targets # different from totAInAltDist2
 
 (mbh <- mean(mybeh))
@@ -3709,14 +4008,14 @@ sum(beh * stat) # totAInAltDist2_nc 1318.7 ok
 ### check avTInAltDist2 and avTInAltDist2_nc
 ################################################################################
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,avTInAltDist2, name='mybeh', interaction1 = "mynet")
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avTInAltDist2, depvar="mybeh", covar1="mynet")
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=42)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 (mbh <- mean(mybeh))
@@ -3736,14 +4035,14 @@ weighted_beh <- divi(weighted_beh, outdegree)
 
 sum((mybeh[, , 2]-mbh) * weighted_beh) # 34.24184 ok
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,avTInAltDist2_nc, name='mybeh', interaction1 = "mynet")
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avTInAltDist2_nc, depvar="mybeh", covar1="mynet")
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=42)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 (mbh <- mean(mybeh))
@@ -3764,14 +4063,14 @@ sum((mybeh[, , 2]) * weighted_beh) # 1275.383 ok
 ### check avInAltdist2 and avInAltdist2_nc
 ################################################################################
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,avInAltDist2, name='mybeh', interaction1 = "mynet")
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avInAltDist2, depvar="mybeh", covar1="mynet")
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=42)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 (mbh <- mean(mybeh))
@@ -3804,14 +4103,14 @@ outdegree <- rowSums(mynet[, , 1])
 stat <- divi(stat, outdegree)
 sum(beh * stat) # 15.34422 ok
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,avInAltDist2_nc, name='mybeh', interaction1 = "mynet")
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, avInAltDist2_nc, depvar="mybeh", covar1="mynet")
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=42)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 (mbh <- mean(mybeh))
@@ -3845,14 +4144,14 @@ sum(beh * stat) # 514.7194 ok
 ### check totGwdspFBAlt and totGwdspFBAlt_nc
 ################################################################################
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,totGwdspFBAlt, name='mybeh', interaction1 = "mynet")
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totGwdspFBAlt, depvar="mybeh", covar1="mynet")
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=42)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 (mbh <- mean(mybeh))
@@ -3869,14 +4168,14 @@ sum((mybeh[, , 2] - mbh) * weighted_beh) # 89.68582 ok
 
 
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,totGwdspFBAlt_nc, name='mybeh', interaction1 = "mynet")
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totGwdspFBAlt_nc, depvar="mybeh", covar1="mynet")
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=42)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets # different from totGwdspFBAlt
 
 (mbh <- mean(mybeh))
@@ -3901,14 +4200,14 @@ forward_twopaths <- function(adj) {
   return(mat)
 }
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,totGwdspFFAlt, name='mybeh', interaction1 = "mynet")
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totGwdspFFAlt, depvar="mybeh", covar1="mynet")
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42, nsub=2, n3=100)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=42, n3=100, nsub=2)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 # geometrically weighted number of two-paths weighted
@@ -3923,17 +4222,16 @@ weighted_beh <- (mybeh[, , 2] - mbh) %*% weight_mat
 sum((mybeh[, , 2] - mbh) * weighted_beh) # 87.40375 ok
 
 
-mynet <- sienaDependent(array(c(s501,s502, s503), dim=c(50, 50, 3)))
-mybeh <- sienaDependent(s50a[,1:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
-mymodel <- setEffect(mymodel,totGwdspFFAlt_nc, name='mybeh', interaction1 = "mynet")
-mymodel <- includeEffects(mymodel, quad_nc, name = "mybeh")
-mymodel <- includeEffects(mymodel, quad,
-    name = "mybeh", include = FALSE)
+mynet <- as_dependent_rsiena(array(c(s501,s502, s503), dim=c(50, 50, 3)))
+mybeh <- as_dependent_rsiena(s50a[,1:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totGwdspFFAlt_nc, depvar="mybeh", covar1="mynet")
+mymodel <- set_effect(mymodel, quad_nc, depvar="mybeh")
+mymodel <- set_effect(mymodel, quad, depvar="mybeh", include=FALSE)
 mymodel
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed = 42, nsub=2, n3=100)
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+alg_alg <- set_algorithm_saom(seed=42, n3=100, nsub=2)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets # different from totGwdspFFAlt
 
 
@@ -4032,15 +4330,15 @@ all.equal(manual_contribs, conts) # TRUE
 ### check popAlt and totPopAlt
 ################################################################################
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,2:3], type="behavior")
-mydata <- sienaDataCreate(mynet, mybeh)
-mymodel <- getEffects(mydata)
-mycontrols <- sienaAlgorithmCreate(projname=NULL, seed=123)
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,2:3], type="behavior")
+mydata <- make_data_rsiena(mynet, mybeh)
+mymodel <- make_specification(mydata)
 
 # popAlt
-mymodel <- includeEffects(mymodel, popAlt, name='mybeh', interaction1='mynet')
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- set_effect(mymodel, popAlt, depvar="mybeh", covar1="mynet")
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 (mbh <- mean(mybeh))
@@ -4059,9 +4357,10 @@ avg_popularity <- vapply(1:nrow(mynet[, , 1]), function(i) {
 sum((mybeh[,,2] - mbh)*avg_popularity) # popAlt 26.611 ok
 
 # totPopAlt
-mymodel <- getEffects(mydata)
-mymodel <- includeEffects(mymodel, totPopAlt, name='mybeh', interaction1='mynet')
-(ans <- siena07(mycontrols, data=mydata, effects=mymodel))
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, totPopAlt, depvar="mybeh", covar1="mynet")
+alg_alg <- set_algorithm_saom(seed=123)
+(ans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
 ans$targets
 
 popalt_stat <- vapply(1:nrow(s502), function(i) {
@@ -4079,15 +4378,16 @@ sum((mybeh[,,2] - mbh)*popalt_stat) # totPopAlt 99.22 ok
 ################################################################################
 
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,1:2])
-mycov <- coCovar(s50s[,1])
-mydata <- sienaDataCreate(mynet, mybeh, mycov)
-mymodel <- sienaAlgorithmCreate(projname=NULL, nsub=2, n3=300, seed=123)
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,1:2])
+mycov <- as_covariate_rsiena(s50s[,1])
+mydata <- make_data_rsiena(mynet, mybeh, mycov)
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff, avXAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
-(ans <- siena07(mymodel, data=mydata, effects=myeff))
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, avXAlt, depvar="mybeh", covar1="mycov",
+             covar2="mynet")
+alg_alg <- set_algorithm_saom(seed=123, n3=300, nsub=2)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets
 # [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050  12.2949
 mybeh[,,]
@@ -4102,17 +4402,22 @@ ddegs <- diag(inv(degs))
 rowSums( ddegs %*% s502)
 sum((mybeh[,,2] - meanbeh) * ( (ddegs %*%mynet[,,1]) %*% cova)) #  12.2949 OK
 
-myeff2 <- getEffects(mydata)
-myeff2 <- setEffect(myeff2, totXAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
-myeff2 <- setEffect(myeff2, outdeg, name="mybeh", interaction1="mynet")
-(ans2 <- siena07(mymodel, data=mydata, effects=myeff2))
+myeff2 <- make_specification(mydata)
+myeff2 <- set_effect(myeff2, totXAlt, depvar="mybeh", covar1="mycov",
+             covar2="mynet")
+myeff2 <- set_effect(myeff2, outdeg, depvar="mybeh", covar1="mynet")
+alg_alg <- set_algorithm_saom(seed=123, n3=300, nsub=2)
+(ans2  <- siena(data=mydata, effects=myeff2, control_algo=alg_alg))
 ans2$targets
 # [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050   25.1600  12.2949  40.8392
 sum((mybeh[,,2] - meanbeh) * ( mynet[,,1] %*% cova)) #  40.8392 OK
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff, avXInAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
-(ans <- siena07(mymodel, data=mydata, effects=myeff, thetaBound=200))
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, avXInAlt, depvar="mybeh", covar1="mycov",
+             covar2="mynet")
+alg_alg <- set_algorithm_saom(seed=123, n3=300, nsub=2)
+(ans  <- siena(data=mydata, effects=myeff, thetaBound=200,
+             control_algo=alg_alg))
 ans$targets
 # [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050  16.80043
 
@@ -4122,16 +4427,20 @@ ddegs <- diag(inv(degs))
 colSums( s502 %*% ddegs )
 sum((mybeh[,,2] - meanbeh) * ( (ddegs %*%t(mynet[,,1])) %*% cova)) #  16.80043 OK
 
-myeff2 <- getEffects(mydata)
-myeff2 <- setEffect(myeff2, totXInAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
-(ans2 <- siena07(mymodel, data=mydata, effects=myeff2))
+myeff2 <- make_specification(mydata)
+myeff2 <- set_effect(myeff2, totXInAlt, depvar="mybeh", covar1="mycov",
+             covar2="mynet")
+alg_alg <- set_algorithm_saom(seed=123, n3=300, nsub=2)
+(ans2  <- siena(data=mydata, effects=myeff2, control_algo=alg_alg))
 ans2$targets
 # [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050  48.5592
 sum((mybeh[,,2] - meanbeh) * (t(mynet[,,1]) %*% cova)) #  48.5592 OK
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff, avXRecAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
-(ans <- siena07(mymodel, data=mydata, effects=myeff))
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, avXRecAlt, depvar="mybeh", covar1="mycov",
+             covar2="mynet")
+alg_alg <- set_algorithm_saom(seed=123, n3=300, nsub=2)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets
 # [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050   14.32523
 
@@ -4142,16 +4451,20 @@ ddegs <- diag(inv(degs))
 colSums( snet %*% ddegs )
 sum((mybeh[,,2] - meanbeh) * ( (ddegs %*%snet ) %*% cova)) #  14.32523 OK
 
-myeff2 <- getEffects(mydata)
-myeff2 <- setEffect(myeff2, totXRecAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
-(ans2 <- siena07(mymodel, data=mydata, effects=myeff2))
+myeff2 <- make_specification(mydata)
+myeff2 <- set_effect(myeff2, totXRecAlt, depvar="mybeh", covar1="mycov",
+             covar2="mynet")
+alg_alg <- set_algorithm_saom(seed=123, n3=300, nsub=2)
+(ans2  <- siena(data=mydata, effects=myeff2, control_algo=alg_alg))
 ans2$targets
 # [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050 23.904
 sum((mybeh[,,2] - meanbeh) * (snet %*% cova)) #  23.904 OK
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff, avSameXAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
-(ans <- siena07(mymodel, data=mydata, effects=myeff))
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, avSameXAlt, depvar="mybeh", covar1="mycov",
+             covar2="mynet")
+alg_alg <- set_algorithm_saom(seed=123, n3=300, nsub=2)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets
 # [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050 -6.106333
 
@@ -4164,16 +4477,20 @@ ddegs <- diag(inv(degs))
 rowSums( ddegs %*% s502)
 sum((mybeh[,,2] - meanbeh) * divi(rowSums( mynet[,,1] * coveq), rowSums(mynet[,,1]))) #   -6.106333 OK
 
-myeff2 <- getEffects(mydata)
-myeff2 <- setEffect(myeff2, totSameXAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
-(ans2 <- siena07(mymodel, data=mydata, effects=myeff2))
+myeff2 <- make_specification(mydata)
+myeff2 <- set_effect(myeff2, totSameXAlt, depvar="mybeh", covar1="mycov",
+             covar2="mynet")
+alg_alg <- set_algorithm_saom(seed=123, n3=300, nsub=2)
+(ans2  <- siena(data=mydata, effects=myeff2, control_algo=alg_alg))
 ans2$targets
 # [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050   25.1600   -5.170
 sum((mybeh[,,2] - meanbeh) * rowSums( mynet[,,1] * coveq)) #  -5.170 OK
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff, avSameXInAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
-(ans <- siena07(mymodel, data=mydata, effects=myeff))
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, avSameXInAlt, depvar="mybeh", covar1="mycov",
+             covar2="mynet")
+alg_alg <- set_algorithm_saom(seed=123, n3=300, nsub=2)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets
 # [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050  -7.843833
 cova <- mydata$cCovars[[1]]
@@ -4183,16 +4500,20 @@ ddegs <- diag(inv(degs))
 rowSums( ddegs %*% t(s502))
 sum((mybeh[,,2] - meanbeh) * divi(rowSums( t(mynet[,,1]) * coveq), colSums(mynet[,,1]))) # -7.843833 OK
 
-myeff2 <- getEffects(mydata)
-myeff2 <- setEffect(myeff2, totSameXInAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
-(ans2 <- siena07(mymodel, data=mydata, effects=myeff2))
+myeff2 <- make_specification(mydata)
+myeff2 <- set_effect(myeff2, totSameXInAlt, depvar="mybeh", covar1="mycov",
+             covar2="mynet")
+alg_alg <- set_algorithm_saom(seed=123, n3=300, nsub=2)
+(ans2  <- siena(data=mydata, effects=myeff2, control_algo=alg_alg))
 ans2$targets
 # [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050   25.1600  -12.170
 sum((mybeh[,,2] - meanbeh) * (rowSums( t(mynet[,,1]) * coveq))) # -12.170 OK
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff, avSameXRecAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
-(ans <- siena07(mymodel, data=mydata, effects=myeff))
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, avSameXRecAlt, depvar="mybeh", covar1="mycov",
+             covar2="mynet")
+alg_alg <- set_algorithm_saom(seed=123, n3=300, nsub=2)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets
 # [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050    -6.733333
 cova <- mydata$cCovars[[1]]
@@ -4203,9 +4524,11 @@ ddegs <- diag(inv(degs))
 rowSums( ddegs %*% t(s502))
 sum((mybeh[,,2] - meanbeh) * divi(rowSums( snet * coveq), rowSums(snet))) #  -6.733333 OK
 
-myeff2 <- getEffects(mydata)
-myeff2 <- setEffect(myeff2, totSameXRecAlt, name="mybeh", interaction1="mycov", interaction2="mynet")
-(ans2 <- siena07(mymodel, data=mydata, effects=myeff2))
+myeff2 <- make_specification(mydata)
+myeff2 <- set_effect(myeff2, totSameXRecAlt, depvar="mybeh", covar1="mycov",
+             covar2="mynet")
+alg_alg <- set_algorithm_saom(seed=123, n3=300, nsub=2)
+(ans2  <- siena(data=mydata, effects=myeff2, control_algo=alg_alg))
 ans2$targets
 # [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050   25.1600  -13.480
 sum((mybeh[,,2] - meanbeh) * (rowSums( snet * coveq))) # -13.48 OK
@@ -4214,14 +4537,15 @@ sum((mybeh[,,2] - meanbeh) * (rowSums( snet * coveq))) # -13.48 OK
 ### check avAltSameX, totAltSameX, avRecAltSameX, totRecAltSameX
 ################################################################################
 
-mynet <- sienaDependent(array(c(s502, s503), dim=c(50, 50, 2)))
-mybeh <- sienaDependent(s50a[,1:2])
-mycov <- coCovar(s50s[,1])
-mydata <- sienaDataCreate(mynet, mybeh, mycov)
-mymodel <- sienaAlgorithmCreate(projname=NULL, nsub=2, n3=300, seed=1447)
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff, avAltSameX, name="mybeh", interaction1="mycov", interaction2="mynet")
-(ans <- siena07(mymodel, data=mydata, effects=myeff))
+mynet <- as_dependent_rsiena(array(c(s502, s503), dim=c(50, 50, 2)))
+mybeh <- as_dependent_rsiena(s50a[,1:2])
+mycov <- as_covariate_rsiena(s50s[,1])
+mydata <- make_data_rsiena(mynet, mybeh, mycov)
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, avAltSameX, depvar="mybeh", covar1="mycov",
+             covar2="mynet")
+alg_alg <- set_algorithm_saom(seed=1447, n3=300, nsub=2)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets
 #  106.00000 122.00000  90.00000  27.00000   5.50000  71.10500 -13.48000  26.10557
 
@@ -4232,17 +4556,21 @@ meanbeh <- mean(mybeh)
 sum( (mybeh[,,2] - meanbeh) *
 	divi((s502*coveq) %*% (mybeh[,,2] - meanbeh) , rowSums(s502*coveq))) # 26.10557 OK
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff, totAltSameX, name="mybeh", interaction1="mycov", interaction2="mynet")
-(ans <- siena07(mymodel, data=mydata, effects=myeff))
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, totAltSameX, depvar="mybeh", covar1="mycov",
+             covar2="mynet")
+alg_alg <- set_algorithm_saom(seed=1447, n3=300, nsub=2)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets
 # 1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050  45.8183
 sum( (mybeh[,,2] - meanbeh) * (s502*coveq) %*% (mybeh[,,2] - meanbeh))
 # 45.8183 OK
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff, avRecAltSameX, name="mybeh", interaction1="mycov", interaction2="mynet")
-(ans <- siena07(mymodel, data=mydata, effects=myeff))
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, avRecAltSameX, depvar="mybeh", covar1="mycov",
+             covar2="mynet")
+alg_alg <- set_algorithm_saom(seed=1447, n3=300, nsub=2)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets
 #  106.00000 122.00000  90.00000  27.00000   5.50000  71.10500  17.52373
 
@@ -4250,9 +4578,11 @@ snet <- mynet[,,1] * t(mynet[,,1])
 sum( (mybeh[,,2] - meanbeh) *
 	divi((snet*coveq) %*% (mybeh[,,2] - meanbeh) , rowSums(snet*coveq))) #  17.52373 OK
 
-myeff <- getEffects(mydata)
-myeff <- setEffect(myeff, totRecAltSameX, name="mybeh", interaction1="mycov", interaction2="mynet")
-(ans <- siena07(mymodel, data=mydata, effects=myeff))
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, totRecAltSameX, depvar="mybeh", covar1="mycov",
+             covar2="mynet")
+alg_alg <- set_algorithm_saom(seed=1447, n3=300, nsub=2)
+(ans  <- siena(data=mydata, effects=myeff, control_algo=alg_alg))
 ans$targets
 #  [1] 106.0000 122.0000  90.0000  27.0000   5.5000  71.1050  33.7252
 
@@ -4337,3 +4667,51 @@ effs <- make_specification(mydata)
 (ans <- siena(data=mydata, effects=effs, control_algo=myalg))
 ans$targets
 sum((mybeh[,1,2]- mean(mybeh))* (t(s501) %*% pop)) #  74.07 OK
+
+################################################################################
+### check XWX  WXX
+################################################################################
+
+advice <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+trust <- as_covariate_rsiena(s503, type="oneMode")
+mydata <- make_data_rsiena(advice,trust)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, XWX, depvar="advice", covar1="trust")
+alg_alg <- set_algorithm_saom(seed=123)
+myans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg)
+myans
+myans$targets  # 116  70  92
+
+
+# for XWX effect:
+sum(diag(s502 %*% t(s503) %*% t(s502))) # 92 OK
+
+# Now WXX
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, WXX, depvar="advice", covar1="trust")
+alg_alg <- set_algorithm_saom(seed=123)
+myans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg)
+myans
+myans$targets  #   116  70  83
+
+# for WXX effect:
+sum(diag(s502 %*% t(s502) %*% t(s503))) # 83 OK
+
+# now for two-mode
+
+senders <- as_nodeset_rsiena(50, nodeSetName="senders")
+recipients <- as_nodeset_rsiena(30, nodeSetName="recipients")
+mynet <- as_dependent_rsiena(array(c(s501[,1:30], s502[,1:30]), dim=c(50, 30, 2)),
+                         type="bipartite", nodeSet=c("senders","recipients"), 
+						 allowOnly=FALSE)
+mycov <- as_covariate_rsiena(s503, type="oneMode", nodeSet="senders")
+
+mydata2 <- make_data_rsiena(mynet, mycov, nodeSets=list(senders,recipients))
+mymodel2 <- make_specification(mydata2)
+mymodel2 <- set_effect(mymodel2, WXX, depvar="mynet", covar1="mycov")
+alg_alg <- set_algorithm_saom(seed=123)
+myans2  <- siena(data=mydata2, effects=mymodel2, control_algo=alg_alg)
+myans2
+myans2$targets # 65 40
+
+sum(diag(s502[,1:30] %*% t(s502[,1:30]) %*% t(s503))) # 40 OK

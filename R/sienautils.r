@@ -141,8 +141,8 @@ as_covariate_rsiena <- function(val, type="monadic", centered=TRUE,
 # It figures out whether it is a monadic or dyadic covariate,
 # and if dyadic, whether it is a list of sparse matrices.
 {
-	if ((is.null(dim(val)) | (length(dim(val))==1)) &  (type=="monadic")) # Then val should be a numeric vector
-	{
+	if ((is.null(dim(val)) | (length(dim(val))==1)) &  (type=="monadic")){
+# Then val should be a numeric vector
 		if (is.null(centered))
 		{
 			centered <- TRUE
@@ -172,10 +172,14 @@ as_covariate_rsiena <- function(val, type="monadic", centered=TRUE,
 					{
 						nodeSet <- c(nodeSet, nodeSet)
 					}
-					else if (type=="oneMode")
+					else if ((type=="oneMode") & (nodeSet[1] != nodeSet[2]))
 					{
-	stop("The one-mode dyadic covariate should be represented by a square matrix")
+	stop("The one-mode dyadic covariate should have one nodeSet only")
 					}
+				}
+				else if (type=="bipartite")
+				{
+	stop("The bipartite dyadic covariate should have two nodeSets")
 				}
 				return(coDyadCovar(val, centered=centered, nodeSets=nodeSet, 
 											warn=warn, type=type))
@@ -195,9 +199,13 @@ stop("For a matrix of values, a type (monadic, oneMode or bipartite) should be g
 				{
 					nodeSet <- c(nodeSet, nodeSet)
 				}
-				symmetric <- ifelse(is.list(val), (dim(val[[1]]) == dim(val[[2]])),
+				else if (type=="oneMode")
+				{
+	stop("The one-mode dyadic covariate should have only one nodeSet")
+				}
+				square <- ifelse(is.list(val), (dim(val[[1]]) == dim(val[[2]])),
 												 (dim(val)[1] == dim(val)[2]))
-				if ((!symmetric) & (type=="oneMode"))
+				if ((!square) & (type=="oneMode"))
 				{
 		stop("The one-mode dyadic covariate should be represented by square matrices")
 				}

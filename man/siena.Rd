@@ -279,6 +279,7 @@ estimate_onestep(x, fixed=x$fixed, r=1, shortenNames=FALSE)
   \item{tconv.max}{overall maximum convergence ratio.}
   \item{ac3}{If \code{x$maxlike=TRUE}:
                     autocorrelations of statistics in Phase 3.}
+  \item{initial_theta}{Initial parameter value for estimation.}
   \item{targets}{Observed statistics; for ML, zero vector.}
   \item{targets2}{Observed statistics by wave,
     starting with second wave; for ML, zero matrix.}
@@ -315,7 +316,8 @@ estimate_onestep(x, fixed=x$fixed, r=1, shortenNames=FALSE)
    \item{thetaUsed}{If \code{thetaValues} is not \code{NULL}, the matrix
    of parameter values actually used in the simulations of Phase 3.}
   Writes text output to the file indicated for \code{siena}
-  in \code{control_output} and for \code{siena07} in \code{alg}.
+  in \code{control_output} and for \code{siena07} 
+  indicated in \code{alg}.
 
   \code{estimate_onestep} returns the one-step estimate in which
   the parameters indiated in \code{fixed}  are fixed. This is a vector
@@ -325,7 +327,7 @@ estimate_onestep(x, fixed=x$fixed, r=1, shortenNames=FALSE)
     Amati, V., Schoenenberger, F., and Snijders, T.A.B. (2015),
     Estimation of stochastic actor-oriented models for the evolution of
     networks by generalized method of moments.
-    \emph{Journal de la Societe Francaise de Statistique} \bold{156}, 140--165.
+    \emph{Journal de la Societe Francaise de St atistique} \bold{156}, 140--165.
 
     Amati, V., Schoenenberger, F., and Snijders, T.A.B. (2019),
     Contemporaneous statistics for estimation in stochastic actor-oriented

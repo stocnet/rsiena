@@ -500,17 +500,26 @@ doIterations<- function(z, x, subphase,...)
 
 		## check positivity restriction
 		fchange[is.na(fchange)] <- 0
-		z$positivized[fchange > z$theta] <- z$positivized[fchange > z$theta] +1
+        if (subphase > x$doubleAveraging)
+        {
+            positivizedId <- (fchange > z$thav/z$thavn)
+        }
+        else
+        {
+            positivizedId <- (fchange > z$theta)
+        }
+        z$positivized[positivizedId] <- z$positivized[positivizedId] +1
 		z$positivized[!z$posj] <- 0
-		fchange <- ifelse(z$posj & (fchange > z$theta), z$theta * 0.5, fchange)
-		# make update step
+        # make update step
 		if (subphase > x$doubleAveraging)
 		{
-			zsmall$theta <- (z$thav/z$thavn) - fchange
+            fchange <- ifelse(z$posj & (fchange > (z$thav/z$thavn)), z$thav/z$thavn * 0.5, fchange)
+            zsmall$theta <- (z$thav/z$thavn) - fchange
 		}
 		else
 		{
-				zsmall$theta <- zsmall$theta - fchange
+            fchange <- ifelse(z$posj & (fchange > z$theta), z$theta * 0.5, fchange)
+            zsmall$theta <- zsmall$theta - fchange
 		}
 		z$theta <- zsmall$theta
 		z$thav <- z$thav + zsmall$theta
