@@ -710,6 +710,10 @@ void StatisticCalculator::calculateNetworkEvaluationStatistics(
 //	Rprintf(" this->lcountStaticChangeContributions in calculateNetworkEvaluationStatistics \n");
 			int egos = pCurrentLessMissingsEtc->n();
 			int alters = pCurrentLessMissingsEtc->m();
+			// Choices open to an ego: for one-mode the n alters, the diagonal
+			// serving as "no change"; for two-mode the m receivers plus a
+			// trailing "no change" slot.
+			int nChoices = pNetworkData->oneModeNetwork() ? egos : alters + 1;
 
 			// Compute permitted once per depvar (shared across eval/creation effects)
 			if (this->lstaticPermitted.find(name) == this->lstaticPermitted.end())
@@ -717,9 +721,15 @@ void StatisticCalculator::calculateNetworkEvaluationStatistics(
 				vector<bool *> permVec(egos);
 				for (int e = 0; e < egos; e++)
 				{
-					bool * perms = new bool[egos];
-					for (int a = 0; a < egos; a++)
+					bool * perms = new bool[nChoices];
+					for (int a = 0; a < nChoices; a++)
 					{
+						if ((a == alters) && (!pNetworkData->oneModeNetwork()))
+						{
+							// the two-mode "no change" slot: always available
+							perms[a] = true;
+							continue;
+						}
 						perms[a] = isPermittedNetworkChange(
 							pNetworkData,
 							pCurrentLessMissingsEtc,
@@ -747,10 +757,10 @@ void StatisticCalculator::calculateNetworkEvaluationStatistics(
 					pEffect->initialize(this->lpData, this->lpPredictorState,
 						this->lperiod, &cache);
 				}
-				double * contributions = new double[egos];
+				double * contributions = new double[nChoices];
 				this->lstaticChangeContributions[pInfo].at(e) = contributions;
 				pEffect->preprocessEgo(e);
-				for (int a = 0; a < egos ; a++)
+				for (int a = 0; a < nChoices ; a++)
 				{
 					if ((a == e) && (pNetworkData->oneModeNetwork()))
 					{

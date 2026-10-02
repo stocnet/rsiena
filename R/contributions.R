@@ -214,9 +214,12 @@ getStaticChangeContributions <- function(ans = NULL,
   }
 
   # Prepare for C++ call
+  # Bipartite depvars are passed through as the standard path does: with the
+  # override set to FALSE the data object lacks them while the model options
+  # still expect them, and C_setupModelOptions aborts R rather than erroring.
+  # The static path sizes the two-mode choice set as m + 1 (StatisticCalculator).
   pData <- sienaSetupDataForCpp(data,
-                                includeBehavior = TRUE,
-                                includeBipartite = FALSE)
+                                includeBehavior = TRUE)
   setup <- sienaSetupEffectsForCpp(pData, data, effects)
 
   # Propagate model options to C++ (maxDegree, universalOffset, conditional, etc.)

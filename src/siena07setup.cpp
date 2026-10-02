@@ -783,23 +783,30 @@ SEXP getStaticChangeContributions(SEXP DATAPTR,
 			vector<vector<double *>> changeContributions;
 			vector<vector<bool *>> changePermitted;
 			getStaticChangeContributionstatistics(EFFECTSLIST, &calculator, &changeContributions, &changePermitted);
-			int actors = pData->rDependentVariableData()[0]->n();
+			SEXP NETWORKNAMES = Rf_getAttrib(altStats, Rf_install("networkNames"));
 			for (unsigned e = 0; e < changeContributions.size(); e++)
 			{
-				SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), period),
-								e, Rf_allocVector(VECSXP, actors));
-				SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(permStats, group), period),
-							e, Rf_allocVector(VECSXP, actors));
+				// Size by the dependent variable this effect belongs to, rather
+				// than by the first one: for two-mode networks the choice set is
+				// the m receivers plus a "no change" slot.
+				const char * netName = CHAR(STRING_ELT(NETWORKNAMES, e));
+				int actors;
 				int choices;
 				if (strcmp(CHAR(STRING_ELT(NETWORKTYPES, e)), "behavior") == 0)
 				{
+					actors = pData->pBehaviorData(netName)->n();
 					choices = 3;
 				}
 				else
 				{
-					choices = actors; // will not work for bipartite
-					// But I did not find a convenient way to get knowledge of m() to here
+					NetworkLongitudinalData * pNet = pData->pNetworkData(netName);
+					actors = pNet->n();
+					choices = pNet->oneModeNetwork() ? pNet->n() : pNet->m() + 1;
 				}
+				SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(altStats, group), period),
+								e, Rf_allocVector(VECSXP, actors));
+				SET_VECTOR_ELT(VECTOR_ELT(VECTOR_ELT(permStats, group), period),
+							e, Rf_allocVector(VECSXP, actors));
 				for (int actor = 0; actor < actors; actor++)
 				{
 					SEXP actorsVal = PROTECT(Rf_allocVector(REALSXP, choices));

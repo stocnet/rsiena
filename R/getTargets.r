@@ -1,8 +1,10 @@
 ##@getTargets Miscellaneous Written for Krista. Use as RSiena:::getTargets
 getTargets <- function(data, effects) {
+        # Bipartite depvars pass through as in the standard path: getTargets
+        # returns scalar statistics per effect, with no per-actor or per-choice
+        # array to size, so two-mode data needs no special handling here.
         pData <- sienaSetupDataForCpp(data,
-                                      includeBehavior = TRUE,
-                                      includeBipartite = FALSE)
+                                      includeBehavior = TRUE)
         effects <- effects[effects$include, ]
         setup <- sienaSetupEffectsForCpp(pData,
                                        data, 
@@ -56,8 +58,7 @@ actorTargets <- function(data, effects, behaviorName, wave,
         }
 
         pData <- sienaSetupDataForCpp(data,
-                                      includeBehavior = TRUE,
-                                      includeBipartite = FALSE)
+                                      includeBehavior = TRUE)
         setup <- sienaSetupEffectsForCpp(pData,
                                        data, effects_filtered)
         ans <- .Call(C_getTargets, PACKAGE=pkgname,
