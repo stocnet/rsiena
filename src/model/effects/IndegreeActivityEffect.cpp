@@ -9,6 +9,7 @@
  * IndegreeActivityEffect class.
  *****************************************************************************/
 
+#include <stdexcept>
 #include <cmath>
 #include "data/NetworkLongitudinalData.h"
 #include "IndegreeActivityEffect.h"
@@ -37,8 +38,15 @@ IndegreeActivityEffect::IndegreeActivityEffect(
 	this->lvariableName = pEffectInfo->variableName();
 	int p = int(round(pEffectInfo->internalEffectParameter()));
 	this->luseStart = (p == 0);
-	this->luseBoth= (p <= 0);
-// centering and root cannot occur simultaneously
+	this->luseBoth = (p <= 0);
+	if ((this->lcentering) && (p < 1))
+	{
+		throw logic_error("effect inAct.c needs an internal effect parameter at least 1");
+	}
+	if ((this->lcentering) && (this->lroot))
+	{
+		throw logic_error("There is no indegree activity effect with centering and sqrt");
+	}
 }
 
 /**

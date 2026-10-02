@@ -166,6 +166,8 @@ sum(tt.eq.r) # OK
 ### check to, toU
 ################################################################################
 
+
+
 advice <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
 trust <- as_dependent_rsiena(array(c(s503, s501), dim=c(50, 50, 2)))
 # dyadic covariate
@@ -244,8 +246,8 @@ recipients <- as_nodeset_rsiena(30, nodeSetName="recipients")
 
 advice <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)), nodeSet="senders")
 trust <- as_dependent_rsiena(array(c(s503[,1:30], s501[,1:30]), dim=c(50, 30, 2)),
-                         type="bipartite", nodeSet=c("senders","recipients"), 
-						 allowOnly=FALSE)
+                         type="bipartite", nodeSet=c("senders","recipients"),
+                         allowOnly=FALSE)
 # dyadic covariate
 suppressWarnings(mat2 <- matrix(c(0,1,0,0,4,3,2,0,0), 50,50))
 dcov2 <- as_covariate_rsiena(mat2, type='oneMode', centered=FALSE, nodeSet="senders")
@@ -278,6 +280,32 @@ XWUX <- s501[,1:30] * WUX
 sum(XWUX)  # 80 OK
 
 rm(WX, XWX, WUX, XWUX)
+
+# now without duplication of matrix use for to effect
+
+s504 <- s501 * s502
+advice <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+trust <- as_dependent_rsiena(array(c(s503, s504), dim=c(50, 50, 2)))
+# dyadic covariate
+suppressWarnings(mat <- matrix(c(0,1,0,0,7,0,2,0,0), 50,50))
+dcov <- as_covariate_rsiena(mat, type='oneMode', centered=FALSE)
+mydata <- make_data_rsiena(advice,trust,dcov)
+
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, to, depvar="trust", covar1="advice")
+mymodel
+alg_alg <- set_algorithm_saom(seed=123)
+(myans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg))
+myans$targets
+
+# for to effect:
+# W=advice , X=trust
+WX <- s501 %*% s504
+diag(WX) <- 0
+WXX <- WX * s504
+sum(diag(WXX)) # 0 OK
+sum(WXX) # 26 OK
+
 ################################################################################
 ### check toBack, MixedInXW
 ################################################################################
@@ -2185,7 +2213,7 @@ alg_alg <- set_algorithm_saom(seed=1234)
 (ans2  <- siena(data=mydata, effects=mymodel2, control_algo=alg_alg))
 ans2$targets # 115.00000 116.00000  70.00000  86.89495 106.00000 122.00000  90.00000
 sum(rowSums(s502) * divi(rowSums(sqrt(twop) %*% diag(rowSums(s502) - avdeg)),
-									rowSums(sqrt(twop)) )) # 86.89495 OK avAlt.2M.tot p = 2
+                                    rowSums(sqrt(twop)) )) # 86.89495 OK avAlt.2M.tot p = 2
 
 
 ################################################################################
@@ -2855,7 +2883,7 @@ divi <- function(x,y){ifelse(y==0, 0, x/y)}
 n <- 50
 a <- rep(NA,n)
 for (i in 1:n){
-	a[i] <- divi(sum(intwostars1[i,] * intwostars3[i,]), rowSums(intwostars1)[i])
+    a[i] <- divi(sum(intwostars1[i,] * intwostars3[i,]), rowSums(intwostars1)[i])
 }
 sum(a) # 24.32994 OK
 
@@ -2875,7 +2903,7 @@ divi <- function(x,y){ifelse(y==0, 0, x/y)}
 n <- 50
 a <- rep(NA,n)
 for (i in 1:n){
-	a[i] <- divi(sum(sqrt(intwostars1[i,]) * intwostars3[i,]), rowSums(sqrt(intwostars1))[i])
+    a[i] <- divi(sum(sqrt(intwostars1[i,]) * intwostars3[i,]), rowSums(sqrt(intwostars1))[i])
 }
 sum(a) # 24.27536  OK
 
@@ -2905,7 +2933,7 @@ divi <- function(x,y){ifelse(y==0, 0, x/y)}
 n <- 50
 a <- rep(NA,n)
 for (i in 1:n){
-	a[i] <- divi(sum(intwostars1[i,] * intwostars3[i,]), rowSums(intwostars1)[i])
+    a[i] <- divi(sum(intwostars1[i,] * intwostars3[i,]), rowSums(intwostars1)[i])
 }
 sum(a) #  OK 17.94167
 
@@ -2924,7 +2952,7 @@ diag(intwostars3) <- 0
 n <- 50
 a <- rep(NA,n)
 for (i in 1:n){
-	a[i] <- divi(sum(intwostars1[i,] * intwostars3[i,]), rowSums(intwostars1)[i])
+    a[i] <- divi(sum(intwostars1[i,] * intwostars3[i,]), rowSums(intwostars1)[i])
 }
 sum(a) #  OK 20.83571
 
@@ -2943,7 +2971,7 @@ diag(intwostars3) <- 0
 n <- 50
 a <- rep(NA,n)
 for (i in 1:n){
-	a[i] <- divi(sum(intwostars1[i,] * intwostars3[i,]), rowSums(intwostars1)[i])
+    a[i] <- divi(sum(intwostars1[i,] * intwostars3[i,]), rowSums(intwostars1)[i])
 }
 sum(a) #  OK 8.6
 
@@ -2964,7 +2992,7 @@ divi <- function(x,y){ifelse(y==0, 0, x/y)}
 n <- 50
 a <- rep(NA,n)
 for (i in 1:n){
-	a[i] <- divi(sum(sqrt(intwostars1[i,]) * intwostars3[i,]), rowSums(sqrt(intwostars1))[i])
+    a[i] <- divi(sum(sqrt(intwostars1[i,]) * intwostars3[i,]), rowSums(sqrt(intwostars1))[i])
 }
 sum(a) #  OK  17.68412
 
@@ -2983,7 +3011,7 @@ diag(intwostars3) <- 0
 n <- 50
 a <- rep(NA,n)
 for (i in 1:n){
-	a[i] <- divi(sum(sqrt(intwostars1[i,]) * intwostars3[i,]), rowSums(sqrt(intwostars1))[i])
+    a[i] <- divi(sum(sqrt(intwostars1[i,]) * intwostars3[i,]), rowSums(sqrt(intwostars1))[i])
 }
 sum(a) #  OK  20.89239
 
@@ -3002,7 +3030,7 @@ diag(intwostars3) <- 0
 n <- 50
 a <- rep(NA,n)
 for (i in 1:n){
-	a[i] <- divi(sum(sqrt(intwostars1[i,]) * intwostars3[i,]), rowSums(sqrt(intwostars1))[i])
+    a[i] <- divi(sum(sqrt(intwostars1[i,]) * intwostars3[i,]), rowSums(sqrt(intwostars1))[i])
 }
 sum(a) #  OK 8.303456
 
@@ -3295,7 +3323,7 @@ recipients <- as_nodeset_rsiena(10, nodeSetName="recipients")
 # Make dependent network
 network <- as_dependent_rsiena(array(c(wave1, wave2), dim=c(12,10,2)),
                           type="bipartite", nodeSet=c("senders","recipients"),
-						  allowOnly=FALSE)
+                          allowOnly=FALSE)
 
 # Make covariates
 covaralt <- as_covariate_rsiena(covalt, nodeSet="recipients")
@@ -3608,8 +3636,8 @@ sum(colSums(s502)*(rowSums(s502)> 3)) # 20 OK
 
 # make example analysis w/ s50 data:
 thedata <- make_data_rsiena(
-	net = as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2))),
-	beh = as_dependent_rsiena(s50a[,1:2], type='behavior')
+    net = as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2))),
+    beh = as_dependent_rsiena(s50a[,1:2], type='behavior')
 )
 
 gm <- mean(s50a[,1:2])
@@ -3618,7 +3646,7 @@ avAlt <- function(n, b){
 # calculates peers' average behavior;
 # n = adjacency matrix senders (rows) by receivers (cols)
 # b = behavior vector
-	n %*% b / rowSums(n)
+    n %*% b / rowSums(n)
 }
 
 # specify w/ contemporaneously centered effects alongside grand-mean centered ones:
@@ -3638,8 +3666,8 @@ model <- set_effect(model, quad, type="eval", depvar="beh", fix=TRUE, test=TRUE)
 alg_alg <- set_algorithm_saom(seed=1234)
 (results  <- siena(data=thedata, effects=model, control_algo=alg_alg))
 (daf <- data.frame(
-	shortNames = results$effects$shortName,
-	targets = results$targets
+    shortNames = results$effects$shortName,
+    targets = results$targets
 ))
 
 # control calculations for targets:
@@ -4554,7 +4582,7 @@ cova <- mydata$cCovars[[1]]
 coveq <- 1*outer(cova,cova,"==")
 meanbeh <- mean(mybeh)
 sum( (mybeh[,,2] - meanbeh) *
-	divi((s502*coveq) %*% (mybeh[,,2] - meanbeh) , rowSums(s502*coveq))) # 26.10557 OK
+    divi((s502*coveq) %*% (mybeh[,,2] - meanbeh) , rowSums(s502*coveq))) # 26.10557 OK
 
 myeff <- make_specification(mydata)
 myeff <- set_effect(myeff, totAltSameX, depvar="mybeh", covar1="mycov",
@@ -4576,7 +4604,7 @@ ans$targets
 
 snet <- mynet[,,1] * t(mynet[,,1])
 sum( (mybeh[,,2] - meanbeh) *
-	divi((snet*coveq) %*% (mybeh[,,2] - meanbeh) , rowSums(snet*coveq))) #  17.52373 OK
+    divi((snet*coveq) %*% (mybeh[,,2] - meanbeh) , rowSums(snet*coveq))) #  17.52373 OK
 
 myeff <- make_specification(mydata)
 myeff <- set_effect(myeff, totRecAltSameX, depvar="mybeh", covar1="mycov",
@@ -4592,7 +4620,7 @@ sum( (mybeh[,,2] - meanbeh) * (snet*coveq) %*% (mybeh[,,2] - meanbeh))
 
 
 ################################################################################
-### check parameters 0 and 1 for outPop and inAct
+### check parameters 0 and -1 for outPop and inAct
 ################################################################################
 
 mynet <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
@@ -4612,6 +4640,7 @@ ans$targets
 # 116  70 594
 sum(rowSums(s502)*colSums(s502)) # 306 OK
 sum(rowSums(s502)*colSums(s501)) # 288 OK
+sum(rowSums(s502)*colSums(s501+s502)) # 594 OK
 
 algo <- set_algorithm_saom(seed=1234)
 myeff <- make_specification(mydata)
@@ -4628,11 +4657,16 @@ myeff <- set_effect(myeff, outPop, parameter=-1)
 ans$targets
 # 116  70 613
 
+
+sum(rowSums(s502)*colSums(s502)) # 306 OK
+sum(rowSums(s501)*colSums(s502)) # 307 OK
+sum(rowSums(s501+s502)*colSums(s502)) # 613 OK
+
 myeff <- make_specification(mydata)
 myeff <- set_effect(myeff, list(inAct, outPop))
-(ans <- siena(mydata, effects=myeff, control_algo=algo))
+(ans <- siena(mydata, effects=myeff, control_algo=algo)) #diverges
 ans$targets
-# 116  70 613
+# 116  70 306 306
 myeff <- set_effect(myeff, inAct, parameter=0)
 myeff <- set_effect(myeff, outPop, parameter=0)
 myeff
@@ -4644,6 +4678,38 @@ myeff
 (ans <- siena(mydata, effects=myeff, control_algo=algo))
 ans$targets # 116  70 613 594 OK
 
+
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, outPopSqrt)
+(ans <- siena(mydata, effects=myeff, control_algo=algo))
+ans$targets
+#  116.000  70.000 182.625
+
+sum(sqrt(rowSums(s502))*colSums(s502)) # 182.625
+myeff <- set_effect(myeff, outPopSqrt, parameter=0)
+(ans <- siena(mydata, effects=myeff, control_algo=algo))
+# error message:)
+# effect outPopSqrt needs an internal effect parameter at least 1
+
+
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, inActSqrt)
+(ans <- siena(mydata, effects=myeff, control_algo=algo))
+ans$targets
+#  116.000  70.000  174.5797
+sum((rowSums(s502))*sqrt(colSums(s502))) # 174.5797 OK
+
+myeff <- set_effect(myeff, inActSqrt, parameter=0)
+(ans <- siena(mydata, effects=myeff, control_algo=algo))
+ans$targets # 16.0000  70.0000 171.6464
+sum((rowSums(s502))*sqrt(colSums(s501))) #171.6464 OK
+
+
+myeff <- set_effect(myeff, inActSqrt, parameter=-1)
+(ans <- siena(mydata, effects=myeff, control_algo=algo))
+ans$targets # 16.0000  70.0000 250.0313
+
+sum((rowSums(s502))*sqrt(colSums(s501+s502))) # 250.0313 OK
 
 ################################################################################
 ### check outdegMixedPop
@@ -4702,8 +4768,8 @@ sum(diag(s502 %*% t(s502) %*% t(s503))) # 83 OK
 senders <- as_nodeset_rsiena(50, nodeSetName="senders")
 recipients <- as_nodeset_rsiena(30, nodeSetName="recipients")
 mynet <- as_dependent_rsiena(array(c(s501[,1:30], s502[,1:30]), dim=c(50, 30, 2)),
-                         type="bipartite", nodeSet=c("senders","recipients"), 
-						 allowOnly=FALSE)
+                         type="bipartite", nodeSet=c("senders","recipients"),
+                         allowOnly=FALSE)
 mycov <- as_covariate_rsiena(s503, type="oneMode", nodeSet="senders")
 
 mydata2 <- make_data_rsiena(mynet, mycov, nodeSets=list(senders,recipients))
@@ -4715,3 +4781,92 @@ myans2
 myans2$targets # 65 40
 
 sum(diag(s502[,1:30] %*% t(s502[,1:30]) %*% t(s503))) # 40 OK
+
+# and interchanging the modes
+senders <- as_nodeset_rsiena(30, nodeSetName="senders")
+recipients <- as_nodeset_rsiena(50, nodeSetName="recipients")
+mynet <- as_dependent_rsiena(array(c(s501[1:30,], s502[1:30,]), dim=c(30, 50, 2)),
+                         type="bipartite", nodeSet=c("senders","recipients"),
+                         allowOnly=FALSE)
+mycov <- as_covariate_rsiena(s503[1:30,1:30], type="oneMode", nodeSet="senders")
+
+mydata2 <- make_data_rsiena(mynet, mycov, nodeSets=list(senders,recipients))
+mymodel2 <- make_specification(mydata2)
+mymodel2 <- set_effect(mymodel2, WXX, depvar="mynet", covar1="mycov")
+alg_alg <- set_algorithm_saom(seed=123)
+myans2  <- siena(data=mydata2, effects=mymodel2, control_algo=alg_alg)
+myans2
+myans2$targets #  66 29
+
+sum(diag(s502[1:30,] %*% t(s502[1:30,]) %*% t(s503[1:30,1:30]))) # 29 OK
+
+################################################################################
+### check WXZX
+################################################################################
+
+# For one-mode
+advice <- as_dependent_rsiena(array(c(s501, s502), dim=c(50, 50, 2)))
+trust <- as_covariate_rsiena(s503, type="oneMode")
+s504 <- 2*t(s503) - s503*t(s503)
+friend <- as_covariate_rsiena(s504, type="oneMode")
+mydata <- make_data_rsiena(advice,trust,friend)
+mymodel <- make_specification(mydata)
+mymodel <- set_effect(mymodel, WXZX, depvar="advice", covar1="trust", covar2="friend")
+alg_alg <- set_algorithm_saom(seed=123)
+myans  <- siena(data=mydata, effects=mymodel, control_algo=alg_alg)
+myans
+myans$targets  # 116  70  369
+
+matXZ <- s502 %*% s504
+matWXZ <- s503 %*% matXZ
+matXWXZ <- s502 * matWXZ
+sum(matXWXZ) # 369 OK
+
+# now for two-mode
+
+senders <- as_nodeset_rsiena(50, nodeSetName="senders")
+recipients <- as_nodeset_rsiena(30, nodeSetName="recipients")
+mynet <- as_dependent_rsiena(array(c(s501[,1:30], s502[,1:30]), dim=c(50, 30, 2)),
+                         type="bipartite", nodeSet=c("senders","recipients"),
+                         allowOnly=FALSE)
+trust <- as_covariate_rsiena(s503, type="oneMode", nodeSet="senders")
+s504 <- 2*t(s503) - s503*t(s503)
+friend <- as_covariate_rsiena(s504[1:30,1:30], type="oneMode", nodeSet="recipients")
+trust
+friend
+
+mydata2 <- make_data_rsiena(mynet, trust, friend, nodeSets=list(senders,recipients))
+mymodel2 <- make_specification(mydata2)
+mymodel2 <- set_effect(mymodel2, WXZX, depvar="mynet", covar1="trust", covar2="friend")
+alg_alg <- set_algorithm_saom(seed=123)
+myans2  <- siena(data=mydata2, effects=mymodel2, control_algo=alg_alg)
+myans2
+myans2$targets # 65 145
+
+matXZ <- s502[,1:30] %*% s504[1:30,1:30]
+matWXZ <- s503 %*% matXZ
+matXWXZ <- s502[,1:30] * matWXZ
+sum(matXWXZ) # 145 OK
+
+# and interchanging the modes
+senders <- as_nodeset_rsiena(30, nodeSetName="senders")
+recipients <- as_nodeset_rsiena(50, nodeSetName="recipients")
+mynet <- as_dependent_rsiena(array(c(s501[1:30,], s502[1:30,]), dim=c(30, 50, 2)),
+                         type="bipartite", nodeSet=c("senders","recipients"),
+                         allowOnly=FALSE)
+trust <- as_covariate_rsiena(s503[1:30,1:30], type="oneMode", nodeSet="senders")
+s504 <- 2*t(s503) - s503*t(s503)
+friend <- as_covariate_rsiena(s504, type="oneMode", nodeSet="recipients")
+
+mydata2 <- make_data_rsiena(mynet, trust, friend, nodeSets=list(senders,recipients))
+mymodel2 <- make_specification(mydata2)
+mymodel2 <- set_effect(mymodel2, WXZX, depvar="mynet", covar1="trust", covar2="friend")
+alg_alg <- set_algorithm_saom(seed=123)
+myans2  <- siena(data=mydata2, effects=mymodel2, control_algo=alg_alg)
+myans2
+myans2$targets #  66 148
+
+matXZ <- s502[1:30,] %*% s504
+matWXZ <- s503[1:30,1:30] %*% matXZ
+matXWXZ <- s502[1:30,] * matWXZ
+sum(matXWXZ) # 148 OK
