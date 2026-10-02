@@ -53,7 +53,7 @@ void WXXClosureEffect::initialize(const Data * pData,
 		pState, period, pCache);
 
 	delete[] this->lsums;
-	this->lsums = new double[this->pNetwork()->n()];
+	this->lsums = new double[this->pNetwork()->m()]; // was n() until September 2026
 }
 
 
@@ -76,10 +76,10 @@ void WXXClosureEffect::preprocessEgo(int ego)
 void WXXClosureEffect::calculateSums(int i,
 	const Network * pNetwork, double * sums) const
 {
-	int n = pNetwork->n();
+	int m = pNetwork->m();
 
 	// Initialize
-	for (int j = 0; j < n; j++)
+	for (int j = 0; j < m; j++)
 	{
 		sums[j] = 0;
 	}

@@ -9,6 +9,7 @@
  * OutdegreePopularityEffect class.
  *****************************************************************************/
 
+#include <stdexcept>
 #include <cmath> /* round, sqrt */
 #include "data/NetworkLongitudinalData.h"
 #include "OutdegreePopularityEffect.h"
@@ -41,10 +42,18 @@ OutdegreePopularityEffect::OutdegreePopularityEffect(
 	this->lp = pEffectInfo->internalEffectParameter();
 	if (this->ltrunc)
 	{
+		if (int(round(this->lp)) < 1)
+		{
+throw logic_error("effects outPopMore, outPopSqrtMore, and outPopThreshold need an internal effect parameter at least 1");
+		}
 		if (this->lroot)
 		{
 			this->lp = this->lsqrtTable->sqrt(int(round(this->lp)));
 		}
+	}
+	if ((this->lroot) && (int(round(this->lp)) < 1))
+	{
+		throw logic_error("effect outPopSqrt needs an internal effect parameter at least 1");
 	}
 	this->luseStart = (int(round(this->lp)) == 0);
 	this->luseBoth = (int(round(this->lp)) <= 0);
@@ -98,7 +107,7 @@ double OutdegreePopularityEffect::calculateContribution(int alter) const
 		{
 			change = change - this->lp;
 		}
-		if ((this->lthreshold) && (change > 0.0001))
+		if ((this->lthreshold) && (change > EPSILON))
 		{
 			change = 1;
 		}

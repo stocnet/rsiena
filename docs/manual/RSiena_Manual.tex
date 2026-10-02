@@ -216,7 +216,7 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.6.12.
+This version was renewed for \RS version 1.6.13.
 
 In version 1.6, the names of \RS functions have undergone
 important changes. This manual is for the new names.
@@ -1187,7 +1187,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g., 1.6.12).
+  identified by a version number (e.g., 1.6.13).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -10341,7 +10341,11 @@ and
  of the others to whom $i$ is tied,\\
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, x_{j+} =
   \sum_j x_{ij} \sum_h x_{jh} $; \\
- until version 3.313, this effect was multiplied by a factor $1/n$;
+ until version 3.313, this effect was multiplied by a factor $1/n$;\\
+  if the internal effect parameter is equal to 0, the estimation statistic uses
+  the outdegrees $x_{j+} $ of the start of the period;
+  if the internal effect parameter is equal to --1, the estimation statistic uses
+  the sum of the current outdegrees and those at the start of the period;
 
  \item {\em out-degree related popularity effect (centered)} \texttt{(outPop.c)},
  defined by the sum of
@@ -10360,7 +10364,8 @@ and
  \item {\em out-degree related popularity more than $p$ effect} \texttt{(outPopMore)}, defined by
   the sum of the difference between the out-degrees  of the others to whom $i$ is tied,
   and the internal effect parameter $p$, truncated to positive values: \\
- $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \max\{ x_{j+} - p, 0 \}  $;
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \max\{ x_{j+} - p, 0 \}  $;\\
+ internal effect parameter $p$ should be at least 1;
 
 
  \item {\em out-degree related popularity (sqrt) more than $p$ effect}
@@ -10368,14 +10373,15 @@ and
   the sum of the difference between the square roots of the
   out-degrees  of the others to whom $i$ is tied,
   and the internal effect parameter $p$, truncated to positive values: \\
- $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \max\{ \sqrt{x_{j+}} - \sqrt{p}, 0 \}  $;
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \max\{ \sqrt{x_{j+}} - \sqrt{p}, 0 \}  $;\\
+ internal effect parameter $p$ should be at least 1;
 
 
  \item {\em out-degree related popularity more than $p$ effect} \texttt{(outPopThreshold)}, defined by
   the number of others to whom $i$ is tied who have outdegree larger than the
   internal effect parameter $p$: \\
- $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, I\{ x_{j+} > p \}  $;
-
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, I\{ x_{j+} > p \}  $;\\
+ internal effect parameter $p$ should be at least 1;
 
  \item {\em reciprocal degree-related popularity effect} \texttt{(reciPop)}
  defined by the sum of the reciprocal degrees
@@ -10396,8 +10402,11 @@ and
 
  \item {\em in-degree related activity effect}, \texttt{(inAct)}
  defined as  the cross-product  of the actor's in- and out-degrees,\\
- $s^{\rm net}_{i\vit}(x) = x_{i+}\, x_{+i}$;\\
- endowment effect only likelihood-based;
+ $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, x_{+i}  = x_{i+}\, x_{+i}$;\\
+  if the internal effect parameter is equal to 0, the estimation statistic uses
+  the indegrees $x_{+i} $ of the start of the period;
+  if the internal effect parameter is equal to --1, the estimation statistic uses
+  the sum of the current indegrees and those at the start of the period;
 
  \item {\em in-degree related activity effect (centered)} \texttt{(inAct.c)},
  defined by the sum of
@@ -10407,7 +10416,11 @@ and
 
  \item {\em in-degree related activity (sqrt) effect}, \texttt{(inActSqrt)}
  defined by  \\
- $s^{\rm net}_{i\vit}(x) = x_{i+}\,\sqrt{x_{+i}}$ ;
+ $s^{\rm net}_{i\vit}(x) = x_{i+}\,\sqrt{x_{+i}}$ ;\\
+  if the internal effect parameter is equal to 0, the estimation statistic uses
+  the square roots of the indegrees $x_{+i} $ of the start of the period;
+  if the internal effect parameter is equal to --1, the estimation statistic uses
+  the square roots of the sum of the current indegrees and those at the start of the period;
 
 \item \emph{in-isolate Outdegree effect}, (\texttt{inIsDegree}), the
       (additional) out-degree (or activity)
@@ -11102,6 +11115,58 @@ by Maximum Likelihood and Bayesian estimation.
 
 \setcounter{savenumi}{\value{enumi}}
 \end{enumerate}
+
+\paragraph{Dyadic double covariate effects}
+
+
+\noindent
+For pairs of one-mode dyadic covariates $W$ and $Z$ with values  $w_{ij}$ and $z_{ij}$,
+the following effect is available.
+It can be useful, e.g., for bipartite (two-mode) networks.
+ Then $W$ must be a dyadic covariate for the first mode,
+ and $Z$ for the second mode.
+For one-mode networks $X$, the same dyadic covariate can be used for $W$ and $Z$.
+
+\begin{enumerate}
+\setcounter{enumi}{\value{savenumi}}
+\begin{minipage}[t]{.70\textwidth}
+\item {\em $WXZ=>X$ doubly ($W$, $Z$) mixed four-cycle closure}  \texttt{(WXZX)},\\
+ $s^{\rm el}_{i\vit}(x)  \, = \,   x_{ij}\, \sum_{k,h; \text{all different}}
+             w_{ih}\, x_{hk} \,   z_{kj} \,  $;\\[0.3em]
+ The covariates $W$ and $Z$ here always are used non-centered.
+
+ This is programmed as an elementary effect for \\
+ dependent tie variable $x_{ij}$.
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\linethickness{0.3pt}
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <0.8cm,0.8cm> point at 4 3
+\setplotarea x from 0.5 to 4.5, y from 0 to 5
+\put{\large$\bullet$} at  1 1
+\put{\large$\circ$} at  4 1
+\put{\large$\bullet$} at  1 3
+\put{\large$\circ$} at  4 3
+\put{$h$} at 0.5 1
+\put{$i$} at 0.5 3
+\put{$k$} at 4.5 1
+\put{$j$} at 4.5 3
+\put{$X$} at 2.5 1.3
+\put{$X$} at 2.5 3.3
+\put{$W$} at 0.65 2
+\put{$Z$} at 4.3 2
+\arrow <2mm> [.2,.6]  from 1.2 3 to 3.8 3  % i j
+\arrow <2mm> [.2,.6]  from 1 2.7 to 1 1.3  % i h
+\arrow <2mm> [.2,.6]  from 1.2 1 to 3.8 1  % h k
+\arrow <2mm> [.2,.6]  from 4 1.3 to 4 2.7  % k j
+\endpicture
+\end{center}
+\end{minipage}
+\setcounter{savenumi}{\value{enumi}}
+\end{enumerate}
+
 
 \paragraph{Monadic covariate effects}
 
@@ -11925,7 +11990,7 @@ These are useful, e.g., for bipartite (two-mode) networks.
 
 If it is desired to use them for the same variables ($V = U$),
 it is necessary to define a data set with two identical variables
-(i.e., with all variables equal) bearing the same name.
+(i.e., with all values equal) bearing different names.
 
 \begin{enumerate}
 \setcounter{enumi}{\value{savenumi}}
@@ -13341,7 +13406,7 @@ and the dyadic covariate $U$ as \texttt{covar2}.
  Here $W$ is \texttt{covar1} and $U$ is \texttt{covar2}.\\
  This will be suitable mainly for non-centered covariates $U$,
  for which the term `weight' is appropriate.
- 
+
  \textcolor{red}{This effect was incorrect until and including version 1.6.11.}
       \end{minipage}
 \hfill
@@ -17801,12 +17866,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type
-\verb|R CMD check RSiena_1.6.12.tar.gz|\\
+\verb|R CMD check RSiena_1.6.13.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.6.12.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.6.13.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -18317,6 +18382,10 @@ A different approach was taken for effectGroups
 the former is for covariates on the first node set, the second for
 covariates on the second node set.
 
+EffectGroup \sfn{dyadFirstSecondBipartiteObjective} is for a dependent network
+and two one-mode dyadic covariates; if the network is two-mode, then the first
+should be for the first mode, the second on the second mode.
+
 For effects defined for one dependent network and two actor covariates,
 the following effectGroup is defined:
 \begin{itemize}
@@ -18485,6 +18554,26 @@ Changes in RSiena:
 \end{itemize}
 \fi
 
+
+\item 2026-10-01 GitHub, package version 1.6.13.
+
+Changes in RSiena:
+\begin{itemize}
+  \item  Effects:
+  \begin{itemize}
+  \item Effect \texttt{WXX} corrected for two-mode networks.
+  \item New effect \texttt{WXZX} (contributed by Harald Waxenecker).
+  \item Effects  \texttt{outPop.c} , \texttt{outPopSqrt} , \texttt{outPopMore} , \texttt{outPopSqrtMore} ,
+    \texttt{outPopThreshold} , \texttt{inAct.c}  and \texttt{inActSqrt}  now have
+    internal effect parameter~1.
+    \end{itemize}
+  \item  Methods:
+     \begin{itemize}
+     \item New method \sfn{print.coDyadCovar}.
+     \item New method \sfn{print.varDyadCovar}.
+  \end{itemize}
+\end{itemize}
+
 \item 2026-09-14 GitHub, package version 1.6.12.
 
 Changes in RSiena:
@@ -18519,8 +18608,6 @@ Changes in RSiena:
     starting with one object for each dependent variable;
     and dropping \sfn{interpret\_size.sienaEffects}, i.e., the possibility
     to run \sfn{interpret\_size} without a \sfn{sienaFit} object.
-  \item In \sfn{interpret\_size}, \texttt{toggleProbabilities} that were \texttt{NA}
-    get the value 0 (which they should have).
   \item \texttt{toggleProbabilities} are returned by \sfn{interpret\_size} only if
     \texttt{getChangeStatistics} is \texttt{TRUE}.
   \item Changed the class name of the object created by \sfn{interpret\_size}
@@ -19656,7 +19743,7 @@ Changes in RSiena:
 \item  Effects:
 \begin{itemize}
   \item New effects  \texttt{simAllNear}, \texttt{simAllFar}, \texttt{absOutDiffIntn}, \texttt{avDegIntn}.
-  \item New effects \texttt{recipRateInv}, \texttt{recipRateLog} (Steffen Triebel).
+  \item New effects \texttt{recipRateInv}, \texttt{recipRateLog} (contributed by Steffen Triebel).
   \item Default internal effect parameter for \texttt{outOutActIntn}, \texttt{outOutAvIntn},
     and \texttt{both} changed from 2 to 1.
 \end{itemize}

@@ -32,7 +32,7 @@ TruncatedOutdegreeEffect::TruncatedOutdegreeEffect(
 	this->lc = 1;
 	this->lright = right;
 	this->loutThreshold = outThreshold;
-	if ((this->lOutIso ) & (!this->lright))
+	if ((this->lOutIso ) && (!this->lright))
 	{
 		throw invalid_argument(
 			"Truncated/MoreThreshold OutdegreeEffect: outIso requires right");

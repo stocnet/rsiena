@@ -89,7 +89,7 @@ void AltersCovariateAverageEffect::preprocessEgo(int ego)
 			this->lTotalAlterValue += alterValue;
 		}
 
-		if ((this->ldivide) & (neighborCount > 0))
+		if ((this->ldivide) && (neighborCount > 0))
 		{
 			this->lTotalAlterValue /= neighborCount;
 		}

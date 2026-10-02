@@ -55,6 +55,8 @@ importFrom("utils", "browseURL", "edit",
            "packageDescription", "read.csv",
            "read.table", "write.csv", "write.table")
 importFrom("network", "network.initialize", "network.edgelist")
+S3method(print, coDyadCovar)
+S3method(print, varDyadCovar)
 S3method(print, sienadata)
 S3method(print, siena)
 S3method(make_specification, sienadata)

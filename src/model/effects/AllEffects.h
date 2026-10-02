@@ -149,6 +149,7 @@
 #include "WienerEffect.h"
 #include "WWXClosureEffect.h"
 #include "WXXClosureEffect.h"
+#include "WXZXClosureEffect.h"
 #include "XWXClosureEffect.h"
 #include "XXWClosureEffect.h"
 #include "AgreementTransitivityGMMEffect.h"

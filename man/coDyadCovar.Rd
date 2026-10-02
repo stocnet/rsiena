@@ -28,6 +28,8 @@ coDyadCovar(val, centered=TRUE, nodeSets=c("Actors", "Actors"),
   associated with the node sets named in nodeSets
   of the Siena data object. The name of the associated node sets will only
   be checked when the Siena data object is created.
+  
+  There is a \code{print}  method for class "coDyadCovar".
 }
 \value{
    Returns the covariate as an object of class "coDyadCovar", in which

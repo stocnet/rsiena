@@ -83,7 +83,7 @@ void AltersCovariateAvRecAltEffect::preprocessEgo(int ego)
 			}			
 		}
 
-		if ((this->ldivide) & (neighborCount > 0))
+		if ((this->ldivide) && (neighborCount > 0))
 		{
 			this->lTotalAlterValue /= neighborCount;
 		}

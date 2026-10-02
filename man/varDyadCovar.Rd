@@ -37,6 +37,8 @@ varDyadCovar(val, centered=TRUE, nodeSets=c("Actors", "Actors"),
   if any, for wave \code{M} will not be used. Therefore, the number of columns
   can be \code{M} or \code{M-1}; if the former, the values in the last
   column will not be used.
+    
+  There is a \code{print}  method for class "varDyadCovar".
 }
 \value{
   Returns the covariate as an object of class "varDyadCovar", in which

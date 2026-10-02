@@ -147,6 +147,13 @@ as_covariate_rsiena <- function(val, type="monadic", centered=TRUE,
 		{
 			centered <- TRUE
 		}
+		if (is.list(val))
+		{
+			cat("You gave a list of values, probably a sparse matrix,\n") 
+			cat("which implies that it will be a dyadic covariate;\n")
+			cat("but you also specified 'type=monadic'.\n")
+			stop("Inconsistency between values and type.")
+		}
 		return(coCovar(val, centered=centered, nodeSet=nodeSet, warn=warn, 
 								imputationValues=imputationValues))
 	}
@@ -345,7 +352,7 @@ varCovar<- function(val, centered=TRUE, nodeSet="Actors", warn=TRUE, imputationV
 }
 
 ##@coDyadCovar Create
-coDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
+coDyadCovar <- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
 					   warn=TRUE, sparse=inherits(val,"TsparseMatrix"),
 					   type=c("oneMode", "bipartite"))
 {
@@ -375,13 +382,17 @@ coDyadCovar<- function(val, centered=TRUE, nodeSets=c("Actors","Actors"),
         {
             stop("not a sparse triples matrix")
         }
+		vardims <- dim(val)
         val <- list(val)
     }
+	else
+	{
+		vardims <- dim(val)	
+	}
 	if ((sum(!is.na(val))==0) & warn)
 	{
 		warning('Note: all values are missing.')
 	}
-    vardims <- dim(val)
     if (length(nodeSets) > 2)
     {
         stop("nodeSets may only have one or two elements")

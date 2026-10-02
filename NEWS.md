@@ -1,3 +1,24 @@
+2026-10-02
+
+# RSiena 1.6.13
+
+## Changes in RSiena:
+### Effects
+  * Effect `WXX` for two-mode networks corrected.
+  * New effect `WXZX` (contributed by Harald Waxenecker). 
+  * New effect group `dyadFirstSecondBipartiteObjective`.
+  * Effects  `outPop.c`, `outPopSqrt`, `outPopMore`, `outPopSqrtMore`, 
+    `outPopThreshold`, `inAct.c` and `inActSqrt` now have 
+    internal effect parameter 1.
+  * Using `outPopMore`, `outPopSqrtMore`, `outPopThreshold`, or `inAct.c`
+    with an internal effect parameter less than 1 leads to an error. 
+### Methods
+  * New method `print.coDyadCovar`.
+  * New method `print.varDyadCovar`. 
+### Correction
+  * Give a constant dyadic covariate, if constructed from a sparse matrix,
+    also the `vardims` attribute.
+
 2026-09-15
 
 # RSiena 1.6.12
@@ -254,7 +275,8 @@
 ### New effects
   * Effects `sameXOutAct`, `diffXOutAct`, `crossXOutAct` also implemented
     for two-mode networks.
-  * Parameter values 0 and -1 added for `outAct` and `inPop`. 
+  * Parameter values 0 and -1 added for `outPop` and `inAct` 
+    (earlier these were wrongly mentioned here as `outAct` and `inPop`).
 ### Coding
   * <math.h> replaced by <cmath> in C++ code.
 
