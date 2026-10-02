@@ -168,34 +168,68 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 				groupName=groupName, group=group,
 				netType=netType)
 		}
-		for (j in seq(along = xx$dycCovars))
+		
+		allDyadicCovars <- c(xx$dycCovars, xx$dyvCovars)
+		
+		for (j in seq(along = allDyadicCovars))
 		{
-			if (attr(xx$dycCovars[[j]], "type") == "oneMode" &&
-				attr(xx$dycCovars[[j]], 'nodeSet')[1] == nodeSet)
+			if (attr(allDyadicCovars[[j]], "type") == "oneMode" &&
+				attr(allDyadicCovars[[j]], 'nodeSet')[1] == nodeSet)
 			{
 				objEffects <- rbind(objEffects,
 					createEffects("dyadObjective",
-						names(xx$dycCovars)[j],
+						names(allDyadicCovars)[j],
 						name=varname,
 						groupName=groupName,
 						group=group,
 						netType=netType))
 			}
 		}
-		for (j in seq(along = xx$dyvCovars))
+# Pre-1.6.13 the following construction was used also for xx$dycCovars.
+# This was replaced by the above.
+# If it works OK, then the following may be dropped.
+#		for (j in seq(along = xx$dyvCovars))
+#		{
+#			if (attr(xx$dyvCovars[[j]], "type") == "oneMode" &&
+#				attr(xx$dyvCovars[[j]], 'nodeSet')[1] == nodeSet)
+#			{
+#				objEffects <- rbind(objEffects,
+#					createEffects("dyadObjective",
+#						names(xx$dyvCovars)[j],
+#						name=varname,
+#						groupName=groupName,
+#						group=group,
+#						netType=netType))
+#			}
+#		}
+#browser()
+		for (j in seq(along = allDyadicCovars))
 		{
-			if (attr(xx$dyvCovars[[j]], "type") == "oneMode" &&
-				attr(xx$dyvCovars[[j]], 'nodeSet')[1] == nodeSet)
+			wNodeSets <- attr(allDyadicCovars[[j]], "nodeSet")
+			wIsOneMode <- (attr(allDyadicCovars[[j]], "type") == "oneMode" &&
+				attr(allDyadicCovars[[j]], 'nodeSet')[1] == nodeSet)
+			if (wIsOneMode)
 			{
-				objEffects <- rbind(objEffects,
-					createEffects("dyadObjective",
-						names(xx$dyvCovars)[j],
-						name=varname,
-						groupName=groupName,
-						group=group,
-						netType=netType))
+				for (k in seq(along = allDyadicCovars))
+				{
+					zNodeSets <- attr(allDyadicCovars[[k]], "nodeSet")
+					zIsOneMode <- (attr(allDyadicCovars[[k]], "type") == "oneMode" &&
+						attr(allDyadicCovars[[k]], 'nodeSet')[1] == nodeSet)
+					if (zIsOneMode)
+					{
+						objEffects <- rbind(objEffects,
+							createEffects(
+								"dyadFirstSecondBipartiteObjective",
+								names(allDyadicCovars)[j],
+								names(allDyadicCovars)[k],
+								name = varname,
+								groupName = groupName, group = group,
+								netType = netType))
+					}
+				}
 			}
 		}
+
 		for (j in seq(along = xx$cCovars))
 		{
 			if (attr(xx$cCovars[[j]], 'nodeSet') == nodeSet)
@@ -1031,7 +1065,6 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 
 		for (j in seq(along = xx$dycCovars))
 		{
-            #browser()
 			if (attr(xx$dycCovars[[j]], "type") == "bipartite" &&
 				all(nodeSets == attr(xx$dycCovars[[j]], 'nodeSet')))
 			{
@@ -1087,6 +1120,43 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 						name=varname,
 						groupName=groupName, group=group,
 						netType=netType))
+			}
+		}
+
+		# For effect WXZX (or others of this type, if any). 
+		# W is a one-mode dyadic covariate on the first mode of X; 
+		# Z is a one-mode dyadic covariate on the second mode of X. 
+		# Constant and changing covariates are allowed.
+		allDyadicCovars <- c(xx$dycCovars, xx$dyvCovars)
+		for (j in seq(along = allDyadicCovars))
+		{
+			wNodeSets <- attr(allDyadicCovars[[j]], "nodeSet")
+			wIsFirstMode <-
+				attr(allDyadicCovars[[j]], "type") == "oneMode" &&
+				length(wNodeSets) == 2 && all(wNodeSets == nodeSets[1])
+
+			if (wIsFirstMode)
+			{
+				for (k in seq(along = allDyadicCovars))
+				{
+					zNodeSets <- attr(allDyadicCovars[[k]], "nodeSet")
+					zIsSecondMode <-
+						attr(allDyadicCovars[[k]], "type") == "oneMode" &&
+						length(zNodeSets) == 2 &&
+						all(zNodeSets == nodeSets[2])
+
+					if (zIsSecondMode)
+					{
+						objEffects <- rbind(objEffects,
+							createEffects(
+								"dyadFirstSecondBipartiteObjective",
+								names(allDyadicCovars)[j],
+								names(allDyadicCovars)[k],
+								name = varname,
+								groupName = groupName, group = group,
+								netType = netType))
+					}
+				}
 			}
 		}
 		for (j in seq(along = xx$cCovars))
