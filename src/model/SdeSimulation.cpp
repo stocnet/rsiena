@@ -81,7 +81,8 @@ void SdeSimulation::initialize(int period)
 {
 	this->lperiod = period;
 	this->lbasicScale = 
-		this->lpSimulation->pModel()->basicScaleParameter(period);
+		this->lpSimulation->pModel()->basicScaleParameter(
+			this->lpSimulation->pData(), period);
 }
 
 /**
