@@ -1041,9 +1041,16 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 		if (nContinuous > 1)
 			wEffects$include <- TRUE
 
-        starts <- getContinuousStartingVals(depvars, onePeriodSde)
+		## for multi-group data: one fit to all groups (shared feedback and
+        ## intercept, a scale parameter per period of each group)
+        if (groupx)
+            groupDepvars <- lapply(x, function(xg) xg$depvars[varnames])
+        else
+            groupDepvars <- list(depvars)
+
+        starts <- getContinuousStartingVals(groupDepvars, onePeriodSde)
         wEffects$initialValue <- starts$startWiener
-		rateEffects$initialValue[1:noPeriods] <- starts$startScale
+		rateEffects$initialValue[1:length(starts$startScale)] <- starts$startScale
 		fbicEffects$initialValue <- starts$startFbic
 
         list(effects = rbind(rateEffects, wEffects, fbicEffects, objEffects),
@@ -1853,7 +1860,7 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 	## add starting values for the other objects
 	if (groupx && length(x) > 1)
 	{
-		period <-  xx$observations ##periods used so far
+		period <- xx$observations ##periods used so far
 
 		for (group in 2:length(x))
 		{
@@ -2026,9 +2033,7 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 				contIndices <- (n-nContinuous+1):n ## indicates continuous depvars
 				varnames <- names(xx$depvars)[contIndices]
 				depvars <- xx$depvars[contIndices]
-				starts <- getContinuousStartingVals(depvars, onePeriodSde = FALSE)
-				## At this point, onePeriodSde is always FALSE, as the combination
-				## of multi-group and onePeriodSde = TRUE is not feasible
+				
 				for (i in 1:nContinuous) ## check whether all continous vars match
 				{
 					eff <- match(varnames[i], names(effects))
@@ -2040,9 +2045,8 @@ getEffects <- function(x, nintn = 10, behNintn=4, getDocumentation=FALSE, onePer
 				effectname <- paste('scale parameter (period ',
 									period + 1:noPeriods, ')', sep='')
 				use <- effects[[n+1]]$effectName %in% effectname
-				effects[[n+1]][use, c('include','initialValue',
-										'groupName', 'group', 'period')] <-
-					list(TRUE, starts$startScale, groupNames[group], group, 1:noPeriods)
+				effects[[n+1]][use, c('include', 'groupName', 'group', 'period')] <-
+					list(TRUE, groupNames[group], group, 1:noPeriods)
 			}
 
 			period <-  period + xx$observations ##periods used so far
@@ -2139,12 +2143,12 @@ getBehaviorStartingVals <- function(depvar)
 	list(startRate=startRate, tendency=tendency, untrimmed = untrimmed, dif=dif)
 }
 ##@getContinuousStartingVals DataCreate
-getContinuousStartingVals <- function(depvars, onePeriodSde)
+getContinuousStartingVals <- function(groupDepvars, onePeriodSde)
 {
-	depvar <- depvars[[1]][,1,]       # first continuous dependent variable
-	nActors <- nrow(depvar)           # no. of actors
-	nPeriods <- ncol(depvar) - 1	  # no. of periods
-	nCont <- length(depvars)          # no. of continuous variables
+	# continuous dependent variable: an actors x waves matrix per group
+	ys <- lapply(groupDepvars, function(depvars) depvars[[1]][,1,])
+	nPeriods <- sum(sapply(ys, ncol) - 1) # no. of periods
+	nCont <- length(groupDepvars[[1]]) # no. of continuous variables
 
 	if(nCont > 1)
 		stop("getContinuousStartingVals not defined for more than one continuous variable")
@@ -2158,21 +2162,28 @@ getContinuousStartingVals <- function(depvars, onePeriodSde)
 		b0 <- theta[2]
 		tau <- theta[3:(2+nPeriods)]
 		minlogliks <- rep(0, nPeriods)
+		k <- 0 # period counter over all groups
 
-		for(i in 1:nPeriods)
-		{	# actors present at time i and i+1
-			act <- which(!is.na(depvar[,i] + depvar[,i+1]))
-			R <- depvar[act,i+1] - exp(a * tau[i]) * depvar[act,i] -
-				(exp(a*tau[i]) - 1) * b0 / a
-			R <- suppressWarnings(dnorm(R, 0, sqrt((exp(2 * a * tau[i]) - 1) / (2*a)),
-				log = TRUE))
-			minlogliks[i] <- -sum(R)
+		for (depvar in ys)
+		{	
+			for (i in 1:(ncol(depvar) - 1))
+			{
+				k <- k + 1
+				# actors present at time i and i+1
+				act <- which(!is.na(depvar[,i] + depvar[,i+1]))
+				R <- depvar[act,i+1] - exp(a * tau[k]) * depvar[act,i] -
+					(exp(a*tau[k]) - 1) * b0 / a
+				R <- suppressWarnings(dnorm(R, 0, sqrt((exp(2 * a * tau[k]) - 1) / (2*a)),
+					log = TRUE))
+				minlogliks[k] <- -sum(R)
+			}
 		}
 		sum(minlogliks)
-    	}
+    }
 
 	LLonePeriodSde <- function(theta)
 	{
+		depvar <- ys[[1]]
 		a <- theta[1]
 		b0 <- theta[2]
 		g <- theta[3]
