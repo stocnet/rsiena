@@ -64,11 +64,14 @@ maxlikec <- function(z, x, data=NULL, effects=NULL,
     else
     {
 		## z$int2 is the number of processors if iterating by period, so 1 means
-		## we are not. Can only parallelize by period withmaxlike.
+		## we are not. Can only parallelize by period with maxlike.
         if (z$int2 == 1)
         {
-            anss <- apply(cbind(callGrid, 1:nrow(callGrid)),
-						  1, doMLModel, z$Deriv, z$thetaMat,
+# earlier (before 1.6.14):
+#            anss <- apply(cbind(callGrid, 1:nrow(callGrid)),
+#						  1, doMLModel, z$Deriv, z$thetaMat,
+            anss <- lapply(1:nrow(callGrid),
+						  doMLModel, callGrid, z$Deriv, z$thetaMat,
                           z$nrunMH, z$addChainToStore,
                           z$returnDataFrame, z$returnDeps,
                           z$returnChains, byGroup, z$theta, returnLoglik,
@@ -77,8 +80,12 @@ maxlikec <- function(z, x, data=NULL, effects=NULL,
         else
         {
             use <- 1:(min(nrow(callGrid), z$int2))
-            anss <- parRapply(z$cl[use], cbind(callGrid, 1:nrow(callGrid)),
-							  doMLModel, z$Deriv, z$thetaMat,
+# earlier (before 1.6.14):s
+#            anss <- parRapply(z$cl[use], cbind(callGrid, 1:nrow(callGrid)),
+#							  doMLModel, z$Deriv, z$thetaMat,
+            anss <- clusterApply(z$cl[use], 1:nrow(callGrid), doMLModel, 
+							  callGrid,
+							  z$Deriv, z$thetaMat,
                               z$nrunMH, z$addChainToStore,
                               z$returnDataFrame,  z$returnDeps, z$returnChains, byGroup,
 							  z$theta, returnLoglik, onlyLoglik)
@@ -158,14 +165,15 @@ maxlikec <- function(z, x, data=NULL, effects=NULL,
 }
 
 ##@doMLModel Maximum likelihood
-doMLModel <- function(x, Deriv, thetaMat, nrunMH, addChainToStore,
+doMLModel <- function(x, callGrid, Deriv, thetaMat, nrunMH, addChainToStore,
                       returnDataFrame, returnDeps, returnChains,
 					  byGroup, theta, returnLoglik, onlyLoglik)
 {
+# Changed from x = matrix to x = list of integers
     f <- FRANstore()
 	if (byGroup)
 	{
-		theta <- thetaMat[x[1], ]
+		theta <- thetaMat[callGrid[x,1], ]
 	}
 	else
 	{
@@ -173,7 +181,10 @@ doMLModel <- function(x, Deriv, thetaMat, nrunMH, addChainToStore,
 	}
     .Call(C_mlPeriod, PACKAGE=pkgname, Deriv, f$pData,
           f$pModel, f$myeffects, theta,
-          as.integer(x[1]), as.integer(x[2]), nrunMH[x[3]], addChainToStore,
+		  as.integer(callGrid[x,1]), as.integer(callGrid[x,2]), nrunMH[x],
+# earlier:
+#          as.integer(x[1]), as.integer(x[2]), nrunMH[x[3]], 
+		  addChainToStore,
 		  returnDataFrame, returnDeps, returnChains,
 		  returnLoglik, onlyLoglik)
 }
@@ -273,6 +284,7 @@ getProbabilitiesFromC <- function(z, index=1, getScores=FALSE)
 			anss <- parRapply(z$cl[use], callGrid,
 							  doGetProbabilitiesFromC, z$thetaMat, index,
 							  getScores)
+# Perhaps this has to be changed to clusterApply just like above.
 		}
 	}
 	ans <- list()
