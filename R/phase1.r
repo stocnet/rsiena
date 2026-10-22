@@ -295,16 +295,6 @@ phase1.2 <- function(z, x, ...)
 		fchange <- as.vector(dinv %*% z$mnfra)
 		z$dinv <- dinv
 	}
-	splitDepvars <- "splitDepvars" %in% names(x)
-	if (splitDepvars)
-	{
-		 splitDepvars <- (x$splitDepvars >= 1)
-		 oldNRstep <- (x$splitDepvars < 0)
-	}
-	else
-	{
-		oldNRstep <- FALSE
-	}
 	# Partial diagonalization of derivative matrix
 	# for use if 0 < x$diagonalize < 1.
 	if (!z$gmm)
@@ -314,11 +304,6 @@ phase1.2 <- function(z, x, ...)
 	  temp[z$fixed, ] <- 0.0
 	  temp[, z$fixed] <- 0.0
 	  diag(temp)[z$fixed] <- 1.0
-      if ((splitDepvars) & (length(unique(z$effects$name)) > 1))
-	  {
-		temp[outer(z$effects$name, z$effects$name, '!=')] <- 0
-		Report('Split updates between dependent variables \n', cf)
-	  }
 	  # Invert this matrix
 	  z$dinvv <- solve(temp)
 	}
@@ -334,25 +319,12 @@ phase1.2 <- function(z, x, ...)
 	  z$dinvv <- solve(temp)%*%B
 	}
 
-	if (!z$gmm)
-	{
-		if (oldNRstep)
-		{
-# This was used before version 1.6.3
-			fchange <- as.vector(z$dinv %*% z$mnfra)
-		}
-		else
-		{
-			fchange <- as.vector(z$dinvv %*% z$mnfra)
-		}		
-	}	
-
 	Report('dfra :\n', cf)
 	##  browser()
 	PrtOutMat(z$dfra, cf)
-	Report('inverse of dfra: dinv = \n', cf)
+	Report('inverse of dfra :\n', cf)
 	PrtOutMat(dinv, cf)
-	Report('Modified dinv: dinvv  = \n', cf)
+	Report('dinvv :\n', cf)
 	PrtOutMat(z$dinvv, cf)
 	Report('Full Quasi-Newton-Raphson step after phase 1:\n', cf)
 	Report(c(paste(1:z$pp, '. ', format(-fchange, width = 12, digits = 6,
