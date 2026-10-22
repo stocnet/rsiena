@@ -84,7 +84,8 @@ void ContinuousVariable::initialize(int period)
 	this->lperiod = period;
 	this->lsimulatedDistance = 0;
 
-	this->lbasicScale = this->lpSimulation->pModel()->basicScaleParameter(period);
+	this->lbasicScale = this->lpSimulation->pModel()->basicScaleParameter(
+		this->lpSimulation->pData(), period);
 	this->lbasicScaleScore = 0;
 	this->lbasicScaleDerivative = 0;
 
@@ -235,7 +236,7 @@ void ContinuousVariable::accumulateScores(const vector<double> &actorMeans,
 	double g = sde->wienerParameter();
 	double Vardt = sde->wienerCoefficient();
 	double tau = this->pSimulation()->pModel()->basicScaleParameter(
-										this->pSimulation()->period());
+		this->pSimulation()->pData(), this->pSimulation()->period());
 
 	double errorxerror = 0; // inner product
 	for (int actor = 0; actor < this->n(); actor++)

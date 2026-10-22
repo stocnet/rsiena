@@ -1,3 +1,22 @@
+2026-10-18
+
+# RSiena 1.6.14
+
+## Changes in RSiena:
+### Functionality
+  * Multi-group option (`make_group_rsiena`) now available for models
+    with continuous behavior variables, with parameter starting values 
+    based on one fit to all groups.
+### Bug corrections
+  * Analytic Phase 1 derivatives of the feedback statistic for continuous
+    behavior variables in `updateDerivativeSde` corrected (it used the 
+    behavior at the end instead of at the start of the period).
+### Tests
+  * New test in `tests/newparallel.R` for multi-group data with a
+    continuous behavior variable.
+  * Simulation of continuous behavior data in test16 of
+    `tests/newparallel.R` corrected.
+    
 2026-10-02
 
 # RSiena 1.6.13

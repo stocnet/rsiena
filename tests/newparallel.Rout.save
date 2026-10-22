@@ -1,11 +1,13 @@
 
-R version 4.6.1 (2026-06-24 ucrt) -- "Happy Hop"
+R version 4.6.1 (2026-06-24) -- "Happy Hop"
 Copyright (C) 2026 The R Foundation for Statistical Computing
-Platform: x86_64-w64-mingw32/x64
+Platform: aarch64-apple-darwin23
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
 Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
 
 R is a collaborative project with many contributors.
 Type 'contributors()' for more information and
@@ -365,7 +367,7 @@ Total of 322 iteration steps.
 > ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg)
 > alg_alg2 <- set_algorithm_saom(cond=TRUE, condvarno=1, seed=5, n3=50, nsub=1,
-+ 			splitDepvars=1)
++             splitDepvars=1)
 > ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg2)
 > ##, verbose=TRUE)
@@ -728,7 +730,7 @@ Total of 541 iteration steps.
 [1] "test16"
 > set.seed(123) # simulate behavior data according to dZ(t) = [-0.1 Z + 1] dt + 1 dW(t)
 > y1 <- rnorm(50, 0,3)
-> y2 <- exp(-0.1) * y1 + (1-exp(-0.1)) * 1/ -0.1 + rnorm(50, 0, (exp(-0.2)- 1) / -0.2 * 1^2)
+> y2 <- exp(-0.1) * y1 + (exp(-0.1)-1) * 1/ -0.1 + rnorm(50, 0, sqrt((exp(-0.2)- 1) / -0.2 * 1^2))
 > friend <- as_dependent_rsiena(array(c(s501, s502), dim = c(50,50,2)))
 > behavior <- as_dependent_rsiena(matrix(c(y1,y2), 50,2), type = "continuous")
 > (mydata <- make_data_rsiena(friend, behavior))
@@ -744,44 +746,44 @@ Observations       2
 Nodeset            Actors     
 Densities          0.046 0.047
 
-Dependent variable behavior      
-Type               continuous    
-Observations       2             
-Nodeset            Actors        
-Range              -6.242 - 6.507
+Dependent variable behavior    
+Type               continuous  
+Observations       2           
+Nodeset            Actors      
+Range              -5.9 - 7.051
 
 > (myeff <- make_specification(mydata, onePeriodSde = TRUE))
-SDE init parameters:  -0.1117176 -0.864023 0.8576913 
-SDE par stand errors: 0.04669358 0.1223113 0.08791327 
+SDE init parameters:  -0.1124194 1.154606 0.9011711 
+SDE par stand errors: 0.04908118 0.1316103 0.09260299 
   name     effectName                  include fix   test  initialValue parm
 1 friend   basic rate parameter friend TRUE    FALSE FALSE    4.69604   0   
 2 friend   outdegree (density)         TRUE    FALSE FALSE   -1.48852   0   
 3 friend   reciprocity                 TRUE    FALSE FALSE    0.00000   0   
 4 sde      scale parameter period 1    TRUE    TRUE  FALSE    1.00000   0   
-5 behavior wiener (behavior.behavior)  TRUE    FALSE FALSE    0.85769   0   
-6 behavior feedback from behavior      TRUE    FALSE FALSE   -0.11172   0   
-7 behavior intercept                   TRUE    FALSE FALSE   -0.86402   0   
+5 behavior wiener (behavior.behavior)  TRUE    FALSE FALSE    0.90117   0   
+6 behavior feedback from behavior      TRUE    FALSE FALSE   -0.11242   0   
+7 behavior intercept                   TRUE    FALSE FALSE    1.15461   0   
 > alg_alg <- set_algorithm_saom(seed=321, n3=20, nsub=1)
 > (ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
 +          control_algo=alg_alg))
-SDE init parameters:  -0.1117176 -0.864023 0.8576913 
-SDE par stand errors: 0.04669358 0.1223113 0.08791327 
+SDE init parameters:  -0.1124194 1.154606 0.9011711 
+SDE par stand errors: 0.04908118 0.1316103 0.09260299 
 Estimates, standard errors and convergence t-ratios
 
                                       Estimate   Standard   Convergence 
                                                    Error      t-ratio   
 Network Dynamics 
-  1. rate basic rate parameter friend  5.5455  ( 1.3505   )    0.1743   
-  2. eval outdegree (density)         -2.2776  ( 0.1270   )   -0.2121   
-  3. eval reciprocity                  2.4902  ( 0.2396   )   -0.1214   
+  1. rate basic rate parameter friend  5.6304  ( 0.9943   )   -0.5965   
+  2. eval outdegree (density)         -2.3584  ( 1.4045   )   -0.4847   
+  3. eval reciprocity                  2.6056  ( 1.2565   )    0.0732   
 
 Continuous Behavior Dynamics
-  4. eval wiener (behavior.behavior)   0.8424  ( 0.0167   )   -0.2656   
-  5. eval feedback from behavior      -0.1108  ( 0.0941   )    0.1166   
-  6. eval intercept                   -0.8651  ( 0.1500   )    0.2041   
-  7. rate scale parameter period 1     1.0000  (     NA   )   -0.2656   
+  4. eval wiener (behavior.behavior)   0.9183  ( 0.0700   )    0.0324   
+  5. eval feedback from behavior      -0.1143  ( 0.2930   )    0.2682   
+  6. eval intercept                    1.1607  ( 0.5612   )    0.0219   
+  7. rate scale parameter period 1     1.0000  (     NA   )    0.0324   
 
-Overall maximum convergence ratio:    0.5077 
+Overall maximum convergence ratio:    1.1879 
 
 
 Total of 305 iteration steps.
@@ -1702,7 +1704,7 @@ Period 2:
 > thv[,4] <- 0.02 * (1:10)
 > thv[,5] <- 0.02 * (10:1) 
 > myalg <- set_algorithm_saom(nsub=2, n3=50, cond=FALSE, seed=5, simOnly=TRUE,
-+ 				thetaValues=thv)
++                 thetaValues=thv)
 > print('test24')
 [1] "test24"
 > (ans <- siena(mymodel, data=mydata, effects=myeff, 
@@ -1779,10 +1781,75 @@ sigma (average within-ego standard deviation of change statistics):
   4. eval outdegree - activity   2.6380     2.6380   
 
 R_H ('degree of certainty')     0.2434     0.2434   
+> ##test27
+> print('test27')
+[1] "test27"
+> # multi-group data with a continuous behavior variable: shared feedback and
+> # intercept, a scale parameter per group; behavior simulated as in
+> # dZ(t) = tau [a Z + b] dt + sqrt(tau) dW(t); a=-0.1, b=1, tau1=1, tau2=1.5
+> simSDE <- function(y, a, b, tau)
++   exp(a*tau) * y + (exp(a*tau) - 1) * b / a +
++   rnorm(length(y), 0, sqrt((exp(2*a*tau) - 1) / (2*a)))
+> set.seed(123)
+> y11 <- rnorm(50, 0, 3)
+> y21 <- rnorm(50, 0, 3)
+> y12 <- simSDE(y11, a = -0.1, b = 1, tau = 1)
+> y22 <- simSDE(y21, a = -0.1, b = 1, tau = 1.5)
+> friend <- as_dependent_rsiena(array(c(s501, s502), dim = c(50,50,2)))
+> behavior <- as_dependent_rsiena(matrix(c(y11,y12), 50,2), type = "continuous")
+> mydata1 <- make_data_rsiena(friend, behavior)
+> friend <- as_dependent_rsiena(array(c(s502, s503), dim = c(50,50,2)))
+> behavior <- as_dependent_rsiena(matrix(c(y21,y22), 50,2), type = "continuous")
+> mydata2 <- make_data_rsiena(friend, behavior)
+> mygroup <- make_group_rsiena(list(mydata1, mydata2))
+> (myeff <- make_specification(mygroup))
+SDE init parameters:  -0.1292816 0.9785233 0.8320437 1.580063 
+SDE par stand errors: 0.03604445 0.1675669 0.1395666 0.2768361 
+  name     effectName                      include fix   test  initialValue
+1 friend   constant friend rate (period 1) TRUE    FALSE FALSE    4.69604  
+2 friend   constant friend rate (period 3) TRUE    FALSE FALSE    4.32885  
+3 friend   outdegree (density)             TRUE    FALSE FALSE   -1.46770  
+4 friend   reciprocity                     TRUE    FALSE FALSE    0.00000  
+5 sde      scale parameter (period 1)      TRUE    FALSE FALSE    0.83204  
+6 sde      scale parameter (period 3)      TRUE    FALSE FALSE    1.58006  
+7 behavior feedback from behavior          TRUE    FALSE FALSE   -0.12928  
+8 behavior intercept                       TRUE    FALSE FALSE    0.97852  
+  parm
+1 0   
+2 0   
+3 0   
+4 0   
+5 0   
+6 0   
+7 0   
+8 0   
+> alg_alg <- set_algorithm_saom(cond=FALSE, seed=321, n3=20, nsub=1)
+> (ans  <- siena(data=mygroup, effects=myeff, batch=TRUE, silent=TRUE,
++          control_algo=alg_alg))
+SDE init parameters:  -0.1292816 0.9785233 0.8320437 1.580063 
+SDE par stand errors: 0.03604445 0.1675669 0.1395666 0.2768361 
+Estimates, standard errors and convergence t-ratios
+
+                                          Estimate   Standard   Convergence 
+                                                       Error      t-ratio   
+Network Dynamics 
+  1. rate constant friend rate (period 1)  5.8752  (  0.7108  )    0.0828   
+  2. rate constant friend rate (period 3)  4.5200  (  0.5828  )   -0.7314   
+  3. eval outdegree (density)             -2.3649  (  0.1270  )   -0.0776   
+  4. eval reciprocity                      2.8281  (  0.2273  )   -0.2061   
+
+Continuous Behavior Dynamics
+  5. eval feedback from behavior          -0.1259  (  0.0513  )    0.0674   
+  6. eval intercept                        0.9627  (  0.2253  )    0.3447   
+  7. rate scale parameter (period 1)       0.8513  ( 12.5885  )    0.1332   
+  8. rate scale parameter (period 3)       1.6015  (  0.0581  )    0.6053   
+
+Overall maximum convergence ratio:    1.2733 
+
+
+Total of 307 iteration steps.
+
 > ## delete output files
 > if (file.exists('mydata_out.txt')){unlink('mydata_out.txt')}
 > if (file.exists('effects.html')){unlink('effects.html')}
 > 
-> proc.time()
-   user  system elapsed 
-  43.28    1.23   45.03 

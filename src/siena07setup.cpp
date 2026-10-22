@@ -361,20 +361,6 @@ SEXP effects(SEXP RpData, SEXP EFFECTSLIST)
 		R_ExternalPtrAddr(RpData);
 
 	Model * pModel = new Model();
-
-	// for the SDE part of the model, in particular the scale parameters,
-	// it is important that numberOfPeriods in the model is set very early 
-	// on (waiting till setupModelOptions is too late); however this is 
-	// still only implemented for a single group
-	if(pGroupData->size() > 1)
-	{
-		//error("SDE not implemented yet for multiple groups (note nr. of obs!)");
-		pModel->numberOfPeriods(totalPeriods(*pGroupData));
-	}
-	else // single group
-	{
-		pModel->numberOfPeriods((*(*pGroupData)[0]).observationCount() - 1);
-	}
 	
 	/* find the number of columns of the data frame (all will be the same
 	   as they are split in R just before the call) */
