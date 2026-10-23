@@ -46,7 +46,7 @@
     n3 = 1000, nsub = 4, n2start = NULL, firstg = 0.2, reduceg = 0.5,
     truncation = 5, doubleAveraging = 0,
     diagonalize = 0.2*!maxlike, standardizeVar = (diagonalize<1),
-    dolby = TRUE, splitDepvars = 0,
+    dolby = TRUE, 
     useStdInits = FALSE, findiff = FALSE,
     mult = 5, prML = 1, maximumPermutationLength = 40,
     minimumPermutationLength = 2, initialPermutationLength = 20,
@@ -60,7 +60,7 @@ set_output_saom(outputName = NULL, lessMem = FALSE,
 sienaAlgorithmCreate(fn, projname = "Siena", MaxDegree = NULL,
      Offset = NULL, useStdInits = FALSE,
      n3 = 1000, nsub = 4, n2start = NULL,
-     dolby = TRUE, splitDepvars = 0,
+     dolby = TRUE,
      maxlike = FALSE, gmm = FALSE,
      diagonalize = 0.2*!maxlike,
      condvarno = 0, condname = "", firstg = 0.2, reduceg = 0.5,
@@ -74,7 +74,7 @@ sienaAlgorithmCreate(fn, projname = "Siena", MaxDegree = NULL,
 sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL,
      Offset = NULL, useStdInits = FALSE,
      n3 = 1000, nsub = 4, n2start = NULL,
-     dolby = TRUE,  splitDepvars = 0,
+     dolby = TRUE,
      maxlike = FALSE, gmm = FALSE,
      diagonalize = 0.2*!maxlike,
      condvarno = 0, condname = "", firstg = 0.2, reduceg = 0.5,
@@ -197,11 +197,6 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL,
     convergence, but takes some extra computing time;
     if convergence is problematic, however, \code{dolby = FALSE} may be tried.
     Just use whatever works best.}
-  \item{splitDepvars}{Integer with possible values \code{-1, 0, +1}.
-    If \code{-1}, obtain results as in versions
-    prior to 1.3.6. If \code{+1}, Robbins-Monro updates for a given dependent
-    variable will not depend on deviations for other dependent variables.
-    See Details.}
   \item{useStdInits}{Boolean. If \code{TRUE}, the initial values in the effects
     object will be ignored and default values used instead.
     If FALSE, the initial values in the effects object will be used.}
@@ -270,9 +265,7 @@ sienaModelCreate(fn, projname = "Siena", MaxDegree = NULL,
   available as arguments can be changed manually when desired.\cr
   The matrix \code{D} transforming deviations from targets to updates
   in the Robbins Monro steps are partially diagonalized
-  if \code{diagonalize > 0}; and its between-dependent variable blocks
-  are put to \code{0} if \code{splitDepvars=1}. Diagonalization is omitted
-  for the update step immediately at the end of Phase if \code{splitDepvars=-1}.
+  if \code{diagonalize > 0}. 
 
   The value \code{prML = 1} defines the defaults valid in RSiena up to version
   1.3.16. For ML estimation with only one dependent variable,

@@ -32,7 +32,7 @@ importFrom("Matrix", "Matrix", "sparseMatrix", "spMatrix", "drop0",
 importFrom("lattice", "xyplot", "trellis.par.get", "trellis.par.set", "bwplot",
            "panel.violin", "panel.bwplot", "panel.xyplot", "panel.text",
            "panel.abline") 
-importFrom("parallel", "clusterCall", "parLapply", "parRapply",
+importFrom("parallel", "clusterCall", "parLapply", "parRapply", "clusterApply",
            "clusterSetRNGStream", "makeCluster", "stopCluster")
 importFrom("xtable", "xtable", "print.xtable")
 importFrom("MASS", "cov.rob", "ginv")

@@ -216,7 +216,7 @@ by Mark Huisman, Michael Schweinberger, Christian Steglich,
 and Viviana Amati.
 
 This manual is frequently updated, mostly only in a minor way.
-This version was renewed for \RS version 1.6.13.
+This version was renewed for \RS version 1.6.14.
 
 In version 1.6, the names of \RS functions have undergone
 important changes. This manual is for the new names.
@@ -1187,7 +1187,7 @@ For technical problems running \rs, follow the following points.
   of \rs. Details of the latest version available can
   be found at the `Downloads' page.
   The version is
-  identified by a version number (e.g., 1.6.13).
+  identified by a version number (e.g., 1.6.14).
   You can find the number of your current installed version by
   opening \R, and typing\\
   \verb|packageVersion("RSiena")|   \\
@@ -10335,13 +10335,14 @@ and
  since this is an elementary effect, it can be used in interactions
  and in endowment and creation functions;
 
- \item {\em out-degree related popularity effect} \texttt{(outPop)}
- (earlier called {\em activity} or {\em activity of alter effect}), defined by
+ \item {\em out-degree related popularity effect} \texttt{(outPop)}, defined by
   the sum of the out-degrees
  of the others to whom $i$ is tied,\\
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, x_{j+} =
   \sum_j x_{ij} \sum_h x_{jh} $; \\
  until version 3.313, this effect was multiplied by a factor $1/n$;\\
+ this is a regular evaluation effect with standard MoM estimation
+ for internal effect parameter 1 and higher;
   if the internal effect parameter is equal to 0, the estimation statistic uses
   the outdegrees $x_{j+} $ of the start of the period;
   if the internal effect parameter is equal to --1, the estimation statistic uses
@@ -10353,8 +10354,8 @@ and
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, \big( x_{j+} - d \big)$,\\
  where $d$ is the average out-degree across all waves;
 
- \item {\em out-degree related popularity (sqrt) effect} \texttt{(outPopSqrt)}
- (earlier called {\em activity of alter (sqrt measure) effect}), defined by the sum of
+ \item {\em out-degree related popularity (sqrt) effect} \texttt{(outPopSqrt)},
+ defined by the sum of
  the square roots of the out-degrees of the others to whom $i$ is tied,\\
  $s^{\rm net}_{i\vit}(x) = \sum_j x_{ij}\, \sqrt{x_{j+}} =
   \sum_j x_{ij} \sqrt{\sum_h x_{jh}} $;\\
@@ -10403,6 +10404,8 @@ and
  \item {\em in-degree related activity effect}, \texttt{(inAct)}
  defined as  the cross-product  of the actor's in- and out-degrees,\\
  $s^{\rm net}_{i\vit}(x) =  \sum_j x_{ij}\, x_{+i}  = x_{i+}\, x_{+i}$;\\
+ this is a regular evaluation effect with standard MoM estimation
+ for internal effect parameter 1 and higher;
   if the internal effect parameter is equal to 0, the estimation statistic uses
   the indegrees $x_{+i} $ of the start of the period;
   if the internal effect parameter is equal to --1, the estimation statistic uses
@@ -10417,6 +10420,8 @@ and
  \item {\em in-degree related activity (sqrt) effect}, \texttt{(inActSqrt)}
  defined by  \\
  $s^{\rm net}_{i\vit}(x) = x_{i+}\,\sqrt{x_{+i}}$ ;\\
+ this is a regular evaluation effect with standard MoM estimation
+ for internal effect parameter 1 and higher;
   if the internal effect parameter is equal to 0, the estimation statistic uses
   the square roots of the indegrees $x_{+i} $ of the start of the period;
   if the internal effect parameter is equal to --1, the estimation statistic uses
@@ -17866,12 +17871,12 @@ might remind you to set the property of \textsf{eol-style} on them when you add
 them to the repository.
 \item [Check] Checking is a process designed to ensure that packages are likely
   to work correctly when installed. Type
-\verb|R CMD check RSiena_1.6.13.tar.gz|\\
+\verb|R CMD check RSiena_1.6.14.tar.gz|\\
 (where the version number is adjusted to match the tar ball name.)
 \item[zip file] To make a zip file that can be used in Windows for
 `installing from a local zip file', and therefore is easy for distribution
 to others, type\\
-\verb|R CMD INSTALL --build RSiena_1.6.13.tar.gz| \\
+\verb|R CMD INSTALL --build RSiena_1.6.14.tar.gz| \\
 (where again the version number is adjusted to match the tar ball name.)
 \end{description}
 
@@ -18554,6 +18559,28 @@ Changes in RSiena:
 \end{itemize}
 \fi
 
+\item 2026-10-22 GitHub, package version 1.6.14.
+
+Changes in RSiena:
+\begin{itemize}
+  \item Functionality:
+     \begin{itemize}
+  \item The multi-group option (\sfn{make\_group\_rsiena}) is now available
+    for models with continuous behavior variables, with parameter starting values
+    based on one fit to all groups.
+  \item The option \texttt{splitDepvars} in \sfn{set\_algorithm\_saom}, 
+    introduced in version 1.6.3,
+    was rolled back and does not exist any more.
+    \end{itemize}
+  \item Bug corrections:
+    \begin{itemize}
+  \item Analytic Phase~1 derivatives of the feedback statistic for continuous
+    behavior variables in \texttt{updateDerivativeSde} corrected (it used the
+    behavior at the end instead of at the start of the period).
+    \item There was an error when using multiple processors and maximum likelihood
+    estimation. This was corrected.
+    \end{itemize}
+\end{itemize}
 
 \item 2026-10-01 GitHub, package version 1.6.13.
 
@@ -18563,8 +18590,8 @@ Changes in RSiena:
   \begin{itemize}
   \item Effect \texttt{WXX} corrected for two-mode networks.
   \item New effect \texttt{WXZX} (contributed by Harald Waxenecker).
-  \item Effects  \texttt{outPop.c} , \texttt{outPopSqrt} , \texttt{outPopMore} , \texttt{outPopSqrtMore} ,
-    \texttt{outPopThreshold} , \texttt{inAct.c}  and \texttt{inActSqrt}  now have
+  \item Effects  \texttt{outPop.c} , \texttt{outPopSqrt} , \texttt{outPopMore}, \texttt{outPopSqrtMore} ,
+    \texttt{outPopThreshold}, \texttt{inAct.c},  and \texttt{inActSqrt}  now have
     internal effect parameter~1.
     \end{itemize}
   \item  Methods:

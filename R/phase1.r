@@ -295,16 +295,6 @@ phase1.2 <- function(z, x, ...)
 		fchange <- as.vector(dinv %*% z$mnfra)
 		z$dinv <- dinv
 	}
-	splitDepvars <- "splitDepvars" %in% names(x)
-	if (splitDepvars)
-	{
-		 splitDepvars <- (x$splitDepvars >= 1)
-		 oldNRstep <- (x$splitDepvars < 0)
-	}
-	else
-	{
-		oldNRstep <- FALSE
-	}
 	# Partial diagonalization of derivative matrix
 	# for use if 0 < x$diagonalize < 1.
 	if (!z$gmm)
@@ -314,11 +304,6 @@ phase1.2 <- function(z, x, ...)
 	  temp[z$fixed, ] <- 0.0
 	  temp[, z$fixed] <- 0.0
 	  diag(temp)[z$fixed] <- 1.0
-      if ((splitDepvars) & (length(unique(z$effects$name)) > 1))
-	  {
-		temp[outer(z$effects$name, z$effects$name, '!=')] <- 0
-		Report('Split updates between dependent variables \n', cf)
-	  }
 	  # Invert this matrix
 	  z$dinvv <- solve(temp)
 	}
@@ -334,25 +319,12 @@ phase1.2 <- function(z, x, ...)
 	  z$dinvv <- solve(temp)%*%B
 	}
 
-	if (!z$gmm)
-	{
-		if (oldNRstep)
-		{
-# This was used before version 1.6.3
-			fchange <- as.vector(z$dinv %*% z$mnfra)
-		}
-		else
-		{
-			fchange <- as.vector(z$dinvv %*% z$mnfra)
-		}		
-	}	
-
 	Report('dfra :\n', cf)
 	##  browser()
 	PrtOutMat(z$dfra, cf)
-	Report('inverse of dfra: dinv = \n', cf)
+	Report('inverse of dfra :\n', cf)
 	PrtOutMat(dinv, cf)
-	Report('Modified dinv: dinvv  = \n', cf)
+	Report('dinvv :\n', cf)
 	PrtOutMat(z$dinvv, cf)
 	Report('Full Quasi-Newton-Raphson step after phase 1:\n', cf)
 	Report(c(paste(1:z$pp, '. ', format(-fchange, width = 12, digits = 6,
@@ -636,58 +608,63 @@ updateDerivativeSde <- function(z, dfra)
 			function(x){grepl("intercept", x, fixed = TRUE)}, FUN.VALUE=TRUE))
   scaleId <- which(z$effects$name == "sde")
   onePeriodSde <- (length(wienerId) > 0) # option set by the user
-  nPeriods <- z$observations - 1
-  n <- length(z$f$Data1$nodeSets$Actors)
     
   g <- ifelse(onePeriodSde, z$effects$initialValue[wienerId], 1)
   a <- z$effects$initialValue[feedbackId]
   b <- z$effects$initialValue[interceptId]
-  tau <- z$effects$initialValue[scaleId]
-  y <- z$f$Data1$contbehavs[[1]][[1]]
 
   if (onePeriodSde) {
     dfra[c(wienerId, feedbackId, interceptId), c(wienerId, feedbackId, interceptId)] <- 0
   } else {
     dfra[c(feedbackId, interceptId, scaleId), c(feedbackId, interceptId, scaleId)] <- 0
-  } 
-  
-  for (i in 1:nPeriods) 
-  {
-    dSa_da <- sum(y[,i+1] * (tau[i] * exp(a*tau[i]) * y[,i] + 
-                  (1 + a*tau[i]*exp(a*tau[i]) - exp(a*tau[i])) * b / (a^2)))
-    dSa_db <- sum((exp(a*tau[i])-1)/a * y[,i+1])
-    dSa_dg <- 0
-    dSa_dt <- sum(exp(a*tau[i]) * (b + a * y[,i]) * y[,i+1])
-    
-    dSb_da <- sum(tau[i] * exp(a*tau[i]) * y[,i] + 
-                  (1 + a*tau[i]*exp(a*tau[i]) - exp(a*tau[i])) * b / (a^2))
-    dSb_db <- n * (exp(a*tau[i])-1)/a 
-    dSb_dg <- 0
-    dSb_dt <- sum(exp(a*tau[i]) * (b + a * y[,i]))
-    
-    dSgt_da <- sum(1/(2*a^3) * (-4*b^2 + a*g^2 - 4*a*b*y[,i] - 4*exp(a*tau[i])*(b+a*y[,i]) *
-                   (b * (-2+a*tau[i]) + a^2*tau[i]*y[,i]) + exp(2*a*tau[i]) *
-                   (-4*b^2 + 4*a^3*tau[i]*y[,i]^2 + 2*a^2*tau[i]*(g^2 + 4*b*y[,i]) - 
-                   a * (g^2 + 4*b*(-b*tau[i] + y[,i])))))
-    dSgt_db <- sum(1/(a^2) * (2*(-1+exp(a*tau[i]))^2 * (b+a*y[,i])))
-    dSgt_dg <- n * (exp(2*a*tau[i])-1) * g / a
-    dSgt_dt <- sum((-2*exp(a*tau[i])*(b + a*y[,i])^2 + 
-                    exp(2*a*tau[i])*(2*b^2 + a*(g^2 + 2*y[,i]*(2*b + a*y[,i])))) / a)
+  }
 
-    if (onePeriodSde) 
+  for (grp in 1:length(z$f$groupNames))
+  {
+    y <- z$f[[z$f$groupNames[grp]]]$contbehavs[[1]][[1]]
+    n <- nrow(y)
+    nPeriods <- ncol(y) - 1
+ 
+    for (i in 1:nPeriods) 
     {
-      dfra[wienerId, c(wienerId, feedbackId, interceptId)] <- c(dSgt_dg, dSgt_da, dSgt_db)
-      dfra[feedbackId, c(wienerId, feedbackId, interceptId)] <- c(dSa_dg, dSa_da, dSa_db)
-      dfra[interceptId, c(wienerId, feedbackId, interceptId)] <- c(dSb_dg, dSb_da, dSb_db)
-    }
-    else
-    {
-      dfra[feedbackId, c(feedbackId, interceptId, scaleId[i])] <- 
-        dfra[feedbackId, c(feedbackId, interceptId, scaleId[i])] + c(dSa_da, dSa_db, dSa_dt)
-      dfra[interceptId, c(feedbackId, interceptId, scaleId[i])] <- 
-        dfra[interceptId, c(feedbackId, interceptId, scaleId[i])] + c(dSb_da, dSb_db, dSb_dt)
-      dfra[scaleId[i], c(feedbackId, interceptId, scaleId[i])] <- 
-        dfra[scaleId[i], c(feedbackId, interceptId, scaleId[i])] + c(dSgt_da, dSgt_db, dSgt_dt)
+      sId <- scaleId[z$effects$group[scaleId] == grp & z$effects$period[scaleId] == i]
+      tau <- z$effects$initialValue[sId]
+
+      dSa_da <- sum(y[,i] * (tau * exp(a*tau) * y[,i] + 
+                  (1 + a*tau*exp(a*tau) - exp(a*tau)) * b / (a^2)))
+      dSa_db <- sum((exp(a*tau)-1)/a * y[,i])
+      dSa_dg <- 0
+      dSa_dt <- sum(exp(a*tau) * (b + a * y[,i]) * y[,i])
+    
+      dSb_da <- sum(tau * exp(a*tau) * y[,i] + 
+                    (1 + a*tau*exp(a*tau) - exp(a*tau)) * b / (a^2))
+      dSb_db <- n * (exp(a*tau)-1)/a 
+      dSb_dg <- 0
+      dSb_dt <- sum(exp(a*tau) * (b + a * y[,i]))
+    
+      dSgt_da <- sum(1/(2*a^3) * (-4*b^2 + a*g^2 - 4*a*b*y[,i] - 4*exp(a*tau)*(b+a*y[,i]) *
+                   (b * (-2+a*tau) + a^2*tau*y[,i]) + exp(2*a*tau) *
+                   (-4*b^2 + 4*a^3*tau*y[,i]^2 + 2*a^2*tau*(g^2 + 4*b*y[,i]) - 
+                   a * (g^2 + 4*b*(-b*tau + y[,i])))))
+      dSgt_db <- sum(1/(a^2) * (2*(-1+exp(a*tau))^2 * (b+a*y[,i])))
+      dSgt_dg <- n * (exp(2*a*tau)-1) * g / a
+      dSgt_dt <- sum((-2*exp(a*tau)*(b + a*y[,i])^2 + 
+                    exp(2*a*tau)*(2*b^2 + a*(g^2 + 2*y[,i]*(2*b + a*y[,i])))) / a)
+
+      if (onePeriodSde) 
+      {
+		ids <- c(wienerId, feedbackId, interceptId)
+        dfra[wienerId, ids] <- c(dSgt_dg, dSgt_da, dSgt_db)
+        dfra[feedbackId, ids] <- c(dSa_dg, dSa_da, dSa_db)
+        dfra[interceptId, ids] <- c(dSb_dg, dSb_da, dSb_db)
+      }
+      else
+      {
+        ids <- c(feedbackId, interceptId, sId)
+		dfra[feedbackId, ids] <- dfra[feedbackId, ids] + c(dSa_da, dSa_db, dSa_dt)
+        dfra[interceptId, ids] <- dfra[interceptId, ids] + c(dSb_da, dSb_db, dSb_dt)
+        dfra[sId, ids] <- dfra[sId, ids] + c(dSgt_da, dSgt_db, dSgt_dt)
+      }
     }
   }
   dfra

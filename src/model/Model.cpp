@@ -36,7 +36,6 @@ namespace siena
 Model::Model()
 {
 	this->lconditional = false;
-	this->lbasicScaleParameters = 0;
 	this->lGMMModel = false;
 	this->lneedChain = false;
 	this->lneedScores = false;
@@ -96,9 +95,14 @@ Model::~Model()
 		deallocateVector(this->lchainStore[i]);
 	}
 	
-	// Delete the array of basic scale parameters
-	delete[] this->lbasicScaleParameters;
-	this->lbasicScaleParameters = 0;
+	// Delete the arrays of basic scale parameters
+
+	while (!this->lbasicScaleParameters.empty())
+	{
+		double * array = this->lbasicScaleParameters.begin()->second;
+		this->lbasicScaleParameters.erase(this->lbasicScaleParameters.begin());
+		delete[] array;
+	}
 }
 
 
@@ -374,36 +378,46 @@ double Model::basicRateParameter(LongitudinalData * pDependentVariableData,
 /**
  * Stores the basic scale parameter for the SDE at the given period.
  */
-void Model::basicScaleParameter(int period, double value)
+void Model::basicScaleParameter(const Data * pData, int period, double value)
 {
-	if (period >= this->lnumberOfPeriods)
+	if (period >= pData->observationCount() - 1)
 		Rf_error("Array basicScaleParameter out of bounds\n");
 		
-	if (!this->lbasicScaleParameters)
+	if (!this->lbasicScaleParameters[pData])
 	{
-		double * array = new double[this->lnumberOfPeriods];
+		int nPeriods = pData->observationCount() - 1;
+		double * array = new double[nPeriods];
 
 		// The default basic scale is 1.
-		for (int i = 0; i < this->lnumberOfPeriods; i++)
+		for (int i = 0; i < nPeriods; i++)
 		{
 			array[i] = 1;
 		}
 
-		this->lbasicScaleParameters = array;
+		this->lbasicScaleParameters[pData] = array;
 	}
-	this->lbasicScaleParameters[period] = value;
+	this->lbasicScaleParameters[pData][period] = value;
 }
 
 
 /**
  * Returns the basic scale parameter for the SDE at the given period.
  */
-double Model::basicScaleParameter(int period) const
+double Model::basicScaleParameter(const Data * pData, int period) const
 {
-	if (period >= this->lnumberOfPeriods)
+	if (period >= pData->observationCount() - 1)
 		Rf_error("Array basicScaleParameter out of bounds\n");
 
-	return this->lbasicScaleParameters[period];
+	std::map<const Data *, double *>::const_iterator iter =
+		this->lbasicScaleParameters.find(pData);
+	double value = 1;
+	
+	if (iter != this->lbasicScaleParameters.end())
+	{
+		value = iter->second[period];
+	}
+
+	return value;
 }
 
 /**

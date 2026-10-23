@@ -86,11 +86,6 @@ print('test10')
 alg_alg <- set_algorithm_saom(cond=TRUE, condvarno=1, seed=5, n3=50, nsub=1)
 ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
          control_algo=alg_alg)
-alg_alg2 <- set_algorithm_saom(cond=TRUE, condvarno=1, seed=5, n3=50, nsub=1,
-            splitDepvars=1)
-ans  <- siena(data=mydata, effects=myeff, batch=TRUE, silent=TRUE,
-         control_algo=alg_alg2)
-##, verbose=TRUE)
 ans
 ##test11
 print('test11')
@@ -158,9 +153,11 @@ alg_alg <- set_algorithm_saom(gmm=TRUE, seed=6, n3=100, nsub=1)
          control_algo=alg_alg))
 ##test16
 print('test16')
-set.seed(123) # simulate behavior data according to dZ(t) = [-0.1 Z + 1] dt + 1 dW(t)
+set.seed(123) 
+# simulate behavior data according to dZ(t) = [-0.1 Z + 1] dt + 1 dW(t)
 y1 <- rnorm(50, 0,3)
-y2 <- exp(-0.1) * y1 + (1-exp(-0.1)) * 1/ -0.1 + rnorm(50, 0, (exp(-0.2)- 1) / -0.2 * 1^2)
+y2 <- exp(-0.1) * y1 + ((exp(-0.1)-1) * 1/ -0.1) + 
+                       rnorm(50, 0, sqrt((exp(-0.2)- 1) / (-0.2 * 1^2)))
 friend <- as_dependent_rsiena(array(c(s501, s502), dim = c(50,50,2)))
 behavior <- as_dependent_rsiena(matrix(c(y1,y2), 50,2), type = "continuous")
 (mydata <- make_data_rsiena(friend, behavior))
@@ -348,6 +345,30 @@ alg_alg <- set_algorithm_saom(cond=FALSE, seed=288, n3=50, nsub=1)
 ans  <- siena(data=mydata, effects=mymodel, batch=TRUE, silent=TRUE,
          control_algo=alg_alg)
 (RI <- interpret_size(ans, data=mydata))
+##test27
+print('test27')
+# multi-group data with a continuous behavior variable: shared feedback and
+# intercept, a scale parameter per group; behavior simulated as in
+# dZ(t) = tau [a Z + b] dt + sqrt(tau) dW(t); a=-0.1, b=1, tau1=1, tau2=1.5
+simSDE <- function(y, a, b, tau)
+  exp(a*tau) * y + (exp(a*tau) - 1) * b / a +
+  rnorm(length(y), 0, sqrt((exp(2*a*tau) - 1) / (2*a)))
+set.seed(123)
+y11 <- rnorm(50, 0, 3)
+y21 <- rnorm(50, 0, 3)
+y12 <- simSDE(y11, a = -0.1, b = 1, tau = 1)
+y22 <- simSDE(y21, a = -0.1, b = 1, tau = 1.5)
+friend <- as_dependent_rsiena(array(c(s501, s502), dim = c(50,50,2)))
+behavior <- as_dependent_rsiena(matrix(c(y11,y12), 50,2), type = "continuous")
+mydata1 <- make_data_rsiena(friend, behavior)
+friend <- as_dependent_rsiena(array(c(s502, s503), dim = c(50,50,2)))
+behavior <- as_dependent_rsiena(matrix(c(y21,y22), 50,2), type = "continuous")
+mydata2 <- make_data_rsiena(friend, behavior)
+mygroup <- make_group_rsiena(list(mydata1, mydata2))
+(myeff <- make_specification(mygroup))
+alg_alg <- set_algorithm_saom(cond=FALSE, seed=321, n3=20, nsub=1)
+(ans  <- siena(data=mygroup, effects=myeff, batch=TRUE, silent=TRUE,
+         control_algo=alg_alg))
 ## delete output files
 if (file.exists('mydata_out.txt')){unlink('mydata_out.txt')}
 if (file.exists('effects.html')){unlink('effects.html')}

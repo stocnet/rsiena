@@ -312,10 +312,12 @@ void updateParameters(SEXP EFFECTSLIST, SEXP THETA, vector<Data *> *
 			else if (strcmp(effectType, "rate") == 0 &&
 					 strcmp(effectName, "scale") == 0)
 			{
+				int group = INTEGER(VECTOR_ELT(EFFECTS, groupCol))[eff] - 1;
 				int period = INTEGER(VECTOR_ELT(EFFECTS, periodCol))[eff] - 1;
+				Data * pData = (*pGroupData)[group];
 				if (strcmp(setting, "") == 0)
 				{
-					pModel->basicScaleParameter(period, currentValue);
+					pModel->basicScaleParameter(pData, period, currentValue);
 				}
 			else
 			{
@@ -1504,10 +1506,12 @@ SEXP createEffects(SEXP EFFECTS, Model *pModel, vector<Data *> * pGroupData,
 		else if (strcmp(effectType, "rate") == 0 &&
 				 strcmp(effectName, "scale") == 0)
 		{
+			int group = INTEGER(VECTOR_ELT(EFFECTS, groupCol))[i] - 1;
 			int period = INTEGER(VECTOR_ELT(EFFECTS, periodCol))[i] - 1;
+			Data * pData = (*pGroupData)[group];
 			if (strcmp(setting, "") == 0)
 			{
-				pModel->basicScaleParameter(period, initialValue);
+				pModel->basicScaleParameter(pData, period, initialValue);
 			}
 		else
 		{

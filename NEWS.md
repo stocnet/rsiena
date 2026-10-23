@@ -1,3 +1,27 @@
+2026-10-22
+
+# RSiena 1.6.14
+
+## Changes in RSiena:
+### Functionality
+  * Multi-group option (`make_group_rsiena`) now available for models
+    with continuous behavior variables, with parameter starting values 
+    based on one fit to all groups.
+  * The option `splitDepvars` in `set_algorithm_saom`, introduced in version 1.6.3,
+    was rolled back and does not exist any more.
+### Bug corrections
+  * Analytic Phase 1 derivatives of the feedback statistic for continuous
+    behavior variables in `updateDerivativeSde` corrected (it used the 
+    behavior at the end instead of at the start of the period).
+  * There was an error when using multiple processors and maximum likelihood
+    estimation. This was corrected by using `clusterApply` instead of
+    `parRapply`  in `maxlike.c`. 
+### Tests
+  * New test in `tests/newparallel.R` for multi-group data with a
+    continuous behavior variable.
+  * Simulation of continuous behavior data in `test16` of
+    `tests/newparallel.R` corrected.
+	
 2026-10-02
 
 # RSiena 1.6.13

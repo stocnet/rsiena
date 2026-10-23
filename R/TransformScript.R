@@ -590,7 +590,7 @@ zsiena07 <- function(alg, data=NULL, effects=NULL, batch=FALSE,
 		write(paste("\nAlgorithm ", algname, "of siena07 not found.", sep=" "),
 						file=logfile, append=TRUE)
 		commentline <- paste("### Algorithm ", algname,
-							"is not available in this script. ###", sep="")
+							" is not available in this script. ###", sep="")
 		alg_model_text <- NULL
 		alg_out_text <- NULL
 		alg_alg_text <- NULL
