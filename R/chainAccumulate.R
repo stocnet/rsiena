@@ -131,6 +131,24 @@ periodDirectionDelta <- function(cs, thetaEff, u, permitted = NULL) {
 ## a dyadic statistic touches the focal alternative alone (a = 0, one alter
 ## update), an ego statistic touches them all.
 ## --------------------------------------------------------------------------
+## Is a cached vector usable at this theta?
+##
+## The caches are computed by C++ at one theta and then PREFERRED over
+## recomputation, so handing the same object a different theta silently
+## returns the wrong thing.  An untagged cache is trusted, which keeps older
+## objects working; a tagged one is used only at its own theta.
+##
+## This is not hypothetical: a finite difference taken without clearing the
+## cache moves only the shift channel and leaves the baseline probability
+## frozen, which looks like a plausible derivative and is not one.
+.cachedAtTheta <- function(x, theta) {
+  if (is.null(x) || all(is.na(x))) return(FALSE)
+  tt <- attr(x, "theta")
+  if (is.null(tt)) return(TRUE)
+  length(tt) == length(theta) && isTRUE(all.equal(tt, unname(theta),
+                                                  tolerance = 0))
+}
+
 branchProbabilities <- function(cc, theta, shifts = list(),
                                 dependencies = list(), perturbTypes = NULL,
                                 dirDelta = NULL) {
@@ -147,10 +165,16 @@ branchProbabilities <- function(cc, theta, shifts = list(),
         stop("branchProbabilities: the period-level recursion needs a density ",
              "column to read the tie direction from.", call. = FALSE)
 
-    u    <- if (!is.null(cc$changeUtility) && !all(is.na(cc$changeUtility)))
+    u    <- if (.cachedAtTheta(cc$changeUtility, theta))
                 as.numeric(cc$changeUtility)
             else calculateUtility(cs$csMat, thetaEff, cc$permitted, dI)
-    p    <- if (!is.null(cc$changeProbability) &&
+    ## Guarded by the UTILITY's tag: the two caches are produced together by
+    ## the same C++ call, so changeProbability is valid exactly when
+    ## changeUtility is.  Guarding only the utility would leave the stale
+    ## probability in place, which is the half-fix that makes a finite
+    ## difference move the shift channel alone.
+    p    <- if (.cachedAtTheta(cc$changeUtility, theta) &&
+                !is.null(cc$changeProbability) &&
                 !all(is.na(cc$changeProbability)))
                 as.numeric(cc$changeProbability)
             else calculateChangeProb(u, cc$group_id)

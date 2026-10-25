@@ -456,8 +456,8 @@ predictProbability <- function(changeContributions, theta, type = "changeProb",
     thetaEff <- buildThetaEff(theta_use, cs$changeStatsMap)
 
     # Use C++ values when available (dynamic), else compute in R (static).
-    if (!is.null(contributions$changeUtility) &&
-        !all(is.na(contributions$changeUtility))) {
+    # Only at the theta they were computed at: see .cachedAtTheta().
+    if (.cachedAtTheta(contributions$changeUtility, theta)) {
       utility    <- contributions$changeUtility
       changeProb <- contributions$changeProbability
     } else {

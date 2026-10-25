@@ -142,6 +142,23 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
 
   results <- setNames(vector("list", length(specs)), names(specs))
 
+  ## Streamed buckets are computed for EVERY spec in ONE walk over the
+  ## batches, before the per-spec loop below.  Doing it inside that loop would
+  ## re-read and re-flatten every batch once per spec, which is the cost the
+  ## single all-chains `wide` used to amortise -- five specs meant five full
+  ## passes.  Hoisted, the walk happens once and each batch serves all specs.
+  ## Preferred source: the per-chain aggregates the estimation walk already
+  ## produced, carried on `hat`.  Nothing is recomputed -- only the cell
+  ## matching, which needs the finished `hat` and so could not be done during
+  ## the walk.  The streamed fallback below exists for callers that did not
+  ## ask the walk for them.
+  fused_aggs <- attr(hat, "chainAggs")
+  streamed_buckets <- NULL
+  if (reinforce_requested && is.null(fused_aggs) && isTRUE(wide$.streamed))
+    streamed_buckets <- .allSpecChainBucketsStreamed(
+      specs, wide, thetaHat, type,
+      .bucketKeyFrames(specs, hat, wide$changeStats$csNames))
+
   for (specName in names(specs)) {
     spec        <- specs[[specName]]
     outcomeName <- spec$outcomeName
@@ -163,7 +180,22 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
       ## .evalSpecChainBuckets handles the n_out==1 case with key_df = one-row
       ## placeholder; gradReinforceRowwise handles [1×R] just as well as [C×R].
       bucket_res <- NULL
-      if (!is.null(wide)) {
+      ## The fused aggregates stand on their own: they carry the gvars they
+      ## were grouped by, so they need neither `wide` nor a csNames lookup to
+      ## resolve the spec's condition.  Streamed chains leave `wide` NULL, so
+      ## requiring it here is what silently sent those runs to the
+      ## conditional SE.
+      if (!is.null(fused_aggs)) {
+        gvars_b  <- fused_aggs[[specName]]$gvars
+        key_cols <- intersect(gvars_b, names(hat[[specName]]))
+        key_df_b <- if (length(key_cols) > 0L)
+          hat[[specName]][, key_cols, drop = FALSE]
+        else
+          data.frame(.row = seq_len(n_out))
+        bucket_res <- tryCatch(
+          .bucketsFromAgg(fused_aggs[[specName]], spec, key_df_b),
+          error = function(e) NULL)
+      } else if (!is.null(wide)) {
         cond_resolved_b <- if (!is.null(spec$condition))
           resolveEffectName(spec$condition, wide$changeStats$csNames) else NULL
         gvars_b  <- getGroupVars(level = spec$level, condition = cond_resolved_b)
@@ -172,9 +204,11 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
           hat[[specName]][, key_cols, drop = FALSE]
         else
           data.frame(.row = seq_len(n_out))
-        bucket_res <- tryCatch(
-          .evalSpecChainBuckets(spec, wide, thetaHat, type, key_df_b),
-          error = function(e) NULL)
+        bucket_res <- if (isTRUE(wide$.streamed))
+          streamed_buckets[[specName]]
+        else
+          tryCatch(.evalSpecChainBuckets(spec, wide, thetaHat, type, key_df_b),
+                   error = function(e) NULL)
       }
 
       if (!is.null(bucket_res)) {
@@ -268,6 +302,64 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
 
     raw_chains <- dynArgs$preloadedChains
     ssc_sum    <- NULL
+
+    ## ── Streaming path ────────────────────────────────────────────────────
+    ## The frozen-chain Jacobian needs the SAME realised paths as the point
+    ## estimate, which a memory store guarantees trivially.  A seeded
+    ## chainStore_simulate gives the same guarantee by regenerating batch b
+    ## identically on every visit, without holding anything: chains become
+    ## n3BatchSize-bounded instead of n3-bounded.
+    ##
+    ## That matters more than it looks.  Measured on Glasgow at n3 = 1000,
+    ## five effects: the point-estimate path, which streams, runs in 9.4 min
+    ## at 2.9 GB, while the delta path, which materialises, takes 57.7-79.8
+    ## min at 17-20 GB -- the same chains, the same walk, the same
+    ## aggregation, differing only in how much is resident.  The cost is
+    ## allocation and GC pressure, not arithmetic.
+    ##
+    ## Not taken under deltaFull: ssc_sum currently comes from the single
+    ## whole-set simulation, and a concatenation of per-batch simulations is
+    ## a different sequence, so the scores would no longer line up row for
+    ## row with the chains.  Streaming that case needs scores collected per
+    ## batch, which is a change to how they are gathered rather than to which
+    ## store is used.
+    ## deltaFull streams too when scores are collected per batch: each batch's
+    ## simulation returns its own ssc_sum (one row per chain), so stacking
+    ## them in batch order rebuilds the global matrix, aligned to the same
+    ## global chain ids the per-chain aggregates use. That is alignment by
+    ## construction, where the whole-set path relies on both having come from
+    ## one call.
+    streamFull <- isTRUE(getOption("rsiena.deltaStreamFull", TRUE))
+    streamable <- (!isFullMode || streamFull) && is.null(raw_chains) &&
+                  !is.null(n3BatchSize) &&
+                  n3BatchSize < max(n3, n3PointEst, 0L) &&
+                  isTRUE(getOption("rsiena.deltaStream", TRUE))
+    if (streamable) {
+        nTot <- max(n3, n3PointEst, 0L)
+        bsz  <- min(n3BatchSize, nTot)
+        ## theta is NOT set here: chainStore_simulate supplies it per batch,
+        ## and passing it in dynArgs too makes the call ambiguous.  returnWide
+        ## is left as the caller set it, matching .buildDynChainStore's own
+        ## simulate branch.
+        sim_args                        <- dynArgs
+        sim_args$useChangeContributions <- FALSE
+        sim_args$includeScores          <- isFullMode
+        store      <- chainStore_simulate(sim_args, bsz, nTot)
+        contribFun <- makeContribFun(store          = store,
+                                     effects        = dynArgs$effects,
+                                     depvar         = dynArgs$depvar,
+                                     data           = dynArgs$data,
+                                     keepContribMat = TRUE)
+        return(list(contribFun     = contribFun,
+                    nChainBatches  = store$nBatches,
+                    delta_wide     = NULL,
+                    ## Collected during the walk, not here: see the sscSum
+                    ## attribute assembled in makeEstimatorFun().
+                    ssc_sum        = NULL,
+                    collectScores  = isFullMode,
+                    chainBatchSize = bsz))
+    }
+
     if (is.null(raw_chains)) {
         ## ONE simulation serves the point estimate, the frozen-chain
         ## Jacobian and (under deltaFull) the scores -- they have to describe
@@ -296,15 +388,18 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
 
     # deltaFull must pair Q_chain and ssc_sum from the same simulated chains.
     # Build the wide object from raw_chains directly, rather than re-simulating.
-    delta_wide <- NULL
+    ## Only the column NAMES are needed up front (to resolve a spec's
+    ## `condition`), so flatten a single chain rather than all of them.
+    csNames_only <- NULL
     if (isFullMode) {
       if (is.null(ssc_sum))
         stop("uncertaintyMode = 'deltaFull' requires score statistics.")
-      delta_wide <- flattenAndEnrichWide(raw_chains,
-                         effects = dynArgs$effects,
-                         depvar  = dynArgs$depvar,
-                         data    = dynArgs$data)
-      delta_wide$ssc_sum <- ssc_sum
+      csNames_only <- tryCatch(
+        flattenAndEnrichWide(raw_chains[1L],
+                             effects = dynArgs$effects,
+                             depvar  = dynArgs$depvar,
+                             data    = dynArgs$data)$changeStats$csNames,
+        error = function(e) NULL)
     }
 
     store <- chainStore_memory(raw_chains, bsz)
@@ -317,10 +412,32 @@ deltaMethodUncertainty <- function(wide, estimator, ssc_sum, thetaHat, covTheta,
                                  keepContribMat = TRUE)
     nChainBatches <- store$nBatches
 
-    list(contribFun    = contribFun,
-         nChainBatches = nChainBatches,
-         delta_wide    = delta_wide,
-         ssc_sum       = ssc_sum)
+    ## deltaFull used to receive a `wide` spanning every chain, built by
+    ## flattenAndEnrichWide over the whole set.  That is a second full-size
+    ## structure on top of the resident chains -- the reason deltaFull ran out
+    ## of memory at n3 = 1000 where plain delta completed -- and a third pass
+    ## over data the batch loop already walks.  Hand the bucket path the means
+    ## to stream instead: it reads one batch at a time through the same
+    ## contribFun and stacks the per-chain buckets.
+    delta_wide <- NULL
+    if (isFullMode) {
+      delta_wide <- list(.streamed   = TRUE,
+                         contribFun  = contribFun,
+                         nBatches    = store$nBatches,
+                         nTotal      = store$nTotal,
+                         batchSize   = ceiling(store$nTotal / store$nBatches),
+                         changeStats = list(csNames = csNames_only),
+                         ssc_sum     = ssc_sum)
+    }
+
+    list(contribFun     = contribFun,
+         nChainBatches  = nChainBatches,
+         delta_wide     = delta_wide,
+         ssc_sum        = ssc_sum,
+         ## How the store slices chains, so the main walk can turn a batch's
+         ## local chain labels into global ones.  chainStore_memory derives
+         ## its own slice width this way, so the two must agree.
+         chainBatchSize = ceiling(store$nTotal / store$nBatches))
 }
 
 ## ── accumulatedByChain — per-(chain, cell) sum/count for accumulated specs ───
@@ -390,25 +507,39 @@ accumulatedByChain <- function(spec, structural, vals) {
 ##   Y, N        — [n_chains × R] double matrices (row = chain, col = cell).
 ##   chain_ids   — integer vector of chain labels mapping Y rows to ssc_sum rows.
 
-.evalSpecChainBuckets <- function(spec, wide, theta, type, key_df) {
-  if (is.null(wide$chain))      return(NULL)
+## PRODUCER: per-(chain, cell) sums and counts for one spec on one
+## contribution table.  Split out from the matrix-building consumer below so
+## that the main batch walk can produce this directly, while the outcome
+## vector is still in hand, instead of a second walk recomputing it.
+##
+## `ov` is that outcome vector.  Supplied, this does no prediction at all and
+## only re-groups what the caller already has; omitted, it evaluates
+## predictFun itself (the standalone path, kept for callers holding a single
+## wide over every chain).
+##
+## Returns list(agg, gvars) -- `agg` carrying chain, <gvars>,
+## <outcome>_sum, <outcome>_n -- or NULL if this spec cannot be bucketed.
+.specChainAgg <- function(spec, wide, theta, type, ov = NULL) {
+  if (is.null(wide$chain)) return(NULL)
 
-  R <- nrow(key_df)
-  if (R == 0L) return(NULL)
-
-  ## Evaluate predictFun with outcomesOnly on delta_wide at theta.
-  wide_eval                   <- wide
-  wide_eval$changeUtility     <- NULL
-  wide_eval$changeProbability <- NULL
-  baseline <- predictProbability(wide_eval, theta, type, returnComponents = TRUE)
-  extra    <- c(list(changeContributions = wide_eval,
-                     theta               = theta,
-                     baseline            = baseline,
-                     outcomesOnly        = TRUE),
-                spec$predictArgs)
-  outcomes <- tryCatch(do.call(spec$predictFun, extra), error = function(e) NULL)
-  if (is.null(outcomes) || is.data.frame(outcomes)) return(NULL)
-  ov <- outcomes[[spec$outcomeName]]
+  if (is.null(ov)) {
+    ## Standalone path: no outcome vector supplied, so evaluate predictFun
+    ## here.  The fused caller never takes this branch.
+    wide_eval                   <- wide
+    wide_eval$changeUtility     <- NULL
+    wide_eval$changeProbability <- NULL
+    baseline <- predictProbability(wide_eval, theta, type,
+                                   returnComponents = TRUE)
+    extra    <- c(list(changeContributions = wide_eval,
+                       theta               = theta,
+                       baseline            = baseline,
+                       outcomesOnly        = TRUE),
+                  spec$predictArgs)
+    outcomes <- tryCatch(do.call(spec$predictFun, extra),
+                         error = function(e) NULL)
+    if (is.null(outcomes) || is.data.frame(outcomes)) return(NULL)
+    ov <- outcomes[[spec$outcomeName]]
+  }
   if (is.null(ov) || length(ov) == 0L) return(NULL)
 
   ## Keep mask — same logic as .evalSpecScalar.
@@ -461,6 +592,24 @@ accumulatedByChain <- function(spec, structural, vals) {
   cntCol <- paste0(spec$outcomeName, "_n")
   if (!all(c(sumCol, cntCol, "chain") %in% names(bc_agg))) return(NULL)
 
+  list(agg = bc_agg, gvars = gvars)
+}
+
+
+## CONSUMER: stacked per-(chain, cell) aggregates -> the Y/N matrices
+## gradReinforceRowwise() consumes.  Pure bookkeeping, no prediction: it takes
+## whatever .specChainAgg() produced, from one table or from every batch
+## stacked, and matches rows to the global cell reference `key_df`.
+.bucketsFromAgg <- function(agg_res, spec, key_df) {
+  if (is.null(agg_res) || is.null(key_df)) return(NULL)
+  bc_agg <- agg_res$agg
+  gvars  <- agg_res$gvars
+  R      <- nrow(key_df)
+  if (R == 0L || is.null(bc_agg) || nrow(bc_agg) == 0L) return(NULL)
+
+  sumCol <- paste0(spec$outcomeName, "_sum")
+  cntCol <- paste0(spec$outcomeName, "_n")
+
   chains_all <- sort(unique(bc_agg$chain))
   n_chains   <- length(chains_all)
   if (n_chains == 0L) return(NULL)
@@ -501,6 +650,139 @@ accumulatedByChain <- function(spec, structural, vals) {
   }
 
   list(Y = Y, N = N, chain_ids = as.integer(chains_all))
+}
+
+
+## Single-table entry point: produce then consume.  Unchanged behaviour for
+## callers holding one wide over every chain.
+.evalSpecChainBuckets <- function(spec, wide, theta, type, key_df) {
+  .bucketsFromAgg(.specChainAgg(spec, wide, theta, type), spec, key_df)
+}
+
+
+## ── Streamed buckets: one batch at a time, instead of one big wide ──────────
+##
+## Same result as .evalSpecChainBuckets() on a wide covering every chain, but
+## without ever holding one.  Building that wide (flattenAndEnrichWide over
+## all n3 chains) is a second full-size structure on top of the resident
+## chains and is what makes deltaFull run out of memory where plain delta
+## survives; it is also a third pass over data the batch loop has already
+## seen.
+##
+## Buckets stack cleanly because chains are DISJOINT across batches: each
+## batch contributes its own rows of Y and N, and the cell columns are shared
+## because key_df is global.
+##
+## The one thing that does not stack is the chain label.
+## flattenChangeContributionsWide numbers chains within the list it is handed,
+## so every batch calls its chains 1..n_b.  ssc_sum is indexed by GLOBAL chain
+## number, so each batch's labels are shifted by its offset in the original
+## chain order.  That is only correct for a store whose batches are
+## consecutive slices of the chains ssc_sum came from -- i.e. the memory store
+## the deltaFull path builds -- which is why this takes an explicit batchSize
+## rather than guessing.
+## The cell reference frame each spec's buckets are matched against. Hoisted
+## out of the per-spec loop so the streamed walk can be driven for all specs
+## at once; the logic is the same as the inline version it replaces.
+.bucketKeyFrames <- function(specs, hat, csNames) {
+  setNames(lapply(names(specs), function(sn) {
+    spec  <- specs[[sn]]
+    n_out <- length(hat[[sn]][[spec$outcomeName]])
+    cond  <- if (!is.null(spec$condition))
+      resolveEffectName(spec$condition, csNames) else NULL
+    gv    <- getGroupVars(level = spec$level, condition = cond)
+    kc    <- intersect(gv, names(hat[[sn]]))
+    if (length(kc) > 0L) hat[[sn]][, kc, drop = FALSE]
+    else                 data.frame(.row = seq_len(n_out))
+  }), names(specs))
+}
+
+## One walk over the batches, every spec served from each batch.
+## Returns a named list of list(Y, N, chain_ids), NULL for any spec that
+## cannot be bucketed -- the same per-spec NULL protocol as before, so a
+## single unsupported spec still falls back on its own rather than taking the
+## others with it.
+.allSpecChainBucketsStreamed <- function(specs, bucketCtx, theta, type, key_dfs) {
+  nB   <- bucketCtx$nBatches
+  bsz  <- bucketCtx$batchSize
+  nTot <- bucketCtx$nTotal
+  nm   <- names(specs)
+  Ys   <- setNames(vector("list", length(nm)), nm)
+  Ns   <- setNames(vector("list", length(nm)), nm)
+  seen <- setNames(rep(list(logical(nTot)), length(nm)), nm)
+  dead <- setNames(rep(FALSE, length(nm)), nm)
+
+  for (b in seq_len(nB)) {
+    cc_b <- tryCatch(
+      bucketCtx$contribFun(theta, b, nB, useChangeContributions = FALSE),
+      error = function(e) NULL)
+    if (is.null(cc_b)) return(setNames(vector("list", length(nm)), nm))
+    for (sn in nm) {
+      if (dead[[sn]]) next
+      r <- tryCatch(.evalSpecChainBuckets(specs[[sn]], cc_b, theta, type,
+                                          key_dfs[[sn]]),
+                    error = function(e) NULL)
+      if (is.null(r)) { dead[[sn]] <- TRUE; next }
+      if (is.null(Ys[[sn]])) {
+        Ys[[sn]] <- matrix(0, nrow = nTot, ncol = ncol(r$Y))
+        Ns[[sn]] <- matrix(0, nrow = nTot, ncol = ncol(r$N))
+      } else if (ncol(r$Y) != ncol(Ys[[sn]])) {
+        dead[[sn]] <- TRUE; next      # cell set must be stable across batches
+      }
+      gid <- r$chain_ids + (b - 1L) * bsz
+      if (any(gid < 1L | gid > nTot)) { dead[[sn]] <- TRUE; next }
+      Ys[[sn]][gid, ]  <- r$Y
+      Ns[[sn]][gid, ]  <- r$N
+      seen[[sn]][gid]  <- TRUE
+    }
+    rm(cc_b)
+  }
+
+  setNames(lapply(nm, function(sn) {
+    if (dead[[sn]] || is.null(Ys[[sn]]) || !any(seen[[sn]])) return(NULL)
+    keep_c <- which(seen[[sn]])
+    list(Y = Ys[[sn]][keep_c, , drop = FALSE],
+         N = Ns[[sn]][keep_c, , drop = FALSE],
+         chain_ids = as.integer(keep_c))
+  }), nm)
+}
+
+.evalSpecChainBucketsStreamed <- function(spec, bucketCtx, theta, type, key_df) {
+  nB   <- bucketCtx$nBatches
+  bsz  <- bucketCtx$batchSize
+  nTot <- bucketCtx$nTotal
+  ## The final shape is known once the first batch has given the cell count,
+  ## so fill preallocated matrices by global chain row rather than collecting
+  ## per-batch blocks and stacking them afterwards: one allocation, no
+  ## intermediate list, and the row index IS the global chain id.
+  Y <- NULL; N <- NULL
+  seen <- logical(nTot)
+  for (b in seq_len(nB)) {
+    cc_b <- tryCatch(
+      bucketCtx$contribFun(theta, b, nB, useChangeContributions = FALSE),
+      error = function(e) NULL)
+    if (is.null(cc_b)) return(NULL)
+    r <- .evalSpecChainBuckets(spec, cc_b, theta, type, key_df)
+    rm(cc_b)
+    if (is.null(r)) return(NULL)
+    if (is.null(Y)) {
+      Y <- matrix(0, nrow = nTot, ncol = ncol(r$Y))
+      N <- matrix(0, nrow = nTot, ncol = ncol(r$N))
+    } else if (ncol(r$Y) != ncol(Y)) {
+      return(NULL)                      # cell set must be stable across batches
+    }
+    gid <- r$chain_ids + (b - 1L) * bsz
+    if (any(gid < 1L | gid > nTot)) return(NULL)
+    Y[gid, ] <- r$Y
+    N[gid, ] <- r$N
+    seen[gid] <- TRUE
+  }
+  if (is.null(Y) || !any(seen)) return(NULL)
+  ## Drop chains that contributed no rows, so the result matches what the
+  ## single-wide path returns: it only ever lists chains present in bc_agg.
+  keep_c <- which(seen)
+  list(Y = Y[keep_c, , drop = FALSE], N = N[keep_c, , drop = FALSE],
+       chain_ids = as.integer(keep_c))
 }
 
 

@@ -585,7 +585,10 @@ set_second_diff <- function(x, ...) UseMethod("set_second_diff", x)
 ## `perturbations` is the per-effect list; see .parsePerturbList.
 set_second_diff.sienaPostestTargets <- function(x, perturbations,
                                                 returnDecisionDetails = FALSE,
-                                                name = NULL, type,
+                                                name = NULL,
+                                                level, condition, accumulated,
+                                                rateWeight, massContrasts, type,
+                                                scope,
                                                 include = TRUE, verbose = TRUE,
                                                 ...) {
     .example <- paste0(
@@ -668,12 +671,22 @@ set_second_diff.sienaPostestTargets <- function(x, perturbations,
         returnDecisionDetails = isTRUE(returnDecisionDetails),
         .seq = max(c(x$.seq, 0), na.rm = TRUE) + 1
     )
+    ## The same per-row overrides set_target() takes, and for the same reason:
+    ## a second difference is a target like any other, and quantities that must
+    ## be read off the SAME simulated chains -- the per-ministep effect and the
+    ## period-level endpoint -- have to be requestable in one call.  Without
+    ## `scope` here, a specification carrying second differences needed one
+    ## call per scope and so one chain simulation per scope.
+    ov <- list()
+    for (f in c("level", "condition", "accumulated", "rateWeight",
+                "massContrasts", "type", "scope"))
+        if (!missing_arg_named(f, environment())) ov[f] <- list(get(f))
+
     list_new <- list(
         diff1 = diff1, contrast1 = contrast1,
         diff2 = diff2, contrast2 = contrast2,
         perturbType1 = perturbType1, perturbType2 = perturbType2,
-        .overrides = if (missing_arg_named("type", environment())) list()
-                     else list(type = type)
+        .overrides = ov
     )
 
     out <- unclass(x)

@@ -208,8 +208,10 @@ sienaPostestimate <- function(
                            n3, n3BatchSize, useChangeContributions,
                            decisionDetails, saveDir, n3PointEst = NULL,
                            reportConditional = FALSE) {
-    delta_wide <- NULL
-    ssc_sum    <- NULL
+    delta_wide     <- NULL
+    ssc_sum        <- NULL
+    chainBatchSize <- NULL
+    collectScores  <- FALSE
     if (dynamic && !is.null(dynArgs)) {
         deltaState    <- .initDeltaMode(
             isFullMode      = isFullMode,
@@ -223,21 +225,32 @@ sienaPostestimate <- function(
             n3BatchSize     = n3BatchSize,
             n3PointEst      = n3PointEst
         )
-        contribFun    <- deltaState$contribFun
-        nChainBatches <- deltaState$nChainBatches
-        delta_wide    <- deltaState$delta_wide
-        ssc_sum       <- deltaState$ssc_sum
+        contribFun     <- deltaState$contribFun
+        nChainBatches  <- deltaState$nChainBatches
+        delta_wide     <- deltaState$delta_wide
+        ssc_sum        <- deltaState$ssc_sum
+        chainBatchSize <- deltaState$chainBatchSize
+        collectScores  <- isTRUE(deltaState$collectScores)
     }
 
+    ## Under deltaFull the same walk also produces each spec's per-chain
+    ## aggregate, which the score correction needs.  Asking for it here means
+    ## the chain dimension is kept while the outcome vector exists, instead of
+    ## being collapsed away and rebuilt by a second walk.
     hatEstimatorFun <- makeEstimatorFun(specs, contribFun, nChainBatches,
                                         type, rateParams, rateIdx, verbose,
-                                        mc.cores = nbrNodes)
+                                        mc.cores = nbrNodes,
+                                        chainAgg = isFullMode,
+                                        chainBatchSize = chainBatchSize)
 
     has_accumulated <- any(vapply(specs, function(s) isTRUE(s$accumulated),
                                   logical(1L)))
     has_rateweight <- any(vapply(specs, function(s) isTRUE(s$rateWeight),
                    logical(1L)))
-    if (isFullMode && (!dynamic || is.null(ssc_sum)))
+    ## When the chains stream, ssc_sum does not exist yet: it is gathered
+    ## batch by batch during the walk below.  Only demand it up front when
+    ## nothing is going to collect it.
+    if (isFullMode && (!dynamic || (is.null(ssc_sum) && !collectScores)))
         stop("uncertaintyMode = 'deltaFull' requires dynamic = TRUE and ",
              "score statistics (includeScores = TRUE in dynArgs).")
 
@@ -254,6 +267,11 @@ sienaPostestimate <- function(
     expects <- if (!is.null(precomputed)) precomputed$hat
                else hatEstimatorFun(thetaHat,
                                     useChangeContributions = useChangeContributions)
+
+    ## Streamed chains carry no up-front ssc_sum: it is assembled batch by
+    ## batch during the walk and arrives on `expects`.
+    if (is.null(ssc_sum) && collectScores)
+        ssc_sum <- attr(expects, "sscSum")
     memReport("post-hat + Jacobian", verbose = verbose >= 2)
 
     delta_uncert <- deltaMethodUncertainty(
@@ -311,7 +329,16 @@ sienaPostestimate <- function(
             }
         }
         res <- attachPostestAttrs(df, spec$metadata)
-        attr(res, "uncertaintyMethod") <- if (isFullMode) "deltaFull" else "delta"
+        ## What the SE actually IS, not what was asked for.  Under deltaFull a
+        ## spec whose REINFORCE term could not be bucketed carries the
+        ## conditional SE, and reporting it as "deltaFull" makes a frozen-chain
+        ## interval read as a path-inclusive one.  `delta_full_fallback` below
+        ## has always recorded this per spec; this makes the headline attribute
+        ## agree with it, so printing either one tells the truth.
+        attr(res, "uncertaintyMethod") <-
+            if (!isFullMode) "delta"
+            else if (isTRUE(attr(du$SE_deltaFull, "fallback"))) "delta (conditional; deltaFull unavailable)"
+            else "deltaFull"
         attr(res, "delta_jacobians") <- du[c("J_cond", "J_full",
                                               "baseline", "ssc_colMeans")]
         if (isFullMode && isTRUE(attr(du$SE_deltaFull, "fallback")))
@@ -512,6 +539,18 @@ chainStore_disk <- function(chains, batchSize, dir = NULL,
 chainStore_simulate <- function(dynArgs, batchSize, n3Total, seedBase = NULL) {
     nBatches <- ceiling(n3Total / batchSize)
     batchDynArgs <- dynArgs
+    # An unseeded MULTI-batch store is never what the caller wants.  If the
+    # algorithm carries a fixed randomSeed -- ordinary practice, and what
+    # sienaAlgorithmCreate(seed = ) produces -- every batch re-seeds the
+    # simulator identically and returns the SAME chains, so the effective
+    # sample silently collapses to batchSize while the result still reports
+    # n3Total.  Fall back to the algorithm's own seed so that batches differ
+    # while a run stays reproducible: the same algorithm seed gives the same
+    # chains, batch by batch.  A single batch is left alone, since there is
+    # nothing to distinguish and re-deriving its seed would needlessly change
+    # existing results.
+    if (is.null(seedBase) && nBatches > 1L)
+        seedBase <- dynArgs$algorithm$randomSeed
     batchSeeds <- if (is.null(seedBase)) NULL
                   else .withSeed(seedBase,
                                  sample.int(.Machine$integer.max, nBatches))
@@ -770,10 +809,12 @@ chainStore_simulate <- function(dynArgs, batchSize, n3Total, seedBase = NULL) {
 #   dynamic:       logical — TRUE when chains come from siena07
 # --------------------------------------------------------------------------
 makeEstimatorFun <- function(specs, contribFun, nBatches,
-    type, rateParams = NULL, rateIdx = NULL, verbose = FALSE, mc.cores = 1L) {
+    type, rateParams = NULL, rateIdx = NULL, verbose = FALSE, mc.cores = 1L,
+    chainAgg = FALSE, chainBatchSize = NULL) {
   # Force evaluation for use in closure below.
   force(specs); force(contribFun); force(nBatches)
   force(type); force(rateParams); force(rateIdx); force(verbose); force(mc.cores)
+  force(chainAgg); force(chainBatchSize)
   N         <- length(specs)
   eff_names <- names(specs)
   sep       <- "\x1f"
@@ -818,7 +859,14 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
     rateParams    = rateParams,
     rateIdx       = rateIdx,
     verbose       = verbose,
-    mc.cores      = mc.cores
+    mc.cores      = mc.cores,
+    ## deltaFull also wants each spec's outcome aggregated per CHAIN, for the
+    ## score correction.  That is the same outcome vector this walk already
+    ## computes, grouped one level finer, so it is produced here rather than
+    ## by a second walk that would re-flatten every batch and re-evaluate
+    ## predictFun to rebuild what was just thrown away.  What is kept is the
+    ## aggregate, not the chains: a few numbers per (chain, cell).
+    chainAgg      = isTRUE(chainAgg)
   )
 
   one_batch <- function(b, theta, useChangeContributions,
@@ -842,15 +890,49 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
 
     batchCtx <- .prepBatchContext(cc, evalConfig)
 
-    if (mode == "jacobian") {
-      br <- .evalBatch(cc, theta, batchCtx, evalConfig, jacobian = TRUE)
-      return(list(hat = br$hat, jac = br$jac, jac_eff_names = br$eff_names))
+    ## Chain labels are local to the batch: flattenChangeContributionsWide
+    ## numbers chains within the list it is handed, so every batch calls its
+    ## chains 1..n_b.  ssc_sum is indexed by GLOBAL chain, so shift by this
+    ## batch's offset in the original chain order.  Valid because the store
+    ## hands out consecutive slices of that order.
+    ##
+    ## Applied on EVERY return path.  The jacobian mode returns early and is
+    ## the path the analytical route actually takes, so missing it there left
+    ## every batch labelled 1..n_b: the labels collided, ssc_sum was indexed
+    ## by the wrong rows, and the point estimates stayed correct while the
+    ## standard errors silently did not.
+    globaliseChains <- function(partials) {
+      if (!isTRUE(evalConfig$chainAgg) || is.null(chainBatchSize))
+        return(partials)
+      off <- (b - 1L) * chainBatchSize
+      for (j in seq_along(partials))
+        if (!is.null(partials[[j]]$chainAgg))
+          partials[[j]]$chainAgg$agg$chain <-
+            partials[[j]]$chainAgg$agg$chain + off
+      partials
     }
 
-    hat <- .evalBatch(cc, theta, batchCtx, evalConfig)
+    ## Per-batch scores, when the chains are streamed rather than retained.
+    ## The simulator returns one ssc row per chain in this batch; stacking in
+    ## batch order rebuilds the global matrix against the same chain ids
+    ## globaliseChains() assigns.
+    ## Where the scores live depends on the return shape: the wide form
+    ## carries them as a list element (contributions.R, returnWide branch),
+    ## the raw-chain form as an attribute.  Accept either.
+    ssc_b <- if (isTRUE(evalConfig$chainAgg)) {
+      if (!is.null(cc$ssc_sum)) cc$ssc_sum else attr(cc, "ssc_sum")
+    } else NULL
+
+    if (mode == "jacobian") {
+      br <- .evalBatch(cc, theta, batchCtx, evalConfig, jacobian = TRUE)
+      return(list(hat = globaliseChains(br$hat), jac = br$jac,
+                  jac_eff_names = br$eff_names, ssc = ssc_b))
+    }
+
+    hat <- globaliseChains(.evalBatch(cc, theta, batchCtx, evalConfig))
 
     if (is.null(perturbations))
-      return(list(hat = hat))
+      return(list(hat = hat, ssc = ssc_b))
 
     # Perturbation evals are independent (same cc/batchCtx, different theta).
     # Strip the C++ probability cache (computed at theta_hat) so that
@@ -867,7 +949,7 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
     } else {
       perts <- lapply(perturbations, function(tp) .evalBatch(cc_pert, tp, batchCtx, evalConfig))
     }
-    list(hat = hat, perturbations = perts)
+    list(hat = hat, perturbations = perts, ssc = ssc_b)
     # cc and batchCtx freed on return
   }
 
@@ -905,6 +987,28 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
         accums_hat[[j]] <- mergePartialAccum(accums_hat[[j]], br$hat[[j]])
     }
     results_hat <- .finaliseAccums(accums_hat, evalConfig)
+
+    ## Stack the per-chain aggregates.  Chains are disjoint across batches, so
+    ## this is a concatenation, not a merge; the cell matching happens once at
+    ## the end in .bucketsFromAgg().
+    if (isTRUE(evalConfig$chainAgg)) {
+      chain_aggs <- setNames(vector("list", N), eff_names)
+      for (j in seq_len(N)) {
+        parts <- lapply(all_batch_results, function(br) br$hat[[j]]$chainAgg)
+        parts <- parts[!vapply(parts, is.null, logical(1L))]
+        if (length(parts) == length(all_batch_results) && length(parts) > 0L)
+          chain_aggs[[j]] <- list(
+            agg   = do.call(rbind, lapply(parts, `[[`, "agg")),
+            gvars = parts[[1L]]$gvars)
+      }
+      attr(results_hat, "chainAggs") <- chain_aggs
+
+      ## Scores stack the same way and for the same reason: one row per
+      ## chain, batches in order, so row i is global chain i.
+      ssc_parts <- lapply(all_batch_results, `[[`, "ssc")
+      if (!any(vapply(ssc_parts, is.null, logical(1L))))
+        attr(results_hat, "sscSum") <- do.call(rbind, ssc_parts)
+    }
 
     if (mode == "jacobian") {
       jac_eff_names <- all_batch_results[[1L]]$jac_eff_names
@@ -1169,6 +1273,32 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
             na.rm = spec$na.rm,
             egoNormalize = spec$egoNormalize))
       }
+
+      ## Per-chain aggregate for the deltaFull score term.
+      ##
+      ## These specs reach here because their predictFun returns a per-DYAD
+      ## frame rather than a row-wise vector, which is also why the bucketed
+      ## REINFORCE path could not build (Y_c, N_c) for them and their SEs fell
+      ## back to the conditional one.  But the frame carries `chain`, so the
+      ## buckets are just the SAME aggregation one level finer -- and because
+      ## it is the same aggAccum call with the same condition, na.rm and
+      ## egoNormalize, summing it over chain returns the point estimate above
+      ## by construction rather than by coincidence.
+      if (isTRUE(evalConfig$chainAgg)) {
+        rl <- .chainRefinedLevel(spec$level)
+        batch_partials[[j]]$chainAgg <- if (is.null(rl)) NULL else tryCatch({
+          a <- aggAccum(spec$outcomeName, unit_pred,
+                 level = rl, condition = spec$condition,
+                 na.rm = spec$na.rm,
+                 egoNormalize = if (isTRUE(spec$accumulated)) TRUE
+                                else spec$egoNormalize,
+                 accumulated = isTRUE(spec$accumulated))
+          if (!"chain" %in% names(a)) NULL
+          else list(agg = a,
+                    gvars = getGroupVars(level = spec$level,
+                                         condition = spec$condition))
+        }, error = function(e) NULL)
+      }
       if (verbose >= 2)
         t_agg_specs <- t_agg_specs + (proc.time() - t_ag)[["elapsed"]]
       next
@@ -1216,6 +1346,14 @@ makeEstimatorFun <- function(specs, contribFun, nBatches,
       batch_partials[[j]] <- list(main =
         aggWithCache(spec$outcomeName, kept_vec, cache_j,
                      pre_ego_vals = pre_ego_vals))
+
+      ## Per-chain aggregate for the deltaFull score term, from the outcome
+      ## vector already in hand (outcome_vec, pre-keep: .specChainAgg applies
+      ## its own keep mask).  No prediction is repeated.
+      if (isTRUE(evalConfig$chainAgg))
+        batch_partials[[j]]$chainAgg <-
+          tryCatch(.specChainAgg(spec, cc, theta, type, ov = outcome_vec),
+                   error = function(e) NULL)
 
       massCols <- intersect(c("massCreation", "massDissolution"),
                             names(outcomes))
@@ -2100,6 +2238,48 @@ decodeGroupKeys <- function(key_mat, group_vars, decode) {
 # ======================================================================
 # SECTION 4: Utilities
 # ======================================================================
+
+# The same level, refined by chain.
+#
+# The score correction needs each spec's outcome aggregated per CHAIN as well
+# as per cell.  Rather than assembling that grouping by hand, note that the
+# level table below already contains the chain-refined counterpart of each
+# level: period -> chain, ego -> chainEgo, egoChoice -> chainEgoChoice.  So the
+# bucket is the same aggregation evaluated one level finer, and summing it over
+# chain returns the coarser aggregate exactly.
+#
+# NULL means there is no chain-refined counterpart, and the caller should fall
+# back rather than invent one.  "none" is the case: a quantity with no grouping
+# at all has no entry here to refine, and a bare chain grouping is not a level
+# the table defines.
+## The chain-refined counterpart of an output level: the same grouping one
+## level finer, so that the bucketed REINFORCE term can be built and then
+## summed back to the output level.  A level with no counterpart returns NULL
+## and its SE falls back to the conditional (frozen-chain) delta.
+##
+## `none` maps to "chain" for the same reason `period` does.  getGroupVars()
+## gives none = character(0) and chain = c("period", "chain"), so the refined
+## grouping adds both; reducing it back over chain AND period returns the
+## ungrouped estimate, exactly as reducing the period case over chain returns
+## the per-period one.  Without this entry an ungrouped PERIOD-level quantity
+## (scope = "period", level = "none") silently reported the conditional SE --
+## about 5% low on the Glasgow reciprocity contrast, where the ladder runs
+## delta 0.02114 / deltaFull 0.02231 / bootstrap 0.02696.
+##
+## This only reaches specs whose predictFun returns a FRAME, i.e. period-level
+## ones: row-wise ministep specs take the .specChainAgg path instead, which
+## already handled level = "none" and is untouched by this.
+.chainRefinedLevel <- function(level) {
+  switch(level,
+         none           = "chain",
+         period         = "chain",
+         ego            = "chainEgo",
+         egoChoice      = "chainEgoChoice",
+         chain          = "chain",
+         chainEgo       = "chainEgo",
+         chainEgoChoice = "chainEgoChoice",
+         NULL)
+}
 
 getGroupVars <- function(level = "none", condition = NULL) {
   levels <- list(

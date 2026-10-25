@@ -551,7 +551,13 @@ marginalEffects.sienaFit <- function(
                 depvar       = depvar,
                 effects      = effects,
                 n3_per_batch = n3Batch,
-                n3_uncert    = n3,
+                # Chains per uncertainty BATCH, not the total: the uncertainty
+                # path streams at min(n3BatchSize, n3) just as the hat path
+                # does. Passing the total overestimated the per-worker figure
+                # by n3/n3Batch -- 46 GB against an actual 0.5 GB at
+                # n3 = 1000, n3BatchSize = 10 -- and auto-reduced 7 workers
+                # to 1 to avoid an OOM that was never going to happen.
+                n3_uncert    = if (!is.null(n3BatchSize)) min(n3BatchSize, n3) else n3,
                 useCluster   = useCluster,
                 nbrNodes     = nbrNodes,
                 clusterType  = clusterType,

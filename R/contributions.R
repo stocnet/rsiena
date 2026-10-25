@@ -699,6 +699,14 @@ getDynamicChangeContributions <- function(
     wide$changeStats <- contribToChangeStats(wide$contribMat, wide$effectNames,
                                              direction = wide$direction)
     if (!is.null(ssc_sum)) wide$ssc_sum <- ssc_sum
+    ## Tag the cached utilities with the theta they were computed at.
+    ## predictProbability() and branchProbabilities() both PREFER these
+    ## caches over recomputing, which silently ignores the theta they are
+    ## handed; correctness then rests on every caller remembering to clear
+    ## them first.  Three call sites do, deliberately.  The tag lets the
+    ## consumer check instead of the caller remember.
+    if (!is.null(wide$changeUtility) && !is.null(theta))
+      attr(wide$changeUtility, "theta") <- unname(theta)
     return(wide)
   }
   if(returnDataFrame == TRUE) {
