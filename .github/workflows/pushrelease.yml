@@ -80,18 +80,26 @@ jobs:
         with:
           fetch-depth: '0'
 
-      - name: Bump version and push tag
-        id: newtag
-        uses: anothrNick/github-tag-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: true
-          DEFAULT_BUMP: patch
-          RELEASE_BRANCHES: main
+      - name: Extract version
+        run: |
+          echo "PACKAGE_VERSION=$(grep '^Version' DESCRIPTION | sed 's/.*: *//')" >> $GITHUB_ENV
+          echo "PACKAGE_NAME=$(grep '^Package' DESCRIPTION | sed 's/.*: *//')" >> $GITHUB_ENV
 
-      - name: Checkout two
-        uses: actions/checkout@v4
-    
+      - name: Tag the DESCRIPTION version
+        id: newtag
+        shell: bash
+        run: |
+          # The tag is the Version in DESCRIPTION, so a minor or major
+          # release is tagged as such rather than as the next patch.
+          tag="v${{ env.PACKAGE_VERSION }}"
+          if git rev-parse -q --verify "refs/tags/$tag" > /dev/null; then
+            echo "::error::Tag $tag already exists. Raise the Version in DESCRIPTION before merging."
+            exit 1
+          fi
+          git tag "$tag" "$GITHUB_SHA"
+          git push origin "$tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
       - name: Download binaries
         uses: actions/download-artifact@v4
         
