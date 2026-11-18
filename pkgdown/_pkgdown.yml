@@ -1,0 +1,184 @@
+url: https://stocnet.github.io/rsiena/
+destination: pkgdown/site
+development:
+    mode: auto
+template:
+  bootstrap: 5
+  bslib:
+    # Light theme with colours from the RSiena logo (man/figures/logo.png)
+    base_font: {google: "Lato"}
+    heading_font: {google: "Lato"}
+    code_font: {google: "Source Code Pro"}
+    bg: "#FBF8E6"
+    fg: "#3A2C1C"
+    primary: "#9A5A0C"
+    secondary: "#8A6422"
+    link-color: "#9A5A0C"
+    headings-color: "#B16B0F"
+    code-bg: "#F5F2CA"
+    code-color: "#7A4A0A"
+    pkgdown-nav-height: 72px
+authors:
+  Tom A.B. Snijders:
+    href: https://www.stats.ox.ac.uk/~snijders/
+  James Hollway:
+    href: https://jameshollway.com
+navbar:
+  bg: secondary
+  type: dark
+  structure:
+    left:
+    - home
+    - reference
+    - tutorials
+    - manual
+    - resources
+    - family
+    - news
+    right:
+    - search
+    - siena
+    - github
+    - cran
+  components:
+    home:
+      icon: fa-home fa-lg
+      href: index.html
+      aria-label: Go to home
+    reference:
+      text: Function Overview
+      href: reference/index.html
+    tutorials:
+      text: Scripts
+      href: https://www.stats.ox.ac.uk/~snijders/siena/siena_scripts.htm
+    manual:
+      text: Manual
+      href: https://github.com/stocnet/rsiena/releases/latest/download/RSiena_Manual.pdf
+    resources:
+      text: Resources
+      menu:
+      - text: "Maintained in the RSiena wiki"
+      - text: Literature
+        href: https://github.com/stocnet/rsiena/wiki/Literature
+      - text: Applications
+        href: https://github.com/stocnet/rsiena/wiki/Applications
+      - text: Data sets
+        href: https://github.com/stocnet/rsiena/wiki/Data
+      - text: Workshops and courses
+        href: https://github.com/stocnet/rsiena/wiki/Activities-and-workshops
+      - text: Research projects
+        href: https://github.com/stocnet/rsiena/wiki/Research-projects
+    family:
+      text: Related Packages
+      menu:
+      - text: manynet
+        href: https://stocnet.github.io/manynet/
+      - text: autograph
+        href: https://stocnet.github.io/autograph/
+      - text: netrics
+        href: https://stocnet.github.io/netrics/
+      - text: infernet
+        href: https://stocnet.github.io/infernet/
+      - text: goldfish
+        href: https://stocnet.github.io/goldfish/
+      - text: MoNAn
+        href: https://github.com/stocnet/MoNAn
+      - text: ERPM
+        href: https://github.com/stocnet/ERPM
+    news:
+      text: News
+      href: news/index.html
+    siena:
+      icon: "fas fa-globe fa-lg"
+      href: https://www.stats.ox.ac.uk/~snijders/siena/
+      aria-label: Go to the Siena website
+    github:
+      icon: "fab fa-github fa-lg"
+      href: https://github.com/stocnet/rsiena
+      aria-label: View on Github
+    cran:
+      icon: "fab fa-r-project"
+      href: https://cloud.r-project.org/package=RSiena
+      aria-label: View on CRAN
+
+reference:
+  - title: "Package"
+    contents:
+      - RSiena-package
+  - title: "Make data"
+    desc: |
+      Functions to create node sets, dependent variables, covariates,
+      composition change, and the Siena data objects that combine them.
+    contents:
+      - as_nodeset_rsiena
+      - as_dependent_rsiena
+      - as_covariate_rsiena
+      - coCovar
+      - varCovar
+      - coDyadCovar
+      - varDyadCovar
+      - as_composition_rsiena
+      - make_data_rsiena
+      - make_group_rsiena
+      - make_constraint
+      - write_report
+  - title: "Specify"
+    desc: |
+      Functions to create and change the model specification (effects object).
+    contents:
+      - make_specification
+      - includeEffects
+      - set_effect
+      - set_interaction
+      - includeTimeDummy
+      - includeGMoMStatistics
+      - update_theta
+      - effectsDocumentation
+      - print.sienaEffects
+      - edit.sienaEffects
+  - title: "Estimate"
+    desc: |
+      Functions to set the algorithm and estimate the parameters.
+    contents:
+      - set_algorithm
+      - siena
+      - sienaFit.methods
+  - title: "Test"
+    desc: |
+      Functions for parameter tests, time heterogeneity, and goodness of fit.
+    contents:
+      - test_parameter
+      - print.sienaTest
+      - test_time
+      - plot.sienaTimeTest
+      - test_gof
+      - test_gof_auxiliary
+  - title: "Interpret"
+    desc: |
+      Functions to interpret effect sizes, influence, and selection.
+    contents:
+      - starts_with("interpret_")
+  - title: "Meta-analysis"
+    desc: |
+      Functions to combine the results of several Siena fits.
+    contents:
+      - meta_siena
+      - print.sienaMeta
+      - funnelPlot
+      - iwlsm
+      - summary.iwlsm
+  - title: "Data"
+    desc: |
+      Data sets that are included in RSiena.
+    contents:
+      - starts_with("s50")
+      - n3401
+      - hn3401
+      - tmp3
+      - tmp4
+  - title: "Utilities"
+    contents:
+      - transformScript
+      - xtable
+      - allEffects
+      - simstats0c
