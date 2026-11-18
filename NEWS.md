@@ -2,8 +2,13 @@
 
 ## Package
 
-  * The release workflow (`pushrelease.yml`) tags each release with the
-    `Version` in `DESCRIPTION`, instead of a patch increment of the newest tag.
+  * Improved the Github CI workflows:
+    - Pull request workflow (`prchecks.yml`) checks `README.md` corresponds to `README.Rmd`
+    - Release workflow (`pushrelease.yml`) tags each release with the `DESCRIPTION`'s version, 
+      instead of a patch increment of the newest tag
+    - Release workflow attaches the manual to each GitHub release here:
+      <https://github.com/stocnet/rsiena/releases/latest/download/RSiena_Manual.pdf>
+    - Release workflow builds the website and deploys it to `gh-pages` branch
 
 ## Documentation
 

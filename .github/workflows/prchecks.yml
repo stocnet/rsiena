@@ -7,6 +7,35 @@ name: Binary checks
 
 jobs:
 
+  readme:
+    name: README.md is up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check that README.md was knitted from README.Rmd
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          changed=$(git diff --name-only "origin/${BASE_REF}...HEAD")
+          rmd=$(echo "$changed" | grep -qx 'README.Rmd' && echo yes || echo no)
+          md=$(echo "$changed" | grep -qx 'README.md' && echo yes || echo no)
+          if [ "$rmd" = yes ] && [ "$md" = no ]; then
+            echo "::error file=README.Rmd::README.Rmd changed but README.md did not. Run rmarkdown::render('README.Rmd') and commit README.md."
+            exit 1
+          fi
+          if [ "$md" = yes ] && [ "$rmd" = no ]; then
+            echo "::error file=README.md::README.md changed but README.Rmd did not. Edit README.Rmd, then run rmarkdown::render('README.Rmd')."
+            exit 1
+          fi
+          if [ "$rmd" = yes ] && [ "$(git log -1 --format=%ct -- README.md)" -lt "$(git log -1 --format=%ct -- README.Rmd)" ]; then
+            echo "::error file=README.md::README.md is older than README.Rmd. Run rmarkdown::render('README.Rmd') and commit README.md."
+            exit 1
+          fi
+          echo "README.md and README.Rmd are in step."
+
   build:
     name: Build for ${{ matrix.config.os }} (${{ matrix.config.r }})
     runs-on: ${{ matrix.config.os }}
