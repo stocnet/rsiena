@@ -204,7 +204,7 @@ selectionTable.basis <- function(x, xd, name, vname,
 	Delta12  <- attr(thevar, 'range2')
 	if (is.null(Delta12))
 	{
-		Delta12  <- range(attr(thevar, 'rangep'))
+		Delta12  <- range(attr(thevar, 'rangep'), na.rm=TRUE)
 	}
     if (is.null(levls))
     {

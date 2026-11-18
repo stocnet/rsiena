@@ -45,9 +45,17 @@
   * `set_effect` with a list of effects ignored `include = FALSE`,
     so that the effects stayed included. It now passes `include` on
     to `includeEffects`.
+  * A changing covariate (`varCovar`) with a period that has only missing
+    values (for example, a variable that was not measured at the first wave)
+    gave warnings `no non-missing arguments to min/max` in
+    `make_data_rsiena`, and a range of `Inf`/`-Inf` for that period.
+    The range for that period now is `NA`, with no warning
+    (`addAttributes.varCovar`). `selectionTables` ignores such periods.
 
 ## Tests
 
+  * New test `tests/varcovar.R` for a changing covariate with a period
+    of missing values only.
   * New test `tests/set_effect.R` for `set_effect` with a list of effects
     and `include = FALSE`.
 
