@@ -37,6 +37,7 @@
   * Added first few articles based on scripts from the Oxford website, 
     using new function names in `vignettes/articles/`:
     - *Getting started with RSiena*
+    - *Specifying and estimating a model*
 
 ## Documentation
 
