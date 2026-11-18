@@ -49,8 +49,17 @@ navbar:
       text: Function Overview
       href: reference/index.html
     tutorials:
-      text: Scripts
-      href: https://www.stats.ox.ac.uk/~snijders/siena/siena_scripts.htm
+      text: Articles
+      menu:
+      - text: Getting started with RSiena
+        href: articles/getting-started.html
+      - text: Specifying and estimating a model
+        href: articles/model-estimation.html
+      - text: Co-evolution of networks and behaviour
+        href: articles/coevolution.html
+      - text: -------
+      - text: All RSiena scripts (Siena website)
+        href: https://www.stats.ox.ac.uk/~snijders/siena/siena_scripts.htm
     manual:
       text: Manual
       href: https://github.com/stocnet/rsiena/releases/latest/download/RSiena_Manual.pdf
@@ -100,6 +109,16 @@ navbar:
       icon: "fab fa-r-project"
       href: https://cloud.r-project.org/package=RSiena
       aria-label: View on CRAN
+
+articles:
+  - title: Articles
+    desc: |
+      Worked examples, based on the RSiena scripts
+      (see [#4](https://github.com/stocnet/rsiena/issues/4) for the migration of the other scripts).
+    contents:
+      - "`articles/getting-started`"
+      - "`articles/model-estimation`"
+      - "`articles/coevolution`"
 
 reference:
   - title: "Package"

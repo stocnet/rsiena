@@ -24,6 +24,16 @@
       a section on documentation and help with introductory reading, 
       one installation section, a citation section that recommends `citation("RSiena")`, 
       and a section about the project and its funding.
+  * New pkgdown website at <https://stocnet.github.io/rsiena/>
+    - Configuration is in `pkgdown/_pkgdown.yml`
+    - Built using colours taken from the RSiena logo
+    - Function overview on the website groups help pages by task:
+      making data, specifying, estimating, testing, interpreting,
+      meta-analysis, and data sets
+    - Navigation bar links to the scripts, the manual,
+      related stocnet packages, and pages of the RSiena wiki
+      (literature, applications, data sets, workshops, research projects),
+      which can be updated without a new release of the package
 
 ## Documentation
 
