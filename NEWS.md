@@ -38,13 +38,9 @@
     using new function names in `vignettes/articles/`:
     - *Getting started with RSiena*
     - *Specifying and estimating a model*
+    - *Co-evolution of networks and behaviour*
 
-## Documentation
 
-  * `NEWS.md` restructured: each release date is in the version heading,
-    the headings `Changes in RSiena` were removed, and the section names
-    were standardised (Effects, Functionality, Bug corrections, Messages,
-    Documentation, Coding, Tests, Package).
 
 # RSiena 1.6.14 (2026-10-22)
 

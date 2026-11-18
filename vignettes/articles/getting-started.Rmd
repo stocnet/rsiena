@@ -1,0 +1,212 @@
+---
+title: "Getting started with RSiena"
+author: "Tom A.B. Snijders"
+description: >
+  A first analysis with RSiena: make the data, specify a model,
+  estimate it, check convergence, and test parameters.
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+# RSiena writes report files to the working directory; keep them out of the site.
+knitr::opts_knit$set(root.dir = tempdir())
+```
+
+This article shows a basic sequence of commands for estimating a
+Stochastic Actor-oriented Model (SAOM) with RSiena.
+It is based on the script `basic_RSiena.Rmd` by Tom Snijders
+(see [the scripts catalogue](https://github.com/stocnet/rsiena/issues/4)),
+updated to the function names that RSiena uses since version 1.6.0.
+
+```{r load, message = FALSE}
+library(RSiena)
+```
+
+## The data
+
+We use the `s50` data that come with the package:
+an excerpt of 50 pupils from the Teenage Friends and Lifestyle Study,
+with friendship networks at three waves,
+and the alcohol use and smoking of each pupil at each wave.
+See `?s50` for a description.
+
+```{r data}
+dim(s501)
+s501[1:6, 1:10]
+head(s50a)
+```
+
+If you have your own data in files, read them as matrices,
+for example with `as.matrix(read.table("network1.dat"))`,
+and continue in the same way.
+
+## Roles of the variables
+
+Each variable in a SIENA analysis has a role.
+The **dependent variables** are the variables whose change the model explains.
+Here the dependent variable is the friendship network.
+First make a 50 × 50 × 3 array of the three adjacency matrices,
+and then give it the role of a dependent variable:
+
+```{r depvar}
+friendship <- as_dependent_rsiena(array(c(s501, s502, s503),
+                                        dim = c(50, 50, 3)))
+friendship
+```
+
+The **covariates** are explanatory variables.
+We use smoking at wave 1 as a constant actor covariate,
+and alcohol use as a changing actor covariate:
+
+```{r covariates}
+smoke1  <- as_covariate_rsiena(s50s[, 1])
+alcohol <- as_covariate_rsiena(s50a)
+```
+
+(Only the first wave of smoking is used here,
+to show a constant covariate.)
+
+Then put the variables together in one data object:
+
+```{r makedata}
+mydata <- make_data_rsiena(friendship, smoke1, alcohol)
+mydata
+```
+
+`write_report(mydata)` writes a file with basic descriptive statistics
+of the data to the working directory.
+Read it before you estimate a model:
+it shows, for example, the density, the number of changes between waves,
+and the Jaccard index, which tells whether there is enough stability
+between waves for a SAOM.
+
+```{r report, results = "hide"}
+write_report(mydata)
+```
+
+## Specifying the model
+
+The model specification is an *effects object*.
+`make_specification()` makes one that holds all the effects
+that are possible for this data, with a few basic effects included:
+
+```{r effects}
+myeff <- make_specification(mydata)
+myeff
+```
+
+`effectsDocumentation(myeff)` gives a table of all the available effects.
+Chapter 12 of the [RSiena manual](https://github.com/stocnet/rsiena/releases/latest/download/RSiena_Manual.pdf)
+describes each effect.
+Add structural effects for network closure,
+and effects of the covariates:
+the sender (ego), receiver (alter), and similarity effects of alcohol,
+and the similarity effect of smoking.
+
+```{r specify}
+myeff <- set_effect(myeff, list(transTrip, cycle3))
+myeff <- set_effect(myeff, list(egoX, altX, simX), covar1 = "alcohol")
+myeff <- set_effect(myeff, simX, covar1 = "smoke1")
+myeff
+```
+
+## Estimating the model
+
+The algorithm has many settings,
+but the defaults are usually good.
+Set the random seed, so that you get the same results each time:
+
+```{r algorithm}
+myalgo <- set_algorithm_saom(seed = 435123)
+```
+
+`siena()` estimates the parameters.
+`batch = TRUE` writes short progress information to the console
+instead of opening a window.
+
+```{r estimate}
+ans <- siena(mydata, effects = myeff, control_algo = myalgo, batch = TRUE)
+ans
+```
+
+### Convergence
+
+Before you interpret the estimates, check the convergence of the algorithm.
+All convergence t-ratios should be less than 0.1 in absolute value,
+and the overall maximum convergence ratio should be less than 0.25:
+
+```{r convergence}
+ans$tconv.max
+```
+
+If the convergence is not good enough, estimate again
+from the previous result, with `prevAns`:
+
+```{r prevans, eval = FALSE}
+ans <- siena(mydata, effects = myeff, control_algo = myalgo,
+             prevAns = ans, batch = TRUE)
+```
+
+`summary(ans)` gives more details,
+and the output file in the working directory gives the most details.
+
+## Adding an effect
+
+Add the transitive reciprocated triplets effect,
+which is an interaction between transitivity and reciprocity,
+and estimate again.
+Because the new model only adds an effect,
+the estimation can start from the previous result:
+
+```{r add}
+myeff <- set_effect(myeff, transRecTrip)
+ans1 <- siena(mydata, effects = myeff, control_algo = myalgo,
+              prevAns = ans, batch = TRUE)
+ans1
+```
+
+## Testing parameters
+
+To test a parameter, divide the estimate by its standard error,
+and compare the result with a standard normal distribution
+(with a critical value of about 2).
+`test_parameter()` does this.
+The parameters are numbered as in the table above
+(the rate parameters are not counted).
+For example, the test of alcohol similarity:
+
+```{r test1}
+alcsim <- which(ans1$effects$shortName == "simX" &
+                ans1$effects$interaction1 == "alcohol")
+test_parameter(ans1, tested = alcsim)
+```
+
+A joint test of the three alcohol effects:
+
+```{r test3}
+alc <- which(ans1$effects$interaction1 == "alcohol" &
+             ans1$effects$type == "eval")
+test_parameter(ans1, tested = alc)
+```
+
+A single effect can be significant while a joint test of several effects
+is not, because the other effects add little to the model.
+
+## Next steps
+
+- Make alcohol use a dependent behaviour variable,
+  to study selection and influence together:
+  see [Co-evolution of networks and behaviour](coevolution.html).
+- For more about model specification, estimation,
+  and the tests that are available:
+  see [Specifying and estimating a model](model-estimation.html).
+
+## Try it yourself
+
+1. Drop the effect of smoking similarity,
+   with `set_effect(..., include = FALSE)`,
+   and estimate the model again.
+   Give the new effects object and the new results new names,
+   so that you can compare the two models.
+2. Replace the three effects of alcohol with the single effect
+   of alcohol similarity, and estimate again.
