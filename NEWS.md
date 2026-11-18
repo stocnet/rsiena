@@ -34,6 +34,9 @@
       related stocnet packages, and pages of the RSiena wiki
       (literature, applications, data sets, workshops, research projects),
       which can be updated without a new release of the package
+  * Added first few articles based on scripts from the Oxford website, 
+    using new function names in `vignettes/articles/`:
+    - *Getting started with RSiena*
 
 ## Documentation
 
