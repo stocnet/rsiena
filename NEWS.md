@@ -2,6 +2,15 @@
 
 ## Package
 
+  * `DESCRIPTION`: website added to `URL`, and `Config/Needs/website` added.
+  * `inst/CITATION`: added missing comma, and corrected Boitmanis' first name
+  * Logo now also available in `man/figures/logo.png`, and added favicons
+  * `NEWS.md` restructured
+    - Each release date is in the version heading
+    - Subheadings `Changes in RSiena` were removed
+    - Section names were standardised (Effects, Functionality, 
+      Bug corrections, Messages, Documentation, Coding, Tests, Package)
+  * `.github/CONTRIBUTING.md` updated with more recent guidelines
   * Improved the Github CI workflows:
     - Pull request workflow (`prchecks.yml`) checks `README.md` corresponds to `README.Rmd`
     - Release workflow (`pushrelease.yml`) tags each release with the `DESCRIPTION`'s version, 

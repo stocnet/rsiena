@@ -41,3 +41,8 @@ Makevars.win
 
 # Mac OS
 .DS_Store
+# pkgdown site
+pkgdown/site/
+
+# Local development material (not tracked)
+development/

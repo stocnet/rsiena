@@ -14,9 +14,9 @@ bibentry(bibtype = "Misc",
          note = vers,
          url = meta$URL,
          textVersion =
-            paste("Tom A.B. Snijders, Ruth M. Ripley, Krist Boitmanis,
+            paste("Tom A.B. Snijders, Ruth M. Ripley, Krists Boitmanis,
             Christian Steglich, Nynke M.D. Niezink, Felix Schoenenberger, Viviana Amati, 
-            and Daniel Gotthardt",
+            and Daniel Gotthardt, ",
             year,
             ". RSiena - Simulation Investigation for Empirical Network Analysis, ",
             vers, ". ", meta$URL, sep="")
