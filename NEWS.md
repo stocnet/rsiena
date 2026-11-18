@@ -18,6 +18,12 @@
     - Release workflow attaches the manual to each GitHub release here:
       <https://github.com/stocnet/rsiena/releases/latest/download/RSiena_Manual.pdf>
     - Release workflow builds the website and deploys it to `gh-pages` branch
+  * `README.md` is now generated from `README.Rmd`
+    - It includes a short introduction to the SAOM, a table of contents, 
+      an example that is run when the README is knitted (closes #66), 
+      a section on documentation and help with introductory reading, 
+      one installation section, a citation section that recommends `citation("RSiena")`, 
+      and a section about the project and its funding.
 
 ## Documentation
 
