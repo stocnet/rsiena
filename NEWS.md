@@ -40,7 +40,16 @@
     - *Specifying and estimating a model*
     - *Co-evolution of networks and behaviour*
 
+## Bug corrections
 
+  * `set_effect` with a list of effects ignored `include = FALSE`,
+    so that the effects stayed included. It now passes `include` on
+    to `includeEffects`.
+
+## Tests
+
+  * New test `tests/set_effect.R` for `set_effect` with a list of effects
+    and `include = FALSE`.
 
 # RSiena 1.6.14 (2026-10-22)
 
