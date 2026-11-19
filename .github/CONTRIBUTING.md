@@ -80,11 +80,11 @@ This branching model is based on <https://nvie.com/posts/a-successful-git-branch
 4. After the merge, delete the branch: `git branch -d myfeature`.
 
 ### Hotfix branches (critical bugs in a release)
-1. Make the branch: `git switch -c hotfix-1.7.1 main`.
+1. Make the branch: `git switch -c hotfix-1.6.16 main`.
 2. Fix the bug, add a test, and raise the patch digit of `Version` in `DESCRIPTION` (see [Versioning](#versioning)).
 3. Open a pull request from the hotfix branch to `main`. The merge makes the release.
 4. Merge `main` back into `develop`: `git switch develop` and then `git merge main`.
-5. Delete the hotfix branch: `git branch -d hotfix-1.7.1`.
+5. Delete the hotfix branch: `git branch -d hotfix-1.6.16`.
 
 ### Releases (code maintainer only)
 The GitHub Actions workflows make a release automatically:
@@ -93,7 +93,7 @@ The GitHub Actions workflows make a release automatically:
   It builds and checks the package on macOS, Windows and Ubuntu (R-release), and on Ubuntu (R-devel).
   It also fails if `README.Rmd` and `README.md` do not change together.
 - `pushrelease.yml` runs on each push to `main`.
-  It checks the package again, and then tags the commit as `v` plus the `Version` in `DESCRIPTION` (for example `v1.7.0`).
+  It checks the package again, and then tags the commit as `v` plus the `Version` in `DESCRIPTION` (for example `v1.6.15`).
   It makes a GitHub release with the binaries and `RSiena_Manual.pdf`, and then deploys the website to the `gh-pages` branch.
 
 To make a release:
@@ -131,7 +131,7 @@ To run all tests, build and check the package:
 
 ```sh
 R CMD build .
-R CMD check RSiena_1.7.0.tar.gz
+R CMD check RSiena_1.6.15.tar.gz
 ```
 
 Use the version number from `DESCRIPTION` in the file name.
@@ -170,7 +170,7 @@ Please contact us directly with proposals for updating the documentation, or sub
 
 ## NEWS
 Add each change to the top entry of `NEWS.md`.
-Each version has a heading such as `# RSiena 1.7.0 (2026-11-18)`.
+Each version has a heading such as `# RSiena 1.6.15 (2026-11-19)`.
 Put the changes under these second-level headings, in this sequence, and use only the headings that you need:
 `## Effects`, `## Functionality`, `## Bug corrections`, `## Messages`, `## Documentation`, `## Coding`, `## Tests`, `## Package`.
 

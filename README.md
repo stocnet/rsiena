@@ -252,12 +252,12 @@ citation("RSiena")
 #>   Tom A.B. Snijders, Ruth M. Ripley, Krists Boitmanis, Christian
 #>   Steglich, Nynke M.D. Niezink, Felix Schoenenberger, Viviana Amati,
 #>   and Daniel Gotthardt, 2026. RSiena - Simulation Investigation for
-#>   Empirical Network Analysis, R package version 1.7.0.
+#>   Empirical Network Analysis, R package version 1.6.15.
 #>   https://www.stats.ox.ac.uk/~snijders/siena/,
 #>   https://stocnet.github.io/rsiena/
 #> 
 #>   Tom A.B. Snijders, Ruth Ripley, Zsofia Boda, Andras Voros, and
-#>   Paulina Preciado, 2026. Manual for RSiena. R package version 1.7.0.
+#>   Paulina Preciado, 2026. Manual for RSiena. R package version 1.6.15.
 #>   https://www.stats.ox.ac.uk/~snijders/siena/,
 #>   https://stocnet.github.io/rsiena/
 #> 

@@ -9,6 +9,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+# RSiena writes report files to the working directory; keep them out of the repository.
+knitr::opts_knit$set(root.dir = tempdir())
 ```
 
 # RSiena <img src="man/figures/logo.png" align="right" alt="RSiena logo" width="150"/>
