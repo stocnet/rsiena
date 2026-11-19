@@ -1,32 +1,222 @@
-# rsiena  <img src="https://raw.githubusercontent.com/stocnet/rsiena/main/inst/rsienalogo-2.png" align="right" width="150"/>
 
-![CRAN/METACRAN](https://img.shields.io/cran/l/RSiena)
-![CRAN/METACRAN](https://img.shields.io/cran/v/RSiena)
-![GitHub R package version](https://img.shields.io/github/r-package/v/stocnet/rsiena)
-![GitHub issues](https://img.shields.io/github/issues-raw/stocnet/rsiena)
-![GitHub All Releases](https://img.shields.io/github/downloads/stocnet/rsiena/total)
-![](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)
+<!-- README.md is generated from README.Rmd. Please edit that file. -->
 
+# RSiena <img src="man/figures/logo.png" align="right" alt="RSiena logo" width="150"/>
 
-SIENA is a program for the statistical analysis of longitudinal network data, with the focus on social networks.
-Networks here are understood as entire (complete) networks, not as personal (egocentered) networks: 
-it is assumed that a set of nodes (social actors) is given, and all ties (links) between these nodes are known - 
-except perhaps for a moderate amount of missing data.
-`Longitudinal` means that two or more repeated observations ("panel data") are available.
-The name SIENA stands for Simulation Investigation for Empirical Network Analysis.
-The R package is called RSiena.
+<!-- badges: start -->
+
+[![CRAN
+status](https://img.shields.io/cran/v/RSiena)](https://cran.r-project.org/package=RSiena)
+[![GitHub
+release](https://img.shields.io/github/v/release/stocnet/rsiena)](https://github.com/stocnet/rsiena/releases/latest)
+[![Check and
+release](https://github.com/stocnet/rsiena/actions/workflows/pushrelease.yml/badge.svg)](https://github.com/stocnet/rsiena/actions/workflows/pushrelease.yml)
+[![License](https://img.shields.io/cran/l/RSiena)](https://cran.r-project.org/package=RSiena)
+[![Lifecycle:
+stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
+[![GitHub
+downloads](https://img.shields.io/github/downloads/stocnet/rsiena/total)](https://github.com/stocnet/rsiena/releases)
+<!-- badges: end -->
+
+SIENA is a program for the statistical analysis of longitudinal network
+data, with the focus on social networks. Networks here are understood as
+entire (complete) networks, not as personal (egocentered) networks: it
+is assumed that a set of nodes (social actors) is given, and all ties
+(links) between these nodes are known - except perhaps for a moderate
+amount of missing data. `Longitudinal` means that two or more repeated
+observations (“panel data”) are available. The name SIENA stands for
+Simulation Investigation for Empirical Network Analysis. The R package
+is called RSiena.
+
+The main model in SIENA is the Stochastic Actor-oriented Model (SAOM).
+In this model, the actors who are the nodes of the network change their
+ties (and, if included, their behaviour) step by step between the
+observations. The model represents network dynamics as the result of
+many tendencies that operate at the same time, such as reciprocity,
+transitivity (“friends of my friends are my friends”), homophily (ties
+between actors who are similar), and the effects of actor and dyadic
+covariates. SIENA estimates the strength of each tendency and tests
+hypotheses about it, while it controls for the other tendencies. With
+networks and behaviour together, SIENA can separate *selection* (actors
+choose ties to similar others) from *influence* (actors become more
+similar to the others they have ties to).
+
+- [Data types](#data-types)
+- [Example](#example)
+- [Documentation and help](#documentation-and-help)
+- [Installation](#installation)
+- [Citation](#citation)
+- [About the project](#about-the-project)
+
+## Data types
+
+SIENA is designed for analyzing various types of data as dependent
+variables:
+
+### Longitudinal network data
+
+This refers to repeated measures of networks on a given node set
+(although it is allowed that there are some changes in the node set).
+Networks can be one-mode directed, one-mode non-directed, or two-mode
+(directed from the first to the second mode). The main model is the
+actor-oriented SAOM; for non-directed networks, tie-oriented models are
+also available.
+
+All models in SIENA are Markov chain models. They are best suited to
+ties and behaviour that can be regarded as *states* (for example
+friendship or advice), and less to *events* that do not endure (for
+example messages or meetings). For data on events, see the
+[goldfish](https://stocnet.github.io/goldfish/) package.
+
+The analysis is based on simulation of the network, and this can take
+time. The method is applicable in principle to networks of approximately
+10 to 1,000 actors; in practice, a few hundred actors is already large.
+For many replications of small networks (from about 5 to 60 actors), the
+multilevel option `sienaBayes` is available in the sister package
+`multiSiena`.
+
+### Longitudinal data of networks and behavior
+
+This is like longitudinal network data, but in addition there are one or
+more changing nodal variables that are also treated as dependent
+variables, and referred to as behavior. The network will influence the
+dynamics of the behavior, and the behavior will influence the dynamics
+of the network. In other words, this is about the co-evolution of
+networks and behavior.
+
+### Multivariate and two-mode networks
+
+Network data sets can be multivariate, i.e., be composed of multiple
+networks on the same node set. Some or all of these networks can be
+two-mode networks. The restriction is that the first mode must be the
+same for all networks; the first mode is defined as the set of actors.
+The second mode node sets are allowed to differ across the various
+networks in a given data set. For such multivariate data sets, the model
+again is about the co-evolution of several networks; and this may be
+combined with behavior.
+
+## Example
+
+This example uses the `s50` data that come with the package: friendship
+networks among 50 pupils at three time points, and their alcohol use.
+The model asks two questions at the same time. Do pupils select friends
+who drink like them (selection)? Do pupils change their drinking to be
+more like their friends (influence)?
+
+``` r
+library(RSiena)
+
+# 1. Make the data: two dependent variables that change together
+friends  <- as_dependent_rsiena(array(c(s501, s502, s503), dim = c(50, 50, 3)))
+drinking <- as_dependent_rsiena(s50a, type = "behavior")
+mydata   <- make_data_rsiena(friends, drinking)
+
+# 2. Specify the model: start from the defaults, then add effects
+myeff <- make_specification(mydata)
+# network closure
+myeff <- set_effect(myeff, list(transTrip, cycle3), verbose = FALSE)
+# selection: drinking of ego and alter, and similarity in drinking
+myeff <- set_effect(myeff, list(egoX, altX, simX), covar1 = "drinking",
+                    verbose = FALSE)
+# influence: drinking becomes more like the drinking of friends
+myeff <- set_effect(myeff, avSim, covar1 = "friends", depvar = "drinking",
+                    verbose = FALSE)
+
+# 3. Estimate the model (about 10 seconds)
+myalgo <- set_algorithm_saom(seed = 1234)
+ans <- siena(mydata, effects = myeff, control_algo = myalgo, batch = TRUE)
+ans
+#> Estimates, standard errors and convergence t-ratios
+#> 
+#>                                             Estimate   Standard   Convergence 
+#>                                                          Error      t-ratio   
+#> Network Dynamics 
+#>    1. rate constant friends rate (period 1)  6.4790  ( 1.0256   )   -0.0355   
+#>    2. rate constant friends rate (period 2)  5.1974  ( 0.8702   )    0.0636   
+#>    3. eval outdegree (density)              -2.7592  ( 0.1538   )   -0.0410   
+#>    4. eval reciprocity                       2.3895  ( 0.2285   )   -0.0268   
+#>    5. eval transitive triplets               0.6469  ( 0.1436   )   -0.0472   
+#>    6. eval 3-cycles                         -0.0627  ( 0.2854   )   -0.0369   
+#>    7. eval drinking alter                   -0.0595  ( 0.1074   )   -0.0167   
+#>    8. eval drinking ego                      0.0493  ( 0.1128   )   -0.0384   
+#>    9. eval drinking similarity               1.3598  ( 0.6778   )   -0.0203   
+#> 
+#> Behavior Dynamics
+#>   10. rate rate drinking (period 1)          1.3482  ( 0.3776   )   -0.0084   
+#>   11. rate rate drinking (period 2)          1.8419  ( 0.4939   )    0.0516   
+#>   12. eval drinking linear shape             0.3674  ( 0.1899   )    0.0595   
+#>   13. eval drinking quadratic shape         -0.0667  ( 0.1098   )    0.0514   
+#>   14. eval drinking average similarity       3.9629  ( 2.2024   )    0.0070   
+#> 
+#> Overall maximum convergence ratio:    0.1725 
+#> 
+#> 
+#> Total of 3078 iteration steps.
+```
+
+If all convergence t-ratios are below 0.1 and the overall maximum
+convergence ratio is below 0.25, the estimation converged. The estimates
+show whether pupils choose friends with similar drinking behaviour
+(`drinking similarity`) and whether pupils adapt their drinking to their
+friends (`drinking average similarity`). To use your own data, replace
+the matrices in step 1 with your own adjacency matrices (one per wave)
+and your own behaviour matrix (actors × waves).
+
+## Documentation and help
+
+- The [RSiena
+  manual](https://github.com/stocnet/rsiena/releases/latest/download/RSiena_Manual.pdf)
+  gives a full description of the models, effects and functions. It
+  complements the help pages in the package. Each release includes the
+  version of the manual for that release.
+- The [package website](https://stocnet.github.io/rsiena/) has the help
+  pages for all functions and the news for each release.
+- The [RSiena
+  scripts](https://www.stats.ox.ac.uk/~snijders/siena/siena_scripts.htm)
+  show many types of analysis step by step. They are moving to the
+  package website ([\#4](https://github.com/stocnet/rsiena/issues/4)).
+- For questions about the use of RSiena, join the [RSiena users’ group
+  at groups.io](https://groups.io/g/RSiena).
+- To report a bug or ask for a new feature, open an [issue on
+  GitHub](https://github.com/stocnet/rsiena/issues).
+- [Instats](https://instats.org/seminar/longitudinal-social-network-analysis)
+  offers an on-demand introductory workshop on the SAOM and RSiena,
+  taught by Tom Snijders (18 recorded sessions of 45 minutes). Workshops
+  are also given regularly at the Sunbelt conferences of INSNA.
+
+### Introductory reading
+
+- Snijders, T.A.B., van de Bunt, G.G., and Steglich, C.E.G. (2010).
+  Introduction to stochastic actor-based models for network dynamics.
+  *Social Networks*, 32, 44–60.
+  <https://doi.org/10.1016/j.socnet.2009.02.004>. A tutorial
+  introduction.
+- Snijders, T.A.B. (2017). Stochastic actor-oriented models for network
+  dynamics. *Annual Review of Statistics and Its Application*, 4,
+  343–363. <https://doi.org/10.1146/annurev-statistics-060116-054035>.
+  An overview of the models.
+- Steglich, C.E.G., Snijders, T.A.B., and Pearson, M. (2010). Dynamic
+  networks and behavior: Separating selection from influence.
+  *Sociological Methodology*, 40, 329–393.
+  <https://doi.org/10.1111/j.1467-9531.2010.01225.x>. The model for the
+  co-evolution of networks and behaviour.
+- Snijders, T.A.B. (2024). [Siena
+  algorithms](https://www.stats.ox.ac.uk/~snijders/siena/Siena_algorithms.pdf).
+  A sketch of the main algorithms in RSiena, as background for the code.
 
 ## Installation
 
-For most people, the best way to install RSiena is to install the latest version from CRAN:
+For most people, the best way to install RSiena is to install the latest
+version from CRAN:
 
-```r
+``` r
 install.packages("RSiena")
 ```
 
-The latest binary release on GitHub will have newer features:
+The latest binary release on GitHub can have newer features than the
+CRAN version:
 
-```r
+``` r
 # On Windows:
 install.packages("https://github.com/stocnet/rsiena/releases/latest/download/RSiena.zip", repos = NULL)
 
@@ -37,9 +227,11 @@ install.packages("https://github.com/stocnet/rsiena/releases/latest/download/RSi
 install.packages("https://github.com/stocnet/rsiena/releases/latest/download/RSiena.tgz", repos = NULL)
 ```
 
-To compile and install the source version from GitHub, install the `{remotes}` package and then run the following. NB: this requires compilation of `C++` source files so it may take some time.
+To compile and install the source version from GitHub, install the
+`{remotes}` package and then run the following. This needs a compiler
+for `C++` source files, and it can take some time.
 
-```r
+``` r
 # latest version
 remotes::install_github("stocnet/rsiena@main")
 
@@ -47,67 +239,64 @@ remotes::install_github("stocnet/rsiena@main")
 remotes::install_github("stocnet/rsiena@develop")
 ```
 
-## Data types
-
-SIENA is designed for analyzing various types of data as dependent variables:
-
-### Longitudinal network data:
-This refers to repeated measures of networks on a given node set (although it is allowed that there are some changes in the node set). Models can be specified with actor-oriented as well as tie-oriented dynamics; but mainly the former.
-
-Practical restrictions are that the number of actors should not be too large; a few hundred already is pretty large.
-
-### Longitudinal data of networks and behavior:
-This is like longitudinal network data, but in addition there are one or more changing nodal variables that are also treated as dependent variables, and referred to as behavior. The network will influence the dynamics of the behavior, and the behavior will influence the dynamics of the network. In other words, this is about the co-evolution of networks and behavior.
-
-### Multivariate and two-mode networks:
-Network data sets can be multivariate, i.e., be composed of multiple networks on the same node set.
-Some or all of these networks can be two-mode networks. The restriction is that the first mode must be the same for all networks; the first mode is defined as the set of actors. The second mode node sets are allowed to differ across the various networks in a given data set. For such multivariate data sets, the model again is about the co-evolution of several networks; and this may be combined with behavior. 
-
-## Manual:  
-There is an extensive [manual](https://www.stats.ox.ac.uk/~snijders/siena/RSiena_Manual.pdf) which is complementary to the help pages in the package.
-
-## Further information...
-
-The main Siena website is [here](http://www.stats.ox.ac.uk/~snijders/siena/). It has a lot of resources, such as scripts and papers with explanations, and lists of published applications. In future, some of these resources may be migrated to [this website](http://stocnet.github.io/rsiena/); you can find [a wiki here](https://github.com/stocnet/rsiena/wiki) that holds much of the information on the original website, including background on SAOMs and RSiena as well as links to teaching materials, literature, and contributing people and projects.
-
-## Installation
-
-### From binary
-
-Perhaps the easiest way to install RSiena is by installing a compiled binary.
-Binaries for all major OSes -- Windows, Mac, and Linux -- 
-can be found by clicking on the latest release for your OS [here](https://github.com/stocnet/rsiena/releases/latest).
-For Windows you should use the `RSiena.zip`, for macOS it should be `RSiena.tgz`, and for Linux `RSiena.tar.gz`.
-
-Once the file has been downloaded, install the binary appropriate for your Operating System like so:
-
-`install.packages("~/Downloads/RSiena.zip", repos = NULL)`
-
-amending the file suffix as necessary.
-
-### From source
-
-To install from source the latest main version of RSiena from Github, 
-please install the `{remotes}` package from CRAN and then enter into the console:
-
-`remotes::install_github("stocnet/rsiena", ref = "main")`
-
-The development version of RSiena can be similarly installed as:
-
-`remotes::install_github("stocnet/rsiena@develop")`
-
 ## Citation
 
-To cite the RSiena package in publications use:
+To cite RSiena in publications, use the references that
+`citation("RSiena")` gives for the version that you used:
 
-> Ruth M. Ripley, Tom A. B. Snijders, Zsofia Boda, Andras Voros, and Paulina Preciado (2024). Manual
-> for Siena version 4.0. R package version 1.4.13.
-> https://www.cran.r-project.org/web/packages/RSiena/.
+``` r
+citation("RSiena")
+#> When you use the RSiena package in publications, please cite the
+#> package and/or the manual:
+#> 
+#>   Tom A.B. Snijders, Ruth M. Ripley, Krists Boitmanis, Christian
+#>   Steglich, Nynke M.D. Niezink, Felix Schoenenberger, Viviana Amati,
+#>   and Daniel Gotthardt, 2026. RSiena - Simulation Investigation for
+#>   Empirical Network Analysis, R package version 1.6.15.
+#>   https://www.stats.ox.ac.uk/~snijders/siena/,
+#>   https://stocnet.github.io/rsiena/
+#> 
+#>   Tom A.B. Snijders, Ruth Ripley, Zsofia Boda, Andras Voros, and
+#>   Paulina Preciado, 2026. Manual for RSiena. R package version 1.6.15.
+#>   https://www.stats.ox.ac.uk/~snijders/siena/,
+#>   https://stocnet.github.io/rsiena/
+#> 
+#> To see these entries in BibTeX format, use 'print(<citation>,
+#> bibtex=TRUE)', 'toBibtex(.)', or set
+#> 'options(citation.bibtex.max=999)'.
+```
 
-A BibTeX entry for LaTeX users is obtained by requesting
+Please also cite the methods that you use. The manual and the help pages
+give the relevant references.
 
-`citation(package="RSiena")` 
+## About the project
 
-in an `R` session.
+SIENA is part of an ongoing research effort. The research team is
+composed of Tom Snijders, Christian Steglich, Johan Koskinen, Nynke
+Niezink, Viviana Amati, Daniel Gotthardt, Christoph Stadtfeld, Robert
+Krause, and James Hollway, with earlier contributions from Ruth Ripley,
+Krists Boitmanis, Felix Schönenberger, Charlotte Greenan, Josh
+Lospinoso, Paulina Preciado, Michael Schweinberger, Mark Huisman, and
+Marijtje van Duijn. RSiena was originally programmed by Ruth Ripley and
+Krists Boitmanis, in collaboration with Tom Snijders. Christian Steglich
+is the maintainer of the package.
 
-For more references, see https://www.stats.ox.ac.uk/~snijders/siena/. 
+RSiena received the 2017 INSNA William D. Richards Award, a lifetime
+achievement award for publicly available social network analysis
+software.
+
+### Funding
+
+We are grateful to NIH (National Institutes of Health, USA) for their
+funding of programming RSiena during 2008-2014, as part of the project
+*Adolescent Peer Social Network Dynamics and Problem Behavior* (Grant
+Number 1R01HD052887-01A2), Principal Investigator John M. Light (Oregon
+Research Institute).
+
+For earlier work on SIENA, we are grateful to NWO (Netherlands
+Organisation for Scientific Research) for their support to the projects
+*Models for the Evolution of Networks and Behavior* (461-05-690), *The
+dynamics of networks and behavior* (401-01-550), *Statistical methods
+for the joint development of individual behavior and peer networks*
+(575-28-012), and *An open software system for the statistical analysis
+of social networks* (405-20-20), and to the foundation ProGAMMA.

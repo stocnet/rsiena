@@ -1,0 +1,247 @@
+---
+title: "Specifying and estimating a model"
+author: "Tom A.B. Snijders"
+description: >
+  The estimation results in detail, the choice of effects for an actor
+  variable with a selection table, better convergence, and the tests
+  that are available in RSiena.
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+# RSiena writes report files to the working directory; keep them out of the site.
+knitr::opts_knit$set(root.dir = tempdir())
+```
+
+This article continues from [Getting started](getting-started.html).
+It is based on the scripts `Rscript03SienaRunModel.R` and
+`RscriptOnestep.R` by Tom Snijders, with earlier contributions from
+Robin Gauthier, Ruth Ripley, Johan Koskinen, and Paulina Preciado.
+
+## Data and a first model
+
+We use the `s50` data again, with friendship as the dependent network,
+smoking at wave 1 as a constant covariate,
+and alcohol use as a changing covariate.
+
+```{r data, message = FALSE}
+library(RSiena)
+friendship <- as_dependent_rsiena(array(c(s501, s502, s503),
+                                        dim = c(50, 50, 3)))
+smoke1  <- as_covariate_rsiena(s50s[, 1])
+alcohol <- as_covariate_rsiena(s50a)
+mydata  <- make_data_rsiena(friendship, smoke1, alcohol)
+```
+
+The first model has transitivity, outdegree activity,
+three effects of alcohol, and smoking similarity:
+
+```{r model1}
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, list(transTrip, outAct), verbose = FALSE)
+myeff <- set_effect(myeff, list(egoX, altX, simX), covar1 = "alcohol",
+                    verbose = FALSE)
+myeff <- set_effect(myeff, simX, covar1 = "smoke1", verbose = FALSE)
+myalgo <- set_algorithm_saom(seed = 1293)
+ans <- siena(mydata, effects = myeff, control_algo = myalgo, batch = TRUE)
+ans
+```
+
+## Reading the results
+
+The **convergence t-ratio** in the last column checks the convergence
+of the algorithm; it is not a test of the effect.
+All convergence t-ratios should be less than 0.1 in absolute value,
+and the overall maximum convergence ratio should be less than 0.25
+(see Section 7.2 of the manual).
+
+The results object holds, among other things,
+the estimates, their standard errors, and their covariance matrix:
+
+```{r components}
+ans$theta
+ans$se
+```
+
+`summary(ans)` gives a longer summary.
+To make a table for a paper, use `siena_table(ans, type = "html")`
+(or `type = "tex"`), which writes a file to the working directory.
+
+The estimation simulates the network evolution,
+so two runs give slightly different results.
+For results that you report, set `n3` (the number of iterations in phase 3)
+in `set_algorithm_saom()` to a larger value than the default 1000,
+for example `n3 = 5000`, and set `seed` for reproducible results.
+
+## Choosing the effects of an actor variable
+
+How can you choose the effects of an actor variable such as alcohol use?
+Snijders and Lomi (2019) propose to start from five effects,
+and to interpret them together with a *selection table*.
+
+> Snijders, T.A.B. and Lomi, A. (2019).
+> Beyond homophily: Incorporating actor variables in statistical network models.
+> *Network Science*, 7, 1–19.
+> <https://doi.org/10.1017/nws.2018.30>
+
+```{r five}
+myeff2 <- make_specification(mydata)
+myeff2 <- set_effect(myeff2, list(transTrip, outAct), verbose = FALSE)
+myeff2 <- set_effect(myeff2, list(egoX, altX, egoSqX, egoXaltX, diffSqX),
+                     covar1 = "alcohol", verbose = FALSE)
+myeff2 <- set_effect(myeff2, simX, covar1 = "smoke1", verbose = FALSE)
+ans2 <- siena(mydata, effects = myeff2, control_algo = myalgo, batch = TRUE)
+ans2
+```
+
+It is almost impossible to interpret five parameters one by one.
+The selection table gives, for each combination of the alcohol use
+of ego (rows) and alter (columns), the total contribution of the
+five alcohol effects to the evaluation function:
+
+```{r seltable}
+(table.alcohol <- interpret_selection(ans2, mydata, "friendship", "alcohol"))
+```
+
+The [autograph](https://stocnet.github.io/autograph/) package plots it.
+There is one curve for each value of ego's alcohol use;
+the horizontal axis gives alter's alcohol use.
+
+```{r selplot, message = FALSE, fig.width = 7, fig.height = 4.5}
+library(autograph)
+plot(table.alcohol)
+```
+
+If the top of each curve is near ego's own value, this shows homophily.
+Differences in the height of the curves
+show how the tendency to have friends depends on ego's alcohol use.
+
+### Backward selection
+
+The model can then be made simpler, one effect at a time.
+Remove the effect with the smallest absolute t-statistic,
+but keep the lower-order effects of an interaction that stays in the model.
+Here we remove `egoXaltX`, and then `altX`:
+
+```{r backward}
+myeff3 <- set_effect(myeff2, list(egoXaltX, altX), covar1 = "alcohol",
+                     include = FALSE, verbose = FALSE)
+ans3 <- siena(mydata, effects = myeff3, control_algo = myalgo, batch = TRUE)
+ans3
+```
+
+```{r selplot3, fig.width = 7, fig.height = 4.5}
+plot(interpret_selection(ans3, mydata, "friendship", "alcohol"))
+```
+
+Section 14.3 of the manual explains selection tables in more detail.
+
+## Better convergence
+
+If the convergence is not good enough,
+continue from the previous results with `prevAns`.
+The estimates in the previous results are then the starting values,
+and phase 1 of the algorithm is skipped.
+You can use `prevAns` if the specification is the same,
+or if effects were only added.
+If effects were dropped, start again without `prevAns`
+(or use `update_theta()` to set the starting values).
+
+For precise final results, continue with a long phase 2 subphase
+and a long phase 3:
+
+```{r precise}
+algo1 <- set_algorithm_saom(nsub = 1, n2start = 2000, n3 = 5000, seed = 99)
+ans <- siena(mydata, effects = myeff, control_algo = algo1,
+             prevAns = ans, batch = TRUE)
+ans$tconv.max
+```
+
+Section 7.3 of the manual gives more advice about convergence
+and the settings of the algorithm.
+
+## Testing effects
+
+RSiena has three types of test.
+
+### t-type tests of one parameter
+
+Divide the estimate by its standard error.
+`test_parameter()` gives the test.
+For alcohol similarity:
+
+```{r ttest}
+alcsim <- which(ans$effects$shortName == "simX" &
+                ans$effects$interaction1 == "alcohol")
+test_parameter(ans, tested = alcsim)
+```
+
+A one-sided test is appropriate when the direction of the effect
+was expected in advance; then divide the two-sided p-value by 2.
+
+### Tests of several parameters
+
+`test_parameter()` with several parameters gives a joint Wald-type test.
+Compare the three alcohol effects in the first model
+with the three alcohol effects in the model from the backward selection:
+
+```{r wald}
+alc  <- which(ans$effects$interaction1 == "alcohol")
+alc3 <- which(ans3$effects$interaction1 == "alcohol")
+test_parameter(ans, tested = alc)
+test_parameter(ans3, tested = alc3)
+```
+
+### Score tests
+
+A score test tests an effect without estimating it.
+Include the effect, fix it at 0, and mark it to be tested.
+Here we test the effect of indegree popularity:
+
+```{r score}
+myeff <- set_effect(myeff, inPop, fix = TRUE, test = TRUE, verbose = FALSE)
+ans4 <- siena(mydata, effects = myeff, control_algo = myalgo,
+              prevAns = ans, batch = TRUE)
+inpop <- which(ans4$effects$shortName == "inPop")
+test_parameter(ans4, tested = inpop, method = "score")
+```
+
+See `?test_parameter` for more options.
+
+## Time heterogeneity
+
+Are the parameters the same in the two periods?
+`test_time()` applies a score test for each effect
+and each period.
+
+> Lospinoso, J.A., Schweinberger, M., Snijders, T.A.B. and Ripley, R.M. (2011).
+> Assessing and accounting for time heterogeneity in stochastic actor oriented models.
+> *Advances in Data Analysis and Classification*, 5, 147–176.
+> <https://doi.org/10.1007/s11634-010-0076-1>
+
+```{r timetest}
+tt <- test_time(ans)
+summary(tt)
+```
+
+If the overall test is significant, the effect-wise and period-wise
+results show where the heterogeneity is.
+`includeTimeDummy()` then adds parameters for the separate periods.
+
+## Summary of the code
+
+```{r summary, eval = FALSE}
+library(RSiena)
+friendship <- as_dependent_rsiena(array(c(s501, s502, s503),
+                                        dim = c(50, 50, 3)))
+smoke1  <- as_covariate_rsiena(s50s[, 1])
+alcohol <- as_covariate_rsiena(s50a)
+mydata  <- make_data_rsiena(friendship, smoke1, alcohol)
+write_report(mydata)
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, list(transTrip, outAct))
+myeff <- set_effect(myeff, list(egoX, altX, simX), covar1 = "alcohol")
+myeff <- set_effect(myeff, simX, covar1 = "smoke1")
+ans <- siena(mydata, effects = myeff, batch = TRUE)
+ans
+```

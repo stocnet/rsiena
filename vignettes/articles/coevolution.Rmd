@@ -1,0 +1,204 @@
+---
+title: "Co-evolution of networks and behaviour"
+author: "Tom A.B. Snijders and Christian Steglich"
+description: >
+  Behaviour as a dependent variable: separate selection from influence,
+  check the fit of the model, and interpret influence with influence tables.
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+# RSiena writes report files to the working directory; keep them out of the site.
+knitr::opts_knit$set(root.dir = tempdir())
+```
+
+Do adolescents choose friends who drink like them (*selection*),
+or do they start to drink like their friends (*influence*)?
+Both processes make friends similar,
+so a cross-sectional analysis cannot separate them.
+A SAOM with the network and the behaviour as dependent variables
+can (Steglich, Snijders and Pearson, 2010).
+
+This article is based on the scripts `Rscript04SienaBehaviour.R`
+by Tom Snijders and `Lab_coevolution.R`
+by Christian Steglich and Tom Snijders.
+
+> Steglich, C.E.G., Snijders, T.A.B. and Pearson, M. (2010).
+> Dynamic networks and behavior: Separating selection from influence.
+> *Sociological Methodology*, 40, 329–393.
+> <https://doi.org/10.1111/j.1467-9531.2010.01225.x>
+
+## Data
+
+The `s50` data have friendship at three waves,
+and smoking and alcohol use at the same three waves.
+Here, friendship, smoking and drinking are all dependent variables.
+
+```{r data, message = FALSE}
+library(RSiena)
+friendship <- as_dependent_rsiena(array(c(s501, s502, s503),
+                                        dim = c(50, 50, 3)))
+drinking <- as_dependent_rsiena(s50a, type = "behavior")
+smoking  <- as_dependent_rsiena(s50s, type = "behavior")
+mydata <- make_data_rsiena(friendship, smoking, drinking)
+mydata
+```
+
+`write_report(mydata)` writes descriptive statistics to a file.
+For behaviour variables, it also gives the number of increases
+and decreases between waves.
+Moran's I and related measures (for example, `nacf()` in the sna package)
+describe how similar friends are.
+
+## Specification
+
+The model has three parts, one for each dependent variable.
+First the structural effects for friendship:
+
+```{r structural}
+myeff <- make_specification(mydata)
+myeff <- set_effect(myeff, list(outAct, inPop, transTrip, transRecTrip),
+                    verbose = FALSE)
+```
+
+Then the **selection** effects:
+how smoking and drinking affect the choice of friends.
+
+```{r selection}
+myeff <- set_effect(myeff, simX, covar1 = "smoking", verbose = FALSE)
+myeff <- set_effect(myeff, list(egoX, altX, egoXaltX, egoSqX),
+                    covar1 = "drinking", verbose = FALSE)
+```
+
+Then the **influence** effects:
+how friends affect smoking and drinking.
+These effects belong to the behaviour variables,
+so `depvar` must name the behaviour variable.
+
+```{r influence}
+myeff <- set_effect(myeff, avAlt, depvar = "drinking",
+                    covar1 = "friendship", verbose = FALSE)
+myeff <- set_effect(myeff, avSim, depvar = "smoking",
+                    covar1 = "friendship", verbose = FALSE)
+myeff
+```
+
+The effects `egoXaltX` (selection) and `avAlt` (influence) for drinking
+are a matching pair, as are `simX` and `avSim` for smoking.
+Use such pairs, so that selection and influence are measured
+in the same terms.
+
+## Estimation
+
+```{r estimate}
+algo <- set_algorithm_saom(seed = 1410)
+ans <- siena(mydata, effects = myeff, control_algo = algo, batch = TRUE)
+ans
+```
+
+Continue the estimation for better convergence and precise standard errors
+(see Section 7.3.3 of the manual):
+
+```{r estimate2}
+algo2 <- set_algorithm_saom(seed = 828, n3 = 5000, nsub = 1,
+                            n2start = 2000, firstg = 0.01)
+ans2 <- siena(mydata, effects = myeff, control_algo = algo2,
+              prevAns = ans, batch = TRUE)
+ans2
+```
+
+The influence effect for drinking (`drinking average alter`)
+and the selection effect (`drinking ego x drinking alter`)
+are estimated together, each controlled for the other.
+
+## Interpreting influence
+
+As for selection, the parameters of a behaviour variable
+are easier to read in a table or a plot.
+The *influence table* gives the evaluation function of the behaviour
+for each value of ego's behaviour (horizontal axis)
+and each average value of the friends' behaviour (one curve each):
+
+```{r inftable, message = FALSE, fig.width = 7, fig.height = 4.5}
+library(autograph)
+(influence.drinking <- interpret_influence(ans2, mydata,
+                                           "friendship", "drinking"))
+plot(influence.drinking)
+```
+
+In a ministep, a pupil is more likely to change the behaviour
+towards a higher value of this function.
+When the friends' average is low, the curves show pressure downwards;
+when it is high, pressure upwards.
+
+For smoking, the influence effect is average similarity.
+Each curve shows the hypothetical case that *all* friends
+have the same value, so real cases are less extreme:
+
+```{r inftable2, fig.width = 7, fig.height = 4.5}
+plot(interpret_influence(ans2, mydata, "friendship", "smoking"))
+```
+
+Section 14.4 of the manual explains influence tables.
+
+## Goodness of fit
+
+Does the model reproduce features of the data that it does not
+model directly?
+Simulate from the fitted model with `returnDeps = TRUE`.
+No further estimation is needed, so set `nsub = 0`:
+
+```{r gofsim}
+algo3 <- set_algorithm_saom(seed = 766, nsub = 0)
+ans.gof <- siena(mydata, effects = myeff, control_algo = algo3,
+                 prevAns = ans2, returnDeps = TRUE, batch = TRUE)
+```
+
+First, is there time heterogeneity?
+
+```{r timetest}
+test_time(ans.gof)
+```
+
+Then compare statistics of the observed data with the same statistics
+of the simulated data.
+A small p-value shows a poor fit.
+
+```{r gof, fig.width = 7, fig.height = 4.5}
+gof.out <- test_gof(ans.gof, OutdegreeDistribution, varName = "friendship",
+                    cumulative = FALSE, levls = 0:10)
+gof.out
+plot(gof.out)
+
+gof.in <- test_gof(ans.gof, IndegreeDistribution, varName = "friendship",
+                   cumulative = FALSE, levls = 0:10)
+gof.in
+plot(gof.in)
+
+gof.drink <- test_gof(ans.gof, BehaviorDistribution, varName = "drinking",
+                      cumulative = FALSE, levls = 1:5)
+gof.drink
+plot(gof.drink)
+```
+
+`?test_gof_auxiliary` describes more statistics,
+for example the triad census and `egoAlterCombi`
+for the combination of network and behaviour.
+
+## Alternative influence effects
+
+Average similarity (`avSim`) and total similarity (`totSim`)
+are different forms of influence.
+With average similarity, the influence of each friend is smaller
+when a pupil has more friends;
+with total similarity, each friend has the same influence.
+To compare, replace one with the other and estimate again:
+
+```{r totsim, eval = FALSE}
+myeff.tot <- set_effect(myeff, avSim, depvar = "smoking",
+                        covar1 = "friendship", include = FALSE)
+myeff.tot <- set_effect(myeff.tot, totSim, depvar = "smoking",
+                        covar1 = "friendship")
+ans.tot <- siena(mydata, effects = myeff.tot, control_algo = algo,
+                 batch = TRUE)
+```

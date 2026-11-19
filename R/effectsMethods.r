@@ -77,7 +77,7 @@ set_effect.sienaEffects <- function(x, shortNames, type="eval",
 		{
 			warning("For more than one shortName, function set_effect does not consider parameters")
 		}		
-		includeEffects(x, shn2, include = TRUE, name = depvar, type = type,
+		includeEffects(x, shn2, include = include, name = depvar, type = type,
 			interaction1 = covar1, interaction2 = covar2, fix=fix, test=test, character=TRUE,
 			verbose = verbose)
 	}

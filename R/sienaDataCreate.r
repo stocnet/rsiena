@@ -85,7 +85,10 @@ addAttributes.varCovar <- function(x, name, ...)
 	varmean <- mean(x, na.rm=TRUE)
 	vartotal <- sum(x, na.rm=TRUE)
 	nonMissingCount <- sum(!is.na(x))
-	attr(x, "rangep") <- apply(x, 2, range, na.rm=TRUE)
+	# A period with only missing values has no range: give NA, not Inf/-Inf
+	# with a warning.
+	attr(x, "rangep") <- apply(x, 2, function(xp)
+		if (all(is.na(xp))) c(NA, NA) else range(xp, na.rm=TRUE))
 	attr(x, "meanp") <- colMeans(x, na.rm=TRUE)
 	cr <- range(x, na.rm=TRUE)
 	attr(x, 'range') <- cr[2] - cr[1]

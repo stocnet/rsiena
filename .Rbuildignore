@@ -1,6 +1,5 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
 ^\.github$
@@ -14,3 +13,8 @@
 ^.*\.code-workspace$
 NEWSnew.md
 man/Show.*
+^development$
+^README\.Rmd$
+^vignettes/articles$
+^CLAUDE\.md$
+^\.claude$
