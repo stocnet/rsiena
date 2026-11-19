@@ -1,6 +1,7 @@
 # Contributing
 
-Contributions to `rsiena`, whether in the form of issue identification, bug fixes, new code or documentation are encouraged and welcome:
+Contributions to `rsiena`, whether in the form of issue identification, 
+bug fixes, new code or documentation are encouraged and welcome:
 
 * [Submit an issue](#issues)
 * [Fix a bug or implement new features](#adding-new-code)
@@ -20,6 +21,7 @@ The most useful issues are ones that precisely identify a bug,
 or propose a test that should pass but instead fails.
 
 ## Adding new code
+
 Independent or assigned code contributions are most welcome.
 When you write new R code, please follow the [tidyverse style guide](https://style.tidyverse.org/index.html).
 The packages `lintr` and `goodpractice` help to find problems, and `styler` fixes some of the formatting:
@@ -87,6 +89,7 @@ This branching model is based on <https://nvie.com/posts/a-successful-git-branch
 5. Delete the hotfix branch: `git branch -d hotfix-1.6.16`.
 
 ### Releases (code maintainer only)
+
 The GitHub Actions workflows make a release automatically:
 
 - `prchecks.yml` runs on each pull request to `main`.
@@ -109,9 +112,12 @@ If the tag already exists, the release job stops with an error.
 Then raise `Version` and push again.
 
 ### Commit messages
+
 Commits that relate to existing issues should reference the updated status of those issues, and mention the issue number (preceded by a hash symbol: #) in the commit description:
 
-``` Resolved #31 by adding a new function that does things, also updated documentation ```
+```
+Resolved #31 by adding a new function that does things, also updated documentation
+```
 
 Where the issue hash (i.e. #31) is preceded by `resolve`, `resolves`, `resolved`, `close`, `closes`, `closed`, `fix`, `fixes`, or `fixed` (capitalised or not), the status of the issue(s) mentioned is updated automatically.
 Our current syntactical standard is to mention the issue first and then provide a short description of what the committed changes do in relation to that issue.
@@ -120,6 +126,7 @@ Any ancillary changes can be mentioned after a comma.
 It should all be written in a single line, like so: `{verb} {issue} {describe main action/changes}, {additional actions/changes}`.
 
 ### Testing
+
 The tests are plain R scripts in [tests/](../tests).
 `R CMD check` runs each script.
 A script fails if it gives an error, so use `stopifnot()` to test a result.
@@ -169,12 +176,14 @@ rmarkdown::render("README.Rmd", output_options = list(html_preview = FALSE))
 Please contact us directly with proposals for updating the documentation, or submit an issue if existing documentation is unclear.
 
 ## NEWS
+
 Add each change to the top entry of `NEWS.md`.
 Each version has a heading such as `# RSiena 1.6.15 (2026-11-19)`.
 Put the changes under these second-level headings, in this sequence, and use only the headings that you need:
 `## Effects`, `## Functionality`, `## Bug corrections`, `## Messages`, `## Documentation`, `## Coding`, `## Tests`, `## Package`.
 
 ## Versioning
+
 The `rsiena` package uses [semantic versioning](https://semver.org/).
 The version has the format Major.Minor.Patch:
 
@@ -216,6 +225,7 @@ A tarball built from the files of a GitHub release archive
 does not give this warning.
 
 ## For developers using macOS
+
 To compile the package from source on macOS, you need:
 
 - The Xcode Command Line Tools (`xcode-select --install`).

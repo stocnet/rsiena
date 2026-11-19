@@ -17,3 +17,4 @@ man/Show.*
 ^README\.Rmd$
 ^vignettes/articles$
 ^CLAUDE\.md$
+^\.claude$
